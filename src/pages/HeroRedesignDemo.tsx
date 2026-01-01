@@ -557,6 +557,531 @@ export default function HeroRedesignDemo() {
         </div>
       </section>
 
+      {/* Option 7: Clean Editorial */}
+      <section className="border-b">
+        <div className="mb-4 bg-muted px-6 py-3">
+          <Badge variant="outline" className="mr-2">Option 7</Badge>
+          <span className="font-semibold">Clean Editorial</span>
+          <span className="ml-2 text-sm text-muted-foreground">— Magazine-style white layout</span>
+        </div>
+        
+        <div className="min-h-[650px] bg-white py-20">
+          <div className="container">
+            <div className="grid items-center gap-16 lg:grid-cols-2">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+              >
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Est. 2020</span>
+                </div>
+                
+                <h1 className="mb-6 font-serif text-5xl font-light leading-tight text-slate-900 lg:text-6xl">
+                  The Art of
+                  <span className="block font-normal italic text-amber-600">Confident Driving</span>
+                </h1>
+                
+                <p className="mb-8 max-w-md text-lg leading-relaxed text-slate-600">
+                  Master the road with expert guidance. Our personalized approach has helped over 15,000 students pass with flying colors.
+                </p>
+                
+                <div className="mb-10 flex items-center gap-4">
+                  <Button size="lg" className="rounded-none bg-slate-900 px-8 hover:bg-slate-800">
+                    Start Your Journey
+                  </Button>
+                  <Button size="lg" variant="ghost" className="rounded-none text-slate-600 hover:text-slate-900">
+                    Learn More →
+                  </Button>
+                </div>
+                
+                <div className="flex items-center gap-8 border-t pt-8">
+                  {[
+                    { value: "98%", label: "Pass Rate" },
+                    { value: "15K+", label: "Graduates" },
+                    { value: "4.9", label: "Rating" },
+                  ].map((stat, i) => (
+                    <div key={i}>
+                      <p className="text-3xl font-light text-slate-900">{stat.value}</p>
+                      <p className="text-sm text-slate-500">{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                className="relative"
+              >
+                <div className="relative">
+                  <img src={testimonialSarah} alt="" className="h-[500px] w-full object-cover" />
+                  <div className="absolute -bottom-6 -left-6 bg-white p-6 shadow-xl">
+                    <div className="flex items-center gap-1 mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <p className="text-sm text-slate-600">"Exceptional experience from start to finish."</p>
+                    <p className="mt-2 text-xs font-semibold text-slate-900">— Sarah M.</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Option 8: Soft Gradient White */}
+      <section className="border-b">
+        <div className="mb-4 bg-muted px-6 py-3">
+          <Badge variant="outline" className="mr-2">Option 8</Badge>
+          <span className="font-semibold">Soft Gradient White</span>
+          <span className="ml-2 text-sm text-muted-foreground">— Subtle gradient with floating cards</span>
+        </div>
+        
+        <div className="min-h-[650px] bg-gradient-to-b from-amber-50/50 via-white to-white py-20">
+          <div className="container">
+            <div className="mx-auto max-w-4xl text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+              >
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
+                  <Award className="h-4 w-4" />
+                  Rated #1 Driving School in UK
+                </div>
+                
+                <h1 className="mb-6 text-5xl font-bold tracking-tight text-slate-900 lg:text-6xl">
+                  Your License to
+                  <span className="relative mx-2">
+                    <span className="relative z-10 text-amber-600">Freedom</span>
+                    <div className="absolute -inset-1 -rotate-1 rounded bg-amber-100" />
+                  </span>
+                  Awaits
+                </h1>
+                
+                <p className="mx-auto mb-10 max-w-2xl text-xl text-slate-600">
+                  Join thousands of confident drivers who started their journey with us. Expert instructors, flexible schedules, guaranteed results.
+                </p>
+                
+                <div className="mx-auto mb-12 flex max-w-xl flex-col items-center gap-4 sm:flex-row">
+                  <div className="relative w-full flex-1">
+                    <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder="Enter your postcode..."
+                      className="h-14 rounded-xl border-slate-200 bg-white pl-12 shadow-sm"
+                    />
+                  </div>
+                  <Button size="lg" className="h-14 w-full rounded-xl bg-amber-500 px-8 hover:bg-amber-600 sm:w-auto">
+                    Find Courses
+                  </Button>
+                </div>
+              </motion.div>
+              
+              {/* Floating Feature Cards */}
+              <div className="mt-8 grid gap-6 sm:grid-cols-3">
+                {[
+                  { icon: Clock, title: "Flexible Hours", desc: "Morning, evening & weekend slots" },
+                  { icon: Shield, title: "Pass Guarantee", desc: "Free re-test if you don't pass" },
+                  { icon: Users, title: "Expert Instructors", desc: "500+ certified professionals" },
+                ].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                  >
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
+                      <item.icon className="h-6 w-6 text-amber-600" />
+                    </div>
+                    <h3 className="mb-1 font-semibold text-slate-900">{item.title}</h3>
+                    <p className="text-sm text-slate-500">{item.desc}</p>
+                  </motion.div>
+                ))}
+              </div>
+              
+              {/* Avatars */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="mt-12 flex items-center justify-center gap-4"
+              >
+                <div className="flex -space-x-3">
+                  {[testimonialSarah, testimonialJames, testimonialEmma].map((img, i) => (
+                    <img key={i} src={img} alt="" className="h-12 w-12 rounded-full border-3 border-white object-cover shadow-sm" />
+                  ))}
+                </div>
+                <div className="text-left">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-slate-600">15,000+ happy students</p>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Option 9: Minimal Cards */}
+      <section className="border-b">
+        <div className="mb-4 bg-muted px-6 py-3">
+          <Badge variant="outline" className="mr-2">Option 9</Badge>
+          <span className="font-semibold">Minimal Cards</span>
+          <span className="ml-2 text-sm text-muted-foreground">— Ultra-clean with card-based layout</span>
+        </div>
+        
+        <div className="min-h-[650px] bg-white py-20">
+          <div className="container">
+            <div className="grid gap-8 lg:grid-cols-12">
+              {/* Left Content */}
+              <div className="lg:col-span-5">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="sticky top-24"
+                >
+                  <p className="mb-4 text-sm font-medium text-amber-600">LEARN TO DRIVE</p>
+                  
+                  <h1 className="mb-6 text-4xl font-bold text-slate-900 lg:text-5xl">
+                    Pass your test with confidence
+                  </h1>
+                  
+                  <p className="mb-8 text-lg text-slate-600">
+                    Expert instruction tailored to your pace. Book your first lesson in minutes.
+                  </p>
+                  
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button size="lg" className="bg-slate-900">
+                      Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button size="lg" variant="outline">
+                      View Pricing
+                    </Button>
+                  </div>
+                  
+                  <div className="mt-10 flex items-center gap-6">
+                    <div className="flex -space-x-2">
+                      {[testimonialSarah, testimonialJames, testimonialEmma].map((img, i) => (
+                        <img key={i} src={img} alt="" className="h-10 w-10 rounded-full border-2 border-white object-cover" />
+                      ))}
+                    </div>
+                    <p className="text-sm text-slate-500">
+                      <span className="font-semibold text-slate-900">15K+</span> students passed
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+              
+              {/* Right Cards */}
+              <div className="lg:col-span-7">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {[
+                    { img: testimonialSarah, name: "Sarah M.", quote: "Passed first time!", course: "Intensive" },
+                    { img: testimonialJames, name: "James T.", quote: "Amazing instructor!", course: "Semi-Intensive" },
+                    { img: testimonialEmma, name: "Emma L.", quote: "So patient and helpful!", course: "Weekly" },
+                    { img: testimonialSarah, name: "Mike R.", quote: "Highly recommend!", course: "Intensive" },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className={`overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 ${i === 0 ? "sm:col-span-2" : ""}`}
+                    >
+                      <img src={item.img} alt="" className={`w-full object-cover ${i === 0 ? "h-64" : "h-40"}`} />
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-slate-900">{item.name}</p>
+                            <p className="text-sm text-slate-500">{item.course} Course</p>
+                          </div>
+                          <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                            {item.quote}
+                          </Badge>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Option 10: Boxed Hero */}
+      <section className="border-b">
+        <div className="mb-4 bg-muted px-6 py-3">
+          <Badge variant="outline" className="mr-2">Option 10</Badge>
+          <span className="font-semibold">Boxed Hero</span>
+          <span className="ml-2 text-sm text-muted-foreground">— Content in bordered container</span>
+        </div>
+        
+        <div className="min-h-[650px] bg-slate-50 py-20">
+          <div className="container">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="overflow-hidden rounded-3xl border border-slate-200 bg-white"
+            >
+              <div className="grid lg:grid-cols-2">
+                {/* Left Content */}
+                <div className="p-10 lg:p-16">
+                  <div className="mb-8 flex items-center gap-3">
+                    <img src={logo} alt="EveryDriver" className="h-8" />
+                  </div>
+                  
+                  <h1 className="mb-6 text-4xl font-bold text-slate-900 lg:text-5xl">
+                    Learn to drive the <span className="text-amber-500">smart way</span>
+                  </h1>
+                  
+                  <p className="mb-8 text-lg text-slate-600">
+                    Personalized lessons with top-rated instructors. Flexible scheduling that fits your life.
+                  </p>
+                  
+                  <div className="mb-8 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="mb-3 text-sm font-medium text-slate-700">Find instructors near you</p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <Input placeholder="Postcode" className="h-12 pl-10" />
+                      </div>
+                      <Button className="h-12 bg-amber-500 px-6 hover:bg-amber-600">
+                        Search
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-6">
+                    {[
+                      { icon: CheckCircle2, text: "Free cancellation" },
+                      { icon: CheckCircle2, text: "Pass guarantee" },
+                      { icon: CheckCircle2, text: "0% finance available" },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                        <item.icon className="h-4 w-4 text-emerald-500" />
+                        {item.text}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Right Image */}
+                <div className="relative">
+                  <img src={testimonialSarah} alt="" className="h-full min-h-[400px] w-full object-cover" />
+                  
+                  {/* Floating Stats */}
+                  <div className="absolute bottom-6 left-6 right-6 grid grid-cols-3 gap-3">
+                    {[
+                      { value: "98%", label: "Pass Rate" },
+                      { value: "500+", label: "Instructors" },
+                      { value: "4.9★", label: "Rating" },
+                    ].map((stat, i) => (
+                      <div key={i} className="rounded-xl bg-white/90 p-3 text-center backdrop-blur-sm">
+                        <p className="text-lg font-bold text-slate-900">{stat.value}</p>
+                        <p className="text-xs text-slate-600">{stat.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Option 11: Stacked Sections */}
+      <section className="border-b">
+        <div className="mb-4 bg-muted px-6 py-3">
+          <Badge variant="outline" className="mr-2">Option 11</Badge>
+          <span className="font-semibold">Stacked Sections</span>
+          <span className="ml-2 text-sm text-muted-foreground">— Vertical flow with distinct sections</span>
+        </div>
+        
+        <div className="min-h-[650px] bg-white">
+          {/* Top Section */}
+          <div className="border-b py-16">
+            <div className="container">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="mx-auto max-w-3xl text-center"
+              >
+                <div className="mb-4 flex justify-center gap-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="mb-6 text-slate-500">Trusted by 15,000+ learners across the UK</p>
+                
+                <h1 className="mb-6 text-5xl font-bold text-slate-900 lg:text-6xl">
+                  Pass Your Driving Test
+                  <span className="block text-amber-500">First Time</span>
+                </h1>
+                
+                <p className="mb-8 text-xl text-slate-600">
+                  Expert instructors. Flexible scheduling. Guaranteed results.
+                </p>
+                
+                <div className="flex flex-wrap justify-center gap-4">
+                  <Button size="lg" className="bg-slate-900 px-8">
+                    Book Now
+                  </Button>
+                  <Button size="lg" variant="outline" className="px-8">
+                    View Courses
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+          
+          {/* Image Strip */}
+          <div className="overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              className="flex"
+            >
+              {[testimonialSarah, testimonialJames, testimonialEmma, testimonialSarah, testimonialJames].map((img, i) => (
+                <div key={i} className="flex-shrink-0">
+                  <img src={img} alt="" className="h-64 w-80 object-cover" />
+                </div>
+              ))}
+            </motion.div>
+          </div>
+          
+          {/* Stats Section */}
+          <div className="border-t py-12">
+            <div className="container">
+              <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+                {[
+                  { value: "98%", label: "Pass Rate" },
+                  { value: "15K+", label: "Students Passed" },
+                  { value: "500+", label: "Instructors" },
+                  { value: "24/7", label: "Online Booking" },
+                ].map((stat, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="text-center"
+                  >
+                    <p className="text-4xl font-bold text-slate-900">{stat.value}</p>
+                    <p className="text-slate-500">{stat.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Option 12: Playful Modern */}
+      <section className="border-b">
+        <div className="mb-4 bg-muted px-6 py-3">
+          <Badge variant="outline" className="mr-2">Option 12</Badge>
+          <span className="font-semibold">Playful Modern</span>
+          <span className="ml-2 text-sm text-muted-foreground">— Fun, approachable design with shapes</span>
+        </div>
+        
+        <div className="relative min-h-[650px] overflow-hidden bg-white py-20">
+          {/* Decorative Shapes */}
+          <div className="absolute -left-20 top-20 h-40 w-40 rounded-full bg-amber-100" />
+          <div className="absolute -right-10 bottom-20 h-32 w-32 rounded-full bg-blue-100" />
+          <div className="absolute right-1/4 top-10 h-24 w-24 rounded-full bg-emerald-100" />
+          
+          <div className="container relative">
+            <div className="grid items-center gap-12 lg:grid-cols-2">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+              >
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-2 text-amber-700">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="text-sm font-medium">New: Pay monthly from £99</span>
+                </div>
+                
+                <h1 className="mb-6 text-5xl font-bold text-slate-900 lg:text-6xl">
+                  Driving lessons
+                  <span className="relative mx-2 inline-block">
+                    <span className="relative z-10">made easy</span>
+                    <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 200 12" preserveAspectRatio="none">
+                      <path d="M0,10 Q50,0 100,10 T200,10" stroke="#f59e0b" strokeWidth="4" fill="none" />
+                    </svg>
+                  </span>
+                  🚗
+                </h1>
+                
+                <p className="mb-8 text-xl text-slate-600">
+                  Learn at your own pace with friendly, patient instructors. We'll get you road-ready in no time!
+                </p>
+                
+                <div className="mb-8 flex flex-wrap gap-4">
+                  <Button size="lg" className="rounded-full bg-amber-500 px-8 hover:bg-amber-600">
+                    Find Your Instructor ✨
+                  </Button>
+                  <Button size="lg" variant="outline" className="rounded-full px-8">
+                    How It Works
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-4">
+                  {["🎯 98% Pass Rate", "⭐ 4.9 Rating", "💳 0% Finance"].map((text, i) => (
+                    <span key={i} className="rounded-full bg-slate-100 px-4 py-2 text-sm text-slate-700">
+                      {text}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                className="relative"
+              >
+                {/* Main Image */}
+                <div className="relative z-10 overflow-hidden rounded-[2rem] shadow-xl">
+                  <img src={testimonialSarah} alt="" className="w-full" />
+                </div>
+                
+                {/* Floating Elements */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="absolute -left-8 top-1/4 z-20 rounded-2xl bg-white p-4 shadow-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-2xl">
+                      🎉
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900">15,000+</p>
+                      <p className="text-sm text-slate-500">Happy Drivers</p>
+                    </div>
+                  </div>
+                </motion.div>
+                
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="absolute -bottom-4 -right-4 z-20 rounded-2xl bg-amber-500 px-6 py-4 text-white shadow-xl"
+                >
+                  <p className="text-2xl font-bold">From £30/hr</p>
+                </motion.div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <section className="py-12 text-center">
         <p className="text-muted-foreground">Which hero design do you prefer? Let me know and I'll implement it!</p>
