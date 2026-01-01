@@ -118,147 +118,98 @@ export default function Index() {
 
   return (
     <MainLayout>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-background py-12 lg:py-20">
+      {/* Hero Section - Soft Gradient White */}
+      <section className="min-h-[650px] bg-gradient-to-b from-amber-50/50 via-white to-white py-20">
         <div className="container">
-          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
-            {/* Left Content */}
+          <div className="mx-auto max-w-4xl text-center">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <Badge className="mb-6 border-0 bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
-                Free Re-test
-              </Badge>
-
-              <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                Your Driving
-                <span className="block text-primary">Success Story</span>
-                <span className="block">Starts Here</span>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
+                <Award className="h-4 w-4" />
+                Rated #1 Driving School in UK
+              </div>
+              
+              <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground lg:text-6xl">
+                Your License to
+                <span className="relative mx-2 inline-block">
+                  <span className="relative z-10 text-amber-600">Freedom</span>
+                  <div className="absolute -inset-1 -rotate-1 rounded bg-amber-100" />
+                </span>
+                Awaits
               </h1>
-
-              <p className="mb-8 max-w-md text-lg text-muted-foreground">
-                Join thousands who passed with DriveTime. Intensive courses designed to get you on the road faster.
+              
+              <p className="mx-auto mb-10 max-w-2xl text-xl text-muted-foreground">
+                Join thousands of confident drivers who started their journey with us. Expert instructors, flexible schedules, guaranteed results.
               </p>
-
-              {/* Search Form */}
-              <form onSubmit={handleSearch} className="mb-8 flex max-w-md overflow-hidden rounded-full border bg-card shadow-md">
-                <div className="relative flex-1">
+              
+              <form onSubmit={handleSearch} className="mx-auto mb-12 flex max-w-xl flex-col items-center gap-4 sm:flex-row">
+                <div className="relative w-full flex-1">
                   <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder="Enter your postcode..."
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value)}
-                    className="h-14 border-0 bg-transparent pl-12 text-base focus-visible:ring-0"
+                    className="h-14 rounded-xl border-border bg-white pl-12 shadow-sm"
                   />
                 </div>
-                <Button type="submit" className="m-1.5 h-11 rounded-full px-6">
+                <Button type="submit" size="lg" className="h-14 w-full rounded-xl bg-amber-500 px-8 hover:bg-amber-600 sm:w-auto">
                   Find Courses
                 </Button>
               </form>
-
-              {/* Trust Indicators */}
-              <div className="flex flex-wrap items-center gap-4">
+            </motion.div>
+            
+            {/* Floating Feature Cards */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mt-8 grid gap-6 sm:grid-cols-3"
+            >
+              {[
+                { icon: Clock, title: "Flexible Hours", desc: "Morning, evening & weekend slots" },
+                { icon: ShieldCheck, title: "Pass Guarantee", desc: "Free re-test if you don't pass" },
+                { icon: Users, title: "Expert Instructors", desc: "500+ certified professionals" },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                  className="rounded-2xl border border-border bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                >
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
+                    <item.icon className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <h3 className="mb-1 font-semibold text-foreground">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+            
+            {/* Avatars & Rating */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="mt-12 flex items-center justify-center gap-4"
+            >
+              <div className="flex -space-x-3">
+                {[testimonialSarah, testimonialJames, testimonialEmma].map((img, i) => (
+                  <img key={i} src={img} alt="" className="h-12 w-12 rounded-full border-3 border-white object-cover shadow-sm" />
+                ))}
+              </div>
+              <div className="text-left">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                   ))}
-                  <span className="ml-1 font-semibold text-foreground">4.9</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded bg-[#ffb3c7] px-2 py-1 text-xs font-semibold text-[#000]">
-                    Klarna.
-                  </span>
-                  <span className="rounded bg-[#b2fce4] px-2 py-1 text-xs font-semibold text-[#000]">
-                    clearpay
-                  </span>
-                  <span className="text-sm text-muted-foreground">0% Finance</span>
-                </div>
+                <p className="text-sm text-muted-foreground">15,000+ happy students</p>
               </div>
-            </motion.div>
-
-            {/* Right Content - Masonry Collage */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden h-[450px] grid-cols-12 gap-3 lg:grid"
-            >
-              {/* Tall left image */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="relative col-span-5 row-span-2 overflow-hidden rounded-2xl shadow-xl"
-              >
-                <img
-                  src={testimonialSarah}
-                  alt="Sarah - Passed 1st time"
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                  <p className="font-semibold text-white">Sarah</p>
-                  <p className="text-sm text-white/80">Passed in 2 weeks</p>
-                </div>
-              </motion.div>
-
-              {/* Top right image */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="relative col-span-7 h-52 overflow-hidden rounded-2xl shadow-xl"
-              >
-                <img
-                  src={testimonialJames}
-                  alt="James - Intensive Course"
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                  <p className="font-semibold text-white">James</p>
-                  <p className="text-sm text-white/80">Intensive Course</p>
-                </div>
-              </motion.div>
-
-              {/* Bottom right image */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="relative col-span-7 h-44 overflow-hidden rounded-2xl shadow-xl"
-              >
-                <img
-                  src={testimonialEmma}
-                  alt="Emma - Weekly Lessons"
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                  <p className="font-semibold text-white">Emma</p>
-                  <p className="text-sm text-white/80">Weekly Lessons</p>
-                </div>
-              </motion.div>
-
-              {/* Stats overlay */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="absolute -bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-xl bg-white px-6 py-3 shadow-xl"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="text-center">
-                    <p className="text-xl font-bold text-primary">98%</p>
-                    <p className="text-xs text-muted-foreground">Pass Rate</p>
-                  </div>
-                  <div className="h-8 w-px bg-border"></div>
-                  <div className="text-center">
-                    <p className="text-xl font-bold text-primary">15k+</p>
-                    <p className="text-xs text-muted-foreground">Students</p>
-                  </div>
-                </div>
-              </motion.div>
             </motion.div>
           </div>
         </div>
