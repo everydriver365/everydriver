@@ -31,11 +31,19 @@ interface InstructorCourse {
   course_image_url: string | null;
 }
 
+interface CourseTemplate {
+  course_hours: number;
+  course_name: string;
+  default_image_url: string | null;
+  is_popular: boolean | null;
+}
+
 interface CourseWithInstructor {
   instructor: Instructor;
   hours: number;
   nextAvailable: Date | null;
   courseImageUrl: string | null;
+  isPopular: boolean;
 }
 
 export default function Courses() {
@@ -53,41 +61,42 @@ export default function Courses() {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      // Fetch active instructors
-      const { data: instructors, error: instructorsError } = await supabase
-        .from("instructors")
-        .select("*")
-        .eq("is_active", true);
+      // Fetch active instructors, instructor courses, and course templates in parallel
+      const [instructorsRes, coursesRes, templatesRes] = await Promise.all([
+        supabase.from("instructors").select("*").eq("is_active", true),
+        supabase.from("instructor_courses").select("*").eq("is_active", true),
+        supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular").eq("is_active", true),
+      ]);
 
-      if (instructorsError) throw instructorsError;
+      if (instructorsRes.error) throw instructorsRes.error;
+      if (coursesRes.error) throw coursesRes.error;
+      if (templatesRes.error) throw templatesRes.error;
 
-      // Fetch instructor courses
-      const { data: instructorCourses, error: coursesError } = await supabase
-        .from("instructor_courses")
-        .select("*")
-        .eq("is_active", true);
-
-      if (coursesError) throw coursesError;
+      const instructors = instructorsRes.data || [];
+      const instructorCourses = coursesRes.data || [];
+      const courseTemplates: CourseTemplate[] = templatesRes.data || [];
 
       // Build course list based on instructor offerings
       const courseList: CourseWithInstructor[] = [];
 
-      for (const instructor of instructors || []) {
+      for (const instructor of instructors) {
         // Get courses this instructor offers
-        const offeredCourses = (instructorCourses || []).filter(
+        const offeredCourses = instructorCourses.filter(
           (c) => c.instructor_id === instructor.id
         );
 
         // For each course hour the instructor offers, create a course card
         for (const hours of DISPLAY_HOURS) {
           const courseData = offeredCourses.find((c) => c.course_hours === hours);
+          const template = courseTemplates.find((t) => t.course_hours === hours);
           
           if (courseData) {
             courseList.push({
               instructor,
               hours,
               nextAvailable: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000),
-              courseImageUrl: courseData.course_image_url || null,
+              courseImageUrl: courseData.course_image_url || template?.default_image_url || null,
+              isPopular: template?.is_popular || false,
             });
           }
         }
@@ -243,7 +252,7 @@ export default function Courses() {
                   hours={course.hours}
                   nextAvailable={course.nextAvailable}
                   courseImageUrl={course.courseImageUrl}
-                  isPopular={course.hours === 30 || course.hours === 40}
+                  isPopular={course.isPopular}
                 />
               </motion.div>
             ))}

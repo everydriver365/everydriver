@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, TrendingUp, Star, CheckCircle, Car } from "lucide-react";
+import { MapPin, Clock, TrendingUp, Star, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -68,20 +68,13 @@ export function DynamicCourseCard({
       >
         {/* Front of Card */}
         <div className="absolute inset-0 overflow-hidden rounded-2xl border bg-card shadow-md [backface-visibility:hidden]">
-          {/* Header Section - with optional image */}
-          <div 
-            className="relative h-32 overflow-hidden"
-            style={{ backgroundColor: courseImageUrl ? undefined : brandColour }}
-          >
-            {courseImageUrl ? (
-              <img
-                src={courseImageUrl}
-                alt={courseName}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-            )}
+          {/* Hero Image Section */}
+          <div className="relative h-44 overflow-hidden">
+            <img
+              src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
+              alt={courseName}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
             
             {isPopular && (
               <Badge className="absolute left-3 top-3 border-0 bg-emerald-500 text-white gap-1">
@@ -91,7 +84,7 @@ export function DynamicCourseCard({
             )}
 
             <div className="absolute right-3 top-3 flex flex-col gap-2">
-              <Badge className="border-0 bg-white/20 text-white backdrop-blur-sm">
+              <Badge className="border-0 bg-primary/90 text-primary-foreground backdrop-blur-sm">
                 {instructor.car_type}
               </Badge>
               {hours === 28 && (
@@ -100,23 +93,10 @@ export function DynamicCourseCard({
                 </Badge>
               )}
             </div>
-
-            <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-white">{courseName}</h3>
-                <p className="text-sm text-white/80">{hours} hours of lessons</p>
-              </div>
-              <Avatar className="h-14 w-14 border-2 border-white">
-                <AvatarImage src={instructor.profile_image_url || undefined} />
-                <AvatarFallback className="bg-white text-primary font-semibold">
-                  {instructor.name.split(" ").map((n) => n[0]).join("")}
-                </AvatarFallback>
-              </Avatar>
-            </div>
           </div>
 
           {/* Content Section */}
-          <div className="flex h-[calc(100%-8rem)]">
+          <div className="flex h-[calc(100%-11rem)]">
             <div className="flex flex-col items-center justify-center bg-primary px-3 py-4 text-primary-foreground min-w-[80px]">
               <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Next</span>
               <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
@@ -124,10 +104,8 @@ export function DynamicCourseCard({
               <span className="text-xs font-medium">{month}</span>
             </div>
 
-            <div className="flex-1 p-3 flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-sm">{instructor.name}</span>
-              </div>
+            <div className="flex-1 p-3">
+              <h3 className="text-base font-bold text-foreground line-clamp-2">{courseName}</h3>
               
               <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
@@ -135,18 +113,25 @@ export function DynamicCourseCard({
                   <span className="line-clamp-1">Near {instructor.home_postcode}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Car className="h-3 w-3" />
-                  <span>{instructor.car_make} {instructor.car_model}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
                   <Clock className="h-3 w-3" />
-                  <span>Flexible lesson lengths</span>
+                  <span>{hours} hours • {instructor.car_type}</span>
                 </div>
               </div>
 
-              <div className="mt-auto">
+              <div className="mt-2 flex items-center gap-2">
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={instructor.profile_image_url || undefined} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
+                    {instructor.name.split(" ").map((n) => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-muted-foreground truncate">
+                  {instructor.name}
+                </span>
+              </div>
+
+              <div className="mt-2">
                 <span className="text-xl font-bold text-foreground">£{totalPrice}</span>
-                <span className="text-xs text-muted-foreground ml-1">total</span>
               </div>
 
               <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
