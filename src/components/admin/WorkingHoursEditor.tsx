@@ -36,6 +36,7 @@ interface WorkingHour {
 interface DateOverride {
   id?: string;
   override_date: string;
+  override_end_date: string | null;
   start_time: string | null;
   end_time: string | null;
   is_available: boolean;
@@ -49,7 +50,9 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>();
+  const [selectedEndDate, setSelectedEndDate] = useState<Date | undefined>();
+  const [isForever, setIsForever] = useState(false);
   const [newOverride, setNewOverride] = useState<Partial<DateOverride>>({
     is_available: true,
     start_time: "09:00",
@@ -107,6 +110,7 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
         (overrides || []).map((o) => ({
           id: o.id,
           override_date: o.override_date,
+          override_end_date: o.override_end_date || null,
           start_time: o.start_time?.slice(0, 5) || null,
           end_time: o.end_time?.slice(0, 5) || null,
           is_available: o.is_available,
@@ -165,15 +169,21 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
   };
 
   const addDateOverride = async () => {
-    if (!selectedDate) {
-      toast.error("Please select a date");
+    if (!selectedStartDate) {
+      toast.error("Please select a start date");
+      return;
+    }
+
+    if (!isForever && selectedEndDate && selectedEndDate < selectedStartDate) {
+      toast.error("End date must be after start date");
       return;
     }
 
     try {
       const overrideData = {
         instructor_id: instructorId,
-        override_date: format(selectedDate, "yyyy-MM-dd"),
+        override_date: format(selectedStartDate, "yyyy-MM-dd"),
+        override_end_date: isForever ? null : (selectedEndDate ? format(selectedEndDate, "yyyy-MM-dd") : format(selectedStartDate, "yyyy-MM-dd")),
         start_time: newOverride.is_available ? newOverride.start_time : null,
         end_time: newOverride.is_available ? newOverride.end_time : null,
         is_available: newOverride.is_available,
@@ -181,12 +191,14 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
 
       const { error } = await supabase
         .from("instructor_date_overrides")
-        .upsert(overrideData, { onConflict: "instructor_id,override_date" });
+        .insert(overrideData);
 
       if (error) throw error;
 
       toast.success("Date override added");
-      setSelectedDate(undefined);
+      setSelectedStartDate(undefined);
+      setSelectedEndDate(undefined);
+      setIsForever(false);
       setNewOverride({
         is_available: true,
         start_time: "09:00",
@@ -288,71 +300,115 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
           Date-Specific Overrides
         </h4>
         <p className="mb-4 text-sm text-muted-foreground">
-          Set custom hours or mark specific dates as unavailable
+          Set custom hours or mark date ranges as unavailable. Leave end date blank for ongoing overrides.
         </p>
 
-        <div className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border p-4">
-          <div>
-            <Label className="mb-2 block text-sm">Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-40 justify-start">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {selectedDate ? format(selectedDate, "dd MMM yyyy") : "Pick date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  disabled={(date) => date < new Date()}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              id="override-available"
-              checked={newOverride.is_available}
-              onCheckedChange={(checked) =>
-                setNewOverride((prev) => ({ ...prev, is_available: checked }))
-              }
-            />
-            <Label htmlFor="override-available" className="text-sm">
-              Available
-            </Label>
-          </div>
-
-          {newOverride.is_available && (
-            <div className="flex items-center gap-2">
-              <Input
-                type="time"
-                value={newOverride.start_time}
-                onChange={(e) =>
-                  setNewOverride((prev) => ({ ...prev, start_time: e.target.value }))
-                }
-                className="w-32"
-              />
-              <span className="text-muted-foreground">to</span>
-              <Input
-                type="time"
-                value={newOverride.end_time}
-                onChange={(e) =>
-                  setNewOverride((prev) => ({ ...prev, end_time: e.target.value }))
-                }
-                className="w-32"
-              />
+        <div className="mb-4 space-y-4 rounded-lg border p-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <Label className="mb-2 block text-sm">Start Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-40 justify-start">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {selectedStartDate ? format(selectedStartDate, "dd MMM yyyy") : "Pick date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedStartDate}
+                    onSelect={setSelectedStartDate}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
-          )}
 
-          <Button onClick={addDateOverride} size="sm">
-            <Plus className="mr-1 h-4 w-4" />
-            Add Override
-          </Button>
+            <div>
+              <Label className="mb-2 block text-sm">End Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className={cn("w-40 justify-start", isForever && "opacity-50")}
+                    disabled={isForever}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {isForever ? "Forever" : (selectedEndDate ? format(selectedEndDate, "dd MMM yyyy") : "Pick date")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedEndDate}
+                    onSelect={setSelectedEndDate}
+                    disabled={(date) => date < (selectedStartDate || new Date())}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Switch
+                id="override-forever"
+                checked={isForever}
+                onCheckedChange={(checked) => {
+                  setIsForever(checked);
+                  if (checked) setSelectedEndDate(undefined);
+                }}
+              />
+              <Label htmlFor="override-forever" className="text-sm">
+                Forever
+              </Label>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="override-available"
+                checked={newOverride.is_available}
+                onCheckedChange={(checked) =>
+                  setNewOverride((prev) => ({ ...prev, is_available: checked }))
+                }
+              />
+              <Label htmlFor="override-available" className="text-sm">
+                Available
+              </Label>
+            </div>
+
+            {newOverride.is_available && (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="time"
+                  value={newOverride.start_time}
+                  onChange={(e) =>
+                    setNewOverride((prev) => ({ ...prev, start_time: e.target.value }))
+                  }
+                  className="w-32"
+                />
+                <span className="text-muted-foreground">to</span>
+                <Input
+                  type="time"
+                  value={newOverride.end_time}
+                  onChange={(e) =>
+                    setNewOverride((prev) => ({ ...prev, end_time: e.target.value }))
+                  }
+                  className="w-32"
+                />
+              </div>
+            )}
+
+            <Button onClick={addDateOverride} size="sm">
+              <Plus className="mr-1 h-4 w-4" />
+              Add Override
+            </Button>
+          </div>
         </div>
 
         {dateOverrides.length > 0 ? (
@@ -367,7 +423,12 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
               >
                 <div className="flex items-center gap-4">
                   <span className="font-medium">
-                    {format(new Date(override.override_date), "EEE, dd MMM yyyy")}
+                    {format(new Date(override.override_date), "dd MMM yyyy")}
+                    {override.override_end_date ? (
+                      <span> → {format(new Date(override.override_end_date), "dd MMM yyyy")}</span>
+                    ) : (
+                      <span className="text-muted-foreground"> → Forever</span>
+                    )}
                   </span>
                   {override.is_available ? (
                     <span className="text-sm text-muted-foreground">
