@@ -17,6 +17,12 @@ import videoThumbnail from "@/assets/video-thumbnail.jpg";
 import newsFeatured from "@/assets/news-featured.jpg";
 import newsArticle1 from "@/assets/news-article1.jpg";
 import newsArticle2 from "@/assets/news-article2.jpg";
+import featureRetest from "@/assets/feature-retest.jpg";
+import featureAvailability from "@/assets/feature-availability.jpg";
+import featureTheory from "@/assets/feature-theory.jpg";
+import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
+import featureCancellation from "@/assets/feature-cancellation.jpg";
+import featurePayments from "@/assets/feature-payments.jpg";
 
 const features = [
   {
@@ -459,10 +465,12 @@ export default function Index() {
               viewport={{ once: true }}
               className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
             >
-              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-rose-100 to-rose-200">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <ShieldCheck className="h-20 w-20 text-rose-400" />
-                </div>
+              <div className="relative h-40 overflow-hidden">
+                <img
+                  src={featureRetest}
+                  alt="FREE Re-Test"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
               <div className="p-5">
                 <div className="mb-2 flex items-center justify-between">
@@ -486,10 +494,12 @@ export default function Index() {
               viewport={{ once: true }}
               className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
             >
-              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-amber-100 to-amber-200">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Video className="h-20 w-20 text-amber-500" />
-                </div>
+              <div className="relative h-40 overflow-hidden">
+                <img
+                  src={featureAvailability}
+                  alt="Live Availability"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
               <div className="p-5">
                 <div className="mb-2 flex items-center justify-between">
@@ -513,10 +523,12 @@ export default function Index() {
               viewport={{ once: true }}
               className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
             >
-              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-emerald-100 to-emerald-200">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <GraduationCap className="h-20 w-20 text-emerald-500" />
-                </div>
+              <div className="relative h-40 overflow-hidden">
+                <img
+                  src={featureTheory}
+                  alt="FREE Theory Test"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
               <div className="p-5">
                 <div className="mb-2 flex items-center justify-between">
@@ -540,10 +552,12 @@ export default function Index() {
               viewport={{ once: true }}
               className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
             >
-              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-sky-100 to-sky-200">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Award className="h-20 w-20 text-sky-500" />
-                </div>
+              <div className="relative h-40 overflow-hidden">
+                <img
+                  src={featureTheoryPro}
+                  alt="FREE Theory Test Pro"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
               <div className="p-5">
                 <div className="mb-2 flex items-center justify-between">
@@ -567,10 +581,12 @@ export default function Index() {
               viewport={{ once: true }}
               className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
             >
-              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-violet-100 to-violet-200">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Search className="h-20 w-20 text-violet-500" />
-                </div>
+              <div className="relative h-40 overflow-hidden">
+                <img
+                  src={featureCancellation}
+                  alt="FREE Cancellation Finder"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
               <div className="p-5">
                 <div className="mb-2 flex items-center justify-between">
@@ -594,15 +610,12 @@ export default function Index() {
               viewport={{ once: true }}
               className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
             >
-              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-pink-100 via-pink-50 to-teal-100">
-                <div className="absolute inset-0 flex items-center justify-center gap-4">
-                  <span className="rounded bg-[#ffb3c7] px-3 py-1.5 text-sm font-bold text-black">
-                    Klarna.
-                  </span>
-                  <span className="rounded bg-[#b2fce4] px-3 py-1.5 text-sm font-bold text-black">
-                    clearpay
-                  </span>
-                </div>
+              <div className="relative h-40 overflow-hidden">
+                <img
+                  src={featurePayments}
+                  alt="Flexible Payments"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
               <div className="p-5">
                 <div className="mb-2 flex items-center justify-between">
