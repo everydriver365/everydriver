@@ -89,6 +89,15 @@ export function DynamicCourseCard({
       >
         {/* Front of Card */}
         <div className="absolute inset-0 overflow-hidden rounded-2xl border bg-card shadow-md [backface-visibility:hidden]">
+          {/* Available This Week Ribbon */}
+          {isAvailableSoon && (
+            <div className="absolute top-0 left-0 z-20 overflow-hidden w-24 h-24 pointer-events-none">
+              <div className="absolute top-3 -left-8 w-32 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider py-1 text-center transform -rotate-45 shadow-md">
+                This Week!
+              </div>
+            </div>
+          )}
+          
           {/* Hero Image Section */}
           <div className="relative h-44 overflow-hidden">
             <img
@@ -104,15 +113,22 @@ export function DynamicCourseCard({
               </Badge>
             )}
 
-            <div className="absolute right-3 top-3 flex flex-col gap-2">
-              <Badge className="border-0 bg-primary/90 text-primary-foreground backdrop-blur-sm">
-                {instructor.car_type}
-              </Badge>
-              {hours === 28 && (
-                <Badge className="border-0 bg-amber-500 text-white">
-                  Intensive
+            {/* Price badge - top right */}
+            <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
+              <div className="bg-card/95 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-lg border">
+                <div className="text-lg font-bold text-foreground">£{totalPrice}</div>
+                <div className="text-[10px] text-muted-foreground">£{Math.round(totalPrice / 4)}/mo</div>
+              </div>
+              <div className="flex gap-1">
+                <Badge className="border-0 bg-primary/90 text-primary-foreground backdrop-blur-sm text-[10px]">
+                  {instructor.car_type}
                 </Badge>
-              )}
+                {hours === 28 && (
+                  <Badge className="border-0 bg-amber-500 text-white text-[10px]">
+                    Intensive
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
 
@@ -176,11 +192,7 @@ export function DynamicCourseCard({
                 </span>
               </div>
 
-              <div className="mt-2">
-                <span className="text-xl font-bold text-foreground">£{totalPrice}</span>
-              </div>
-
-              <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <span className="rounded bg-[#b2fce4] px-1 py-0.5 font-semibold text-[#000]">
                   clearpay
                 </span>
