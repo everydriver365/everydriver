@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ShieldCheck, Video, GraduationCap, Search, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -418,6 +418,198 @@ export default function Index() {
                     </Button>
                   </Link>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* What's Included Section */}
+      <section className="bg-background py-16">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
+              Why Learners Love Us
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+              What's Included With Every Course
+            </h2>
+            <p className="mx-auto mb-12 max-w-2xl text-muted-foreground">
+              Everything you need to pass your driving test, all included for free.
+            </p>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* FREE Re-Test */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-rose-100 to-rose-200">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ShieldCheck className="h-20 w-20 text-rose-400" />
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">FREE Re-Test if you fail</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Every instructor is DVSA approved and background checked for your safety.
+                </p>
+                <button className="mt-3 text-sm text-primary hover:underline">
+                  Tap for more info
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Live Availability */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-amber-100 to-amber-200">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Video className="h-20 w-20 text-amber-500" />
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">Live Availability</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Skip the waiting lists. Find instructors with immediate availability in your area.
+                </p>
+                <button className="mt-3 text-sm text-primary hover:underline">
+                  Tap for more info
+                </button>
+              </div>
+            </motion.div>
+
+            {/* FREE Theory Test */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-emerald-100 to-emerald-200">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <GraduationCap className="h-20 w-20 text-emerald-500" />
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">FREE Theory Test</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Our intensive courses are designed to get you test-ready in record time.
+                </p>
+                <button className="mt-3 text-sm text-primary hover:underline">
+                  Tap for more info
+                </button>
+              </div>
+            </motion.div>
+
+            {/* FREE Theory Test Pro */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-sky-100 to-sky-200">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Award className="h-20 w-20 text-sky-500" />
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">FREE Theory Test Pro</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  We cover the cost of your second test if you don't pass the first time.
+                </p>
+                <button className="mt-3 text-sm text-primary hover:underline">
+                  Tap for more info
+                </button>
+              </div>
+            </motion.div>
+
+            {/* FREE Cancellation Finder */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-violet-100 to-violet-200">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Search className="h-20 w-20 text-violet-500" />
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">FREE Cancellation Finder</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Our dedicated team is here to help you every step of the way, 7 days a week.
+                </p>
+                <button className="mt-3 text-sm text-primary hover:underline">
+                  Tap for more info
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Flexible Payments */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-40 overflow-hidden bg-gradient-to-br from-pink-100 via-pink-50 to-teal-100">
+                <div className="absolute inset-0 flex items-center justify-center gap-4">
+                  <span className="rounded bg-[#ffb3c7] px-3 py-1.5 text-sm font-bold text-black">
+                    Klarna.
+                  </span>
+                  <span className="rounded bg-[#b2fce4] px-3 py-1.5 text-sm font-bold text-black">
+                    clearpay
+                  </span>
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">Flexible Payments</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Lessons that fit around your life. Weekends, evenings, and intensive blocks available.
+                </p>
+                <button className="mt-3 text-sm text-primary hover:underline">
+                  Tap for more info
+                </button>
               </div>
             </motion.div>
           </div>
