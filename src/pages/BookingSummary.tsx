@@ -24,6 +24,7 @@ interface Instructor {
   preferred_lesson_length: number;
   booking_advance_days: number | null;
   available_from: string | null;
+  allowed_lesson_lengths: number[] | null;
 }
 
 interface SelectedSlot {
@@ -76,6 +77,7 @@ export default function BookingSummary() {
           preferred_lesson_length: instructor.preferred_lesson_length || 60,
           booking_advance_days: instructor.booking_advance_days || 28,
           available_from: instructor.available_from || null,
+          allowed_lesson_lengths: instructor.allowed_lesson_lengths || null,
         },
         hours,
         courseName,
@@ -204,6 +206,7 @@ export default function BookingSummary() {
                 maxLessonLength={instructor.preferred_lesson_length}
                 bookingAdvanceDays={instructor.booking_advance_days || 28}
                 availableFrom={instructor.available_from}
+                allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
                 onSlotsChange={handleSlotsChange}
               />
             </motion.div>
