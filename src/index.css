@@ -51,6 +51,9 @@
     --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.1), 0 8px 10px -6px hsl(222 47% 11% / 0.1);
     --shadow-accent: 0 10px 30px -10px hsl(38 92% 50% / 0.4);
 
+    --nav-background: 213 100% 14%;
+    --nav-foreground: 0 0% 100%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;

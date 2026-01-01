@@ -23,13 +23,13 @@ export function Header() {
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-nav/20 bg-nav">
       <nav className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
             <Car className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">DriveTime</span>
+          <span className="text-xl font-bold text-nav-foreground">DriveTime</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -38,8 +38,8 @@ export function Header() {
             <Link
               key={link.href}
               to={link.href}
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                location.pathname === link.href ? "text-primary" : "text-muted-foreground"
+              className={`text-sm font-medium transition-colors hover:text-accent ${
+                location.pathname === link.href ? "text-accent" : "text-nav-foreground/80"
               }`}
             >
               {link.label}
@@ -50,7 +50,7 @@ export function Header() {
         {/* Portal Dropdown & Login */}
         <div className="hidden items-center gap-3 md:flex">
           <div className="group relative">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="border-nav-foreground/30 text-nav-foreground hover:bg-nav-foreground/10 hover:text-nav-foreground">
               Portals
             </Button>
             <div className="invisible absolute right-0 top-full mt-2 w-48 rounded-xl border bg-card p-2 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
