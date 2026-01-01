@@ -14,9 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      instructor_date_overrides: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          instructor_id: string
+          is_available: boolean
+          override_date: string
+          start_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          instructor_id: string
+          is_available?: boolean
+          override_date: string
+          start_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          instructor_id?: string
+          is_available?: boolean
+          override_date?: string
+          start_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_date_overrides_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_working_hours: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_working_hours_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructors: {
         Row: {
           bio: string | null
+          buffer_minutes: number
           car_image_url: string | null
           car_make: string | null
           car_model: string | null
@@ -35,6 +118,7 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          buffer_minutes?: number
           car_image_url?: string | null
           car_make?: string | null
           car_model?: string | null
@@ -53,6 +137,7 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          buffer_minutes?: number
           car_image_url?: string | null
           car_make?: string | null
           car_model?: string | null

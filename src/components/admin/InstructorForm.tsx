@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Upload, X, Car, User } from "lucide-react";
+import { X, Car, User } from "lucide-react";
+import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +36,7 @@ const instructorSchema = z.object({
   car_model: z.string().optional(),
   bio: z.string().optional(),
   hourly_rate: z.coerce.number().optional(),
+  buffer_minutes: z.coerce.number().min(0).max(60),
 });
 
 type InstructorFormData = z.infer<typeof instructorSchema>;
@@ -42,7 +44,7 @@ type InstructorFormData = z.infer<typeof instructorSchema>;
 interface InstructorFormProps {
   onSuccess: () => void;
   onCancel: () => void;
-  initialData?: Partial<InstructorFormData & { id: string; profile_image_url?: string; car_image_url?: string }>;
+  initialData?: Partial<InstructorFormData & { id: string; profile_image_url?: string; car_image_url?: string; buffer_minutes?: number }>;
 }
 
 const carTypes = [
@@ -71,6 +73,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       car_model: initialData?.car_model || "",
       bio: initialData?.bio || "",
       hourly_rate: initialData?.hourly_rate || undefined,
+      buffer_minutes: initialData?.buffer_minutes ?? 15,
     },
   });
 
@@ -140,6 +143,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         car_model: data.car_model || null,
         bio: data.bio || null,
         hourly_rate: data.hourly_rate || null,
+        buffer_minutes: data.buffer_minutes,
         profile_image_url: profileImageUrl,
         car_image_url: carImageUrl,
       };
@@ -301,6 +305,20 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="buffer_minutes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Buffer Between Lessons (mins)</FormLabel>
+                <FormControl>
+                  <Input type="number" min={0} max={60} placeholder="15" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* Location */}
@@ -408,6 +426,14 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
             </FormItem>
           )}
         />
+
+        {/* Working Hours - Only show for existing instructors */}
+        {initialData?.id && (
+          <div className="rounded-lg border p-4">
+            <h3 className="mb-4 text-lg font-semibold">Working Hours & Availability</h3>
+            <WorkingHoursEditor instructorId={initialData.id} />
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex justify-end gap-3">
