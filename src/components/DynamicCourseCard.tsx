@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, TrendingUp, Star, CheckCircle } from "lucide-react";
+import { MapPin, Clock, TrendingUp, Star, CheckCircle, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format, isFuture, parseISO } from "date-fns";
 
 interface DynamicCourseCardProps {
   instructor: {
@@ -22,6 +23,7 @@ interface DynamicCourseCardProps {
   nextAvailable?: Date | null;
   courseImageUrl?: string | null;
   isPopular?: boolean;
+  availableFrom?: string | null;
 }
 
 export function DynamicCourseCard({ 
@@ -29,7 +31,8 @@ export function DynamicCourseCard({
   hours, 
   nextAvailable,
   courseImageUrl,
-  isPopular = false 
+  isPopular = false,
+  availableFrom
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
@@ -44,16 +47,29 @@ export function DynamicCourseCard({
     navigate(`/book/${instructor.id}?hours=${hours}`);
   };
 
+  // Check if instructor has a future available_from date
+  const hasDelayedAvailability = availableFrom && isFuture(parseISO(availableFrom));
+  const availableFromDate = availableFrom ? parseISO(availableFrom) : null;
+
   const formatNextAvailable = () => {
-    if (!nextAvailable) return { day: "TBC", month: "" };
+    // If instructor has a future available_from date, show that instead
+    if (hasDelayedAvailability && availableFromDate) {
+      return {
+        day: availableFromDate.getDate().toString(),
+        month: availableFromDate.toLocaleDateString("en-GB", { month: "short" }),
+        isDelayed: true,
+      };
+    }
+    if (!nextAvailable) return { day: "TBC", month: "", isDelayed: false };
     const date = new Date(nextAvailable);
     return {
       day: date.getDate().toString(),
       month: date.toLocaleDateString("en-GB", { month: "short" }),
+      isDelayed: false,
     };
   };
 
-  const { day, month } = formatNextAvailable();
+  const { day, month, isDelayed } = formatNextAvailable();
 
   return (
     <div
@@ -97,9 +113,21 @@ export function DynamicCourseCard({
 
           {/* Content Section */}
           <div className="flex h-[calc(100%-11rem)]">
-            <div className="flex flex-col items-center justify-center bg-primary px-3 py-4 text-primary-foreground min-w-[80px]">
-              <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Next</span>
-              <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
+            <div className={`flex flex-col items-center justify-center px-3 py-4 min-w-[80px] ${
+              isDelayed ? "bg-amber-500 text-white" : "bg-primary text-primary-foreground"
+            }`}>
+              {isDelayed ? (
+                <>
+                  <CalendarClock className="h-4 w-4 mb-1 opacity-90" />
+                  <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
+                  <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">From</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Next</span>
+                  <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
+                </>
+              )}
               <span className="mt-1 text-2xl font-bold">{day}</span>
               <span className="text-xs font-medium">{month}</span>
             </div>
