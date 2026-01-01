@@ -1,55 +1,63 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Star, Clock, Car, Filter, ChevronDown } from "lucide-react";
+import { Search, MapPin, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Card, CardContent } from "@/components/ui/card";
+import { CourseCard } from "@/components/CourseCard";
 
 const mockCourses = [
   {
     id: 1,
+    title: "40 Hour Intensive Course",
     instructor: "John Smith",
-    rating: 4.9,
-    reviews: 127,
-    price: 35,
-    location: "Manchester, M1",
-    availability: "Next available: Tomorrow",
-    specialties: ["Manual", "Nervous Drivers"],
-    image: "JS",
+    price: 1800,
+    location: "Winchester, Southampton or Portsmouth",
+    duration: "4hr lessons",
+    description: "The standard course for complete beginners.",
+    nextAvailableDay: "2",
+    nextAvailableMonth: "Mar",
+    tags: ["Intensive", "Manual"],
+    isPopular: true,
   },
   {
     id: 2,
+    title: "30 Hour Semi-Intensive Course",
     instructor: "Sarah Johnson",
-    rating: 4.8,
-    reviews: 89,
-    price: 32,
-    location: "Manchester, M4",
-    availability: "Next available: Today",
-    specialties: ["Automatic", "Intensive Courses"],
-    image: "SJ",
+    price: 1350,
+    location: "Manchester, Bolton or Salford",
+    duration: "3hr lessons",
+    description: "Perfect for those with some driving experience.",
+    nextAvailableDay: "5",
+    nextAvailableMonth: "Mar",
+    tags: ["Semi-Intensive", "Automatic"],
+    isPopular: false,
   },
   {
     id: 3,
+    title: "20 Hour Refresher Course",
     instructor: "Mike Williams",
-    rating: 4.7,
-    reviews: 156,
-    price: 38,
-    location: "Salford, M5",
-    availability: "Next available: Friday",
-    specialties: ["Manual", "Pass Plus"],
-    image: "MW",
+    price: 900,
+    location: "Birmingham, Coventry or Wolverhampton",
+    duration: "2hr lessons",
+    description: "Ideal for returning drivers needing a confidence boost.",
+    nextAvailableDay: "8",
+    nextAvailableMonth: "Mar",
+    tags: ["Refresher", "Manual"],
+    isPopular: true,
   },
   {
     id: 4,
+    title: "50 Hour Complete Beginner Course",
     instructor: "Emma Davis",
-    rating: 5.0,
-    reviews: 45,
-    price: 40,
-    location: "Trafford, M32",
-    availability: "Next available: Monday",
-    specialties: ["Automatic", "Female Instructor"],
-    image: "ED",
+    price: 2250,
+    location: "Leeds, Bradford or Wakefield",
+    duration: "5hr lessons",
+    description: "Comprehensive course for absolute beginners.",
+    nextAvailableDay: "12",
+    nextAvailableMonth: "Mar",
+    tags: ["Intensive", "Automatic"],
+    isPopular: false,
   },
 ];
 
@@ -162,66 +170,7 @@ export default function Courses() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="overflow-hidden transition-all hover:shadow-lg">
-                <CardContent className="p-0">
-                  <div className="flex flex-col sm:flex-row">
-                    <div className="flex h-32 w-full items-center justify-center bg-primary sm:h-auto sm:w-32">
-                      <span className="text-3xl font-bold text-primary-foreground">
-                        {course.image}
-                      </span>
-                    </div>
-                    <div className="flex-1 p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold">{course.instructor}</h3>
-                          <div className="mt-1 flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-accent text-accent" />
-                            <span className="text-sm font-medium">{course.rating}</span>
-                            <span className="text-sm text-muted-foreground">
-                              ({course.reviews} reviews)
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-primary">£{course.price}</div>
-                          <div className="text-xs text-muted-foreground">per hour</div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {course.location}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {course.availability}
-                        </span>
-                      </div>
-
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {course.specialties.map((specialty) => (
-                          <span
-                            key={specialty}
-                            className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium"
-                          >
-                            {specialty}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="mt-4 flex gap-2">
-                        <Button variant="accent" size="sm" className="flex-1">
-                          Book Lesson
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          View Profile
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <CourseCard course={course} />
             </motion.div>
           ))}
         </div>
