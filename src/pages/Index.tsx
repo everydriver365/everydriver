@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ShieldCheck, Video, GraduationCap, Search, Wallet } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -12,6 +12,7 @@ import testimonialEmma from "@/assets/testimonial-emma.jpg";
 import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
+import videoThumbnail from "@/assets/video-thumbnail.jpg";
 
 const features = [
   {
@@ -610,6 +611,67 @@ export default function Index() {
                 <button className="mt-3 text-sm text-primary hover:underline">
                   Tap for more info
                 </button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Video Story Section */}
+      <section className="bg-amber-50/60 py-16">
+        <div className="container">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Video Thumbnail */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="relative overflow-hidden rounded-2xl shadow-xl">
+                <img
+                  src={videoThumbnail}
+                  alt="Our Story Video"
+                  className="h-full w-full object-cover"
+                />
+                {/* Play Button Overlay */}
+                <button className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors hover:bg-black/30">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg transition-transform hover:scale-110">
+                    <Play className="h-6 w-6 fill-primary text-primary ml-1" />
+                  </div>
+                </button>
+              </div>
+              <p className="mt-4 text-center italic text-muted-foreground">
+                Our Story - Watch Now!
+              </p>
+            </motion.div>
+
+            {/* Content */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <Badge className="mb-4 gap-1 border-0 bg-amber-500 text-white hover:bg-amber-500">
+                <Play className="h-3 w-3 fill-white" />
+                Watch Our Story
+              </Badge>
+              <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+                Every Driver Has a Story
+              </h2>
+              <p className="mb-8 text-lg text-muted-foreground">
+                From nervous first-timers to confident road users, we've been part of thousands of driving journeys. Watch our intro to see what makes us different.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Button className="gap-2 bg-amber-500 hover:bg-amber-600">
+                  <Play className="h-4 w-4 fill-white" />
+                  Play Video
+                </Button>
+                <Button variant="outline" className="gap-2">
+                  Learn More
+                </Button>
               </div>
             </motion.div>
           </div>
