@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Filter, ChevronDown, Clock, PoundSterling, Navigation, Loader2 } from "lucide-react";
-import { isFuture, parseISO } from "date-fns";
+import { Search, MapPin, Filter, ChevronDown, Clock, PoundSterling, Navigation, Loader2, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { isFuture, parseISO, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -43,14 +44,27 @@ interface CourseTemplate {
   is_popular: boolean | null;
 }
 
+interface WorkingHours {
+  instructor_id: string;
+  day_of_week: number;
+  is_active: boolean;
+}
+
+interface DateOverride {
+  instructor_id: string;
+  override_date: string;
+  override_end_date: string | null;
+  is_available: boolean;
+}
+
 interface CourseWithInstructor {
   instructor: Instructor;
   hours: number;
-  nextAvailable: Date | null;
+  bookableDate: Date;
   courseImageUrl: string | null;
   isPopular: boolean;
   availableFrom: string | null;
-  distance?: number; // in miles
+  distance?: number;
 }
 
 interface GeoCache {
@@ -59,7 +73,7 @@ interface GeoCache {
 
 // Haversine formula to calculate distance between two coordinates
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3959; // Earth's radius in miles
+  const R = 3959;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
@@ -72,22 +86,157 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
+// Generate next 6 months for dropdown
+function getMonthOptions(): { value: string; label: string }[] {
+  const options = [];
+  const now = new Date();
+  for (let i = 0; i < 6; i++) {
+    const month = addMonths(now, i);
+    options.push({
+      value: format(month, "yyyy-MM"),
+      label: format(month, "MMMM yyyy"),
+    });
+  }
+  return options;
+}
+
 export default function Courses() {
   const [postcode, setPostcode] = useState("");
   const [radius, setRadius] = useState("10");
   const [showFilters, setShowFilters] = useState(false);
   const [transmission, setTransmission] = useState("all");
-  const [availabilityFilter, setAvailabilityFilter] = useState("all");
-  const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [geoCache, setGeoCache] = useState<GeoCache>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Date selection state
+  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  // Data from Supabase
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [instructorCourses, setInstructorCourses] = useState<InstructorCourse[]>([]);
+  const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
+  const [workingHours, setWorkingHours] = useState<WorkingHours[]>([]);
+  const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
+
+  const monthOptions = useMemo(() => getMonthOptions(), []);
+
   useEffect(() => {
-    fetchCourses();
+    fetchData();
   }, []);
+
+  // Get available dates for the selected month
+  const availableDatesInMonth = useMemo(() => {
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const monthStart = startOfMonth(new Date(year, month - 1));
+    const monthEnd = endOfMonth(monthStart);
+    const today = startOfDay(new Date());
+
+    const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+    // For each day, check if any instructor is available
+    return allDays.filter((day) => {
+      if (isBefore(day, today)) return false;
+
+      const dayOfWeek = getDay(day); // 0 = Sunday, 1 = Monday, etc.
+      const dateStr = format(day, "yyyy-MM-dd");
+
+      // Check if any instructor works on this day
+      return instructors.some((instructor) => {
+        // Check available_from restriction
+        if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+          return false;
+        }
+
+        // Check date overrides first
+        const override = dateOverrides.find(
+          (o) =>
+            o.instructor_id === instructor.id &&
+            (o.override_date === dateStr ||
+              (o.override_end_date &&
+                dateStr >= o.override_date &&
+                dateStr <= o.override_end_date))
+        );
+        if (override) return override.is_available;
+
+        // Check working hours
+        return workingHours.some(
+          (wh) =>
+            wh.instructor_id === instructor.id &&
+            wh.day_of_week === dayOfWeek &&
+            wh.is_active
+        );
+      });
+    });
+  }, [selectedMonth, instructors, workingHours, dateOverrides]);
+
+  // Generate courses for the selected date
+  const coursesForSelectedDate = useMemo(() => {
+    if (!selectedDate) return [];
+
+    const dayOfWeek = getDay(selectedDate);
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    const courses: CourseWithInstructor[] = [];
+
+    for (const instructor of instructors) {
+      // Check available_from restriction
+      if (instructor.available_from && isAfter(parseISO(instructor.available_from), selectedDate)) {
+        continue;
+      }
+
+      // Check date overrides first
+      const override = dateOverrides.find(
+        (o) =>
+          o.instructor_id === instructor.id &&
+          (o.override_date === dateStr ||
+            (o.override_end_date &&
+              dateStr >= o.override_date &&
+              dateStr <= o.override_end_date))
+      );
+
+      let isAvailable = false;
+      if (override) {
+        isAvailable = override.is_available;
+      } else {
+        // Check working hours
+        isAvailable = workingHours.some(
+          (wh) =>
+            wh.instructor_id === instructor.id &&
+            wh.day_of_week === dayOfWeek &&
+            wh.is_active
+        );
+      }
+
+      if (!isAvailable) continue;
+
+      // Get courses this instructor offers
+      const offeredCourses = instructorCourses.filter(
+        (c) => c.instructor_id === instructor.id
+      );
+
+      for (const hours of DISPLAY_HOURS) {
+        const courseData = offeredCourses.find((c) => c.course_hours === hours);
+        const template = courseTemplates.find((t) => t.course_hours === hours);
+
+        if (courseData) {
+          courses.push({
+            instructor,
+            hours,
+            bookableDate: selectedDate,
+            courseImageUrl: courseData.course_image_url || template?.default_image_url || null,
+            isPopular: template?.is_popular || false,
+            availableFrom: instructor.available_from,
+            distance: undefined,
+          });
+        }
+      }
+    }
+
+    return courses;
+  }, [selectedDate, instructors, instructorCourses, courseTemplates, workingHours, dateOverrides]);
 
   // Geocode postcodes via edge function
   const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<GeoCache> => {
@@ -117,7 +266,6 @@ export default function Courses() {
     }
   }, [geoCache]);
 
-  // Handle search button click
   const handleSearch = async () => {
     if (!postcode.trim()) {
       toast({ title: "Please enter a postcode", variant: "destructive" });
@@ -142,79 +290,44 @@ export default function Courses() {
     }
   };
 
-  const fetchCourses = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch active instructors, instructor courses, and course templates in parallel
-      const [instructorsRes, coursesRes, templatesRes] = await Promise.all([
+      const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
         supabase.from("instructors").select("*").eq("is_active", true),
         supabase.from("instructor_courses").select("*").eq("is_active", true),
         supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular").eq("is_active", true),
+        supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
+        supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
       ]);
 
       if (instructorsRes.error) throw instructorsRes.error;
       if (coursesRes.error) throw coursesRes.error;
       if (templatesRes.error) throw templatesRes.error;
+      if (workingHoursRes.error) throw workingHoursRes.error;
+      if (overridesRes.error) throw overridesRes.error;
 
-      const instructors = instructorsRes.data || [];
-      const instructorCourses = coursesRes.data || [];
-      const courseTemplates: CourseTemplate[] = templatesRes.data || [];
+      setInstructors(instructorsRes.data || []);
+      setInstructorCourses(coursesRes.data || []);
+      setCourseTemplates(templatesRes.data || []);
+      setWorkingHours(workingHoursRes.data || []);
+      setDateOverrides(overridesRes.data || []);
 
       // Geocode all instructor postcodes
-      const allPostcodes = instructors.map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
-      const cache = await geocodePostcodes(allPostcodes);
-
-      // Build course list based on instructor offerings
-      const courseList: CourseWithInstructor[] = [];
-
-      for (const instructor of instructors) {
-        // Get courses this instructor offers
-        const offeredCourses = instructorCourses.filter(
-          (c) => c.instructor_id === instructor.id
-        );
-
-        const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-        const instructorLocation = cache[instructorPostcode];
-
-        // For each course hour the instructor offers, create a course card
-        for (const hours of DISPLAY_HOURS) {
-          const courseData = offeredCourses.find((c) => c.course_hours === hours);
-          const template = courseTemplates.find((t) => t.course_hours === hours);
-          
-          if (courseData) {
-            courseList.push({
-              instructor,
-              hours,
-              nextAvailable: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000),
-              courseImageUrl: courseData.course_image_url || template?.default_image_url || null,
-              isPopular: template?.is_popular || false,
-              availableFrom: instructor.available_from,
-              distance: undefined, // Will be calculated when user searches
-            });
-          }
-        }
-      }
-
-      // Sort by next available date
-      courseList.sort((a, b) => {
-        if (!a.nextAvailable) return 1;
-        if (!b.nextAvailable) return -1;
-        return a.nextAvailable.getTime() - b.nextAvailable.getTime();
-      });
-
-      setCourses(courseList);
+      const allPostcodes = (instructorsRes.data || []).map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
+      await geocodePostcodes(allPostcodes);
     } catch (error) {
-      console.error("Error fetching courses:", error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Calculate distances when user location changes
+  // Calculate distances
   const coursesWithDistance = useMemo(() => {
-    if (!userLocation) return courses;
+    if (!userLocation) return coursesForSelectedDate;
 
-    return courses.map((course) => {
+    return coursesForSelectedDate.map((course) => {
       const instructorPostcode = course.instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
       const instructorLocation = geoCache[instructorPostcode];
 
@@ -229,11 +342,10 @@ export default function Courses() {
       }
       return { ...course, distance: undefined };
     });
-  }, [courses, userLocation, geoCache]);
+  }, [coursesForSelectedDate, userLocation, geoCache]);
 
   const filteredCourses = coursesWithDistance
     .filter((course) => {
-      // Transmission filter
       if (transmission !== "all") {
         const carType = course.instructor.car_type.toLowerCase();
         if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
@@ -243,29 +355,19 @@ export default function Courses() {
           return false;
         }
       }
-      
-      // Availability filter
-      if (availabilityFilter === "available-now") {
-        if (course.availableFrom && isFuture(parseISO(course.availableFrom))) {
-          return false;
-        }
-      }
 
-      // Radius filter (only when user has searched)
       if (userLocation && course.distance !== undefined) {
         if (course.distance > parseInt(radius)) {
           return false;
         }
       }
-      
+
       return true;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "soonest":
-          if (!a.nextAvailable) return 1;
-          if (!b.nextAvailable) return -1;
-          return a.nextAvailable.getTime() - b.nextAvailable.getTime();
+          return a.bookableDate.getTime() - b.bookableDate.getTime();
         case "price-low":
           const priceA = a.hours * (a.instructor.hourly_rate || 40);
           const priceB = b.hours * (b.instructor.hourly_rate || 40);
@@ -279,6 +381,9 @@ export default function Courses() {
       }
     });
 
+  // Get visible days (show up to 7 available days)
+  const visibleDays = availableDatesInMonth.slice(0, 7);
+
   return (
     <MainLayout>
       {/* Search Header */}
@@ -290,7 +395,7 @@ export default function Courses() {
             className="mx-auto max-w-4xl"
           >
             <h1 className="mb-6 text-2xl font-bold md:text-3xl">Find Driving Courses Near You</h1>
-            
+
             <div className="flex flex-col gap-3 rounded-xl bg-card p-4 shadow-md sm:flex-row sm:items-center">
               <div className="relative flex-1">
                 <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
@@ -333,9 +438,6 @@ export default function Courses() {
                 Filters
                 <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
               </Button>
-              <span className="text-sm text-muted-foreground">
-                {loading ? "Loading..." : `${filteredCourses.length} courses available`}
-              </span>
             </div>
 
             {showFilters && (
@@ -343,11 +445,11 @@ export default function Courses() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-4 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-4"
+                className="mt-4 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3"
               >
                 <div>
                   <label className="mb-2 block text-sm font-medium">Transmission</label>
-                  <select 
+                  <select
                     className="w-full rounded-lg border bg-background px-3 py-2"
                     value={transmission}
                     onChange={(e) => setTransmission(e.target.value)}
@@ -355,17 +457,6 @@ export default function Courses() {
                     <option value="all">All</option>
                     <option value="manual">Manual</option>
                     <option value="automatic">Automatic</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Availability</label>
-                  <select 
-                    className="w-full rounded-lg border bg-background px-3 py-2"
-                    value={availabilityFilter}
-                    onChange={(e) => setAvailabilityFilter(e.target.value)}
-                  >
-                    <option value="all">All instructors</option>
-                    <option value="available-now">Available now</option>
                   </select>
                 </div>
                 <div>
@@ -394,75 +485,187 @@ export default function Courses() {
         </div>
       </section>
 
-      {/* Sort buttons + Results */}
-      <section className="container py-8">
-        {/* Sort buttons */}
-        <div className="mb-6 flex flex-wrap items-center gap-2">
-          <span className="mr-2 text-sm font-medium text-muted-foreground">Sort by:</span>
-          <Button
-            variant={sortBy === "soonest" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSortBy("soonest")}
-            className="gap-1.5"
-          >
-            <Clock className="h-3.5 w-3.5" />
-            Soonest Available
-          </Button>
-          <Button
-            variant={sortBy === "price-low" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSortBy("price-low")}
-            className="gap-1.5"
-          >
-            <PoundSterling className="h-3.5 w-3.5" />
-            Lowest Price
-          </Button>
-          <Button
-            variant={sortBy === "nearest" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSortBy("nearest")}
-            className="gap-1.5"
-          >
-            <Navigation className="h-3.5 w-3.5" />
-            Nearest
-          </Button>
+      {/* Date Selection */}
+      <section className="border-b bg-card py-6">
+        <div className="container">
+          <div className="mx-auto max-w-4xl">
+            {/* Month Selector */}
+            <div className="mb-4 flex items-center gap-4">
+              <Calendar className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm font-medium">Select a date:</span>
+              <Select value={selectedMonth} onValueChange={(value) => {
+                setSelectedMonth(value);
+                setSelectedDate(null);
+              }}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Day Pills */}
+            {loading ? (
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-16 w-16 animate-pulse rounded-xl bg-muted" />
+                ))}
+              </div>
+            ) : availableDatesInMonth.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {visibleDays.map((date) => {
+                  const isSelected = selectedDate && isSameDay(date, selectedDate);
+                  return (
+                    <button
+                      key={date.toISOString()}
+                      onClick={() => setSelectedDate(date)}
+                      className={`flex flex-col items-center justify-center rounded-xl px-4 py-2 transition-all ${
+                        isSelected
+                          ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                          : "bg-secondary hover:bg-secondary/80 text-foreground"
+                      }`}
+                    >
+                      <span className="text-xs font-medium uppercase">
+                        {format(date, "EEE")}
+                      </span>
+                      <span className="text-xl font-bold">{format(date, "d")}</span>
+                      <span className="text-xs">{format(date, "MMM")}</span>
+                    </button>
+                  );
+                })}
+                {availableDatesInMonth.length > 7 && (
+                  <button
+                    onClick={() => setShowFilters(true)}
+                    className="flex flex-col items-center justify-center rounded-xl bg-muted px-4 py-2 text-muted-foreground hover:bg-muted/80"
+                  >
+                    <span className="text-xs">+{availableDatesInMonth.length - 7}</span>
+                    <span className="text-sm font-medium">more</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No available dates in this month</p>
+            )}
+
+            {/* Show all dates in month when expanded */}
+            {availableDatesInMonth.length > 7 && (
+              <details className="mt-4">
+                <summary className="cursor-pointer text-sm text-primary hover:underline">
+                  View all {availableDatesInMonth.length} available dates
+                </summary>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {availableDatesInMonth.map((date) => {
+                    const isSelected = selectedDate && isSameDay(date, selectedDate);
+                    return (
+                      <button
+                        key={date.toISOString()}
+                        onClick={() => setSelectedDate(date)}
+                        className={`flex flex-col items-center justify-center rounded-xl px-3 py-1.5 transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground shadow-lg"
+                            : "bg-secondary hover:bg-secondary/80 text-foreground"
+                        }`}
+                      >
+                        <span className="text-[10px] font-medium uppercase">
+                          {format(date, "EEE")}
+                        </span>
+                        <span className="text-lg font-bold">{format(date, "d")}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </details>
+            )}
+          </div>
         </div>
-        {loading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-[420px] animate-pulse rounded-2xl bg-muted" />
-            ))}
-          </div>
-        ) : filteredCourses.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCourses.map((course, index) => (
-              <motion.div
-                key={`${course.instructor.id}-${course.hours}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <DynamicCourseCard
-                  instructor={course.instructor}
-                  hours={course.hours}
-                  nextAvailable={course.nextAvailable}
-                  courseImageUrl={course.courseImageUrl}
-                  isPopular={course.isPopular}
-                  availableFrom={course.availableFrom}
-                  distance={course.distance}
-                />
-              </motion.div>
-            ))}
-          </div>
-        ) : (
+      </section>
+
+      {/* Results */}
+      <section className="container py-8">
+        {!selectedDate ? (
           <div className="py-16 text-center">
-            <h2 className="text-xl font-semibold">No courses available</h2>
+            <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold">Select a date to see available courses</h2>
             <p className="mt-2 text-muted-foreground">
-              Try adjusting your filters or check back later.
+              Choose a date above to view instructors available on that day
             </p>
           </div>
+        ) : (
+          <>
+            {/* Selected date header */}
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold">
+                  Courses available on {format(selectedDate, "EEEE, d MMMM yyyy")}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
+                </p>
+              </div>
+
+              {/* Sort buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-muted-foreground">Sort:</span>
+                <Button
+                  variant={sortBy === "price-low" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSortBy("price-low")}
+                  className="gap-1.5"
+                >
+                  <PoundSterling className="h-3.5 w-3.5" />
+                  Price
+                </Button>
+                <Button
+                  variant={sortBy === "nearest" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSortBy("nearest")}
+                  className="gap-1.5"
+                  disabled={!userLocation}
+                >
+                  <Navigation className="h-3.5 w-3.5" />
+                  Nearest
+                </Button>
+              </div>
+            </div>
+
+            {filteredCourses.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filteredCourses.map((course, index) => (
+                  <motion.div
+                    key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <DynamicCourseCard
+                      instructor={course.instructor}
+                      hours={course.hours}
+                      nextAvailable={course.bookableDate}
+                      courseImageUrl={course.courseImageUrl}
+                      isPopular={course.isPopular}
+                      availableFrom={course.availableFrom}
+                      distance={course.distance}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-16 text-center">
+                <h2 className="text-xl font-semibold">No courses available</h2>
+                <p className="mt-2 text-muted-foreground">
+                  Try adjusting your filters or selecting a different date.
+                </p>
+              </div>
+            )}
+          </>
         )}
-        </section>
+      </section>
     </MainLayout>
   );
 }
