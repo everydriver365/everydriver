@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Filter, ChevronDown } from "lucide-react";
+import { Search, MapPin, Filter, ChevronDown, Clock, PoundSterling, Navigation } from "lucide-react";
 import { isFuture, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
+
+type SortOption = "soonest" | "price-low" | "nearest";
 
 interface Instructor {
   id: string;
@@ -57,6 +59,7 @@ export default function Courses() {
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<SortOption>("soonest");
 
   useEffect(() => {
     fetchCourses();
@@ -122,27 +125,45 @@ export default function Courses() {
     }
   };
 
-  const filteredCourses = courses.filter((course) => {
-    // Transmission filter
-    if (transmission !== "all") {
-      const carType = course.instructor.car_type.toLowerCase();
-      if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
-        return false;
+  const filteredCourses = courses
+    .filter((course) => {
+      // Transmission filter
+      if (transmission !== "all") {
+        const carType = course.instructor.car_type.toLowerCase();
+        if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
+          return false;
+        }
+        if (transmission === "automatic" && !carType.includes("automatic") && carType !== "both") {
+          return false;
+        }
       }
-      if (transmission === "automatic" && !carType.includes("automatic") && carType !== "both") {
-        return false;
+      
+      // Availability filter
+      if (availabilityFilter === "available-now") {
+        if (course.availableFrom && isFuture(parseISO(course.availableFrom))) {
+          return false;
+        }
       }
-    }
-    
-    // Availability filter
-    if (availabilityFilter === "available-now") {
-      if (course.availableFrom && isFuture(parseISO(course.availableFrom))) {
-        return false;
+      
+      return true;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "soonest":
+          if (!a.nextAvailable) return 1;
+          if (!b.nextAvailable) return -1;
+          return a.nextAvailable.getTime() - b.nextAvailable.getTime();
+        case "price-low":
+          const priceA = a.hours * (a.instructor.hourly_rate || 40);
+          const priceB = b.hours * (b.instructor.hourly_rate || 40);
+          return priceA - priceB;
+        case "nearest":
+          // For now, sort alphabetically by postcode (real implementation would use geo distance)
+          return a.instructor.home_postcode.localeCompare(b.instructor.home_postcode);
+        default:
+          return 0;
       }
-    }
-    
-    return true;
-  });
+    });
 
   return (
     <MainLayout>
@@ -255,8 +276,39 @@ export default function Courses() {
         </div>
       </section>
 
-      {/* Results */}
+      {/* Sort buttons + Results */}
       <section className="container py-8">
+        {/* Sort buttons */}
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          <span className="mr-2 text-sm font-medium text-muted-foreground">Sort by:</span>
+          <Button
+            variant={sortBy === "soonest" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSortBy("soonest")}
+            className="gap-1.5"
+          >
+            <Clock className="h-3.5 w-3.5" />
+            Soonest Available
+          </Button>
+          <Button
+            variant={sortBy === "price-low" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSortBy("price-low")}
+            className="gap-1.5"
+          >
+            <PoundSterling className="h-3.5 w-3.5" />
+            Lowest Price
+          </Button>
+          <Button
+            variant={sortBy === "nearest" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSortBy("nearest")}
+            className="gap-1.5"
+          >
+            <Navigation className="h-3.5 w-3.5" />
+            Nearest
+          </Button>
+        </div>
         {loading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -291,7 +343,7 @@ export default function Courses() {
             </p>
           </div>
         )}
-      </section>
+        </section>
     </MainLayout>
   );
 }
