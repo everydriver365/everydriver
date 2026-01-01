@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, MapPin, Filter, ChevronDown } from "lucide-react";
+import { isFuture, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -53,6 +54,7 @@ export default function Courses() {
   const [radius, setRadius] = useState("10");
   const [showFilters, setShowFilters] = useState(false);
   const [transmission, setTransmission] = useState("all");
+  const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -121,6 +123,7 @@ export default function Courses() {
   };
 
   const filteredCourses = courses.filter((course) => {
+    // Transmission filter
     if (transmission !== "all") {
       const carType = course.instructor.car_type.toLowerCase();
       if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
@@ -130,6 +133,14 @@ export default function Courses() {
         return false;
       }
     }
+    
+    // Availability filter
+    if (availabilityFilter === "available-now") {
+      if (course.availableFrom && isFuture(parseISO(course.availableFrom))) {
+        return false;
+      }
+    }
+    
     return true;
   });
 
@@ -193,7 +204,7 @@ export default function Courses() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-4 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3"
+                className="mt-4 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-4"
               >
                 <div>
                   <label className="mb-2 block text-sm font-medium">Transmission</label>
@@ -205,6 +216,17 @@ export default function Courses() {
                     <option value="all">All</option>
                     <option value="manual">Manual</option>
                     <option value="automatic">Automatic</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Availability</label>
+                  <select 
+                    className="w-full rounded-lg border bg-background px-3 py-2"
+                    value={availabilityFilter}
+                    onChange={(e) => setAvailabilityFilter(e.target.value)}
+                  >
+                    <option value="all">All instructors</option>
+                    <option value="available-now">Available now</option>
                   </select>
                 </div>
                 <div>
