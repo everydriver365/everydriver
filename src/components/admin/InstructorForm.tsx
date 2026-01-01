@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { X, Car, User, Clock, MapPin, GraduationCap } from "lucide-react";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
+import { TestCentreCombobox } from "./TestCentreCombobox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -628,24 +629,11 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <MapPin className="h-4 w-4" /> Test Centres Covered
           </h3>
-          {testCentres.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-              {testCentres.map((centre) => (
-                <div key={centre.id} className="flex items-center space-x-2">
-                  <Switch
-                    id={`centre-${centre.id}`}
-                    checked={selectedTestCentres.includes(centre.id)}
-                    onCheckedChange={() => toggleTestCentre(centre.id)}
-                  />
-                  <Label htmlFor={`centre-${centre.id}`} className="text-sm cursor-pointer">
-                    {centre.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No test centres configured yet.</p>
-          )}
+          <TestCentreCombobox
+            testCentres={testCentres}
+            selectedIds={selectedTestCentres}
+            onSelectionChange={setSelectedTestCentres}
+          />
         </div>
 
         {/* Google Calendar */}
