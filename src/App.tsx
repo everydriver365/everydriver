@@ -11,6 +11,7 @@ import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
 import CollageDemo from "./pages/CollageDemo";
+import HeroRedesignDemo from "./pages/HeroRedesignDemo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/admin" element={<AdminPortal />} />
           <Route path="/hero-demo" element={<HeroLayoutDemo />} />
           <Route path="/collage-demo" element={<CollageDemo />} />
+          <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
