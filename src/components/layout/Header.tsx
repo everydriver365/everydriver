@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Car, Menu, X, User, GraduationCap, Shield, Users } from "lucide-react";
+import { Menu, X, User, GraduationCap, Shield, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import logo from "@/assets/logo.png";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -25,11 +26,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-nav/20 bg-nav">
       <nav className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-            <Car className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold text-nav-foreground">DriveTime</span>
+        <Link to="/" className="flex items-center">
+          <img src={logo} alt="EveryDriver" className="h-8" />
         </Link>
 
         {/* Desktop Navigation */}
