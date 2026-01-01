@@ -20,6 +20,7 @@ interface DynamicCourseCardProps {
   };
   hours: number;
   nextAvailable?: Date | null;
+  courseImageUrl?: string | null;
   isPopular?: boolean;
 }
 
@@ -27,6 +28,7 @@ export function DynamicCourseCard({
   instructor, 
   hours, 
   nextAvailable,
+  courseImageUrl,
   isPopular = false 
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -66,12 +68,20 @@ export function DynamicCourseCard({
       >
         {/* Front of Card */}
         <div className="absolute inset-0 overflow-hidden rounded-2xl border bg-card shadow-md [backface-visibility:hidden]">
-          {/* Header Section */}
+          {/* Header Section - with optional image */}
           <div 
             className="relative h-32 overflow-hidden"
-            style={{ backgroundColor: brandColour }}
+            style={{ backgroundColor: courseImageUrl ? undefined : brandColour }}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+            {courseImageUrl ? (
+              <img
+                src={courseImageUrl}
+                alt={courseName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+            )}
             
             {isPopular && (
               <Badge className="absolute left-3 top-3 border-0 bg-emerald-500 text-white gap-1">

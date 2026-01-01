@@ -58,6 +58,7 @@ export type Database = {
       instructor_courses: {
         Row: {
           course_hours: number
+          course_image_url: string | null
           course_name: string
           created_at: string
           id: string
@@ -66,6 +67,7 @@ export type Database = {
         }
         Insert: {
           course_hours: number
+          course_image_url?: string | null
           course_name: string
           created_at?: string
           id?: string
@@ -74,6 +76,7 @@ export type Database = {
         }
         Update: {
           course_hours?: number
+          course_image_url?: string | null
           course_name?: string
           created_at?: string
           id?: string
