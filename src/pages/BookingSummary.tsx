@@ -150,7 +150,7 @@ export default function BookingSummary() {
                   <div>
                     <div className="font-medium">{hours} Hours Total</div>
                     <div className="text-sm text-muted-foreground">
-                      {instructor.preferred_lesson_length / 60}h lessons
+                      Up to {instructor.preferred_lesson_length / 60}h lessons
                     </div>
                   </div>
                 </div>
@@ -199,7 +199,7 @@ export default function BookingSummary() {
               <LessonScheduler
                 instructorId={instructor.id}
                 totalHours={hours}
-                preferredLessonLength={instructor.preferred_lesson_length}
+                maxLessonLength={instructor.preferred_lesson_length}
                 bookingAdvanceDays={instructor.booking_advance_days || 28}
                 onSlotsChange={handleSlotsChange}
               />

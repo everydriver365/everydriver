@@ -1,14 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { format, addDays, startOfDay, isSameDay, isAfter, isBefore, parse } from "date-fns";
-import { Calendar, Clock, X, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,7 +39,7 @@ interface SelectedSlot {
 interface LessonSchedulerProps {
   instructorId: string;
   totalHours: number;
-  preferredLessonLength: number; // in minutes
+  maxLessonLength: number; // in minutes - maximum lesson duration allowed
   bookingAdvanceDays?: number;
   onSlotsChange: (slots: SelectedSlot[]) => void;
 }
@@ -49,10 +51,26 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
   return `${hour.toString().padStart(2, "0")}:${minutes}`;
 }).filter(Boolean) as string[];
 
+// Generate duration options in 30-minute increments
+const getDurationOptions = (maxMinutes: number) => {
+  const options: number[] = [];
+  for (let d = 30; d <= maxMinutes; d += 30) {
+    options.push(d);
+  }
+  return options;
+};
+
+const formatDuration = (minutes: number) => {
+  if (minutes < 60) return `${minutes} mins`;
+  const hours = minutes / 60;
+  if (hours === 1) return "1 hour";
+  return `${hours} hours`;
+};
+
 export function LessonScheduler({
   instructorId,
   totalHours,
-  preferredLessonLength,
+  maxLessonLength,
   bookingAdvanceDays = 28,
   onSlotsChange,
 }: LessonSchedulerProps) {
@@ -62,8 +80,9 @@ export function LessonScheduler({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [loading, setLoading] = useState(true);
   const [viewMonth, setViewMonth] = useState(new Date());
+  const [selectedDuration, setSelectedDuration] = useState(maxLessonLength || 60);
 
-  const lessonDurationMinutes = preferredLessonLength || 60;
+  const durationOptions = useMemo(() => getDurationOptions(maxLessonLength || 60), [maxLessonLength]);
 
   useEffect(() => {
     fetchAvailability();
@@ -167,15 +186,16 @@ export function LessonScheduler({
 
     for (const time of TIME_SLOTS) {
       if (time >= startTime && time < endTime) {
-        // Check if there's enough time for a lesson
-        const slotEnd = addMinutesToTime(time, lessonDurationMinutes);
+        // Check if there's enough time for the selected lesson duration
+        const slotEnd = addMinutesToTime(time, selectedDuration);
         if (slotEnd <= endTime) {
           // Check if slot conflicts with already selected slots
           const conflicts = selectedSlots.some(
             (s) =>
               isSameDay(s.date, date) &&
               ((time >= s.startTime && time < s.endTime) ||
-                (slotEnd > s.startTime && slotEnd <= s.endTime))
+                (slotEnd > s.startTime && slotEnd <= s.endTime) ||
+                (time < s.startTime && slotEnd > s.startTime))
           );
           if (!conflicts) {
             slots.push(time);
@@ -204,7 +224,8 @@ export function LessonScheduler({
   const handleSelectSlot = (date: Date, startTime: string) => {
     if (remainingHours <= 0) return;
 
-    const duration = Math.min(lessonDurationMinutes, remainingHours * 60);
+    // Use the selected duration, but cap at remaining hours if needed
+    const duration = Math.min(selectedDuration, remainingHours * 60);
     const endTime = addMinutesToTime(startTime, duration);
 
     setSelectedSlots((prev) => [
@@ -243,13 +264,29 @@ export function LessonScheduler({
         </Badge>
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        Select dates and times for your {totalHours}-hour course. Each lesson is{" "}
-        {lessonDurationMinutes >= 60
-          ? `${lessonDurationMinutes / 60} hour${lessonDurationMinutes > 60 ? "s" : ""}`
-          : `${lessonDurationMinutes} minutes`}
-        .
-      </p>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <p className="text-sm text-muted-foreground">
+          Select dates and times for your {totalHours}-hour course.
+        </p>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Lesson length:</span>
+          <Select
+            value={selectedDuration.toString()}
+            onValueChange={(val) => setSelectedDuration(Number(val))}
+          >
+            <SelectTrigger className="w-[120px] h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {durationOptions.map((d) => (
+                <SelectItem key={d} value={d.toString()}>
+                  {formatDuration(d)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       {/* Calendar and Time Slot Selection */}
       <div className="grid gap-4 md:grid-cols-2">
