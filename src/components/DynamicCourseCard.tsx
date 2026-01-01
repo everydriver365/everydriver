@@ -24,6 +24,7 @@ interface DynamicCourseCardProps {
   courseImageUrl?: string | null;
   isPopular?: boolean;
   availableFrom?: string | null;
+  distance?: number; // Distance in miles from user's location
 }
 
 export function DynamicCourseCard({ 
@@ -32,7 +33,8 @@ export function DynamicCourseCard({
   nextAvailable,
   courseImageUrl,
   isPopular = false,
-  availableFrom
+  availableFrom,
+  distance
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
@@ -172,7 +174,13 @@ export function DynamicCourseCard({
               <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="h-3 w-3 shrink-0" />
-                  <span className="line-clamp-1">Near {instructor.home_postcode}</span>
+                  <span className="line-clamp-1">
+                    {distance !== undefined ? (
+                      <span className="font-medium text-primary">{distance.toFixed(1)} miles away</span>
+                    ) : (
+                      <>Near {instructor.home_postcode}</>
+                    )}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Clock className="h-3 w-3" />

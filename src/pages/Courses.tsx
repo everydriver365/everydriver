@@ -449,6 +449,7 @@ export default function Courses() {
                   courseImageUrl={course.courseImageUrl}
                   isPopular={course.isPopular}
                   availableFrom={course.availableFrom}
+                  distance={course.distance}
                 />
               </motion.div>
             ))}
