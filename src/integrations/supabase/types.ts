@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      course_templates: {
+        Row: {
+          course_hours: number
+          course_name: string
+          created_at: string
+          default_image_url: string | null
+          display_order: number | null
+          features: string[] | null
+          full_description: string | null
+          id: string
+          is_active: boolean | null
+          is_intensive: boolean | null
+          is_popular: boolean | null
+          short_description: string | null
+          updated_at: string
+        }
+        Insert: {
+          course_hours: number
+          course_name: string
+          created_at?: string
+          default_image_url?: string | null
+          display_order?: number | null
+          features?: string[] | null
+          full_description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_intensive?: boolean | null
+          is_popular?: boolean | null
+          short_description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          course_hours?: number
+          course_name?: string
+          created_at?: string
+          default_image_url?: string | null
+          display_order?: number | null
+          features?: string[] | null
+          full_description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_intensive?: boolean | null
+          is_popular?: boolean | null
+          short_description?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       instructor_calendar_events: {
         Row: {
           end_time: string
