@@ -13,6 +13,9 @@ import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
 import videoThumbnail from "@/assets/video-thumbnail.jpg";
+import newsFeatured from "@/assets/news-featured.jpg";
+import newsArticle1 from "@/assets/news-article1.jpg";
+import newsArticle2 from "@/assets/news-article2.jpg";
 
 const features = [
   {
@@ -674,6 +677,111 @@ export default function Index() {
                 </Button>
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest News Section */}
+      <section className="bg-background py-16">
+        <div className="container">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold md:text-3xl">Latest News & Tips</h2>
+            <Button variant="outline" className="hidden sm:flex">
+              View All Articles
+            </Button>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Featured Article */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className="group relative overflow-hidden rounded-2xl"
+            >
+              <img
+                src={newsFeatured}
+                alt="Road safety news"
+                className="h-80 w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-96"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <Badge className="mb-3 border-0 bg-primary text-primary-foreground">
+                  Driving News
+                </Badge>
+                <h3 className="mb-2 text-xl font-bold text-white md:text-2xl">
+                  Road Safety Statistics Show Improvement in 2025
+                </h3>
+                <p className="text-sm text-white/80">
+                  New figures have been released showing improved road safety outcomes, with officials urging continued focus on safe driving practices.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Side Articles */}
+            <div className="flex flex-col gap-6">
+              {/* Article 1 */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                viewport={{ once: true }}
+                className="group flex gap-4 rounded-xl bg-card p-4 shadow-md transition-shadow hover:shadow-lg"
+              >
+                <img
+                  src={newsArticle1}
+                  alt="Instructor test changes"
+                  className="h-24 w-24 rounded-lg object-cover"
+                />
+                <div className="flex flex-col justify-center">
+                  <Badge className="mb-1 w-fit border-0 bg-primary/10 text-primary text-xs">
+                    Driving News
+                  </Badge>
+                  <h4 className="mb-1 font-semibold group-hover:text-primary transition-colors">
+                    Driving instructor qualifying test changes: December 2025
+                  </h4>
+                  <span className="text-xs text-muted-foreground">1 min read</span>
+                </div>
+              </motion.div>
+
+              {/* Article 2 */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+                viewport={{ once: true }}
+                className="group flex gap-4 rounded-xl bg-card p-4 shadow-md transition-shadow hover:shadow-lg"
+              >
+                <img
+                  src={newsArticle2}
+                  alt="Examiner news"
+                  className="h-24 w-24 rounded-lg object-cover"
+                />
+                <div className="flex flex-col justify-center">
+                  <Badge className="mb-1 w-fit border-0 bg-primary/10 text-primary text-xs">
+                    Driving News
+                  </Badge>
+                  <h4 className="mb-1 font-semibold group-hover:text-primary transition-colors">
+                    Driving examiner updates: December 2025. Driver and Vehicle Standards Agency.
+                  </h4>
+                  <span className="text-xs text-muted-foreground">1 min read</span>
+                </div>
+              </motion.div>
+
+              {/* Read More Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                <Button className="w-full gap-2">
+                  Read More Articles
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
