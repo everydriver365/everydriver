@@ -108,11 +108,19 @@ export function DynamicCourseCard({
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             
-            {isPopular && (
+            {isPopular && !distance && (
               <Badge className="absolute left-3 top-3 border-0 bg-emerald-500 text-white gap-1">
                 <TrendingUp className="h-3 w-3" />
                 Popular
               </Badge>
+            )}
+
+            {/* Distance badge - bottom left of image */}
+            {distance !== undefined && (
+              <div className="absolute left-3 bottom-3 flex items-center gap-1.5 bg-primary/95 backdrop-blur-sm text-primary-foreground px-2.5 py-1.5 rounded-lg shadow-lg">
+                <MapPin className="h-3.5 w-3.5" />
+                <span className="text-sm font-bold">{distance.toFixed(1)} mi</span>
+              </div>
             )}
 
             {/* Price badge - top right */}
