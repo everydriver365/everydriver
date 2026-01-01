@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, User, Calendar, CheckCircle, CreditCard } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, Calendar, CheckCircle, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Instructor {
@@ -20,6 +21,15 @@ interface Instructor {
   bio: string | null;
   special_skills: string | null;
   brand_colour: string | null;
+  preferred_lesson_length: number;
+  booking_advance_days: number | null;
+}
+
+interface SelectedSlot {
+  date: Date;
+  startTime: string;
+  endTime: string;
+  duration: number;
 }
 
 interface CourseDetails {
@@ -36,6 +46,7 @@ export default function BookingSummary() {
   const navigate = useNavigate();
   const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
 
   const hours = parseInt(searchParams.get("hours") || "10");
 
@@ -59,7 +70,11 @@ export default function BookingSummary() {
       const courseName = hours === 28 ? "Test in a Week" : `${hours} Hour Course`;
 
       setCourseDetails({
-        instructor,
+        instructor: {
+          ...instructor,
+          preferred_lesson_length: instructor.preferred_lesson_length || 60,
+          booking_advance_days: instructor.booking_advance_days || 28,
+        },
         hours,
         courseName,
         totalPrice: hours * hourlyRate,
@@ -70,6 +85,13 @@ export default function BookingSummary() {
 
     fetchDetails();
   }, [instructorId, hours]);
+
+  const handleSlotsChange = useCallback((slots: SelectedSlot[]) => {
+    setSelectedSlots(slots);
+  }, []);
+
+  const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
+  const isFullyScheduled = scheduledHours >= hours;
 
   if (loading) {
     return (
@@ -128,7 +150,7 @@ export default function BookingSummary() {
                   <div>
                     <div className="font-medium">{hours} Hours Total</div>
                     <div className="text-sm text-muted-foreground">
-                      Flexible scheduling
+                      {instructor.preferred_lesson_length / 60}h lessons
                     </div>
                   </div>
                 </div>
@@ -156,20 +178,38 @@ export default function BookingSummary() {
                 <div className="flex items-center gap-3 rounded-lg bg-secondary/50 p-4">
                   <Calendar className="h-5 w-5 text-primary" />
                   <div>
-                    <div className="font-medium">Flexible Start</div>
+                    <div className="font-medium">
+                      {isFullyScheduled ? "Fully Scheduled" : "Choose Dates"}
+                    </div>
                     <div className="text-sm text-muted-foreground">
-                      Choose your dates
+                      {scheduledHours}/{hours} hours booked
                     </div>
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* Instructor Info */}
+            {/* Lesson Scheduler */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
+              className="rounded-2xl border bg-card p-6 shadow-md"
+            >
+              <LessonScheduler
+                instructorId={instructor.id}
+                totalHours={hours}
+                preferredLessonLength={instructor.preferred_lesson_length}
+                bookingAdvanceDays={instructor.booking_advance_days || 28}
+                onSlotsChange={handleSlotsChange}
+              />
+            </motion.div>
+
+            {/* Instructor Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
               className="rounded-2xl border bg-card p-6 shadow-md"
             >
               <h2 className="text-lg font-semibold">Your Instructor</h2>
@@ -210,7 +250,7 @@ export default function BookingSummary() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.3 }}
               className="rounded-2xl border bg-card p-6 shadow-md"
             >
               <h2 className="text-lg font-semibold">What's Included</h2>
@@ -237,7 +277,7 @@ export default function BookingSummary() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.4 }}
               className="sticky top-24 rounded-2xl border bg-card p-6 shadow-md"
             >
               <h2 className="text-lg font-semibold">Price Summary</h2>
@@ -264,10 +304,34 @@ export default function BookingSummary() {
                 </div>
               </div>
 
-              <Button className="w-full mt-6 gap-2" size="lg">
+              {/* Scheduled Lessons Summary */}
+              {selectedSlots.length > 0 && (
+                <div className="mt-4 border-t pt-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Lessons scheduled</span>
+                    <span>{selectedSlots.length}</span>
+                  </div>
+                  <div className="flex justify-between text-sm mt-1">
+                    <span className="text-muted-foreground">Hours scheduled</span>
+                    <span>{scheduledHours}/{hours}h</span>
+                  </div>
+                </div>
+              )}
+
+              <Button 
+                className="w-full mt-6 gap-2" 
+                size="lg"
+                disabled={!isFullyScheduled}
+              >
                 <CreditCard className="h-4 w-4" />
-                Proceed to Payment
+                {isFullyScheduled ? "Proceed to Payment" : "Schedule All Lessons First"}
               </Button>
+
+              {!isFullyScheduled && (
+                <p className="mt-2 text-center text-xs text-amber-600">
+                  Please schedule all {hours} hours before proceeding
+                </p>
+              )}
 
               <div className="mt-4 flex justify-center gap-2">
                 <span className="rounded bg-[#b2fce4] px-2 py-1 text-xs font-semibold text-[#000]">
