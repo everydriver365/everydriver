@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, ChevronRight, Calendar, Award, Users, Clock } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
-import heroImage from "@/assets/hero-driving.jpg";
+import { Badge } from "@/components/ui/badge";
+import testimonialSarah from "@/assets/testimonial-sarah.jpg";
+import testimonialJames from "@/assets/testimonial-james.jpg";
+import testimonialEmma from "@/assets/testimonial-emma.jpg";
 
 const features = [
   {
@@ -58,110 +61,184 @@ const testimonials = [
   },
 ];
 
+const heroTestimonials = [
+  {
+    name: "Sarah",
+    achievement: "Passed 1st time!",
+    image: testimonialSarah,
+    rotation: -6,
+    position: "top-0 left-0",
+  },
+  {
+    name: "James",
+    achievement: "Intensive Course",
+    image: testimonialJames,
+    rotation: 6,
+    position: "top-8 right-0",
+  },
+  {
+    name: "Emma",
+    achievement: "Intensive Course",
+    image: testimonialEmma,
+    rotation: 0,
+    position: "bottom-0 left-1/4",
+  },
+];
+
 export default function Index() {
   const [postcode, setPostcode] = useState("");
-  const [radius, setRadius] = useState("10");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to courses with search params
-    window.location.href = `/courses?postcode=${postcode}&radius=${radius}`;
+    window.location.href = `/courses?postcode=${postcode}`;
   };
 
   return (
     <MainLayout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden gradient-hero">
-        <div className="absolute inset-0">
-          <img 
-            src={heroImage} 
-            alt="Driving lesson in progress" 
-            className="h-full w-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 gradient-hero opacity-90" />
-        </div>
-        
-        <div className="container relative py-24 lg:py-32">
-          <div className="mx-auto max-w-3xl text-center">
+      <section className="relative overflow-hidden bg-background py-12 lg:py-20">
+        <div className="container">
+          <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
+            {/* Left Content */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              <span className="mb-4 inline-block rounded-full bg-accent/20 px-4 py-1.5 text-sm font-medium text-accent">
-                🚗 Learn to Drive with Confidence
-              </span>
-            </motion.div>
-            
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="mb-6 text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl lg:text-6xl"
-            >
-              Your Journey to the
-              <span className="text-gradient block">Open Road Starts Here</span>
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mb-8 text-lg text-primary-foreground/80"
-            >
-              Find local driving instructors with real-time availability. 
-              Book lessons, track progress, and get on the road faster.
-            </motion.p>
+              <Badge className="mb-6 border-0 bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                Free Re-test
+              </Badge>
 
-            {/* Search Form */}
-            <motion.form
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              onSubmit={handleSearch}
-              className="mx-auto flex max-w-xl flex-col gap-3 rounded-2xl bg-card p-4 shadow-xl sm:flex-row sm:items-center"
-            >
-              <div className="relative flex-1">
-                <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Enter your postcode"
-                  value={postcode}
-                  onChange={(e) => setPostcode(e.target.value)}
-                  className="h-12 border-0 bg-secondary pl-10 text-base"
-                />
+              <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+                Your Driving
+                <span className="block text-primary">Success Story</span>
+                <span className="block">Starts Here</span>
+              </h1>
+
+              <p className="mb-8 max-w-md text-lg text-muted-foreground">
+                Join thousands who passed with DriveTime. Intensive courses designed to get you on the road faster.
+              </p>
+
+              {/* Search Form */}
+              <form onSubmit={handleSearch} className="mb-8 flex max-w-md overflow-hidden rounded-full border bg-card shadow-md">
+                <div className="relative flex-1">
+                  <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Enter your postcode..."
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
+                    className="h-14 border-0 bg-transparent pl-12 text-base focus-visible:ring-0"
+                  />
+                </div>
+                <Button type="submit" className="m-1.5 h-11 rounded-full px-6">
+                  Find Courses
+                </Button>
+              </form>
+
+              {/* Trust Indicators */}
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
+                  ))}
+                  <span className="ml-1 font-semibold text-foreground">4.9</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-[#ffb3c7] px-2 py-1 text-xs font-semibold text-[#000]">
+                    Klarna.
+                  </span>
+                  <span className="rounded bg-[#b2fce4] px-2 py-1 text-xs font-semibold text-[#000]">
+                    clearpay
+                  </span>
+                  <span className="text-sm text-muted-foreground">0% Finance</span>
+                </div>
               </div>
-              <select
-                value={radius}
-                onChange={(e) => setRadius(e.target.value)}
-                className="h-12 rounded-lg border-0 bg-secondary px-4 text-base text-foreground"
-              >
-                <option value="5">5 miles</option>
-                <option value="10">10 miles</option>
-                <option value="15">15 miles</option>
-                <option value="25">25 miles</option>
-              </select>
-              <Button type="submit" variant="hero" size="lg" className="h-12">
-                <Search className="mr-2 h-5 w-5" />
-                Search
-              </Button>
-            </motion.form>
-          </div>
-        </div>
+            </motion.div>
 
-        {/* Wave decoration */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              fill="hsl(var(--background))"
-            />
-          </svg>
+            {/* Right Content - Testimonial Images */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative hidden h-[500px] lg:block"
+            >
+              {/* Sarah Card - Top Left */}
+              <motion.div
+                initial={{ opacity: 0, y: 20, rotate: -6 }}
+                animate={{ opacity: 1, y: 0, rotate: -6 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="absolute left-0 top-0 z-10 w-56 overflow-hidden rounded-3xl shadow-xl"
+              >
+                <img
+                  src={testimonialSarah}
+                  alt="Sarah - Passed 1st time"
+                  className="h-72 w-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                  <div className="font-semibold text-white">Sarah</div>
+                  <div className="text-sm text-white/80">Passed 1st time!</div>
+                </div>
+              </motion.div>
+
+              {/* James Card - Top Right */}
+              <motion.div
+                initial={{ opacity: 0, y: 20, rotate: 6 }}
+                animate={{ opacity: 1, y: 0, rotate: 6 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="absolute right-0 top-8 z-20 w-48 overflow-hidden rounded-3xl shadow-xl"
+              >
+                <img
+                  src={testimonialJames}
+                  alt="James - Intensive Course"
+                  className="h-64 w-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                  <div className="font-semibold text-white">James</div>
+                  <div className="text-sm text-white/80">Intensive Course</div>
+                </div>
+              </motion.div>
+
+              {/* Emma Card - Bottom Center */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                className="absolute bottom-0 left-1/4 z-30 w-52 overflow-hidden rounded-3xl border-4 border-white shadow-xl"
+              >
+                <img
+                  src={testimonialEmma}
+                  alt="Emma - Intensive Course"
+                  className="h-56 w-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                  <div className="font-semibold text-white">Emma</div>
+                  <div className="text-sm text-white/80">Intensive Course</div>
+                </div>
+              </motion.div>
+
+              {/* Learners Badge */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+                className="absolute bottom-16 right-4 z-40 flex items-center gap-3 rounded-2xl bg-primary px-4 py-3 shadow-lg"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                  <Heart className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="font-bold text-white">10k+ Learners</div>
+                  <div className="text-sm text-white/80">And counting!</div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="container -mt-6 relative z-10">
+      <section className="container py-12">
         <div className="grid grid-cols-2 gap-4 rounded-2xl bg-card p-6 shadow-lg md:grid-cols-4 md:gap-8 md:p-8">
           {stats.map((stat, index) => (
             <motion.div
