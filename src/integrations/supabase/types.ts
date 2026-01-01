@@ -98,6 +98,7 @@ export type Database = {
           instructor_id: string
           is_available: boolean
           override_date: string
+          override_end_date: string | null
           start_time: string | null
           updated_at: string
         }
@@ -108,6 +109,7 @@ export type Database = {
           instructor_id: string
           is_available?: boolean
           override_date: string
+          override_end_date?: string | null
           start_time?: string | null
           updated_at?: string
         }
@@ -118,6 +120,7 @@ export type Database = {
           instructor_id?: string
           is_available?: boolean
           override_date?: string
+          override_end_date?: string | null
           start_time?: string | null
           updated_at?: string
         }
