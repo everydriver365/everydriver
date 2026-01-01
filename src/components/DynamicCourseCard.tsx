@@ -100,8 +100,8 @@ export function DynamicCourseCard({
             </div>
           )}
           
-          {/* Hero Image Section */}
-          <div className="relative h-44 overflow-hidden">
+          {/* Hero Image Section - taller */}
+          <div className="relative h-56 overflow-hidden">
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
               alt={courseName}
@@ -142,9 +142,9 @@ export function DynamicCourseCard({
             </div>
           </div>
 
-          {/* Content Section */}
-          <div className="flex h-[calc(100%-11rem)]">
-            <div className={`relative flex flex-col items-center justify-center px-4 py-4 min-w-[90px] ${
+          {/* Content Section - smaller */}
+          <div className="flex h-[calc(100%-14rem)]">
+            <div className={`relative flex flex-col items-center justify-center px-3 py-2 min-w-[70px] ${
               isAvailableSoon 
                 ? "bg-emerald-500 text-white" 
                 : isDelayed 
@@ -172,43 +172,40 @@ export function DynamicCourseCard({
                   <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
                 </>
               )}
-              <span className="mt-1 text-3xl font-bold relative z-10">{day}</span>
-              <span className="text-sm font-semibold relative z-10">{month}</span>
+              <span className="mt-0.5 text-2xl font-bold relative z-10">{day}</span>
+              <span className="text-xs font-semibold relative z-10">{month}</span>
             </div>
 
-            <div className="flex-1 p-3">
-              <h3 className="text-base font-bold text-foreground line-clamp-2">{courseName}</h3>
-              
-              <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="h-3 w-3 shrink-0" />
-                  <span className="line-clamp-1">
-                    {distance !== undefined ? (
-                      <span className="font-medium text-primary">{distance.toFixed(1)} miles away</span>
-                    ) : (
-                      <>Near {instructor.home_postcode}</>
-                    )}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-3 w-3" />
-                  <span>{hours} hours • {instructor.car_type}</span>
-                </div>
-              </div>
-
-              <div className="mt-2 flex items-center gap-2">
-                <Avatar className="h-5 w-5">
+            <div className="flex-1 p-2.5">
+              <div className="flex items-center gap-2.5">
+                <Avatar className="h-10 w-10 ring-2 ring-background shadow-md">
                   <AvatarImage src={instructor.profile_image_url || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
                     {instructor.name.split(" ").map((n) => n[0]).join("")}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground truncate">
-                  {instructor.name}
-                </span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-foreground truncate">{courseName}</h3>
+                  <span className="text-xs text-muted-foreground truncate block">
+                    {instructor.name}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="mt-1.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{hours}hrs</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  <span className="truncate">
+                    {distance !== undefined ? `${distance.toFixed(1)}mi` : instructor.home_postcode}
+                  </span>
+                </div>
               </div>
 
-              <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <div className="mt-1.5 flex items-center gap-1 text-[10px]">
                 <span className="rounded bg-[#b2fce4] px-1 py-0.5 font-semibold text-[#000]">
                   clearpay
                 </span>
