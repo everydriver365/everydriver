@@ -53,7 +53,7 @@ const instructorSchema = z.object({
   extra_info: z.string().optional(),
   brand_colour: z.string().optional(),
   school_skim_percentage: z.coerce.number().min(0).max(100).optional(),
-  booking_advance_days: z.coerce.number().min(1).max(365).optional(),
+  booking_advance_days: z.coerce.number().min(1).max(548).optional(), // up to 18 months
   personal_website_url: z.string().url().optional().or(z.literal("")),
   facebook_url: z.string().url().optional().or(z.literal("")),
   instagram_url: z.string().url().optional().or(z.literal("")),
