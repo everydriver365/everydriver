@@ -42,6 +42,7 @@ interface LessonSchedulerProps {
   maxLessonLength: number; // in minutes - maximum lesson duration allowed
   bookingAdvanceDays?: number;
   availableFrom?: string | null; // earliest date instructor accepts bookings (YYYY-MM-DD)
+  allowedLessonLengths?: number[]; // array of allowed durations in minutes
   onSlotsChange: (slots: SelectedSlot[]) => void;
 }
 
@@ -52,14 +53,8 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
   return `${hour.toString().padStart(2, "0")}:${minutes}`;
 }).filter(Boolean) as string[];
 
-// Generate duration options in 30-minute increments
-const getDurationOptions = (maxMinutes: number) => {
-  const options: number[] = [];
-  for (let d = 30; d <= maxMinutes; d += 30) {
-    options.push(d);
-  }
-  return options;
-};
+// Default allowed lesson lengths (1-7 hours)
+const DEFAULT_LESSON_LENGTHS = [60, 120, 180, 240, 300, 360, 420];
 
 const formatDuration = (minutes: number) => {
   if (minutes < 60) return `${minutes} mins`;
@@ -74,6 +69,7 @@ export function LessonScheduler({
   maxLessonLength,
   bookingAdvanceDays = 28,
   availableFrom,
+  allowedLessonLengths,
   onSlotsChange,
 }: LessonSchedulerProps) {
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
@@ -82,9 +78,16 @@ export function LessonScheduler({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [loading, setLoading] = useState(true);
   const [viewMonth, setViewMonth] = useState(new Date());
-  const [selectedDuration, setSelectedDuration] = useState(maxLessonLength || 60);
+  
+  // Use allowed lesson lengths or default to 1-7 hours
+  const durationOptions = useMemo(() => {
+    const lengths = allowedLessonLengths && allowedLessonLengths.length > 0 
+      ? allowedLessonLengths 
+      : DEFAULT_LESSON_LENGTHS;
+    return lengths.sort((a, b) => a - b);
+  }, [allowedLessonLengths]);
 
-  const durationOptions = useMemo(() => getDurationOptions(maxLessonLength || 60), [maxLessonLength]);
+  const [selectedDuration, setSelectedDuration] = useState(durationOptions[0] || 60);
 
   useEffect(() => {
     fetchAvailability();
@@ -382,12 +385,18 @@ export function LessonScheduler({
             modifiers={{
               booked: (date) =>
                 selectedSlots.some((s) => isSameDay(s.date, date)),
+              available: (date) => isDateAvailable(date) && !selectedSlots.some((s) => isSameDay(s.date, date)),
             }}
             modifiersStyles={{
               booked: {
                 backgroundColor: "hsl(var(--primary))",
                 color: "white",
                 fontWeight: "bold",
+              },
+              available: {
+                backgroundColor: "hsl(142 76% 90%)",
+                color: "hsl(142 76% 25%)",
+                fontWeight: "500",
               },
             }}
             className={cn("p-3 pointer-events-auto")}

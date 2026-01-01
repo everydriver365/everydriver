@@ -264,6 +264,7 @@ export type Database = {
       }
       instructors: {
         Row: {
+          allowed_lesson_lengths: number[] | null
           available_from: string | null
           bio: string | null
           booking_advance_days: number | null
@@ -302,6 +303,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allowed_lesson_lengths?: number[] | null
           available_from?: string | null
           bio?: string | null
           booking_advance_days?: number | null
@@ -340,6 +342,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allowed_lesson_lengths?: number[] | null
           available_from?: string | null
           bio?: string | null
           booking_advance_days?: number | null

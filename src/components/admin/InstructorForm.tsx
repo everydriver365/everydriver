@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 
 const COURSE_HOURS = [8, 10, 12, 16, 20, 24, 28, 30, 32, 40, 48];
 const LESSON_LENGTHS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420];
+const BOOKABLE_LESSON_LENGTHS = [60, 120, 180, 240, 300, 360, 420]; // 1-7 hours in minutes
 
 const instructorSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -89,6 +90,7 @@ interface InstructorFormProps {
     school_skim_percentage?: number;
     booking_advance_days?: number;
     available_from?: string | null;
+    allowed_lesson_lengths?: number[];
     personal_website_url?: string;
     facebook_url?: string;
     instagram_url?: string;
@@ -111,6 +113,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
   const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
   const [selectedTestCentres, setSelectedTestCentres] = useState<string[]>([]);
+  const [allowedLessonLengths, setAllowedLessonLengths] = useState<number[]>([60, 120]);
 
   const form = useForm<InstructorFormData>({
     resolver: zodResolver(instructorSchema),
@@ -184,9 +187,14 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       if (centres) {
         setSelectedTestCentres(centres.map(c => c.test_centre_id));
       }
+
+      // Set allowed lesson lengths from initialData
+      if (initialData.allowed_lesson_lengths) {
+        setAllowedLessonLengths(initialData.allowed_lesson_lengths);
+      }
     };
     fetchInstructorData();
-  }, [initialData?.id]);
+  }, [initialData?.id, initialData?.allowed_lesson_lengths]);
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -240,6 +248,19 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
     );
   };
 
+  const toggleLessonLength = (minutes: number) => {
+    setAllowedLessonLengths(prev =>
+      prev.includes(minutes)
+        ? prev.filter(m => m !== minutes)
+        : [...prev, minutes].sort((a, b) => a - b)
+    );
+  };
+
+  const formatLessonLengthLabel = (minutes: number) => {
+    const hours = minutes / 60;
+    return `${hours} hr${hours > 1 ? 's' : ''}`;
+  };
+
   const onSubmit = async (data: InstructorFormData) => {
     setIsSubmitting(true);
 
@@ -281,6 +302,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         school_skim_percentage: data.school_skim_percentage ?? 0,
         booking_advance_days: data.booking_advance_days ?? 28,
         available_from: data.available_from ? format(data.available_from, "yyyy-MM-dd") : null,
+        allowed_lesson_lengths: allowedLessonLengths.length > 0 ? allowedLessonLengths : [60, 120],
         personal_website_url: data.personal_website_url || null,
         facebook_url: data.facebook_url || null,
         instagram_url: data.instagram_url || null,
@@ -723,6 +745,28 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                 </FormItem>
               )}
             />
+          </div>
+
+          {/* Allowed Lesson Lengths */}
+          <div className="mt-4">
+            <FormLabel>Allowed Lesson Lengths</FormLabel>
+            <FormDescription className="mb-3">
+              Select which lesson durations pupils can book
+            </FormDescription>
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+              {BOOKABLE_LESSON_LENGTHS.map((minutes) => (
+                <div key={minutes} className="flex items-center space-x-2">
+                  <Switch
+                    id={`lesson-length-${minutes}`}
+                    checked={allowedLessonLengths.includes(minutes)}
+                    onCheckedChange={() => toggleLessonLength(minutes)}
+                  />
+                  <Label htmlFor={`lesson-length-${minutes}`} className="text-sm cursor-pointer">
+                    {formatLessonLengthLabel(minutes)}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
