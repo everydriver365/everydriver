@@ -22,6 +22,7 @@ interface Instructor {
   bio: string | null;
   brand_colour: string | null;
   is_active: boolean;
+  available_from: string | null;
 }
 
 interface InstructorCourse {
@@ -44,6 +45,7 @@ interface CourseWithInstructor {
   nextAvailable: Date | null;
   courseImageUrl: string | null;
   isPopular: boolean;
+  availableFrom: string | null;
 }
 
 export default function Courses() {
@@ -97,6 +99,7 @@ export default function Courses() {
               nextAvailable: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000),
               courseImageUrl: courseData.course_image_url || template?.default_image_url || null,
               isPopular: template?.is_popular || false,
+              availableFrom: instructor.available_from,
             });
           }
         }
@@ -253,6 +256,7 @@ export default function Courses() {
                   nextAvailable={course.nextAvailable}
                   courseImageUrl={course.courseImageUrl}
                   isPopular={course.isPopular}
+                  availableFrom={course.availableFrom}
                 />
               </motion.div>
             ))}
