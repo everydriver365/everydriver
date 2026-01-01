@@ -1040,6 +1040,70 @@ export default function Index() {
           </div>
         </motion.div>
       </section>
+
+      {/* Trust Badges Section */}
+      <section className="border-t bg-muted/30 py-8">
+        <div className="container">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            {/* DVSA */}
+            <div className="flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white text-xs font-bold">
+                DVSA
+              </div>
+              <span className="text-xs text-muted-foreground hidden sm:block">Driver & Vehicle<br/>Standards Agency</span>
+            </div>
+
+            {/* ADI Code of Practice */}
+            <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
+              <span className="text-sm font-semibold text-primary">ADI</span>
+              <span className="text-xs text-muted-foreground">Code of Practice</span>
+              <div className="h-5 w-5 rounded-full bg-teal-500 flex items-center justify-center">
+                <span className="text-white text-xs">✓</span>
+              </div>
+            </div>
+
+            {/* MSA */}
+            <div className="text-primary font-bold text-lg italic">
+              msa<span className="text-teal-500">.</span>
+            </div>
+
+            {/* DBS */}
+            <div className="flex items-center gap-1 rounded bg-teal-600 px-2 py-1">
+              <span className="text-white text-xs font-bold">DBS</span>
+              <span className="text-white/80 text-[10px]">checked</span>
+            </div>
+
+            {/* MSA Badge */}
+            <div className="text-primary font-bold text-lg">
+              MSA
+            </div>
+
+            {/* DIA */}
+            <div className="rounded border border-primary px-2 py-1">
+              <span className="text-primary text-sm font-bold">DIA</span>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden h-8 w-px bg-border md:block" />
+
+            {/* Payment Methods */}
+            <div className="flex items-center gap-3">
+              <div className="rounded bg-[#1a1f71] px-2 py-1">
+                <span className="text-white text-xs font-bold italic">VISA</span>
+              </div>
+              <div className="rounded bg-gradient-to-r from-[#eb001b] to-[#f79e1b] px-2 py-1">
+                <span className="text-white text-xs font-bold">MasterCard</span>
+              </div>
+              <div className="rounded bg-[#0099df] px-2 py-1">
+                <span className="text-white text-xs font-bold">Maestro</span>
+              </div>
+              <div className="rounded bg-[#0b4ea2] px-2 py-1">
+                <span className="text-white text-xs font-bold">JCB</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </MainLayout>
   );
 }
