@@ -10,6 +10,7 @@ import InstructorPortal from "./pages/InstructorPortal";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
+import CollageDemo from "./pages/CollageDemo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/parent" element={<ParentPortal />} />
           <Route path="/admin" element={<AdminPortal />} />
           <Route path="/hero-demo" element={<HeroLayoutDemo />} />
+          <Route path="/collage-demo" element={<CollageDemo />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
