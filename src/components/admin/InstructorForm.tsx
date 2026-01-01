@@ -299,6 +299,17 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
 
         if (error) throw error;
         instructorId = newInstructor.id;
+
+        // Auto-initialize default working hours (Mon-Fri 9am-5pm)
+        const defaultWorkingHours = [1, 2, 3, 4, 5].map((dayOfWeek) => ({
+          instructor_id: instructorId,
+          day_of_week: dayOfWeek,
+          start_time: "09:00",
+          end_time: "17:00",
+          is_active: true,
+        }));
+
+        await supabase.from("instructor_working_hours").insert(defaultWorkingHours);
       }
 
       // Save courses
