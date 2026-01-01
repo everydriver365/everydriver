@@ -179,80 +179,84 @@ export default function Index() {
               </div>
             </motion.div>
 
-            {/* Right Content - Testimonial Images */}
+            {/* Right Content - Masonry Collage */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden h-[500px] lg:block"
+              className="relative hidden h-[450px] grid-cols-12 gap-3 lg:grid"
             >
-              {/* Sarah Card - Top Left */}
+              {/* Tall left image */}
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: -6 }}
-                animate={{ opacity: 1, y: 0, rotate: -6 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="absolute left-0 top-0 z-10 w-56 overflow-hidden rounded-3xl shadow-xl"
+                className="relative col-span-5 row-span-2 overflow-hidden rounded-2xl shadow-xl"
               >
                 <img
                   src={testimonialSarah}
                   alt="Sarah - Passed 1st time"
-                  className="h-72 w-full object-cover"
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                  <div className="font-semibold text-white">Sarah</div>
-                  <div className="text-sm text-white/80">Passed 1st time!</div>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  <p className="font-semibold text-white">Sarah</p>
+                  <p className="text-sm text-white/80">Passed in 2 weeks</p>
                 </div>
               </motion.div>
 
-              {/* James Card - Top Right */}
+              {/* Top right image */}
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: 6 }}
-                animate={{ opacity: 1, y: 0, rotate: 6 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
-                className="absolute right-0 top-8 z-20 w-48 overflow-hidden rounded-3xl shadow-xl"
+                className="relative col-span-7 h-52 overflow-hidden rounded-2xl shadow-xl"
               >
                 <img
                   src={testimonialJames}
                   alt="James - Intensive Course"
-                  className="h-64 w-full object-cover"
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                  <div className="font-semibold text-white">James</div>
-                  <div className="text-sm text-white/80">Intensive Course</div>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  <p className="font-semibold text-white">James</p>
+                  <p className="text-sm text-white/80">Intensive Course</p>
                 </div>
               </motion.div>
 
-              {/* Emma Card - Bottom Center */}
+              {/* Bottom right image */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
-                className="absolute bottom-0 left-1/4 z-30 w-52 overflow-hidden rounded-3xl border-4 border-white shadow-xl"
+                className="relative col-span-7 h-44 overflow-hidden rounded-2xl shadow-xl"
               >
                 <img
                   src={testimonialEmma}
-                  alt="Emma - Intensive Course"
-                  className="h-56 w-full object-cover"
+                  alt="Emma - Weekly Lessons"
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                  <div className="font-semibold text-white">Emma</div>
-                  <div className="text-sm text-white/80">Intensive Course</div>
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  <p className="font-semibold text-white">Emma</p>
+                  <p className="text-sm text-white/80">Weekly Lessons</p>
                 </div>
               </motion.div>
 
-              {/* Learners Badge */}
+              {/* Stats overlay */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
-                className="absolute bottom-16 right-4 z-40 flex items-center gap-3 rounded-2xl bg-primary px-4 py-3 shadow-lg"
+                className="absolute -bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-xl bg-white px-6 py-3 shadow-xl"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-                  <Heart className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <div className="font-bold text-white">10k+ Learners</div>
-                  <div className="text-sm text-white/80">And counting!</div>
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-primary">98%</p>
+                    <p className="text-xs text-muted-foreground">Pass Rate</p>
+                  </div>
+                  <div className="h-8 w-px bg-border"></div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-primary">15k+</p>
+                    <p className="text-xs text-muted-foreground">Students</p>
+                  </div>
                 </div>
               </motion.div>
             </motion.div>
