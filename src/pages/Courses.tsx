@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Filter, ChevronDown, Clock, PoundSterling, Navigation } from "lucide-react";
+import { Search, MapPin, Filter, ChevronDown, Clock, PoundSterling, Navigation, Loader2 } from "lucide-react";
 import { isFuture, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -49,6 +50,26 @@ interface CourseWithInstructor {
   courseImageUrl: string | null;
   isPopular: boolean;
   availableFrom: string | null;
+  distance?: number; // in miles
+}
+
+interface GeoCache {
+  [postcode: string]: { lat: number; lng: number } | null;
+}
+
+// Haversine formula to calculate distance between two coordinates
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959; // Earth's radius in miles
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 export default function Courses() {
@@ -60,10 +81,66 @@ export default function Courses() {
   const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
+  const [geoCache, setGeoCache] = useState<GeoCache>({});
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  // Geocode postcodes via edge function
+  const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<GeoCache> => {
+    const uncached = postcodes.filter((p) => !(p in geoCache));
+    if (uncached.length === 0) return geoCache;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("geocode-postcode", {
+        body: { postcodes: uncached },
+      });
+
+      if (error) throw error;
+
+      const newCache: GeoCache = { ...geoCache };
+      for (const result of data.results || []) {
+        if (result.latitude && result.longitude) {
+          newCache[result.postcode] = { lat: result.latitude, lng: result.longitude };
+        } else {
+          newCache[result.postcode] = null;
+        }
+      }
+      setGeoCache(newCache);
+      return newCache;
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      return geoCache;
+    }
+  }, [geoCache]);
+
+  // Handle search button click
+  const handleSearch = async () => {
+    if (!postcode.trim()) {
+      toast({ title: "Please enter a postcode", variant: "destructive" });
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const cache = await geocodePostcodes([postcode.replace(/\s+/g, "").toUpperCase()]);
+      const cleanPostcode = postcode.replace(/\s+/g, "").toUpperCase();
+      const location = cache[cleanPostcode];
+
+      if (location) {
+        setUserLocation(location);
+        setSortBy("nearest");
+        toast({ title: "Location found!", description: "Sorting by nearest instructors" });
+      } else {
+        toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
+      }
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -83,6 +160,10 @@ export default function Courses() {
       const instructorCourses = coursesRes.data || [];
       const courseTemplates: CourseTemplate[] = templatesRes.data || [];
 
+      // Geocode all instructor postcodes
+      const allPostcodes = instructors.map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
+      const cache = await geocodePostcodes(allPostcodes);
+
       // Build course list based on instructor offerings
       const courseList: CourseWithInstructor[] = [];
 
@@ -91,6 +172,9 @@ export default function Courses() {
         const offeredCourses = instructorCourses.filter(
           (c) => c.instructor_id === instructor.id
         );
+
+        const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+        const instructorLocation = cache[instructorPostcode];
 
         // For each course hour the instructor offers, create a course card
         for (const hours of DISPLAY_HOURS) {
@@ -105,6 +189,7 @@ export default function Courses() {
               courseImageUrl: courseData.course_image_url || template?.default_image_url || null,
               isPopular: template?.is_popular || false,
               availableFrom: instructor.available_from,
+              distance: undefined, // Will be calculated when user searches
             });
           }
         }
@@ -125,7 +210,28 @@ export default function Courses() {
     }
   };
 
-  const filteredCourses = courses
+  // Calculate distances when user location changes
+  const coursesWithDistance = useMemo(() => {
+    if (!userLocation) return courses;
+
+    return courses.map((course) => {
+      const instructorPostcode = course.instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+      const instructorLocation = geoCache[instructorPostcode];
+
+      if (instructorLocation) {
+        const distance = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          instructorLocation.lat,
+          instructorLocation.lng
+        );
+        return { ...course, distance };
+      }
+      return { ...course, distance: undefined };
+    });
+  }, [courses, userLocation, geoCache]);
+
+  const filteredCourses = coursesWithDistance
     .filter((course) => {
       // Transmission filter
       if (transmission !== "all") {
@@ -144,6 +250,13 @@ export default function Courses() {
           return false;
         }
       }
+
+      // Radius filter (only when user has searched)
+      if (userLocation && course.distance !== undefined) {
+        if (course.distance > parseInt(radius)) {
+          return false;
+        }
+      }
       
       return true;
     })
@@ -158,8 +271,9 @@ export default function Courses() {
           const priceB = b.hours * (b.instructor.hourly_rate || 40);
           return priceA - priceB;
         case "nearest":
-          // For now, sort alphabetically by postcode (real implementation would use geo distance)
-          return a.instructor.home_postcode.localeCompare(b.instructor.home_postcode);
+          if (a.distance === undefined) return 1;
+          if (b.distance === undefined) return -1;
+          return a.distance - b.distance;
         default:
           return 0;
       }
@@ -198,8 +312,12 @@ export default function Courses() {
                 <option value="15">15 miles</option>
                 <option value="25">25 miles</option>
               </select>
-              <Button variant="accent" size="lg" className="h-11">
-                <Search className="mr-2 h-4 w-4" />
+              <Button variant="accent" size="lg" className="h-11" onClick={handleSearch} disabled={isSearching}>
+                {isSearching ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="mr-2 h-4 w-4" />
+                )}
                 Search
               </Button>
             </div>
