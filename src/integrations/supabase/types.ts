@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      instructor_calendar_events: {
+        Row: {
+          end_time: string
+          google_event_id: string
+          id: string
+          instructor_id: string
+          is_busy: boolean
+          start_time: string
+          synced_at: string
+          title: string | null
+        }
+        Insert: {
+          end_time: string
+          google_event_id: string
+          id?: string
+          instructor_id: string
+          is_busy?: boolean
+          start_time: string
+          synced_at?: string
+          title?: string | null
+        }
+        Update: {
+          end_time?: string
+          google_event_id?: string
+          id?: string
+          instructor_id?: string
+          is_busy?: boolean
+          start_time?: string
+          synced_at?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_calendar_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_courses: {
+        Row: {
+          course_hours: number
+          course_name: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+        }
+        Insert: {
+          course_hours: number
+          course_name: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+        }
+        Update: {
+          course_hours?: number
+          course_name?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_courses_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_date_overrides: {
         Row: {
           created_at: string
@@ -51,6 +127,42 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_test_centres: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          test_centre_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          test_centre_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          test_centre_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_test_centres_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_test_centres_test_centre_id_fkey"
+            columns: ["test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
             referencedColumns: ["id"]
           },
         ]
@@ -106,12 +218,19 @@ export type Database = {
           car_type: string
           created_at: string
           email: string | null
+          google_access_token: string | null
+          google_calendar_id: string | null
+          google_refresh_token: string | null
+          google_token_expires_at: string | null
+          home_address: string | null
           home_postcode: string
           hourly_rate: number | null
           id: string
           is_active: boolean
+          last_calendar_sync: string | null
           name: string
           phone: string | null
+          preferred_lesson_length: number
           profile_image_url: string | null
           radius_miles: number
           updated_at: string
@@ -125,12 +244,19 @@ export type Database = {
           car_type: string
           created_at?: string
           email?: string | null
+          google_access_token?: string | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          google_token_expires_at?: string | null
+          home_address?: string | null
           home_postcode: string
           hourly_rate?: number | null
           id?: string
           is_active?: boolean
+          last_calendar_sync?: string | null
           name: string
           phone?: string | null
+          preferred_lesson_length?: number
           profile_image_url?: string | null
           radius_miles?: number
           updated_at?: string
@@ -144,15 +270,49 @@ export type Database = {
           car_type?: string
           created_at?: string
           email?: string | null
+          google_access_token?: string | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          google_token_expires_at?: string | null
+          home_address?: string | null
           home_postcode?: string
           hourly_rate?: number | null
           id?: string
           is_active?: boolean
+          last_calendar_sync?: string | null
           name?: string
           phone?: string | null
+          preferred_lesson_length?: number
           profile_image_url?: string | null
           radius_miles?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      test_centres: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          postcode: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          postcode?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          postcode?: string | null
         }
         Relationships: []
       }
