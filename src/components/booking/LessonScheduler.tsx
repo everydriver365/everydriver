@@ -41,6 +41,7 @@ interface LessonSchedulerProps {
   totalHours: number;
   maxLessonLength: number; // in minutes - maximum lesson duration allowed
   bookingAdvanceDays?: number;
+  availableFrom?: string | null; // earliest date instructor accepts bookings (YYYY-MM-DD)
   onSlotsChange: (slots: SelectedSlot[]) => void;
 }
 
@@ -72,6 +73,7 @@ export function LessonScheduler({
   totalHours,
   maxLessonLength,
   bookingAdvanceDays = 28,
+  availableFrom,
   onSlotsChange,
 }: LessonSchedulerProps) {
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
@@ -179,6 +181,12 @@ export function LessonScheduler({
     const maxDate = addDays(today, bookingAdvanceDays);
     
     if (isBefore(date, today) || isAfter(date, maxDate)) return false;
+    
+    // Check if instructor has an "available from" date set
+    if (availableFrom) {
+      const availableFromDate = parse(availableFrom, "yyyy-MM-dd", new Date());
+      if (isBefore(date, availableFromDate)) return false;
+    }
     
     return getAvailabilityForDate(date) !== null;
   };

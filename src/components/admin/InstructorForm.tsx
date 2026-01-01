@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image } from "lucide-react";
+import { format } from "date-fns";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon } from "lucide-react";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { CourseImageEditor } from "./CourseImageEditor";
@@ -29,6 +30,9 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 const COURSE_HOURS = [8, 10, 12, 16, 20, 24, 28, 30, 32, 40, 48];
 const LESSON_LENGTHS = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420];
@@ -54,6 +58,7 @@ const instructorSchema = z.object({
   brand_colour: z.string().optional(),
   school_skim_percentage: z.coerce.number().min(0).max(100).optional(),
   booking_advance_days: z.coerce.number().min(1).max(548).optional(), // up to 18 months
+  available_from: z.date().nullable().optional(),
   personal_website_url: z.string().url().optional().or(z.literal("")),
   facebook_url: z.string().url().optional().or(z.literal("")),
   instagram_url: z.string().url().optional().or(z.literal("")),
@@ -83,6 +88,7 @@ interface InstructorFormProps {
     brand_colour?: string;
     school_skim_percentage?: number;
     booking_advance_days?: number;
+    available_from?: string | null;
     personal_website_url?: string;
     facebook_url?: string;
     instagram_url?: string;
@@ -129,6 +135,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       brand_colour: initialData?.brand_colour || "#1e3a5f",
       school_skim_percentage: initialData?.school_skim_percentage ?? 0,
       booking_advance_days: initialData?.booking_advance_days ?? 28,
+      available_from: initialData?.available_from ? new Date(initialData.available_from) : null,
       personal_website_url: initialData?.personal_website_url || "",
       facebook_url: initialData?.facebook_url || "",
       instagram_url: initialData?.instagram_url || "",
@@ -273,6 +280,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         brand_colour: data.brand_colour || '#1e3a5f',
         school_skim_percentage: data.school_skim_percentage ?? 0,
         booking_advance_days: data.booking_advance_days ?? 28,
+        available_from: data.available_from ? format(data.available_from, "yyyy-MM-dd") : null,
         personal_website_url: data.personal_website_url || null,
         facebook_url: data.facebook_url || null,
         instagram_url: data.instagram_url || null,
@@ -655,6 +663,62 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                     <Input type="number" min={0} max={60} placeholder="15" {...field} />
                   </FormControl>
                   <FormDescription>Minutes between lessons</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="available_from"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Available From</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Available now</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value || undefined}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                      {field.value && (
+                        <div className="border-t p-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => field.onChange(null)}
+                          >
+                            Clear date (Available now)
+                          </Button>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription>
+                    Earliest date this instructor accepts bookings
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
