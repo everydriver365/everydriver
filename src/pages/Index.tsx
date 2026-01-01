@@ -119,8 +119,20 @@ export default function Index() {
   return (
     <MainLayout>
       {/* Hero Section - Soft Gradient White */}
-      <section className="min-h-[650px] bg-gradient-to-b from-amber-50/50 via-white to-white py-20">
-        <div className="container">
+      <section className="relative min-h-[650px] overflow-hidden bg-gradient-to-b from-amber-50/50 via-white to-white py-20">
+        {/* Subtle dot pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.4]" 
+          style={{ 
+            backgroundImage: `radial-gradient(circle, hsl(var(--primary) / 0.15) 1px, transparent 1px)`,
+            backgroundSize: '24px 24px'
+          }} 
+        />
+        {/* Decorative gradient orbs */}
+        <div className="absolute -left-32 top-0 h-64 w-64 rounded-full bg-amber-200/30 blur-3xl" />
+        <div className="absolute -right-32 top-32 h-80 w-80 rounded-full bg-amber-100/40 blur-3xl" />
+        
+        <div className="container relative">
           <div className="mx-auto max-w-4xl text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
