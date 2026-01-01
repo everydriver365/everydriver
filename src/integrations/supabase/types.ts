@@ -14,7 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      instructors: {
+        Row: {
+          bio: string | null
+          car_image_url: string | null
+          car_make: string | null
+          car_model: string | null
+          car_type: string
+          created_at: string
+          email: string | null
+          home_postcode: string
+          hourly_rate: number | null
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+          profile_image_url: string | null
+          radius_miles: number
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          car_image_url?: string | null
+          car_make?: string | null
+          car_model?: string | null
+          car_type: string
+          created_at?: string
+          email?: string | null
+          home_postcode: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          phone?: string | null
+          profile_image_url?: string | null
+          radius_miles?: number
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          car_image_url?: string | null
+          car_make?: string | null
+          car_model?: string | null
+          car_type?: string
+          created_at?: string
+          email?: string | null
+          home_postcode?: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          profile_image_url?: string | null
+          radius_miles?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

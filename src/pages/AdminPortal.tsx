@@ -1,11 +1,22 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Shield, Users, Calendar, CreditCard, Settings, BarChart3, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp 
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { InstructorForm } from "@/components/admin/InstructorForm";
+import { InstructorList } from "@/components/admin/InstructorList";
+import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -27,7 +38,61 @@ const alerts = [
   { type: "success", message: "System backup completed", action: "View" },
 ];
 
+interface Instructor {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  home_postcode: string;
+  radius_miles: number;
+  car_type: string;
+  car_make: string | null;
+  car_model: string | null;
+  profile_image_url: string | null;
+  car_image_url: string | null;
+  bio: string | null;
+  hourly_rate: number | null;
+  is_active: boolean;
+}
+
 export default function AdminPortal() {
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
+
+  const fetchInstructors = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("instructors")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setInstructors(data || []);
+    } catch (error) {
+      console.error("Error fetching instructors:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInstructors();
+  }, []);
+
+  const handleFormSuccess = () => {
+    setIsFormOpen(false);
+    setEditingInstructor(null);
+    fetchInstructors();
+  };
+
+  const handleEdit = (instructor: Instructor) => {
+    setEditingInstructor(instructor);
+    setIsFormOpen(true);
+  };
+
   return (
     <MainLayout>
       <div className="container py-8">
@@ -56,159 +121,223 @@ export default function AdminPortal() {
           </motion.div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, index) => (
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="instructors">Instructors</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview">
+            {/* Stats Grid */}
+            <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                          <stat.icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <span className={`flex items-center gap-1 text-xs ${
+                          stat.trend === "up" ? "text-success" : "text-muted-foreground"
+                        }`}>
+                          {stat.trend === "up" && <TrendingUp className="h-3 w-3" />}
+                          {stat.change}
+                        </span>
+                      </div>
+                      <div className="mt-3">
+                        <div className="text-2xl font-bold">{stat.value}</div>
+                        <div className="text-sm text-muted-foreground">{stat.label}</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-3">
+              {/* Alerts */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="lg:col-span-2"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-accent" />
+                      System Alerts
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {alerts.map((alert, index) => (
+                        <div
+                          key={index}
+                          className={`flex items-center justify-between rounded-lg border p-4 ${
+                            alert.type === "warning"
+                              ? "border-warning/30 bg-warning/5"
+                              : alert.type === "success"
+                              ? "border-success/30 bg-success/5"
+                              : "border-primary/30 bg-primary/5"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {alert.type === "warning" ? (
+                              <AlertTriangle className="h-5 w-5 text-warning" />
+                            ) : alert.type === "success" ? (
+                              <CheckCircle className="h-5 w-5 text-success" />
+                            ) : (
+                              <Clock className="h-5 w-5 text-primary" />
+                            )}
+                            <span>{alert.message}</span>
+                          </div>
+                          <Button variant="ghost" size="sm">
+                            {alert.action}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Quick Management */}
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Quick Management</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+                        <Users className="h-6 w-6" />
+                        <span>Manage Users</span>
+                      </Button>
+                      <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+                        <Calendar className="h-6 w-6" />
+                        <span>View Bookings</span>
+                      </Button>
+                      <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+                        <CreditCard className="h-6 w-6" />
+                        <span>Payments</span>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* Recent Users */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <UserPlus className="h-5 w-5 text-accent" />
+                      Recent Users
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {recentUsers.map((user) => (
+                        <div
+                          key={user.name}
+                          className="flex items-center gap-3 rounded-lg border p-3"
+                        >
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                            {user.name.split(" ").map((n) => n[0]).join("")}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{user.name}</span>
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-xs ${
+                                  user.status === "active"
+                                    ? "bg-success/10 text-success"
+                                    : "bg-warning/10 text-warning"
+                                }`}
+                              >
+                                {user.status}
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {user.type} • {user.joined}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="outline" className="mt-4 w-full">
+                      View All Users
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="instructors">
             <motion.div
-              key={stat.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
             >
               <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <stat.icon className="h-5 w-5 text-primary" />
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <UserPlus className="h-5 w-5 text-accent" />
+                    Manage Instructors
+                  </CardTitle>
+                  <Button onClick={() => setIsFormOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Instructor
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                     </div>
-                    <span className={`flex items-center gap-1 text-xs ${
-                      stat.trend === "up" ? "text-success" : "text-muted-foreground"
-                    }`}>
-                      {stat.trend === "up" && <TrendingUp className="h-3 w-3" />}
-                      {stat.change}
-                    </span>
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
-                  </div>
+                  ) : (
+                    <InstructorList
+                      instructors={instructors}
+                      onEdit={handleEdit}
+                      onRefresh={fetchInstructors}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
-          ))}
-        </div>
+          </TabsContent>
+        </Tabs>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Alerts */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-2"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-accent" />
-                  System Alerts
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {alerts.map((alert, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-between rounded-lg border p-4 ${
-                        alert.type === "warning"
-                          ? "border-warning/30 bg-warning/5"
-                          : alert.type === "success"
-                          ? "border-success/30 bg-success/5"
-                          : "border-primary/30 bg-primary/5"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {alert.type === "warning" ? (
-                          <AlertTriangle className="h-5 w-5 text-warning" />
-                        ) : alert.type === "success" ? (
-                          <CheckCircle className="h-5 w-5 text-success" />
-                        ) : (
-                          <Clock className="h-5 w-5 text-primary" />
-                        )}
-                        <span>{alert.message}</span>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        {alert.action}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Management */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Quick Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <Button variant="outline" className="h-auto flex-col gap-2 py-4">
-                    <Users className="h-6 w-6" />
-                    <span>Manage Users</span>
-                  </Button>
-                  <Button variant="outline" className="h-auto flex-col gap-2 py-4">
-                    <Calendar className="h-6 w-6" />
-                    <span>View Bookings</span>
-                  </Button>
-                  <Button variant="outline" className="h-auto flex-col gap-2 py-4">
-                    <CreditCard className="h-6 w-6" />
-                    <span>Payments</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Recent Users */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-accent" />
-                  Recent Users
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentUsers.map((user) => (
-                    <div
-                      key={user.name}
-                      className="flex items-center gap-3 rounded-lg border p-3"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                        {user.name.split(" ").map((n) => n[0]).join("")}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{user.name}</span>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-xs ${
-                              user.status === "active"
-                                ? "bg-success/10 text-success"
-                                : "bg-warning/10 text-warning"
-                            }`}
-                          >
-                            {user.status}
-                          </span>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {user.type} • {user.joined}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Button variant="outline" className="mt-4 w-full">
-                  View All Users
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+        {/* Instructor Form Dialog */}
+        <Dialog open={isFormOpen} onOpenChange={(open) => {
+          setIsFormOpen(open);
+          if (!open) setEditingInstructor(null);
+        }}>
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingInstructor ? "Edit Instructor" : "Add New Instructor"}
+              </DialogTitle>
+            </DialogHeader>
+            <InstructorForm
+              onSuccess={handleFormSuccess}
+              onCancel={() => {
+                setIsFormOpen(false);
+                setEditingInstructor(null);
+              }}
+              initialData={editingInstructor || undefined}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
