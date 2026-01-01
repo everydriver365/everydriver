@@ -28,12 +28,14 @@ interface InstructorCourse {
   instructor_id: string;
   course_hours: number;
   is_active: boolean;
+  course_image_url: string | null;
 }
 
 interface CourseWithInstructor {
   instructor: Instructor;
   hours: number;
   nextAvailable: Date | null;
+  courseImageUrl: string | null;
 }
 
 export default function Courses() {
@@ -78,13 +80,14 @@ export default function Courses() {
 
         // For each course hour the instructor offers, create a course card
         for (const hours of DISPLAY_HOURS) {
-          const offersCourse = offeredCourses.some((c) => c.course_hours === hours);
+          const courseData = offeredCourses.find((c) => c.course_hours === hours);
           
-          if (offersCourse) {
+          if (courseData) {
             courseList.push({
               instructor,
               hours,
-              nextAvailable: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000), // Random date within next week for demo
+              nextAvailable: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000),
+              courseImageUrl: courseData.course_image_url || null,
             });
           }
         }
@@ -239,6 +242,7 @@ export default function Courses() {
                   instructor={course.instructor}
                   hours={course.hours}
                   nextAvailable={course.nextAvailable}
+                  courseImageUrl={course.courseImageUrl}
                   isPopular={course.hours === 30 || course.hours === 40}
                 />
               </motion.div>

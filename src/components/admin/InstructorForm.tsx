@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image } from "lucide-react";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
+import { CourseImageEditor } from "./CourseImageEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -670,6 +671,22 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
             ))}
           </div>
         </div>
+
+        {/* Course Images */}
+        {selectedCourses.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <Image className="h-4 w-4" /> Course Photos
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Add photos for each course to display on course listings
+            </p>
+            <CourseImageEditor
+              instructorId={initialData?.id || ""}
+              selectedCourses={selectedCourses}
+            />
+          </div>
+        )}
 
         {/* Test Centres */}
         <div className="space-y-4">
