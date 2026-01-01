@@ -23,6 +23,9 @@ import featureTheory from "@/assets/feature-theory.jpg";
 import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
 import featureCancellation from "@/assets/feature-cancellation.jpg";
 import featurePayments from "@/assets/feature-payments.jpg";
+import testimonialSarahM from "@/assets/testimonial-sarah-m.jpg";
+import testimonialEmily from "@/assets/testimonial-emily.jpg";
+import testimonialPriya from "@/assets/testimonial-priya.jpg";
 
 const features = [
   {
@@ -734,6 +737,140 @@ export default function Index() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* From Nervous to Road Ready Section */}
+      <section className="bg-secondary/30 py-16">
+        <div className="container">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Left Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <Badge className="mb-4 gap-1 border-0 bg-emerald-500 text-white hover:bg-emerald-500">
+                <Award className="h-3 w-3" />
+                Proven Results
+              </Badge>
+              <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+                From Nervous to<br />
+                <span className="italic text-primary">Road Ready</span>
+              </h2>
+              <p className="mb-8 text-lg text-muted-foreground">
+                Join thousands of learners who transformed their driving fears into confidence.
+              </p>
+
+              {/* Stats */}
+              <div className="mb-8 flex flex-wrap gap-6">
+                <div className="rounded-xl border bg-card px-6 py-4 text-center shadow-sm">
+                  <div className="text-3xl font-bold text-foreground">98%</div>
+                  <div className="text-sm text-muted-foreground">Pass Rate</div>
+                </div>
+                <div className="rounded-xl border bg-card px-6 py-4 text-center shadow-sm">
+                  <div className="text-3xl font-bold text-foreground">15k+</div>
+                  <div className="text-sm text-muted-foreground">Happy Learners</div>
+                </div>
+                <div className="rounded-xl border bg-card px-6 py-4 text-center shadow-sm">
+                  <div className="text-3xl font-bold text-foreground">4.9</div>
+                  <div className="text-sm text-muted-foreground">Average Rating</div>
+                </div>
+              </div>
+
+              <Link to="/courses">
+                <Button className="gap-2">
+                  Start Your Journey
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+
+            {/* Right Content - Testimonials */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="space-y-4"
+            >
+              {/* Testimonial 1 */}
+              <div className="rounded-xl bg-card p-4 shadow-md">
+                <div className="flex gap-4">
+                  <img
+                    src={testimonialSarahM}
+                    alt="Sarah M."
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="mb-1 flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <p className="mb-2 text-sm text-muted-foreground">
+                      "The intensive course was exactly what I needed. My instructor was patient and really focused on my weak points."
+                    </p>
+                    <div className="text-sm">
+                      <span className="font-semibold">Sarah M.</span>
+                      <span className="text-muted-foreground"> • 5-Day Intensive</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 2 */}
+              <div className="rounded-xl bg-card p-4 shadow-md">
+                <div className="flex gap-4">
+                  <img
+                    src={testimonialEmily}
+                    alt="Emily R."
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="mb-1 flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <p className="mb-2 text-sm text-muted-foreground">
+                      "I went from being terrified of roundabouts to navigating them with ease. Best decision I ever made."
+                    </p>
+                    <div className="text-sm">
+                      <span className="font-semibold">Emily R.</span>
+                      <span className="text-muted-foreground"> • Semi-Intensive</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 3 */}
+              <div className="rounded-xl bg-card p-4 shadow-md">
+                <div className="flex gap-4">
+                  <img
+                    src={testimonialPriya}
+                    alt="Priya T."
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="mb-1 flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <p className="mb-2 text-sm text-muted-foreground">
+                      "Working full-time made it hard to learn, but the flexible scheduling meant I could fit lessons around my job."
+                    </p>
+                    <div className="text-sm">
+                      <span className="font-semibold">Priya T.</span>
+                      <span className="text-muted-foreground"> • 10-Day Course</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
