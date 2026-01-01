@@ -100,11 +100,17 @@ export function LessonScheduler({
         .select("*")
         .eq("instructor_id", instructorId);
 
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      const maxDateStr = format(addDays(new Date(), bookingAdvanceDays), "yyyy-MM-dd");
+
       const { data: overrides } = await supabase
         .from("instructor_date_overrides")
         .select("*")
         .eq("instructor_id", instructorId)
-        .gte("override_date", format(new Date(), "yyyy-MM-dd"));
+        // include overrides that still apply (either no end date, or end date not passed)
+        .or(`override_end_date.gte.${todayStr},override_end_date.is.null`)
+        // and only fetch overrides that could affect the currently bookable window
+        .lte("override_date", maxDateStr);
 
       setWorkingHours(
         (hours || []).map((h) => ({
