@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { format, addDays, startOfDay, isSameDay, isAfter, isBefore, parse } from "date-fns";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { format, addDays, startOfDay, startOfMonth, isSameDay, isAfter, isBefore, parse } from "date-fns";
 import { Calendar, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +89,72 @@ export function LessonScheduler({
   useEffect(() => {
     fetchAvailability();
   }, [instructorId]);
+
+  // Navigate to the first available date's month when data loads
+  useEffect(() => {
+    if (!loading && workingHours.length > 0) {
+      const today = startOfDay(new Date());
+      const maxDate = addDays(today, bookingAdvanceDays);
+      
+      // Find the first available date
+      let checkDate = today;
+      
+      // If availableFrom is set and in the future, start from there
+      if (availableFrom) {
+        const availableFromDate = parse(availableFrom, "yyyy-MM-dd", new Date());
+        if (isAfter(availableFromDate, today)) {
+          checkDate = availableFromDate;
+        }
+      }
+      
+      // Find first date with availability
+      while (isBefore(checkDate, maxDate) || isSameDay(checkDate, maxDate)) {
+        if (isDateAvailableCheck(checkDate)) {
+          setViewMonth(startOfMonth(checkDate));
+          break;
+        }
+        checkDate = addDays(checkDate, 1);
+      }
+    }
+  }, [loading, workingHours, availableFrom, bookingAdvanceDays]);
+
+  // Helper to check date availability without depending on isDateAvailable (avoids circular deps)
+  const isDateAvailableCheck = useCallback((date: Date) => {
+    const today = startOfDay(new Date());
+    const maxDate = addDays(today, bookingAdvanceDays);
+    
+    if (isBefore(date, today) || isAfter(date, maxDate)) return false;
+    
+    if (availableFrom) {
+      const availableFromDate = parse(availableFrom, "yyyy-MM-dd", new Date());
+      if (isBefore(date, availableFromDate)) return false;
+    }
+    
+    const dateStr = format(date, "yyyy-MM-dd");
+    const dayOfWeek = date.getDay();
+
+    // Check date overrides first
+    const override = dateOverrides.find((o) => {
+      const startDate = o.override_date;
+      const endDate = o.override_end_date;
+      
+      if (endDate) {
+        return dateStr >= startDate && dateStr <= endDate;
+      }
+      if (!endDate && dateStr >= startDate) {
+        return true;
+      }
+      return dateStr === startDate;
+    });
+
+    if (override) {
+      return override.is_available;
+    }
+
+    // Fall back to regular working hours
+    const regularHours = workingHours.find((h) => h.day_of_week === dayOfWeek);
+    return regularHours?.is_active || false;
+  }, [workingHours, dateOverrides, availableFrom, bookingAdvanceDays]);
 
   useEffect(() => {
     onSlotsChange(selectedSlots);
