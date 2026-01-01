@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, TrendingUp, Star, CheckCircle, CalendarClock } from "lucide-react";
+import { MapPin, Clock, TrendingUp, Star, CheckCircle, CalendarClock, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format, isFuture, parseISO } from "date-fns";
+import { format, isFuture, parseISO, differenceInDays } from "date-fns";
 
 interface DynamicCourseCardProps {
   instructor: {
@@ -58,18 +58,23 @@ export function DynamicCourseCard({
         day: availableFromDate.getDate().toString(),
         month: availableFromDate.toLocaleDateString("en-GB", { month: "short" }),
         isDelayed: true,
+        date: availableFromDate,
       };
     }
-    if (!nextAvailable) return { day: "TBC", month: "", isDelayed: false };
+    if (!nextAvailable) return { day: "TBC", month: "", isDelayed: false, date: null };
     const date = new Date(nextAvailable);
     return {
       day: date.getDate().toString(),
       month: date.toLocaleDateString("en-GB", { month: "short" }),
       isDelayed: false,
+      date: date,
     };
   };
 
-  const { day, month, isDelayed } = formatNextAvailable();
+  const { day, month, isDelayed, date: availableDate } = formatNextAvailable();
+  
+  // Check if available within 7 days
+  const isAvailableSoon = availableDate && differenceInDays(availableDate, new Date()) <= 7 && differenceInDays(availableDate, new Date()) >= 0;
 
   return (
     <div
@@ -113,10 +118,23 @@ export function DynamicCourseCard({
 
           {/* Content Section */}
           <div className="flex h-[calc(100%-11rem)]">
-            <div className={`flex flex-col items-center justify-center px-3 py-4 min-w-[80px] ${
-              isDelayed ? "bg-amber-500 text-white" : "bg-primary text-primary-foreground"
+            <div className={`relative flex flex-col items-center justify-center px-4 py-4 min-w-[90px] ${
+              isAvailableSoon 
+                ? "bg-emerald-500 text-white" 
+                : isDelayed 
+                  ? "bg-amber-500 text-white" 
+                  : "bg-primary text-primary-foreground"
             }`}>
-              {isDelayed ? (
+              {isAvailableSoon && (
+                <div className="absolute inset-0 bg-emerald-400 animate-pulse opacity-30" />
+              )}
+              {isAvailableSoon ? (
+                <>
+                  <Zap className="h-4 w-4 mb-1 animate-pulse" />
+                  <span className="text-[9px] font-semibold uppercase tracking-wider">Book</span>
+                  <span className="text-[9px] font-semibold uppercase tracking-wider">Now!</span>
+                </>
+              ) : isDelayed ? (
                 <>
                   <CalendarClock className="h-4 w-4 mb-1 opacity-90" />
                   <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
@@ -128,8 +146,8 @@ export function DynamicCourseCard({
                   <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
                 </>
               )}
-              <span className="mt-1 text-2xl font-bold">{day}</span>
-              <span className="text-xs font-medium">{month}</span>
+              <span className="mt-1 text-3xl font-bold relative z-10">{day}</span>
+              <span className="text-sm font-semibold relative z-10">{month}</span>
             </div>
 
             <div className="flex-1 p-3">
