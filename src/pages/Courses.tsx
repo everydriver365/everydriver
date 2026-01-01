@@ -1,70 +1,122 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, MapPin, Filter, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { CourseCard } from "@/components/CourseCard";
+import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockCourses = [
-  {
-    id: 1,
-    title: "40 Hour Intensive Course",
-    instructor: "John Smith",
-    price: 1800,
-    location: "Winchester, Southampton or Portsmouth",
-    duration: "4hr lessons",
-    description: "The standard course for complete beginners.",
-    nextAvailableDay: "2",
-    nextAvailableMonth: "Mar",
-    tags: ["Intensive", "Manual"],
-    isPopular: true,
-  },
-  {
-    id: 2,
-    title: "30 Hour Semi-Intensive Course",
-    instructor: "Sarah Johnson",
-    price: 1350,
-    location: "Manchester, Bolton or Salford",
-    duration: "3hr lessons",
-    description: "Perfect for those with some driving experience.",
-    nextAvailableDay: "5",
-    nextAvailableMonth: "Mar",
-    tags: ["Semi-Intensive", "Automatic"],
-    isPopular: false,
-  },
-  {
-    id: 3,
-    title: "20 Hour Refresher Course",
-    instructor: "Mike Williams",
-    price: 900,
-    location: "Birmingham, Coventry or Wolverhampton",
-    duration: "2hr lessons",
-    description: "Ideal for returning drivers needing a confidence boost.",
-    nextAvailableDay: "8",
-    nextAvailableMonth: "Mar",
-    tags: ["Refresher", "Manual"],
-    isPopular: true,
-  },
-  {
-    id: 4,
-    title: "50 Hour Complete Beginner Course",
-    instructor: "Emma Davis",
-    price: 2250,
-    location: "Leeds, Bradford or Wakefield",
-    duration: "5hr lessons",
-    description: "Comprehensive course for absolute beginners.",
-    nextAvailableDay: "12",
-    nextAvailableMonth: "Mar",
-    tags: ["Intensive", "Automatic"],
-    isPopular: false,
-  },
-];
+// Standard course hours to display
+const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
+
+interface Instructor {
+  id: string;
+  name: string;
+  profile_image_url: string | null;
+  car_type: string;
+  car_make: string | null;
+  car_model: string | null;
+  home_postcode: string;
+  hourly_rate: number | null;
+  bio: string | null;
+  brand_colour: string | null;
+  is_active: boolean;
+}
+
+interface InstructorCourse {
+  instructor_id: string;
+  course_hours: number;
+  is_active: boolean;
+}
+
+interface CourseWithInstructor {
+  instructor: Instructor;
+  hours: number;
+  nextAvailable: Date | null;
+}
 
 export default function Courses() {
   const [postcode, setPostcode] = useState("");
   const [radius, setRadius] = useState("10");
   const [showFilters, setShowFilters] = useState(false);
+  const [transmission, setTransmission] = useState("all");
+  const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    setLoading(true);
+    try {
+      // Fetch active instructors
+      const { data: instructors, error: instructorsError } = await supabase
+        .from("instructors")
+        .select("*")
+        .eq("is_active", true);
+
+      if (instructorsError) throw instructorsError;
+
+      // Fetch instructor courses
+      const { data: instructorCourses, error: coursesError } = await supabase
+        .from("instructor_courses")
+        .select("*")
+        .eq("is_active", true);
+
+      if (coursesError) throw coursesError;
+
+      // Build course list based on instructor offerings
+      const courseList: CourseWithInstructor[] = [];
+
+      for (const instructor of instructors || []) {
+        // Get courses this instructor offers
+        const offeredCourses = (instructorCourses || []).filter(
+          (c) => c.instructor_id === instructor.id
+        );
+
+        // For each course hour the instructor offers, create a course card
+        for (const hours of DISPLAY_HOURS) {
+          const offersCourse = offeredCourses.some((c) => c.course_hours === hours);
+          
+          if (offersCourse) {
+            courseList.push({
+              instructor,
+              hours,
+              nextAvailable: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000), // Random date within next week for demo
+            });
+          }
+        }
+      }
+
+      // Sort by next available date
+      courseList.sort((a, b) => {
+        if (!a.nextAvailable) return 1;
+        if (!b.nextAvailable) return -1;
+        return a.nextAvailable.getTime() - b.nextAvailable.getTime();
+      });
+
+      setCourses(courseList);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCourses = courses.filter((course) => {
+    if (transmission !== "all") {
+      const carType = course.instructor.car_type.toLowerCase();
+      if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
+        return false;
+      }
+      if (transmission === "automatic" && !carType.includes("automatic") && carType !== "both") {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <MainLayout>
@@ -76,7 +128,7 @@ export default function Courses() {
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto max-w-4xl"
           >
-            <h1 className="mb-6 text-2xl font-bold md:text-3xl">Find Driving Lessons Near You</h1>
+            <h1 className="mb-6 text-2xl font-bold md:text-3xl">Find Driving Courses Near You</h1>
             
             <div className="flex flex-col gap-3 rounded-xl bg-card p-4 shadow-md sm:flex-row sm:items-center">
               <div className="relative flex-1">
@@ -117,7 +169,7 @@ export default function Courses() {
                 <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
               </Button>
               <span className="text-sm text-muted-foreground">
-                {mockCourses.length} instructors found
+                {loading ? "Loading..." : `${filteredCourses.length} courses available`}
               </span>
             </div>
 
@@ -130,28 +182,34 @@ export default function Courses() {
               >
                 <div>
                   <label className="mb-2 block text-sm font-medium">Transmission</label>
-                  <select className="w-full rounded-lg border bg-background px-3 py-2">
-                    <option>All</option>
-                    <option>Manual</option>
-                    <option>Automatic</option>
+                  <select 
+                    className="w-full rounded-lg border bg-background px-3 py-2"
+                    value={transmission}
+                    onChange={(e) => setTransmission(e.target.value)}
+                  >
+                    <option value="all">All</option>
+                    <option value="manual">Manual</option>
+                    <option value="automatic">Automatic</option>
                   </select>
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium">Price Range</label>
                   <select className="w-full rounded-lg border bg-background px-3 py-2">
                     <option>Any price</option>
-                    <option>Under £30/hr</option>
-                    <option>£30-£40/hr</option>
-                    <option>Over £40/hr</option>
+                    <option>Under £500</option>
+                    <option>£500-£1000</option>
+                    <option>Over £1000</option>
                   </select>
                 </div>
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Availability</label>
+                  <label className="mb-2 block text-sm font-medium">Course Type</label>
                   <select className="w-full rounded-lg border bg-background px-3 py-2">
-                    <option>Any time</option>
-                    <option>Today</option>
-                    <option>This week</option>
-                    <option>Weekends only</option>
+                    <option>All courses</option>
+                    <option>10 Hours</option>
+                    <option>20 Hours</option>
+                    <option>30 Hours</option>
+                    <option>40 Hours</option>
+                    <option>Test in a Week</option>
                   </select>
                 </div>
               </motion.div>
@@ -162,18 +220,38 @@ export default function Courses() {
 
       {/* Results */}
       <section className="container py-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {mockCourses.map((course, index) => (
-            <motion.div
-              key={course.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <CourseCard course={course} />
-            </motion.div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="h-[420px] animate-pulse rounded-2xl bg-muted" />
+            ))}
+          </div>
+        ) : filteredCourses.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredCourses.map((course, index) => (
+              <motion.div
+                key={`${course.instructor.id}-${course.hours}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <DynamicCourseCard
+                  instructor={course.instructor}
+                  hours={course.hours}
+                  nextAvailable={course.nextAvailable}
+                  isPopular={course.hours === 30 || course.hours === 40}
+                />
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-16 text-center">
+            <h2 className="text-xl font-semibold">No courses available</h2>
+            <p className="mt-2 text-muted-foreground">
+              Try adjusting your filters or check back later.
+            </p>
+          </div>
+        )}
       </section>
     </MainLayout>
   );
