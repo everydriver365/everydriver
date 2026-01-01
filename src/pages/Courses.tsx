@@ -162,7 +162,7 @@ export default function Courses() {
 
       {/* Results */}
       <section className="container py-8">
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {mockCourses.map((course, index) => (
             <motion.div
               key={course.id}
