@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -9,6 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import testimonialSarah from "@/assets/testimonial-sarah.jpg";
 import testimonialJames from "@/assets/testimonial-james.jpg";
 import testimonialEmma from "@/assets/testimonial-emma.jpg";
+import courseIntensive from "@/assets/course-intensive.jpg";
+import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
+import courseWeekly from "@/assets/course-weekly.jpg";
 
 const features = [
   {
@@ -232,6 +235,190 @@ export default function Index() {
                   <div className="text-sm text-white/80">And counting!</div>
                 </div>
               </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Choose Your Learning Path Section */}
+      <section className="bg-secondary/30 py-16">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
+            <Badge className="mb-4 border-0 bg-primary text-primary-foreground">
+              Find Your Perfect Fit
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+              Choose Your Learning Path
+            </h2>
+            <p className="mx-auto mb-12 max-w-2xl text-muted-foreground">
+              Whether you want to pass quickly or learn at your own pace, we have the perfect course for you
+            </p>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Intensive Courses */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={courseIntensive}
+                  alt="Intensive Courses"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <Badge className="absolute right-3 top-3 border-0 bg-primary text-primary-foreground gap-1">
+                  <Zap className="h-3 w-3" />
+                  Fast Track
+                </Badge>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold">Intensive Courses</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Full immersion driving experience. Learn everything in concentrated sessions and pass your test in record time.
+                </p>
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span><strong>30-40 hours</strong> of lessons</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <span>Pass in <strong>1-2 weeks</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Award className="h-4 w-4 text-primary" />
+                    <span>Test booking <strong>included</strong></span>
+                  </div>
+                </div>
+                <div className="mt-6 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs text-muted-foreground">From</span>
+                    <div className="text-2xl font-bold text-primary">£1,299</div>
+                  </div>
+                  <Link to="/courses?type=intensive">
+                    <Button className="gap-2">
+                      View Courses
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Semi-Intensive */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={courseSemiIntensive}
+                  alt="Semi-Intensive Courses"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <Badge className="absolute right-3 top-3 border-0 bg-emerald-500 text-white gap-1">
+                  <Star className="h-3 w-3" />
+                  Popular
+                </Badge>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold">Semi-Intensive</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  The perfect balance of speed and flexibility. Ideal if you have some availability but need time to practice between sessions.
+                </p>
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span><strong>30 hours</strong> of lessons</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <span>Pass in <strong>2-4 weeks</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Award className="h-4 w-4 text-primary" />
+                    <span><strong>Flexible</strong> scheduling</span>
+                  </div>
+                </div>
+                <div className="mt-6 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs text-muted-foreground">From</span>
+                    <div className="text-2xl font-bold text-primary">£999</div>
+                  </div>
+                  <Link to="/courses?type=semi-intensive">
+                    <Button className="gap-2">
+                      View Courses
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Weekly Lessons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={courseWeekly}
+                  alt="Weekly Lessons"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <Badge className="absolute right-3 top-3 border-0 bg-blue-500 text-white gap-1">
+                  <Heart className="h-3 w-3" />
+                  Flexible
+                </Badge>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-bold">Weekly Lessons</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Traditional approach for busy schedules. Build confidence gradually with regular weekly sessions at times that suit you.
+                </p>
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span><strong>1-2 hours</strong> per week</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CreditCard className="h-4 w-4 text-primary" />
+                    <span><strong>Pay as you go</strong> or packages</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="h-4 w-4 text-primary" />
+                    <span><strong>Same instructor</strong> every week</span>
+                  </div>
+                </div>
+                <div className="mt-6 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs text-muted-foreground">From</span>
+                    <div className="text-2xl font-bold text-primary">£35<span className="text-sm font-normal text-muted-foreground">/hour</span></div>
+                  </div>
+                  <Link to="/courses?type=weekly">
+                    <Button className="gap-2">
+                      View Lessons
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
