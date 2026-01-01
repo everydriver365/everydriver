@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
+import { CourseCard } from "@/components/CourseCard";
 import { Badge } from "@/components/ui/badge";
 import testimonialSarah from "@/assets/testimonial-sarah.jpg";
 import testimonialJames from "@/assets/testimonial-james.jpg";
@@ -616,6 +617,110 @@ export default function Index() {
                 </button>
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Courses Section */}
+      <section className="bg-background py-16">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="mb-8 flex items-center justify-between"
+          >
+            <div>
+              <Badge className="mb-2 border-0 bg-primary text-primary-foreground">
+                Available Now
+              </Badge>
+              <h2 className="text-2xl font-bold md:text-3xl">Featured Courses</h2>
+            </div>
+            <Link to="/courses">
+              <Button variant="outline" className="hidden gap-2 sm:flex">
+                View All Courses
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </motion.div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <CourseCard
+                course={{
+                  id: 1,
+                  title: "Intensive Driving Course - Manchester",
+                  instructor: "Sarah Johnson",
+                  price: 1299,
+                  location: "Manchester, M1",
+                  duration: "30 hours",
+                  description: "Fast-track your driving with our intensive course. Perfect for quick learners who want to pass in 1-2 weeks.",
+                  nextAvailableDay: "15",
+                  nextAvailableMonth: "Jan",
+                  tags: ["Intensive"],
+                  isPopular: true,
+                }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              viewport={{ once: true }}
+            >
+              <CourseCard
+                course={{
+                  id: 2,
+                  title: "Semi-Intensive Course - London",
+                  instructor: "James Williams",
+                  price: 999,
+                  location: "London, SW1",
+                  duration: "30 hours",
+                  description: "Balance speed and flexibility with our semi-intensive option. Learn at a comfortable pace over 2-4 weeks.",
+                  nextAvailableDay: "18",
+                  nextAvailableMonth: "Jan",
+                  tags: ["Semi-Intensive"],
+                }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <CourseCard
+                course={{
+                  id: 3,
+                  title: "Weekly Lessons - Birmingham",
+                  instructor: "Emma Thompson",
+                  price: 35,
+                  location: "Birmingham, B1",
+                  duration: "2 hours/week",
+                  description: "Traditional weekly lessons at your own pace. Perfect for busy schedules with flexible booking.",
+                  nextAvailableDay: "12",
+                  nextAvailableMonth: "Jan",
+                  tags: ["Weekly"],
+                }}
+              />
+            </motion.div>
+          </div>
+
+          <div className="mt-6 text-center sm:hidden">
+            <Link to="/courses">
+              <Button className="gap-2">
+                View All Courses
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
