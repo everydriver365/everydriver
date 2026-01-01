@@ -211,13 +211,18 @@ export type Database = {
       instructors: {
         Row: {
           bio: string | null
+          booking_advance_days: number | null
+          brand_colour: string | null
           buffer_minutes: number
           car_image_url: string | null
           car_make: string | null
           car_model: string | null
           car_type: string
           created_at: string
+          custom_branding_enabled: boolean | null
           email: string | null
+          extra_info: string | null
+          facebook_url: string | null
           google_access_token: string | null
           google_calendar_id: string | null
           google_refresh_token: string | null
@@ -226,24 +231,35 @@ export type Database = {
           home_postcode: string
           hourly_rate: number | null
           id: string
+          instagram_url: string | null
           is_active: boolean
           last_calendar_sync: string | null
+          linkedin_url: string | null
           name: string
+          personal_website_url: string | null
           phone: string | null
           preferred_lesson_length: number
           profile_image_url: string | null
           radius_miles: number
+          school_skim_percentage: number | null
+          special_skills: string | null
+          twitter_url: string | null
           updated_at: string
         }
         Insert: {
           bio?: string | null
+          booking_advance_days?: number | null
+          brand_colour?: string | null
           buffer_minutes?: number
           car_image_url?: string | null
           car_make?: string | null
           car_model?: string | null
           car_type: string
           created_at?: string
+          custom_branding_enabled?: boolean | null
           email?: string | null
+          extra_info?: string | null
+          facebook_url?: string | null
           google_access_token?: string | null
           google_calendar_id?: string | null
           google_refresh_token?: string | null
@@ -252,24 +268,35 @@ export type Database = {
           home_postcode: string
           hourly_rate?: number | null
           id?: string
+          instagram_url?: string | null
           is_active?: boolean
           last_calendar_sync?: string | null
+          linkedin_url?: string | null
           name: string
+          personal_website_url?: string | null
           phone?: string | null
           preferred_lesson_length?: number
           profile_image_url?: string | null
           radius_miles?: number
+          school_skim_percentage?: number | null
+          special_skills?: string | null
+          twitter_url?: string | null
           updated_at?: string
         }
         Update: {
           bio?: string | null
+          booking_advance_days?: number | null
+          brand_colour?: string | null
           buffer_minutes?: number
           car_image_url?: string | null
           car_make?: string | null
           car_model?: string | null
           car_type?: string
           created_at?: string
+          custom_branding_enabled?: boolean | null
           email?: string | null
+          extra_info?: string | null
+          facebook_url?: string | null
           google_access_token?: string | null
           google_calendar_id?: string | null
           google_refresh_token?: string | null
@@ -278,13 +305,19 @@ export type Database = {
           home_postcode?: string
           hourly_rate?: number | null
           id?: string
+          instagram_url?: string | null
           is_active?: boolean
           last_calendar_sync?: string | null
+          linkedin_url?: string | null
           name?: string
+          personal_website_url?: string | null
           phone?: string | null
           preferred_lesson_length?: number
           profile_image_url?: string | null
           radius_miles?: number
+          school_skim_percentage?: number | null
+          special_skills?: string | null
+          twitter_url?: string | null
           updated_at?: string
         }
         Relationships: []

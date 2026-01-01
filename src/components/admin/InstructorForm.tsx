@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X, Car, User, Clock, MapPin, GraduationCap } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link } from "lucide-react";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,18 @@ const instructorSchema = z.object({
   buffer_minutes: z.coerce.number().min(0).max(60),
   preferred_lesson_length: z.coerce.number().min(30).max(420),
   google_calendar_id: z.string().optional(),
+  // New fields
+  special_skills: z.string().optional(),
+  extra_info: z.string().optional(),
+  brand_colour: z.string().optional(),
+  school_skim_percentage: z.coerce.number().min(0).max(100).optional(),
+  booking_advance_days: z.coerce.number().min(1).max(365).optional(),
+  personal_website_url: z.string().url().optional().or(z.literal("")),
+  facebook_url: z.string().url().optional().or(z.literal("")),
+  instagram_url: z.string().url().optional().or(z.literal("")),
+  twitter_url: z.string().url().optional().or(z.literal("")),
+  linkedin_url: z.string().url().optional().or(z.literal("")),
+  custom_branding_enabled: z.boolean().optional(),
 });
 
 type InstructorFormData = z.infer<typeof instructorSchema>;
@@ -65,6 +77,17 @@ interface InstructorFormProps {
     id: string; 
     profile_image_url?: string; 
     car_image_url?: string;
+    special_skills?: string;
+    extra_info?: string;
+    brand_colour?: string;
+    school_skim_percentage?: number;
+    booking_advance_days?: number;
+    personal_website_url?: string;
+    facebook_url?: string;
+    instagram_url?: string;
+    twitter_url?: string;
+    linkedin_url?: string;
+    custom_branding_enabled?: boolean;
   }>;
 }
 
@@ -99,6 +122,18 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       buffer_minutes: initialData?.buffer_minutes ?? 15,
       preferred_lesson_length: initialData?.preferred_lesson_length ?? 60,
       google_calendar_id: initialData?.google_calendar_id || "",
+      // New fields
+      special_skills: initialData?.special_skills || "",
+      extra_info: initialData?.extra_info || "",
+      brand_colour: initialData?.brand_colour || "#1e3a5f",
+      school_skim_percentage: initialData?.school_skim_percentage ?? 0,
+      booking_advance_days: initialData?.booking_advance_days ?? 28,
+      personal_website_url: initialData?.personal_website_url || "",
+      facebook_url: initialData?.facebook_url || "",
+      instagram_url: initialData?.instagram_url || "",
+      twitter_url: initialData?.twitter_url || "",
+      linkedin_url: initialData?.linkedin_url || "",
+      custom_branding_enabled: initialData?.custom_branding_enabled ?? false,
     },
   });
 
@@ -231,6 +266,18 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         google_calendar_id: data.google_calendar_id || null,
         profile_image_url: profileImageUrl,
         car_image_url: carImageUrl,
+        // New fields
+        special_skills: data.special_skills || null,
+        extra_info: data.extra_info || null,
+        brand_colour: data.brand_colour || '#1e3a5f',
+        school_skim_percentage: data.school_skim_percentage ?? 0,
+        booking_advance_days: data.booking_advance_days ?? 28,
+        personal_website_url: data.personal_website_url || null,
+        facebook_url: data.facebook_url || null,
+        instagram_url: data.instagram_url || null,
+        twitter_url: data.twitter_url || null,
+        linkedin_url: data.linkedin_url || null,
+        custom_branding_enabled: data.custom_branding_enabled ?? false,
       };
 
       let instructorId = initialData?.id;
@@ -659,24 +706,252 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           />
         </div>
 
-        {/* Bio */}
-        <FormField
-          control={form.control}
-          name="bio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Tell us about this instructor's experience and teaching style..."
-                  className="min-h-[80px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Bio & Skills */}
+        <div className="space-y-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <User className="h-4 w-4" /> Biography & Skills
+          </h3>
+          
+          <FormField
+            control={form.control}
+            name="bio"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bio</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Tell us about this instructor's experience and teaching style..."
+                    className="min-h-[80px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="special_skills"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Special Skills</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="e.g., Motorway lessons, nervous driver specialist, automatic only..."
+                    className="min-h-[60px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="extra_info"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Extra Information</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Any additional information about this instructor..."
+                    className="min-h-[60px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Branding & Web Presence */}
+        <div className="space-y-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Palette className="h-4 w-4" /> Branding & Web Presence
+          </h3>
+          
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="brand_colour"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Brand Colour</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        className="w-14 h-10 p-1 cursor-pointer"
+                        {...field}
+                      />
+                      <Input
+                        type="text"
+                        placeholder="#1e3a5f"
+                        value={field.value}
+                        onChange={field.onChange}
+                        className="flex-1"
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="custom_branding_enabled"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>Custom Branding</FormLabel>
+                    <FormDescription className="text-xs">
+                      Enable personal branding on their page
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="personal_website_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Personal Website</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="facebook_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Facebook URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://facebook.com/..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="instagram_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Instagram URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://instagram.com/..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="twitter_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Twitter/X URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://twitter.com/..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="linkedin_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>LinkedIn URL</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://linkedin.com/in/..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Booking Settings (Admin Only) */}
+        <div className="space-y-4 rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-800">
+            <Globe className="h-4 w-4" /> Booking Settings (Admin Only)
+          </h3>
+          <p className="text-xs text-amber-700">These settings are not visible to instructors</p>
+          
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="school_skim_percentage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>School Skim (%)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                      placeholder="0"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    Extra % charged to pupils (hidden from instructor)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="booking_advance_days"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Booking Advance (Days)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={365}
+                      placeholder="28"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    How far in advance bookings can be made
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         {/* Working Hours - Only show for existing instructors */}
         {initialData?.id && (
