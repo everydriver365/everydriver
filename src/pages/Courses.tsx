@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Filter, ChevronDown, Clock, PoundSterling, Navigation, Loader2, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, MapPin, Filter, ChevronDown, Clock, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
 import { isFuture, parseISO, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,6 +100,110 @@ function getMonthOptions(): { value: string; label: string }[] {
   return options;
 }
 
+// Calendar Grid View Component
+interface CalendarGridViewProps {
+  selectedMonth: string;
+  selectedDate: Date | null;
+  availableDates: Date[];
+  onSelectDate: (date: Date) => void;
+  loading: boolean;
+}
+
+function CalendarGridView({ selectedMonth, selectedDate, availableDates, onSelectDate, loading }: CalendarGridViewProps) {
+  const today = startOfDay(new Date());
+  
+  const calendarDays = useMemo(() => {
+    const [year, month] = selectedMonth.split("-").map(Number);
+    const monthStart = startOfMonth(new Date(year, month - 1));
+    const monthEnd = endOfMonth(monthStart);
+    const startDay = getDay(monthStart);
+    
+    const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    
+    const paddedDays: (Date | null)[] = Array(startDay).fill(null);
+    days.forEach(day => paddedDays.push(day));
+    
+    while (paddedDays.length % 7 !== 0) {
+      paddedDays.push(null);
+    }
+    
+    return paddedDays.map(day => ({
+      date: day,
+      isAvailable: day ? availableDates.some(d => isSameDay(d, day)) : false,
+      isPast: day ? isBefore(day, today) : false,
+    }));
+  }, [selectedMonth, availableDates, today]);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-7 gap-1">
+        {Array.from({ length: 35 }).map((_, i) => (
+          <div key={i} className="h-10 w-full animate-pulse rounded-md bg-muted" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border bg-background p-4">
+      {/* Weekday headers */}
+      <div className="mb-2 grid grid-cols-7 gap-1">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
+          <div key={day} className="text-center text-xs font-medium text-muted-foreground py-1">
+            {day}
+          </div>
+        ))}
+      </div>
+      
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 gap-1">
+        {calendarDays.map((day, index) => {
+          if (!day.date) {
+            return <div key={`empty-${index}`} className="h-10" />;
+          }
+          
+          const isSelected = selectedDate && isSameDay(day.date, selectedDate);
+          const isToday = isSameDay(day.date, today);
+          
+          return (
+            <button
+              key={day.date.toISOString()}
+              onClick={() => day.isAvailable && onSelectDate(day.date!)}
+              disabled={!day.isAvailable || day.isPast}
+              className={`relative flex h-10 items-center justify-center rounded-md text-sm font-medium transition-all ${
+                isSelected
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : day.isAvailable
+                    ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+                    : day.isPast
+                      ? "text-muted-foreground/40 cursor-not-allowed"
+                      : "text-muted-foreground hover:bg-muted/50 cursor-not-allowed"
+              } ${isToday ? "ring-2 ring-primary/30" : ""}`}
+            >
+              {format(day.date, "d")}
+              {day.isAvailable && !isSelected && (
+                <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-emerald-500" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+      
+      {/* Legend */}
+      <div className="mt-4 flex items-center justify-center gap-6 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded bg-emerald-100 dark:bg-emerald-900/30" />
+          <span>Available</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded bg-primary" />
+          <span>Selected</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Courses() {
   const [postcode, setPostcode] = useState("");
   const [radius, setRadius] = useState("10");
@@ -114,6 +218,7 @@ export default function Courses() {
   // Date selection state
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [viewMode, setViewMode] = useState<"pills" | "calendar">("pills");
 
   // Data from Supabase
   const [instructors, setInstructors] = useState<Instructor[]>([]);
@@ -489,98 +594,111 @@ export default function Courses() {
       <section className="border-b bg-card py-6">
         <div className="container">
           <div className="mx-auto max-w-4xl">
-            {/* Month Selector */}
-            <div className="mb-4 flex items-center gap-4">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
-              <span className="text-sm font-medium">Select a date:</span>
-              <Select value={selectedMonth} onValueChange={(value) => {
-                setSelectedMonth(value);
-                setSelectedDate(null);
-              }}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Month Selector & View Toggle */}
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm font-medium">Select a date:</span>
+                <Select value={selectedMonth} onValueChange={(value) => {
+                  setSelectedMonth(value);
+                  setSelectedDate(null);
+                }}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {monthOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+                <button
+                  onClick={() => setViewMode("pills")}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    viewMode === "pills" 
+                      ? "bg-background text-foreground shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <List className="h-4 w-4" />
+                  <span className="hidden sm:inline">Pills</span>
+                </button>
+                <button
+                  onClick={() => setViewMode("calendar")}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    viewMode === "calendar" 
+                      ? "bg-background text-foreground shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  <span className="hidden sm:inline">Calendar</span>
+                </button>
+              </div>
             </div>
 
-            {/* Day Pills */}
-            {loading ? (
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-16 w-16 animate-pulse rounded-xl bg-muted" />
-                ))}
-              </div>
-            ) : availableDatesInMonth.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {visibleDays.map((date) => {
-                  const isSelected = selectedDate && isSameDay(date, selectedDate);
-                  return (
-                    <button
-                      key={date.toISOString()}
-                      onClick={() => setSelectedDate(date)}
-                      className={`flex flex-col items-center justify-center rounded-xl px-4 py-2 transition-all ${
-                        isSelected
-                          ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                          : "bg-secondary hover:bg-secondary/80 text-foreground"
-                      }`}
-                    >
-                      <span className="text-xs font-medium uppercase">
-                        {format(date, "EEE")}
-                      </span>
-                      <span className="text-xl font-bold">{format(date, "d")}</span>
-                      <span className="text-xs">{format(date, "MMM")}</span>
-                    </button>
-                  );
-                })}
-                {availableDatesInMonth.length > 7 && (
-                  <button
-                    onClick={() => setShowFilters(true)}
-                    className="flex flex-col items-center justify-center rounded-xl bg-muted px-4 py-2 text-muted-foreground hover:bg-muted/80"
-                  >
-                    <span className="text-xs">+{availableDatesInMonth.length - 7}</span>
-                    <span className="text-sm font-medium">more</span>
-                  </button>
+            {/* Day Pills View */}
+            {viewMode === "pills" && (
+              <>
+                {loading ? (
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="h-16 w-16 animate-pulse rounded-xl bg-muted" />
+                    ))}
+                  </div>
+                ) : availableDatesInMonth.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {visibleDays.map((date) => {
+                      const isSelected = selectedDate && isSameDay(date, selectedDate);
+                      return (
+                        <button
+                          key={date.toISOString()}
+                          onClick={() => setSelectedDate(date)}
+                          className={`flex flex-col items-center justify-center rounded-xl px-4 py-2 transition-all ${
+                            isSelected
+                              ? "bg-primary text-primary-foreground shadow-lg scale-105"
+                              : "bg-secondary hover:bg-secondary/80 text-foreground"
+                          }`}
+                        >
+                          <span className="text-xs font-medium uppercase">
+                            {format(date, "EEE")}
+                          </span>
+                          <span className="text-xl font-bold">{format(date, "d")}</span>
+                          <span className="text-xs">{format(date, "MMM")}</span>
+                        </button>
+                      );
+                    })}
+                    {availableDatesInMonth.length > 7 && (
+                      <button
+                        onClick={() => setViewMode("calendar")}
+                        className="flex flex-col items-center justify-center rounded-xl bg-muted px-4 py-2 text-muted-foreground hover:bg-muted/80"
+                      >
+                        <span className="text-xs">+{availableDatesInMonth.length - 7}</span>
+                        <span className="text-sm font-medium">more</span>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No available dates in this month</p>
                 )}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No available dates in this month</p>
+              </>
             )}
 
-            {/* Show all dates in month when expanded */}
-            {availableDatesInMonth.length > 7 && (
-              <details className="mt-4">
-                <summary className="cursor-pointer text-sm text-primary hover:underline">
-                  View all {availableDatesInMonth.length} available dates
-                </summary>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {availableDatesInMonth.map((date) => {
-                    const isSelected = selectedDate && isSameDay(date, selectedDate);
-                    return (
-                      <button
-                        key={date.toISOString()}
-                        onClick={() => setSelectedDate(date)}
-                        className={`flex flex-col items-center justify-center rounded-xl px-3 py-1.5 transition-all ${
-                          isSelected
-                            ? "bg-primary text-primary-foreground shadow-lg"
-                            : "bg-secondary hover:bg-secondary/80 text-foreground"
-                        }`}
-                      >
-                        <span className="text-[10px] font-medium uppercase">
-                          {format(date, "EEE")}
-                        </span>
-                        <span className="text-lg font-bold">{format(date, "d")}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </details>
+            {/* Calendar Grid View */}
+            {viewMode === "calendar" && (
+              <CalendarGridView
+                selectedMonth={selectedMonth}
+                selectedDate={selectedDate}
+                availableDates={availableDatesInMonth}
+                onSelectDate={setSelectedDate}
+                loading={loading}
+              />
             )}
           </div>
         </div>
@@ -590,7 +708,7 @@ export default function Courses() {
       <section className="container py-8">
         {!selectedDate ? (
           <div className="py-16 text-center">
-            <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold">Select a date to see available courses</h2>
             <p className="mt-2 text-muted-foreground">
               Choose a date above to view instructors available on that day
