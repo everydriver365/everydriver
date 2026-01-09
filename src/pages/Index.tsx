@@ -1187,9 +1187,17 @@ export default function Index() {
               >
                 <p className="mb-4 text-muted-foreground">"{testimonial.content}"</p>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                    {testimonial.avatar_initials || testimonial.name.charAt(0)}
-                  </div>
+                  {testimonial.photo_url ? (
+                    <img 
+                      src={testimonial.photo_url} 
+                      alt={testimonial.name}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                      {testimonial.avatar_initials || testimonial.name.charAt(0)}
+                    </div>
+                  )}
                   <div>
                     <div className="font-medium">{testimonial.name}</div>
                     <div className="text-sm text-muted-foreground">{testimonial.role}</div>
