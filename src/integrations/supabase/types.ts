@@ -419,6 +419,7 @@ export type Database = {
           last_calendar_sync: string | null
           linkedin_url: string | null
           name: string
+          payment_qr_url: string | null
           personal_website_url: string | null
           phone: string | null
           preferred_lesson_length: number
@@ -465,6 +466,7 @@ export type Database = {
           last_calendar_sync?: string | null
           linkedin_url?: string | null
           name: string
+          payment_qr_url?: string | null
           personal_website_url?: string | null
           phone?: string | null
           preferred_lesson_length?: number
@@ -511,6 +513,7 @@ export type Database = {
           last_calendar_sync?: string | null
           linkedin_url?: string | null
           name?: string
+          payment_qr_url?: string | null
           personal_website_url?: string | null
           phone?: string | null
           preferred_lesson_length?: number
