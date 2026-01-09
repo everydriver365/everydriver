@@ -86,21 +86,26 @@ export function BespokeEnquiryForm() {
   const onSubmit = async (data: BespokeEnquiryFormData) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("course_enquiries").insert({
-        name: data.name,
-        address: data.address,
-        postcode: data.postcode.toUpperCase(),
-        course_type: data.course_type,
-        requested_hours: data.requested_hours,
-        preferred_timing: data.preferred_timing,
-        additional_notes: data.additional_notes || null,
-        status: "pending",
+      // Use the edge function to create enquiry and notify instructors
+      const { data: result, error } = await supabase.functions.invoke("create-enquiry", {
+        body: {
+          name: data.name,
+          address: data.address,
+          postcode: data.postcode.toUpperCase(),
+          courseType: data.course_type,
+          requestedHours: data.requested_hours,
+          preferredTiming: data.preferred_timing,
+          additionalNotes: data.additional_notes || null,
+        },
       });
 
       if (error) throw error;
 
       setIsSubmitted(true);
       toast.success("Your bespoke course request has been submitted!");
+      if (result?.notified > 0) {
+        toast.info(`${result.notified} instructors have been notified`);
+      }
       reset();
     } catch (error) {
       console.error("Error submitting enquiry:", error);

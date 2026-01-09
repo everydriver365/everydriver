@@ -388,6 +388,12 @@ export default function BookingConfirmation() {
               transition={{ delay: 0.6 }}
               className="space-y-3"
             >
+              <Button className="w-full gap-2" asChild>
+                <Link to={`/pupil?id=${pupil.id}`}>
+                  <ArrowRight className="h-4 w-4" />
+                  Go to My Dashboard
+                </Link>
+              </Button>
               <Button variant="outline" className="w-full gap-2" asChild>
                 <Link to="/theory">
                   <ArrowRight className="h-4 w-4" />
