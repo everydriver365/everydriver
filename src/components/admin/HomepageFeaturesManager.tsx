@@ -43,6 +43,7 @@ interface HomepageFeature {
   icon_name: string;
   display_order: number;
   is_active: boolean;
+  detailed_content: string | null;
 }
 
 // Popular icon options for driving school context
@@ -106,6 +107,7 @@ export function HomepageFeaturesManager() {
       icon_name: "Star",
       display_order: maxOrder + 1,
       is_active: true,
+      detailed_content: null,
     });
     setDialogOpen(true);
   };
@@ -130,6 +132,7 @@ export function HomepageFeaturesManager() {
             icon_name: editingFeature.icon_name,
             display_order: editingFeature.display_order,
             is_active: editingFeature.is_active,
+            detailed_content: editingFeature.detailed_content,
           })
           .eq("id", editingFeature.id);
 
@@ -145,6 +148,7 @@ export function HomepageFeaturesManager() {
             icon_name: editingFeature.icon_name,
             display_order: editingFeature.display_order,
             is_active: editingFeature.is_active,
+            detailed_content: editingFeature.detailed_content,
           });
 
         if (error) throw error;
@@ -380,7 +384,7 @@ export function HomepageFeaturesManager() {
 
               {/* Description */}
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label>Short Description</Label>
                 <Textarea
                   value={editingFeature.description}
                   onChange={(e) =>
@@ -389,8 +393,32 @@ export function HomepageFeaturesManager() {
                       description: e.target.value,
                     })
                   }
-                  placeholder="Brief description of this feature..."
-                  rows={3}
+                  placeholder="Brief description shown on the card..."
+                  rows={2}
+                />
+              </div>
+
+              {/* Detailed Content for Modal */}
+              <div className="space-y-2">
+                <Label>Detailed Content (Modal Popup)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Extended information shown when users click "Tap for more info". Use blank lines to separate paragraphs.
+                </p>
+                <Textarea
+                  value={editingFeature.detailed_content || ""}
+                  onChange={(e) =>
+                    setEditingFeature({
+                      ...editingFeature,
+                      detailed_content: e.target.value || null,
+                    })
+                  }
+                  placeholder="Enter detailed paragraphs about this feature...
+
+Separate paragraphs with blank lines.
+
+This content will appear in a modal popup when users click 'Tap for more info'."
+                  rows={6}
+                  className="font-mono text-sm"
                 />
               </div>
 

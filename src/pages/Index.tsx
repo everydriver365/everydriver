@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
+import { FeatureDetailModal } from "@/components/FeatureDetailModal";
+import { FeatureData } from "@/hooks/useHomepageFeatures";
 import {
   Accordion,
   AccordionContent,
@@ -50,12 +52,20 @@ import logoCardPayments from "@/assets/logo-card-payments.png";
 
 export default function Index() {
   const [postcode, setPostcode] = useState("");
+  const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
+  const [featureModalOpen, setFeatureModalOpen] = useState(false);
   const { getImage, getAlt } = useSiteImages();
   const { courses: featuredCourses, loading: featuredLoading } = useFeaturedCourses(3);
   const { news: dvsaNews, loading: newsLoading } = useDVSANews();
   const { features } = useHomepageFeatures();
   const { hero } = useHomepageHero();
   const { featuredTestimonials, testimonials } = useHomepageTestimonials();
+
+  // Helper to open feature modal
+  const openFeatureModal = (feature: FeatureData) => {
+    setSelectedFeature(feature);
+    setFeatureModalOpen(true);
+  };
   // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
   const testimonialJames = getImage("testimonial_james", testimonialJamesFallback);
@@ -483,182 +493,77 @@ export default function Index() {
           </motion.div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* FREE Re-Test */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
-            >
-              <div className="relative h-40 overflow-hidden">
-                <img
-                  src={featureRetest}
-                  alt="FREE Re-Test"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-bold text-primary">FREE Re-Test if you fail</h3>
-                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Every instructor is DVSA approved and background checked for your safety.
-                </p>
-                <button className="mt-3 text-sm text-primary hover:underline">
-                  Tap for more info
-                </button>
-              </div>
-            </motion.div>
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <motion.div
+                  key={feature.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+                  viewport={{ once: true }}
+                  className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+                  onClick={() => openFeatureModal(feature)}
+                >
+                  <div className="relative h-40 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                    <IconComponent className="h-16 w-16 text-primary/40 transition-transform duration-300 group-hover:scale-110" />
+                  </div>
+                  <div className="p-5">
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="font-bold text-primary">{feature.title}</h3>
+                      <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {feature.description}
+                    </p>
+                    <button className="mt-3 text-sm text-primary hover:underline">
+                      Tap for more info
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
 
-            {/* Live Availability */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
-            >
-              <div className="relative h-40 overflow-hidden">
-                <img
-                  src={featureAvailability}
-                  alt="Live Availability"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-bold text-primary">Live Availability</h3>
-                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Skip the waiting lists. Find instructors with immediate availability in your area.
-                </p>
-                <button className="mt-3 text-sm text-primary hover:underline">
-                  Tap for more info
-                </button>
-              </div>
-            </motion.div>
-
-            {/* FREE Theory Test */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
-            >
-              <div className="relative h-40 overflow-hidden">
-                <img
-                  src={featureTheory}
-                  alt="FREE Theory Test"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-bold text-primary">FREE Theory Test</h3>
-                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Our intensive courses are designed to get you test-ready in record time.
-                </p>
-                <button className="mt-3 text-sm text-primary hover:underline">
-                  Tap for more info
-                </button>
-              </div>
-            </motion.div>
-
-            {/* FREE Theory Test Pro */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.25 }}
-              viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
-            >
-              <div className="relative h-40 overflow-hidden">
-                <img
-                  src={featureTheoryProImg}
-                  alt="FREE Theory Test Pro"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-bold text-primary">FREE Theory Test Pro</h3>
-                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  We cover the cost of your second test if you don't pass the first time.
-                </p>
-                <button className="mt-3 text-sm text-primary hover:underline">
-                  Tap for more info
-                </button>
-              </div>
-            </motion.div>
-
-            {/* FREE Cancellation Finder */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
-            >
-              <div className="relative h-40 overflow-hidden">
-                <img
-                  src={featureCancellation}
-                  alt="FREE Cancellation Finder"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-bold text-primary">FREE Cancellation Finder</h3>
-                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Our dedicated team is here to help you every step of the way, 7 days a week.
-                </p>
-                <button className="mt-3 text-sm text-primary hover:underline">
-                  Tap for more info
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Flexible Payments */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.35 }}
-              viewport={{ once: true }}
-              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
-            >
-              <div className="relative h-40 overflow-hidden">
-                <img
-                  src={featurePayments}
-                  alt="Flexible Payments"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-bold text-primary">Flexible Payments</h3>
-                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Lessons that fit around your life. Weekends, evenings, and intensive blocks available.
-                </p>
-                <button className="mt-3 text-sm text-primary hover:underline">
-                  Tap for more info
-                </button>
-              </div>
-            </motion.div>
+            {/* Fallback static cards if no CMS features loaded */}
+            {features.length === 0 && (
+              <>
+                {/* FREE Re-Test */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  viewport={{ once: true }}
+                  className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
+                >
+                  <div className="relative h-40 overflow-hidden">
+                    <img
+                      src={featureRetest}
+                      alt="FREE Re-Test"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="font-bold text-primary">FREE Re-Test if you fail</h3>
+                      <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Every instructor is DVSA approved and background checked for your safety.
+                    </p>
+                  </div>
+                </motion.div>
+              </>
+            )}
           </div>
         </div>
       </section>
+
+      {/* Feature Detail Modal */}
+      <FeatureDetailModal
+        feature={selectedFeature}
+        open={featureModalOpen}
+        onClose={() => setFeatureModalOpen(false)}
+      />
 
       {/* Featured Courses Section */}
       <section className="bg-background py-16">
