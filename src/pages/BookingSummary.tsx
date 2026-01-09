@@ -294,33 +294,81 @@ export default function BookingSummary() {
 
   return (
     <MainLayout>
-      {/* Hero Section */}
-      <div className="relative h-64 md:h-80 overflow-hidden">
-        <img
-          src={courseImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&h=400&fit=crop"}
-          alt={courseName}
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-        
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 gap-2 text-white hover:bg-white/20"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
+      {/* Hero Section - Compact Design */}
+      <div className="bg-gradient-to-b from-secondary/50 to-background">
+        <div className="container py-6">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="mb-4 gap-2 -ml-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to courses
+          </Button>
 
-        {/* Course Title Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-          <div className="container">
-            <Badge className="mb-2 bg-primary text-primary-foreground">
-              {instructor.car_type}
-            </Badge>
-            <h1 className="text-2xl md:text-4xl font-bold text-white">{courseName}</h1>
-            <p className="mt-2 text-white/80">with {instructor.name}</p>
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Hero Image */}
+            <div className="relative w-full md:w-80 h-48 md:h-52 shrink-0 rounded-xl overflow-hidden shadow-lg">
+              <img
+                src={courseImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&h=400&fit=crop"}
+                alt={courseName}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              <Badge className="absolute bottom-3 left-3 bg-primary text-primary-foreground">
+                {instructor.car_type}
+              </Badge>
+            </div>
+
+            {/* Course Info */}
+            <div className="flex-1 flex flex-col justify-center">
+              <h1 className="text-2xl md:text-3xl font-bold">{courseName}</h1>
+              
+              <div className="flex items-center gap-3 mt-3">
+                <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
+                  <AvatarImage src={instructor.profile_image_url || undefined} />
+                  <AvatarFallback 
+                    style={{ backgroundColor: brandColour, color: "white" }}
+                  >
+                    {instructor.name.split(" ").map((n) => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-medium">{instructor.name}</div>
+                  <div className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                    <span>4.9</span>
+                    <span className="text-muted-foreground/60">• {reviews.length} reviews</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" />
+                  <span>{hours} hours</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4" />
+                  <span>{locationName || instructor.home_postcode}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Car className="h-4 w-4" />
+                  <span>{instructor.car_make} {instructor.car_model}</span>
+                </div>
+              </div>
+
+              {/* Price & Payment */}
+              <div className="flex items-center gap-4 mt-4">
+                <span className="text-2xl font-bold">£{totalPrice}</span>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="rounded bg-[#ffb3c7] px-1.5 py-0.5 font-semibold text-black">Klarna.</span>
+                  <span className="rounded bg-[#b2fce4] px-1.5 py-0.5 font-semibold text-black">clearpay</span>
+                  <span>from £{Math.round(totalPrice / 4)}/mo</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
