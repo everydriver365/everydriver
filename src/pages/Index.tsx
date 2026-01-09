@@ -159,8 +159,9 @@ export default function Index() {
                   <span className="ml-2 font-semibold text-foreground">4.9</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded bg-[#ffb3c7] px-2 py-1 text-xs font-bold text-black">Klarna.</span>
-                  <span className="rounded bg-[#b2fce4] px-2 py-1 text-xs font-bold text-black">clearpay</span>
+                  <span className="rounded-md bg-[#ffb3c7] px-2 py-1 text-xs font-bold text-black">Klarna.</span>
+                  <span className="rounded-md bg-[#b2fce4] px-2 py-1 text-xs font-bold text-black">clearpay</span>
+                  <span className="rounded-md bg-[#ffd700] px-2 py-1 text-xs font-bold text-black">iDeal</span>
                   <span className="text-sm text-muted-foreground">0% Finance</span>
                 </div>
               </div>
@@ -1293,21 +1294,21 @@ export default function Index() {
             <img 
               src={logoKlarna} 
               alt="Klarna" 
-              className="h-7 object-contain"
+              className="h-7 object-contain rounded-md"
             />
 
             {/* Clearpay */}
             <img 
               src={logoClearpay} 
               alt="Clearpay" 
-              className="h-7 object-contain"
+              className="h-7 object-contain rounded-md"
             />
 
             {/* iDeal 4 Finance */}
             <img 
               src={logoIdeal4Finance} 
               alt="iDeal 4 Finance" 
-              className="h-7 object-contain"
+              className="h-7 object-contain rounded-md"
             />
           </div>
         </div>

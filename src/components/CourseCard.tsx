@@ -106,11 +106,14 @@ export function CourseCard({ course }: CourseCardProps) {
               </div>
 
               <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                <span className="rounded bg-[#b2fce4] px-1 py-0.5 font-semibold text-[#000]">
+                <span className="rounded-md bg-[#b2fce4] px-1 py-0.5 font-semibold text-[#000]">
                   clearpay
                 </span>
-                <span className="rounded bg-[#ffb3c7] px-1 py-0.5 font-semibold text-[#000]">
+                <span className="rounded-md bg-[#ffb3c7] px-1 py-0.5 font-semibold text-[#000]">
                   Klarna.
+                </span>
+                <span className="rounded-md bg-[#ffd700] px-1 py-0.5 font-semibold text-[#000]">
+                  iDeal
                 </span>
               </div>
             </div>
