@@ -8,6 +8,7 @@ import Courses from "./pages/Courses";
 import BookingSummary from "./pages/BookingSummary";
 import PupilPortal from "./pages/PupilPortal";
 import InstructorPortal from "./pages/InstructorPortal";
+import InstructorPupils from "./pages/InstructorPupils";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/book/:instructorId" element={<BookingSummary />} />
           <Route path="/pupil" element={<PupilPortal />} />
           <Route path="/instructor" element={<InstructorPortal />} />
+          <Route path="/instructor/pupils" element={<InstructorPupils />} />
           <Route path="/parent" element={<ParentPortal />} />
           <Route path="/admin" element={<AdminPortal />} />
           <Route path="/theory" element={<Theory />} />
