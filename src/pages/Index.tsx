@@ -1041,7 +1041,7 @@ export default function Index() {
         </div>
 
         <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, index) => (
+          {features.slice(0, 4).map((feature, index) => (
             <motion.div
               key={feature.title}
               initial={{ opacity: 0, y: 20 }}
