@@ -389,6 +389,7 @@ export type Database = {
           allowed_lesson_lengths: number[] | null
           available_from: string | null
           bio: string | null
+          bonus_earned: number | null
           booking_advance_days: number | null
           brand_colour: string | null
           buffer_minutes: number
@@ -436,6 +437,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           available_from?: string | null
           bio?: string | null
+          bonus_earned?: number | null
           booking_advance_days?: number | null
           brand_colour?: string | null
           buffer_minutes?: number
@@ -483,6 +485,7 @@ export type Database = {
           allowed_lesson_lengths?: number[] | null
           available_from?: string | null
           bio?: string | null
+          bonus_earned?: number | null
           booking_advance_days?: number | null
           brand_colour?: string | null
           buffer_minutes?: number
