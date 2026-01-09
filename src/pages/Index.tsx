@@ -1042,64 +1042,72 @@ export default function Index() {
 
         <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Pupil Portal */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0 }}
-            viewport={{ once: true }}
-            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
-          >
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-              <User className="h-6 w-6" />
-            </div>
-            <h3 className="mb-2 font-semibold">Pupil Portal</h3>
-            <p className="text-sm text-muted-foreground">Track lessons, view progress, and manage payments all in one place.</p>
-          </motion.div>
+          <Link to="/pupil">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0 }}
+              viewport={{ once: true }}
+              className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
+            >
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+                <User className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 font-semibold">Pupil Portal</h3>
+              <p className="text-sm text-muted-foreground">Track lessons, view progress, and manage payments all in one place.</p>
+            </motion.div>
+          </Link>
 
           {/* Instructor Portal */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            viewport={{ once: true }}
-            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
-          >
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-              <Car className="h-6 w-6" />
-            </div>
-            <h3 className="mb-2 font-semibold">Instructor Portal</h3>
-            <p className="text-sm text-muted-foreground">Manage your schedule, pupils, and earnings with powerful tools.</p>
-          </motion.div>
+          <Link to="/instructor">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
+            >
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+                <Car className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 font-semibold">Instructor Portal</h3>
+              <p className="text-sm text-muted-foreground">Manage your schedule, pupils, and earnings with powerful tools.</p>
+            </motion.div>
+          </Link>
 
           {/* Parent Portal */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
-          >
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-              <Users className="h-6 w-6" />
-            </div>
-            <h3 className="mb-2 font-semibold">Parent Portal</h3>
-            <p className="text-sm text-muted-foreground">Stay informed with lesson updates, progress reports, and payment visibility.</p>
-          </motion.div>
+          <Link to="/parent">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
+            >
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+                <Users className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 font-semibold">Parent Portal</h3>
+              <p className="text-sm text-muted-foreground">Stay informed with lesson updates, progress reports, and payment visibility.</p>
+            </motion.div>
+          </Link>
 
           {/* Admin Portal */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            viewport={{ once: true }}
-            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
-          >
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
-            <h3 className="mb-2 font-semibold">Admin Portal</h3>
-            <p className="text-sm text-muted-foreground">Full control over instructors, courses, enquiries, and site content.</p>
-          </motion.div>
+          <Link to="/admin">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
+            >
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <h3 className="mb-2 font-semibold">Admin Portal</h3>
+              <p className="text-sm text-muted-foreground">Full control over instructors, courses, enquiries, and site content.</p>
+            </motion.div>
+          </Link>
         </div>
       </section>
 
