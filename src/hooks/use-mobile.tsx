@@ -13,12 +13,20 @@ export function useIsMobile() {
 
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+
+    const update = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+
+    // Some embedded/preview environments don't reliably fire matchMedia events,
+    // so we also listen to resize to ensure the layout switches immediately.
+    mql.addEventListener?.("change", update);
+    window.addEventListener("resize", update);
+
+    update();
+
+    return () => {
+      mql.removeEventListener?.("change", update);
+      window.removeEventListener("resize", update);
     };
-    mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
   }, []);
 
   return isMobile;
