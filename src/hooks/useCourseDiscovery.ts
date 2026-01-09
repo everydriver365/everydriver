@@ -294,6 +294,14 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
     }
   };
 
+  const clearSearch = () => {
+    setPostcode("");
+    setUserLocation(null);
+    setSearchedPostcode(null);
+    setSearchedAreaName(null);
+    setSortBy("soonest");
+  };
+
   const availableDatesInMonth = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
     const monthStart = startOfMonth(new Date(year, month - 1));
@@ -481,5 +489,6 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
     handleSearch,
     searchedPostcode,
     searchedAreaName,
+    clearSearch,
   };
 }
