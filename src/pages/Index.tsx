@@ -118,110 +118,157 @@ export default function Index() {
 
   return (
     <MainLayout>
-      {/* Hero Section - Soft Gradient White */}
-      <section className="relative min-h-[650px] overflow-hidden bg-gradient-to-b from-amber-50/50 via-white to-white py-20">
-        {/* Subtle dot pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.4]" 
-          style={{ 
-            backgroundImage: `radial-gradient(circle, hsl(var(--primary) / 0.15) 1px, transparent 1px)`,
-            backgroundSize: '24px 24px'
-          }} 
-        />
-        {/* Decorative gradient orbs */}
-        <div className="absolute -left-32 top-0 h-64 w-64 rounded-full bg-amber-200/30 blur-3xl" />
-        <div className="absolute -right-32 top-32 h-80 w-80 rounded-full bg-amber-100/40 blur-3xl" />
-        
+      {/* Hero Section - Matching Reference Design */}
+      <section className="relative min-h-[600px] overflow-hidden bg-white py-12 lg:py-20">
         <div className="container relative">
-          <div className="mx-auto max-w-4xl text-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Left Content */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
+              className="max-w-xl"
             >
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-                <Award className="h-4 w-4" />
-                Rated #1 Driving School in UK
+              {/* Free Re-test Badge */}
+              <div className="mb-6">
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-medium text-emerald-700">
+                  Free Re-test
+                </span>
               </div>
               
-              <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground lg:text-6xl">
-                Your License to
-                <span className="relative mx-2 inline-block">
-                  <span className="relative z-10 text-amber-600">Freedom</span>
-                  <div className="absolute -inset-1 -rotate-1 rounded bg-amber-100" />
-                </span>
-                Awaits
+              {/* Main Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]">
+                <span className="text-primary">Your Driving</span>
+                <br />
+                <span className="text-primary">Success </span>
+                <span className="text-emerald-500">Story</span>
+                <br />
+                <span className="text-primary">Starts Here</span>
               </h1>
               
-              <p className="mx-auto mb-10 max-w-2xl text-xl text-muted-foreground">
-                Join thousands of confident drivers who started their journey with us. Expert instructors, flexible schedules, guaranteed results.
+              {/* Subtext */}
+              <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
+                Join thousands who passed with Every Driver. Intensive courses designed to get you on the road faster.
               </p>
               
-              <form onSubmit={handleSearch} className="mx-auto mb-12 flex max-w-xl flex-col items-center gap-4 sm:flex-row">
-                <div className="relative w-full flex-1">
+              {/* Search Form */}
+              <form onSubmit={handleSearch} className="mt-8 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
                   <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder="Enter your postcode..."
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value)}
-                    className="h-14 rounded-xl border-border bg-white pl-12 shadow-sm"
+                    className="h-14 rounded-xl border-2 border-border bg-white pl-12 text-base"
                   />
                 </div>
-                <Button type="submit" size="lg" className="h-14 w-full rounded-xl bg-amber-500 px-8 hover:bg-amber-600 sm:w-auto">
+                <Button type="submit" size="lg" className="h-14 rounded-xl px-8 text-base font-semibold">
                   Find Courses
                 </Button>
               </form>
-            </motion.div>
-            
-            {/* Floating Feature Cards */}
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-8 grid gap-6 sm:grid-cols-3"
-            >
-              {[
-                { icon: Clock, title: "Flexible Hours", desc: "Morning, evening & weekend slots" },
-                { icon: ShieldCheck, title: "Pass Guarantee", desc: "Free re-test if you don't pass" },
-                { icon: Users, title: "Expert Instructors", desc: "500+ certified professionals" },
-              ].map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
-                  className="rounded-2xl border border-border bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100">
-                    <item.icon className="h-6 w-6 text-amber-600" />
-                  </div>
-                  <h3 className="mb-1 font-semibold text-foreground">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.desc}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-            
-            {/* Avatars & Rating */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="mt-12 flex items-center justify-center gap-4"
-            >
-              <div className="flex -space-x-3">
-                {[testimonialSarah, testimonialJames, testimonialEmma].map((img, i) => (
-                  <img key={i} src={img} alt="" className="h-12 w-12 rounded-full border-3 border-white object-cover shadow-sm" />
-                ))}
-              </div>
-              <div className="text-left">
+              
+              {/* Social Proof Row */}
+              <div className="mt-8 flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
                   ))}
+                  <span className="ml-2 font-semibold text-foreground">4.9</span>
                 </div>
-                <p className="text-sm text-muted-foreground">15,000+ happy students</p>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-[#ffb3c7] px-2 py-1 text-xs font-bold text-black">Klarna.</span>
+                  <span className="rounded bg-[#b2fce4] px-2 py-1 text-xs font-bold text-black">clearpay</span>
+                  <span className="text-sm text-muted-foreground">0% Finance</span>
+                </div>
               </div>
+            </motion.div>
+            
+            {/* Right Content - Photo Collage */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative h-[400px] lg:h-[500px] hidden md:block"
+            >
+              {/* Background gradient blob */}
+              <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-emerald-200 to-cyan-200 rounded-[2rem] -rotate-6" />
+              
+              {/* Sarah - Top Left Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20, rotate: -6 }}
+                animate={{ opacity: 1, y: 0, rotate: -6 }}
+                transition={{ delay: 0.3 }}
+                className="absolute top-4 left-4 lg:left-0 w-44 lg:w-52 rounded-2xl overflow-hidden shadow-2xl bg-white"
+              >
+                <div className="relative aspect-[3/4]">
+                  <img 
+                    src={testimonialSarah} 
+                    alt="Sarah" 
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                    <div className="text-white font-semibold">Sarah</div>
+                    <div className="text-white/80 text-sm">Passed 1st time!</div>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* James - Top Right Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20, rotate: 6 }}
+                animate={{ opacity: 1, y: 0, rotate: 6 }}
+                transition={{ delay: 0.4 }}
+                className="absolute top-8 right-0 lg:right-4 w-36 lg:w-44 rounded-2xl overflow-hidden shadow-2xl bg-white"
+              >
+                <div className="relative aspect-[3/4]">
+                  <img 
+                    src={testimonialJames} 
+                    alt="James" 
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                    <div className="text-white font-semibold">James</div>
+                    <div className="text-white/80 text-sm">Intensive Course</div>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* Emma - Bottom Center Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20, rotate: 0 }}
+                animate={{ opacity: 1, y: 0, rotate: 0 }}
+                transition={{ delay: 0.5 }}
+                className="absolute bottom-4 left-1/4 lg:left-20 w-44 lg:w-52 rounded-2xl overflow-hidden shadow-2xl bg-white"
+              >
+                <div className="relative aspect-[3/4]">
+                  <img 
+                    src={testimonialEmma} 
+                    alt="Emma" 
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                    <div className="text-white font-semibold">Emma</div>
+                    <div className="text-white/80 text-sm">Intensive Course</div>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {/* 10k+ Learners Badge */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6 }}
+                className="absolute bottom-16 right-0 lg:right-8 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 fill-current" />
+                  <div>
+                    <div className="font-bold">10k+ Learners</div>
+                    <div className="text-sm opacity-80">And counting!</div>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
