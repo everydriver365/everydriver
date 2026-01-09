@@ -37,10 +37,10 @@ export default function InstructorPay() {
 
   const fetchData = async () => {
     try {
-      // Fetch instructor hourly rate, payment QR, and bonus
+      // Fetch instructor hourly rate and payment QR
       const { data: instructor } = await supabase
         .from("instructors")
-        .select("hourly_rate, payment_qr_url, bonus_earned")
+        .select("hourly_rate, payment_qr_url")
         .eq("id", MOCK_INSTRUCTOR_ID)
         .single();
 
@@ -49,7 +49,8 @@ export default function InstructorPay() {
         setPaymentQrUrl(instructor.payment_qr_url);
       }
 
-      const bonusAmount = (instructor as any)?.bonus_earned || 0;
+      // Bonus earned - will be 0 until database column is added
+      const bonusAmount = 0;
 
       const now = new Date();
       const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
