@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, addDays, startOfDay, startOfMonth, isSameDay, isAfter, isBefore, parse } from "date-fns";
-import { Calendar, Clock, X } from "lucide-react";
+import { Calendar, Clock, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -414,6 +414,19 @@ export function LessonScheduler({
                 backgroundColor: "hsl(142 76% 90%)",
                 color: "hsl(142 76% 25%)",
                 fontWeight: "600",
+              },
+            }}
+            components={{
+              DayContent: ({ date }) => {
+                const isBooked = selectedSlots.some((s) => isSameDay(s.date, date));
+                return (
+                  <div className="relative flex items-center justify-center w-full h-full">
+                    <span>{date.getDate()}</span>
+                    {isBooked && (
+                      <Check className="absolute bottom-0 right-0 h-3 w-3 text-white" strokeWidth={3} />
+                    )}
+                  </div>
+                );
               },
             }}
             className={cn(
