@@ -449,10 +449,11 @@ export default function BookingSummary() {
                 {template?.explainer_video_url && (
                   <Card className="overflow-hidden">
                     <div className="relative aspect-video bg-muted">
-                      <iframe
+                      <video
                         src={template.explainer_video_url}
-                        className="h-full w-full"
-                        allowFullScreen
+                        className="h-full w-full object-cover"
+                        controls
+                        poster=""
                       />
                     </div>
                     <CardContent className="p-4">
@@ -466,10 +467,11 @@ export default function BookingSummary() {
                 {instructor.welcome_video_url && (
                   <Card className="overflow-hidden">
                     <div className="relative aspect-video bg-muted">
-                      <iframe
+                      <video
                         src={instructor.welcome_video_url}
-                        className="h-full w-full"
-                        allowFullScreen
+                        className="h-full w-full object-cover"
+                        controls
+                        poster=""
                       />
                     </div>
                     <CardContent className="p-4">
