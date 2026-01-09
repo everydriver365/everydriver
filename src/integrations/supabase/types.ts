@@ -976,6 +976,54 @@ export type Database = {
           },
         ]
       }
+      payment_history: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          instructor_id: string
+          notes: string | null
+          payment_method: string | null
+          pupil_id: string
+          recorded_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          payment_method?: string | null
+          pupil_id: string
+          recorded_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          payment_method?: string | null
+          pupil_id?: string
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_history_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotional_messages: {
         Row: {
           created_at: string

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
+import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths } from "date-fns";
 
@@ -22,6 +23,7 @@ interface Pupil {
   id: string;
   name: string;
   account_balance: number | null;
+  phone: string | null;
 }
 
 export default function InstructorPay() {
@@ -34,6 +36,7 @@ export default function InstructorPay() {
   });
   const [hourlyRate, setHourlyRate] = useState<number>(40);
   const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
+  const [instructorName, setInstructorName] = useState<string>("Your Instructor");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -47,7 +50,7 @@ export default function InstructorPay() {
     try {
       const { data, error } = await supabase
         .from("pupils")
-        .select("id, name, account_balance")
+        .select("id, name, account_balance, phone")
         .eq("instructor_id", MOCK_INSTRUCTOR_ID)
         .order("name", { ascending: true });
 
@@ -60,16 +63,17 @@ export default function InstructorPay() {
 
   const fetchData = async () => {
     try {
-      // Fetch instructor hourly rate, payment QR, and bonus
+      // Fetch instructor hourly rate, payment QR, name, and bonus
       const { data: instructor } = await supabase
         .from("instructors")
-        .select("hourly_rate, payment_qr_url, bonus_earned")
+        .select("hourly_rate, payment_qr_url, bonus_earned, name")
         .eq("id", MOCK_INSTRUCTOR_ID)
         .single();
 
       if (instructor) {
         setHourlyRate(instructor.hourly_rate || 40);
         setPaymentQrUrl(instructor.payment_qr_url);
+        setInstructorName(instructor.name || "Your Instructor");
       }
 
       const bonusAmount = instructor?.bonus_earned || 0;
@@ -198,6 +202,9 @@ export default function InstructorPay() {
           </CardContent>
         </Card>
 
+        {/* Payment History */}
+        <PaymentHistory instructorId={MOCK_INSTRUCTOR_ID} limit={15} />
+
         {/* Outstanding Payments */}
         <Card>
           <CardHeader className="pb-2">
@@ -219,6 +226,8 @@ export default function InstructorPay() {
         onOpenChange={setPaymentModalOpen}
         paymentQrUrl={paymentQrUrl}
         pupils={pupils}
+        instructorId={MOCK_INSTRUCTOR_ID}
+        instructorName={instructorName}
         onPaymentRecorded={fetchPupils}
       />
       <InstructorBottomNav />

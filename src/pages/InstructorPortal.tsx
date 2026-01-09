@@ -28,6 +28,7 @@ interface Pupil {
   next_lesson: string | null;
   progress: number | null;
   account_balance: number | null;
+  phone: string | null;
 }
 
 // Mock instructor ID - in production this would come from auth
@@ -72,7 +73,7 @@ export default function InstructorPortal() {
     try {
       const { data, error } = await supabase
         .from("pupils")
-        .select("id, name, lessons_completed, next_lesson, progress, account_balance")
+        .select("id, name, lessons_completed, next_lesson, progress, account_balance, phone")
         .eq("instructor_id", MOCK_INSTRUCTOR_ID)
         .order("name", { ascending: true });
 
@@ -175,6 +176,8 @@ export default function InstructorPortal() {
           onOpenChange={setPaymentModalOpen}
           paymentQrUrl={instructor?.payment_qr_url}
           pupils={pupils}
+          instructorId={MOCK_INSTRUCTOR_ID}
+          instructorName={instructor?.name}
           onPaymentRecorded={fetchPupils}
         />
 

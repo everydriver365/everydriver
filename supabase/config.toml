@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.notify-instructor]
 verify_jwt = false
+
+[functions.send-payment-confirmation]
+verify_jwt = false
