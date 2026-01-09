@@ -34,7 +34,7 @@ export function Header() {
       <div className="border-b border-nav/20 bg-nav">
       <nav className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center">
-          <img src={logo} alt="EveryDriver" className="h-12" />
+          <img src={logo} alt="EveryDriver" className="h-16" />
         </Link>
 
         {/* Desktop Navigation */}
