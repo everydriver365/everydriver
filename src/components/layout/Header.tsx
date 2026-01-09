@@ -120,8 +120,10 @@ export function Header() {
         </motion.div>
       )}
       </div>
-      <PromoBanner />
-      <SecondaryNav />
+      <div className="hidden md:block">
+        <PromoBanner />
+        <SecondaryNav />
+      </div>
     </header>
   );
 }
