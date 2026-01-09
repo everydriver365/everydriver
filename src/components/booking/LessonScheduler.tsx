@@ -389,9 +389,9 @@ export function LessonScheduler({
       </div>
 
       {/* Calendar, Time Slots, and Selected Lessons */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {/* Calendar */}
-        <div className="rounded-lg border p-4">
+        <div className="rounded-lg border p-2">
           <CalendarComponent
             mode="single"
             selected={selectedDate}
@@ -416,18 +416,18 @@ export function LessonScheduler({
                 fontWeight: "500",
               },
             }}
-            className={cn("p-3 pointer-events-auto")}
+            className={cn("p-1 pointer-events-auto text-sm [&_table]:w-full [&_td]:p-0.5 [&_th]:p-0.5 [&_button]:h-8 [&_button]:w-8 [&_button]:text-xs")}
           />
         </div>
 
         {/* Time Slots */}
-        <div className="rounded-lg border p-4">
+        <div className="rounded-lg border p-3">
           {selectedDate ? (
             <div>
-              <h4 className="font-medium mb-3">
-                Available times for {format(selectedDate, "EEE, d MMM")}
+              <h4 className="font-medium mb-2 text-sm">
+                Times for {format(selectedDate, "EEE, d MMM")}
               </h4>
-              <div className="grid grid-cols-3 gap-2 max-h-[280px] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto">
                 {getAvailableTimeSlots(selectedDate).map((time) => (
                   <Button
                     key={time}
@@ -435,29 +435,29 @@ export function LessonScheduler({
                     size="sm"
                     onClick={() => handleSelectSlot(selectedDate, time)}
                     disabled={remainingHours <= 0}
-                    className="text-sm"
+                    className="text-xs h-8"
                   >
                     <Clock className="h-3 w-3 mr-1" />
                     {time}
                   </Button>
                 ))}
                 {getAvailableTimeSlots(selectedDate).length === 0 && (
-                  <p className="col-span-3 text-sm text-muted-foreground py-4 text-center">
-                    No available slots for this date
+                  <p className="col-span-2 text-xs text-muted-foreground py-4 text-center">
+                    No available slots
                   </p>
                 )}
               </div>
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-              Select a date to see available times
+            <div className="h-full flex items-center justify-center text-muted-foreground text-xs py-8">
+              Select a date to see times
             </div>
           )}
         </div>
 
         {/* Selected Lessons - Now in third column */}
-        <div className="rounded-lg border p-4 md:col-span-2 lg:col-span-1">
-          <h4 className="font-medium mb-3">Your Scheduled Lessons</h4>
+        <div className="rounded-lg border p-3">
+          <h4 className="font-medium mb-2 text-sm">Scheduled Lessons</h4>
           {selectedSlots.length > 0 ? (
             <div className="space-y-2 max-h-[280px] overflow-y-auto">
               {selectedSlots
