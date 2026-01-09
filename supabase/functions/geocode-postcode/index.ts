@@ -9,6 +9,7 @@ interface PostcodeResult {
   postcode: string;
   latitude: number | null;
   longitude: number | null;
+  area_name: string | null;
 }
 
 serve(async (req) => {
@@ -42,11 +43,12 @@ serve(async (req) => {
 
     const data = await response.json();
 
-    // Map results
+    // Map results - include admin_district as area_name
     const results: PostcodeResult[] = data.result.map((item: any) => ({
       postcode: item.query,
       latitude: item.result?.latitude || null,
       longitude: item.result?.longitude || null,
+      area_name: item.result?.admin_district || item.result?.admin_ward || null,
     }));
 
     return new Response(

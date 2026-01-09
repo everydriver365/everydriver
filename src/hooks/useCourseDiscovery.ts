@@ -97,6 +97,10 @@ export function getMonthOptions(): { value: string; label: string }[] {
   return options;
 }
 
+interface AreaCache {
+  [postcode: string]: string | null;
+}
+
 export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
   const [postcode, setPostcode] = useState("");
   const [radius, setRadius] = useState("10");
@@ -104,9 +108,11 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("soonest");
   const [geoCache, setGeoCache] = useState<GeoCache>({});
+  const [areaCache, setAreaCache] = useState<AreaCache>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [searchedPostcode, setSearchedPostcode] = useState<string | null>(null);
+  const [searchedAreaName, setSearchedAreaName] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -183,9 +189,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
     return null;
   }, [monthOptions, isDateAvailable]);
 
-  const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<GeoCache> => {
+  const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<{ geoCache: GeoCache; areaCache: AreaCache }> => {
     const uncached = postcodes.filter((p) => !(p in geoCache));
-    if (uncached.length === 0) return geoCache;
+    if (uncached.length === 0) return { geoCache, areaCache };
 
     try {
       const { data, error } = await supabase.functions.invoke("geocode-postcode", {
@@ -194,21 +200,26 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
 
       if (error) throw error;
 
-      const newCache: GeoCache = { ...geoCache };
+      const newGeoCache: GeoCache = { ...geoCache };
+      const newAreaCache: AreaCache = { ...areaCache };
+      
       for (const result of data.results || []) {
         if (result.latitude && result.longitude) {
-          newCache[result.postcode] = { lat: result.latitude, lng: result.longitude };
+          newGeoCache[result.postcode] = { lat: result.latitude, lng: result.longitude };
         } else {
-          newCache[result.postcode] = null;
+          newGeoCache[result.postcode] = null;
         }
+        newAreaCache[result.postcode] = result.area_name || null;
       }
-      setGeoCache(newCache);
-      return newCache;
+      
+      setGeoCache(newGeoCache);
+      setAreaCache(newAreaCache);
+      return { geoCache: newGeoCache, areaCache: newAreaCache };
     } catch (error) {
       console.error("Geocoding error:", error);
-      return geoCache;
+      return { geoCache, areaCache };
     }
-  }, [geoCache]);
+  }, [geoCache, areaCache]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -264,14 +275,17 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
 
     setIsSearching(true);
     try {
-      const cache = await geocodePostcodes([postcode.replace(/\s+/g, "").toUpperCase()]);
       const cleanPostcode = postcode.replace(/\s+/g, "").toUpperCase();
-      const location = cache[cleanPostcode];
+      const result = await geocodePostcodes([cleanPostcode]);
+      const location = result.geoCache[cleanPostcode];
+      const areaName = result.areaCache[cleanPostcode];
 
       if (location) {
         setUserLocation(location);
+        setSearchedPostcode(cleanPostcode);
+        setSearchedAreaName(areaName || null);
         setSortBy("nearest");
-        toast({ title: "Location found!", description: "Sorting by nearest instructors" });
+        toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
       } else {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
       }
@@ -465,5 +479,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
     availableDatesInMonth,
     filteredCourses,
     handleSearch,
+    searchedPostcode,
+    searchedAreaName,
   };
 }
