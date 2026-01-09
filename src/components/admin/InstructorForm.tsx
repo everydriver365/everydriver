@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award } from "lucide-react";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { CourseImageEditor } from "./CourseImageEditor";
@@ -66,6 +66,10 @@ const instructorSchema = z.object({
   twitter_url: z.string().url().optional().or(z.literal("")),
   linkedin_url: z.string().url().optional().or(z.literal("")),
   custom_branding_enabled: z.boolean().optional(),
+  // Certifications
+  cpd_certified: z.boolean().optional(),
+  adi_code_of_practice: z.boolean().optional(),
+  instructor_grade: z.string().optional(),
 });
 
 type InstructorFormData = z.infer<typeof instructorSchema>;
@@ -97,6 +101,9 @@ interface InstructorFormProps {
     twitter_url?: string;
     linkedin_url?: string;
     custom_branding_enabled?: boolean;
+    cpd_certified?: boolean;
+    adi_code_of_practice?: boolean;
+    instructor_grade?: string;
   }>;
 }
 
@@ -145,6 +152,10 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       twitter_url: initialData?.twitter_url || "",
       linkedin_url: initialData?.linkedin_url || "",
       custom_branding_enabled: initialData?.custom_branding_enabled ?? false,
+      // Certifications
+      cpd_certified: initialData?.cpd_certified ?? false,
+      adi_code_of_practice: initialData?.adi_code_of_practice ?? false,
+      instructor_grade: initialData?.instructor_grade || "",
     },
   });
 
@@ -309,6 +320,10 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         twitter_url: data.twitter_url || null,
         linkedin_url: data.linkedin_url || null,
         custom_branding_enabled: data.custom_branding_enabled ?? false,
+        // Certifications
+        cpd_certified: data.cpd_certified ?? false,
+        adi_code_of_practice: data.adi_code_of_practice ?? false,
+        instructor_grade: data.instructor_grade || null,
       };
 
       let instructorId = initialData?.id;
@@ -526,6 +541,72 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                   <FormControl>
                     <Input type="number" placeholder="35" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {/* Certifications */}
+        <div className="space-y-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Award className="h-4 w-4" /> Certifications & Grade
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormField
+              control={form.control}
+              name="cpd_certified"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>CPD Certified</FormLabel>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="adi_code_of_practice"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>ADI Code of Practice</FormLabel>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="instructor_grade"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Instructor Grade</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || ""}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select grade" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="A">Grade A</SelectItem>
+                      <SelectItem value="B">Grade B</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
