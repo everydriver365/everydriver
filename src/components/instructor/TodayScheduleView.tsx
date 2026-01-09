@@ -1,0 +1,340 @@
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
+import { 
+  Calendar, 
+  Navigation, 
+  Phone, 
+  MessageSquare, 
+  Clock, 
+  MapPin,
+  Check,
+  Loader2
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+interface ScheduledLesson {
+  id: string;
+  lesson_date: string;
+  start_time: string;
+  duration_minutes: number;
+  lesson_type: string;
+  pickup_location: string | null;
+  pickup_postcode: string | null;
+  status: string;
+  payment_status: string;
+  prepaid_hours_used: number;
+  amount_due: number;
+  pupil: {
+    id: string;
+    name: string;
+    phone: string | null;
+    address: string;
+    postcode: string;
+    prepaid_hours: number;
+    account_balance: number;
+  };
+}
+
+interface TodayScheduleViewProps {
+  instructorId: string;
+}
+
+export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
+  const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sendingMessage, setSendingMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchLessons();
+  }, [instructorId]);
+
+  const fetchLessons = async () => {
+    try {
+      setLoading(true);
+      const today = format(new Date(), "yyyy-MM-dd");
+      
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .select(`
+          id,
+          lesson_date,
+          start_time,
+          duration_minutes,
+          lesson_type,
+          pickup_location,
+          pickup_postcode,
+          status,
+          payment_status,
+          prepaid_hours_used,
+          amount_due,
+          pupil:pupils(
+            id,
+            name,
+            phone,
+            address,
+            postcode,
+            prepaid_hours,
+            account_balance
+          )
+        `)
+        .eq("instructor_id", instructorId)
+        .eq("lesson_date", today)
+        .neq("status", "cancelled")
+        .order("start_time", { ascending: true });
+
+      if (error) throw error;
+      
+      const transformedData = (data || []).map((lesson: any) => ({
+        ...lesson,
+        pupil: lesson.pupil || {
+          id: "",
+          name: "Unknown",
+          phone: null,
+          address: "",
+          postcode: "",
+          prepaid_hours: 0,
+          account_balance: 0
+        }
+      }));
+      
+      setLessons(transformedData);
+    } catch (error) {
+      console.error("Error fetching today's lessons:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTime = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "pm" : "am";
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes}${ampm}`;
+  };
+
+  const getPaymentStatusBadge = (lesson: ScheduledLesson) => {
+    const { payment_status, pupil } = lesson;
+    
+    if (payment_status === "paid") {
+      return <Badge className="bg-success text-success-foreground text-xs">Paid</Badge>;
+    }
+    
+    if (pupil?.prepaid_hours && pupil.prepaid_hours > 0) {
+      return (
+        <Badge variant="secondary" className="bg-accent/20 text-accent-foreground text-xs">
+          {pupil.prepaid_hours}h Credit
+        </Badge>
+      );
+    }
+    
+    return <Badge variant="destructive" className="text-xs">Unpaid</Badge>;
+  };
+
+  const handleNavigate = (address: string, postcode: string) => {
+    const query = encodeURIComponent(`${address}, ${postcode}`);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const url = isIOS 
+      ? `maps://maps.apple.com/?daddr=${query}`
+      : `geo:0,0?q=${query}`;
+    
+    const fallbackUrl = `https://www.google.com/maps/dir/?api=1&destination=${query}`;
+    
+    window.location.href = url;
+    setTimeout(() => {
+      window.open(fallbackUrl, "_blank");
+    }, 500);
+  };
+
+  const handleCall = (phone: string | null) => {
+    if (!phone) {
+      toast({ title: "No phone number", variant: "destructive" });
+      return;
+    }
+    window.location.href = `tel:${phone}`;
+  };
+
+  const handleText = (phone: string | null) => {
+    if (!phone) {
+      toast({ title: "No phone number", variant: "destructive" });
+      return;
+    }
+    window.location.href = `sms:${phone}`;
+  };
+
+  const handleOnWay = (lesson: ScheduledLesson, delayMinutes?: number) => {
+    if (!lesson.pupil?.phone) {
+      toast({ title: "No phone number", variant: "destructive" });
+      return;
+    }
+
+    setSendingMessage(lesson.id);
+    
+    let message = "Hi! I'm on my way to pick you up for your driving lesson. See you soon!";
+    if (delayMinutes) {
+      message = `Hi! I'm running about ${delayMinutes} minutes late for your driving lesson. I'll be with you as soon as possible.`;
+    }
+    
+    const encodedMessage = encodeURIComponent(message);
+    window.location.href = `sms:${lesson.pupil.phone}?body=${encodedMessage}`;
+    setSendingMessage(null);
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-primary" />
+            Today
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-primary" />
+          Today
+          <Badge variant="secondary" className="ml-auto">
+            {lessons.length} lesson{lessons.length !== 1 ? "s" : ""}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {lessons.length === 0 ? (
+          <div className="text-center py-6 text-muted-foreground text-sm">
+            No lessons scheduled for today
+          </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {lessons.map((lesson, index) => (
+              <motion.div
+                key={lesson.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Card className="overflow-hidden">
+                  <CardContent className="p-0">
+                    {/* Time Header */}
+                    <div className="bg-primary px-3 py-1.5 flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-primary-foreground text-sm">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span className="font-bold">{formatTime(lesson.start_time)}</span>
+                        <span className="opacity-70">•</span>
+                        <span>{lesson.duration_minutes}m</span>
+                      </div>
+                      {getPaymentStatusBadge(lesson)}
+                    </div>
+
+                    <div className="p-3 space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold">{lesson.pupil?.name}</h3>
+                          <p className="text-xs text-muted-foreground">{lesson.lesson_type}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2 text-xs">
+                        <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                        <span className="truncate">
+                          {lesson.pickup_location || lesson.pupil?.address}
+                        </span>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="grid grid-cols-4 gap-1.5 pt-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-col h-auto py-1.5 gap-0.5"
+                          onClick={() => handleNavigate(
+                            lesson.pickup_location || lesson.pupil?.address || "",
+                            lesson.pickup_postcode || lesson.pupil?.postcode || ""
+                          )}
+                        >
+                          <Navigation className="h-3.5 w-3.5 text-accent" />
+                          <span className="text-[10px]">Nav</span>
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-col h-auto py-1.5 gap-0.5"
+                          onClick={() => handleCall(lesson.pupil?.phone)}
+                        >
+                          <Phone className="h-3.5 w-3.5 text-success" />
+                          <span className="text-[10px]">Call</span>
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-col h-auto py-1.5 gap-0.5"
+                          onClick={() => handleText(lesson.pupil?.phone)}
+                        >
+                          <MessageSquare className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-[10px]">Text</span>
+                        </Button>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-col h-auto py-1.5 gap-0.5"
+                              disabled={sendingMessage === lesson.id}
+                            >
+                              {sendingMessage === lesson.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Check className="h-3.5 w-3.5 text-warning" />
+                              )}
+                              <span className="text-[10px]">On Way</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleOnWay(lesson)}>
+                              On my way!
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOnWay(lesson, 5)}>
+                              Delayed 5 mins
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOnWay(lesson, 10)}>
+                              Delayed 10 mins
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOnWay(lesson, 15)}>
+                              Delayed 15 mins
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
