@@ -235,11 +235,13 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
               >
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
-                    {/* Map Preview */}
-                    <PostcodeMapPreview 
-                      postcode={lesson.pickup_postcode || lesson.pupil?.postcode || ""} 
-                      className="rounded-none border-0"
-                    />
+                    {/* Map Preview - only for next upcoming lesson */}
+                    {index === 0 && (
+                      <PostcodeMapPreview 
+                        postcode={lesson.pickup_postcode || lesson.pupil?.postcode || ""} 
+                        className="rounded-none border-0"
+                      />
+                    )}
                     
                     {/* Time Header */}
                     <div className="bg-primary px-3 py-1.5 flex items-center justify-between">
