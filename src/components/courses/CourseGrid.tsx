@@ -51,25 +51,34 @@ export function CourseGrid({
     <>
       {/* Location header if searched */}
       {locationDisplay && (
-        <div className="mb-4 flex items-center justify-between rounded-lg bg-primary/5 px-4 py-3">
-          <div className="flex items-center gap-2 text-primary">
-            <MapPin className="h-5 w-5" />
-            <h2 className="text-lg font-semibold">
-              Courses Available in {locationDisplay}
-            </h2>
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 flex items-center justify-between rounded-xl border-2 border-primary bg-primary/10 px-5 py-4 shadow-md"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-primary">Showing results for</p>
+              <h2 className="text-xl font-bold text-foreground">
+                {locationDisplay}
+              </h2>
+            </div>
           </div>
           {onClearSearch && (
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm" 
               onClick={onClearSearch}
-              className="gap-1.5 text-muted-foreground hover:text-foreground"
+              className="gap-1.5 border-primary/30 hover:bg-primary/10"
             >
               <X className="h-4 w-4" />
-              Clear search
+              Clear
             </Button>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* Selected date header */}
