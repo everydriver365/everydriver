@@ -366,10 +366,6 @@ export default function BookingSummary() {
                   </span>
                   <span>£{totalPrice}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Booking fee</span>
-                  <span>£0</span>
-                </div>
                 <div className="border-t pt-3">
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total</span>
