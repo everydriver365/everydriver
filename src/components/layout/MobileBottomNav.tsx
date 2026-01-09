@@ -13,6 +13,10 @@ const navItems = [
 export function MobileBottomNav() {
   const location = useLocation();
 
+  // Hide the public site bottom-nav inside the instructor portal.
+  // Instructor pages render their own bottom navigation.
+  if (location.pathname.startsWith("/instructor")) return null;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 md:hidden">
       <div className="flex items-center justify-around h-16 px-1">
