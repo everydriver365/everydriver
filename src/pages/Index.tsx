@@ -13,9 +13,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import testimonialSarah from "@/assets/testimonial-sarah.jpg";
-import testimonialJames from "@/assets/testimonial-james.jpg";
-import testimonialEmma from "@/assets/testimonial-emma.jpg";
+import { useSiteImages } from "@/hooks/useSiteImages";
+// Static fallback images
+import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
+import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
+import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
 import courseIntensive from "@/assets/course-intensive.jpg";
 import courseSemiIntensive from "@/assets/course-semi-intensive.jpg";
 import courseWeekly from "@/assets/course-weekly.jpg";
@@ -25,13 +27,13 @@ import newsArticle1 from "@/assets/news-article1.jpg";
 import newsArticle2 from "@/assets/news-article2.jpg";
 import featureRetest from "@/assets/feature-retest.jpg";
 import featureAvailability from "@/assets/feature-availability.jpg";
-import featureTheory from "@/assets/feature-theory.jpg";
+import featureTheoryFallback from "@/assets/feature-theory.jpg";
 import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
-import featureCancellation from "@/assets/feature-cancellation.jpg";
-import featurePayments from "@/assets/feature-payments.jpg";
+import featureCancellationFallback from "@/assets/feature-cancellation.jpg";
+import featurePaymentsFallback from "@/assets/feature-payments.jpg";
 import testimonialSarahM from "@/assets/testimonial-sarah-m.jpg";
-import testimonialEmily from "@/assets/testimonial-emily.jpg";
-import testimonialPriya from "@/assets/testimonial-priya.jpg";
+import testimonialEmilyFallback from "@/assets/testimonial-emily.jpg";
+import testimonialPriyaFallback from "@/assets/testimonial-priya.jpg";
 
 const features = [
   {
@@ -84,32 +86,19 @@ const testimonials = [
   },
 ];
 
-const heroTestimonials = [
-  {
-    name: "Sarah",
-    achievement: "Passed 1st time!",
-    image: testimonialSarah,
-    rotation: -6,
-    position: "top-0 left-0",
-  },
-  {
-    name: "James",
-    achievement: "Intensive Course",
-    image: testimonialJames,
-    rotation: 6,
-    position: "top-8 right-0",
-  },
-  {
-    name: "Emma",
-    achievement: "Intensive Course",
-    image: testimonialEmma,
-    rotation: 0,
-    position: "bottom-0 left-1/4",
-  },
-];
-
 export default function Index() {
   const [postcode, setPostcode] = useState("");
+  const { getImage, getAlt } = useSiteImages();
+
+  // Dynamic images from CMS with fallbacks
+  const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
+  const testimonialJames = getImage("testimonial_james", testimonialJamesFallback);
+  const testimonialEmma = getImage("testimonial_emma", testimonialEmmaFallback);
+  const testimonialEmily = getImage("testimonial_emily", testimonialEmilyFallback);
+  const testimonialPriya = getImage("testimonial_priya", testimonialPriyaFallback);
+  const featureTheory = getImage("feature_theory", featureTheoryFallback);
+  const featurePayments = getImage("feature_payments", featurePaymentsFallback);
+  const featureCancellation = getImage("feature_cancellation", featureCancellationFallback);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
