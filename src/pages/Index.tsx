@@ -194,17 +194,15 @@ export default function Index() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative h-[400px] lg:h-[500px] hidden md:block"
+              className="relative h-[420px] lg:h-[520px] hidden md:block"
             >
-              {/* Background gradient blob */}
-              <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-emerald-200 to-cyan-200 rounded-[2rem] -rotate-6" />
               
               {/* Sarah - Top Left Card */}
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: -6 }}
-                animate={{ opacity: 1, y: 0, rotate: -6 }}
+                initial={{ opacity: 0, y: 20, rotate: -8 }}
+                animate={{ opacity: 1, y: 0, rotate: -8 }}
                 transition={{ delay: 0.3 }}
-                className="absolute top-4 left-4 lg:left-0 w-44 lg:w-52 rounded-2xl overflow-hidden shadow-2xl bg-white"
+                className="absolute top-0 left-0 lg:left-4 w-48 lg:w-56 rounded-2xl overflow-hidden shadow-2xl border-4 border-white"
               >
                 <div className="relative aspect-[3/4]">
                   <img 
@@ -221,10 +219,10 @@ export default function Index() {
               
               {/* James - Top Right Card */}
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: 6 }}
-                animate={{ opacity: 1, y: 0, rotate: 6 }}
+                initial={{ opacity: 0, y: 20, rotate: 5 }}
+                animate={{ opacity: 1, y: 0, rotate: 5 }}
                 transition={{ delay: 0.4 }}
-                className="absolute top-8 right-0 lg:right-4 w-36 lg:w-44 rounded-2xl overflow-hidden shadow-2xl bg-white"
+                className="absolute top-6 right-0 w-44 lg:w-52 rounded-2xl overflow-hidden shadow-2xl border-4 border-white z-10"
               >
                 <div className="relative aspect-[3/4]">
                   <img 
@@ -241,10 +239,10 @@ export default function Index() {
               
               {/* Emma - Bottom Center Card */}
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: 0 }}
-                animate={{ opacity: 1, y: 0, rotate: 0 }}
+                initial={{ opacity: 0, y: 20, rotate: -3 }}
+                animate={{ opacity: 1, y: 0, rotate: -3 }}
                 transition={{ delay: 0.5 }}
-                className="absolute bottom-4 left-1/4 lg:left-20 w-44 lg:w-52 rounded-2xl overflow-hidden shadow-2xl bg-white"
+                className="absolute bottom-0 left-12 lg:left-16 w-52 lg:w-60 rounded-2xl overflow-hidden shadow-2xl border-4 border-white z-20"
               >
                 <div className="relative aspect-[3/4]">
                   <img 
@@ -264,7 +262,7 @@ export default function Index() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.6 }}
-                className="absolute bottom-16 right-0 lg:right-8 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-lg"
+                className="absolute bottom-20 right-0 lg:right-4 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-lg z-30"
               >
                 <div className="flex items-center gap-2">
                   <Heart className="h-5 w-5 fill-current" />
