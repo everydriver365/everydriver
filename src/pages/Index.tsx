@@ -1040,7 +1040,7 @@ export default function Index() {
           </motion.p>
         </div>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Pupil Portal */}
           <Link to="/pupil">
             <motion.div
@@ -1108,6 +1108,54 @@ export default function Index() {
               <p className="text-sm text-muted-foreground">Full control over instructors, courses, enquiries, and site content.</p>
             </motion.div>
           </Link>
+        </div>
+
+        {/* Second Row - Features */}
+        <div className="mt-6 grid gap-6 md:grid-cols-3">
+          {/* Live Availability */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            viewport={{ once: true }}
+            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+          >
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+              <Calendar className="h-6 w-6" />
+            </div>
+            <h3 className="mb-2 font-semibold">Live Availability</h3>
+            <p className="text-sm text-muted-foreground">Real-time calendar sync shows you exactly when instructors are free to book.</p>
+          </motion.div>
+
+          {/* Local Instructors */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            viewport={{ once: true }}
+            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+          >
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+              <MapPin className="h-6 w-6" />
+            </div>
+            <h3 className="mb-2 font-semibold">Local Instructors</h3>
+            <p className="text-sm text-muted-foreground">Find certified instructors near you by postcode with adjustable search radius.</p>
+          </motion.div>
+
+          {/* Track Progress */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            viewport={{ once: true }}
+            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+          >
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+              <Award className="h-6 w-6" />
+            </div>
+            <h3 className="mb-2 font-semibold">Track Progress</h3>
+            <p className="text-sm text-muted-foreground">Monitor your learning journey with detailed progress reports and skill assessments.</p>
+          </motion.div>
         </div>
       </section>
 
