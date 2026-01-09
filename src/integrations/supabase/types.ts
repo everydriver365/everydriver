@@ -718,6 +718,7 @@ export type Database = {
           preferred_lesson_length: number
           profile_image_url: string | null
           radius_miles: number
+          school_skim_amount: number | null
           school_skim_percentage: number | null
           special_skills: string | null
           twitter_url: string | null
@@ -766,6 +767,7 @@ export type Database = {
           preferred_lesson_length?: number
           profile_image_url?: string | null
           radius_miles?: number
+          school_skim_amount?: number | null
           school_skim_percentage?: number | null
           special_skills?: string | null
           twitter_url?: string | null
@@ -814,6 +816,7 @@ export type Database = {
           preferred_lesson_length?: number
           profile_image_url?: string | null
           radius_miles?: number
+          school_skim_amount?: number | null
           school_skim_percentage?: number | null
           special_skills?: string | null
           twitter_url?: string | null

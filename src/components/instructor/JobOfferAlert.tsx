@@ -37,7 +37,7 @@ interface CourseEnquiry {
 
 interface Instructor {
   hourly_rate: number | null;
-  school_skim_percentage: number | null;
+  school_skim_amount: number | null;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -92,7 +92,7 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
       // Fetch instructor details for payment calculation
       const { data: instructorData, error: instructorError } = await supabase
         .from("instructors")
-        .select("hourly_rate, school_skim_percentage")
+        .select("hourly_rate, school_skim_amount")
         .eq("id", instructorId)
         .maybeSingle();
 
@@ -108,9 +108,8 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
 
   const calculatePayment = (hours: number) => {
     const hourlyRate = instructor?.hourly_rate || 35; // Default £35/hour
-    const skimPercentage = instructor?.school_skim_percentage || 0;
+    const skimAmount = instructor?.school_skim_amount || 0; // Fixed GBP amount
     const grossAmount = hours * hourlyRate;
-    const skimAmount = grossAmount * (skimPercentage / 100);
     const netAmount = grossAmount - skimAmount;
     return { grossAmount, skimAmount, netAmount, hourlyRate };
   };
