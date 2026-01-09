@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CMSImageUpload } from "./CMSImageUpload";
 
 interface HomepageFeature {
   id: string;
@@ -402,35 +403,19 @@ export function HomepageFeaturesManager() {
                 />
               </div>
 
-              {/* Image URL */}
-              <div className="space-y-2">
-                <Label>Feature Image URL (Optional)</Label>
-                <p className="text-xs text-muted-foreground">
-                  Add an image URL to display instead of the icon. Leave empty to show the icon.
-                </p>
-                <Input
-                  value={editingFeature.image_url || ""}
-                  onChange={(e) =>
-                    setEditingFeature({
-                      ...editingFeature,
-                      image_url: e.target.value || null,
-                    })
-                  }
-                  placeholder="https://example.com/feature-image.jpg"
-                />
-                {editingFeature.image_url && (
-                  <div className="mt-2 rounded-lg border overflow-hidden">
-                    <img 
-                      src={editingFeature.image_url} 
-                      alt="Feature preview" 
-                      className="w-full h-32 object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
+              {/* Feature Image Upload */}
+              <CMSImageUpload
+                value={editingFeature.image_url}
+                onChange={(url) =>
+                  setEditingFeature({
+                    ...editingFeature,
+                    image_url: url,
+                  })
+                }
+                bucket="instructor-images"
+                folder="features"
+                label="Feature Image (Optional)"
+              />
 
               {/* Detailed Content for Modal */}
               <div className="space-y-2">
