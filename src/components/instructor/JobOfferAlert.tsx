@@ -219,19 +219,11 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
                     <div className="flex items-center gap-2">
                       <PoundSterling className="h-5 w-5 text-success" />
                       <span className="font-semibold text-success">
-                        You'll Earn
+                        Total Payable
                       </span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-success">
-                        £{payment.netAmount.toFixed(0)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {hours} hours × £{payment.hourlyRate}/hr
-                        {payment.skimAmount > 0 && (
-                          <span> (- £{payment.skimAmount.toFixed(0)} platform fee)</span>
-                        )}
-                      </div>
+                    <div className="text-2xl font-bold text-success">
+                      £{payment.grossAmount.toFixed(0)}
                     </div>
                   </div>
 
