@@ -25,8 +25,8 @@ import videoThumbnail from "@/assets/video-thumbnail.jpg";
 import newsFeatured from "@/assets/news-featured.jpg";
 import newsArticle1 from "@/assets/news-article1.jpg";
 import newsArticle2 from "@/assets/news-article2.jpg";
-import featureRetest from "@/assets/feature-retest.jpg";
-import featureAvailability from "@/assets/feature-availability.jpg";
+import featureRetestFallback from "@/assets/feature-retest.jpg";
+import featureAvailabilityFallback from "@/assets/feature-availability.jpg";
 import featureTheoryFallback from "@/assets/feature-theory.jpg";
 import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
 import featureCancellationFallback from "@/assets/feature-cancellation.jpg";
@@ -90,15 +90,25 @@ export default function Index() {
   const [postcode, setPostcode] = useState("");
   const { getImage, getAlt } = useSiteImages();
 
-  // Dynamic images from CMS with fallbacks
+  // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
   const testimonialJames = getImage("testimonial_james", testimonialJamesFallback);
   const testimonialEmma = getImage("testimonial_emma", testimonialEmmaFallback);
   const testimonialEmily = getImage("testimonial_emily", testimonialEmilyFallback);
   const testimonialPriya = getImage("testimonial_priya", testimonialPriyaFallback);
+  
+  // Dynamic images - Learning paths
+  const courseIntensiveImg = getImage("course_intensive", courseIntensive);
+  const courseSemiIntensiveImg = getImage("course_semi_intensive", courseSemiIntensive);
+  const courseWeeklyImg = getImage("course_weekly", courseWeekly);
+  
+  // Dynamic images - What's included features
+  const featureRetest = getImage("feature_retest", featureRetestFallback);
+  const featureAvailability = getImage("feature_availability", featureAvailabilityFallback);
   const featureTheory = getImage("feature_theory", featureTheoryFallback);
-  const featurePayments = getImage("feature_payments", featurePaymentsFallback);
+  const featureTheoryProImg = getImage("feature_theory_pro", featureTheoryPro);
   const featureCancellation = getImage("feature_cancellation", featureCancellationFallback);
+  const featurePayments = getImage("feature_payments", featurePaymentsFallback);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -295,7 +305,7 @@ export default function Index() {
             >
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src={courseIntensive}
+                  src={courseIntensiveImg}
                   alt="Intensive Courses"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
@@ -348,7 +358,7 @@ export default function Index() {
             >
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src={courseSemiIntensive}
+                  src={courseSemiIntensiveImg}
                   alt="Semi-Intensive Courses"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
@@ -401,7 +411,7 @@ export default function Index() {
             >
               <div className="relative h-48 overflow-hidden">
                 <img
-                  src={courseWeekly}
+                  src={courseWeeklyImg}
                   alt="Weekly Lessons"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
@@ -566,7 +576,7 @@ export default function Index() {
             >
               <div className="relative h-40 overflow-hidden">
                 <img
-                  src={featureTheoryPro}
+                  src={featureTheoryProImg}
                   alt="FREE Theory Test Pro"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
