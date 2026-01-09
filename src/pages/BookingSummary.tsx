@@ -294,81 +294,103 @@ export default function BookingSummary() {
 
   return (
     <MainLayout>
-      {/* Hero Section - Compact Design */}
-      <div className="bg-gradient-to-b from-secondary/50 to-background">
-        <div className="container py-6">
+      {/* Hero Section - Bold Design */}
+      <div className="relative bg-primary overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        </div>
+        
+        <div className="container relative py-8">
           {/* Back Button */}
           <Button
             variant="ghost"
             onClick={() => navigate(-1)}
-            className="mb-4 gap-2 -ml-2"
+            className="mb-6 gap-2 -ml-2 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to courses
           </Button>
 
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col lg:flex-row gap-8">
             {/* Hero Image */}
-            <div className="relative w-full md:w-80 h-48 md:h-52 shrink-0 rounded-xl overflow-hidden shadow-lg">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative w-full lg:w-96 h-56 lg:h-64 shrink-0 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white/20"
+            >
               <img
                 src={courseImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&h=400&fit=crop"}
                 alt={courseName}
                 className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              <Badge className="absolute bottom-3 left-3 bg-primary text-primary-foreground">
-                {instructor.car_type}
-              </Badge>
-            </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <Badge className="bg-white text-primary font-semibold">
+                  {instructor.car_type}
+                </Badge>
+              </div>
+            </motion.div>
 
             {/* Course Info */}
-            <div className="flex-1 flex flex-col justify-center">
-              <h1 className="text-2xl md:text-3xl font-bold">{courseName}</h1>
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex-1 flex flex-col justify-center text-primary-foreground"
+            >
+              <h1 className="text-3xl lg:text-4xl font-bold">{courseName}</h1>
               
-              <div className="flex items-center gap-3 mt-3">
-                <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
+              <div className="flex items-center gap-4 mt-4">
+                <Avatar className="h-14 w-14 border-4 border-white/20 shadow-lg">
                   <AvatarImage src={instructor.profile_image_url || undefined} />
-                  <AvatarFallback 
-                    style={{ backgroundColor: brandColour, color: "white" }}
-                  >
+                  <AvatarFallback className="bg-white text-primary font-semibold text-lg">
                     {instructor.name.split(" ").map((n) => n[0]).join("")}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-medium">{instructor.name}</div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-                    <span>4.9</span>
-                    <span className="text-muted-foreground/60">• {reviews.length} reviews</span>
+                  <div className="font-semibold text-lg">{instructor.name}</div>
+                  <div className="text-sm text-primary-foreground/70 flex items-center gap-1.5">
+                    <div className="flex">
+                      {[1,2,3,4,5].map(i => (
+                        <Star key={i} className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                      ))}
+                    </div>
+                    <span className="ml-1">4.9</span>
+                    <span className="text-primary-foreground/50">({reviews.length} reviews)</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-4 mt-5 text-sm text-primary-foreground/80">
+                <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
                   <Clock className="h-4 w-4" />
                   <span>{hours} hours</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
                   <MapPin className="h-4 w-4" />
                   <span>{locationName || instructor.home_postcode}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2 bg-white/10 rounded-full px-3 py-1.5">
                   <Car className="h-4 w-4" />
                   <span>{instructor.car_make} {instructor.car_model}</span>
                 </div>
               </div>
 
               {/* Price & Payment */}
-              <div className="flex items-center gap-4 mt-4">
-                <span className="text-2xl font-bold">£{totalPrice}</span>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="rounded bg-[#ffb3c7] px-1.5 py-0.5 font-semibold text-black">Klarna.</span>
-                  <span className="rounded bg-[#b2fce4] px-1.5 py-0.5 font-semibold text-black">clearpay</span>
-                  <span>from £{Math.round(totalPrice / 4)}/mo</span>
+              <div className="flex flex-wrap items-center gap-4 mt-6">
+                <div className="bg-white text-primary rounded-xl px-5 py-3 shadow-lg">
+                  <span className="text-3xl font-bold">£{totalPrice}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-[#ffb3c7] px-2 py-1 text-xs font-bold text-black">Klarna.</span>
+                    <span className="rounded bg-[#b2fce4] px-2 py-1 text-xs font-bold text-black">clearpay</span>
+                  </div>
+                  <span className="text-sm text-primary-foreground/70">from £{Math.round(totalPrice / 4)}/mo</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
