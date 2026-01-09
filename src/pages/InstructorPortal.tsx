@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
 import { TodayScheduleView } from "@/components/instructor/TodayScheduleView";
 import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleView";
@@ -24,7 +25,13 @@ interface Pupil {
 // Mock instructor ID - in production this would come from auth
 const MOCK_INSTRUCTOR_ID = "b7987d5e-348f-4047-a8d4-ee71fab1f01d";
 
+interface Instructor {
+  name: string;
+  profile_image_url: string | null;
+}
+
 export default function InstructorPortal() {
+  const [instructor, setInstructor] = useState<Instructor | null>(null);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [pupilsLoading, setPupilsLoading] = useState(true);
   const [todaysLessonCount, setTodaysLessonCount] = useState(0);
@@ -32,9 +39,25 @@ export default function InstructorPortal() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    fetchInstructor();
     fetchPupils();
     fetchTodaysLessonCount();
   }, []);
+
+  const fetchInstructor = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("instructors")
+        .select("name, profile_image_url")
+        .eq("id", MOCK_INSTRUCTOR_ID)
+        .single();
+
+      if (error) throw error;
+      setInstructor(data);
+    } catch (error) {
+      console.error("Error fetching instructor:", error);
+    }
+  };
 
   const fetchPupils = async () => {
     try {
@@ -71,23 +94,36 @@ export default function InstructorPortal() {
     }
   };
 
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase();
+  };
+
   // Mobile Layout
   if (isMobile) {
     return (
       <MainLayout>
         <div className="container py-4 pb-24 space-y-4">
-          {/* Mobile Header */}
+          {/* Mobile Header with Avatar */}
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold">Dashboard</h1>
-              <p className="text-sm text-muted-foreground">Welcome back</p>
+            <div className="flex items-center gap-3">
+              <Avatar className="h-12 w-12 border-2 border-primary">
+                <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
+                <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                  {instructor?.name ? getInitials(instructor.name) : "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h1 className="text-lg font-bold">{instructor?.name || "Dashboard"}</h1>
+                <p className="text-sm text-muted-foreground">Welcome back</p>
+              </div>
             </div>
             <Button 
               onClick={() => setPaymentModalOpen(true)}
+              size="sm"
               className="gap-2"
             >
               <CreditCard className="h-4 w-4" />
-              Take Payment
+              Pay
             </Button>
           </div>
 
@@ -134,9 +170,18 @@ export default function InstructorPortal() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-4"
           >
-            <h1 className="text-2xl font-bold md:text-3xl">Instructor Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, John Smith</p>
+            <Avatar className="h-14 w-14 border-2 border-primary">
+              <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
+              <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-lg">
+                {instructor?.name ? getInitials(instructor.name) : "?"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl font-bold md:text-3xl">{instructor?.name || "Instructor Dashboard"}</h1>
+              <p className="text-muted-foreground">Welcome back</p>
+            </div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
