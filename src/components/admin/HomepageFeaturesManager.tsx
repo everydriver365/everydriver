@@ -44,6 +44,7 @@ interface HomepageFeature {
   display_order: number;
   is_active: boolean;
   detailed_content: string | null;
+  image_url: string | null;
 }
 
 // Popular icon options for driving school context
@@ -108,6 +109,7 @@ export function HomepageFeaturesManager() {
       display_order: maxOrder + 1,
       is_active: true,
       detailed_content: null,
+      image_url: null,
     });
     setDialogOpen(true);
   };
@@ -133,6 +135,7 @@ export function HomepageFeaturesManager() {
             display_order: editingFeature.display_order,
             is_active: editingFeature.is_active,
             detailed_content: editingFeature.detailed_content,
+            image_url: editingFeature.image_url,
           })
           .eq("id", editingFeature.id);
 
@@ -149,6 +152,7 @@ export function HomepageFeaturesManager() {
             display_order: editingFeature.display_order,
             is_active: editingFeature.is_active,
             detailed_content: editingFeature.detailed_content,
+            image_url: editingFeature.image_url,
           });
 
         if (error) throw error;
@@ -396,6 +400,36 @@ export function HomepageFeaturesManager() {
                   placeholder="Brief description shown on the card..."
                   rows={2}
                 />
+              </div>
+
+              {/* Image URL */}
+              <div className="space-y-2">
+                <Label>Feature Image URL (Optional)</Label>
+                <p className="text-xs text-muted-foreground">
+                  Add an image URL to display instead of the icon. Leave empty to show the icon.
+                </p>
+                <Input
+                  value={editingFeature.image_url || ""}
+                  onChange={(e) =>
+                    setEditingFeature({
+                      ...editingFeature,
+                      image_url: e.target.value || null,
+                    })
+                  }
+                  placeholder="https://example.com/feature-image.jpg"
+                />
+                {editingFeature.image_url && (
+                  <div className="mt-2 rounded-lg border overflow-hidden">
+                    <img 
+                      src={editingFeature.image_url} 
+                      alt="Feature preview" 
+                      className="w-full h-32 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Detailed Content for Modal */}
