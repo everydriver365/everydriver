@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CreditCard, TrendingUp, PoundSterling, Calendar } from "lucide-react";
+import { CreditCard, TrendingUp, PoundSterling, Calendar, Gift } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ interface EarningsSummary {
   thisMonth: number;
   lastMonth: number;
   hoursThisMonth: number;
+  bonusEarned: number;
 }
 
 export default function InstructorPay() {
@@ -23,6 +24,7 @@ export default function InstructorPay() {
     thisMonth: 0,
     lastMonth: 0,
     hoursThisMonth: 0,
+    bonusEarned: 0,
   });
   const [hourlyRate, setHourlyRate] = useState<number>(40);
   const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
@@ -35,10 +37,10 @@ export default function InstructorPay() {
 
   const fetchData = async () => {
     try {
-      // Fetch instructor hourly rate and payment QR
+      // Fetch instructor hourly rate, payment QR, and bonus
       const { data: instructor } = await supabase
         .from("instructors")
-        .select("hourly_rate, payment_qr_url")
+        .select("hourly_rate, payment_qr_url, bonus_earned")
         .eq("id", MOCK_INSTRUCTOR_ID)
         .single();
 
@@ -46,6 +48,8 @@ export default function InstructorPay() {
         setHourlyRate(instructor.hourly_rate || 40);
         setPaymentQrUrl(instructor.payment_qr_url);
       }
+
+      const bonusAmount = (instructor as any)?.bonus_earned || 0;
 
       const now = new Date();
       const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
@@ -87,6 +91,7 @@ export default function InstructorPay() {
         thisMonth: Math.round(thisMonthHours * rate),
         lastMonth: Math.round(lastMonthHours * rate),
         hoursThisMonth: Math.round(thisMonthHours),
+        bonusEarned: bonusAmount,
       });
     } catch (error) {
       console.error("Error fetching earnings:", error);
@@ -137,6 +142,18 @@ export default function InstructorPay() {
           </Card>
         </div>
 
+        {/* Bonus Earned */}
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-white/80 mb-1">
+              <Gift className="h-4 w-4" />
+              <span className="text-xs">Bonus Earned</span>
+            </div>
+            <div className="text-2xl font-bold">£{earnings.bonusEarned}</div>
+            <p className="text-xs text-white/70 mt-1">£50 per completed course</p>
+          </CardContent>
+        </Card>
+
         {/* Details */}
         <Card>
           <CardHeader className="pb-2">
@@ -154,10 +171,6 @@ export default function InstructorPay() {
             <div className="flex justify-between items-center py-2 border-b">
               <span className="text-muted-foreground">Last Month</span>
               <span className="font-semibold">£{earnings.lastMonth}</span>
-            </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-muted-foreground">School Commission</span>
-              <span className="font-semibold text-muted-foreground">Varies</span>
             </div>
           </CardContent>
         </Card>
