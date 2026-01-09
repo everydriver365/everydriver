@@ -270,8 +270,8 @@ export default function Index() {
               >
                 <div className="relative w-32 lg:w-40">
                   <img 
-                    src={testimonialPriyaFallback} 
-                    alt="Priya" 
+                    src={testimonialPriya} 
+                    alt="Priya"
                     className="w-full aspect-[4/5] object-cover"
                   />
                   <div className="pt-3 pb-1 text-center">
