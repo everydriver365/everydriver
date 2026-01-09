@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, Headphones, ChevronDown } from "lucide-react";
+import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, Headphones, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
-import { CourseCard } from "@/components/CourseCard";
+import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
@@ -14,6 +14,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useSiteImages } from "@/hooks/useSiteImages";
+import { useFeaturedCourses } from "@/hooks/useFeaturedCourses";
 // Static fallback images
 import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
@@ -89,6 +90,7 @@ const testimonials = [
 export default function Index() {
   const [postcode, setPostcode] = useState("");
   const { getImage, getAlt } = useSiteImages();
+  const { courses: featuredCourses, loading: featuredLoading } = useFeaturedCourses(3);
 
   // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
@@ -681,72 +683,39 @@ export default function Index() {
           </motion.div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-              <CourseCard
-                course={{
-                  id: 1,
-                  title: "Intensive Driving Course - Manchester",
-                  instructor: "Sarah Johnson",
-                  price: 1299,
-                  location: "Manchester, M1",
-                  duration: "30 hours",
-                  description: "Fast-track your driving with our intensive course. Perfect for quick learners who want to pass in 1-2 weeks.",
-                  nextAvailableDay: "15",
-                  nextAvailableMonth: "Jan",
-                  tags: ["Intensive"],
-                  isPopular: true,
-                }}
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              viewport={{ once: true }}
-            >
-              <CourseCard
-                course={{
-                  id: 2,
-                  title: "Semi-Intensive Course - London",
-                  instructor: "James Williams",
-                  price: 999,
-                  location: "London, SW1",
-                  duration: "30 hours",
-                  description: "Balance speed and flexibility with our semi-intensive option. Learn at a comfortable pace over 2-4 weeks.",
-                  nextAvailableDay: "18",
-                  nextAvailableMonth: "Jan",
-                  tags: ["Semi-Intensive"],
-                }}
-              />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <CourseCard
-                course={{
-                  id: 3,
-                  title: "Weekly Lessons - Birmingham",
-                  instructor: "Emma Thompson",
-                  price: 35,
-                  location: "Birmingham, B1",
-                  duration: "2 hours/week",
-                  description: "Traditional weekly lessons at your own pace. Perfect for busy schedules with flexible booking.",
-                  nextAvailableDay: "12",
-                  nextAvailableMonth: "Jan",
-                  tags: ["Weekly"],
-                }}
-              />
-            </motion.div>
+            {featuredLoading ? (
+              // Loading state
+              <>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-[340px] animate-pulse rounded-xl bg-muted" />
+                ))}
+              </>
+            ) : featuredCourses.length > 0 ? (
+              // Live courses
+              featuredCourses.map((course, index) => (
+                <motion.div
+                  key={`${course.instructor.id}-${course.hours}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+                  viewport={{ once: true }}
+                >
+                  <DynamicCourseCard
+                    instructor={course.instructor}
+                    hours={course.hours}
+                    nextAvailable={course.bookableDate}
+                    courseImageUrl={course.courseImageUrl}
+                    isPopular={course.isPopular}
+                    availableFrom={course.availableFrom}
+                  />
+                </motion.div>
+              ))
+            ) : (
+              // No courses available
+              <div className="col-span-full py-12 text-center">
+                <p className="text-muted-foreground">No courses available at the moment. Check back soon!</p>
+              </div>
+            )}
           </div>
 
           <div className="mt-6 text-center sm:hidden">
