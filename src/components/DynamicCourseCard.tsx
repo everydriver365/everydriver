@@ -210,7 +210,7 @@ export function DynamicCourseCard({
                 </div>
               </div>
               <Button size="sm" variant="secondary" onClick={handleBookNow}>
-                Book Now
+                Learn More
               </Button>
             </div>
 

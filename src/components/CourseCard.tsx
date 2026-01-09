@@ -175,7 +175,7 @@ export function CourseCard({ course }: CourseCardProps) {
                   // Handle booking
                 }}
               >
-                Book Now
+                Learn More
               </Button>
             </div>
 
