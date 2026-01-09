@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { PostcodeMapPreview } from "./PostcodeMapPreview";
 
 interface ScheduledLesson {
   id: string;
@@ -234,6 +235,12 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
               >
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
+                    {/* Map Preview */}
+                    <PostcodeMapPreview 
+                      postcode={lesson.pickup_postcode || lesson.pupil?.postcode || ""} 
+                      className="rounded-none border-0"
+                    />
+                    
                     {/* Time Header */}
                     <div className="bg-primary px-3 py-1.5 flex items-center justify-between">
                       <div className="flex items-center gap-2 text-primary-foreground text-sm">
