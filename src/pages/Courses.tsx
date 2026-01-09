@@ -271,6 +271,61 @@ export default function Courses() {
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
+  // Helper to check if a date has availability
+  const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
+    const today = startOfDay(new Date());
+    if (isBefore(day, today)) return false;
+
+    const dayOfWeek = getDay(day);
+    const dateStr = format(day, "yyyy-MM-dd");
+
+    return instructorsList.some((instructor) => {
+      if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+        return false;
+      }
+
+      const override = dateOverridesList.find(
+        (o) =>
+          o.instructor_id === instructor.id &&
+          (o.override_date === dateStr ||
+            (o.override_end_date &&
+              dateStr >= o.override_date &&
+              dateStr <= o.override_end_date))
+      );
+      if (override) return override.is_available;
+
+      return workingHoursList.some(
+        (wh) =>
+          wh.instructor_id === instructor.id &&
+          wh.day_of_week === dayOfWeek &&
+          wh.is_active
+      );
+    });
+  }, []);
+
+  // Find first available date across next 6 months
+  const findFirstAvailableDate = useCallback((instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
+    const today = startOfDay(new Date());
+    
+    for (const monthOption of monthOptions) {
+      const [year, month] = monthOption.value.split("-").map(Number);
+      const monthStart = startOfMonth(new Date(year, month - 1));
+      const monthEnd = endOfMonth(monthStart);
+      const searchStart = isAfter(monthStart, today) ? monthStart : today;
+      
+      if (isBefore(monthEnd, today)) continue;
+      
+      const daysInMonth = eachDayOfInterval({ start: searchStart, end: monthEnd });
+      
+      for (const day of daysInMonth) {
+        if (isDateAvailable(day, instructorsList, workingHoursList, dateOverridesList)) {
+          return { date: day, month: monthOption.value };
+        }
+      }
+    }
+    return null;
+  }, [monthOptions, isDateAvailable]);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -454,11 +509,22 @@ export default function Courses() {
       if (workingHoursRes.error) throw workingHoursRes.error;
       if (overridesRes.error) throw overridesRes.error;
 
-      setInstructors(instructorsRes.data || []);
+      const loadedInstructors = instructorsRes.data || [];
+      const loadedWorkingHours = workingHoursRes.data || [];
+      const loadedOverrides = overridesRes.data || [];
+
+      setInstructors(loadedInstructors);
       setInstructorCourses(coursesRes.data || []);
       setCourseTemplates(templatesRes.data || []);
-      setWorkingHours(workingHoursRes.data || []);
-      setDateOverrides(overridesRes.data || []);
+      setWorkingHours(loadedWorkingHours);
+      setDateOverrides(loadedOverrides);
+
+      // Auto-advance to first available date
+      const firstAvailable = findFirstAvailableDate(loadedInstructors, loadedWorkingHours, loadedOverrides);
+      if (firstAvailable) {
+        setSelectedMonth(firstAvailable.month);
+        setSelectedDate(firstAvailable.date);
+      }
 
       // Geocode all instructor postcodes
       const allPostcodes = (instructorsRes.data || []).map((i) => i.home_postcode.replace(/\s+/g, "").toUpperCase());
