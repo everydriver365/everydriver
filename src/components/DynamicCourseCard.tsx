@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, TrendingUp, Star, CheckCircle, CalendarClock, Zap } from "lucide-react";
+import { MapPin, Clock, Star, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { format, isFuture, parseISO, differenceInDays } from "date-fns";
+import { isFuture, parseISO, differenceInDays } from "date-fns";
 
 interface DynamicCourseCardProps {
   instructor: {
@@ -15,6 +15,7 @@ interface DynamicCourseCardProps {
     car_make: string | null;
     car_model: string | null;
     home_postcode: string;
+    home_address: string | null;
     hourly_rate: number | null;
     bio: string | null;
     brand_colour: string | null;
@@ -24,7 +25,7 @@ interface DynamicCourseCardProps {
   courseImageUrl?: string | null;
   isPopular?: boolean;
   availableFrom?: string | null;
-  distance?: number; // Distance in miles from user's location
+  distance?: number;
 }
 
 export function DynamicCourseCard({ 
@@ -53,37 +54,13 @@ export function DynamicCourseCard({
   const hasDelayedAvailability = availableFrom && isFuture(parseISO(availableFrom));
   const availableFromDate = availableFrom ? parseISO(availableFrom) : null;
 
-  const formatNextAvailable = () => {
-    // Use the nextAvailable date (selected from calendar) if provided
-    if (nextAvailable) {
-      const date = new Date(nextAvailable);
-      return {
-        day: date.getDate().toString(),
-        month: date.toLocaleDateString("en-GB", { month: "short" }),
-        isDelayed: false,
-        date: date,
-      };
-    }
-    // Fallback: If instructor has a future available_from date, show that
-    if (hasDelayedAvailability && availableFromDate) {
-      return {
-        day: availableFromDate.getDate().toString(),
-        month: availableFromDate.toLocaleDateString("en-GB", { month: "short" }),
-        isDelayed: true,
-        date: availableFromDate,
-      };
-    }
-    return { day: "TBC", month: "", isDelayed: false, date: null };
-  };
-
-  const { day, month, isDelayed, date: availableDate } = formatNextAvailable();
-  
   // Check if available within 7 days
+  const availableDate = nextAvailable ? new Date(nextAvailable) : (hasDelayedAvailability ? availableFromDate : null);
   const isAvailableSoon = availableDate && differenceInDays(availableDate, new Date()) <= 7 && differenceInDays(availableDate, new Date()) >= 0;
 
   return (
     <div
-      className="group h-[420px] cursor-pointer [perspective:1000px]"
+      className="group h-[380px] cursor-pointer [perspective:1000px]"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
     >
@@ -94,31 +71,24 @@ export function DynamicCourseCard({
       >
         {/* Front of Card */}
         <div className="absolute inset-0 overflow-hidden rounded-2xl border bg-card shadow-md [backface-visibility:hidden]">
-          {/* Available This Week Ribbon */}
-          {isAvailableSoon && (
+          {/* Popular Ribbon */}
+          {isPopular && (
             <div className="absolute top-0 left-0 z-20 overflow-hidden w-24 h-24 pointer-events-none">
               <div className="absolute top-3 -left-8 w-32 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider py-1 text-center transform -rotate-45 shadow-md">
-                This Week!
+                Popular
               </div>
             </div>
           )}
           
-          {/* Hero Image Section - taller */}
-          <div className="relative h-56 overflow-hidden">
+          {/* Hero Image Section */}
+          <div className="relative h-44 overflow-hidden">
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
               alt={courseName}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             
-            {isPopular && !distance && (
-              <Badge className="absolute left-3 top-3 border-0 bg-emerald-500 text-white gap-1">
-                <TrendingUp className="h-3 w-3" />
-                Popular
-              </Badge>
-            )}
-
-            {/* Distance badge - bottom left of image */}
+            {/* Distance badge */}
             {distance !== undefined && (
               <div className="absolute left-3 bottom-3 flex items-center gap-1.5 bg-primary/95 backdrop-blur-sm text-primary-foreground px-2.5 py-1.5 rounded-lg shadow-lg">
                 <MapPin className="h-3.5 w-3.5" />
@@ -126,89 +96,60 @@ export function DynamicCourseCard({
               </div>
             )}
 
-            {/* Price badge - top right */}
-            <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
-              <div className="bg-card/95 backdrop-blur-sm rounded-lg px-2.5 py-1.5 shadow-lg border">
-                <div className="text-lg font-bold text-foreground">£{totalPrice}</div>
-                <div className="text-[10px] text-muted-foreground">£{Math.round(totalPrice / 4)}/mo</div>
-              </div>
-              <div className="flex gap-1">
-                <Badge className="border-0 bg-primary/90 text-primary-foreground backdrop-blur-sm text-[10px]">
-                  {instructor.car_type}
-                </Badge>
-                {hours === 28 && (
-                  <Badge className="border-0 bg-amber-500 text-white text-[10px]">
-                    Intensive
-                  </Badge>
-                )}
-              </div>
-            </div>
+            {/* Transmission badge */}
+            <Badge className="absolute right-3 top-3 border-0 bg-primary/90 text-primary-foreground backdrop-blur-sm">
+              {instructor.car_type}
+            </Badge>
           </div>
 
-          {/* Content Section - smaller */}
-          <div className="flex h-[calc(100%-14rem)]">
-            <div className={`relative flex flex-col items-center justify-center px-3 py-2 min-w-[70px] ${
-              isAvailableSoon 
-                ? "bg-emerald-500 text-white" 
-                : isDelayed 
-                  ? "bg-amber-500 text-white" 
-                  : "bg-primary text-primary-foreground"
-            }`}>
-              {isAvailableSoon && (
-                <div className="absolute inset-0 bg-emerald-400 animate-pulse opacity-30" />
-              )}
-              {isAvailableSoon ? (
-                <>
-                  <Zap className="h-4 w-4 mb-1 animate-pulse" />
-                  <span className="text-[9px] font-semibold uppercase tracking-wider">Book</span>
-                  <span className="text-[9px] font-semibold uppercase tracking-wider">Now!</span>
-                </>
-              ) : (
-                <>
-                  <CalendarClock className="h-4 w-4 mb-1 opacity-90" />
-                </>
-              )}
-              <span className="mt-0.5 text-2xl font-bold relative z-10">{day}</span>
-              <span className="text-xs font-semibold relative z-10">{month}</span>
+          {/* Content Section */}
+          <div className="p-4">
+            {/* Course Title */}
+            <h3 className="text-lg font-bold text-foreground">{courseName}</h3>
+            
+            {/* Duration & Location */}
+            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4" />
+                <span>{hours} hours</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="h-4 w-4" />
+                <span className="truncate">{instructor.home_address || instructor.home_postcode}</span>
+              </div>
             </div>
 
-            <div className="flex-1 p-2.5">
-              <div className="flex items-center gap-2.5">
-                <Avatar className="h-10 w-10 ring-2 ring-background shadow-md">
-                  <AvatarImage src={instructor.profile_image_url || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
-                    {instructor.name.split(" ").map((n) => n[0]).join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-bold text-foreground truncate">{courseName}</h3>
-                  <span className="text-xs text-muted-foreground truncate block">
-                    {instructor.name}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="mt-1.5 flex items-center gap-3 text-[11px] text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{hours}hrs</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  <span className="truncate">
-                    {distance !== undefined ? `${distance.toFixed(1)}mi` : instructor.home_postcode}
-                  </span>
-                </div>
-              </div>
+            {/* Instructor */}
+            <div className="mt-3 flex items-center gap-3">
+              <Avatar className="h-9 w-9 ring-2 ring-background shadow-md">
+                <AvatarImage src={instructor.profile_image_url || undefined} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+                  {instructor.name.split(" ").map((n) => n[0]).join("")}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium text-foreground">{instructor.name}</span>
+            </div>
 
-              <div className="mt-1.5 flex items-center gap-1 text-[10px]">
-                <span className="rounded bg-[#b2fce4] px-1 py-0.5 font-semibold text-[#000]">
+            {/* Price */}
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-foreground">£{totalPrice}</span>
+              <span className="text-sm text-muted-foreground line-through">£{Math.round(totalPrice * 1.15)}</span>
+              <Badge variant="secondary" className="ml-auto bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                Save 15%
+              </Badge>
+            </div>
+
+            {/* Payment Options */}
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
+              <div className="flex items-center gap-1.5">
+                <span className="rounded bg-[#b2fce4] px-1.5 py-0.5 text-xs font-bold text-black">
                   clearpay
                 </span>
-                <span className="rounded bg-[#ffb3c7] px-1 py-0.5 font-semibold text-[#000]">
+                <span className="rounded bg-[#ffb3c7] px-1.5 py-0.5 text-xs font-bold text-black">
                   Klarna.
                 </span>
               </div>
+              <span className="text-xs text-muted-foreground">Pay in 3 or 4 months</span>
             </div>
           </div>
 
