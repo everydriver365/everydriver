@@ -56,6 +56,7 @@ import {
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
+import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 
 interface Pupil {
   id: string;
@@ -220,7 +221,7 @@ export default function InstructorPupils() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="container py-8 flex items-center justify-center min-h-[400px]">
+        <div className="px-3 md:container py-8 flex items-center justify-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </MainLayout>
@@ -229,7 +230,7 @@ export default function InstructorPupils() {
 
   return (
     <MainLayout>
-      <div className="container py-8">
+      <div className="px-3 md:container py-6 pb-24">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
@@ -715,6 +716,7 @@ export default function InstructorPupils() {
           </SheetContent>
         </Sheet>
       </div>
+      <InstructorBottomNav />
     </MainLayout>
   );
 }
