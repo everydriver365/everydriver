@@ -638,6 +638,9 @@ export type Database = {
           postcode: string
           prepaid_hours: number | null
           progress: number | null
+          test_centre_id: string | null
+          test_date: string | null
+          test_time: string | null
           updated_at: string
         }
         Insert: {
@@ -657,6 +660,9 @@ export type Database = {
           postcode: string
           prepaid_hours?: number | null
           progress?: number | null
+          test_centre_id?: string | null
+          test_date?: string | null
+          test_time?: string | null
           updated_at?: string
         }
         Update: {
@@ -676,6 +682,9 @@ export type Database = {
           postcode?: string
           prepaid_hours?: number | null
           progress?: number | null
+          test_centre_id?: string | null
+          test_date?: string | null
+          test_time?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -691,6 +700,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupils_test_centre_id_fkey"
+            columns: ["test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
             referencedColumns: ["id"]
           },
         ]
