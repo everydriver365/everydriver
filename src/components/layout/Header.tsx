@@ -98,6 +98,24 @@ export function Header() {
         >
           <div className="container py-4">
             <div className="flex flex-col gap-2">
+              {/* Mobile Postcode Search */}
+              <form onSubmit={handleSearch} className="mb-2">
+                <div className="flex items-center rounded-full bg-secondary px-3 py-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
+                  <Input
+                    type="text"
+                    placeholder="Enter your postcode"
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
+                    className="h-8 flex-1 border-0 bg-transparent p-0 text-sm placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                  <Button type="submit" variant="accent" size="sm" className="h-8 rounded-full px-4 ml-2">
+                    <Search className="h-4 w-4 mr-1" />
+                    Search
+                  </Button>
+                </div>
+              </form>
+
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -108,13 +126,6 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
-              <div className="mt-2">
-                <Link to="/courses">
-                  <Button variant="accent" className="w-full">
-                    Find Courses
-                  </Button>
-                </Link>
-              </div>
             </div>
           </div>
         </motion.div>
