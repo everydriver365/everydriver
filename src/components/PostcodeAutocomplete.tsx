@@ -4,10 +4,15 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
+interface PostcodeSuggestion {
+  postcode: string;
+  area_name: string | null;
+}
+
 interface PostcodeAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
-  onSelect?: (postcode: string) => void;
+  onSelect?: (postcode: string, areaName?: string | null) => void;
   placeholder?: string;
   className?: string;
   inputClassName?: string;
@@ -21,7 +26,7 @@ export function PostcodeAutocomplete({
   className,
   inputClassName,
 }: PostcodeAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<PostcodeSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -115,11 +120,11 @@ export function PostcodeAutocomplete({
     }
   };
 
-  const handleSelect = (postcode: string) => {
-    onChange(postcode);
+  const handleSelect = (suggestion: PostcodeSuggestion) => {
+    onChange(suggestion.postcode);
     setShowDropdown(false);
     setSuggestions([]);
-    onSelect?.(postcode);
+    onSelect?.(suggestion.postcode, suggestion.area_name);
   };
 
   return (
@@ -148,20 +153,27 @@ export function PostcodeAutocomplete({
       {showDropdown && suggestions.length > 0 && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border bg-popover shadow-lg overflow-hidden">
           <ul className="max-h-60 overflow-auto py-1">
-            {suggestions.map((postcode, index) => (
+            {suggestions.map((suggestion, index) => (
               <li
-                key={postcode}
-                onClick={() => handleSelect(postcode)}
+                key={suggestion.postcode}
+                onClick={() => handleSelect(suggestion)}
                 onMouseEnter={() => setHighlightedIndex(index)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 cursor-pointer transition-colors",
+                  "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors",
                   highlightedIndex === index
                     ? "bg-accent text-accent-foreground"
                     : "hover:bg-muted"
                 )}
               >
                 <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="font-medium">{postcode}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-semibold">{suggestion.postcode}</span>
+                  {suggestion.area_name && (
+                    <span className="text-sm text-muted-foreground truncate">
+                      {suggestion.area_name}
+                    </span>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
