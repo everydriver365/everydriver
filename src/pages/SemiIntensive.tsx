@@ -28,6 +28,7 @@ export default function SemiIntensive() {
     handleSearch,
     searchedPostcode,
     searchedAreaName,
+    clearSearch,
   } = useCourseDiscovery("semi-intensive");
 
   return (
@@ -108,6 +109,7 @@ export default function SemiIntensive() {
               userLocation={userLocation}
               searchedPostcode={searchedPostcode}
               searchedAreaName={searchedAreaName}
+              onClearSearch={clearSearch}
             />
           </div>
         </div>

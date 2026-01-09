@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin } from "lucide-react";
+import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { CourseWithInstructor, SortOption } from "@/hooks/useCourseDiscovery";
@@ -13,6 +13,7 @@ interface CourseGridProps {
   userLocation: { lat: number; lng: number } | null;
   searchedPostcode?: string | null;
   searchedAreaName?: string | null;
+  onClearSearch?: () => void;
 }
 
 export function CourseGrid({
@@ -23,6 +24,7 @@ export function CourseGrid({
   userLocation,
   searchedPostcode,
   searchedAreaName,
+  onClearSearch,
 }: CourseGridProps) {
   if (!selectedDate) {
     return (
@@ -49,11 +51,24 @@ export function CourseGrid({
     <>
       {/* Location header if searched */}
       {locationDisplay && (
-        <div className="mb-4 flex items-center gap-2 text-primary">
-          <MapPin className="h-5 w-5" />
-          <h2 className="text-lg font-semibold">
-            Courses Available in {locationDisplay}
-          </h2>
+        <div className="mb-4 flex items-center justify-between rounded-lg bg-primary/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-primary">
+            <MapPin className="h-5 w-5" />
+            <h2 className="text-lg font-semibold">
+              Courses Available in {locationDisplay}
+            </h2>
+          </div>
+          {onClearSearch && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onClearSearch}
+              className="gap-1.5 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+              Clear search
+            </Button>
+          )}
         </div>
       )}
 

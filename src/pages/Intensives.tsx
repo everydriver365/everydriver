@@ -28,6 +28,7 @@ export default function Intensives() {
     handleSearch,
     searchedPostcode,
     searchedAreaName,
+    clearSearch,
   } = useCourseDiscovery("intensive");
 
   return (
@@ -108,6 +109,7 @@ export default function Intensives() {
               userLocation={userLocation}
               searchedPostcode={searchedPostcode}
               searchedAreaName={searchedAreaName}
+              onClearSearch={clearSearch}
             />
           </div>
         </div>
