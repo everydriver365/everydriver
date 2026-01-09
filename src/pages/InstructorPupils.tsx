@@ -52,11 +52,13 @@ import {
   ArrowLeft,
   User,
   History,
+  Navigation,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
 
 interface Pupil {
   id: string;
@@ -94,6 +96,7 @@ export default function InstructorPupils() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isDrivingReportOpen, setIsDrivingReportOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Pupil>>({});
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -420,6 +423,15 @@ export default function InstructorPupils() {
                               Lesson History
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedPupil(pupil);
+                                setIsDrivingReportOpen(true);
+                              }}
+                            >
+                              <Navigation className="mr-2 h-4 w-4" />
+                              Driving Report
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
                               onClick={() => handleDeletePupil(pupil)}
                               className="text-destructive"
                             >
@@ -721,6 +733,28 @@ export default function InstructorPupils() {
             )}
           </SheetContent>
         </Sheet>
+
+        {/* Driving Report Dialog */}
+        <Dialog open={isDrivingReportOpen} onOpenChange={setIsDrivingReportOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Navigation className="h-5 w-5 text-primary" />
+                Driving Report
+              </DialogTitle>
+              <DialogDescription>
+                Telematics data and driving behavior analysis for {selectedPupil?.name}
+              </DialogDescription>
+            </DialogHeader>
+            {selectedPupil && (
+              <PupilDrivingReport
+                pupilId={selectedPupil.id}
+                pupilName={selectedPupil.name}
+                instructorId={MOCK_INSTRUCTOR_ID}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
       <InstructorBottomNav />
     </MainLayout>
