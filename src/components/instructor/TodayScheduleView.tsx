@@ -10,7 +10,10 @@ import {
   MapPin,
   Check,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  CalendarClock,
+  XCircle,
+  MoreHorizontal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +23,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -35,6 +39,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
+import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
+import { CancelLessonDialog } from "./CancelLessonDialog";
 
 interface ScheduledLesson {
   id: string;
@@ -68,6 +74,8 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [completingLesson, setCompletingLesson] = useState<string | null>(null);
+  const [rescheduleLesson, setRescheduleLesson] = useState<ScheduledLesson | null>(null);
+  const [cancelLesson, setCancelLesson] = useState<ScheduledLesson | null>(null);
 
   useEffect(() => {
     fetchLessons();
@@ -343,7 +351,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="grid grid-cols-5 gap-1.5 pt-1">
+                      <div className="grid grid-cols-6 gap-1 pt-1">
                         <Button
                           variant="outline"
                           size="sm"
@@ -443,6 +451,34 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+
+                        {/* More Options */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="flex-col h-auto py-1.5 gap-0.5"
+                            >
+                              <MoreHorizontal className="h-3.5 w-3.5" />
+                              <span className="text-[10px]">More</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setRescheduleLesson(lesson)}>
+                              <CalendarClock className="h-4 w-4 mr-2" />
+                              Reschedule
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => setCancelLesson(lesson)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Cancel Lesson
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   </CardContent>
@@ -452,6 +488,42 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
           </AnimatePresence>
         )}
       </CardContent>
+
+      {/* Reschedule Sheet */}
+      {rescheduleLesson && (
+        <RescheduleLessonSheet
+          open={!!rescheduleLesson}
+          onOpenChange={(open) => !open && setRescheduleLesson(null)}
+          lessonId={rescheduleLesson.id}
+          instructorId={instructorId}
+          pupilName={rescheduleLesson.pupil?.name || "Pupil"}
+          currentDate={rescheduleLesson.lesson_date}
+          currentTime={rescheduleLesson.start_time}
+          durationMinutes={rescheduleLesson.duration_minutes}
+          onRescheduled={() => {
+            setRescheduleLesson(null);
+            fetchLessons();
+          }}
+        />
+      )}
+
+      {/* Cancel Dialog */}
+      {cancelLesson && (
+        <CancelLessonDialog
+          open={!!cancelLesson}
+          onOpenChange={(open) => !open && setCancelLesson(null)}
+          lessonId={cancelLesson.id}
+          pupilId={cancelLesson.pupil?.id || ""}
+          pupilName={cancelLesson.pupil?.name || "Pupil"}
+          amountDue={cancelLesson.amount_due || 0}
+          pupilBalance={cancelLesson.pupil?.account_balance || 0}
+          durationMinutes={cancelLesson.duration_minutes}
+          onCancelled={() => {
+            setCancelLesson(null);
+            setLessons((prev) => prev.filter((l) => l.id !== cancelLesson.id));
+          }}
+        />
+      )}
     </Card>
   );
 }
