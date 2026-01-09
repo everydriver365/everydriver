@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, X, User, GraduationCap, Shield, Users, MapPin, Search } from "lucide-react";
+import { Menu, X, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -13,12 +13,6 @@ const navLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-const portalLinks = [
-  { href: "/pupil", label: "Pupil Portal", icon: GraduationCap },
-  { href: "/instructor", label: "Instructor Portal", icon: User },
-  { href: "/parent", label: "Parent Portal", icon: Users },
-  { href: "/admin", label: "Admin Portal", icon: Shield },
-];
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -55,7 +49,6 @@ export function Header() {
           ))}
         </div>
 
-        {/* Postcode Search & Portal Dropdown & Login */}
         <div className="hidden items-center gap-3 md:flex">
           {/* Postcode Search */}
           <form onSubmit={handleSearch} className="flex items-center">
@@ -79,27 +72,6 @@ export function Header() {
               </Button>
             </div>
           </form>
-
-          <div className="group relative">
-            <Button variant="outline" size="sm" className="border-nav-foreground/30 text-nav-foreground hover:bg-nav-foreground/10 hover:text-nav-foreground">
-              Portals
-            </Button>
-            <div className="invisible absolute right-0 top-full mt-2 w-48 rounded-xl border bg-card p-2 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
-              {portalLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                >
-                  <link.icon className="h-4 w-4" />
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <Button variant="accent" size="sm">
-            Book Now
-          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -133,25 +105,12 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
-              <div className="my-2 border-t" />
-              <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Portals
-              </p>
-              {portalLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                >
-                  <link.icon className="h-4 w-4" />
-                  {link.label}
-                </Link>
-              ))}
               <div className="mt-2">
-                <Button variant="accent" className="w-full">
-                  Book Now
-                </Button>
+                <Link to="/courses">
+                  <Button variant="accent" className="w-full">
+                    Find Courses
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
