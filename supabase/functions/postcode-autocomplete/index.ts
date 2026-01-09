@@ -5,6 +5,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface PostcodeSuggestion {
+  postcode: string;
+  area_name: string | null;
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -27,30 +32,64 @@ serve(async (req) => {
     console.log(`Fetching autocomplete for: ${cleanQuery}`);
 
     // Call postcodes.io autocomplete API
-    const response = await fetch(
+    const autocompleteResponse = await fetch(
       `https://api.postcodes.io/postcodes/${encodeURIComponent(cleanQuery)}/autocomplete`
     );
 
-    if (!response.ok) {
-      console.error(`Postcodes.io error: ${response.status}`);
+    if (!autocompleteResponse.ok) {
+      console.error(`Postcodes.io autocomplete error: ${autocompleteResponse.status}`);
       return new Response(
         JSON.stringify({ suggestions: [] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const data = await response.json();
+    const autocompleteData = await autocompleteResponse.json();
+    const rawPostcodes: string[] = autocompleteData.result || [];
     
-    // Format postcodes with proper spacing (e.g., "SW1A 1AA")
-    const suggestions = (data.result || []).map((postcode: string) => {
-      // Insert space before last 3 characters
-      if (postcode.length > 3) {
-        return postcode.slice(0, -3) + ' ' + postcode.slice(-3);
-      }
-      return postcode;
+    if (rawPostcodes.length === 0) {
+      return new Response(
+        JSON.stringify({ suggestions: [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Bulk lookup to get area names for all postcodes
+    const bulkResponse = await fetch('https://api.postcodes.io/postcodes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ postcodes: rawPostcodes }),
     });
 
-    console.log(`Found ${suggestions.length} suggestions`);
+    const suggestions: PostcodeSuggestion[] = [];
+
+    if (bulkResponse.ok) {
+      const bulkData = await bulkResponse.json();
+      
+      for (const item of bulkData.result || []) {
+        if (item.result) {
+          // Format postcode with space
+          const formattedPostcode = item.query.length > 3 
+            ? item.query.slice(0, -3) + ' ' + item.query.slice(-3)
+            : item.query;
+          
+          suggestions.push({
+            postcode: formattedPostcode,
+            area_name: item.result.admin_district || item.result.admin_ward || null,
+          });
+        }
+      }
+    } else {
+      // Fallback: just return postcodes without area names
+      for (const postcode of rawPostcodes) {
+        const formattedPostcode = postcode.length > 3 
+          ? postcode.slice(0, -3) + ' ' + postcode.slice(-3)
+          : postcode;
+        suggestions.push({ postcode: formattedPostcode, area_name: null });
+      }
+    }
+
+    console.log(`Found ${suggestions.length} suggestions with area names`);
 
     return new Response(
       JSON.stringify({ suggestions }),
