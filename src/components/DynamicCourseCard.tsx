@@ -54,7 +54,17 @@ export function DynamicCourseCard({
   const availableFromDate = availableFrom ? parseISO(availableFrom) : null;
 
   const formatNextAvailable = () => {
-    // If instructor has a future available_from date, show that instead
+    // Use the nextAvailable date (selected from calendar) if provided
+    if (nextAvailable) {
+      const date = new Date(nextAvailable);
+      return {
+        day: date.getDate().toString(),
+        month: date.toLocaleDateString("en-GB", { month: "short" }),
+        isDelayed: false,
+        date: date,
+      };
+    }
+    // Fallback: If instructor has a future available_from date, show that
     if (hasDelayedAvailability && availableFromDate) {
       return {
         day: availableFromDate.getDate().toString(),
@@ -63,14 +73,7 @@ export function DynamicCourseCard({
         date: availableFromDate,
       };
     }
-    if (!nextAvailable) return { day: "TBC", month: "", isDelayed: false, date: null };
-    const date = new Date(nextAvailable);
-    return {
-      day: date.getDate().toString(),
-      month: date.toLocaleDateString("en-GB", { month: "short" }),
-      isDelayed: false,
-      date: date,
-    };
+    return { day: "TBC", month: "", isDelayed: false, date: null };
   };
 
   const { day, month, isDelayed, date: availableDate } = formatNextAvailable();
