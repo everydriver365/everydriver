@@ -213,8 +213,12 @@ export default function BookingSummary() {
                   <Clock className="h-5 w-5 text-primary" />
                   <div>
                     <div className="font-medium">{hours} Hours Total</div>
-                    <div className="text-sm text-muted-foreground">
-                      Lessons from {instructor.allowed_lesson_lengths?.[0] ? instructor.allowed_lesson_lengths[0] / 60 : 1}h to {instructor.preferred_lesson_length / 60}h
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {(instructor.allowed_lesson_lengths || [60, 90, 120]).map((length) => (
+                        <Badge key={length} variant="outline" className="text-xs font-medium">
+                          {length / 60}h lesson
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 </div>
