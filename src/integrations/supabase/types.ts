@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      course_reviews: {
+        Row: {
+          course_hours: number
+          created_at: string
+          id: string
+          instructor_id: string
+          is_verified: boolean | null
+          is_visible: boolean | null
+          rating: number
+          review_date: string | null
+          review_text: string
+          reviewer_name: string
+        }
+        Insert: {
+          course_hours: number
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_verified?: boolean | null
+          is_visible?: boolean | null
+          rating: number
+          review_date?: string | null
+          review_text: string
+          reviewer_name: string
+        }
+        Update: {
+          course_hours?: number
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_verified?: boolean | null
+          is_visible?: boolean | null
+          rating?: number
+          review_date?: string | null
+          review_text?: string
+          reviewer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_reviews_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_templates: {
         Row: {
           course_hours: number
@@ -21,14 +68,21 @@ export type Database = {
           created_at: string
           default_image_url: string | null
           display_order: number | null
+          driving_test_details: string | null
+          explainer_video_url: string | null
           features: string[] | null
           full_description: string | null
           id: string
           is_active: boolean | null
           is_intensive: boolean | null
           is_popular: boolean | null
+          payment_terms: string | null
+          prerequisites: string[] | null
           short_description: string | null
+          terms_conditions: string | null
+          theory_test_details: string | null
           updated_at: string
+          what_to_bring: string[] | null
         }
         Insert: {
           course_hours: number
@@ -36,14 +90,21 @@ export type Database = {
           created_at?: string
           default_image_url?: string | null
           display_order?: number | null
+          driving_test_details?: string | null
+          explainer_video_url?: string | null
           features?: string[] | null
           full_description?: string | null
           id?: string
           is_active?: boolean | null
           is_intensive?: boolean | null
           is_popular?: boolean | null
+          payment_terms?: string | null
+          prerequisites?: string[] | null
           short_description?: string | null
+          terms_conditions?: string | null
+          theory_test_details?: string | null
           updated_at?: string
+          what_to_bring?: string[] | null
         }
         Update: {
           course_hours?: number
@@ -51,14 +112,21 @@ export type Database = {
           created_at?: string
           default_image_url?: string | null
           display_order?: number | null
+          driving_test_details?: string | null
+          explainer_video_url?: string | null
           features?: string[] | null
           full_description?: string | null
           id?: string
           is_active?: boolean | null
           is_intensive?: boolean | null
           is_popular?: boolean | null
+          payment_terms?: string | null
+          prerequisites?: string[] | null
           short_description?: string | null
+          terms_conditions?: string | null
+          theory_test_details?: string | null
           updated_at?: string
+          what_to_bring?: string[] | null
         }
         Relationships: []
       }
@@ -304,6 +372,7 @@ export type Database = {
           special_skills: string | null
           twitter_url: string | null
           updated_at: string
+          welcome_video_url: string | null
         }
         Insert: {
           adi_code_of_practice?: boolean | null
@@ -346,6 +415,7 @@ export type Database = {
           special_skills?: string | null
           twitter_url?: string | null
           updated_at?: string
+          welcome_video_url?: string | null
         }
         Update: {
           adi_code_of_practice?: boolean | null
@@ -388,6 +458,7 @@ export type Database = {
           special_skills?: string | null
           twitter_url?: string | null
           updated_at?: string
+          welcome_video_url?: string | null
         }
         Relationships: []
       }

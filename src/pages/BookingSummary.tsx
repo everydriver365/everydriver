@@ -1,13 +1,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, Calendar, CheckCircle, CreditCard, User, Award, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, Calendar, CheckCircle, CreditCard, User, Award, ShieldCheck, Play, Star, FileText, AlertCircle, Backpack } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
+import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Instructor {
@@ -17,6 +19,7 @@ interface Instructor {
   car_type: string;
   car_make: string | null;
   car_model: string | null;
+  car_image_url: string | null;
   home_postcode: string;
   home_address: string | null;
   hourly_rate: number | null;
@@ -31,6 +34,7 @@ interface Instructor {
   cpd_certified: boolean | null;
   adi_code_of_practice: boolean | null;
   instructor_grade: string | null;
+  welcome_video_url: string | null;
 }
 
 interface CourseTemplate {
@@ -40,6 +44,28 @@ interface CourseTemplate {
   short_description: string | null;
   full_description: string | null;
   features: string[] | null;
+  what_to_bring: string[] | null;
+  prerequisites: string[] | null;
+  theory_test_details: string | null;
+  driving_test_details: string | null;
+  payment_terms: string | null;
+  terms_conditions: string | null;
+  explainer_video_url: string | null;
+}
+
+interface CourseReview {
+  id: string;
+  reviewer_name: string;
+  review_text: string;
+  rating: number;
+  review_date: string;
+  is_verified: boolean;
+}
+
+interface OtherCourse {
+  course_hours: number;
+  course_name: string;
+  course_image_url: string | null;
 }
 
 interface SelectedSlot {
@@ -58,6 +84,7 @@ interface CourseDetails {
   courseImageUrl: string | null;
   courseDescription: string | null;
   features: string[] | null;
+  template: CourseTemplate | null;
 }
 
 export default function BookingSummary() {
@@ -67,20 +94,41 @@ export default function BookingSummary() {
   const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
+  const [reviews, setReviews] = useState<CourseReview[]>([]);
+  const [otherCourses, setOtherCourses] = useState<OtherCourse[]>([]);
+  const [locationName, setLocationName] = useState<string>("");
 
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
   const selectedDate = selectedDateParam ? parseISO(selectedDateParam) : null;
 
+  // Fetch location name from postcode
+  const fetchLocationName = async (postcode: string) => {
+    try {
+      const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+      const data = await response.json();
+      if (data.status === 200 && data.result) {
+        const { admin_district, parish, admin_ward } = data.result;
+        setLocationName(parish || admin_ward || admin_district || postcode);
+      } else {
+        setLocationName(postcode);
+      }
+    } catch {
+      setLocationName(postcode);
+    }
+  };
+
   useEffect(() => {
     const fetchDetails = async () => {
       if (!instructorId) return;
 
-      // Fetch instructor and course template in parallel
-      const [instructorRes, templateRes, instructorCourseRes] = await Promise.all([
+      // Fetch all data in parallel
+      const [instructorRes, templateRes, instructorCourseRes, reviewsRes, otherCoursesRes] = await Promise.all([
         supabase.from("instructors").select("*").eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
+        supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
+        supabase.from("instructor_courses").select("course_hours, course_name, course_image_url").eq("instructor_id", instructorId).eq("is_active", true).neq("course_hours", hours),
       ]);
 
       if (instructorRes.error || !instructorRes.data) {
@@ -97,6 +145,9 @@ export default function BookingSummary() {
       const courseName = template?.course_name || (hours === 28 ? "Test in a Week" : `${hours} Hour Course`);
       const courseImageUrl = instructorCourse?.course_image_url || template?.default_image_url || null;
 
+      // Fetch location name
+      fetchLocationName(instructor.home_postcode);
+
       setCourseDetails({
         instructor: {
           ...instructor,
@@ -106,6 +157,8 @@ export default function BookingSummary() {
           available_from: instructor.available_from || null,
           allowed_lesson_lengths: instructor.allowed_lesson_lengths || null,
           buffer_minutes: instructor.buffer_minutes || 15,
+          car_image_url: instructor.car_image_url || null,
+          welcome_video_url: instructor.welcome_video_url || null,
         },
         hours,
         courseName,
@@ -114,7 +167,12 @@ export default function BookingSummary() {
         courseImageUrl,
         courseDescription: template?.full_description || template?.short_description || null,
         features: template?.features || null,
+        template: template || null,
       });
+
+      if (reviewsRes.data) setReviews(reviewsRes.data);
+      if (otherCoursesRes.data) setOtherCourses(otherCoursesRes.data);
+      
       setLoading(false);
     };
 
@@ -151,9 +209,14 @@ export default function BookingSummary() {
     );
   }
 
-  const { instructor, courseName, totalPrice, pricePerHour, courseImageUrl, courseDescription, features } = courseDetails;
+  const { instructor, courseName, totalPrice, courseImageUrl, courseDescription, features, template } = courseDetails;
   const brandColour = instructor.brand_colour || "#1e3a5f";
-  const locationDisplay = instructor.home_address || instructor.home_postcode;
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }).map((_, i) => (
+      <Star key={i} className={`h-4 w-4 ${i < rating ? "text-amber-400 fill-amber-400" : "text-gray-300"}`} />
+    ));
+  };
 
   return (
     <MainLayout>
@@ -210,7 +273,6 @@ export default function BookingSummary() {
               )}
               
               <div className="grid gap-4 sm:grid-cols-2">
-
                 {/* Duration */}
                 <div className="flex items-center gap-3 rounded-lg bg-secondary/50 p-4">
                   <Clock className="h-5 w-5 text-primary" />
@@ -218,15 +280,15 @@ export default function BookingSummary() {
                     <div className="font-medium">{hours} Hours Total</div>
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {(instructor.allowed_lesson_lengths || [60, 90, 120]).map((length) => {
-                        const hours = length / 60;
-                        const colorClass = hours <= 1.5 
+                        const hrs = length / 60;
+                        const colorClass = hrs <= 1.5 
                           ? "border-emerald-500 bg-emerald-50 text-emerald-700" 
-                          : hours <= 2.5 
+                          : hrs <= 2.5 
                             ? "border-amber-500 bg-amber-50 text-amber-700"
                             : "border-blue-500 bg-blue-50 text-blue-700";
                         return (
                           <Badge key={length} variant="outline" className={`text-xs font-medium ${colorClass}`}>
-                            {hours}h lesson
+                            {hrs}h lesson
                           </Badge>
                         );
                       })}
@@ -234,9 +296,13 @@ export default function BookingSummary() {
                   </div>
                 </div>
 
-                {/* Vehicle */}
+                {/* Vehicle with Image */}
                 <div className="flex items-center gap-3 rounded-lg bg-secondary/50 p-4">
-                  <Car className="h-5 w-5 text-primary" />
+                  {instructor.car_image_url ? (
+                    <img src={instructor.car_image_url} alt="Training vehicle" className="h-12 w-16 rounded object-cover" />
+                  ) : (
+                    <Car className="h-5 w-5 text-primary" />
+                  )}
                   <div>
                     <div className="font-medium">{instructor.car_type} Vehicle</div>
                     <div className="text-sm text-muted-foreground">
@@ -245,11 +311,11 @@ export default function BookingSummary() {
                   </div>
                 </div>
 
-                {/* Location */}
+                {/* Location - Named Area */}
                 <div className="flex items-center gap-3 rounded-lg bg-secondary/50 p-4">
                   <MapPin className="h-5 w-5 text-primary" />
                   <div>
-                    <div className="font-medium">{locationDisplay}</div>
+                    <div className="font-medium">{locationName || instructor.home_postcode}</div>
                     <div className="text-sm text-muted-foreground">
                       Pick-up available
                     </div>
@@ -296,27 +362,74 @@ export default function BookingSummary() {
                   </div>
                 </div>
               </div>
-
-              {/* Course Description */}
-              {courseDescription && (
-                <div className="mt-6 pt-6 border-t">
-                  <h3 className="font-medium mb-2">About This Course</h3>
-                  <p className="text-sm text-muted-foreground">{courseDescription}</p>
-                </div>
-              )}
             </motion.div>
+
+            {/* Video Tiles */}
+            {(template?.explainer_video_url || instructor.welcome_video_url) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="grid gap-4 sm:grid-cols-2"
+              >
+                {template?.explainer_video_url && (
+                  <Card className="overflow-hidden">
+                    <div className="relative aspect-video bg-muted">
+                      <iframe
+                        src={template.explainer_video_url}
+                        className="h-full w-full"
+                        allowFullScreen
+                      />
+                    </div>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Play className="h-4 w-4 text-primary" />
+                        <span className="font-medium text-sm">Course Explainer</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                {instructor.welcome_video_url && (
+                  <Card className="overflow-hidden">
+                    <div className="relative aspect-video bg-muted">
+                      <iframe
+                        src={instructor.welcome_video_url}
+                        className="h-full w-full"
+                        allowFullScreen
+                      />
+                    </div>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-primary" />
+                        <span className="font-medium text-sm">Meet {instructor.name.split(" ")[0]}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </motion.div>
+            )}
+
+            {/* About This Course */}
+            {courseDescription && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="rounded-2xl border bg-card p-6 shadow-md"
+              >
+                <h2 className="text-lg font-semibold">About This Course</h2>
+                <p className="mt-4 text-sm text-muted-foreground whitespace-pre-line">{courseDescription}</p>
+              </motion.div>
+            )}
 
             {/* Lesson Scheduler */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.15 }}
               className="rounded-2xl border bg-card p-6 shadow-md"
             >
               <h2 className="text-lg font-semibold mb-4">Select Your Lesson Slots</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Choose available time slots from the instructor's calendar. Lessons are available in {instructor.allowed_lesson_lengths?.map(l => `${l/60}h`).join(", ") || "1-7 hour"} durations with {instructor.buffer_minutes} minute buffers between bookings.
-              </p>
               <LessonScheduler
                 instructorId={instructor.id}
                 totalHours={hours}
@@ -335,7 +448,7 @@ export default function BookingSummary() {
               transition={{ delay: 0.2 }}
               className="rounded-2xl border bg-card p-6 shadow-md"
             >
-              <h2 className="text-lg font-semibold">What's Included</h2>
+              <h2 className="text-lg font-semibold">What&apos;s Included</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {(features || [
                   "Pick-up from home or work",
@@ -353,12 +466,116 @@ export default function BookingSummary() {
               </div>
             </motion.div>
 
+            {/* What to Bring */}
+            {template?.what_to_bring && template.what_to_bring.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="rounded-2xl border bg-card p-6 shadow-md"
+              >
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Backpack className="h-5 w-5" />
+                  What to Bring
+                </h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {template.what_to_bring.map((item) => (
+                    <div key={item} className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                      <span className="text-sm">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Prerequisites */}
+            {template?.prerequisites && template.prerequisites.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="rounded-2xl border bg-card p-6 shadow-md"
+              >
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5" />
+                  Prerequisites
+                </h2>
+                <div className="mt-4 space-y-2">
+                  {template.prerequisites.map((item) => (
+                    <div key={item} className="flex items-start gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Theory & Driving Test Details */}
+            {(template?.theory_test_details || template?.driving_test_details) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="grid gap-4 sm:grid-cols-2"
+              >
+                {template?.theory_test_details && (
+                  <Card className="p-4">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" />
+                      Theory Test
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground whitespace-pre-line">{template.theory_test_details}</p>
+                  </Card>
+                )}
+                {template?.driving_test_details && (
+                  <Card className="p-4">
+                    <h3 className="font-semibold flex items-center gap-2">
+                      <Car className="h-4 w-4 text-primary" />
+                      Driving Test
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground whitespace-pre-line">{template.driving_test_details}</p>
+                  </Card>
+                )}
+              </motion.div>
+            )}
+
+            {/* Payment Terms */}
+            {template?.payment_terms && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="rounded-2xl border bg-card p-6 shadow-md"
+              >
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Payment Terms
+                </h2>
+                <p className="mt-4 text-sm text-muted-foreground whitespace-pre-line">{template.payment_terms}</p>
+              </motion.div>
+            )}
+
+            {/* Terms & Conditions */}
+            {template?.terms_conditions && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="rounded-2xl border bg-card p-6 shadow-md"
+              >
+                <h2 className="text-lg font-semibold">Terms & Conditions</h2>
+                <p className="mt-4 text-sm text-muted-foreground whitespace-pre-line">{template.terms_conditions}</p>
+              </motion.div>
+            )}
+
             {/* Instructor Bio */}
             {instructor.bio && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.5 }}
                 className="rounded-2xl border bg-card p-6 shadow-md"
               >
                 <h2 className="text-lg font-semibold">About Your Instructor</h2>
@@ -369,6 +586,67 @@ export default function BookingSummary() {
                     <span className="text-sm text-muted-foreground">{instructor.special_skills}</span>
                   </div>
                 )}
+              </motion.div>
+            )}
+
+            {/* Reviews */}
+            {reviews.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55 }}
+                className="rounded-2xl border bg-card p-6 shadow-md"
+              >
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
+                  Student Reviews
+                </h2>
+                <div className="mt-4 space-y-4">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="border-b pb-4 last:border-0 last:pb-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{review.reviewer_name}</span>
+                          {review.is_verified && (
+                            <Badge variant="secondary" className="text-xs">Verified</Badge>
+                          )}
+                        </div>
+                        <div className="flex">{renderStars(review.rating)}</div>
+                      </div>
+                      <p className="mt-2 text-sm text-muted-foreground">{review.review_text}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{format(parseISO(review.review_date), "d MMM yyyy")}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Other Courses from Instructor */}
+            {otherCourses.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="rounded-2xl border bg-card p-6 shadow-md"
+              >
+                <h2 className="text-lg font-semibold">Other Courses from {instructor.name.split(" ")[0]}</h2>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  {otherCourses.map((course) => (
+                    <Card
+                      key={course.course_hours}
+                      className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                      onClick={() => navigate(`/book/${instructor.id}?hours=${course.course_hours}`)}
+                    >
+                      {course.course_image_url && (
+                        <img src={course.course_image_url} alt={course.course_name} className="h-32 w-full object-cover" />
+                      )}
+                      <CardContent className="p-4">
+                        <h3 className="font-medium">{course.course_name}</h3>
+                        <p className="text-sm text-muted-foreground">{course.course_hours} hours</p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </motion.div>
             )}
           </div>
