@@ -25,6 +25,7 @@ import { HomepageFeaturesManager } from "@/components/admin/HomepageFeaturesMana
 import { HomepageStatsManager } from "@/components/admin/HomepageStatsManager";
 import { HomepageTestimonialsManager } from "@/components/admin/HomepageTestimonialsManager";
 import { HomepageHeroManager } from "@/components/admin/HomepageHeroManager";
+import { IncludedFeaturesManager } from "@/components/admin/IncludedFeaturesManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -138,6 +139,7 @@ export default function AdminPortal() {
             <TabsTrigger value="hero">Hero Section</TabsTrigger>
             <TabsTrigger value="stats">Stats</TabsTrigger>
             <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+            <TabsTrigger value="included">What's Included</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
             <TabsTrigger value="images">Site Images</TabsTrigger>
             <TabsTrigger value="videos">Videos</TabsTrigger>
@@ -405,6 +407,25 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <HomepageTestimonialsManager />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="included">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-accent" />
+                    What's Included Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <IncludedFeaturesManager />
                 </CardContent>
               </Card>
             </motion.div>

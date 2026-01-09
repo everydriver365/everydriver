@@ -443,6 +443,45 @@ export type Database = {
         }
         Relationships: []
       }
+      included_features: {
+        Row: {
+          created_at: string
+          description: string
+          detailed_content: string | null
+          display_order: number
+          icon_name: string
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          detailed_content?: string | null
+          display_order?: number
+          icon_name?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          detailed_content?: string | null
+          display_order?: number
+          icon_name?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       instructor_calendar_events: {
         Row: {
           end_time: string
