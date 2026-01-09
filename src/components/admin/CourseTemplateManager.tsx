@@ -51,6 +51,7 @@ export function CourseTemplateManager() {
   const [loading, setLoading] = useState(true);
   const [editingTemplate, setEditingTemplate] = useState<CourseTemplate | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   useEffect(() => {
     fetchTemplates();
@@ -520,25 +521,117 @@ export function CourseTemplateManager() {
                 </div>
               </div>
 
-              {/* Explainer Video URL */}
+              {/* Explainer Video Upload */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Video className="h-4 w-4" />
-                  Explainer Video URL
+                  Explainer Video
                 </Label>
-                <Input
-                  value={editingTemplate.explainer_video_url || ""}
-                  onChange={(e) =>
-                    setEditingTemplate({
-                      ...editingTemplate,
-                      explainer_video_url: e.target.value || null,
-                    })
-                  }
-                  placeholder="https://www.youtube.com/embed/..."
-                />
-                <p className="text-xs text-muted-foreground">
-                  Use embed URL format (e.g., YouTube embed link)
-                </p>
+                <div className="flex gap-4">
+                  <div className="relative aspect-video w-48 rounded-lg border-2 border-dashed bg-muted overflow-hidden">
+                    {editingTemplate.explainer_video_url ? (
+                      <>
+                        <video
+                          src={editingTemplate.explainer_video_url}
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <Video className="h-8 w-8 text-white" />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute right-1 top-1 h-6 w-6"
+                          onClick={() =>
+                            setEditingTemplate({
+                              ...editingTemplate,
+                              explainer_video_url: null,
+                            })
+                          }
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
+                    ) : (
+                      <label className={`flex h-full cursor-pointer flex-col items-center justify-center gap-2 p-4 ${uploadingVideo ? "pointer-events-none opacity-50" : ""}`}>
+                        {uploadingVideo ? (
+                          <>
+                            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                            <span className="text-xs text-muted-foreground">Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-6 w-6 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">Upload video</span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          disabled={uploadingVideo}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file || !editingTemplate) return;
+
+                            if (!file.type.startsWith("video/")) {
+                              toast.error("Please select a video file");
+                              return;
+                            }
+
+                            if (file.size > 100 * 1024 * 1024) {
+                              toast.error("Video must be less than 100MB");
+                              return;
+                            }
+
+                            setUploadingVideo(true);
+                            const fileExt = file.name.split(".").pop();
+                            const fileName = `explainer-${editingTemplate.course_hours}-${Date.now()}.${fileExt}`;
+                            const filePath = `explainers/${fileName}`;
+
+                            const { error: uploadError } = await supabase.storage
+                              .from("course-videos")
+                              .upload(filePath, file);
+
+                            if (uploadError) {
+                              console.error("Upload error:", uploadError);
+                              toast.error("Failed to upload video");
+                              setUploadingVideo(false);
+                              return;
+                            }
+
+                            const { data: urlData } = supabase.storage
+                              .from("course-videos")
+                              .getPublicUrl(filePath);
+
+                            setEditingTemplate({
+                              ...editingTemplate,
+                              explainer_video_url: urlData.publicUrl,
+                            });
+                            toast.success("Video uploaded");
+                            setUploadingVideo(false);
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Upload an explainer video for this course type. Max 100MB.
+                    </p>
+                    {editingTemplate.explainer_video_url && (
+                      <a 
+                        href={editingTemplate.explainer_video_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline"
+                      >
+                        View video in new tab
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Theory Test Details */}
