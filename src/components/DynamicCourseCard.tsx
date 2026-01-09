@@ -143,6 +143,17 @@ export function DynamicCourseCard({
                 <PoundSterling className="h-4 w-4 flex-shrink-0" />
                 <span className="text-sm font-semibold">£{totalPrice.toFixed(2)}</span>
               </div>
+
+              {/* Payment Options */}
+              <div className="flex items-center gap-2 pt-1">
+                <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
+                  Klarna.
+                </span>
+                <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
+                  clearpay
+                </span>
+                <span className="text-xs text-muted-foreground">Pay in 3 or 4 months</span>
+              </div>
             </div>
           </div>
         </div>
