@@ -12,6 +12,7 @@ import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleVi
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
+import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -147,11 +148,16 @@ export default function InstructorPortal() {
                 <span className="text-sm">My Pupils</span>
               </Button>
             </Link>
-            <Button variant="outline" className="h-auto py-4 flex-col gap-2">
-              <Settings className="h-5 w-5" />
-              <span className="text-sm">Settings</span>
-            </Button>
+            <Link to="/instructor/settings">
+              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
+                <Settings className="h-5 w-5" />
+                <span className="text-sm">Settings</span>
+              </Button>
+            </Link>
           </div>
+
+          {/* Gaps Filler */}
+          <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
         </div>
 
         <PaymentQRModal 
@@ -341,7 +347,17 @@ export default function InstructorPortal() {
           </motion.div>
         </div>
 
-        <PaymentQRModal 
+        {/* Gaps Filler - Bottom Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55 }}
+          className="mt-8"
+        >
+          <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
+        </motion.div>
+
+        <PaymentQRModal
           open={paymentModalOpen} 
           onOpenChange={setPaymentModalOpen}
           paymentQrUrl={instructor?.payment_qr_url}

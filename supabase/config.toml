@@ -2,3 +2,6 @@ project_id = "qyqeibovdhyohkfagujv"
 
 [functions.fetch-dvsa-news]
 verify_jwt = false
+
+[functions.send-gap-sms]
+verify_jwt = false
