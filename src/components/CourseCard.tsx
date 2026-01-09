@@ -28,7 +28,7 @@ export function CourseCard({ course }: CourseCardProps) {
 
   return (
     <div
-      className="group h-[420px] cursor-pointer [perspective:1000px]"
+      className="group h-[420px] cursor-pointer [perspective:1000px] transition-transform duration-300 hover:-translate-y-2"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
     >
