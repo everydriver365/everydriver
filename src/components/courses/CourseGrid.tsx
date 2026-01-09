@@ -57,9 +57,14 @@ export function CourseGrid({
           className="mb-6 flex items-center justify-between rounded-xl border-2 border-emerald-500/30 bg-emerald-500/20 px-5 py-4 shadow-md"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">
+            <motion.div 
+              initial={{ scale: 1 }}
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 0.6, delay: 0.3, times: [0, 0.5, 1] }}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+            >
               <MapPin className="h-5 w-5" />
-            </div>
+            </motion.div>
             <div>
               <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Showing results for</p>
               <h2 className="text-xl font-bold text-foreground">

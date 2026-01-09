@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, LocateFixed } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 interface PostcodeSuggestion {
   postcode: string;
@@ -16,6 +18,7 @@ interface PostcodeAutocompleteProps {
   placeholder?: string;
   className?: string;
   inputClassName?: string;
+  showGeolocation?: boolean;
 }
 
 export function PostcodeAutocomplete({
@@ -25,6 +28,7 @@ export function PostcodeAutocomplete({
   placeholder = "Enter your postcode...",
   className,
   inputClassName,
+  showGeolocation = true,
 }: PostcodeAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<PostcodeSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +37,7 @@ export function PostcodeAutocomplete({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Fetch suggestions from edge function
   const fetchSuggestions = useCallback(async (query: string) => {
@@ -131,25 +136,123 @@ export function PostcodeAutocomplete({
     onSelect?.(suggestion.postcode, suggestion.area_name);
   };
 
+  // Geolocation handler
+  const handleGeolocation = async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Geolocation not supported",
+        description: "Your browser doesn't support location services",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLocating(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          
+          // Reverse geocode to get postcode
+          const response = await fetch(
+            `https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}&limit=1`
+          );
+          
+          if (!response.ok) throw new Error('Failed to fetch postcode');
+          
+          const data = await response.json();
+          
+          if (data.result && data.result.length > 0) {
+            const result = data.result[0];
+            const formattedPostcode = result.postcode;
+            const areaName = result.admin_district || result.admin_ward || null;
+            
+            onChange(formattedPostcode);
+            onSelect?.(formattedPostcode, areaName);
+            
+            toast({
+              title: "Location found!",
+              description: `Using ${formattedPostcode}${areaName ? `, ${areaName}` : ''}`,
+            });
+          } else {
+            toast({
+              title: "No postcode found",
+              description: "Couldn't find a postcode for your location",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error('Reverse geocoding error:', error);
+          toast({
+            title: "Location error",
+            description: "Failed to get postcode from your location",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        let message = "Failed to get your location";
+        if (error.code === error.PERMISSION_DENIED) {
+          message = "Location permission denied";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          message = "Location unavailable";
+        } else if (error.code === error.TIMEOUT) {
+          message = "Location request timed out";
+        }
+        toast({
+          title: "Location error",
+          description: message,
+          variant: "destructive",
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
   return (
     <div ref={wrapperRef} className={cn("relative", className)}>
-      <div className="relative">
-        <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" />
-        <Input
-          ref={inputRef}
-          type="text"
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value.toUpperCase())}
-          onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (suggestions.length > 0) setShowDropdown(true);
-          }}
-          className={cn("pl-10", inputClassName)}
-          autoComplete="off"
-        />
-        {isLoading && (
-          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+      <div className="relative flex gap-2">
+        <div className="relative flex-1">
+          <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none z-10" />
+          <Input
+            ref={inputRef}
+            type="text"
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value.toUpperCase())}
+            onKeyDown={handleKeyDown}
+            onFocus={() => {
+              if (suggestions.length > 0) setShowDropdown(true);
+            }}
+            className={cn("pl-10", inputClassName)}
+            autoComplete="off"
+          />
+          {isLoading && (
+            <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          )}
+        </div>
+        
+        {/* Geolocation button */}
+        {showGeolocation && (
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleGeolocation}
+            disabled={isLocating}
+            className="h-auto aspect-square flex-shrink-0 border-muted-foreground/20 hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+            title="Use my location"
+          >
+            {isLocating ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <LocateFixed className="h-5 w-5" />
+            )}
+          </Button>
         )}
       </div>
 
