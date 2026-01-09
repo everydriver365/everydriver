@@ -17,6 +17,7 @@ import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import TelematicsTracker from "@/components/instructor/TelematicsTracker";
 import VehicleHealthManager from "@/components/instructor/VehicleHealthManager";
+import DrivingSkillsHeatmap from "@/components/instructor/DrivingSkillsHeatmap";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -374,11 +375,21 @@ export default function InstructorPortal() {
           </motion.div>
         </div>
 
-        {/* Gaps Filler - Bottom Section */}
+        {/* Driving Skills Heatmap - All Pupils */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.65 }}
+          className="mt-8"
+        >
+          <DrivingSkillsHeatmap instructorId={MOCK_INSTRUCTOR_ID} height="350px" />
+        </motion.div>
+
+        {/* Gaps Filler - Bottom Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
           className="mt-8"
         >
           <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
