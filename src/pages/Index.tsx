@@ -1412,64 +1412,61 @@ export default function Index() {
         </motion.div>
       </section>
 
-      {/* Trust Badges Section */}
-      <section className="border-t bg-muted/30 py-8">
+      {/* Trust Badges Section - Hidden on mobile */}
+      <section className="hidden md:block border-t bg-muted/30 py-6">
         <div className="container">
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
+          <div className="flex items-center justify-center gap-8">
             {/* ADI Code of Practice */}
             <img 
               src={logoAdiCode} 
               alt="ADI Code of Practice" 
-              className="h-12 md:h-14 object-contain"
+              className="h-10 object-contain"
             />
 
             {/* MSA GB */}
             <img 
               src={logoMsa} 
               alt="MSA GB - For all driver trainers" 
-              className="h-14 md:h-16 object-contain"
+              className="h-10 object-contain"
             />
 
             {/* CPD */}
             <img 
               src={logoCpd} 
               alt="Continuing Professional Development" 
-              className="h-12 md:h-14 object-contain"
+              className="h-10 object-contain"
             />
 
             {/* Divider */}
-            <div className="hidden h-10 w-px bg-border md:block" />
+            <div className="h-8 w-px bg-border" />
 
-            {/* Payment Methods */}
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              {/* Card Payments */}
-              <img 
-                src={logoCardPayments} 
-                alt="Visa, MasterCard, Maestro, JCB" 
-                className="h-8 md:h-10 object-contain"
-              />
+            {/* Card Payments */}
+            <img 
+              src={logoCardPayments} 
+              alt="Visa, MasterCard, Maestro, JCB" 
+              className="h-7 object-contain"
+            />
 
-              {/* Klarna */}
-              <img 
-                src={logoKlarna} 
-                alt="Klarna" 
-                className="h-8 md:h-10 object-contain rounded"
-              />
+            {/* Klarna */}
+            <img 
+              src={logoKlarna} 
+              alt="Klarna" 
+              className="h-7 object-contain"
+            />
 
-              {/* Clearpay */}
-              <img 
-                src={logoClearpay} 
-                alt="Clearpay" 
-                className="h-8 md:h-10 object-contain rounded"
-              />
+            {/* Clearpay */}
+            <img 
+              src={logoClearpay} 
+              alt="Clearpay" 
+              className="h-7 object-contain"
+            />
 
-              {/* iDeal 4 Finance */}
-              <img 
-                src={logoIdeal4Finance} 
-                alt="iDeal 4 Finance" 
-                className="h-8 md:h-10 object-contain rounded"
-              />
-            </div>
+            {/* iDeal 4 Finance */}
+            <img 
+              src={logoIdeal4Finance} 
+              alt="iDeal 4 Finance" 
+              className="h-7 object-contain"
+            />
           </div>
         </div>
       </section>
