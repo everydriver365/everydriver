@@ -47,9 +47,13 @@ export function PostcodeAutocomplete({
         body: { query },
       });
 
+      console.log('Autocomplete response:', data);
       if (error) throw error;
-      setSuggestions(data.suggestions || []);
-      setShowDropdown(true);
+      
+      const parsedSuggestions = data?.suggestions || [];
+      console.log('Parsed suggestions:', parsedSuggestions);
+      setSuggestions(parsedSuggestions);
+      setShowDropdown(parsedSuggestions.length > 0);
       setHighlightedIndex(-1);
     } catch (error) {
       console.error('Autocomplete error:', error);
