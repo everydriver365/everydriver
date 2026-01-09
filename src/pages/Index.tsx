@@ -17,6 +17,8 @@ import { useSiteImages } from "@/hooks/useSiteImages";
 import { useFeaturedCourses } from "@/hooks/useFeaturedCourses";
 import { useDVSANews } from "@/hooks/useDVSANews";
 import { useHomepageFeatures } from "@/hooks/useHomepageFeatures";
+import { useHomepageHero } from "@/hooks/useHomepageHero";
+import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
 import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
@@ -44,35 +46,7 @@ import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
 
-// Features are now loaded dynamically via useHomepageFeatures hook
-
-const stats = [
-  { value: "15,000+", label: "Students Passed" },
-  { value: "98%", label: "Pass Rate" },
-  { value: "500+", label: "Instructors" },
-  { value: "24/7", label: "Online Booking" },
-];
-
-const testimonials = [
-  {
-    name: "Emma Thompson",
-    role: "Passed First Time",
-    content: "The booking system made finding a local instructor so easy. Passed my test in just 8 weeks!",
-    avatar: "ET",
-  },
-  {
-    name: "James Wilson",
-    role: "Parent",
-    content: "Being able to track my daughter's progress and manage payments in one place is brilliant.",
-    avatar: "JW",
-  },
-  {
-    name: "Sarah Mitchell",
-    role: "Driving Instructor",
-    content: "The calendar integration saves me hours every week. My students love the easy booking.",
-    avatar: "SM",
-  },
-];
+// Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
   const [postcode, setPostcode] = useState("");
@@ -80,14 +54,29 @@ export default function Index() {
   const { courses: featuredCourses, loading: featuredLoading } = useFeaturedCourses(3);
   const { news: dvsaNews, loading: newsLoading } = useDVSANews();
   const { features } = useHomepageFeatures();
-
+  const { hero } = useHomepageHero();
+  const { featuredTestimonials, testimonials } = useHomepageTestimonials();
   // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
   const testimonialJames = getImage("testimonial_james", testimonialJamesFallback);
   const testimonialEmma = getImage("testimonial_emma", testimonialEmmaFallback);
-  const testimonialEmily = getImage("testimonial_emily", testimonialEmilyFallback);
   const testimonialPriya = getImage("testimonial_priya", testimonialPriyaFallback);
+  const testimonialEmily = getImage("testimonial_emily", testimonialEmilyFallback);
+
+  // Get testimonial data for polaroids (first 4 featured)
+  const polaroidTestimonials = featuredTestimonials.slice(0, 4);
+  const getSarahData = polaroidTestimonials.find(t => t.image_key === 'testimonial_sarah') || { name: 'Sarah', content: 'Passed 1st time! ✨' };
+  const getJamesData = polaroidTestimonials.find(t => t.image_key === 'testimonial_james') || { name: 'James', content: 'Intensive Course 🚗' };
+  const getEmmaData = polaroidTestimonials.find(t => t.image_key === 'testimonial_emma') || { name: 'Emma', content: 'Weekly Lessons 💪' };
+  const getPriyaData = polaroidTestimonials.find(t => t.image_key === 'testimonial_priya') || { name: 'Priya', content: 'Semi-Intensive 🎉' };
   
+  // Stats for the stats section
+  const stats = [
+    { value: "15,000+", label: "Students Passed" },
+    { value: "98%", label: "Pass Rate" },
+    { value: "500+", label: "Instructors" },
+    { value: "24/7", label: "Online Booking" },
+  ];
   // Dynamic images - Learning paths
   const courseIntensiveImg = getImage("course_intensive", courseIntensive);
   const courseSemiIntensiveImg = getImage("course_semi_intensive", courseSemiIntensive);
@@ -1175,9 +1164,9 @@ export default function Index() {
           </div>
 
           <div className="mt-16 grid gap-8 md:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
+            {testimonials.filter(t => !t.is_featured).slice(0, 3).map((testimonial, index) => (
               <motion.div
-                key={testimonial.name}
+                key={testimonial.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -1187,7 +1176,7 @@ export default function Index() {
                 <p className="mb-4 text-muted-foreground">"{testimonial.content}"</p>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                    {testimonial.avatar}
+                    {testimonial.avatar_initials || testimonial.name.charAt(0)}
                   </div>
                   <div>
                     <div className="font-medium">{testimonial.name}</div>
