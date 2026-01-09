@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.send-gap-sms]
 verify_jwt = false
+
+[functions.send-lesson-reminders]
+verify_jwt = false
+
+[functions.notify-instructor]
+verify_jwt = false

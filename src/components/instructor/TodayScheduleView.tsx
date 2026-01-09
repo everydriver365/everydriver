@@ -518,6 +518,9 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
           amountDue={cancelLesson.amount_due || 0}
           pupilBalance={cancelLesson.pupil?.account_balance || 0}
           durationMinutes={cancelLesson.duration_minutes}
+          lessonDate={cancelLesson.lesson_date}
+          lessonTime={cancelLesson.start_time}
+          instructorId={instructorId}
           onCancelled={() => {
             setCancelLesson(null);
             setLessons((prev) => prev.filter((l) => l.id !== cancelLesson.id));

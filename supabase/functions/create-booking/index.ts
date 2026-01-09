@@ -108,13 +108,40 @@ serve(async (req) => {
         .eq("id", pupil.id);
     }
 
-    // 4. Sync lessons to Google Calendar (if connected)
+    // 4. Notify instructor of new booking via SMS
+    try {
+      const firstLesson = sortedLessons?.[0];
+      if (firstLesson) {
+        const notifyResponse = await fetch(
+          `${supabaseUrl}/functions/v1/notify-instructor`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              instructorId: booking.instructorId,
+              type: "new_booking",
+              pupilName: booking.pupilName,
+              lessonDate: firstLesson.lesson_date,
+              lessonTime: firstLesson.start_time,
+              durationMinutes: firstLesson.duration_minutes,
+            }),
+          }
+        );
+        console.log("Instructor notification result:", await notifyResponse.json());
+      }
+    } catch (notifyError) {
+      console.error("Instructor notification error (non-fatal):", notifyError);
+    }
+
+    // 5. Sync lessons to Google Calendar (if connected)
     try {
       const calendarLessons = lessons?.map((lesson) => ({
         lessonId: lesson.id,
         date: lesson.lesson_date,
         startTime: lesson.start_time,
-        endTime: lesson.end_time,
         pupilName: booking.pupilName,
         pickupLocation: booking.pupilAddress,
         duration: lesson.duration_minutes,
