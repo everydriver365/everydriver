@@ -302,6 +302,138 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_hero: {
+        Row: {
+          badge_text: string
+          created_at: string
+          headline_highlight: string
+          headline_line1: string
+          headline_line2: string
+          headline_line3: string
+          id: string
+          is_active: boolean | null
+          learners_count: string
+          learners_label: string
+          rating_value: string
+          search_button_text: string
+          search_placeholder: string
+          subtext: string
+          updated_at: string
+        }
+        Insert: {
+          badge_text?: string
+          created_at?: string
+          headline_highlight?: string
+          headline_line1?: string
+          headline_line2?: string
+          headline_line3?: string
+          id?: string
+          is_active?: boolean | null
+          learners_count?: string
+          learners_label?: string
+          rating_value?: string
+          search_button_text?: string
+          search_placeholder?: string
+          subtext?: string
+          updated_at?: string
+        }
+        Update: {
+          badge_text?: string
+          created_at?: string
+          headline_highlight?: string
+          headline_line1?: string
+          headline_line2?: string
+          headline_line3?: string
+          id?: string
+          is_active?: boolean | null
+          learners_count?: string
+          learners_label?: string
+          rating_value?: string
+          search_button_text?: string
+          search_placeholder?: string
+          subtext?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      homepage_stats: {
+        Row: {
+          created_at: string
+          display_order: number
+          icon_name: string
+          id: string
+          is_active: boolean | null
+          stat_label: string
+          stat_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          icon_name?: string
+          id?: string
+          is_active?: boolean | null
+          stat_label: string
+          stat_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          icon_name?: string
+          id?: string
+          is_active?: boolean | null
+          stat_label?: string
+          stat_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      homepage_testimonials: {
+        Row: {
+          avatar_initials: string | null
+          content: string
+          course_type: string | null
+          created_at: string
+          display_order: number
+          id: string
+          image_key: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          name: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_initials?: string | null
+          content: string
+          course_type?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_key?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name: string
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_initials?: string | null
+          content?: string
+          course_type?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_key?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       instructor_calendar_events: {
         Row: {
           end_time: string
