@@ -13,9 +13,10 @@ import { toast } from "@/hooks/use-toast";
 interface PaymentQRModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  paymentQrUrl?: string | null;
 }
 
-export function PaymentQRModal({ open, onOpenChange }: PaymentQRModalProps) {
+export function PaymentQRModal({ open, onOpenChange, paymentQrUrl }: PaymentQRModalProps) {
   const [copied, setCopied] = useState(false);
   
   // Placeholder payment link - in production this would be dynamic
@@ -53,14 +54,23 @@ export function PaymentQRModal({ open, onOpenChange }: PaymentQRModalProps) {
         </DialogHeader>
         
         <div className="flex flex-col items-center gap-6 py-6">
-          {/* QR Code Placeholder */}
+          {/* QR Code Display */}
           <div className="bg-white p-4 rounded-xl shadow-lg">
-            <div className="w-48 h-48 bg-muted flex items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30">
-              <div className="text-center">
-                <QrCode className="h-16 w-16 text-muted-foreground/50 mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">QR Code</p>
+            {paymentQrUrl ? (
+              <img 
+                src={paymentQrUrl} 
+                alt="Payment QR Code" 
+                className="w-48 h-48 object-contain"
+              />
+            ) : (
+              <div className="w-48 h-48 bg-muted flex items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30">
+                <div className="text-center">
+                  <QrCode className="h-16 w-16 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">No QR Code</p>
+                  <p className="text-xs text-muted-foreground mt-1">Upload in settings</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
           
           <p className="text-sm text-muted-foreground text-center">

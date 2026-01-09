@@ -29,6 +29,7 @@ const MOCK_INSTRUCTOR_ID = "b7987d5e-348f-4047-a8d4-ee71fab1f01d";
 interface Instructor {
   name: string;
   profile_image_url: string | null;
+  payment_qr_url: string | null;
 }
 
 export default function InstructorPortal() {
@@ -49,7 +50,7 @@ export default function InstructorPortal() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("name, profile_image_url")
+        .select("name, profile_image_url, payment_qr_url")
         .eq("id", MOCK_INSTRUCTOR_ID)
         .single();
 
@@ -154,7 +155,8 @@ export default function InstructorPortal() {
 
         <PaymentQRModal 
           open={paymentModalOpen} 
-          onOpenChange={setPaymentModalOpen} 
+          onOpenChange={setPaymentModalOpen}
+          paymentQrUrl={instructor?.payment_qr_url}
         />
       </MainLayout>
     );
@@ -338,7 +340,8 @@ export default function InstructorPortal() {
 
         <PaymentQRModal 
           open={paymentModalOpen} 
-          onOpenChange={setPaymentModalOpen} 
+          onOpenChange={setPaymentModalOpen}
+          paymentQrUrl={instructor?.payment_qr_url}
         />
       </div>
     </MainLayout>

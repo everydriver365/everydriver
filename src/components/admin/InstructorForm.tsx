@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode } from "lucide-react";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { CourseImageEditor } from "./CourseImageEditor";
@@ -89,6 +89,7 @@ interface InstructorFormProps {
     profile_image_url?: string; 
     car_image_url?: string;
     welcome_video_url?: string;
+    payment_qr_url?: string;
     special_skills?: string;
     extra_info?: string;
     brand_colour?: string;
@@ -116,6 +117,8 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(initialData?.profile_image_url || null);
   const [carImage, setCarImage] = useState<File | null>(null);
   const [carImagePreview, setCarImagePreview] = useState<string | null>(initialData?.car_image_url || null);
+  const [paymentQrImage, setPaymentQrImage] = useState<File | null>(null);
+  const [paymentQrPreview, setPaymentQrPreview] = useState<string | null>(initialData?.payment_qr_url || null);
   const [welcomeVideoUrl, setWelcomeVideoUrl] = useState<string | null>(initialData?.welcome_video_url || null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   
@@ -281,6 +284,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
     try {
       let profileImageUrl = initialData?.profile_image_url || null;
       let carImageUrl = initialData?.car_image_url || null;
+      let paymentQrUrl = initialData?.payment_qr_url || null;
       const welcomeVideoUrlValue = welcomeVideoUrl;
 
       if (profileImage) {
@@ -291,6 +295,11 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       if (carImage) {
         const url = await uploadImage(carImage, "cars");
         if (url) carImageUrl = url;
+      }
+
+      if (paymentQrImage) {
+        const url = await uploadImage(paymentQrImage, "payment-qr");
+        if (url) paymentQrUrl = url;
       }
 
       const instructorData = {
@@ -310,6 +319,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         google_calendar_id: data.google_calendar_id || null,
         profile_image_url: profileImageUrl,
         car_image_url: carImageUrl,
+        payment_qr_url: paymentQrUrl,
         // New fields
         special_skills: data.special_skills || null,
         extra_info: data.extra_info || null,
@@ -572,6 +582,42 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
               )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">Max 100MB</p>
+          </div>
+
+          {/* Payment QR Code */}
+          <div>
+            <label className="mb-2 block text-sm font-medium flex items-center gap-2">
+              <QrCode className="h-4 w-4" /> Payment QR Code
+            </label>
+            <div className="relative">
+              {paymentQrPreview ? (
+                <div className="relative h-32 w-32 overflow-hidden rounded-xl border">
+                  <img src={paymentQrPreview} alt="Payment QR Code" className="h-full w-full object-contain bg-white" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentQrImage(null);
+                      setPaymentQrPreview(null);
+                    }}
+                    className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-destructive-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex h-32 w-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary">
+                  <QrCode className="mb-1 h-6 w-6 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Upload</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageChange(e, setPaymentQrImage, setPaymentQrPreview)}
+                  />
+                </label>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">For in-car payments</p>
           </div>
         </div>
 
