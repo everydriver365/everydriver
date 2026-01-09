@@ -57,7 +57,7 @@ const instructorSchema = z.object({
   special_skills: z.string().optional(),
   extra_info: z.string().optional(),
   brand_colour: z.string().optional(),
-  school_skim_percentage: z.coerce.number().min(0).max(100).optional(),
+  school_skim_amount: z.coerce.number().min(0).optional(),
   booking_advance_days: z.coerce.number().min(1).max(548).optional(), // up to 18 months
   available_from: z.date().nullable().optional(),
   personal_website_url: z.string().url().optional().or(z.literal("")),
@@ -149,7 +149,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       special_skills: initialData?.special_skills || "",
       extra_info: initialData?.extra_info || "",
       brand_colour: initialData?.brand_colour || "#1e3a5f",
-      school_skim_percentage: initialData?.school_skim_percentage ?? 0,
+      school_skim_amount: initialData?.school_skim_amount ?? 0,
       booking_advance_days: initialData?.booking_advance_days ?? 28,
       available_from: initialData?.available_from ? new Date(initialData.available_from) : null,
       personal_website_url: initialData?.personal_website_url || "",
@@ -324,7 +324,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         special_skills: data.special_skills || null,
         extra_info: data.extra_info || null,
         brand_colour: data.brand_colour || '#1e3a5f',
-        school_skim_percentage: data.school_skim_percentage ?? 0,
+        school_skim_amount: data.school_skim_amount ?? 0,
         booking_advance_days: data.booking_advance_days ?? 28,
         available_from: data.available_from ? format(data.available_from, "yyyy-MM-dd") : null,
         allowed_lesson_lengths: allowedLessonLengths.length > 0 ? allowedLessonLengths : [60, 120],
@@ -1260,22 +1260,21 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
-              name="school_skim_percentage"
+              name="school_skim_amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>School Skim (%)</FormLabel>
+                  <FormLabel>School Skim (£)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min={0}
-                      max={100}
-                      step={0.5}
+                      step={1}
                       placeholder="0"
                       {...field}
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
-                    Extra % charged to pupils (hidden from instructor)
+                    Fixed GBP amount deducted per booking (hidden from instructor)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
