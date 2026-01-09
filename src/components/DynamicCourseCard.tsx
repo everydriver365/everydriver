@@ -69,7 +69,7 @@ export function DynamicCourseCard({
 
   return (
     <div
-      className="group cursor-pointer [perspective:1000px]"
+      className="group cursor-pointer [perspective:1000px] transition-transform duration-300 hover:-translate-y-2"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
     >
