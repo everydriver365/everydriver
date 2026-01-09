@@ -31,7 +31,6 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full">
-      <PromoBanner />
       <div className="border-b border-nav/20 bg-nav">
       <nav className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center">
@@ -121,6 +120,7 @@ export function Header() {
         </motion.div>
       )}
       </div>
+      <PromoBanner />
       <SecondaryNav />
     </header>
   );
