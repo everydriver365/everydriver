@@ -13,6 +13,10 @@ import AdminPortal from "./pages/AdminPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
 import CollageDemo from "./pages/CollageDemo";
 import HeroRedesignDemo from "./pages/HeroRedesignDemo";
+import Theory from "./pages/Theory";
+import FAQs from "./pages/FAQs";
+import Help from "./pages/Help";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +35,10 @@ const App = () => (
           <Route path="/instructor" element={<InstructorPortal />} />
           <Route path="/parent" element={<ParentPortal />} />
           <Route path="/admin" element={<AdminPortal />} />
+          <Route path="/theory" element={<Theory />} />
+          <Route path="/faqs" element={<FAQs />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/hero-demo" element={<HeroLayoutDemo />} />
           <Route path="/collage-demo" element={<CollageDemo />} />
           <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
