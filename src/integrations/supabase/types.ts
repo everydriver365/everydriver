@@ -25,6 +25,7 @@ export type Database = {
           name: string
           postcode: string
           preferred_timing: string
+          requested_hours: number | null
           status: string
           updated_at: string
         }
@@ -38,6 +39,7 @@ export type Database = {
           name: string
           postcode: string
           preferred_timing: string
+          requested_hours?: number | null
           status?: string
           updated_at?: string
         }
@@ -51,6 +53,7 @@ export type Database = {
           name?: string
           postcode?: string
           preferred_timing?: string
+          requested_hours?: number | null
           status?: string
           updated_at?: string
         }

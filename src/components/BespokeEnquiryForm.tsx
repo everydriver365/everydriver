@@ -22,6 +22,7 @@ const bespokeEnquirySchema = z.object({
   address: z.string().trim().min(5, "Please enter your full address").max(200, "Address must be less than 200 characters"),
   postcode: z.string().trim().min(5, "Please enter a valid postcode").max(10, "Postcode must be less than 10 characters"),
   course_type: z.string().min(1, "Please select a course type"),
+  requested_hours: z.number().min(1, "Please select hours").max(100, "Maximum 100 hours"),
   preferred_timing: z.string().min(1, "Please select your preferred timing"),
   additional_notes: z.string().max(500, "Notes must be less than 500 characters").optional(),
 });
@@ -36,6 +37,18 @@ const courseTypes = [
   { value: "pass-plus", label: "Pass Plus" },
   { value: "motorway", label: "Motorway Lessons" },
   { value: "other", label: "Other / Custom" },
+];
+
+const hoursOptions = [
+  { value: 5, label: "5 hours" },
+  { value: 10, label: "10 hours" },
+  { value: 15, label: "15 hours" },
+  { value: 20, label: "20 hours" },
+  { value: 25, label: "25 hours" },
+  { value: 30, label: "30 hours" },
+  { value: 35, label: "35 hours" },
+  { value: 40, label: "40 hours" },
+  { value: 50, label: "50 hours" },
 ];
 
 const timingOptions = [
@@ -58,11 +71,17 @@ export function BespokeEnquiryForm() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
     reset,
   } = useForm<BespokeEnquiryFormData>({
     resolver: zodResolver(bespokeEnquirySchema),
+    defaultValues: {
+      requested_hours: 20,
+    },
   });
+
+  const selectedHours = watch("requested_hours");
 
   const onSubmit = async (data: BespokeEnquiryFormData) => {
     setIsSubmitting(true);
@@ -72,6 +91,7 @@ export function BespokeEnquiryForm() {
         address: data.address,
         postcode: data.postcode.toUpperCase(),
         course_type: data.course_type,
+        requested_hours: data.requested_hours,
         preferred_timing: data.preferred_timing,
         additional_notes: data.additional_notes || null,
         status: "pending",
@@ -164,6 +184,28 @@ export function BespokeEnquiryForm() {
         </Select>
         {errors.course_type && (
           <p className="text-sm text-destructive">{errors.course_type.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="requested_hours">How many hours do you need? *</Label>
+        <Select 
+          value={String(selectedHours || "")}
+          onValueChange={(value) => setValue("requested_hours", parseInt(value))}
+        >
+          <SelectTrigger className={errors.requested_hours ? "border-destructive" : ""}>
+            <SelectValue placeholder="Select hours" />
+          </SelectTrigger>
+          <SelectContent>
+            {hoursOptions.map((option) => (
+              <SelectItem key={option.value} value={String(option.value)}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.requested_hours && (
+          <p className="text-sm text-destructive">{errors.requested_hours.message}</p>
         )}
       </div>
 
