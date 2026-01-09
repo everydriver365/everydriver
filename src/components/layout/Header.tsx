@@ -58,20 +58,26 @@ export function Header() {
         {/* Postcode Search & Portal Dropdown & Login */}
         <div className="hidden items-center gap-3 md:flex">
           {/* Postcode Search */}
-          <form onSubmit={handleSearch} className="flex items-center gap-1.5">
-            <div className="relative">
-              <MapPin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-nav-foreground/50" />
+          <form onSubmit={handleSearch} className="flex items-center">
+            <div className="flex items-center rounded-full bg-white pl-3 pr-1 py-1">
+              <MapPin className="h-4 w-4 text-muted-foreground/60 mr-2" />
               <Input
                 type="text"
-                placeholder="Enter postcode"
+                placeholder="Your postcode"
                 value={postcode}
                 onChange={(e) => setPostcode(e.target.value)}
-                className="h-9 w-36 border-nav-foreground/30 bg-nav-foreground/10 pl-8 text-sm text-nav-foreground placeholder:text-nav-foreground/50 focus-visible:ring-accent"
+                className="h-8 w-28 border-0 bg-transparent p-0 text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
+              <button
+                type="submit"
+                className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              >
+                <Search className="h-4 w-4 rotate-45" />
+              </button>
+              <Button type="submit" variant="accent" size="sm" className="h-8 rounded-full px-4 ml-1">
+                Find Courses
+              </Button>
             </div>
-            <Button type="submit" variant="accent" size="sm" className="h-9 px-3">
-              <Search className="h-4 w-4" />
-            </Button>
           </form>
 
           <div className="group relative">
