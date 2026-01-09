@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload } from "lucide-react";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { CourseImageEditor } from "./CourseImageEditor";
@@ -88,6 +88,7 @@ interface InstructorFormProps {
     id: string; 
     profile_image_url?: string; 
     car_image_url?: string;
+    welcome_video_url?: string;
     special_skills?: string;
     extra_info?: string;
     brand_colour?: string;
@@ -115,6 +116,8 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(initialData?.profile_image_url || null);
   const [carImage, setCarImage] = useState<File | null>(null);
   const [carImagePreview, setCarImagePreview] = useState<string | null>(initialData?.car_image_url || null);
+  const [welcomeVideoUrl, setWelcomeVideoUrl] = useState<string | null>(initialData?.welcome_video_url || null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   
   // New state for courses and test centres
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
@@ -278,6 +281,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
     try {
       let profileImageUrl = initialData?.profile_image_url || null;
       let carImageUrl = initialData?.car_image_url || null;
+      const welcomeVideoUrlValue = welcomeVideoUrl;
 
       if (profileImage) {
         const url = await uploadImage(profileImage, "profiles");
@@ -324,6 +328,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         cpd_certified: data.cpd_certified ?? false,
         adi_code_of_practice: data.adi_code_of_practice ?? false,
         instructor_grade: data.instructor_grade || null,
+        welcome_video_url: welcomeVideoUrlValue,
       };
 
       let instructorId = initialData?.id;
@@ -481,6 +486,92 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                 </label>
               )}
             </div>
+          </div>
+
+          {/* Welcome Video Upload */}
+          <div>
+            <label className="mb-2 block text-sm font-medium flex items-center gap-2">
+              <Video className="h-4 w-4" /> Welcome Video
+            </label>
+            <div className="relative">
+              {welcomeVideoUrl ? (
+                <div className="relative h-32 w-32 overflow-hidden rounded-xl border">
+                  <video
+                    src={welcomeVideoUrl}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <Video className="h-6 w-6 text-white" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setWelcomeVideoUrl(null)}
+                    className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-destructive-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className={`flex h-32 w-32 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary ${uploadingVideo ? "pointer-events-none opacity-50" : ""}`}>
+                  {uploadingVideo ? (
+                    <>
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      <span className="mt-1 text-xs text-muted-foreground">Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mb-1 h-6 w-6 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Upload</span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    disabled={uploadingVideo}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      if (!file.type.startsWith("video/")) {
+                        toast.error("Please select a video file");
+                        return;
+                      }
+
+                      if (file.size > 100 * 1024 * 1024) {
+                        toast.error("Video must be less than 100MB");
+                        return;
+                      }
+
+                      setUploadingVideo(true);
+                      const fileExt = file.name.split(".").pop();
+                      const fileName = `welcome-${Date.now()}.${fileExt}`;
+                      const filePath = `welcome/${fileName}`;
+
+                      const { error: uploadError } = await supabase.storage
+                        .from("course-videos")
+                        .upload(filePath, file);
+
+                      if (uploadError) {
+                        console.error("Upload error:", uploadError);
+                        toast.error("Failed to upload video");
+                        setUploadingVideo(false);
+                        return;
+                      }
+
+                      const { data: urlData } = supabase.storage
+                        .from("course-videos")
+                        .getPublicUrl(filePath);
+
+                      setWelcomeVideoUrl(urlData.publicUrl);
+                      toast.success("Video uploaded");
+                      setUploadingVideo(false);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Max 100MB</p>
           </div>
         </div>
 
