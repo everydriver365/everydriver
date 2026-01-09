@@ -26,6 +26,8 @@ export default function Intensives() {
     availableDatesInMonth,
     filteredCourses,
     handleSearch,
+    searchedPostcode,
+    searchedAreaName,
   } = useCourseDiscovery("intensive");
 
   return (
@@ -104,6 +106,8 @@ export default function Intensives() {
               sortBy={sortBy}
               setSortBy={setSortBy}
               userLocation={userLocation}
+              searchedPostcode={searchedPostcode}
+              searchedAreaName={searchedAreaName}
             />
           </div>
         </div>

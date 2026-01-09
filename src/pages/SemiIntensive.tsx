@@ -26,6 +26,8 @@ export default function SemiIntensive() {
     availableDatesInMonth,
     filteredCourses,
     handleSearch,
+    searchedPostcode,
+    searchedAreaName,
   } = useCourseDiscovery("semi-intensive");
 
   return (
@@ -104,6 +106,8 @@ export default function SemiIntensive() {
               sortBy={sortBy}
               setSortBy={setSortBy}
               userLocation={userLocation}
+              searchedPostcode={searchedPostcode}
+              searchedAreaName={searchedAreaName}
             />
           </div>
         </div>

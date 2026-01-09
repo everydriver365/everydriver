@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PoundSterling, Navigation } from "lucide-react";
+import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { CourseWithInstructor, SortOption } from "@/hooks/useCourseDiscovery";
@@ -11,6 +11,8 @@ interface CourseGridProps {
   sortBy: SortOption;
   setSortBy: (value: SortOption) => void;
   userLocation: { lat: number; lng: number } | null;
+  searchedPostcode?: string | null;
+  searchedAreaName?: string | null;
 }
 
 export function CourseGrid({
@@ -19,6 +21,8 @@ export function CourseGrid({
   sortBy,
   setSortBy,
   userLocation,
+  searchedPostcode,
+  searchedAreaName,
 }: CourseGridProps) {
   if (!selectedDate) {
     return (
@@ -34,8 +38,25 @@ export function CourseGrid({
     );
   }
 
+  // Build location display string
+  const locationDisplay = searchedPostcode 
+    ? searchedAreaName 
+      ? `${searchedPostcode}, ${searchedAreaName}`
+      : searchedPostcode
+    : null;
+
   return (
     <>
+      {/* Location header if searched */}
+      {locationDisplay && (
+        <div className="mb-4 flex items-center gap-2 text-primary">
+          <MapPin className="h-5 w-5" />
+          <h2 className="text-lg font-semibold">
+            Courses Available in {locationDisplay}
+          </h2>
+        </div>
+      )}
+
       {/* Selected date header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
