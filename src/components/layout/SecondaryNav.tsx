@@ -5,6 +5,7 @@ const secondaryLinks = [
   { href: "/theory", label: "Theory Practice", icon: BookOpen },
   { href: "/contact?type=bespoke", label: "Bespoke Course Request", icon: FileEdit },
   { href: "/contact?type=callback", label: "Request a Callback", icon: Phone },
+  { href: "/instructor", label: "Instructor Login", icon: User },
   { href: "/pupil", label: "Pupil Login", icon: User },
 ];
 
