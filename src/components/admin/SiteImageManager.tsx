@@ -44,6 +44,7 @@ const CATEGORIES = [
   { value: "testimonials", label: "Testimonials" },
   { value: "features", label: "Features" },
   { value: "courses", label: "Courses" },
+  { value: "video", label: "Video" },
   { value: "general", label: "General" },
 ];
 

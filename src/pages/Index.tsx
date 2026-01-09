@@ -111,6 +111,9 @@ export default function Index() {
   const featureTheoryProImg = getImage("feature_theory_pro", featureTheoryPro);
   const featureCancellation = getImage("feature_cancellation", featureCancellationFallback);
   const featurePayments = getImage("feature_payments", featurePaymentsFallback);
+  
+  // Dynamic video thumbnail
+  const videoThumbnailImg = getImage("video_thumbnail", videoThumbnail);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -877,7 +880,7 @@ export default function Index() {
             >
               <div className="relative overflow-hidden rounded-2xl shadow-xl">
                 <img
-                  src={videoThumbnail}
+                  src={videoThumbnailImg}
                   alt="Our Story Video"
                   className="h-full w-full object-cover"
                 />
