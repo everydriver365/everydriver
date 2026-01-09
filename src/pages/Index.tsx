@@ -16,6 +16,7 @@ import {
 import { useSiteImages } from "@/hooks/useSiteImages";
 import { useFeaturedCourses } from "@/hooks/useFeaturedCourses";
 import { useDVSANews } from "@/hooks/useDVSANews";
+import { useHomepageFeatures } from "@/hooks/useHomepageFeatures";
 import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
@@ -43,28 +44,7 @@ import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
 
-const features = [
-  {
-    icon: Calendar,
-    title: "Live Availability",
-    description: "See real-time availability synced with Google Calendar. Book lessons that fit your schedule.",
-  },
-  {
-    icon: MapPin,
-    title: "Local Instructors",
-    description: "Find certified instructors near you. Search by postcode and set your preferred radius.",
-  },
-  {
-    icon: Award,
-    title: "Track Progress",
-    description: "Monitor your learning journey with detailed progress reports and skill assessments.",
-  },
-  {
-    icon: Users,
-    title: "Parent Visibility",
-    description: "Parents can track lessons, progress, and payments through a dedicated portal.",
-  },
-];
+// Features are now loaded dynamically via useHomepageFeatures hook
 
 const stats = [
   { value: "15,000+", label: "Students Passed" },
@@ -99,6 +79,7 @@ export default function Index() {
   const { getImage, getAlt } = useSiteImages();
   const { courses: featuredCourses, loading: featuredLoading } = useFeaturedCourses(3);
   const { news: dvsaNews, loading: newsLoading } = useDVSANews();
+  const { features } = useHomepageFeatures();
 
   // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
