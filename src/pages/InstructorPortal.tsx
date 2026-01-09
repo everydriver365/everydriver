@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
 import { MobileScheduleView } from "@/components/instructor/MobileScheduleView";
+import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -242,30 +243,41 @@ export default function InstructorPortal() {
           </motion.div>
         </div>
 
-        {/* Calendar Sync Notice */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-8"
-        >
-          <Card className="border-accent/50 bg-accent/5">
-            <CardContent className="flex flex-col items-center gap-4 p-6 sm:flex-row sm:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
-                  <Calendar className="h-6 w-6 text-accent-foreground" />
-                </div>
-                <div>
-                  <div className="font-semibold">Google Calendar Sync</div>
-                  <div className="text-sm text-muted-foreground">
-                    Your availability is synced with Google Calendar
+        {/* Settings Row */}
+        <div className="mt-8 grid gap-6 md:grid-cols-2">
+          {/* Push Notification Settings */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <PushNotificationSettings instructorId={MOCK_INSTRUCTOR_ID} />
+          </motion.div>
+
+          {/* Calendar Sync Notice */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card className="border-accent/50 bg-accent/5 h-full">
+              <CardContent className="flex flex-col justify-center gap-4 p-6 h-full">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
+                    <Calendar className="h-6 w-6 text-accent-foreground" />
+                  </div>
+                  <div>
+                    <div className="font-semibold">Google Calendar Sync</div>
+                    <div className="text-sm text-muted-foreground">
+                      Your availability is synced with Google Calendar
+                    </div>
                   </div>
                 </div>
-              </div>
-              <Button variant="outline">Manage Sync</Button>
-            </CardContent>
-          </Card>
-        </motion.div>
+                <Button variant="outline" className="w-full mt-2">Manage Sync</Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </div>
     </MainLayout>
   );
