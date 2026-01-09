@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { isFuture, parseISO, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay } from "date-fns";
@@ -9,6 +9,7 @@ import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSearchParams } from "react-router-dom";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -265,7 +266,9 @@ function SidebarCalendar({
 }
 
 export default function Courses() {
-  const [postcode, setPostcode] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPostcode = searchParams.get("postcode") || "";
+  const [postcode, setPostcode] = useState(initialPostcode);
   const [radius, setRadius] = useState("10");
   const [showFilters, setShowFilters] = useState(false);
   const [transmission, setTransmission] = useState("all");
@@ -290,6 +293,9 @@ export default function Courses() {
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
+  
+  // Track if we've done initial search from URL
+  const hasSearchedFromUrl = useRef(false);
 
   // Helper to check if a date has availability
   const isDateAvailable = useCallback((day: Date, instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
@@ -349,6 +355,14 @@ export default function Courses() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Auto-search if postcode was passed via URL
+  useEffect(() => {
+    if (initialPostcode && !hasSearchedFromUrl.current && !loading && instructors.length > 0) {
+      hasSearchedFromUrl.current = true;
+      handleSearch();
+    }
+  }, [initialPostcode, loading, instructors.length]);
 
   // Get available dates for the selected month
   const availableDatesInMonth = useMemo(() => {
@@ -525,6 +539,8 @@ export default function Courses() {
     setSearchedPostcode(null);
     setSearchedAreaName(null);
     setSortBy("soonest");
+    // Clear URL params
+    setSearchParams({});
   };
 
   const fetchData = async () => {
