@@ -350,39 +350,39 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                         </span>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="grid grid-cols-6 gap-1 pt-1">
+                      {/* Action Buttons - 3 cols on mobile, 6 on larger */}
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 pt-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-col h-auto py-1.5 gap-0.5"
+                          className="flex-col h-auto py-2 gap-1"
                           onClick={() => handleNavigate(
                             lesson.pickup_location || lesson.pupil?.address || "",
                             lesson.pickup_postcode || lesson.pupil?.postcode || ""
                           )}
                         >
-                          <Navigation className="h-3.5 w-3.5 text-accent" />
-                          <span className="text-[10px]">Nav</span>
+                          <Navigation className="h-4 w-4 text-accent" />
+                          <span className="text-[10px] leading-none">Nav</span>
                         </Button>
 
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-col h-auto py-1.5 gap-0.5"
+                          className="flex-col h-auto py-2 gap-1"
                           onClick={() => handleCall(lesson.pupil?.phone)}
                         >
-                          <Phone className="h-3.5 w-3.5 text-success" />
-                          <span className="text-[10px]">Call</span>
+                          <Phone className="h-4 w-4 text-success" />
+                          <span className="text-[10px] leading-none">Call</span>
                         </Button>
 
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-col h-auto py-1.5 gap-0.5"
+                          className="flex-col h-auto py-2 gap-1"
                           onClick={() => handleText(lesson.pupil?.phone)}
                         >
-                          <MessageSquare className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-[10px]">Text</span>
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                          <span className="text-[10px] leading-none">Text</span>
                         </Button>
 
                         <DropdownMenu>
@@ -390,15 +390,15 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex-col h-auto py-1.5 gap-0.5"
+                              className="flex-col h-auto py-2 gap-1 w-full"
                               disabled={sendingMessage === lesson.id}
                             >
                               {sendingMessage === lesson.id ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                <Check className="h-3.5 w-3.5 text-warning" />
+                                <Check className="h-4 w-4 text-warning" />
                               )}
-                              <span className="text-[10px]">On Way</span>
+                              <span className="text-[10px] leading-none">On Way</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -422,15 +422,15 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="flex-col h-auto py-1.5 gap-0.5 border-success/50 hover:bg-success/10"
+                              className="flex-col h-auto py-2 gap-1 w-full border-success/50 hover:bg-success/10"
                               disabled={completingLesson === lesson.id}
                             >
                               {completingLesson === lesson.id ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                                <CheckCircle2 className="h-4 w-4 text-success" />
                               )}
-                              <span className="text-[10px]">Done</span>
+                              <span className="text-[10px] leading-none">Done</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -458,10 +458,10 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="flex-col h-auto py-1.5 gap-0.5"
+                              className="flex-col h-auto py-2 gap-1 w-full"
                             >
-                              <MoreHorizontal className="h-3.5 w-3.5" />
-                              <span className="text-[10px]">More</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="text-[10px] leading-none">More</span>
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
