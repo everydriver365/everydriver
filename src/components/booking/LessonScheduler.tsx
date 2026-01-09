@@ -388,8 +388,8 @@ export function LessonScheduler({
         </div>
       </div>
 
-      {/* Calendar and Time Slot Selection */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Calendar, Time Slots, and Selected Lessons */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Calendar */}
         <div className="rounded-lg border p-4">
           <CalendarComponent
@@ -454,43 +454,49 @@ export function LessonScheduler({
             </div>
           )}
         </div>
-      </div>
 
-      {/* Selected Lessons */}
-      {selectedSlots.length > 0 && (
-        <div className="rounded-lg border p-4">
+        {/* Selected Lessons - Now in third column */}
+        <div className="rounded-lg border p-4 md:col-span-2 lg:col-span-1">
           <h4 className="font-medium mb-3">Your Scheduled Lessons</h4>
-          <div className="space-y-2">
-            {selectedSlots
-              .sort((a, b) => a.date.getTime() - b.date.getTime())
-              .map((slot, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-sm font-medium">
-                      {format(slot.date, "EEE, d MMM yyyy")}
-                    </div>
-                    <Badge variant="outline">
-                      {slot.startTime} - {slot.endTime}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      ({slot.duration / 60}h)
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveSlot(index)}
+          {selectedSlots.length > 0 ? (
+            <div className="space-y-2 max-h-[280px] overflow-y-auto">
+              {selectedSlots
+                .sort((a, b) => a.date.getTime() - b.date.getTime())
+                .map((slot, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-2"
                   >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-          </div>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="text-sm font-medium">
+                        {format(slot.date, "EEE, d MMM")}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {slot.startTime} - {slot.endTime}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          ({slot.duration / 60}h)
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveSlot(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center text-muted-foreground text-sm py-8">
+              No lessons scheduled yet
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Remaining Hours Warning */}
       {remainingHours > 0 && selectedSlots.length > 0 && (
