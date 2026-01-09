@@ -391,7 +391,7 @@ export function LessonScheduler({
       {/* Calendar, Time Slots, and Selected Lessons */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Calendar */}
-        <div className="rounded-lg border p-2 max-w-[220px]">
+        <div className="rounded-lg border p-2">
           <CalendarComponent
             mode="single"
             selected={selectedDate}
@@ -413,16 +413,16 @@ export function LessonScheduler({
               available: {
                 backgroundColor: "hsl(142 76% 90%)",
                 color: "hsl(142 76% 25%)",
-                fontWeight: "500",
+                fontWeight: "600",
               },
             }}
             className={cn(
-              "p-0 pointer-events-auto",
-              "[&_table]:w-full [&_table]:table-fixed",
-              "[&_td]:p-0 [&_th]:p-0 [&_th]:text-[10px] [&_th]:font-normal",
-              "[&_button]:h-6 [&_button]:w-6 [&_button]:text-[10px] [&_button]:rounded-sm",
-              "[&_.rdp-caption]:text-xs [&_.rdp-caption]:pb-1",
-              "[&_.rdp-nav_button]:h-5 [&_.rdp-nav_button]:w-5"
+              "p-1 pointer-events-auto",
+              "[&_table]:w-full",
+              "[&_td]:p-0.5 [&_th]:p-0.5 [&_th]:text-xs [&_th]:font-medium",
+              "[&_button]:h-9 [&_button]:w-9 [&_button]:text-sm [&_button]:rounded-none",
+              "[&_.rdp-caption]:text-sm [&_.rdp-caption]:pb-2",
+              "[&_.rdp-nav_button]:h-7 [&_.rdp-nav_button]:w-7"
             )}
           />
         </div>
