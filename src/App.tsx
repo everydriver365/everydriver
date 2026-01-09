@@ -9,6 +9,11 @@ import BookingSummary from "./pages/BookingSummary";
 import PupilPortal from "./pages/PupilPortal";
 import InstructorPortal from "./pages/InstructorPortal";
 import InstructorPupils from "./pages/InstructorPupils";
+import InstructorSchedule from "./pages/InstructorSchedule";
+import InstructorDiary from "./pages/InstructorDiary";
+import InstructorJobs from "./pages/InstructorJobs";
+import InstructorPay from "./pages/InstructorPay";
+import InstructorContact from "./pages/InstructorContact";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
@@ -35,6 +40,11 @@ const App = () => (
           <Route path="/pupil" element={<PupilPortal />} />
           <Route path="/instructor" element={<InstructorPortal />} />
           <Route path="/instructor/pupils" element={<InstructorPupils />} />
+          <Route path="/instructor/schedule" element={<InstructorSchedule />} />
+          <Route path="/instructor/diary" element={<InstructorDiary />} />
+          <Route path="/instructor/jobs" element={<InstructorJobs />} />
+          <Route path="/instructor/pay" element={<InstructorPay />} />
+          <Route path="/instructor/contact" element={<InstructorContact />} />
           <Route path="/parent" element={<ParentPortal />} />
           <Route path="/admin" element={<AdminPortal />} />
           <Route path="/theory" element={<Theory />} />
