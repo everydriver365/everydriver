@@ -23,6 +23,9 @@ interface CancelLessonDialogProps {
   amountDue: number;
   pupilBalance: number;
   durationMinutes: number;
+  lessonDate: string;
+  lessonTime: string;
+  instructorId: string;
   onCancelled: () => void;
 }
 
@@ -35,6 +38,9 @@ export function CancelLessonDialog({
   amountDue,
   pupilBalance,
   durationMinutes,
+  lessonDate,
+  lessonTime,
+  instructorId,
   onCancelled,
 }: CancelLessonDialogProps) {
   const [chargeOption, setChargeOption] = useState<"no_charge" | "charge">("no_charge");
@@ -71,6 +77,22 @@ export function CancelLessonDialog({
           title: "Lesson cancelled",
           description: `No charge applied to ${pupilName}`,
         });
+      }
+
+      // Notify instructor via SMS
+      try {
+        await supabase.functions.invoke("notify-instructor", {
+          body: {
+            instructorId,
+            type: "cancellation",
+            pupilName,
+            lessonDate,
+            lessonTime,
+            chargeApplied: chargeOption === "charge",
+          },
+        });
+      } catch (smsError) {
+        console.error("Failed to send cancellation SMS:", smsError);
       }
 
       onCancelled();

@@ -254,6 +254,23 @@ export function RescheduleLessonSheet({
 
       if (error) throw error;
 
+      // Notify instructor via SMS
+      try {
+        await supabase.functions.invoke("notify-instructor", {
+          body: {
+            instructorId,
+            type: "reschedule",
+            pupilName,
+            lessonDate: newDateStr,
+            lessonTime: selectedTime,
+            oldDate: currentDate,
+            oldTime: currentTime,
+          },
+        });
+      } catch (smsError) {
+        console.error("Failed to send reschedule SMS:", smsError);
+      }
+
       toast({
         title: "Lesson rescheduled",
         description: `Moved to ${format(selectedDate, "EEE d MMM")} at ${selectedTime}`,
