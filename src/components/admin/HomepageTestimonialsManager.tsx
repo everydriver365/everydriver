@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Plus, Trash2, Save, Star, User } from 'lucide-react';
+import { CMSImageUpload } from './CMSImageUpload';
 
 interface HomepageTestimonial {
   id: string;
@@ -278,26 +279,13 @@ function TestimonialCard({
           />
         </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs">Photo URL</Label>
-          <Input
-            value={testimonial.photo_url || ''}
-            onChange={(e) => onUpdate(testimonial.id, { photo_url: e.target.value || null })}
-            placeholder="https://example.com/photo.jpg"
-          />
-          {testimonial.photo_url && (
-            <div className="mt-2 rounded-lg border overflow-hidden">
-              <img 
-                src={testimonial.photo_url} 
-                alt="Preview" 
-                className="w-full h-24 object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            </div>
-          )}
-        </div>
+        <CMSImageUpload
+          value={testimonial.photo_url}
+          onChange={(url) => onUpdate(testimonial.id, { photo_url: url })}
+          bucket="instructor-images"
+          folder="testimonials"
+          label="Pupil Photo"
+        />
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
