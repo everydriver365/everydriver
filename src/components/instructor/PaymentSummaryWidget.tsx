@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PoundSterling, TrendingUp, AlertCircle, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PoundSterling, TrendingUp, AlertCircle, Users, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface PaymentSummaryWidgetProps {
   instructorId: string;
+  instructorName?: string;
   compact?: boolean;
 }
 
@@ -16,9 +19,10 @@ interface PaymentStats {
   paymentsCount: number;
 }
 
-export function PaymentSummaryWidget({ instructorId, compact = false }: PaymentSummaryWidgetProps) {
+export function PaymentSummaryWidget({ instructorId, instructorName, compact = false }: PaymentSummaryWidgetProps) {
   const [stats, setStats] = useState<PaymentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sendingReminders, setSendingReminders] = useState(false);
 
   useEffect(() => {
     fetchPaymentStats();
@@ -68,6 +72,43 @@ export function PaymentSummaryWidget({ instructorId, compact = false }: PaymentS
       console.error("Error fetching payment stats:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendReminders = async () => {
+    if (!instructorName) {
+      toast.error("Instructor name not available");
+      return;
+    }
+
+    setSendingReminders(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-payment-reminder", {
+        body: {
+          instructorId,
+          instructorName
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.sent > 0) {
+        toast.success(`Sent ${data.sent} payment reminder${data.sent > 1 ? 's' : ''}`);
+      }
+      if (data.skipped > 0) {
+        toast.info(`${data.skipped} pupil${data.skipped > 1 ? 's' : ''} skipped (no phone)`);
+      }
+      if (data.failed > 0) {
+        toast.error(`${data.failed} reminder${data.failed > 1 ? 's' : ''} failed to send`);
+      }
+      if (data.sent === 0 && data.skipped === 0 && data.failed === 0) {
+        toast.info("No pupils with outstanding balances");
+      }
+    } catch (error) {
+      console.error("Error sending reminders:", error);
+      toast.error("Failed to send payment reminders");
+    } finally {
+      setSendingReminders(false);
     }
   };
 
@@ -125,11 +166,29 @@ export function PaymentSummaryWidget({ instructorId, compact = false }: PaymentS
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <PoundSterling className="h-5 w-5 text-accent" />
-          Payment Summary
-        </CardTitle>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <PoundSterling className="h-5 w-5 text-accent" />
+            Payment Summary
+          </CardTitle>
+          {(stats?.pupilsWithBalance || 0) > 0 && instructorName && (
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={handleSendReminders}
+              disabled={sendingReminders}
+              className="gap-1.5"
+            >
+              {sendingReminders ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Send className="h-3.5 w-3.5" />
+              )}
+              Send Reminders
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
