@@ -505,8 +505,18 @@ export default function Index() {
                   className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
                   onClick={() => openFeatureModal(feature)}
                 >
-                  <div className="relative h-40 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                    <IconComponent className="h-16 w-16 text-primary/40 transition-transform duration-300 group-hover:scale-110" />
+                  <div className="relative h-40 overflow-hidden">
+                    {feature.image_url ? (
+                      <img
+                        src={feature.image_url}
+                        alt={feature.title}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                        <IconComponent className="h-16 w-16 text-primary/40 transition-transform duration-300 group-hover:scale-110" />
+                      </div>
+                    )}
                   </div>
                   <div className="p-5">
                     <div className="mb-2 flex items-center justify-between">

@@ -277,6 +277,7 @@ export type Database = {
           display_order: number
           icon_name: string
           id: string
+          image_url: string | null
           is_active: boolean | null
           title: string
           updated_at: string
@@ -288,6 +289,7 @@ export type Database = {
           display_order?: number
           icon_name?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           title: string
           updated_at?: string
@@ -299,6 +301,7 @@ export type Database = {
           display_order?: number
           icon_name?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           title?: string
           updated_at?: string

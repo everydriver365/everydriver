@@ -10,6 +10,7 @@ interface HomepageFeature {
   display_order: number;
   is_active: boolean;
   detailed_content: string | null;
+  image_url: string | null;
 }
 
 export interface FeatureData {
@@ -18,6 +19,7 @@ export interface FeatureData {
   title: string;
   description: string;
   detailed_content: string | null;
+  image_url: string | null;
 }
 
 // Get icon component by name with type safety
@@ -49,6 +51,7 @@ export function useHomepageFeatures() {
           title: feature.title,
           description: feature.description,
           detailed_content: feature.detailed_content,
+          image_url: feature.image_url,
         }));
 
         setFeatures(mappedFeatures);
@@ -62,6 +65,7 @@ export function useHomepageFeatures() {
             title: "Live Availability",
             description: "See real-time availability synced with Google Calendar. Book lessons that fit your schedule.",
             detailed_content: null,
+            image_url: null,
           },
           {
             id: '2',
@@ -69,6 +73,7 @@ export function useHomepageFeatures() {
             title: "Local Instructors",
             description: "Find certified instructors near you. Search by postcode and set your preferred radius.",
             detailed_content: null,
+            image_url: null,
           },
           {
             id: '3',
@@ -76,6 +81,7 @@ export function useHomepageFeatures() {
             title: "Track Progress",
             description: "Monitor your learning journey with detailed progress reports and skill assessments.",
             detailed_content: null,
+            image_url: null,
           },
           {
             id: '4',
@@ -83,6 +89,7 @@ export function useHomepageFeatures() {
             title: "Parent Visibility",
             description: "Parents can track lessons, progress, and payments through a dedicated portal.",
             detailed_content: null,
+            image_url: null,
           },
         ]);
       } finally {
