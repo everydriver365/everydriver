@@ -32,8 +32,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full">
       <div className="border-b border-nav/20 bg-nav">
-      <nav className="container max-w-7xl flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center">
+      <nav className="container max-w-7xl flex h-16 items-center">
+        <Link to="/" className="flex items-center mr-auto">
           <img src={logo} alt="EveryDriver" className="h-10" />
         </Link>
 
