@@ -18,6 +18,12 @@ interface EarningsSummary {
   bonusEarned: number;
 }
 
+interface Pupil {
+  id: string;
+  name: string;
+  account_balance: number | null;
+}
+
 export default function InstructorPay() {
   const [earnings, setEarnings] = useState<EarningsSummary>({
     thisWeek: 0,
@@ -30,10 +36,27 @@ export default function InstructorPay() {
   const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [pupils, setPupils] = useState<Pupil[]>([]);
 
   useEffect(() => {
     fetchData();
+    fetchPupils();
   }, []);
+
+  const fetchPupils = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("pupils")
+        .select("id, name, account_balance")
+        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+      setPupils(data || []);
+    } catch (error) {
+      console.error("Error fetching pupils:", error);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -195,6 +218,8 @@ export default function InstructorPay() {
         open={paymentModalOpen} 
         onOpenChange={setPaymentModalOpen}
         paymentQrUrl={paymentQrUrl}
+        pupils={pupils}
+        onPaymentRecorded={fetchPupils}
       />
       <InstructorBottomNav />
     </MainLayout>
