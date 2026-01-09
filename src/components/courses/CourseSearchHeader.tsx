@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import { Search, MapPin, Filter, ChevronDown, Loader2 } from "lucide-react";
+import { Search, Filter, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { useState } from "react";
 
 interface CourseSearchHeaderProps {
@@ -40,16 +40,13 @@ export function CourseSearchHeader({
           <h1 className="mb-6 text-2xl font-bold md:text-3xl">{title}</h1>
 
           <div className="flex flex-col gap-3 rounded-xl bg-card p-4 shadow-md sm:flex-row sm:items-center">
-            <div className="relative flex-1">
-              <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Enter your postcode"
-                value={postcode}
-                onChange={(e) => setPostcode(e.target.value)}
-                className="h-11 border-0 bg-secondary pl-10"
-              />
-            </div>
+            <PostcodeAutocomplete
+              value={postcode}
+              onChange={setPostcode}
+              placeholder="Enter your postcode"
+              className="flex-1"
+              inputClassName="h-11 border-0 bg-secondary"
+            />
             <select
               value={radius}
               onChange={(e) => setRadius(e.target.value)}

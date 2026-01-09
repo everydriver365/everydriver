@@ -2,11 +2,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, CreditCard, User, ArrowRight, ShieldCheck, Video, GraduationCap, Search, Wallet, Play, HelpCircle, CheckCircle2, DollarSign, Car, BookOpen, Headphones, ChevronDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { Badge } from "@/components/ui/badge";
+import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import {
   Accordion,
   AccordionContent,
@@ -135,16 +135,13 @@ export default function Index() {
               
               {/* Search Form */}
               <form onSubmit={handleSearch} className="mt-8 flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Enter your postcode..."
-                    value={postcode}
-                    onChange={(e) => setPostcode(e.target.value)}
-                    className="h-14 rounded-xl border-2 border-border bg-white pl-12 text-base"
-                  />
-                </div>
+                <PostcodeAutocomplete
+                  value={postcode}
+                  onChange={setPostcode}
+                  placeholder="Enter your postcode..."
+                  className="flex-1"
+                  inputClassName="h-14 rounded-xl border-2 border-border bg-white text-base"
+                />
                 <Button type="submit" size="lg" className="h-14 rounded-xl px-8 text-base font-semibold">
                   Find Courses
                 </Button>
