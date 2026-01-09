@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, MapPin, Car, Calendar, CheckCircle, CreditCard, User, Award, ShieldCheck, Play, Star, FileText, AlertCircle, Backpack } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, startOfDay, addDays, getDay, isAfter, isBefore } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -66,6 +66,18 @@ interface OtherCourse {
   course_hours: number;
   course_name: string;
   course_image_url: string | null;
+  nextAvailableDate?: Date;
+}
+
+interface WorkingHours {
+  day_of_week: number;
+  is_active: boolean;
+}
+
+interface DateOverride {
+  override_date: string;
+  override_end_date: string | null;
+  is_available: boolean;
 }
 
 interface SelectedSlot {
@@ -118,17 +130,62 @@ export default function BookingSummary() {
     }
   };
 
+  // Helper to find the next available date for an instructor
+  const findNextAvailableDate = useCallback((
+    availableFrom: string | null,
+    workingHours: WorkingHours[],
+    dateOverrides: DateOverride[]
+  ): Date | undefined => {
+    const today = startOfDay(new Date());
+    const maxDays = 90; // Look ahead 90 days
+
+    for (let i = 0; i < maxDays; i++) {
+      const day = addDays(today, i);
+      const dayOfWeek = getDay(day);
+      const dateStr = format(day, "yyyy-MM-dd");
+
+      // Check available_from
+      if (availableFrom && isAfter(parseISO(availableFrom), day)) {
+        continue;
+      }
+
+      // Check date overrides
+      const override = dateOverrides.find((o) => {
+        if (o.override_end_date) {
+          return dateStr >= o.override_date && dateStr <= o.override_end_date;
+        }
+        return o.override_date === dateStr;
+      });
+
+      if (override) {
+        if (override.is_available) return day;
+        continue;
+      }
+
+      // Check working hours
+      const hasWorkingHours = workingHours.some(
+        (wh) => wh.day_of_week === dayOfWeek && wh.is_active
+      );
+
+      if (hasWorkingHours) return day;
+    }
+
+    return undefined;
+  }, []);
+
   useEffect(() => {
     const fetchDetails = async () => {
       if (!instructorId) return;
 
       // Fetch all data in parallel
-      const [instructorRes, templateRes, instructorCourseRes, reviewsRes, otherCoursesRes] = await Promise.all([
+      const [instructorRes, templateRes, instructorCourseRes, reviewsRes, otherCoursesRes, workingHoursRes, dateOverridesRes] = await Promise.all([
         supabase.from("instructors").select("*").eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
         supabase.from("instructor_courses").select("course_hours, course_name, course_image_url").eq("instructor_id", instructorId).eq("is_active", true).neq("course_hours", hours),
+        supabase.from("instructor_working_hours").select("day_of_week, is_active").eq("instructor_id", instructorId),
+        supabase.from("instructor_date_overrides").select("override_date, override_end_date, is_available").eq("instructor_id", instructorId),
       ]);
 
       if (instructorRes.error || !instructorRes.data) {
@@ -140,10 +197,19 @@ export default function BookingSummary() {
       const instructor = instructorRes.data;
       const template = templateRes.data;
       const instructorCourse = instructorCourseRes.data;
+      const workingHours = workingHoursRes.data || [];
+      const dateOverrides = dateOverridesRes.data || [];
       
       const hourlyRate = instructor.hourly_rate || 40;
       const courseName = template?.course_name || (hours === 28 ? "Test in a Week" : `${hours} Hour Course`);
       const courseImageUrl = instructorCourse?.course_image_url || template?.default_image_url || null;
+
+      // Calculate next available date
+      const nextAvailableDate = findNextAvailableDate(
+        instructor.available_from,
+        workingHours,
+        dateOverrides
+      );
 
       // Fetch location name
       fetchLocationName(instructor.home_postcode);
@@ -171,13 +237,21 @@ export default function BookingSummary() {
       });
 
       if (reviewsRes.data) setReviews(reviewsRes.data);
-      if (otherCoursesRes.data) setOtherCourses(otherCoursesRes.data);
+      
+      // Add next available date to other courses
+      if (otherCoursesRes.data) {
+        const coursesWithDates = otherCoursesRes.data.map((course) => ({
+          ...course,
+          nextAvailableDate: nextAvailableDate,
+        }));
+        setOtherCourses(coursesWithDates);
+      }
       
       setLoading(false);
     };
 
     fetchDetails();
-  }, [instructorId, hours]);
+  }, [instructorId, hours, findNextAvailableDate]);
 
   const handleSlotsChange = useCallback((slots: SelectedSlot[]) => {
     setSelectedSlots(slots);
@@ -645,8 +719,8 @@ export default function BookingSummary() {
                           location: locationName || instructor.home_postcode,
                           duration: `${course.course_hours} hours`,
                           description: `Complete ${course.course_hours}-hour driving course with ${instructor.name}`,
-                          nextAvailableDay: "01",
-                          nextAvailableMonth: "JAN",
+                          nextAvailableDay: course.nextAvailableDate ? format(course.nextAvailableDate, "dd") : "--",
+                          nextAvailableMonth: course.nextAvailableDate ? format(course.nextAvailableDate, "MMM").toUpperCase() : "N/A",
                           tags: [`${course.course_hours}h`],
                           image: course.course_image_url || undefined,
                         }}
