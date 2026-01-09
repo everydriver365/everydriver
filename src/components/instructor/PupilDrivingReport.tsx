@@ -18,11 +18,13 @@ import {
   Navigation,
   Car,
   ChevronRight,
-  Download
+  Download,
+  Map
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import RouteMapView from './RouteMapView';
+import DrivingSkillsHeatmap from './DrivingSkillsHeatmap';
 
 interface TelematicsSession {
   id: string;
@@ -255,11 +257,15 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
         </CardContent>
       </Card>
 
-      {/* Tabs for Sessions and Events */}
+      {/* Tabs for Sessions, Heatmap, and Events */}
       <Tabs defaultValue="sessions" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="sessions">Lesson Sessions</TabsTrigger>
-          <TabsTrigger value="events">All Events ({allEvents.length})</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="sessions">Sessions</TabsTrigger>
+          <TabsTrigger value="heatmap">
+            <Map className="h-4 w-4 mr-1" />
+            Heatmap
+          </TabsTrigger>
+          <TabsTrigger value="events">Events ({allEvents.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sessions" className="space-y-4">
@@ -376,6 +382,14 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
               )}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="heatmap">
+          <DrivingSkillsHeatmap 
+            instructorId={instructorId} 
+            pupilId={pupilId}
+            height="450px"
+          />
         </TabsContent>
 
         <TabsContent value="events">
