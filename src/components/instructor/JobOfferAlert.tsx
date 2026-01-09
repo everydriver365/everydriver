@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { 
   Briefcase, 
   MapPin, 
@@ -273,6 +274,9 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
                       </div>
 
                       <Separator />
+
+                      {/* Map Preview */}
+                      <PostcodeMapPreview postcode={enquiry.postcode} />
 
                       {/* Full Details Grid */}
                       <div className="grid gap-3 text-sm">
