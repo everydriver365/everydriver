@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, X, User, GraduationCap, Shield, Users } from "lucide-react";
+import { Menu, X, User, GraduationCap, Shield, Users, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import logo from "@/assets/logo.png";
 
@@ -21,7 +22,16 @@ const portalLinks = [
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [postcode, setPostcode] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (postcode.trim()) {
+      navigate(`/courses?postcode=${encodeURIComponent(postcode.trim())}`);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-nav/20 bg-nav">
@@ -45,8 +55,25 @@ export function Header() {
           ))}
         </div>
 
-        {/* Portal Dropdown & Login */}
+        {/* Postcode Search & Portal Dropdown & Login */}
         <div className="hidden items-center gap-3 md:flex">
+          {/* Postcode Search */}
+          <form onSubmit={handleSearch} className="flex items-center gap-1.5">
+            <div className="relative">
+              <MapPin className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-nav-foreground/50" />
+              <Input
+                type="text"
+                placeholder="Enter postcode"
+                value={postcode}
+                onChange={(e) => setPostcode(e.target.value)}
+                className="h-9 w-36 border-nav-foreground/30 bg-nav-foreground/10 pl-8 text-sm text-nav-foreground placeholder:text-nav-foreground/50 focus-visible:ring-accent"
+              />
+            </div>
+            <Button type="submit" variant="accent" size="sm" className="h-9 px-3">
+              <Search className="h-4 w-4" />
+            </Button>
+          </form>
+
           <div className="group relative">
             <Button variant="outline" size="sm" className="border-nav-foreground/30 text-nav-foreground hover:bg-nav-foreground/10 hover:text-nav-foreground">
               Portals
