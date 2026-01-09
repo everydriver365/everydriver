@@ -12,6 +12,7 @@ import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleVi
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
+import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -158,6 +159,8 @@ export default function InstructorPortal() {
           onOpenChange={setPaymentModalOpen}
           paymentQrUrl={instructor?.payment_qr_url}
         />
+
+        <InstructorBottomNav />
       </MainLayout>
     );
   }
