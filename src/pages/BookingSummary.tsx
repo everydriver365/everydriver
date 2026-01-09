@@ -214,11 +214,19 @@ export default function BookingSummary() {
                   <div>
                     <div className="font-medium">{hours} Hours Total</div>
                     <div className="flex flex-wrap gap-1.5 mt-1">
-                      {(instructor.allowed_lesson_lengths || [60, 90, 120]).map((length) => (
-                        <Badge key={length} variant="outline" className="text-xs font-medium">
-                          {length / 60}h lesson
-                        </Badge>
-                      ))}
+                      {(instructor.allowed_lesson_lengths || [60, 90, 120]).map((length) => {
+                        const hours = length / 60;
+                        const colorClass = hours <= 1.5 
+                          ? "border-emerald-500 bg-emerald-50 text-emerald-700" 
+                          : hours <= 2.5 
+                            ? "border-amber-500 bg-amber-50 text-amber-700"
+                            : "border-blue-500 bg-blue-50 text-blue-700";
+                        return (
+                          <Badge key={length} variant="outline" className={`text-xs font-medium ${colorClass}`}>
+                            {hours}h lesson
+                          </Badge>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
