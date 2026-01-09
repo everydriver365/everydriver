@@ -163,7 +163,7 @@ export default function InstructorPortal() {
           </div>
 
           {/* Payment Summary */}
-          <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} compact />
+          <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} instructorName={instructor?.name} compact />
 
           {/* GPS Telematics - Compact for mobile */}
           <TelematicsTracker instructorId={MOCK_INSTRUCTOR_ID} compact />
@@ -329,7 +329,7 @@ export default function InstructorPortal() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
           >
-            <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} />
+            <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} instructorName={instructor?.name} />
           </motion.div>
 
           {/* Push Notification Settings */}
