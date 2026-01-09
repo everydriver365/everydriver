@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { QrCode, CreditCard, Copy, Check, User, PoundSterling } from "lucide-react";
+import { QrCode, CreditCard, Copy, Check, User, PoundSterling, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ interface Pupil {
   id: string;
   name: string;
   account_balance?: number | null;
+  phone?: string | null;
 }
 
 interface PaymentQRModalProps {
@@ -31,6 +33,8 @@ interface PaymentQRModalProps {
   onOpenChange: (open: boolean) => void;
   paymentQrUrl?: string | null;
   pupils?: Pupil[];
+  instructorId?: string;
+  instructorName?: string;
   onPaymentRecorded?: () => void;
 }
 
@@ -39,11 +43,14 @@ export function PaymentQRModal({
   onOpenChange, 
   paymentQrUrl, 
   pupils = [],
+  instructorId,
+  instructorName = "Your Instructor",
   onPaymentRecorded 
 }: PaymentQRModalProps) {
   const [copied, setCopied] = useState(false);
   const [selectedPupilId, setSelectedPupilId] = useState<string>("");
   const [paymentAmount, setPaymentAmount] = useState<string>("");
+  const [sendSms, setSendSms] = useState(true);
   const [recording, setRecording] = useState(false);
   
   // Placeholder payment link - in production this would be dynamic
@@ -111,9 +118,46 @@ export function PaymentQRModal({
 
       if (updateError) throw updateError;
 
+      // Record payment in history
+      if (instructorId) {
+        const { error: historyError } = await supabase
+          .from("payment_history")
+          .insert({
+            instructor_id: instructorId,
+            pupil_id: selectedPupilId,
+            amount: amount,
+            payment_method: "manual",
+            notes: `Payment recorded via Take Payment modal`,
+          });
+
+        if (historyError) {
+          console.error("Error recording payment history:", historyError);
+        }
+      }
+
+      // Send SMS confirmation if enabled
+      if (sendSms && selectedPupil?.phone) {
+        try {
+          const { error: smsError } = await supabase.functions.invoke("send-payment-confirmation", {
+            body: {
+              pupilId: selectedPupilId,
+              amount: amount,
+              instructorName: instructorName,
+              newBalance: newBalance,
+            },
+          });
+
+          if (smsError) {
+            console.error("SMS error:", smsError);
+          }
+        } catch (smsErr) {
+          console.error("Failed to send SMS:", smsErr);
+        }
+      }
+
       toast({
         title: "Payment recorded",
-        description: `£${amount.toFixed(2)} added to ${selectedPupil?.name}'s account`,
+        description: `£${amount.toFixed(2)} added to ${selectedPupil?.name}'s account${sendSms && selectedPupil?.phone ? ". SMS confirmation sent." : ""}`,
       });
 
       // Reset form
@@ -205,6 +249,27 @@ export function PaymentQRModal({
                 className="pl-7"
               />
             </div>
+          </div>
+
+          {/* SMS Confirmation Toggle */}
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center gap-2">
+              <Send className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <Label htmlFor="send-sms" className="text-sm font-medium cursor-pointer">
+                  Send SMS confirmation
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {selectedPupil?.phone ? "Notify pupil of payment" : "Pupil has no phone number"}
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="send-sms"
+              checked={sendSms && !!selectedPupil?.phone}
+              onCheckedChange={setSendSms}
+              disabled={!selectedPupil?.phone}
+            />
           </div>
 
           {/* Record Payment Button */}
