@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Shield, Users, Calendar, CreditCard, Settings, BarChart3, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -18,6 +18,7 @@ import { InstructorForm } from "@/components/admin/InstructorForm";
 import { InstructorList } from "@/components/admin/InstructorList";
 import { CourseTemplateManager } from "@/components/admin/CourseTemplateManager";
 import { SiteImageManager } from "@/components/admin/SiteImageManager";
+import { SiteVideoManager } from "@/components/admin/SiteVideoManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -129,6 +130,7 @@ export default function AdminPortal() {
             <TabsTrigger value="instructors">Instructors</TabsTrigger>
             <TabsTrigger value="courses">Course Templates</TabsTrigger>
             <TabsTrigger value="images">Site Images</TabsTrigger>
+            <TabsTrigger value="videos">Videos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -353,6 +355,25 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <SiteImageManager />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="videos">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="h-5 w-5 text-accent" />
+                    Site Videos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SiteVideoManager />
                 </CardContent>
               </Card>
             </motion.div>
