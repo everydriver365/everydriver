@@ -493,77 +493,179 @@ export default function Index() {
           </motion.div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon;
-              return (
-                <motion.div
-                  key={feature.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
-                  viewport={{ once: true }}
-                  className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
-                  onClick={() => openFeatureModal(feature)}
-                >
-                  <div className="relative h-40 overflow-hidden">
-                    {feature.image_url ? (
-                      <img
-                        src={feature.image_url}
-                        alt={feature.title}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                        <IconComponent className="h-16 w-16 text-primary/40 transition-transform duration-300 group-hover:scale-110" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <h3 className="font-bold text-primary">{feature.title}</h3>
-                      <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {feature.description}
-                    </p>
-                    <button className="mt-3 text-sm text-primary hover:underline">
-                      Tap for more info
-                    </button>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {/* Theory Test Support */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+              onClick={() => openFeatureModal({
+                id: 'theory',
+                icon: BookOpen,
+                title: 'Theory Test Support',
+                description: 'Access our comprehensive theory test preparation materials and practice tests.',
+                detailed_content: 'Get ready for your theory test with our comprehensive preparation package.\n\nOur theory support includes:\n• Access to all official DVSA practice questions\n• Hazard perception test training\n• Mock tests to track your progress\n• Study guides and revision materials\n\nAll included free with your driving course booking.',
+                image_url: featureTheory,
+              })}
+            >
+              <div className="relative h-40 overflow-hidden">
+                <img src={featureTheory} alt="Theory Test Support" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">Theory Test Support</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">Access our comprehensive theory test preparation materials and practice tests.</p>
+                <button className="mt-3 text-sm text-primary hover:underline">Tap for more info</button>
+              </div>
+            </motion.div>
 
-            {/* Fallback static cards if no CMS features loaded */}
-            {features.length === 0 && (
-              <>
-                {/* FREE Re-Test */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  viewport={{ once: true }}
-                  className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl"
-                >
-                  <div className="relative h-40 overflow-hidden">
-                    <img
-                      src={featureRetest}
-                      alt="FREE Re-Test"
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <div className="mb-2 flex items-center justify-between">
-                      <h3 className="font-bold text-primary">FREE Re-Test if you fail</h3>
-                      <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Every instructor is DVSA approved and background checked for your safety.
-                    </p>
-                  </div>
-                </motion.div>
-              </>
-            )}
+            {/* Flexible Payments */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+              onClick={() => openFeatureModal({
+                id: 'payments',
+                icon: CreditCard,
+                title: 'Flexible Payments',
+                description: 'Pay your way with Klarna, Clearpay, or 0% finance options available.',
+                detailed_content: 'We believe everyone should have access to quality driving lessons.\n\nPayment options include:\n• Klarna - Pay in 3 instalments\n• Clearpay - Split into 4 payments\n• 0% Finance - Spread the cost over 6-12 months\n• Card payments - Visa, Mastercard, Amex\n\nNo credit checks required for pay-later options. Subject to terms and conditions.',
+                image_url: featurePayments,
+              })}
+            >
+              <div className="relative h-40 overflow-hidden">
+                <img src={featurePayments} alt="Flexible Payments" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">Flexible Payments</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">Pay your way with Klarna, Clearpay, or 0% finance options available.</p>
+                <button className="mt-3 text-sm text-primary hover:underline">Tap for more info</button>
+              </div>
+            </motion.div>
+
+            {/* Free Cancellation */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+              onClick={() => openFeatureModal({
+                id: 'cancellation',
+                icon: Calendar,
+                title: 'Free Cancellation',
+                description: 'Life happens. Cancel or reschedule lessons with 48 hours notice at no cost.',
+                detailed_content: 'We understand plans change, so we make it easy to adjust your lessons.\n\nOur cancellation policy:\n• Free cancellation with 48+ hours notice\n• Easy online rescheduling\n• No hidden fees or penalties\n• Unused hours never expire\n\nSimply log into your pupil portal or contact your instructor to make changes.',
+                image_url: featureCancellation,
+              })}
+            >
+              <div className="relative h-40 overflow-hidden">
+                <img src={featureCancellation} alt="Free Cancellation" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">Free Cancellation</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">Life happens. Cancel or reschedule lessons with 48 hours notice at no cost.</p>
+                <button className="mt-3 text-sm text-primary hover:underline">Tap for more info</button>
+              </div>
+            </motion.div>
+
+            {/* FREE Re-Test */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+              onClick={() => openFeatureModal({
+                id: 'retest',
+                icon: Award,
+                title: 'FREE Re-Test',
+                description: "If you don't pass first time, we'll cover your re-test fee. That's our promise.",
+                detailed_content: "We're so confident in our teaching that we guarantee your success.\n\nOur FREE re-test promise:\n• If you fail your practical test, we cover the re-test fee\n• Additional practice hours provided if needed\n• No time limit on using this benefit\n• Applies to all intensive course bookings\n\nTerms and conditions apply. Ask your instructor for full details.",
+                image_url: featureRetest,
+              })}
+            >
+              <div className="relative h-40 overflow-hidden">
+                <img src={featureRetest} alt="FREE Re-Test" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">FREE Re-Test</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">If you don't pass first time, we'll cover your re-test fee. That's our promise.</p>
+                <button className="mt-3 text-sm text-primary hover:underline">Tap for more info</button>
+              </div>
+            </motion.div>
+
+            {/* Live Availability */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+              onClick={() => openFeatureModal({
+                id: 'availability',
+                icon: Clock,
+                title: 'Live Availability',
+                description: 'See real-time instructor availability and book instantly online 24/7.',
+                detailed_content: 'Book lessons at your convenience with our real-time booking system.\n\nLive availability features:\n• See instructor calendars in real-time\n• Book lessons 24/7 online\n• Instant confirmation\n• Synced with Google Calendar\n\nNo more back-and-forth calls. Just pick a time that works for you.',
+                image_url: featureAvailability,
+              })}
+            >
+              <div className="relative h-40 overflow-hidden">
+                <img src={featureAvailability} alt="Live Availability" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">Live Availability</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">See real-time instructor availability and book instantly online 24/7.</p>
+                <button className="mt-3 text-sm text-primary hover:underline">Tap for more info</button>
+              </div>
+            </motion.div>
+
+            {/* Theory Test Pro */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              viewport={{ once: true }}
+              className="group overflow-hidden rounded-2xl bg-card shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+              onClick={() => openFeatureModal({
+                id: 'theorypro',
+                icon: GraduationCap,
+                title: 'Theory Test Pro',
+                description: 'Premium access to Theory Test Pro app - the #1 rated theory test app in the UK.',
+                detailed_content: 'Get premium access to the UK\'s most popular theory test app.\n\nTheory Test Pro includes:\n• All official DVSA revision questions\n• Unlimited mock tests\n• Hazard perception practice\n• Progress tracking and weak area analysis\n• Works on mobile, tablet and desktop\n\nUsually £4.99/month - included FREE with your course!',
+                image_url: featureTheoryPro,
+              })}
+            >
+              <div className="relative h-40 overflow-hidden">
+                <img src={featureTheoryProImg} alt="Theory Test Pro" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              </div>
+              <div className="p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-primary">Theory Test Pro</h3>
+                  <Badge className="border-0 bg-primary text-primary-foreground text-xs">FREE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">Premium access to Theory Test Pro app - the #1 rated theory test app in the UK.</p>
+                <button className="mt-3 text-sm text-primary hover:underline">Tap for more info</button>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
