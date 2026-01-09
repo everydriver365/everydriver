@@ -407,6 +407,7 @@ export type Database = {
           is_active: boolean | null
           is_featured: boolean | null
           name: string
+          photo_url: string | null
           role: string
           updated_at: string
         }
@@ -421,6 +422,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           name: string
+          photo_url?: string | null
           role: string
           updated_at?: string
         }
@@ -435,6 +437,7 @@ export type Database = {
           is_active?: boolean | null
           is_featured?: boolean | null
           name?: string
+          photo_url?: string | null
           role?: string
           updated_at?: string
         }

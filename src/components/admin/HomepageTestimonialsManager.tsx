@@ -17,6 +17,7 @@ interface HomepageTestimonial {
   content: string;
   avatar_initials: string | null;
   image_key: string | null;
+  photo_url: string | null;
   course_type: string | null;
   is_featured: boolean;
   display_order: number;
@@ -62,6 +63,7 @@ export function HomepageTestimonialsManager() {
             content: testimonial.content,
             avatar_initials: testimonial.avatar_initials,
             image_key: testimonial.image_key,
+            photo_url: testimonial.photo_url,
             course_type: testimonial.course_type,
             is_featured: testimonial.is_featured,
             display_order: testimonial.display_order,
@@ -218,9 +220,17 @@ function TestimonialCard({
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
-              {testimonial.avatar_initials || testimonial.name.charAt(0)}
-            </div>
+            {testimonial.photo_url ? (
+              <img 
+                src={testimonial.photo_url} 
+                alt={testimonial.name}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                {testimonial.avatar_initials || testimonial.name.charAt(0)}
+              </div>
+            )}
             <div>
               <Input
                 value={testimonial.name}
@@ -266,6 +276,27 @@ function TestimonialCard({
             placeholder="Great experience learning to drive!"
             rows={2}
           />
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-xs">Photo URL</Label>
+          <Input
+            value={testimonial.photo_url || ''}
+            onChange={(e) => onUpdate(testimonial.id, { photo_url: e.target.value || null })}
+            placeholder="https://example.com/photo.jpg"
+          />
+          {testimonial.photo_url && (
+            <div className="mt-2 rounded-lg border overflow-hidden">
+              <img 
+                src={testimonial.photo_url} 
+                alt="Preview" 
+                className="w-full h-24 object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
