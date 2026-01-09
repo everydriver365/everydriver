@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Shield, Users, Calendar, CreditCard, Settings, BarChart3, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -21,6 +21,7 @@ import { SiteImageManager } from "@/components/admin/SiteImageManager";
 import { SiteVideoManager } from "@/components/admin/SiteVideoManager";
 import { PromotionalMessageManager } from "@/components/admin/PromotionalMessageManager";
 import { InstructorBonusManager } from "@/components/admin/InstructorBonusManager";
+import { HomepageFeaturesManager } from "@/components/admin/HomepageFeaturesManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -127,10 +128,11 @@ export default function AdminPortal() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="instructors">Instructors</TabsTrigger>
             <TabsTrigger value="courses">Course Templates</TabsTrigger>
+            <TabsTrigger value="features">Homepage Features</TabsTrigger>
             <TabsTrigger value="images">Site Images</TabsTrigger>
             <TabsTrigger value="videos">Videos</TabsTrigger>
             <TabsTrigger value="promotions">Promotions</TabsTrigger>
@@ -340,6 +342,25 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <CourseTemplateManager />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="features">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-accent" />
+                    Homepage Features
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <HomepageFeaturesManager />
                 </CardContent>
               </Card>
             </motion.div>
