@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
 import { supabase } from "@/integrations/supabase/client";
@@ -206,9 +207,11 @@ export default function InstructorPortal() {
                     </div>
                   ))}
                 </div>
-                <Button variant="outline" className="mt-4 w-full">
-                  View All Pupils
-                </Button>
+                <Link to="/instructor/pupils">
+                  <Button variant="outline" className="mt-4 w-full">
+                    View All Pupils
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </motion.div>
