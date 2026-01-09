@@ -1,1 +1,4 @@
 project_id = "qyqeibovdhyohkfagujv"
+
+[functions.fetch-dvsa-news]
+verify_jwt = false
