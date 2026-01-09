@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { isFuture, parseISO, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -274,6 +274,9 @@ export default function Courses() {
   const [geoCache, setGeoCache] = useState<GeoCache>({});
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchedPostcode, setSearchedPostcode] = useState<string | null>(null);
+  const [searchedAreaName, setSearchedAreaName] = useState<string | null>(null);
+  const [areaCache, setAreaCache] = useState<{ [postcode: string]: string | null }>({});
 
   // Date selection state
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
@@ -458,9 +461,9 @@ export default function Courses() {
   }, [selectedDate, instructors, instructorCourses, courseTemplates, workingHours, dateOverrides]);
 
   // Geocode postcodes via edge function
-  const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<GeoCache> => {
+  const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<{ geoCache: GeoCache; areaCache: { [postcode: string]: string | null } }> => {
     const uncached = postcodes.filter((p) => !(p in geoCache));
-    if (uncached.length === 0) return geoCache;
+    if (uncached.length === 0) return { geoCache, areaCache };
 
     try {
       const { data, error } = await supabase.functions.invoke("geocode-postcode", {
@@ -469,21 +472,25 @@ export default function Courses() {
 
       if (error) throw error;
 
-      const newCache: GeoCache = { ...geoCache };
+      const newGeoCache: GeoCache = { ...geoCache };
+      const newAreaCache: { [postcode: string]: string | null } = { ...areaCache };
+      
       for (const result of data.results || []) {
         if (result.latitude && result.longitude) {
-          newCache[result.postcode] = { lat: result.latitude, lng: result.longitude };
+          newGeoCache[result.postcode] = { lat: result.latitude, lng: result.longitude };
         } else {
-          newCache[result.postcode] = null;
+          newGeoCache[result.postcode] = null;
         }
+        newAreaCache[result.postcode] = result.area_name || null;
       }
-      setGeoCache(newCache);
-      return newCache;
+      setGeoCache(newGeoCache);
+      setAreaCache(newAreaCache);
+      return { geoCache: newGeoCache, areaCache: newAreaCache };
     } catch (error) {
       console.error("Geocoding error:", error);
-      return geoCache;
+      return { geoCache, areaCache };
     }
-  }, [geoCache]);
+  }, [geoCache, areaCache]);
 
   const handleSearch = async () => {
     if (!postcode.trim()) {
@@ -493,12 +500,15 @@ export default function Courses() {
 
     setIsSearching(true);
     try {
-      const cache = await geocodePostcodes([postcode.replace(/\s+/g, "").toUpperCase()]);
       const cleanPostcode = postcode.replace(/\s+/g, "").toUpperCase();
-      const location = cache[cleanPostcode];
+      const result = await geocodePostcodes([cleanPostcode]);
+      const location = result.geoCache[cleanPostcode];
+      const areaName = result.areaCache[cleanPostcode];
 
       if (location) {
         setUserLocation(location);
+        setSearchedPostcode(cleanPostcode);
+        setSearchedAreaName(areaName || null);
         setSortBy("nearest");
         toast({ title: "Location found!", description: "Sorting by nearest instructors" });
       } else {
@@ -507,6 +517,14 @@ export default function Courses() {
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const clearSearch = () => {
+    setPostcode("");
+    setUserLocation(null);
+    setSearchedPostcode(null);
+    setSearchedAreaName(null);
+    setSortBy("soonest");
   };
 
   const fetchData = async () => {
@@ -732,6 +750,27 @@ export default function Courses() {
 
           {/* Right Column: Course Tiles */}
           <div className="flex-1">
+            {/* Location display with clear button */}
+            {searchedPostcode && (
+              <div className="mb-4 flex items-center justify-between rounded-lg bg-primary/5 px-4 py-3">
+                <div className="flex items-center gap-2 text-primary">
+                  <MapPin className="h-5 w-5" />
+                  <h2 className="text-lg font-semibold">
+                    Courses Available in {searchedPostcode}{searchedAreaName ? `, ${searchedAreaName}` : ''}
+                  </h2>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearSearch}
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                  Clear search
+                </Button>
+              </div>
+            )}
+
             {!selectedDate ? (
               <div className="flex h-full items-center justify-center py-16">
                 <div className="text-center">
