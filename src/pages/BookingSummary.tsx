@@ -178,7 +178,7 @@ export default function BookingSummary() {
       if (!instructorId) return;
 
       // Fetch all data in parallel
-      const [instructorRes, templateRes, instructorCourseRes, reviewsRes, otherCoursesRes, workingHoursRes, dateOverridesRes] = await Promise.all([
+      const [instructorRes, templateRes, instructorCourseRes, reviewsRes, otherCoursesRes, workingHoursRes, dateOverridesRes, allTemplatesRes] = await Promise.all([
         supabase.from("instructors").select("*").eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
@@ -186,6 +186,7 @@ export default function BookingSummary() {
         supabase.from("instructor_courses").select("course_hours, course_name, course_image_url").eq("instructor_id", instructorId).eq("is_active", true).neq("course_hours", hours),
         supabase.from("instructor_working_hours").select("day_of_week, is_active").eq("instructor_id", instructorId),
         supabase.from("instructor_date_overrides").select("override_date, override_end_date, is_available").eq("instructor_id", instructorId),
+        supabase.from("course_templates").select("course_hours, default_image_url"),
       ]);
 
       if (instructorRes.error || !instructorRes.data) {
@@ -238,10 +239,14 @@ export default function BookingSummary() {
 
       if (reviewsRes.data) setReviews(reviewsRes.data);
       
-      // Add next available date to other courses
+      // Add next available date and default images to other courses
       if (otherCoursesRes.data) {
+        const templateImages = new Map(
+          (allTemplatesRes.data || []).map(t => [t.course_hours, t.default_image_url])
+        );
         const coursesWithDates = otherCoursesRes.data.map((course) => ({
           ...course,
+          course_image_url: course.course_image_url || templateImages.get(course.course_hours) || null,
           nextAvailableDate: nextAvailableDate,
         }));
         setOtherCourses(coursesWithDates);
