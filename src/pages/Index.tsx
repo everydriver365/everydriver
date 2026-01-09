@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/accordion";
 import { useSiteImages } from "@/hooks/useSiteImages";
 import { useFeaturedCourses } from "@/hooks/useFeaturedCourses";
-// Static fallback images
+import { useDVSANews } from "@/hooks/useDVSANews";
 import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
@@ -91,6 +91,7 @@ export default function Index() {
   const [postcode, setPostcode] = useState("");
   const { getImage, getAlt } = useSiteImages();
   const { courses: featuredCourses, loading: featuredLoading } = useFeaturedCourses(3);
+  const { news: dvsaNews, loading: newsLoading } = useDVSANews();
 
   // Dynamic images from CMS with fallbacks - Hero testimonials
   const testimonialSarah = getImage("testimonial_sarah", testimonialSarahFallback);
@@ -932,103 +933,154 @@ export default function Index() {
         <div className="container">
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-2xl font-bold md:text-3xl">Latest News & Tips</h2>
-            <Button variant="outline" className="hidden sm:flex">
-              View All Articles
-            </Button>
+            <a href="https://despatch.blog.gov.uk/" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" className="hidden gap-2 sm:flex">
+                View All Articles
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </a>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-2">
-            {/* Featured Article */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="group relative overflow-hidden rounded-2xl"
-            >
-              <img
-                src={newsFeatured}
-                alt="Road safety news"
-                className="h-80 w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-96"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-6">
-                <Badge className="mb-3 border-0 bg-primary text-primary-foreground">
-                  Driving News
-                </Badge>
-                <h3 className="mb-2 text-xl font-bold text-white md:text-2xl">
-                  Road Safety Statistics Show Improvement in 2025
-                </h3>
-                <p className="text-sm text-white/80">
-                  New figures have been released showing improved road safety outcomes, with officials urging continued focus on safe driving practices.
-                </p>
+          {newsLoading ? (
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div className="h-96 animate-pulse rounded-2xl bg-muted" />
+              <div className="flex flex-col gap-6">
+                <div className="h-32 animate-pulse rounded-xl bg-muted" />
+                <div className="h-32 animate-pulse rounded-xl bg-muted" />
               </div>
-            </motion.div>
-
-            {/* Side Articles */}
-            <div className="flex flex-col gap-6">
-              {/* Article 1 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                viewport={{ once: true }}
-                className="group flex gap-4 rounded-xl bg-card p-4 shadow-md transition-shadow hover:shadow-lg"
-              >
-                <img
-                  src={newsArticle1}
-                  alt="Instructor test changes"
-                  className="h-24 w-24 rounded-lg object-cover"
-                />
-                <div className="flex flex-col justify-center">
-                  <Badge className="mb-1 w-fit border-0 bg-primary/10 text-primary text-xs">
-                    Driving News
-                  </Badge>
-                  <h4 className="mb-1 font-semibold group-hover:text-primary transition-colors">
-                    Driving instructor qualifying test changes: December 2025
-                  </h4>
-                  <span className="text-xs text-muted-foreground">1 min read</span>
-                </div>
-              </motion.div>
-
-              {/* Article 2 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.15 }}
-                viewport={{ once: true }}
-                className="group flex gap-4 rounded-xl bg-card p-4 shadow-md transition-shadow hover:shadow-lg"
-              >
-                <img
-                  src={newsArticle2}
-                  alt="Examiner news"
-                  className="h-24 w-24 rounded-lg object-cover"
-                />
-                <div className="flex flex-col justify-center">
-                  <Badge className="mb-1 w-fit border-0 bg-primary/10 text-primary text-xs">
-                    Driving News
-                  </Badge>
-                  <h4 className="mb-1 font-semibold group-hover:text-primary transition-colors">
-                    Driving examiner updates: December 2025. Driver and Vehicle Standards Agency.
-                  </h4>
-                  <span className="text-xs text-muted-foreground">1 min read</span>
-                </div>
-              </motion.div>
-
-              {/* Read More Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <Button className="w-full gap-2">
-                  Read More Articles
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </motion.div>
             </div>
-          </div>
+          ) : dvsaNews.length > 0 ? (
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Featured Article */}
+              <motion.a
+                href={dvsaNews[0].link}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+                className="group relative overflow-hidden rounded-2xl"
+              >
+                <img
+                  src={dvsaNews[0].imageUrl || newsFeatured}
+                  alt={dvsaNews[0].title}
+                  className="h-80 w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-96"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <Badge className="mb-3 border-0 bg-primary text-primary-foreground">
+                    {dvsaNews[0].category || "DVSA News"}
+                  </Badge>
+                  <h3 className="mb-2 text-xl font-bold text-white md:text-2xl">
+                    {dvsaNews[0].title}
+                  </h3>
+                  <p className="text-sm text-white/80 line-clamp-2">
+                    {dvsaNews[0].description}
+                  </p>
+                </div>
+              </motion.a>
+
+              {/* Side Articles */}
+              <div className="flex flex-col gap-6">
+                {dvsaNews.slice(1, 3).map((article, index) => (
+                  <motion.a
+                    key={article.link}
+                    href={article.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
+                    viewport={{ once: true }}
+                    className="group flex gap-4 rounded-xl bg-card p-4 shadow-md transition-shadow hover:shadow-lg"
+                  >
+                    <img
+                      src={article.imageUrl || (index === 0 ? newsArticle1 : newsArticle2)}
+                      alt={article.title}
+                      className="h-24 w-24 flex-shrink-0 rounded-lg object-cover"
+                    />
+                    <div className="flex flex-col justify-center min-w-0">
+                      <Badge className="mb-1 w-fit border-0 bg-primary/10 text-primary text-xs">
+                        {article.category || "DVSA News"}
+                      </Badge>
+                      <h4 className="mb-1 font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                        {article.title}
+                      </h4>
+                      <span className="text-xs text-muted-foreground">
+                        {article.pubDate ? new Date(article.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                      </span>
+                    </div>
+                  </motion.a>
+                ))}
+
+                {/* Read More Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <a href="https://despatch.blog.gov.uk/" target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full gap-2">
+                      Read More Articles
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </a>
+                </motion.div>
+              </div>
+            </div>
+          ) : (
+            // Fallback to static content
+            <div className="grid gap-8 lg:grid-cols-2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+                className="group relative overflow-hidden rounded-2xl"
+              >
+                <img
+                  src={newsFeatured}
+                  alt="Road safety news"
+                  className="h-80 w-full object-cover transition-transform duration-300 group-hover:scale-105 md:h-96"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <Badge className="mb-3 border-0 bg-primary text-primary-foreground">
+                    Driving News
+                  </Badge>
+                  <h3 className="mb-2 text-xl font-bold text-white md:text-2xl">
+                    Latest DVSA News & Updates
+                  </h3>
+                  <p className="text-sm text-white/80">
+                    Stay up to date with the latest driving test news and instructor updates from DVSA.
+                  </p>
+                </div>
+              </motion.div>
+              <div className="flex flex-col gap-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  viewport={{ once: true }}
+                  className="group flex gap-4 rounded-xl bg-card p-4 shadow-md"
+                >
+                  <img src={newsArticle1} alt="News" className="h-24 w-24 rounded-lg object-cover" />
+                  <div className="flex flex-col justify-center">
+                    <Badge className="mb-1 w-fit border-0 bg-primary/10 text-primary text-xs">DVSA News</Badge>
+                    <h4 className="mb-1 font-semibold">Check back for the latest updates</h4>
+                  </div>
+                </motion.div>
+                <a href="https://despatch.blog.gov.uk/" target="_blank" rel="noopener noreferrer">
+                  <Button className="w-full gap-2">
+                    Visit DVSA Blog
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
