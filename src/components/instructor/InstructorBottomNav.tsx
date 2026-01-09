@@ -13,6 +13,10 @@ const navItems = [
 export function InstructorBottomNav() {
   const location = useLocation();
 
+  const handleNavClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 md:hidden">
       <div className="flex items-center justify-around h-16 px-1">
@@ -22,6 +26,7 @@ export function InstructorBottomNav() {
             <Link
               key={item.path}
               to={item.path}
+              onClick={handleNavClick}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors relative ${
                 isActive 
                   ? "text-white" 
