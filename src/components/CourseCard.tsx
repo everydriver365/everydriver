@@ -38,7 +38,7 @@ export function CourseCard({ course }: CourseCardProps) {
         }`}
       >
         {/* Front of Card */}
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border bg-card shadow-md [backface-visibility:hidden]">
+        <div className="absolute inset-0 overflow-hidden border bg-card shadow-md [backface-visibility:hidden]">
           {/* Hero Image Section */}
           <div className="relative h-44 overflow-hidden">
             <img
@@ -123,9 +123,9 @@ export function CourseCard({ course }: CourseCardProps) {
         </div>
 
         {/* Back of Card */}
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border bg-card shadow-md [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div className="absolute inset-0 overflow-hidden border bg-primary text-primary-foreground shadow-md [backface-visibility:hidden] [transform:rotateY(180deg)]">
           <div className="flex h-full flex-col p-5">
-            <h3 className="text-lg font-bold text-foreground">{course.title}</h3>
+            <h3 className="text-lg font-bold text-primary-foreground">{course.title}</h3>
             
             <div className="mt-3 flex items-center gap-2">
               <Avatar className="h-10 w-10">
@@ -135,40 +135,41 @@ export function CourseCard({ course }: CourseCardProps) {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium text-foreground">{course.instructor}</div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="font-medium text-primary-foreground">{course.instructor}</div>
+                <div className="flex items-center gap-1 text-xs text-primary-foreground/70">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                   <span>4.9 (127 reviews)</span>
                 </div>
               </div>
             </div>
 
-            <p className="mt-4 flex-1 text-sm text-muted-foreground">
+            <p className="mt-4 flex-1 text-sm text-primary-foreground/80">
               {course.description}
             </p>
 
             <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
                 <span>Free re-test if needed</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
                 <span>Theory test support included</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
                 <span>Pick-up from home/work</span>
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between border-t pt-4">
+            <div className="mt-4 flex items-center justify-between border-t border-primary-foreground/20 pt-4">
               <div>
-                <span className="text-2xl font-bold text-foreground">£{course.price}</span>
-                <div className="text-xs text-muted-foreground">or from £{Math.round(course.price / 4)}/month</div>
+                <span className="text-2xl font-bold text-primary-foreground">£{course.price}</span>
+                <div className="text-xs text-primary-foreground/70">or from £{Math.round(course.price / 4)}/month</div>
               </div>
               <Button 
                 size="sm" 
+                variant="secondary"
                 onClick={(e) => {
                   e.stopPropagation();
                   // Handle booking
@@ -178,7 +179,7 @@ export function CourseCard({ course }: CourseCardProps) {
               </Button>
             </div>
 
-            <div className="mt-2 text-center text-[10px] text-muted-foreground">
+            <div className="mt-2 text-center text-[10px] text-primary-foreground/60">
               ← Click to flip back
             </div>
           </div>
