@@ -360,17 +360,9 @@ export default function BookingSummary() {
               <h2 className="text-lg font-semibold">Price Summary</h2>
               
               <div className="mt-4 space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {hours} hours × £{pricePerHour}/hr
-                  </span>
+                <div className="flex justify-between font-semibold text-lg">
+                  <span>Total</span>
                   <span>£{totalPrice}</span>
-                </div>
-                <div className="border-t pt-3">
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>£{totalPrice}</span>
-                  </div>
                 </div>
 
                 {/* Payment Plans */}
