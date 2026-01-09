@@ -79,7 +79,7 @@ export function DynamicCourseCard({
         }`}
       >
         {/* Front of Card */}
-        <div className="overflow-hidden rounded-xl border bg-card shadow-md [backface-visibility:hidden]">
+        <div className="overflow-hidden border bg-card shadow-md [backface-visibility:hidden]">
           {/* Popular Badge */}
           {isPopular && (
             <div className="absolute top-3 left-3 z-20">
@@ -160,9 +160,9 @@ export function DynamicCourseCard({
         </div>
 
         {/* Back of Card */}
-        <div className="absolute inset-0 overflow-hidden rounded-xl border bg-card shadow-md [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div className="absolute inset-0 overflow-hidden border bg-primary text-primary-foreground shadow-md [backface-visibility:hidden] [transform:rotateY(180deg)]">
           <div className="flex h-full flex-col p-5">
-            <h3 className="text-lg font-bold text-foreground uppercase">{courseName}</h3>
+            <h3 className="text-lg font-bold text-primary-foreground uppercase">{courseName}</h3>
             
             <div className="mt-3 flex items-center gap-2">
               <Avatar className="h-10 w-10">
@@ -175,46 +175,46 @@ export function DynamicCourseCard({
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium text-foreground">{instructor.name}</div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="font-medium text-primary-foreground">{instructor.name}</div>
+                <div className="flex items-center gap-1 text-xs text-primary-foreground/70">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                   <span>4.9 rating</span>
                 </div>
               </div>
             </div>
 
-            <p className="mt-4 flex-1 text-sm text-muted-foreground line-clamp-3">
+            <p className="mt-4 flex-1 text-sm text-primary-foreground/80 line-clamp-3">
               {instructor.bio || `Experienced ${instructor.car_type.toLowerCase()} driving instructor ready to help you pass your test.`}
             </p>
 
             <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
                 <span>Free re-test if needed</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
                 <span>Theory test support included</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
                 <span>Pick-up from home/work</span>
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between border-t pt-4">
+            <div className="mt-4 flex items-center justify-between border-t border-primary-foreground/20 pt-4">
               <div>
-                <span className="text-2xl font-bold text-foreground">£{totalPrice}</span>
-                <div className="text-xs text-muted-foreground">
+                <span className="text-2xl font-bold text-primary-foreground">£{totalPrice}</span>
+                <div className="text-xs text-primary-foreground/70">
                   or from £{Math.round(totalPrice / 4)}/month
                 </div>
               </div>
-              <Button size="sm" onClick={handleBookNow}>
+              <Button size="sm" variant="secondary" onClick={handleBookNow}>
                 Book Now
               </Button>
             </div>
 
-            <div className="mt-2 text-center text-[10px] text-muted-foreground">
+            <div className="mt-2 text-center text-[10px] text-primary-foreground/60">
               ← Hover to flip back
             </div>
           </div>
