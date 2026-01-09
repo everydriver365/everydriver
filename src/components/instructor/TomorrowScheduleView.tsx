@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { PostcodeMapPreview } from "./PostcodeMapPreview";
 
 interface ScheduledLesson {
   id: string;
@@ -154,19 +155,27 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+                className="rounded-lg border bg-card overflow-hidden"
               >
-                <div className="text-center min-w-[50px]">
-                  <div className="font-bold text-sm">{formatTime(lesson.start_time)}</div>
-                  <div className="text-xs text-muted-foreground">{lesson.duration_minutes}m</div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{lesson.pupil?.name}</div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {lesson.pickup_location || lesson.pupil?.address}
+                {/* Map Preview */}
+                <PostcodeMapPreview 
+                  postcode={lesson.pickup_postcode || lesson.pupil?.postcode || ""} 
+                  className="rounded-none border-0"
+                />
+                
+                <div className="flex items-center gap-3 p-3">
+                  <div className="text-center min-w-[50px]">
+                    <div className="font-bold text-sm">{formatTime(lesson.start_time)}</div>
+                    <div className="text-xs text-muted-foreground">{lesson.duration_minutes}m</div>
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{lesson.pupil?.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {lesson.pickup_location || lesson.pupil?.address}
+                    </div>
+                  </div>
+                  {getPaymentStatusBadge(lesson)}
                 </div>
-                {getPaymentStatusBadge(lesson)}
               </motion.div>
             ))}
           </AnimatePresence>
