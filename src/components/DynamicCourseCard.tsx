@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, Star, CheckCircle } from "lucide-react";
+import { MapPin, Clock, User, PoundSterling, Star, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { isFuture, parseISO, differenceInDays } from "date-fns";
+import { format, isFuture, parseISO, differenceInDays } from "date-fns";
 
 interface DynamicCourseCardProps {
   instructor: {
@@ -42,7 +42,7 @@ export function DynamicCourseCard({
 
   const hourlyRate = instructor.hourly_rate || 40;
   const totalPrice = hours * hourlyRate;
-  const courseName = hours === 28 ? "Test in a Week" : `${hours} Hour Course`;
+  const courseName = hours === 28 ? "TEST IN A WEEK" : `${hours} HOUR COURSE`;
   const brandColour = instructor.brand_colour || "#1e3a5f";
 
   const handleBookNow = (e: React.MouseEvent) => {
@@ -54,13 +54,21 @@ export function DynamicCourseCard({
   const hasDelayedAvailability = availableFrom && isFuture(parseISO(availableFrom));
   const availableFromDate = availableFrom ? parseISO(availableFrom) : null;
 
-  // Check if available within 7 days
-  const availableDate = nextAvailable ? new Date(nextAvailable) : (hasDelayedAvailability ? availableFromDate : null);
-  const isAvailableSoon = availableDate && differenceInDays(availableDate, new Date()) <= 7 && differenceInDays(availableDate, new Date()) >= 0;
+  // Get the display date
+  const displayDate = nextAvailable ? new Date(nextAvailable) : (hasDelayedAvailability ? availableFromDate : null);
+  const isAvailableSoon = displayDate && differenceInDays(displayDate, new Date()) <= 7 && differenceInDays(displayDate, new Date()) >= 0;
+
+  // Format date parts
+  const dayNumber = displayDate ? format(displayDate, "d") : "TBC";
+  const monthName = displayDate ? format(displayDate, "MMM").toUpperCase() : "";
+  const fullDateDisplay = displayDate ? format(displayDate, "d MMM") : "TBC";
+
+  // Location display
+  const locationDisplay = instructor.home_address || instructor.home_postcode;
 
   return (
     <div
-      className="group h-[380px] cursor-pointer [perspective:1000px]"
+      className="group cursor-pointer [perspective:1000px]"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
     >
@@ -70,18 +78,18 @@ export function DynamicCourseCard({
         }`}
       >
         {/* Front of Card */}
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border bg-card shadow-md [backface-visibility:hidden]">
-          {/* Popular Ribbon */}
+        <div className="overflow-hidden rounded-xl border bg-card shadow-md [backface-visibility:hidden]">
+          {/* Popular Badge */}
           {isPopular && (
-            <div className="absolute top-0 left-0 z-20 overflow-hidden w-24 h-24 pointer-events-none">
-              <div className="absolute top-3 -left-8 w-32 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider py-1 text-center transform -rotate-45 shadow-md">
+            <div className="absolute top-3 left-3 z-20">
+              <Badge className="border-0 bg-emerald-500 text-white">
                 Popular
-              </div>
+              </Badge>
             </div>
           )}
           
           {/* Hero Image Section */}
-          <div className="relative h-44 overflow-hidden">
+          <div className="relative h-48 overflow-hidden">
             <img
               src={courseImageUrl || `https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=400&fit=crop`}
               alt={courseName}
@@ -90,79 +98,59 @@ export function DynamicCourseCard({
             
             {/* Distance badge */}
             {distance !== undefined && (
-              <div className="absolute left-3 bottom-3 flex items-center gap-1.5 bg-primary/95 backdrop-blur-sm text-primary-foreground px-2.5 py-1.5 rounded-lg shadow-lg">
+              <div className="absolute right-3 top-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-primary px-2.5 py-1.5 rounded-lg shadow-lg">
                 <MapPin className="h-3.5 w-3.5" />
                 <span className="text-sm font-bold">{distance.toFixed(1)} mi</span>
               </div>
             )}
-
-            {/* Transmission badge */}
-            <Badge className="absolute right-3 top-3 border-0 bg-primary/90 text-primary-foreground backdrop-blur-sm">
-              {instructor.car_type}
-            </Badge>
           </div>
 
-          {/* Content Section */}
-          <div className="p-4">
-            {/* Course Title */}
-            <h3 className="text-lg font-bold text-foreground">{courseName}</h3>
-            
-            {/* Duration & Location */}
-            <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
-                <span>{hours} hours</span>
+          {/* Content Section with Date Box */}
+          <div className="flex">
+            {/* Date Box - Navy blue left column */}
+            <div className="flex flex-col items-center justify-center bg-primary px-5 py-4 min-w-[80px]">
+              <span className="text-3xl font-bold text-primary-foreground">{dayNumber}</span>
+              <span className="text-sm font-semibold text-primary-foreground/80 uppercase">{monthName}</span>
+            </div>
+
+            {/* Details - Right column */}
+            <div className="flex-1 p-4 space-y-2.5">
+              {/* Course Title */}
+              <h3 className="text-lg font-bold text-foreground uppercase tracking-wide">
+                {courseName}
+              </h3>
+              
+              {/* Duration with icon */}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm">{hours} hours ({fullDateDisplay})</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4" />
-                <span className="truncate">{instructor.home_address || instructor.home_postcode}</span>
+
+              {/* Location with icon */}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm truncate">{locationDisplay}</span>
+              </div>
+
+              {/* Instructor with icon */}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <User className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm">With {instructor.name}</span>
+              </div>
+
+              {/* Price with icon */}
+              <div className="flex items-center gap-2 text-foreground">
+                <PoundSterling className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm font-semibold">£{totalPrice.toFixed(2)}</span>
               </div>
             </div>
-
-            {/* Instructor */}
-            <div className="mt-3 flex items-center gap-3">
-              <Avatar className="h-9 w-9 ring-2 ring-background shadow-md">
-                <AvatarImage src={instructor.profile_image_url || undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
-                  {instructor.name.split(" ").map((n) => n[0]).join("")}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium text-foreground">{instructor.name}</span>
-            </div>
-
-            {/* Price */}
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-foreground">£{totalPrice}</span>
-              <span className="text-sm text-muted-foreground line-through">£{Math.round(totalPrice * 1.15)}</span>
-              <Badge variant="secondary" className="ml-auto bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                Save 15%
-              </Badge>
-            </div>
-
-            {/* Payment Options */}
-            <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-              <div className="flex items-center gap-1.5">
-                <span className="rounded bg-[#b2fce4] px-1.5 py-0.5 text-xs font-bold text-black">
-                  clearpay
-                </span>
-                <span className="rounded bg-[#ffb3c7] px-1.5 py-0.5 text-xs font-bold text-black">
-                  Klarna.
-                </span>
-              </div>
-              <span className="text-xs text-muted-foreground">Pay in 3 or 4 months</span>
-            </div>
-          </div>
-
-          {/* Flip hint */}
-          <div className="absolute bottom-2 right-2 text-[10px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-            Hover for details →
           </div>
         </div>
 
         {/* Back of Card */}
-        <div className="absolute inset-0 overflow-hidden rounded-2xl border bg-card shadow-md [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div className="absolute inset-0 overflow-hidden rounded-xl border bg-card shadow-md [backface-visibility:hidden] [transform:rotateY(180deg)]">
           <div className="flex h-full flex-col p-5">
-            <h3 className="text-lg font-bold text-foreground">{courseName}</h3>
+            <h3 className="text-lg font-bold text-foreground uppercase">{courseName}</h3>
             
             <div className="mt-3 flex items-center gap-2">
               <Avatar className="h-10 w-10">
