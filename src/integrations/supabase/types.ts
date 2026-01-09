@@ -392,6 +392,9 @@ export type Database = {
           booking_advance_days: number | null
           brand_colour: string | null
           buffer_minutes: number
+          cancellation_charge_percent: number | null
+          cancellation_policy_hours: number | null
+          cancellation_policy_text: string | null
           car_image_url: string | null
           car_make: string | null
           car_model: string | null
@@ -435,6 +438,9 @@ export type Database = {
           booking_advance_days?: number | null
           brand_colour?: string | null
           buffer_minutes?: number
+          cancellation_charge_percent?: number | null
+          cancellation_policy_hours?: number | null
+          cancellation_policy_text?: string | null
           car_image_url?: string | null
           car_make?: string | null
           car_model?: string | null
@@ -478,6 +484,9 @@ export type Database = {
           booking_advance_days?: number | null
           brand_colour?: string | null
           buffer_minutes?: number
+          cancellation_charge_percent?: number | null
+          cancellation_policy_hours?: number | null
+          cancellation_policy_text?: string | null
           car_image_url?: string | null
           car_make?: string | null
           car_model?: string | null

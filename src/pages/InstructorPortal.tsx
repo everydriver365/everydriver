@@ -11,6 +11,7 @@ import { TodayScheduleView } from "@/components/instructor/TodayScheduleView";
 import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleView";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
+import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -291,7 +292,7 @@ export default function InstructorPortal() {
         </div>
 
         {/* Settings Row */}
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
+        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Push Notification Settings */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -299,6 +300,15 @@ export default function InstructorPortal() {
             transition={{ delay: 0.4 }}
           >
             <PushNotificationSettings instructorId={MOCK_INSTRUCTOR_ID} />
+          </motion.div>
+
+          {/* Cancellation Policy */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+          >
+            <CancellationPolicyEditor instructorId={MOCK_INSTRUCTOR_ID} />
           </motion.div>
 
           {/* Calendar Sync Notice */}
