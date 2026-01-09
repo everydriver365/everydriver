@@ -9,7 +9,8 @@ import {
   Clock, 
   MapPin,
   Check,
-  Loader2
+  Loader2,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
@@ -55,6 +67,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
+  const [completingLesson, setCompletingLesson] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLessons();
@@ -192,6 +205,62 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
     setSendingMessage(null);
   };
 
+  const handleCompleteLesson = async (lesson: ScheduledLesson) => {
+    setCompletingLesson(lesson.id);
+    
+    try {
+      // 1. Update the scheduled lesson status to completed
+      const { error: updateError } = await supabase
+        .from("scheduled_lessons")
+        .update({ status: "completed" })
+        .eq("id", lesson.id);
+
+      if (updateError) throw updateError;
+
+      // 2. Log to lesson history
+      const { error: historyError } = await supabase
+        .from("lesson_history")
+        .insert({
+          instructor_id: instructorId,
+          pupil_id: lesson.pupil.id,
+          lesson_date: lesson.lesson_date,
+          start_time: lesson.start_time,
+          duration_minutes: lesson.duration_minutes,
+        });
+
+      if (historyError) throw historyError;
+
+      // 3. Update pupil's lessons_completed count
+      const { error: pupilError } = await supabase
+        .from("pupils")
+        .update({ 
+          lessons_completed: (lesson.pupil as any).lessons_completed 
+            ? (lesson.pupil as any).lessons_completed + 1 
+            : 1 
+        })
+        .eq("id", lesson.pupil.id);
+
+      if (pupilError) console.error("Error updating pupil count:", pupilError);
+
+      toast({ 
+        title: "Lesson completed!", 
+        description: `Session with ${lesson.pupil.name} has been logged.` 
+      });
+
+      // Remove from today's list
+      setLessons(prev => prev.filter(l => l.id !== lesson.id));
+    } catch (error) {
+      console.error("Error completing lesson:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to complete lesson. Please try again.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setCompletingLesson(null);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -274,7 +343,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="grid grid-cols-4 gap-1.5 pt-1">
+                      <div className="grid grid-cols-5 gap-1.5 pt-1">
                         <Button
                           variant="outline"
                           size="sm"
@@ -339,6 +408,41 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-col h-auto py-1.5 gap-0.5 border-success/50 hover:bg-success/10"
+                              disabled={completingLesson === lesson.id}
+                            >
+                              {completingLesson === lesson.id ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                              )}
+                              <span className="text-[10px]">Done</span>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Complete Lesson?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Mark the {lesson.duration_minutes}-minute lesson with {lesson.pupil?.name} as complete? This will log it to their lesson history.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleCompleteLesson(lesson)}
+                                className="bg-success hover:bg-success/90"
+                              >
+                                Complete Lesson
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   </CardContent>
