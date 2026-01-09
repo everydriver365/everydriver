@@ -347,27 +347,44 @@ export function LessonScheduler({
         </Badge>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <p className="text-sm text-muted-foreground">
-          Select dates and times for your {totalHours}-hour course.
-        </p>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Lesson length:</span>
-          <Select
-            value={selectedDuration.toString()}
-            onValueChange={(val) => setSelectedDuration(Number(val))}
-          >
-            <SelectTrigger className="w-[120px] h-8">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {durationOptions.map((d) => (
-                <SelectItem key={d} value={d.toString()}>
+      {/* Lesson Length Selection - Made Prominent */}
+      <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <p className="font-medium text-foreground">
+              Choose your lesson length
+            </p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Select how long each lesson should be for your {totalHours}-hour course
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {durationOptions.map((d) => {
+              const hours = d / 60;
+              const isSelected = selectedDuration === d;
+              const colorClass = hours <= 1.5 
+                ? "border-emerald-500 bg-emerald-50 text-emerald-700 hover:bg-emerald-100" 
+                : hours <= 2.5 
+                  ? "border-amber-500 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                  : "border-blue-500 bg-blue-50 text-blue-700 hover:bg-blue-100";
+              return (
+                <Button
+                  key={d}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedDuration(d)}
+                  className={cn(
+                    "font-semibold transition-all",
+                    isSelected 
+                      ? `${colorClass} ring-2 ring-offset-2 ring-primary` 
+                      : colorClass
+                  )}
+                >
                   {formatDuration(d)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
