@@ -224,7 +224,7 @@ export default function Index() {
                 animate={{ opacity: 1, y: 0, rotate: 8 }}
                 whileHover={{ scale: 1.05, zIndex: 50 }}
                 transition={{ type: "spring", stiffness: 100 }}
-                className="absolute top-8 right-0 lg:right-0 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] z-20"
+                className="absolute top-0 right-16 lg:right-20 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] z-20"
               >
                 <div className="relative w-36 lg:w-44">
                   <img 
