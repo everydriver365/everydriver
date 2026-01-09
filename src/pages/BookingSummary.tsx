@@ -195,21 +195,18 @@ export default function BookingSummary() {
               animate={{ opacity: 1, y: 0 }}
               className="rounded-2xl border bg-card p-6 shadow-md"
             >
-              <h2 className="text-lg font-semibold mb-4">Course Details</h2>
+              <h2 className="text-lg font-semibold">Course Details</h2>
+              
+              {/* Selected Date - Prominent Display */}
+              {selectedDate && (
+                <div className="mt-2 mb-4">
+                  <span className="text-xl font-bold text-foreground">
+                    {format(selectedDate, "EEEE, d MMMM yyyy")}
+                  </span>
+                </div>
+              )}
               
               <div className="grid gap-4 sm:grid-cols-2">
-                {/* Selected Date */}
-                {selectedDate && (
-                  <div className="flex items-center gap-3 rounded-lg bg-primary/10 p-4 border border-primary/20">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    <div>
-                      <div className="font-medium">Selected Date</div>
-                      <div className="text-sm text-muted-foreground">
-                        {format(selectedDate, "EEEE, d MMMM yyyy")}
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Duration */}
                 <div className="flex items-center gap-3 rounded-lg bg-secondary/50 p-4">
