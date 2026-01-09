@@ -6,7 +6,9 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
+import { MobileScheduleView } from "@/components/instructor/MobileScheduleView";
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Pupil {
   id: string;
@@ -16,22 +18,18 @@ interface Pupil {
   progress: number | null;
 }
 
-const todaysSchedule = [
-  { time: "09:00", pupil: "Alex Thompson", type: "1hr", status: "confirmed" },
-  { time: "10:30", pupil: "Emma Wilson", type: "2hr", status: "confirmed" },
-  { time: "14:00", pupil: "James Brown", type: "1hr", status: "pending" },
-  { time: "16:00", pupil: "Sophie Davis", type: "Mock Test", status: "confirmed" },
-];
-
 // Mock instructor ID - in production this would come from auth
-const MOCK_INSTRUCTOR_ID = "00000000-0000-0000-0000-000000000001";
+const MOCK_INSTRUCTOR_ID = "b7987d5e-348f-4047-a8d4-ee71fab1f01d";
 
 export default function InstructorPortal() {
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [pupilsLoading, setPupilsLoading] = useState(true);
+  const [todaysLessonCount, setTodaysLessonCount] = useState(0);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchPupils();
+    fetchTodaysLessonCount();
   }, []);
 
   const fetchPupils = async () => {
@@ -52,13 +50,65 @@ export default function InstructorPortal() {
     }
   };
 
-  // Combine mock data with real pupils for display
-  const displayPupils = pupils.length > 0 ? pupils : [
-    { id: "1", name: "Alex Thompson", lessons_completed: 12, next_lesson: "Tomorrow 10am", progress: 65 },
-    { id: "2", name: "Emma Wilson", lessons_completed: 8, next_lesson: "Today 10:30am", progress: 45 },
-    { id: "3", name: "James Brown", lessons_completed: 24, next_lesson: "Today 2pm", progress: 85 },
-  ];
+  const fetchTodaysLessonCount = async () => {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const { count, error } = await supabase
+        .from("scheduled_lessons")
+        .select("*", { count: "exact", head: true })
+        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("lesson_date", today)
+        .neq("status", "cancelled");
 
+      if (error) throw error;
+      setTodaysLessonCount(count || 0);
+    } catch (error) {
+      console.error("Error fetching today's lessons:", error);
+    }
+  };
+
+  // Mobile Layout
+  if (isMobile) {
+    return (
+      <MainLayout>
+        <div className="container py-4 pb-24">
+          {/* Mobile Header */}
+          <div className="mb-4">
+            <h1 className="text-xl font-bold">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">Welcome back</p>
+          </div>
+
+          {/* Job Offers */}
+          <JobOfferAlert instructorId={MOCK_INSTRUCTOR_ID} />
+
+          {/* Mobile Schedule */}
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-accent" />
+              Schedule
+            </h2>
+            <MobileScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-3 mt-6">
+            <Link to="/instructor/pupils">
+              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
+                <Users className="h-5 w-5" />
+                <span className="text-sm">My Pupils</span>
+              </Button>
+            </Link>
+            <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+              <Settings className="h-5 w-5" />
+              <span className="text-sm">Settings</span>
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Desktop Layout (existing)
   return (
     <MainLayout>
       <div className="container py-8">
@@ -93,8 +143,8 @@ export default function InstructorPortal() {
         {/* Stats */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: Calendar, label: "Today's Lessons", value: "4", change: "+2 this week" },
-            { icon: Users, label: "Active Pupils", value: String(pupils.length || 18), change: "+3 new" },
+            { icon: Calendar, label: "Today's Lessons", value: String(todaysLessonCount), change: "+2 this week" },
+            { icon: Users, label: "Active Pupils", value: String(pupils.length || 0), change: "+3 new" },
             { icon: Clock, label: "Hours This Week", value: "32", change: "On track" },
             { icon: TrendingUp, label: "Earnings (Month)", value: "£2,450", change: "+12%" },
           ].map((stat, index) => (
@@ -121,7 +171,7 @@ export default function InstructorPortal() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Today's Schedule */}
+          {/* Today's Schedule - Now uses MobileScheduleView for consistency */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -139,38 +189,7 @@ export default function InstructorPortal() {
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {todaysSchedule.map((lesson, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between rounded-lg border p-4"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 text-center">
-                          <div className="text-lg font-bold">{lesson.time}</div>
-                        </div>
-                        <div>
-                          <div className="font-medium">{lesson.pupil}</div>
-                          <div className="text-sm text-muted-foreground">{lesson.type}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`rounded-full px-2 py-1 text-xs font-medium ${
-                            lesson.status === "confirmed"
-                              ? "bg-success/10 text-success"
-                              : "bg-warning/10 text-warning"
-                          }`}
-                        >
-                          {lesson.status}
-                        </span>
-                        <Button variant="ghost" size="sm">
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <MobileScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
               </CardContent>
             </Card>
           </motion.div>
@@ -190,22 +209,28 @@ export default function InstructorPortal() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {displayPupils.map((pupil) => (
-                    <div
-                      key={pupil.id}
-                      className="flex items-center gap-3 rounded-lg border p-3"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                        {pupil.name.split(" ").map((n) => n[0]).join("")}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium">{pupil.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {pupil.lessons_completed || 0} lessons • {pupil.progress || 0}% complete
+                  {pupils.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No pupils yet
+                    </p>
+                  ) : (
+                    pupils.map((pupil) => (
+                      <div
+                        key={pupil.id}
+                        className="flex items-center gap-3 rounded-lg border p-3"
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                          {pupil.name.split(" ").map((n) => n[0]).join("")}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium">{pupil.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {pupil.lessons_completed || 0} lessons • {pupil.progress || 0}% complete
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
                 <Link to="/instructor/pupils">
                   <Button variant="outline" className="mt-4 w-full">

@@ -607,6 +607,7 @@ export type Database = {
       }
       pupils: {
         Row: {
+          account_balance: number | null
           address: string
           course_type: string | null
           created_at: string
@@ -620,10 +621,12 @@ export type Database = {
           notes: string | null
           phone: string | null
           postcode: string
+          prepaid_hours: number | null
           progress: number | null
           updated_at: string
         }
         Insert: {
+          account_balance?: number | null
           address: string
           course_type?: string | null
           created_at?: string
@@ -637,10 +640,12 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           postcode: string
+          prepaid_hours?: number | null
           progress?: number | null
           updated_at?: string
         }
         Update: {
+          account_balance?: number | null
           address?: string
           course_type?: string | null
           created_at?: string
@@ -654,6 +659,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           postcode?: string
+          prepaid_hours?: number | null
           progress?: number | null
           updated_at?: string
         }
@@ -670,6 +676,78 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_lessons: {
+        Row: {
+          amount_due: number | null
+          created_at: string
+          duration_minutes: number
+          id: string
+          instructor_id: string
+          lesson_date: string
+          lesson_type: string
+          notes: string | null
+          payment_status: string
+          pickup_location: string | null
+          pickup_postcode: string | null
+          prepaid_hours_used: number | null
+          pupil_id: string
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_due?: number | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          instructor_id: string
+          lesson_date: string
+          lesson_type?: string
+          notes?: string | null
+          payment_status?: string
+          pickup_location?: string | null
+          pickup_postcode?: string | null
+          prepaid_hours_used?: number | null
+          pupil_id: string
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          instructor_id?: string
+          lesson_date?: string
+          lesson_type?: string
+          notes?: string | null
+          payment_status?: string
+          pickup_location?: string | null
+          pickup_postcode?: string | null
+          prepaid_hours_used?: number | null
+          pupil_id?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_lessons_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lessons_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
         ]
