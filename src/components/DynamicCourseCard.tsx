@@ -147,13 +147,15 @@ export function DynamicCourseCard({
 
               {/* Payment Options */}
               <div className="flex items-center gap-2 pt-1">
-                <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
+                <span className="rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
                   Klarna.
                 </span>
-                <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
+                <span className="rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
                   clearpay
                 </span>
-                <span className="text-xs text-muted-foreground">Pay in 3 or 4 months</span>
+                <span className="rounded-md bg-[#ffd700] px-2 py-0.5 text-xs font-bold text-black">
+                  iDeal
+                </span>
               </div>
             </div>
           </div>
