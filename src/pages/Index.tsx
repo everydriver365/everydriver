@@ -189,7 +189,7 @@ export default function Index() {
               </div>
             </motion.div>
             
-            {/* Right Content - Photo Collage */}
+            {/* Right Content - Scattered Polaroid Collage */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -197,72 +197,76 @@ export default function Index() {
               className="relative h-[480px] lg:h-[540px] hidden md:block"
             >
               
-              {/* Sarah - Top Left Card */}
+              {/* Sarah - Top Left Polaroid */}
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: -6 }}
-                animate={{ opacity: 1, y: 0, rotate: -6 }}
-                transition={{ delay: 0.3 }}
-                className="absolute top-0 left-0 w-52 lg:w-60 rounded-3xl overflow-hidden shadow-2xl border-4 border-white z-10"
+                initial={{ opacity: 0, y: 30, rotate: -12 }}
+                animate={{ opacity: 1, y: 0, rotate: -12 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
+                whileHover={{ rotate: -8, scale: 1.05, zIndex: 50 }}
+                className="absolute top-0 left-0 lg:left-4 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] cursor-pointer z-10"
               >
-                <div className="relative aspect-[3/4]">
+                <div className="relative w-40 lg:w-48">
                   <img 
                     src={testimonialSarah} 
                     alt="Sarah" 
-                    className="h-full w-full object-cover"
+                    className="w-full aspect-[4/5] object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-                    <div className="text-white font-semibold text-lg">Sarah</div>
-                    <div className="text-white/80 text-sm">Passed 1st time!</div>
+                  <div className="pt-3 pb-1 text-center">
+                    <div className="text-foreground font-semibold text-sm">Sarah</div>
+                    <div className="text-muted-foreground text-xs">Passed 1st time! ✨</div>
                   </div>
                 </div>
               </motion.div>
               
-              {/* James - Top Right Card */}
+              {/* James - Top Right Polaroid */}
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: 6 }}
-                animate={{ opacity: 1, y: 0, rotate: 6 }}
-                transition={{ delay: 0.4 }}
-                className="absolute top-4 right-0 lg:right-4 w-48 lg:w-56 rounded-3xl overflow-hidden shadow-2xl border-4 border-white z-0"
+                initial={{ opacity: 0, y: 30, rotate: 8 }}
+                animate={{ opacity: 1, y: 0, rotate: 8 }}
+                transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
+                whileHover={{ rotate: 4, scale: 1.05, zIndex: 50 }}
+                className="absolute top-8 right-0 lg:right-0 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] cursor-pointer z-20"
               >
-                <div className="relative aspect-[3/4]">
+                <div className="relative w-36 lg:w-44">
                   <img 
                     src={testimonialJames} 
                     alt="James" 
-                    className="h-full w-full object-cover"
+                    className="w-full aspect-[4/5] object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-                    <div className="text-white font-semibold text-lg">James</div>
-                    <div className="text-white/80 text-sm">Intensive Course</div>
+                  <div className="pt-3 pb-1 text-center">
+                    <div className="text-foreground font-semibold text-sm">James</div>
+                    <div className="text-muted-foreground text-xs">Intensive Course 🚗</div>
                   </div>
                 </div>
               </motion.div>
               
-              {/* Emma - Bottom Center Card (in front) */}
+              {/* Emma - Bottom Center Polaroid (in front) */}
               <motion.div
-                initial={{ opacity: 0, y: 20, rotate: 0 }}
-                animate={{ opacity: 1, y: 0, rotate: 0 }}
-                transition={{ delay: 0.5 }}
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 w-52 lg:w-60 rounded-3xl overflow-hidden shadow-2xl border-4 border-white z-20"
+                initial={{ opacity: 0, y: 30, rotate: -4 }}
+                animate={{ opacity: 1, y: 0, rotate: -4 }}
+                transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
+                whileHover={{ rotate: 0, scale: 1.05, zIndex: 50 }}
+                className="absolute bottom-0 left-16 lg:left-20 bg-white p-2 rounded-sm shadow-[0_15px_50px_-10px_rgba(0,0,0,0.35)] cursor-pointer z-30"
               >
-                <div className="relative aspect-[4/5]">
+                <div className="relative w-44 lg:w-52">
                   <img 
                     src={testimonialEmma} 
                     alt="Emma" 
-                    className="h-full w-full object-cover"
+                    className="w-full aspect-[4/5] object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-                    <div className="text-white font-semibold text-lg">Emma</div>
-                    <div className="text-white/80 text-sm">Intensive Course</div>
+                  <div className="pt-3 pb-1 text-center">
+                    <div className="text-foreground font-semibold text-sm">Emma</div>
+                    <div className="text-muted-foreground text-xs">Weekly Lessons 💪</div>
                   </div>
                 </div>
               </motion.div>
               
               {/* 10k+ Learners Badge */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6 }}
-                className="absolute bottom-8 right-0 lg:right-2 bg-primary text-primary-foreground rounded-2xl px-4 py-3 shadow-lg z-30"
+                initial={{ opacity: 0, scale: 0.8, rotate: 6 }}
+                animate={{ opacity: 1, scale: 1, rotate: 6 }}
+                transition={{ delay: 0.6, type: "spring", stiffness: 120 }}
+                whileHover={{ scale: 1.1, rotate: 0 }}
+                className="absolute bottom-24 right-0 lg:right-4 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-xl cursor-pointer z-40"
               >
                 <div className="flex items-center gap-2">
                   <Heart className="h-5 w-5 fill-current" />
