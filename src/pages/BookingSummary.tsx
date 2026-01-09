@@ -371,8 +371,38 @@ export default function BookingSummary() {
                     <span>Total</span>
                     <span>£{totalPrice}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    or from £{Math.round(totalPrice / 4)}/month with Klarna
+                </div>
+
+                {/* Payment Plans */}
+                <div className="mt-4 border-t pt-4 space-y-3">
+                  <p className="text-sm font-medium text-foreground">Pay in instalments</p>
+                  
+                  {/* Klarna */}
+                  <div className="rounded-lg border p-3 bg-[#ffb3c7]/10">
+                    <div className="flex items-center justify-between">
+                      <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
+                        Klarna.
+                      </span>
+                      <span className="text-xs text-muted-foreground">Pay in 3</span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-sm">
+                      <span className="text-muted-foreground">3 × £{(totalPrice / 3).toFixed(2)}</span>
+                      <span className="font-medium">£{(totalPrice / 3).toFixed(2)}/mo</span>
+                    </div>
+                  </div>
+
+                  {/* Clearpay */}
+                  <div className="rounded-lg border p-3 bg-[#b2fce4]/10">
+                    <div className="flex items-center justify-between">
+                      <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
+                        clearpay
+                      </span>
+                      <span className="text-xs text-muted-foreground">Pay in 4</span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-sm">
+                      <span className="text-muted-foreground">4 × £{(totalPrice / 4).toFixed(2)}</span>
+                      <span className="font-medium">£{(totalPrice / 4).toFixed(2)}/mo</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -405,15 +435,6 @@ export default function BookingSummary() {
                   Please schedule all {hours} hours before proceeding
                 </p>
               )}
-
-              <div className="mt-4 flex justify-center gap-2">
-                <span className="rounded bg-[#ffb3c7] px-2 py-1 text-xs font-bold text-black">
-                  Klarna.
-                </span>
-                <span className="rounded bg-[#b2fce4] px-2 py-1 text-xs font-bold text-black">
-                  clearpay
-                </span>
-              </div>
 
               <p className="mt-4 text-center text-xs text-muted-foreground">
                 No payment required now. Pay when your lessons are confirmed.
