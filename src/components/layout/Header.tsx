@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,64 +89,66 @@ export function Header() {
       </nav>
 
       {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="border-t bg-background md:hidden"
-        >
-          <div className="container py-4">
-            <div className="flex flex-col gap-2">
-              {/* Mobile Postcode Search */}
-              <form onSubmit={handleSearch} className="mb-2">
-                <div className="flex items-center rounded-full bg-secondary px-3 py-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
-                  <Input
-                    type="text"
-                    placeholder="Enter your postcode"
-                    value={postcode}
-                    onChange={(e) => setPostcode(e.target.value)}
-                    className="h-8 flex-1 border-0 bg-transparent p-0 text-sm placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
-                  />
-                  <Button type="submit" variant="accent" size="sm" className="h-8 rounded-full px-4 ml-2">
-                    <Search className="h-4 w-4 mr-1" />
-                    Search
-                  </Button>
-                </div>
-              </form>
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t bg-background md:hidden"
+          >
+            <div className="container py-4">
+              <div className="flex flex-col gap-2">
+                {/* Mobile Postcode Search */}
+                <form onSubmit={handleSearch} className="mb-2">
+                  <div className="flex items-center rounded-full bg-secondary px-3 py-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
+                    <Input
+                      type="text"
+                      placeholder="Enter your postcode"
+                      value={postcode}
+                      onChange={(e) => setPostcode(e.target.value)}
+                      className="h-8 flex-1 border-0 bg-transparent p-0 text-sm placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                    <Button type="submit" variant="accent" size="sm" className="h-8 rounded-full px-4 ml-2">
+                      <Search className="h-4 w-4 mr-1" />
+                      Search
+                    </Button>
+                  </div>
+                </form>
 
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              
-              <div className="border-t border-border mt-2 pt-2">
-                <Link
-                  to="/instructor"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-2"
-                >
-                  Instructor Login
-                </Link>
-                <Link
-                  to="/pupil"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-2"
-                >
-                  Pupil Login
-                </Link>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                
+                <div className="border-t border-border mt-2 pt-2">
+                  <Link
+                    to="/instructor"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-2"
+                  >
+                    Instructor Login
+                  </Link>
+                  <Link
+                    to="/pupil"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-2"
+                  >
+                    Pupil Login
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
       </div>
       <div className="hidden md:block">
         <PromoBanner />
