@@ -201,20 +201,15 @@ export default function Index() {
               <motion.div
                 initial={{ opacity: 0, y: 30, rotate: -12 }}
                 animate={{ opacity: 1, y: 0, rotate: -12 }}
-                drag
-                dragConstraints={{ left: -100, right: 200, top: -50, bottom: 200 }}
-                dragElastic={0.1}
-                whileDrag={{ scale: 1.1, zIndex: 100, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.4)" }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.05, zIndex: 50 }}
                 transition={{ type: "spring", stiffness: 100 }}
-                className="absolute top-0 left-0 lg:left-4 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] cursor-grab active:cursor-grabbing z-10"
+                className="absolute top-0 left-0 lg:left-4 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] z-10"
               >
-                <div className="relative w-40 lg:w-48 pointer-events-none">
+                <div className="relative w-40 lg:w-48">
                   <img 
                     src={testimonialSarah} 
                     alt="Sarah" 
                     className="w-full aspect-[4/5] object-cover"
-                    draggable={false}
                   />
                   <div className="pt-3 pb-1 text-center">
                     <div className="text-foreground font-semibold text-sm">Sarah</div>
@@ -227,20 +222,15 @@ export default function Index() {
               <motion.div
                 initial={{ opacity: 0, y: 30, rotate: 8 }}
                 animate={{ opacity: 1, y: 0, rotate: 8 }}
-                drag
-                dragConstraints={{ left: -200, right: 50, top: -50, bottom: 200 }}
-                dragElastic={0.1}
-                whileDrag={{ scale: 1.1, zIndex: 100, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.4)" }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.05, zIndex: 50 }}
                 transition={{ type: "spring", stiffness: 100 }}
-                className="absolute top-8 right-0 lg:right-0 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] cursor-grab active:cursor-grabbing z-20"
+                className="absolute top-8 right-0 lg:right-0 bg-white p-2 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] z-20"
               >
-                <div className="relative w-36 lg:w-44 pointer-events-none">
+                <div className="relative w-36 lg:w-44">
                   <img 
                     src={testimonialJames} 
                     alt="James" 
                     className="w-full aspect-[4/5] object-cover"
-                    draggable={false}
                   />
                   <div className="pt-3 pb-1 text-center">
                     <div className="text-foreground font-semibold text-sm">James</div>
@@ -253,20 +243,15 @@ export default function Index() {
               <motion.div
                 initial={{ opacity: 0, y: 30, rotate: -4 }}
                 animate={{ opacity: 1, y: 0, rotate: -4 }}
-                drag
-                dragConstraints={{ left: -100, right: 150, top: -200, bottom: 50 }}
-                dragElastic={0.1}
-                whileDrag={{ scale: 1.1, zIndex: 100, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.4)" }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.05, zIndex: 50 }}
                 transition={{ type: "spring", stiffness: 100 }}
-                className="absolute bottom-0 left-16 lg:left-20 bg-white p-2 rounded-sm shadow-[0_15px_50px_-10px_rgba(0,0,0,0.35)] cursor-grab active:cursor-grabbing z-30"
+                className="absolute bottom-0 left-16 lg:left-20 bg-white p-2 rounded-sm shadow-[0_15px_50px_-10px_rgba(0,0,0,0.35)] z-30"
               >
-                <div className="relative w-44 lg:w-52 pointer-events-none">
+                <div className="relative w-44 lg:w-52">
                   <img 
                     src={testimonialEmma} 
                     alt="Emma" 
                     className="w-full aspect-[4/5] object-cover"
-                    draggable={false}
                   />
                   <div className="pt-3 pb-1 text-center">
                     <div className="text-foreground font-semibold text-sm">Emma</div>
@@ -279,20 +264,15 @@ export default function Index() {
               <motion.div
                 initial={{ opacity: 0, y: 30, rotate: 10 }}
                 animate={{ opacity: 1, y: 0, rotate: 10 }}
-                drag
-                dragConstraints={{ left: -150, right: 50, top: -200, bottom: 50 }}
-                dragElastic={0.1}
-                whileDrag={{ scale: 1.1, zIndex: 100, boxShadow: "0 25px 50px -12px rgba(0,0,0,0.4)" }}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.05, zIndex: 50 }}
                 transition={{ type: "spring", stiffness: 100 }}
-                className="absolute bottom-16 right-8 lg:right-12 bg-white p-2 rounded-sm shadow-[0_12px_45px_-10px_rgba(0,0,0,0.32)] cursor-grab active:cursor-grabbing z-25"
+                className="absolute bottom-16 right-8 lg:right-12 bg-white p-2 rounded-sm shadow-[0_12px_45px_-10px_rgba(0,0,0,0.32)] z-25"
               >
-                <div className="relative w-32 lg:w-40 pointer-events-none">
+                <div className="relative w-32 lg:w-40">
                   <img 
                     src={testimonialPriyaFallback} 
                     alt="Priya" 
                     className="w-full aspect-[4/5] object-cover"
-                    draggable={false}
                   />
                   <div className="pt-3 pb-1 text-center">
                     <div className="text-foreground font-semibold text-sm">Priya</div>
@@ -305,15 +285,11 @@ export default function Index() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, rotate: 6 }}
                 animate={{ opacity: 1, scale: 1, rotate: 6 }}
-                drag
-                dragConstraints={{ left: -150, right: 50, top: -150, bottom: 50 }}
-                dragElastic={0.1}
-                whileDrag={{ scale: 1.15, zIndex: 100 }}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 120 }}
-                className="absolute bottom-0 right-0 lg:right-0 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-xl cursor-grab active:cursor-grabbing z-40"
+                className="absolute bottom-0 right-0 lg:right-0 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-xl z-40"
               >
-                <div className="flex items-center gap-2 pointer-events-none">
+                <div className="flex items-center gap-2">
                   <Heart className="h-5 w-5 fill-current" />
                   <div>
                     <div className="font-bold">10k+ Learners</div>
