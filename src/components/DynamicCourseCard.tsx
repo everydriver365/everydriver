@@ -79,7 +79,7 @@ export function DynamicCourseCard({
         }`}
       >
         {/* Front of Card */}
-        <div className="overflow-hidden border bg-card shadow-md [backface-visibility:hidden]">
+        <div className="overflow-hidden border border-border/50 bg-card shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15">
           {/* Popular Badge */}
           {isPopular && (
             <div className="absolute top-3 left-3 z-20">
@@ -160,7 +160,7 @@ export function DynamicCourseCard({
         </div>
 
         {/* Back of Card */}
-        <div className="absolute inset-0 overflow-hidden border bg-primary text-primary-foreground shadow-md [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div className="absolute inset-0 overflow-hidden border border-primary/30 bg-primary text-primary-foreground shadow-lg shadow-black/10 [backface-visibility:hidden] [transform:rotateY(180deg)]">
           <div className="flex h-full flex-col p-5">
             <h3 className="text-lg font-bold text-primary-foreground uppercase">{courseName}</h3>
             
