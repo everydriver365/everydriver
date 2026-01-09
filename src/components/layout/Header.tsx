@@ -126,6 +126,23 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
+              
+              <div className="border-t border-border mt-2 pt-2">
+                <Link
+                  to="/instructor"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-2"
+                >
+                  Instructor Login
+                </Link>
+                <Link
+                  to="/pupil"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground flex items-center gap-2"
+                >
+                  Pupil Login
+                </Link>
+              </div>
             </div>
           </div>
         </motion.div>
