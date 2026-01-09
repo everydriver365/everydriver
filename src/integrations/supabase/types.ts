@@ -512,6 +512,63 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_history: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          id: string
+          instructor_id: string
+          lesson_date: string
+          notes: string | null
+          pupil_id: string
+          rating: number | null
+          skills_practiced: string[] | null
+          start_time: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          instructor_id: string
+          lesson_date: string
+          notes?: string | null
+          pupil_id: string
+          rating?: number | null
+          skills_practiced?: string[] | null
+          start_time?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          instructor_id?: string
+          lesson_date?: string
+          notes?: string | null
+          pupil_id?: string
+          rating?: number | null
+          skills_practiced?: string[] | null
+          start_time?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_history_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotional_messages: {
         Row: {
           created_at: string

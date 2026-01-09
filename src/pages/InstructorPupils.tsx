@@ -16,6 +16,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -44,9 +51,11 @@ import {
   Loader2,
   ArrowLeft,
   User,
+  History,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
+import { LessonHistory } from "@/components/instructor/LessonHistory";
 
 interface Pupil {
   id: string;
@@ -83,6 +92,7 @@ export default function InstructorPupils() {
   const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Pupil>>({});
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -394,6 +404,15 @@ export default function InstructorPupils() {
                               Edit Details
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedPupil(pupil);
+                                setIsHistoryOpen(true);
+                              }}
+                            >
+                              <History className="mr-2 h-4 w-4" />
+                              Lesson History
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
                               onClick={() => handleDeletePupil(pupil)}
                               className="text-destructive"
                             >
@@ -470,10 +489,13 @@ export default function InstructorPupils() {
                           variant="outline"
                           size="sm"
                           className="flex-1"
-                          onClick={() => handleUpdateProgress(pupil, 1)}
+                          onClick={() => {
+                            setSelectedPupil(pupil);
+                            setIsHistoryOpen(true);
+                          }}
                         >
-                          <Plus className="mr-1 h-3 w-3" />
-                          Log Lesson
+                          <History className="mr-1 h-3 w-3" />
+                          History
                         </Button>
                         <Button
                           size="sm"
@@ -659,6 +681,39 @@ export default function InstructorPupils() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Lesson History Sheet */}
+        <Sheet open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+          <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+            <SheetHeader className="mb-4">
+              <SheetTitle className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                  {selectedPupil?.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </div>
+                <div>
+                  <div>{selectedPupil?.name}</div>
+                  <div className="text-sm font-normal text-muted-foreground">
+                    {selectedPupil?.postcode}
+                  </div>
+                </div>
+              </SheetTitle>
+              <SheetDescription>
+                View and manage lesson history
+              </SheetDescription>
+            </SheetHeader>
+            {selectedPupil && (
+              <LessonHistory
+                pupilId={selectedPupil.id}
+                pupilName={selectedPupil.name}
+                instructorId={MOCK_INSTRUCTOR_ID}
+                onLessonAdded={fetchPupils}
+              />
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </MainLayout>
   );
