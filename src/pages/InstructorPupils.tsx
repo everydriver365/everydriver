@@ -246,6 +246,12 @@ export default function InstructorPupils() {
               </p>
             </div>
           </div>
+          <Link to="/instructor/diary">
+            <Button variant="outline" className="gap-2">
+              <History className="h-4 w-4" />
+              View All History
+            </Button>
+          </Link>
         </div>
 
         {/* Stats Cards */}
