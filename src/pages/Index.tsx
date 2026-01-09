@@ -1412,7 +1412,40 @@ export default function Index() {
         </motion.div>
       </section>
 
-      {/* Trust Badges Section - Hidden on mobile */}
+      {/* Trust Badges Section - Mobile: Text badges, Desktop: Logo images */}
+      
+      {/* Mobile Trust Badges */}
+      <section className="md:hidden border-t bg-muted/30 py-4">
+        <div className="container">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Badge variant="secondary" className="text-xs font-medium">
+              ADI Code of Practice ✓
+            </Badge>
+            <Badge variant="secondary" className="text-xs font-medium">
+              MSA GB Member
+            </Badge>
+            <Badge variant="secondary" className="text-xs font-medium">
+              CPD Certified
+            </Badge>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+            <Badge variant="outline" className="text-xs">
+              Visa / Mastercard
+            </Badge>
+            <Badge className="text-xs bg-[#ffb3c7] text-black border-0">
+              Klarna
+            </Badge>
+            <Badge className="text-xs bg-[#b2fce4] text-black border-0">
+              Clearpay
+            </Badge>
+            <Badge className="text-xs bg-[#ffd700] text-black border-0">
+              0% Finance
+            </Badge>
+          </div>
+        </div>
+      </section>
+
+      {/* Desktop Trust Badges */}
       <section className="hidden md:block border-t bg-muted/30 py-6">
         <div className="container">
           <div className="flex items-center justify-center gap-8">
