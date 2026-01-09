@@ -32,7 +32,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full">
       <div className="border-b border-nav/20 bg-nav">
-      <nav className="container flex h-16 items-center justify-between">
+      <nav className="container max-w-7xl flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center">
           <img src={logo} alt="EveryDriver" className="h-16" />
         </Link>
