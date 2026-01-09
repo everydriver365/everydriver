@@ -163,16 +163,9 @@ export function DynamicCourseCard({
                   <span className="text-[9px] font-semibold uppercase tracking-wider">Book</span>
                   <span className="text-[9px] font-semibold uppercase tracking-wider">Now!</span>
                 </>
-              ) : isDelayed ? (
-                <>
-                  <CalendarClock className="h-4 w-4 mb-1 opacity-90" />
-                  <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
-                  <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">From</span>
-                </>
               ) : (
                 <>
-                  <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Next</span>
-                  <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
+                  <CalendarClock className="h-4 w-4 mb-1 opacity-90" />
                 </>
               )}
               <span className="mt-0.5 text-2xl font-bold relative z-10">{day}</span>
