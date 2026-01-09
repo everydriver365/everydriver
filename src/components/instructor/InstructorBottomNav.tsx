@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Calendar, BookOpen, Briefcase, CreditCard, Phone } from "lucide-react";
+import { Home, Calendar, BookOpen, Briefcase, CreditCard, Settings } from "lucide-react";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/instructor" },
@@ -7,7 +7,7 @@ const navItems = [
   { label: "Diary", icon: BookOpen, path: "/instructor/diary" },
   { label: "Jobs", icon: Briefcase, path: "/instructor/jobs" },
   { label: "Pay", icon: CreditCard, path: "/instructor/pay" },
-  { label: "Contact", icon: Phone, path: "/instructor/contact" },
+  { label: "Settings", icon: Settings, path: "/instructor/settings" },
 ];
 
 export function InstructorBottomNav() {

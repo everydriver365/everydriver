@@ -14,6 +14,7 @@ import InstructorDiary from "./pages/InstructorDiary";
 import InstructorJobs from "./pages/InstructorJobs";
 import InstructorPay from "./pages/InstructorPay";
 import InstructorContact from "./pages/InstructorContact";
+import InstructorSettings from "./pages/InstructorSettings";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/instructor/jobs" element={<InstructorJobs />} />
           <Route path="/instructor/pay" element={<InstructorPay />} />
           <Route path="/instructor/contact" element={<InstructorContact />} />
+          <Route path="/instructor/settings" element={<InstructorSettings />} />
           <Route path="/parent" element={<ParentPortal />} />
           <Route path="/admin" element={<AdminPortal />} />
           <Route path="/theory" element={<Theory />} />
