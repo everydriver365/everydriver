@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import logo from "@/assets/logo.png";
+import { PromoBanner } from "./PromoBanner";
+import { SecondaryNav } from "./SecondaryNav";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -28,7 +30,9 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-nav/20 bg-nav">
+    <header className="sticky top-0 z-50 w-full">
+      <PromoBanner />
+      <div className="border-b border-nav/20 bg-nav">
       <nav className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center">
           <img src={logo} alt="EveryDriver" className="h-8" />
@@ -116,6 +120,8 @@ export function Header() {
           </div>
         </motion.div>
       )}
+      </div>
+      <SecondaryNav />
     </header>
   );
 }

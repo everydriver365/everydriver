@@ -53,6 +53,12 @@
 
     --nav-background: 213 100% 14%;
     --nav-foreground: 0 0% 100%;
+    
+    --secondary-nav: 200 80% 92%;
+    --secondary-nav-foreground: 213 100% 20%;
+    
+    --promo-banner: 142 71% 45%;
+    --promo-banner-foreground: 0 0% 100%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
