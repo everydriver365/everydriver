@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Circle } from "react-leaflet";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 // Fix default marker icon issue with Leaflet + React
