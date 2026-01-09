@@ -16,6 +16,7 @@ import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import TelematicsTracker from "@/components/instructor/TelematicsTracker";
+import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import VehicleHealthManager from "@/components/instructor/VehicleHealthManager";
 import DrivingSkillsHeatmap from "@/components/instructor/DrivingSkillsHeatmap";
 import { supabase } from "@/integrations/supabase/client";
@@ -160,6 +161,9 @@ export default function InstructorPortal() {
               </Button>
             </Link>
           </div>
+
+          {/* Payment Summary */}
+          <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} compact />
 
           {/* GPS Telematics - Compact for mobile */}
           <TelematicsTracker instructorId={MOCK_INSTRUCTOR_ID} compact />
@@ -317,8 +321,17 @@ export default function InstructorPortal() {
           </motion.div>
         </div>
 
-        {/* Settings Row */}
-        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Payment Summary & Settings Row */}
+        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* Payment Summary Widget */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+          >
+            <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} />
+          </motion.div>
+
           {/* Push Notification Settings */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
