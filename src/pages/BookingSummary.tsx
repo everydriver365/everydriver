@@ -703,29 +703,48 @@ export default function BookingSummary() {
                 transition={{ delay: 0.6 }}
               >
                 <h2 className="text-lg font-semibold mb-4">Other Courses from {instructor.name.split(" ")[0]}</h2>
-                <div className="grid gap-6 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {otherCourses.map((course) => (
-                    <div 
+                    <Card
                       key={course.course_hours}
+                      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
                       onClick={() => navigate(`/book/${instructor.id}?hours=${course.course_hours}`)}
                     >
-                      <CourseCard
-                        course={{
-                          id: course.course_hours,
-                          title: course.course_name,
-                          instructor: instructor.name,
-                          instructorImage: instructor.profile_image_url || undefined,
-                          price: (instructor.hourly_rate || 35) * course.course_hours,
-                          location: locationName || instructor.home_postcode,
-                          duration: `${course.course_hours} hours`,
-                          description: `Complete ${course.course_hours}-hour driving course with ${instructor.name}`,
-                          nextAvailableDay: course.nextAvailableDate ? format(course.nextAvailableDate, "dd") : "--",
-                          nextAvailableMonth: course.nextAvailableDate ? format(course.nextAvailableDate, "MMM").toUpperCase() : "N/A",
-                          tags: [`${course.course_hours}h`],
-                          image: course.course_image_url || undefined,
-                        }}
-                      />
-                    </div>
+                      <div className="flex gap-3 p-3">
+                        {/* Thumbnail */}
+                        <div className="relative h-16 w-16 shrink-0 rounded-md overflow-hidden bg-muted">
+                          {course.course_image_url ? (
+                            <img 
+                              src={course.course_image_url} 
+                              alt={course.course_name} 
+                              className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-primary/10">
+                              <Car className="h-6 w-6 text-primary/50" />
+                            </div>
+                          )}
+                        </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm truncate">{course.course_name}</h3>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>{course.course_hours}h</span>
+                          </div>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-semibold text-sm">
+                              £{(instructor.hourly_rate || 35) * course.course_hours}
+                            </span>
+                            {course.nextAvailableDate && (
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                {format(course.nextAvailableDate, "d MMM")}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
                   ))}
                 </div>
               </motion.div>
