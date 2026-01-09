@@ -360,9 +360,25 @@ export default function BookingSummary() {
               <h2 className="text-lg font-semibold">Price Summary</h2>
               
               <div className="mt-4 space-y-3">
-                <div className="flex justify-between font-semibold text-lg">
-                  <span>Total</span>
-                  <span>£{totalPrice}</span>
+                {/* Savings Badge */}
+                {hours >= 10 && (
+                  <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3 text-center">
+                    <span className="text-emerald-700 font-semibold text-sm">
+                      🎉 You save £{(hours * 5).toFixed(0)} vs individual lessons!
+                    </span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-lg">Total</span>
+                  <div className="text-right">
+                    <span className="font-semibold text-lg">£{totalPrice}</span>
+                    {hours >= 10 && (
+                      <div className="text-xs text-muted-foreground line-through">
+                        £{totalPrice + (hours * 5)}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Payment Plans */}
