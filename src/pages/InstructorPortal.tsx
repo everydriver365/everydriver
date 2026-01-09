@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
-import { MobileScheduleView } from "@/components/instructor/MobileScheduleView";
+import { TodayScheduleView } from "@/components/instructor/TodayScheduleView";
+import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleView";
+import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -26,6 +28,7 @@ export default function InstructorPortal() {
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [pupilsLoading, setPupilsLoading] = useState(true);
   const [todaysLessonCount, setTodaysLessonCount] = useState(0);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -72,27 +75,33 @@ export default function InstructorPortal() {
   if (isMobile) {
     return (
       <MainLayout>
-        <div className="container py-4 pb-24">
+        <div className="container py-4 pb-24 space-y-4">
           {/* Mobile Header */}
-          <div className="mb-4">
-            <h1 className="text-xl font-bold">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Welcome back</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold">Dashboard</h1>
+              <p className="text-sm text-muted-foreground">Welcome back</p>
+            </div>
+            <Button 
+              onClick={() => setPaymentModalOpen(true)}
+              className="gap-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              Take Payment
+            </Button>
           </div>
 
-          {/* Job Offers */}
+          {/* Job Offers - Top Priority */}
           <JobOfferAlert instructorId={MOCK_INSTRUCTOR_ID} />
 
-          {/* Mobile Schedule */}
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-accent" />
-              Schedule
-            </h2>
-            <MobileScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
-          </div>
+          {/* Today's Schedule */}
+          <TodayScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
+
+          {/* Tomorrow's Schedule */}
+          <TomorrowScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3 mt-6">
+          <div className="grid grid-cols-2 gap-3">
             <Link to="/instructor/pupils">
               <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
                 <Users className="h-5 w-5" />
@@ -105,6 +114,11 @@ export default function InstructorPortal() {
             </Button>
           </div>
         </div>
+
+        <PaymentQRModal 
+          open={paymentModalOpen} 
+          onOpenChange={setPaymentModalOpen} 
+        />
       </MainLayout>
     );
   }
@@ -130,13 +144,13 @@ export default function InstructorPortal() {
             transition={{ delay: 0.1 }}
             className="flex gap-3"
           >
+            <Button onClick={() => setPaymentModalOpen(true)}>
+              <CreditCard className="mr-2 h-4 w-4" />
+              Take Payment
+            </Button>
             <Button variant="outline" size="sm">
               <Settings className="mr-2 h-4 w-4" />
               Settings
-            </Button>
-            <Button variant="accent" size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Availability
             </Button>
           </motion.div>
         </div>
@@ -172,27 +186,15 @@ export default function InstructorPortal() {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Today's Schedule - Now uses MobileScheduleView for consistency */}
+          {/* Today's & Tomorrow's Schedule */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="lg:col-span-2"
+            className="lg:col-span-2 space-y-6"
           >
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-accent" />
-                  Today's Schedule
-                </CardTitle>
-                <Button variant="outline" size="sm">
-                  Full Calendar
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <MobileScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
-              </CardContent>
-            </Card>
+            <TodayScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
+            <TomorrowScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
           </motion.div>
 
           {/* Active Pupils */}
@@ -278,6 +280,11 @@ export default function InstructorPortal() {
             </Card>
           </motion.div>
         </div>
+
+        <PaymentQRModal 
+          open={paymentModalOpen} 
+          onOpenChange={setPaymentModalOpen} 
+        />
       </div>
     </MainLayout>
   );
