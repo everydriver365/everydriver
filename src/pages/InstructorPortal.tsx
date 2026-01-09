@@ -1,8 +1,19 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Pupil {
+  id: string;
+  name: string;
+  lessons_completed: number | null;
+  next_lesson: string | null;
+  progress: number | null;
+}
 
 const todaysSchedule = [
   { time: "09:00", pupil: "Alex Thompson", type: "1hr", status: "confirmed" },
@@ -11,16 +22,48 @@ const todaysSchedule = [
   { time: "16:00", pupil: "Sophie Davis", type: "Mock Test", status: "confirmed" },
 ];
 
-const recentPupils = [
-  { name: "Alex Thompson", lessons: 12, nextLesson: "Tomorrow 10am", progress: 65 },
-  { name: "Emma Wilson", lessons: 8, nextLesson: "Today 10:30am", progress: 45 },
-  { name: "James Brown", lessons: 24, nextLesson: "Today 2pm", progress: 85 },
-];
+// Mock instructor ID - in production this would come from auth
+const MOCK_INSTRUCTOR_ID = "00000000-0000-0000-0000-000000000001";
 
 export default function InstructorPortal() {
+  const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [pupilsLoading, setPupilsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPupils();
+  }, []);
+
+  const fetchPupils = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("pupils")
+        .select("id, name, lessons_completed, next_lesson, progress")
+        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      setPupils(data || []);
+    } catch (error) {
+      console.error("Error fetching pupils:", error);
+    } finally {
+      setPupilsLoading(false);
+    }
+  };
+
+  // Combine mock data with real pupils for display
+  const displayPupils = pupils.length > 0 ? pupils : [
+    { id: "1", name: "Alex Thompson", lessons_completed: 12, next_lesson: "Tomorrow 10am", progress: 65 },
+    { id: "2", name: "Emma Wilson", lessons_completed: 8, next_lesson: "Today 10:30am", progress: 45 },
+    { id: "3", name: "James Brown", lessons_completed: 24, next_lesson: "Today 2pm", progress: 85 },
+  ];
+
   return (
     <MainLayout>
       <div className="container py-8">
+        {/* Job Offer Alerts - At the top for visibility */}
+        <JobOfferAlert instructorId={MOCK_INSTRUCTOR_ID} />
+
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -50,7 +93,7 @@ export default function InstructorPortal() {
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { icon: Calendar, label: "Today's Lessons", value: "4", change: "+2 this week" },
-            { icon: Users, label: "Active Pupils", value: "18", change: "+3 new" },
+            { icon: Users, label: "Active Pupils", value: String(pupils.length || 18), change: "+3 new" },
             { icon: Clock, label: "Hours This Week", value: "32", change: "On track" },
             { icon: TrendingUp, label: "Earnings (Month)", value: "£2,450", change: "+12%" },
           ].map((stat, index) => (
@@ -131,7 +174,7 @@ export default function InstructorPortal() {
             </Card>
           </motion.div>
 
-          {/* Recent Pupils */}
+          {/* Active Pupils */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -146,9 +189,9 @@ export default function InstructorPortal() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentPupils.map((pupil) => (
+                  {displayPupils.map((pupil) => (
                     <div
-                      key={pupil.name}
+                      key={pupil.id}
                       className="flex items-center gap-3 rounded-lg border p-3"
                     >
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
@@ -157,7 +200,7 @@ export default function InstructorPortal() {
                       <div className="flex-1">
                         <div className="font-medium">{pupil.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {pupil.lessons} lessons • {pupil.progress}% complete
+                          {pupil.lessons_completed || 0} lessons • {pupil.progress || 0}% complete
                         </div>
                       </div>
                     </div>
