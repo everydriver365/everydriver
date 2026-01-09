@@ -71,12 +71,12 @@ serve(async (req) => {
       pupil_id: pupil.id,
       lesson_date: slot.date,
       start_time: slot.startTime,
-      end_time: slot.endTime,
       duration_minutes: slot.duration,
       pickup_location: booking.pupilAddress,
+      pickup_postcode: booking.pupilPostcode,
       lesson_type: "driving",
       status: "scheduled",
-      is_paid: false,
+      payment_status: "pending",
     }));
 
     const { data: lessons, error: lessonsError } = await supabase
