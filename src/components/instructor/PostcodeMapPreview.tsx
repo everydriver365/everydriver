@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Circle } from "react-leaflet";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Navigation } from "lucide-react";
 import L from "leaflet";
 
 // Fix default marker icon issue with Leaflet + React
@@ -15,9 +15,10 @@ L.Icon.Default.mergeOptions({
 interface PostcodeMapPreviewProps {
   postcode: string;
   className?: string;
+  onClick?: () => void;
 }
 
-export function PostcodeMapPreview({ postcode, className = "" }: PostcodeMapPreviewProps) {
+export function PostcodeMapPreview({ postcode, className = "", onClick }: PostcodeMapPreviewProps) {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -67,33 +68,47 @@ export function PostcodeMapPreview({ postcode, className = "" }: PostcodeMapPrev
   }
 
   return (
-    <div className={`rounded-lg overflow-hidden border ${className}`}>
-      <MapContainer
-        center={[coords.lat, coords.lng]}
-        zoom={13}
-        scrollWheelZoom={false}
-        dragging={false}
-        zoomControl={false}
-        doubleClickZoom={false}
-        touchZoom={false}
-        style={{ height: "120px", width: "100%" }}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Circle
+    <div 
+      className={`rounded-lg overflow-hidden border ${onClick ? "cursor-pointer" : ""} ${className}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => e.key === "Enter" && onClick() : undefined}
+    >
+      {onClick && (
+        <div className="absolute top-2 right-2 z-[1000] bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full shadow-md flex items-center gap-1 pointer-events-none">
+          <Navigation className="h-3 w-3" />
+          Tap to navigate
+        </div>
+      )}
+      <div className="relative">
+        <MapContainer
           center={[coords.lat, coords.lng]}
-          radius={500}
-          pathOptions={{
-            fillColor: "hsl(var(--primary))",
-            fillOpacity: 0.2,
-            color: "hsl(var(--primary))",
-            weight: 2,
-          }}
-        />
-        <Marker position={[coords.lat, coords.lng]} />
-      </MapContainer>
+          zoom={13}
+          scrollWheelZoom={false}
+          dragging={false}
+          zoomControl={false}
+          doubleClickZoom={false}
+          touchZoom={false}
+          style={{ height: "120px", width: "100%" }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Circle
+            center={[coords.lat, coords.lng]}
+            radius={500}
+            pathOptions={{
+              fillColor: "hsl(var(--primary))",
+              fillOpacity: 0.2,
+              color: "hsl(var(--primary))",
+              weight: 2,
+            }}
+          />
+          <Marker position={[coords.lat, coords.lng]} />
+        </MapContainer>
+      </div>
     </div>
   );
 }
