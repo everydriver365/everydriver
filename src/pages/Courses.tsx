@@ -87,11 +87,11 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c;
 }
 
-// Generate next 6 months for dropdown
+// Generate next 18 months for dropdown
 function getMonthOptions(): { value: string; label: string }[] {
   const options = [];
   const now = new Date();
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 18; i++) {
     const month = addMonths(now, i);
     options.push({
       value: format(month, "yyyy-MM"),
@@ -164,6 +164,22 @@ function SidebarCalendar({
 
   return (
     <div className="rounded-xl border bg-card p-4 shadow-sm">
+      {/* Month Dropdown */}
+      <div className="mb-4">
+        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+          <SelectTrigger className="w-full bg-background">
+            <SelectValue placeholder="Select month" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[300px] bg-popover z-50">
+            {monthOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Month Navigation */}
       <div className="mb-4 flex items-center justify-between">
         <button
