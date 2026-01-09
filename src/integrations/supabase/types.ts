@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      course_enquiries: {
+        Row: {
+          additional_notes: string | null
+          address: string
+          assigned_instructor_id: string | null
+          course_type: string
+          created_at: string
+          id: string
+          name: string
+          postcode: string
+          preferred_timing: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          additional_notes?: string | null
+          address: string
+          assigned_instructor_id?: string | null
+          course_type: string
+          created_at?: string
+          id?: string
+          name: string
+          postcode: string
+          preferred_timing: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          additional_notes?: string | null
+          address?: string
+          assigned_instructor_id?: string | null
+          course_type?: string
+          created_at?: string
+          id?: string
+          name?: string
+          postcode?: string
+          preferred_timing?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enquiries_assigned_instructor_id_fkey"
+            columns: ["assigned_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_reviews: {
         Row: {
           course_hours: number
@@ -494,6 +544,75 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      pupils: {
+        Row: {
+          address: string
+          course_type: string | null
+          created_at: string
+          email: string | null
+          enquiry_id: string | null
+          id: string
+          instructor_id: string
+          lessons_completed: number | null
+          name: string
+          next_lesson: string | null
+          notes: string | null
+          phone: string | null
+          postcode: string
+          progress: number | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          course_type?: string | null
+          created_at?: string
+          email?: string | null
+          enquiry_id?: string | null
+          id?: string
+          instructor_id: string
+          lessons_completed?: number | null
+          name: string
+          next_lesson?: string | null
+          notes?: string | null
+          phone?: string | null
+          postcode: string
+          progress?: number | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          course_type?: string | null
+          created_at?: string
+          email?: string | null
+          enquiry_id?: string | null
+          id?: string
+          instructor_id?: string
+          lessons_completed?: number | null
+          name?: string
+          next_lesson?: string | null
+          notes?: string | null
+          phone?: string | null
+          postcode?: string
+          progress?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupils_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "course_enquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupils_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_images: {
         Row: {
