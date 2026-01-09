@@ -768,14 +768,14 @@ export default function Courses() {
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 flex items-center justify-between rounded-xl border-2 border-primary bg-primary/10 px-5 py-4 shadow-md"
+                className="mb-6 flex items-center justify-between rounded-xl border-2 border-emerald-500/30 bg-emerald-500/20 px-5 py-4 shadow-md"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white">
                     <MapPin className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-primary">Showing results for</p>
+                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Showing results for</p>
                     <h2 className="text-xl font-bold text-foreground">
                       {searchedPostcode}{searchedAreaName ? `, ${searchedAreaName}` : ''}
                     </h2>
@@ -785,7 +785,7 @@ export default function Courses() {
                   variant="outline" 
                   size="sm" 
                   onClick={clearSearch}
-                  className="gap-1.5 border-primary/30 hover:bg-primary/10"
+                  className="gap-1.5 border-emerald-500/30 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400"
                 >
                   <X className="h-4 w-4" />
                   Clear
