@@ -416,7 +416,7 @@ export function LessonScheduler({
                 fontWeight: "500",
               },
             }}
-            className={cn("p-1 pointer-events-auto text-sm [&_table]:w-full [&_td]:p-0.5 [&_th]:p-0.5 [&_button]:h-8 [&_button]:w-8 [&_button]:text-xs")}
+            className={cn("p-1 pointer-events-auto text-sm [&_table]:w-full [&_table]:table-fixed [&_td]:p-0 [&_th]:p-0 [&_button]:h-7 [&_button]:w-7 [&_button]:text-xs [&_button]:rounded-md")}
           />
         </div>
 
