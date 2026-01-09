@@ -230,7 +230,7 @@ export default function InstructorPupils() {
 
   return (
     <MainLayout>
-      <div className="px-3 md:container py-6 pb-24">
+      <div className="px-2 sm:px-3 md:container py-6 pb-24">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
@@ -370,7 +370,7 @@ export default function InstructorPupils() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
               {filteredPupils.map((pupil, index) => (
                 <motion.div
