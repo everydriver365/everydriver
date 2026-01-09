@@ -680,6 +680,47 @@ export type Database = {
           },
         ]
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          instructor_id: string
+          p256dh: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          instructor_id: string
+          p256dh: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          instructor_id?: string
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_lessons: {
         Row: {
           amount_due: number | null
