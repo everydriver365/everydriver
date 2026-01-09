@@ -260,13 +260,34 @@ export default function Index() {
                 </div>
               </motion.div>
               
+              {/* Priya - Bottom Right Polaroid */}
+              <motion.div
+                initial={{ opacity: 0, y: 30, rotate: 10 }}
+                animate={{ opacity: 1, y: 0, rotate: 10 }}
+                transition={{ delay: 0.55, type: "spring", stiffness: 100 }}
+                whileHover={{ rotate: 6, scale: 1.05, zIndex: 50 }}
+                className="absolute bottom-16 right-8 lg:right-12 bg-white p-2 rounded-sm shadow-[0_12px_45px_-10px_rgba(0,0,0,0.32)] cursor-pointer z-25"
+              >
+                <div className="relative w-32 lg:w-40">
+                  <img 
+                    src={testimonialPriyaFallback} 
+                    alt="Priya" 
+                    className="w-full aspect-[4/5] object-cover"
+                  />
+                  <div className="pt-3 pb-1 text-center">
+                    <div className="text-foreground font-semibold text-sm">Priya</div>
+                    <div className="text-muted-foreground text-xs">Semi-Intensive 🎉</div>
+                  </div>
+                </div>
+              </motion.div>
+              
               {/* 10k+ Learners Badge */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, rotate: 6 }}
                 animate={{ opacity: 1, scale: 1, rotate: 6 }}
-                transition={{ delay: 0.6, type: "spring", stiffness: 120 }}
+                transition={{ delay: 0.65, type: "spring", stiffness: 120 }}
                 whileHover={{ scale: 1.1, rotate: 0 }}
-                className="absolute bottom-24 right-0 lg:right-4 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-xl cursor-pointer z-40"
+                className="absolute bottom-0 right-0 lg:right-0 bg-primary text-primary-foreground rounded-xl px-4 py-3 shadow-xl cursor-pointer z-40"
               >
                 <div className="flex items-center gap-2">
                   <Heart className="h-5 w-5 fill-current" />
