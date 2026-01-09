@@ -25,6 +25,9 @@ import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
+import About from "./pages/About";
+import Intensives from "./pages/Intensives";
+import SemiIntensive from "./pages/SemiIntensive";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +58,9 @@ const App = () => (
           <Route path="/faqs" element={<FAQs />} />
           <Route path="/help" element={<Help />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/intensives" element={<Intensives />} />
+          <Route path="/semi-intensive" element={<SemiIntensive />} />
           <Route path="/hero-demo" element={<HeroLayoutDemo />} />
           <Route path="/collage-demo" element={<CollageDemo />} />
           <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
