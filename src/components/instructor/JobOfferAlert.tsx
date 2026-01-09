@@ -11,14 +11,15 @@ import {
   Briefcase, 
   MapPin, 
   Calendar, 
-  User, 
   Check, 
   X, 
   Clock,
   PoundSterling,
   Home,
   FileText,
-  Loader2 
+  Loader2,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 interface CourseEnquiry {
@@ -70,6 +71,7 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
   const [instructor, setInstructor] = useState<Instructor | null>(null);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -172,6 +174,10 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
     }
   };
 
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
   if (loading) {
     return (
       <div className="mb-6">
@@ -204,6 +210,7 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
         {enquiries.map((enquiry) => {
           const hours = enquiry.requested_hours || 10;
           const payment = calculatePayment(hours);
+          const isExpanded = expandedId === enquiry.id;
 
           return (
             <motion.div
@@ -214,119 +221,144 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
             >
               <Card className="border-success/50 bg-gradient-to-br from-success/5 to-success/10 overflow-hidden">
                 <CardContent className="p-0">
-                  {/* Payment Banner */}
-                  <div className="bg-success/20 px-4 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <PoundSterling className="h-5 w-5 text-success" />
-                      <span className="font-semibold text-success">
-                        Total Payable
-                      </span>
-                    </div>
-                    <div className="text-2xl font-bold text-success">
-                      £{payment.grossAmount.toFixed(0)}
-                    </div>
-                  </div>
-
-                  <div className="p-4 space-y-4">
-                    {/* Header with Course Type and Date */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <Badge className="bg-primary text-primary-foreground mb-2">
-                          {courseTypeLabels[enquiry.course_type] || enquiry.course_type}
-                        </Badge>
-                        <div className="text-xs text-muted-foreground">
-                          Requested {new Date(enquiry.created_at).toLocaleDateString('en-GB', {
-                            weekday: 'short',
-                            day: 'numeric',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-lg px-3 py-1">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {hours} hours
-                      </Badge>
-                    </div>
-
-                    {/* Client Details */}
-                    <div className="space-y-3">
+                  {/* Clickable Summary Header */}
+                  <div 
+                    className="p-4 cursor-pointer hover:bg-success/5 transition-colors"
+                    onClick={() => toggleExpand(enquiry.id)}
+                  >
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                           {enquiry.name.split(" ").map((n) => n[0]).join("")}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-lg">{enquiry.name}</h3>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            {enquiry.postcode}
+                          <h3 className="font-semibold">{enquiry.name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Badge variant="outline" className="text-xs">
+                              {courseTypeLabels[enquiry.course_type] || enquiry.course_type}
+                            </Badge>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {hours}hrs
+                            </span>
                           </div>
                         </div>
                       </div>
-
-                      <Separator />
-
-                      {/* Map Preview */}
-                      <PostcodeMapPreview postcode={enquiry.postcode} />
-
-                      {/* Full Details Grid */}
-                      <div className="grid gap-3 text-sm">
-                        <div className="flex items-start gap-2">
-                          <Home className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                          <div>
-                            <div className="font-medium">Full Address</div>
-                            <div className="text-muted-foreground">{enquiry.address}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-success flex items-center gap-1">
+                            <PoundSterling className="h-4 w-4" />
+                            {payment.grossAmount.toFixed(0)}
                           </div>
                         </div>
-
-                        <div className="flex items-start gap-2">
-                          <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                          <div>
-                            <div className="font-medium">Preferred Timing</div>
-                            <div className="text-muted-foreground">
-                              {timingLabels[enquiry.preferred_timing] || enquiry.preferred_timing}
-                            </div>
-                          </div>
-                        </div>
-
-                        {enquiry.additional_notes && (
-                          <div className="flex items-start gap-2">
-                            <FileText className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
-                            <div>
-                              <div className="font-medium">Client Notes</div>
-                              <div className="text-muted-foreground">{enquiry.additional_notes}</div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        size="lg"
-                        className="flex-1"
-                        onClick={() => handleAccept(enquiry)}
-                        disabled={processingId === enquiry.id}
-                      >
-                        {processingId === enquiry.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {isExpanded ? (
+                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
                         ) : (
-                          <Check className="mr-2 h-4 w-4" />
+                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
                         )}
-                        Accept Job
-                      </Button>
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={() => handleDecline(enquiry)}
-                        disabled={processingId === enquiry.id}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Expanded Details */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <Separator />
+                        <div className="p-4 space-y-4">
+                          {/* Request Date */}
+                          <div className="text-xs text-muted-foreground">
+                            Requested {new Date(enquiry.created_at).toLocaleDateString('en-GB', {
+                              weekday: 'short',
+                              day: 'numeric',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+
+                          {/* Map Preview */}
+                          <PostcodeMapPreview postcode={enquiry.postcode} />
+
+                          {/* Full Details Grid */}
+                          <div className="grid gap-3 text-sm">
+                            <div className="flex items-start gap-2">
+                              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                              <div>
+                                <div className="font-medium">Postcode</div>
+                                <div className="text-muted-foreground">{enquiry.postcode}</div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start gap-2">
+                              <Home className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                              <div>
+                                <div className="font-medium">Full Address</div>
+                                <div className="text-muted-foreground">{enquiry.address}</div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start gap-2">
+                              <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                              <div>
+                                <div className="font-medium">Preferred Timing</div>
+                                <div className="text-muted-foreground">
+                                  {timingLabels[enquiry.preferred_timing] || enquiry.preferred_timing}
+                                </div>
+                              </div>
+                            </div>
+
+                            {enquiry.additional_notes && (
+                              <div className="flex items-start gap-2">
+                                <FileText className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                                <div>
+                                  <div className="font-medium">Client Notes</div>
+                                  <div className="text-muted-foreground">{enquiry.additional_notes}</div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              size="lg"
+                              className="flex-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAccept(enquiry);
+                              }}
+                              disabled={processingId === enquiry.id}
+                            >
+                              {processingId === enquiry.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Check className="mr-2 h-4 w-4" />
+                              )}
+                              Accept Job
+                            </Button>
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDecline(enquiry);
+                              }}
+                              disabled={processingId === enquiry.id}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </CardContent>
               </Card>
             </motion.div>
