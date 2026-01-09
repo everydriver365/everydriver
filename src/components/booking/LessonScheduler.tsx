@@ -391,7 +391,7 @@ export function LessonScheduler({
       {/* Calendar, Time Slots, and Selected Lessons */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Calendar */}
-        <div className="rounded-lg border p-2">
+        <div className="rounded-lg border p-2 max-w-[220px]">
           <CalendarComponent
             mode="single"
             selected={selectedDate}
@@ -416,7 +416,14 @@ export function LessonScheduler({
                 fontWeight: "500",
               },
             }}
-            className={cn("p-1 pointer-events-auto text-sm [&_table]:w-full [&_table]:table-fixed [&_td]:p-0 [&_th]:p-0 [&_button]:h-7 [&_button]:w-7 [&_button]:text-xs [&_button]:rounded-md")}
+            className={cn(
+              "p-0 pointer-events-auto",
+              "[&_table]:w-full [&_table]:table-fixed",
+              "[&_td]:p-0 [&_th]:p-0 [&_th]:text-[10px] [&_th]:font-normal",
+              "[&_button]:h-6 [&_button]:w-6 [&_button]:text-[10px] [&_button]:rounded-sm",
+              "[&_.rdp-caption]:text-xs [&_.rdp-caption]:pb-1",
+              "[&_.rdp-nav_button]:h-5 [&_.rdp-nav_button]:w-5"
+            )}
           />
         </div>
 
