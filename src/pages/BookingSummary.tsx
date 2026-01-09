@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
-import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { CourseCard } from "@/components/CourseCard";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Instructor {
@@ -627,24 +627,31 @@ export default function BookingSummary() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="rounded-2xl border bg-card p-6 shadow-md"
               >
-                <h2 className="text-lg font-semibold">Other Courses from {instructor.name.split(" ")[0]}</h2>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <h2 className="text-lg font-semibold mb-4">Other Courses from {instructor.name.split(" ")[0]}</h2>
+                <div className="grid gap-6 sm:grid-cols-2">
                   {otherCourses.map((course) => (
-                    <Card
+                    <div 
                       key={course.course_hours}
-                      className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
                       onClick={() => navigate(`/book/${instructor.id}?hours=${course.course_hours}`)}
                     >
-                      {course.course_image_url && (
-                        <img src={course.course_image_url} alt={course.course_name} className="h-32 w-full object-cover" />
-                      )}
-                      <CardContent className="p-4">
-                        <h3 className="font-medium">{course.course_name}</h3>
-                        <p className="text-sm text-muted-foreground">{course.course_hours} hours</p>
-                      </CardContent>
-                    </Card>
+                      <CourseCard
+                        course={{
+                          id: course.course_hours,
+                          title: course.course_name,
+                          instructor: instructor.name,
+                          instructorImage: instructor.profile_image_url || undefined,
+                          price: (instructor.hourly_rate || 35) * course.course_hours,
+                          location: locationName || instructor.home_postcode,
+                          duration: `${course.course_hours} hours`,
+                          description: `Complete ${course.course_hours}-hour driving course with ${instructor.name}`,
+                          nextAvailableDay: "01",
+                          nextAvailableMonth: "JAN",
+                          tags: [`${course.course_hours}h`],
+                          image: course.course_image_url || undefined,
+                        }}
+                      />
+                    </div>
                   ))}
                 </div>
               </motion.div>
