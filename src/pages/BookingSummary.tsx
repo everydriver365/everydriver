@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, Calendar, CheckCircle, CreditCard, User } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, Calendar, CheckCircle, CreditCard, User, Award, ShieldCheck } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -28,6 +28,9 @@ interface Instructor {
   available_from: string | null;
   allowed_lesson_lengths: number[] | null;
   buffer_minutes: number;
+  cpd_certified: boolean | null;
+  adi_code_of_practice: boolean | null;
+  instructor_grade: string | null;
 }
 
 interface CourseTemplate {
@@ -254,7 +257,7 @@ export default function BookingSummary() {
                 </div>
 
                 {/* Instructor */}
-                <div className="flex items-center gap-3 rounded-lg bg-secondary/50 p-4 sm:col-span-2">
+                <div className="flex items-start gap-3 rounded-lg bg-secondary/50 p-4 sm:col-span-2">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={instructor.profile_image_url || undefined} />
                     <AvatarFallback 
@@ -264,10 +267,31 @@ export default function BookingSummary() {
                       {instructor.name.split(" ").map((n) => n[0]).join("")}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
+                  <div className="flex-1">
                     <div className="font-medium">{instructor.name}</div>
                     <div className="text-sm text-muted-foreground">
                       {instructor.car_type} Driving Instructor
+                    </div>
+                    {/* Certifications */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {instructor.instructor_grade && (
+                        <Badge variant="secondary" className="text-xs gap-1">
+                          <Award className="h-3 w-3" />
+                          Grade {instructor.instructor_grade}
+                        </Badge>
+                      )}
+                      {instructor.cpd_certified && (
+                        <Badge variant="secondary" className="text-xs gap-1 bg-emerald-100 text-emerald-700">
+                          <CheckCircle className="h-3 w-3" />
+                          CPD Certified
+                        </Badge>
+                      )}
+                      {instructor.adi_code_of_practice && (
+                        <Badge variant="secondary" className="text-xs gap-1 bg-blue-100 text-blue-700">
+                          <ShieldCheck className="h-3 w-3" />
+                          ADI Code of Practice
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>

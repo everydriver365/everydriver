@@ -264,6 +264,7 @@ export type Database = {
       }
       instructors: {
         Row: {
+          adi_code_of_practice: boolean | null
           allowed_lesson_lengths: number[] | null
           available_from: string | null
           bio: string | null
@@ -274,6 +275,7 @@ export type Database = {
           car_make: string | null
           car_model: string | null
           car_type: string
+          cpd_certified: boolean | null
           created_at: string
           custom_branding_enabled: boolean | null
           email: string | null
@@ -288,6 +290,7 @@ export type Database = {
           hourly_rate: number | null
           id: string
           instagram_url: string | null
+          instructor_grade: string | null
           is_active: boolean
           last_calendar_sync: string | null
           linkedin_url: string | null
@@ -303,6 +306,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           available_from?: string | null
           bio?: string | null
@@ -313,6 +317,7 @@ export type Database = {
           car_make?: string | null
           car_model?: string | null
           car_type: string
+          cpd_certified?: boolean | null
           created_at?: string
           custom_branding_enabled?: boolean | null
           email?: string | null
@@ -327,6 +332,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           instagram_url?: string | null
+          instructor_grade?: string | null
           is_active?: boolean
           last_calendar_sync?: string | null
           linkedin_url?: string | null
@@ -342,6 +348,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           available_from?: string | null
           bio?: string | null
@@ -352,6 +359,7 @@ export type Database = {
           car_make?: string | null
           car_model?: string | null
           car_type?: string
+          cpd_certified?: boolean | null
           created_at?: string
           custom_branding_enabled?: boolean | null
           email?: string | null
@@ -366,6 +374,7 @@ export type Database = {
           hourly_rate?: number | null
           id?: string
           instagram_url?: string | null
+          instructor_grade?: string | null
           is_active?: boolean
           last_calendar_sync?: string | null
           linkedin_url?: string | null
