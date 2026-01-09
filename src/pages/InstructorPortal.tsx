@@ -105,7 +105,7 @@ export default function InstructorPortal() {
   if (isMobile) {
     return (
       <MainLayout>
-        <div className="container py-4 pb-24 space-y-4">
+        <div className="px-3 py-4 pb-24 space-y-4">
           {/* Mobile Header with Avatar */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
