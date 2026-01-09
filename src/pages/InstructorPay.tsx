@@ -97,7 +97,7 @@ export default function InstructorPay() {
 
   return (
     <MainLayout>
-      <div className="container py-4 pb-24 space-y-4">
+      <div className="px-3 md:container py-4 pb-24 space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
