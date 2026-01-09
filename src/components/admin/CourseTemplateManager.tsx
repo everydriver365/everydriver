@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Upload, X, Plus, GripVertical, Save, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Plus, Save, Image as ImageIcon, Video, FileText, Backpack, AlertCircle, CreditCard, ScrollText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +36,14 @@ interface CourseTemplate {
   is_popular: boolean;
   display_order: number;
   is_active: boolean;
+  // New fields
+  what_to_bring: string[];
+  prerequisites: string[];
+  theory_test_details: string | null;
+  driving_test_details: string | null;
+  payment_terms: string | null;
+  terms_conditions: string | null;
+  explainer_video_url: string | null;
 }
 
 export function CourseTemplateManager() {
@@ -83,6 +91,14 @@ export function CourseTemplateManager() {
         is_intensive: editingTemplate.is_intensive,
         is_popular: editingTemplate.is_popular,
         is_active: editingTemplate.is_active,
+        // New fields
+        what_to_bring: editingTemplate.what_to_bring,
+        prerequisites: editingTemplate.prerequisites,
+        theory_test_details: editingTemplate.theory_test_details,
+        driving_test_details: editingTemplate.driving_test_details,
+        payment_terms: editingTemplate.payment_terms,
+        terms_conditions: editingTemplate.terms_conditions,
+        explainer_video_url: editingTemplate.explainer_video_url,
       })
       .eq("id", editingTemplate.id);
 
@@ -158,6 +174,54 @@ export function CourseTemplateManager() {
     setEditingTemplate({
       ...editingTemplate,
       features: editingTemplate.features.filter((_, i) => i !== index),
+    });
+  };
+
+  // What to Bring helpers
+  const addWhatToBring = () => {
+    if (!editingTemplate) return;
+    setEditingTemplate({
+      ...editingTemplate,
+      what_to_bring: [...(editingTemplate.what_to_bring || []), ""],
+    });
+  };
+
+  const updateWhatToBring = (index: number, value: string) => {
+    if (!editingTemplate) return;
+    const items = [...(editingTemplate.what_to_bring || [])];
+    items[index] = value;
+    setEditingTemplate({ ...editingTemplate, what_to_bring: items });
+  };
+
+  const removeWhatToBring = (index: number) => {
+    if (!editingTemplate) return;
+    setEditingTemplate({
+      ...editingTemplate,
+      what_to_bring: (editingTemplate.what_to_bring || []).filter((_, i) => i !== index),
+    });
+  };
+
+  // Prerequisites helpers
+  const addPrerequisite = () => {
+    if (!editingTemplate) return;
+    setEditingTemplate({
+      ...editingTemplate,
+      prerequisites: [...(editingTemplate.prerequisites || []), ""],
+    });
+  };
+
+  const updatePrerequisite = (index: number, value: string) => {
+    if (!editingTemplate) return;
+    const items = [...(editingTemplate.prerequisites || [])];
+    items[index] = value;
+    setEditingTemplate({ ...editingTemplate, prerequisites: items });
+  };
+
+  const removePrerequisite = (index: number) => {
+    if (!editingTemplate) return;
+    setEditingTemplate({
+      ...editingTemplate,
+      prerequisites: (editingTemplate.prerequisites || []).filter((_, i) => i !== index),
     });
   };
 
@@ -380,6 +444,177 @@ export function CourseTemplateManager() {
                     Add Feature
                   </Button>
                 </div>
+              </div>
+
+              {/* What to Bring */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Backpack className="h-4 w-4" />
+                  What to Bring
+                </Label>
+                <div className="space-y-2">
+                  {(editingTemplate.what_to_bring || []).map((item, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={item}
+                        onChange={(e) => updateWhatToBring(index, e.target.value)}
+                        placeholder="e.g., Provisional driving licence"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeWhatToBring(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addWhatToBring}
+                    className="gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add Item
+                  </Button>
+                </div>
+              </div>
+
+              {/* Prerequisites */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Prerequisites
+                </Label>
+                <div className="space-y-2">
+                  {(editingTemplate.prerequisites || []).map((item, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={item}
+                        onChange={(e) => updatePrerequisite(index, e.target.value)}
+                        placeholder="e.g., Must hold a valid provisional licence"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removePrerequisite(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addPrerequisite}
+                    className="gap-1"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add Prerequisite
+                  </Button>
+                </div>
+              </div>
+
+              {/* Explainer Video URL */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Video className="h-4 w-4" />
+                  Explainer Video URL
+                </Label>
+                <Input
+                  value={editingTemplate.explainer_video_url || ""}
+                  onChange={(e) =>
+                    setEditingTemplate({
+                      ...editingTemplate,
+                      explainer_video_url: e.target.value || null,
+                    })
+                  }
+                  placeholder="https://www.youtube.com/embed/..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use embed URL format (e.g., YouTube embed link)
+                </p>
+              </div>
+
+              {/* Theory Test Details */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Theory Test Details
+                </Label>
+                <Textarea
+                  value={editingTemplate.theory_test_details || ""}
+                  onChange={(e) =>
+                    setEditingTemplate({
+                      ...editingTemplate,
+                      theory_test_details: e.target.value || null,
+                    })
+                  }
+                  placeholder="Information about theory test requirements..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Driving Test Details */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Driving Test Details
+                </Label>
+                <Textarea
+                  value={editingTemplate.driving_test_details || ""}
+                  onChange={(e) =>
+                    setEditingTemplate({
+                      ...editingTemplate,
+                      driving_test_details: e.target.value || null,
+                    })
+                  }
+                  placeholder="Information about driving test booking, what to expect..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Payment Terms */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Payment Terms
+                </Label>
+                <Textarea
+                  value={editingTemplate.payment_terms || ""}
+                  onChange={(e) =>
+                    setEditingTemplate({
+                      ...editingTemplate,
+                      payment_terms: e.target.value || null,
+                    })
+                  }
+                  placeholder="Payment schedule, deposit requirements, refund policy..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Terms & Conditions */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <ScrollText className="h-4 w-4" />
+                  Terms & Conditions
+                </Label>
+                <Textarea
+                  value={editingTemplate.terms_conditions || ""}
+                  onChange={(e) =>
+                    setEditingTemplate({
+                      ...editingTemplate,
+                      terms_conditions: e.target.value || null,
+                    })
+                  }
+                  placeholder="Cancellation policy, lesson terms, liability..."
+                  rows={4}
+                />
               </div>
 
               {/* Toggles */}
