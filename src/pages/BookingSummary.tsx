@@ -1,16 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, Calendar, CheckCircle, CreditCard, User, Award, ShieldCheck, Play, Star, FileText, AlertCircle, Backpack } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, Calendar, CheckCircle, CreditCard, User, Award, ShieldCheck, Play, Star, FileText, AlertCircle, Backpack, Loader2 } from "lucide-react";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter, isBefore } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { CourseCard } from "@/components/CourseCard";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Instructor {
   id: string;
@@ -109,6 +112,14 @@ export default function BookingSummary() {
   const [reviews, setReviews] = useState<CourseReview[]>([]);
   const [otherCourses, setOtherCourses] = useState<OtherCourse[]>([]);
   const [locationName, setLocationName] = useState<string>("");
+  
+  // Pupil details form state
+  const [pupilName, setPupilName] = useState("");
+  const [pupilEmail, setPupilEmail] = useState("");
+  const [pupilPhone, setPupilPhone] = useState("");
+  const [pupilAddress, setPupilAddress] = useState("");
+  const [pupilPostcode, setPupilPostcode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
@@ -264,6 +275,49 @@ export default function BookingSummary() {
 
   const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
   const isFullyScheduled = scheduledHours >= hours;
+  const isPupilDetailsComplete = pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim();
+  const canSubmit = isFullyScheduled && isPupilDetailsComplete && !isSubmitting;
+
+  const handleBookingSubmit = async () => {
+    if (!canSubmit || !courseDetails) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-booking", {
+        body: {
+          instructorId: instructor.id,
+          pupilName: pupilName.trim(),
+          pupilEmail: pupilEmail.trim(),
+          pupilPhone: pupilPhone.trim(),
+          pupilAddress: pupilAddress.trim(),
+          pupilPostcode: pupilPostcode.trim().toUpperCase(),
+          courseType: courseName,
+          courseHours: hours,
+          totalPrice,
+          slots: selectedSlots.map(slot => ({
+            date: format(slot.date, "yyyy-MM-dd"),
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            duration: slot.duration,
+          })),
+        },
+      });
+
+      if (error) {
+        console.error("Booking error:", error);
+        toast.error("Failed to complete booking. Please try again.");
+        return;
+      }
+
+      toast.success(`Booking confirmed! ${data.lessonsCreated} lessons scheduled.`);
+      navigate(`/booking-confirmation?pupilId=${data.pupilId}`);
+    } catch (err) {
+      console.error("Booking error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -592,6 +646,68 @@ export default function BookingSummary() {
               />
             </motion.div>
 
+            {/* Your Details Form */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18 }}
+              className="rounded-2xl border bg-card p-6 shadow-md"
+            >
+              <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                <User className="h-5 w-5" />
+                Your Details
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="pupilName">Full Name *</Label>
+                  <Input
+                    id="pupilName"
+                    placeholder="John Smith"
+                    value={pupilName}
+                    onChange={(e) => setPupilName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pupilEmail">Email Address *</Label>
+                  <Input
+                    id="pupilEmail"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={pupilEmail}
+                    onChange={(e) => setPupilEmail(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pupilPhone">Phone Number *</Label>
+                  <Input
+                    id="pupilPhone"
+                    type="tel"
+                    placeholder="07123 456789"
+                    value={pupilPhone}
+                    onChange={(e) => setPupilPhone(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pupilPostcode">Postcode *</Label>
+                  <Input
+                    id="pupilPostcode"
+                    placeholder="SW1A 1AA"
+                    value={pupilPostcode}
+                    onChange={(e) => setPupilPostcode(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="pupilAddress">Pickup Address *</Label>
+                  <Input
+                    id="pupilAddress"
+                    placeholder="123 High Street, London"
+                    value={pupilAddress}
+                    onChange={(e) => setPupilAddress(e.target.value)}
+                  />
+                </div>
+              </div>
+            </motion.div>
+
             {/* What's Included */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -911,15 +1027,32 @@ export default function BookingSummary() {
               <Button 
                 className="w-full mt-6 gap-2" 
                 size="lg"
-                disabled={!isFullyScheduled}
+                disabled={!canSubmit}
+                onClick={handleBookingSubmit}
               >
-                <CreditCard className="h-4 w-4" />
-                {isFullyScheduled ? "Proceed to Payment" : "Schedule All Lessons First"}
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CreditCard className="h-4 w-4" />
+                )}
+                {isSubmitting 
+                  ? "Confirming Booking..." 
+                  : isFullyScheduled 
+                    ? isPupilDetailsComplete 
+                      ? "Confirm Booking" 
+                      : "Complete Your Details"
+                    : "Schedule All Lessons First"}
               </Button>
 
               {!isFullyScheduled && (
                 <p className="mt-2 text-center text-xs text-amber-600">
                   Please schedule all {hours} hours before proceeding
+                </p>
+              )}
+
+              {isFullyScheduled && !isPupilDetailsComplete && (
+                <p className="mt-2 text-center text-xs text-amber-600">
+                  Please complete all your details above
                 </p>
               )}
 
