@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus, CreditCard } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus, CreditCard, Navigation, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
@@ -15,6 +15,8 @@ import { CancellationPolicyEditor } from "@/components/instructor/CancellationPo
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import TelematicsTracker from "@/components/instructor/TelematicsTracker";
+import VehicleHealthManager from "@/components/instructor/VehicleHealthManager";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -156,6 +158,9 @@ export default function InstructorPortal() {
               </Button>
             </Link>
           </div>
+
+          {/* GPS Telematics - Compact for mobile */}
+          <TelematicsTracker instructorId={MOCK_INSTRUCTOR_ID} compact />
 
           {/* Gaps Filler */}
           <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
@@ -351,11 +356,29 @@ export default function InstructorPortal() {
           </motion.div>
         </div>
 
+        {/* Telematics & Vehicle Health Section */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+          >
+            <TelematicsTracker instructorId={MOCK_INSTRUCTOR_ID} />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <VehicleHealthManager instructorId={MOCK_INSTRUCTOR_ID} />
+          </motion.div>
+        </div>
+
         {/* Gaps Filler - Bottom Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55 }}
+          transition={{ delay: 0.65 }}
           className="mt-8"
         >
           <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
@@ -365,7 +388,7 @@ export default function InstructorPortal() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.7 }}
           className="mt-6"
         >
           <UpcomingTestsView instructorId={MOCK_INSTRUCTOR_ID} />

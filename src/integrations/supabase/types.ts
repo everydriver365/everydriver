@@ -225,6 +225,50 @@ export type Database = {
         }
         Relationships: []
       }
+      driving_behavior_events: {
+        Row: {
+          event_type: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
+          recorded_at: string
+          severity: string
+          speed_at_event: number | null
+          telematics_id: string
+        }
+        Insert: {
+          event_type: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          recorded_at?: string
+          severity?: string
+          speed_at_event?: number | null
+          telematics_id: string
+        }
+        Update: {
+          event_type?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          recorded_at?: string
+          severity?: string
+          speed_at_event?: number | null
+          telematics_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driving_behavior_events_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_calendar_events: {
         Row: {
           end_time: string
@@ -670,6 +714,103 @@ export type Database = {
           },
         ]
       }
+      lesson_telematics: {
+        Row: {
+          avg_speed_kmh: number | null
+          created_at: string
+          ended_at: string | null
+          id: string
+          instructor_id: string
+          lesson_id: string | null
+          max_speed_kmh: number | null
+          pupil_id: string | null
+          started_at: string
+          total_distance_km: number | null
+        }
+        Insert: {
+          avg_speed_kmh?: number | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          instructor_id: string
+          lesson_id?: string | null
+          max_speed_kmh?: number | null
+          pupil_id?: string | null
+          started_at?: string
+          total_distance_km?: number | null
+        }
+        Update: {
+          avg_speed_kmh?: number | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          instructor_id?: string
+          lesson_id?: string | null
+          max_speed_kmh?: number | null
+          pupil_id?: string | null
+          started_at?: string
+          total_distance_km?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_telematics_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mileage_log: {
+        Row: {
+          created_at: string
+          date: string
+          distance_km: number | null
+          end_odometer_km: number
+          fuel_added_liters: number | null
+          fuel_cost: number | null
+          id: string
+          instructor_id: string
+          purpose: string | null
+          start_odometer_km: number
+          vehicle_health_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          distance_km?: number | null
+          end_odometer_km: number
+          fuel_added_liters?: number | null
+          fuel_cost?: number | null
+          id?: string
+          instructor_id: string
+          purpose?: string | null
+          start_odometer_km: number
+          vehicle_health_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          distance_km?: number | null
+          end_odometer_km?: number
+          fuel_added_liters?: number | null
+          fuel_cost?: number | null
+          id?: string
+          instructor_id?: string
+          purpose?: string | null
+          start_odometer_km?: number
+          vehicle_health_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mileage_log_vehicle_health_id_fkey"
+            columns: ["vehicle_health_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_health"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotional_messages: {
         Row: {
           created_at: string
@@ -946,6 +1087,50 @@ export type Database = {
         }
         Relationships: []
       }
+      telematics_gps_points: {
+        Row: {
+          accuracy_m: number | null
+          altitude_m: number | null
+          heading: number | null
+          id: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          speed_kmh: number | null
+          telematics_id: string
+        }
+        Insert: {
+          accuracy_m?: number | null
+          altitude_m?: number | null
+          heading?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          speed_kmh?: number | null
+          telematics_id: string
+        }
+        Update: {
+          accuracy_m?: number | null
+          altitude_m?: number | null
+          heading?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          speed_kmh?: number | null
+          telematics_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telematics_gps_points_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_centres: {
         Row: {
           address: string | null
@@ -970,6 +1155,45 @@ export type Database = {
           is_active?: boolean
           name?: string
           postcode?: string | null
+        }
+        Relationships: []
+      }
+      vehicle_health: {
+        Row: {
+          created_at: string
+          current_odometer_km: number
+          fuel_efficiency_avg: number | null
+          id: string
+          instructor_id: string
+          last_service_date: string | null
+          next_service_due_date: string | null
+          next_service_due_km: number | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_odometer_km?: number
+          fuel_efficiency_avg?: number | null
+          id?: string
+          instructor_id: string
+          last_service_date?: string | null
+          next_service_due_date?: string | null
+          next_service_due_km?: number | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_odometer_km?: number
+          fuel_efficiency_avg?: number | null
+          id?: string
+          instructor_id?: string
+          last_service_date?: string | null
+          next_service_due_date?: string | null
+          next_service_due_km?: number | null
+          notes?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
