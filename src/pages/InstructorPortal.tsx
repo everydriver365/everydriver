@@ -13,6 +13,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { GapsFiller } from "@/components/instructor/GapsFiller";
+import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -158,6 +159,9 @@ export default function InstructorPortal() {
 
           {/* Gaps Filler */}
           <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
+
+          {/* Upcoming Tests */}
+          <UpcomingTestsView instructorId={MOCK_INSTRUCTOR_ID} />
         </div>
 
         <PaymentQRModal 
@@ -355,6 +359,16 @@ export default function InstructorPortal() {
           className="mt-8"
         >
           <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
+        </motion.div>
+
+        {/* Upcoming Tests */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mt-6"
+        >
+          <UpcomingTestsView instructorId={MOCK_INSTRUCTOR_ID} />
         </motion.div>
 
         <PaymentQRModal
