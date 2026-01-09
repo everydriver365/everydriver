@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          event_type: string
+          google_event_id: string
+          id: string
+          instructor_id: string
+          lesson_id: string | null
+          synced_at: string
+        }
+        Insert: {
+          event_type?: string
+          google_event_id: string
+          id?: string
+          instructor_id: string
+          lesson_id?: string | null
+          synced_at?: string
+        }
+        Update: {
+          event_type?: string
+          google_event_id?: string
+          id?: string
+          instructor_id?: string
+          lesson_id?: string | null
+          synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: true
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_enquiries: {
         Row: {
           additional_notes: string | null
@@ -219,6 +261,47 @@ export type Database = {
             foreignKeyName: "instructor_calendar_events_instructor_id_fkey"
             columns: ["instructor_id"]
             isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_calendar_tokens: {
+        Row: {
+          access_token: string
+          calendar_id: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          refresh_token: string
+          token_expiry: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          calendar_id?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          refresh_token: string
+          token_expiry: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          calendar_id?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          refresh_token?: string
+          token_expiry?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_calendar_tokens_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
