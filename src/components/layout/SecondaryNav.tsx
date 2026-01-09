@@ -13,7 +13,7 @@ export function SecondaryNav() {
   return (
     <div className="bg-[hsl(var(--secondary-nav))] border-b border-[hsl(var(--secondary-nav-foreground))]/10">
       <div className="container">
-        <nav className="flex items-center justify-center gap-1 md:gap-6 py-2 overflow-x-auto">
+        <nav className="flex items-center justify-center gap-1 md:gap-4 py-1 overflow-x-auto">
           {secondaryLinks.map((link) => {
             const Icon = link.icon;
             return (
