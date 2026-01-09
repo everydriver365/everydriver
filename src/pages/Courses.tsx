@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Filter, ChevronDown, Clock, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
+import { Search, MapPin, Filter, ChevronDown, PoundSterling, Navigation, Loader2, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { isFuture, parseISO, format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, isSameDay, isAfter, isBefore, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,16 +100,26 @@ function getMonthOptions(): { value: string; label: string }[] {
   return options;
 }
 
-// Calendar Grid View Component
-interface CalendarGridViewProps {
+// Sidebar Calendar Component
+interface SidebarCalendarProps {
   selectedMonth: string;
+  setSelectedMonth: (month: string) => void;
   selectedDate: Date | null;
   availableDates: Date[];
   onSelectDate: (date: Date) => void;
   loading: boolean;
+  monthOptions: { value: string; label: string }[];
 }
 
-function CalendarGridView({ selectedMonth, selectedDate, availableDates, onSelectDate, loading }: CalendarGridViewProps) {
+function SidebarCalendar({ 
+  selectedMonth, 
+  setSelectedMonth, 
+  selectedDate, 
+  availableDates, 
+  onSelectDate, 
+  loading,
+  monthOptions 
+}: SidebarCalendarProps) {
   const today = startOfDay(new Date());
   
   const calendarDays = useMemo(() => {
@@ -134,65 +144,98 @@ function CalendarGridView({ selectedMonth, selectedDate, availableDates, onSelec
     }));
   }, [selectedMonth, availableDates, today]);
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-7 gap-1">
-        {Array.from({ length: 35 }).map((_, i) => (
-          <div key={i} className="h-10 w-full animate-pulse rounded-md bg-muted" />
-        ))}
-      </div>
-    );
-  }
+  const currentMonthIndex = monthOptions.findIndex(m => m.value === selectedMonth);
+
+  const handlePrevMonth = () => {
+    if (currentMonthIndex > 0) {
+      setSelectedMonth(monthOptions[currentMonthIndex - 1].value);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonthIndex < monthOptions.length - 1) {
+      setSelectedMonth(monthOptions[currentMonthIndex + 1].value);
+    }
+  };
+
+  const [year, month] = selectedMonth.split("-").map(Number);
+  const monthLabel = format(new Date(year, month - 1), "MMMM yyyy");
 
   return (
-    <div className="rounded-xl border bg-background p-4">
-      {/* Weekday headers */}
-      <div className="mb-2 grid grid-cols-7 gap-1">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-          <div key={day} className="text-center text-xs font-medium text-muted-foreground py-1">
-            {day}
+    <div className="rounded-xl border bg-card p-4 shadow-sm">
+      {/* Month Navigation */}
+      <div className="mb-4 flex items-center justify-between">
+        <button
+          onClick={handlePrevMonth}
+          disabled={currentMonthIndex === 0}
+          className="rounded-md p-1.5 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <span className="text-sm font-semibold">{monthLabel}</span>
+        <button
+          onClick={handleNextMonth}
+          disabled={currentMonthIndex >= monthOptions.length - 1}
+          className="rounded-md p-1.5 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: 35 }).map((_, i) => (
+            <div key={i} className="h-9 w-full animate-pulse rounded-md bg-muted" />
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Weekday headers */}
+          <div className="mb-1 grid grid-cols-7 gap-1">
+            {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
+              <div key={i} className="text-center text-xs font-medium text-muted-foreground py-1">
+                {day}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1">
-        {calendarDays.map((day, index) => {
-          if (!day.date) {
-            return <div key={`empty-${index}`} className="h-10" />;
-          }
           
-          const isSelected = selectedDate && isSameDay(day.date, selectedDate);
-          const isToday = isSameDay(day.date, today);
-          
-          return (
-            <button
-              key={day.date.toISOString()}
-              onClick={() => day.isAvailable && onSelectDate(day.date!)}
-              disabled={!day.isAvailable || day.isPast}
-              className={`relative flex h-10 items-center justify-center rounded-md text-sm font-medium transition-all ${
-                isSelected
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : day.isAvailable
-                    ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
-                    : day.isPast
-                      ? "text-muted-foreground/40 cursor-not-allowed"
-                      : "text-muted-foreground hover:bg-muted/50 cursor-not-allowed"
-              } ${isToday ? "ring-2 ring-primary/30" : ""}`}
-            >
-              {format(day.date, "d")}
-              {day.isAvailable && !isSelected && (
-                <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-emerald-500" />
-              )}
-            </button>
-          );
-        })}
-      </div>
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {calendarDays.map((day, index) => {
+              if (!day.date) {
+                return <div key={`empty-${index}`} className="h-9" />;
+              }
+              
+              const isSelected = selectedDate && isSameDay(day.date, selectedDate);
+              const isToday = isSameDay(day.date, today);
+              
+              return (
+                <button
+                  key={day.date.toISOString()}
+                  onClick={() => day.isAvailable && onSelectDate(day.date!)}
+                  disabled={!day.isAvailable || day.isPast}
+                  className={`relative flex h-9 items-center justify-center rounded-md text-sm font-medium transition-all ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : day.isAvailable
+                        ? "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 dark:text-emerald-400"
+                        : day.isPast
+                          ? "text-muted-foreground/30 cursor-not-allowed"
+                          : "text-muted-foreground/50 cursor-not-allowed"
+                  } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
+                >
+                  {format(day.date, "d")}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
       
       {/* Legend */}
-      <div className="mt-4 flex items-center justify-center gap-6 text-xs text-muted-foreground">
+      <div className="mt-4 flex items-center justify-center gap-4 text-xs text-muted-foreground border-t pt-3">
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded bg-emerald-100 dark:bg-emerald-900/30" />
+          <span className="h-3 w-3 rounded bg-emerald-500/20" />
           <span>Available</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -218,7 +261,6 @@ export default function Courses() {
   // Date selection state
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [viewMode, setViewMode] = useState<"pills" | "calendar">("pills");
 
   // Data from Supabase
   const [instructors, setInstructors] = useState<Instructor[]>([]);
@@ -486,9 +528,6 @@ export default function Courses() {
       }
     });
 
-  // Get visible days (show up to 7 available days)
-  const visibleDays = availableDatesInMonth.slice(0, 7);
-
   return (
     <MainLayout>
       {/* Search Header */}
@@ -590,199 +629,115 @@ export default function Courses() {
         </div>
       </section>
 
-      {/* Date Selection */}
-      <section className="border-b bg-card py-6">
-        <div className="container">
-          <div className="mx-auto max-w-4xl">
-            {/* Month Selector & View Toggle */}
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm font-medium">Select a date:</span>
-                <Select value={selectedMonth} onValueChange={(value) => {
-                  setSelectedMonth(value);
-                  setSelectedDate(null);
-                }}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {monthOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* View Mode Toggle */}
-              <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
-                <button
-                  onClick={() => setViewMode("pills")}
-                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                    viewMode === "pills" 
-                      ? "bg-background text-foreground shadow-sm" 
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <List className="h-4 w-4" />
-                  <span className="hidden sm:inline">Pills</span>
-                </button>
-                <button
-                  onClick={() => setViewMode("calendar")}
-                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                    viewMode === "calendar" 
-                      ? "bg-background text-foreground shadow-sm" 
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                  <span className="hidden sm:inline">Calendar</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Day Pills View */}
-            {viewMode === "pills" && (
-              <>
-                {loading ? (
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className="h-16 w-16 animate-pulse rounded-xl bg-muted" />
-                    ))}
-                  </div>
-                ) : availableDatesInMonth.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {visibleDays.map((date) => {
-                      const isSelected = selectedDate && isSameDay(date, selectedDate);
-                      return (
-                        <button
-                          key={date.toISOString()}
-                          onClick={() => setSelectedDate(date)}
-                          className={`flex flex-col items-center justify-center rounded-xl px-4 py-2 transition-all ${
-                            isSelected
-                              ? "bg-primary text-primary-foreground shadow-lg scale-105"
-                              : "bg-secondary hover:bg-secondary/80 text-foreground"
-                          }`}
-                        >
-                          <span className="text-xs font-medium uppercase">
-                            {format(date, "EEE")}
-                          </span>
-                          <span className="text-xl font-bold">{format(date, "d")}</span>
-                          <span className="text-xs">{format(date, "MMM")}</span>
-                        </button>
-                      );
-                    })}
-                    {availableDatesInMonth.length > 7 && (
-                      <button
-                        onClick={() => setViewMode("calendar")}
-                        className="flex flex-col items-center justify-center rounded-xl bg-muted px-4 py-2 text-muted-foreground hover:bg-muted/80"
-                      >
-                        <span className="text-xs">+{availableDatesInMonth.length - 7}</span>
-                        <span className="text-sm font-medium">more</span>
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No available dates in this month</p>
-                )}
-              </>
-            )}
-
-            {/* Calendar Grid View */}
-            {viewMode === "calendar" && (
-              <CalendarGridView
+      {/* Two Column Layout: Calendar + Courses */}
+      <section className="container py-8">
+        <div className="flex flex-col gap-8 lg:flex-row">
+          {/* Left Column: Calendar */}
+          <div className="w-full lg:w-80 lg:flex-shrink-0">
+            <div className="sticky top-20">
+              <SidebarCalendar
                 selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
                 selectedDate={selectedDate}
                 availableDates={availableDatesInMonth}
                 onSelectDate={setSelectedDate}
                 loading={loading}
+                monthOptions={monthOptions}
               />
+            </div>
+          </div>
+
+          {/* Right Column: Course Tiles */}
+          <div className="flex-1">
+            {!selectedDate ? (
+              <div className="flex h-full items-center justify-center py-16">
+                <div className="text-center">
+                  <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h2 className="text-xl font-semibold">Select a date to see available courses</h2>
+                  <p className="mt-2 text-muted-foreground">
+                    Choose an available date from the calendar
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Selected date header */}
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold">
+                      {format(selectedDate, "EEEE, d MMMM")}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
+                    </p>
+                  </div>
+
+                  {/* Sort buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Sort:</span>
+                    <Button
+                      variant={sortBy === "price-low" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSortBy("price-low")}
+                      className="gap-1.5"
+                    >
+                      <PoundSterling className="h-3.5 w-3.5" />
+                      Price
+                    </Button>
+                    <Button
+                      variant={sortBy === "nearest" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSortBy("nearest")}
+                      className="gap-1.5"
+                      disabled={!userLocation}
+                    >
+                      <Navigation className="h-3.5 w-3.5" />
+                      Nearest
+                    </Button>
+                  </div>
+                </div>
+
+                {filteredCourses.length > 0 ? (
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    {filteredCourses.slice(0, 6).map((course, index) => (
+                      <motion.div
+                        key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <DynamicCourseCard
+                          instructor={course.instructor}
+                          hours={course.hours}
+                          nextAvailable={course.bookableDate}
+                          courseImageUrl={course.courseImageUrl}
+                          isPopular={course.isPopular}
+                          availableFrom={course.availableFrom}
+                          distance={course.distance}
+                        />
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-16 text-center">
+                    <h2 className="text-xl font-semibold">No courses available</h2>
+                    <p className="mt-2 text-muted-foreground">
+                      Try adjusting your filters or selecting a different date.
+                    </p>
+                  </div>
+                )}
+
+                {filteredCourses.length > 6 && (
+                  <div className="mt-6 text-center">
+                    <Button variant="outline" size="lg">
+                      Show all {filteredCourses.length} courses
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
-      </section>
-
-      {/* Results */}
-      <section className="container py-8">
-        {!selectedDate ? (
-          <div className="py-16 text-center">
-            <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold">Select a date to see available courses</h2>
-            <p className="mt-2 text-muted-foreground">
-              Choose a date above to view instructors available on that day
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Selected date header */}
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold">
-                  Courses available on {format(selectedDate, "EEEE, d MMMM yyyy")}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {filteredCourses.length} course{filteredCourses.length !== 1 ? "s" : ""} available
-                </p>
-              </div>
-
-              {/* Sort buttons */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Sort:</span>
-                <Button
-                  variant={sortBy === "price-low" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSortBy("price-low")}
-                  className="gap-1.5"
-                >
-                  <PoundSterling className="h-3.5 w-3.5" />
-                  Price
-                </Button>
-                <Button
-                  variant={sortBy === "nearest" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSortBy("nearest")}
-                  className="gap-1.5"
-                  disabled={!userLocation}
-                >
-                  <Navigation className="h-3.5 w-3.5" />
-                  Nearest
-                </Button>
-              </div>
-            </div>
-
-            {filteredCourses.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredCourses.map((course, index) => (
-                  <motion.div
-                    key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <DynamicCourseCard
-                      instructor={course.instructor}
-                      hours={course.hours}
-                      nextAvailable={course.bookableDate}
-                      courseImageUrl={course.courseImageUrl}
-                      isPopular={course.isPopular}
-                      availableFrom={course.availableFrom}
-                      distance={course.distance}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-16 text-center">
-                <h2 className="text-xl font-semibold">No courses available</h2>
-                <p className="mt-2 text-muted-foreground">
-                  Try adjusting your filters or selecting a different date.
-                </p>
-              </div>
-            )}
-          </>
-        )}
       </section>
     </MainLayout>
   );
