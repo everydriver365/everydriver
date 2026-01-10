@@ -22,6 +22,7 @@ import { useHomepageFeatures } from "@/hooks/useHomepageFeatures";
 import { useHomepageHero } from "@/hooks/useHomepageHero";
 import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
 import { useIncludedFeatures, IncludedFeatureData } from "@/hooks/useIncludedFeatures";
+import { useHomepageStats } from "@/hooks/useHomepageStats";
 import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
@@ -62,6 +63,7 @@ export default function Index() {
   const { hero } = useHomepageHero();
   const { featuredTestimonials, testimonials } = useHomepageTestimonials();
   const { features: includedFeatures } = useIncludedFeatures();
+  const { stats } = useHomepageStats();
 
   // Helper to open feature modal - accepts both FeatureData and IncludedFeatureData
   const openFeatureModal = (feature: FeatureData | IncludedFeatureData) => {
@@ -82,13 +84,7 @@ export default function Index() {
   const getEmmaData = polaroidTestimonials.find(t => t.image_key === 'testimonial_emma') || { name: 'Emma', content: 'Weekly Lessons 💪' };
   const getPriyaData = polaroidTestimonials.find(t => t.image_key === 'testimonial_priya') || { name: 'Priya', content: 'Semi-Intensive 🎉' };
   
-  // Stats for the stats section
-  const stats = [
-    { value: "15,000+", label: "Students Passed" },
-    { value: "98%", label: "Pass Rate" },
-    { value: "500+", label: "Instructors" },
-    { value: "24/7", label: "Online Booking" },
-  ];
+  // Stats are now loaded dynamically via useHomepageStats hook
   // Dynamic images - Learning paths
   const courseIntensiveImg = getImage("course_intensive", courseIntensive);
   const courseSemiIntensiveImg = getImage("course_semi_intensive", courseSemiIntensive);
@@ -651,18 +647,12 @@ export default function Index() {
 
               {/* Stats */}
               <div className="mb-8 flex flex-wrap gap-6">
-                <div className="rounded-xl border bg-card px-6 py-4 text-center shadow-sm">
-                  <div className="text-3xl font-bold text-foreground">98%</div>
-                  <div className="text-sm text-muted-foreground">Pass Rate</div>
-                </div>
-                <div className="rounded-xl border bg-card px-6 py-4 text-center shadow-sm">
-                  <div className="text-3xl font-bold text-foreground">15k+</div>
-                  <div className="text-sm text-muted-foreground">Happy Learners</div>
-                </div>
-                <div className="rounded-xl border bg-card px-6 py-4 text-center shadow-sm">
-                  <div className="text-3xl font-bold text-foreground">4.9</div>
-                  <div className="text-sm text-muted-foreground">Average Rating</div>
-                </div>
+                {stats.slice(0, 3).map((stat, index) => (
+                  <div key={index} className="rounded-xl border bg-card px-6 py-4 text-center shadow-sm">
+                    <div className="text-3xl font-bold text-foreground">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  </div>
+                ))}
               </div>
 
               <Link to="/courses">
