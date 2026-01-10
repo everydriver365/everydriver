@@ -727,6 +727,7 @@ export type Database = {
         Row: {
           adi_code_of_practice: boolean | null
           allowed_lesson_lengths: number[] | null
+          app_slug: string | null
           available_from: string | null
           bio: string | null
           bonus_earned: number | null
@@ -759,15 +760,19 @@ export type Database = {
           is_active: boolean
           last_calendar_sync: string | null
           linkedin_url: string | null
+          logo_url: string | null
           name: string
           payment_qr_url: string | null
           personal_website_url: string | null
           phone: string | null
           preferred_lesson_length: number
           profile_image_url: string | null
+          pupil_app_dark_mode: boolean | null
+          pupil_app_enabled: boolean | null
           radius_miles: number
           school_skim_amount: number | null
           school_skim_percentage: number | null
+          secondary_colour: string | null
           special_skills: string | null
           twitter_url: string | null
           updated_at: string
@@ -776,6 +781,7 @@ export type Database = {
         Insert: {
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
+          app_slug?: string | null
           available_from?: string | null
           bio?: string | null
           bonus_earned?: number | null
@@ -808,15 +814,19 @@ export type Database = {
           is_active?: boolean
           last_calendar_sync?: string | null
           linkedin_url?: string | null
+          logo_url?: string | null
           name: string
           payment_qr_url?: string | null
           personal_website_url?: string | null
           phone?: string | null
           preferred_lesson_length?: number
           profile_image_url?: string | null
+          pupil_app_dark_mode?: boolean | null
+          pupil_app_enabled?: boolean | null
           radius_miles?: number
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
+          secondary_colour?: string | null
           special_skills?: string | null
           twitter_url?: string | null
           updated_at?: string
@@ -825,6 +835,7 @@ export type Database = {
         Update: {
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
+          app_slug?: string | null
           available_from?: string | null
           bio?: string | null
           bonus_earned?: number | null
@@ -857,15 +868,19 @@ export type Database = {
           is_active?: boolean
           last_calendar_sync?: string | null
           linkedin_url?: string | null
+          logo_url?: string | null
           name?: string
           payment_qr_url?: string | null
           personal_website_url?: string | null
           phone?: string | null
           preferred_lesson_length?: number
           profile_image_url?: string | null
+          pupil_app_dark_mode?: boolean | null
+          pupil_app_enabled?: boolean | null
           radius_miles?: number
           school_skim_amount?: number | null
           school_skim_percentage?: number | null
+          secondary_colour?: string | null
           special_skills?: string | null
           twitter_url?: string | null
           updated_at?: string

@@ -1,0 +1,188 @@
+import { useState, useEffect } from "react";
+import { CreditCard, Clock, PoundSterling, ExternalLink } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { format, parseISO } from "date-fns";
+
+interface PupilPortalPaymentsProps {
+  pupilId: string;
+  instructorId: string;
+  brandColour: string | null;
+  darkMode: boolean;
+  accountBalance: number | null;
+  prepaidHours: number | null;
+}
+
+interface PaymentRecord {
+  id: string;
+  amount: number;
+  recorded_at: string;
+  payment_method: string | null;
+  notes: string | null;
+}
+
+export function PupilPortalPayments({ 
+  pupilId, 
+  instructorId, 
+  brandColour, 
+  darkMode,
+  accountBalance,
+  prepaidHours
+}: PupilPortalPaymentsProps) {
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [pupilId]);
+
+  const fetchPayments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("payment_history")
+        .select("id, amount, recorded_at, payment_method, notes")
+        .eq("pupil_id", pupilId)
+        .eq("instructor_id", instructorId)
+        .order("recorded_at", { ascending: false })
+        .limit(20);
+
+      if (!error && data) {
+        setPayments(data);
+      }
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    return format(parseISO(dateStr), 'd MMM yyyy');
+  };
+
+  const balance = accountBalance || 0;
+  const hasCredit = balance > 0;
+  const hasDebt = balance < 0;
+
+  return (
+    <div className="px-4 space-y-6">
+      {/* Balance Card */}
+      <Card 
+        style={{ 
+          backgroundColor: brandColour || '#1e3a5f',
+          borderColor: 'transparent'
+        }}
+      >
+        <CardContent className="p-6 text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <PoundSterling className="h-5 w-5 text-white/80" />
+            <span className="text-white/80 text-sm font-medium">Account Balance</span>
+          </div>
+          
+          <div className="text-center mb-4">
+            <div className={`text-4xl font-bold ${hasDebt ? 'text-red-300' : ''}`}>
+              {hasDebt ? '-' : ''}£{Math.abs(balance).toFixed(2)}
+            </div>
+            <div className="text-white/70 text-sm mt-1">
+              {hasCredit && 'Credit on account'}
+              {hasDebt && 'Amount owed'}
+              {balance === 0 && 'All balanced'}
+            </div>
+          </div>
+
+          {(prepaidHours || 0) > 0 && (
+            <div className="bg-white/10 rounded-lg p-3 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span>{prepaidHours} prepaid hours remaining</span>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Make Payment CTA */}
+      {hasDebt && (
+        <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
+          <CardContent className="p-4">
+            <p className="text-sm mb-3" style={{ color: 'var(--brand-text)' }}>
+              Contact your instructor to make a payment
+            </p>
+            <Button 
+              className="w-full"
+              style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              Make Payment
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Payment History */}
+      <div>
+        <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--brand-text)' }}>
+          Payment History
+        </h2>
+
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <Card key={i} style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
+                <CardContent className="p-4">
+                  <div className="animate-pulse flex justify-between">
+                    <div className="h-4 bg-muted rounded w-1/3"></div>
+                    <div className="h-4 bg-muted rounded w-1/4"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : payments.length === 0 ? (
+          <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
+            <CardContent className="p-6 text-center">
+              <CreditCard className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--brand-muted)' }} />
+              <p style={{ color: 'var(--brand-muted)' }}>No payments recorded yet</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {payments.map((payment) => (
+              <Card 
+                key={payment.id}
+                style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium" style={{ color: 'var(--brand-text)' }}>
+                        £{payment.amount.toFixed(2)}
+                      </div>
+                      <div className="text-xs" style={{ color: 'var(--brand-muted)' }}>
+                        {formatDate(payment.recorded_at)}
+                        {payment.payment_method && ` • ${payment.payment_method}`}
+                      </div>
+                    </div>
+                    <Badge 
+                      variant="outline"
+                      className="bg-green-500/10 text-green-600 border-green-200"
+                    >
+                      Paid
+                    </Badge>
+                  </div>
+                  {payment.notes && (
+                    <p className="text-xs mt-2" style={{ color: 'var(--brand-muted)' }}>
+                      {payment.notes}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

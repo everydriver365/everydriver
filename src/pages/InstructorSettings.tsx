@@ -5,6 +5,7 @@ import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
+import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -263,6 +264,15 @@ export default function InstructorSettings() {
           transition={{ delay: 0.3 }}
         >
           <CancellationPolicyEditor instructorId={MOCK_INSTRUCTOR_ID} />
+        </motion.div>
+
+        {/* Pupil App Branding Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <PupilAppBrandingEditor instructorId={MOCK_INSTRUCTOR_ID} />
         </motion.div>
       </div>
 
