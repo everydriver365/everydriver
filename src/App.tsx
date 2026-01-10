@@ -18,6 +18,7 @@ import InstructorContact from "./pages/InstructorContact";
 import InstructorSettings from "./pages/InstructorSettings";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
+import BrandedPupilPortal from "./pages/BrandedPupilPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
 import CollageDemo from "./pages/CollageDemo";
 import HeroRedesignDemo from "./pages/HeroRedesignDemo";
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/book/:instructorId" element={<BookingSummary />} />
           <Route path="/booking-confirmation" element={<BookingConfirmation />} />
           <Route path="/pupil" element={<PupilPortal />} />
+          <Route path="/p/:slug" element={<BrandedPupilPortal />} />
           <Route path="/instructor" element={<InstructorPortal />} />
           <Route path="/instructor/pupils" element={<InstructorPupils />} />
           <Route path="/instructor/schedule" element={<InstructorSchedule />} />
