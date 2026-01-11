@@ -646,6 +646,48 @@ export type Database = {
           },
         ]
       }
+      instructor_homepage_content: {
+        Row: {
+          created_at: string
+          hero_image_url: string | null
+          id: string
+          is_active: boolean | null
+          motivation_subtitle: string
+          motivation_title: string
+          progress_label: string | null
+          promo_banners: Json | null
+          quick_actions: Json | null
+          show_progress_indicator: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hero_image_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          motivation_subtitle?: string
+          motivation_title?: string
+          progress_label?: string | null
+          promo_banners?: Json | null
+          quick_actions?: Json | null
+          show_progress_indicator?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hero_image_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          motivation_subtitle?: string
+          motivation_title?: string
+          progress_label?: string | null
+          promo_banners?: Json | null
+          quick_actions?: Json | null
+          show_progress_indicator?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       instructor_test_centres: {
         Row: {
           created_at: string

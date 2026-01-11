@@ -19,6 +19,7 @@ import TelematicsTracker from "@/components/instructor/TelematicsTracker";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import VehicleHealthManager from "@/components/instructor/VehicleHealthManager";
 import DrivingSkillsHeatmap from "@/components/instructor/DrivingSkillsHeatmap";
+import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -112,68 +113,11 @@ export default function InstructorPortal() {
   if (isMobile) {
     return (
       <MainLayout>
-        <div className="px-3 py-4 pb-24 space-y-4">
-          {/* Mobile Header with Avatar */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-                <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                  {instructor?.name ? getInitials(instructor.name) : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h1 className="text-lg font-bold">{instructor?.name || "Dashboard"}</h1>
-                <p className="text-sm text-muted-foreground">Welcome back</p>
-              </div>
-            </div>
-            <Button 
-              onClick={() => setPaymentModalOpen(true)}
-              size="sm"
-              className="gap-2"
-            >
-              <CreditCard className="h-4 w-4" />
-              Pay
-            </Button>
-          </div>
-
-          {/* Job Offers - Top Priority */}
-          <JobOfferAlert instructorId={MOCK_INSTRUCTOR_ID} />
-
-          {/* Today's Schedule */}
-          <TodayScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
-
-          {/* Tomorrow's Schedule */}
-          <TomorrowScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
-
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            <Link to="/instructor/pupils">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
-                <Users className="h-5 w-5" />
-                <span className="text-sm">My Pupils</span>
-              </Button>
-            </Link>
-            <Link to="/instructor/settings">
-              <Button variant="outline" className="w-full h-auto py-4 flex-col gap-2">
-                <Settings className="h-5 w-5" />
-                <span className="text-sm">Settings</span>
-              </Button>
-            </Link>
-          </div>
-
-          {/* Payment Summary */}
-          <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} instructorName={instructor?.name} compact />
-
-          {/* GPS Telematics - Compact for mobile */}
-          <TelematicsTracker instructorId={MOCK_INSTRUCTOR_ID} compact />
-
-          {/* Gaps Filler */}
-          <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
-
-          {/* Upcoming Tests */}
-          <UpcomingTestsView instructorId={MOCK_INSTRUCTOR_ID} />
-        </div>
+        <InstructorMobileHome 
+          instructor={instructor}
+          todaysLessonCount={todaysLessonCount}
+          onPaymentClick={() => setPaymentModalOpen(true)}
+        />
 
         <PaymentQRModal 
           open={paymentModalOpen} 
