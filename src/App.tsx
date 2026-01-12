@@ -30,6 +30,9 @@ import About from "./pages/About";
 import Intensives from "./pages/Intensives";
 import SemiIntensive from "./pages/SemiIntensive";
 import NotFound from "./pages/NotFound";
+import InstallInstructor from "./pages/InstallInstructor";
+import InstallPupil from "./pages/InstallPupil";
+import InstallParent from "./pages/InstallParent";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +69,9 @@ const App = () => (
           <Route path="/hero-demo" element={<HeroLayoutDemo />} />
           <Route path="/collage-demo" element={<CollageDemo />} />
           <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
+          <Route path="/instructor/install" element={<InstallInstructor />} />
+          <Route path="/pupil/install" element={<InstallPupil />} />
+          <Route path="/parent/install" element={<InstallParent />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

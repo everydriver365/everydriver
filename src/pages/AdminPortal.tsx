@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Shield, Users, Calendar, CreditCard, Settings, BarChart3, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -27,6 +27,7 @@ import { HomepageTestimonialsManager } from "@/components/admin/HomepageTestimon
 import { HomepageHeroManager } from "@/components/admin/HomepageHeroManager";
 import { IncludedFeaturesManager } from "@/components/admin/IncludedFeaturesManager";
 import { InstructorHomepageManager } from "@/components/admin/InstructorHomepageManager";
+import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -137,6 +138,7 @@ export default function AdminPortal() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="instructors">Instructors</TabsTrigger>
             <TabsTrigger value="courses">Course Templates</TabsTrigger>
+            <TabsTrigger value="pwa-apps">Mobile Apps</TabsTrigger>
             <TabsTrigger value="instructor-home">Instructor App</TabsTrigger>
             <TabsTrigger value="hero">Hero Section</TabsTrigger>
             <TabsTrigger value="stats">Stats</TabsTrigger>
@@ -352,6 +354,25 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <CourseTemplateManager />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="pwa-apps">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Download className="h-5 w-5 text-accent" />
+                    Mobile App Configuration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PWAConfigManager />
                 </CardContent>
               </Card>
             </motion.div>
