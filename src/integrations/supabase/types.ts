@@ -1297,6 +1297,54 @@ export type Database = {
           },
         ]
       }
+      pwa_app_configs: {
+        Row: {
+          app_name: string
+          app_type: string
+          background_color: string
+          created_at: string
+          description: string | null
+          icon_192_url: string | null
+          icon_512_url: string | null
+          id: string
+          is_active: boolean | null
+          short_name: string
+          start_url: string
+          theme_color: string
+          updated_at: string
+        }
+        Insert: {
+          app_name: string
+          app_type: string
+          background_color?: string
+          created_at?: string
+          description?: string | null
+          icon_192_url?: string | null
+          icon_512_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          short_name: string
+          start_url: string
+          theme_color?: string
+          updated_at?: string
+        }
+        Update: {
+          app_name?: string
+          app_type?: string
+          background_color?: string
+          created_at?: string
+          description?: string | null
+          icon_192_url?: string | null
+          icon_512_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          short_name?: string
+          start_url?: string
+          theme_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scheduled_lessons: {
         Row: {
           amount_due: number | null
