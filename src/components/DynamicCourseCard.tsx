@@ -246,7 +246,7 @@ export function DynamicCourseCard({
               {instructor.bio || `Experienced ${instructor.car_type.toLowerCase()} driving instructor ready to help you pass your test.`}
             </p>
 
-            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 max-h-[100px] overflow-y-auto">
+            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 max-h-[140px] overflow-y-auto">
               {displayFeatures && displayFeatures.length > 0 ? (
                 displayFeatures.slice(0, 8).map((feature, index) => (
                   <div key={index} className="flex items-center gap-1.5 text-xs text-white/80">
