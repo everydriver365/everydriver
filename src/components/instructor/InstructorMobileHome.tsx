@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
+import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import logoDark from "@/assets/logo-instructor-dark.png";
 
 // Icon mapping
@@ -42,6 +43,7 @@ export function InstructorMobileHome({
   onPaymentClick 
 }: InstructorMobileHomeProps) {
   const { content, loading } = useInstructorHomepageContent();
+  const pendingJobsCount = usePendingJobsCount();
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -50,6 +52,12 @@ export function InstructorMobileHome({
   const getIcon = (iconName: string) => {
     const Icon = iconMap[iconName] || Calendar;
     return Icon;
+  };
+
+  // Check if action is job offers (by route or title)
+  const isJobOffersAction = (action: QuickAction) => {
+    return action.route === "/instructor/jobs" || 
+           action.title.toLowerCase().includes("job");
   };
 
   // Default hero image
@@ -158,6 +166,7 @@ export function InstructorMobileHome({
           .map((action, index) => {
             const Icon = getIcon(action.icon);
             const isWide = index === 0; // First action is full width
+            const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
             
             if (isWide) {
               return (
@@ -169,8 +178,13 @@ export function InstructorMobileHome({
                 >
                   <Link to={action.route}>
                     <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-4 hover:bg-muted/50 transition-colors">
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <div className="relative w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Icon className="h-6 w-6 text-primary" />
+                        {showBadge && (
+                          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                            {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                          </span>
+                        )}
                       </div>
                       <span className="font-medium text-foreground">{action.title}</span>
                       <ChevronRight className="h-5 w-5 text-muted-foreground ml-auto" />
@@ -189,6 +203,7 @@ export function InstructorMobileHome({
             .slice(1)
             .map((action, index) => {
               const Icon = getIcon(action.icon);
+              const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
               return (
                 <motion.div
                   key={action.id}
@@ -198,8 +213,13 @@ export function InstructorMobileHome({
                 >
                   <Link to={action.route}>
                     <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors min-h-[80px]">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <div className="relative w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                         <Icon className="h-5 w-5 text-primary" />
+                        {showBadge && (
+                          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-sm">
+                            {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                          </span>
+                        )}
                       </div>
                       <span className="font-medium text-foreground text-sm leading-tight">
                         {action.title.split(' ').map((word, i) => (
