@@ -16,6 +16,7 @@ import InstructorJobs from "./pages/InstructorJobs";
 import InstructorPay from "./pages/InstructorPay";
 import InstructorContact from "./pages/InstructorContact";
 import InstructorSettings from "./pages/InstructorSettings";
+import InstructorGaps from "./pages/InstructorGaps";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
 import BrandedPupilPortal from "./pages/BrandedPupilPortal";
@@ -57,6 +58,7 @@ const App = () => (
           <Route path="/instructor/pay" element={<InstructorPay />} />
           <Route path="/instructor/contact" element={<InstructorContact />} />
           <Route path="/instructor/settings" element={<InstructorSettings />} />
+          <Route path="/instructor/gaps" element={<InstructorGaps />} />
           <Route path="/parent" element={<ParentPortal />} />
           <Route path="/admin" element={<AdminPortal />} />
           <Route path="/theory" element={<Theory />} />
