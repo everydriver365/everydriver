@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Clock, Plus, Trash2, Calendar } from "lucide-react";
+import { Clock, Plus, Trash2, Calendar, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
 import {
   Popover,
   PopoverContent,
@@ -14,6 +15,15 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+// Availability presets
+const AVAILABILITY_PRESETS = [
+  { id: "standard", label: "Standard", description: "Mon-Fri 9-5", icon: "📅" },
+  { id: "early", label: "Early Bird", description: "Mon-Fri 7-3", icon: "🌅" },
+  { id: "late", label: "Late Hours", description: "Mon-Fri 12-8", icon: "🌙" },
+  { id: "weekend", label: "Weekends Only", description: "Sat-Sun 9-5", icon: "🎉" },
+  { id: "fullweek", label: "Full Week", description: "All days 9-5", icon: "💪" },
+];
 
 const DAYS_OF_WEEK = [
   { value: 1, label: "Monday" },
@@ -228,12 +238,91 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     }
   };
 
+  const applyPreset = (presetId: string) => {
+    let newHours: WorkingHour[] = [];
+    
+    switch (presetId) {
+      case "standard":
+        newHours = DAYS_OF_WEEK.map((day) => ({
+          ...workingHours.find((h) => h.day_of_week === day.value),
+          day_of_week: day.value,
+          start_time: "09:00",
+          end_time: "17:00",
+          is_active: day.value >= 1 && day.value <= 5,
+        }));
+        break;
+      case "early":
+        newHours = DAYS_OF_WEEK.map((day) => ({
+          ...workingHours.find((h) => h.day_of_week === day.value),
+          day_of_week: day.value,
+          start_time: "07:00",
+          end_time: "15:00",
+          is_active: day.value >= 1 && day.value <= 5,
+        }));
+        break;
+      case "late":
+        newHours = DAYS_OF_WEEK.map((day) => ({
+          ...workingHours.find((h) => h.day_of_week === day.value),
+          day_of_week: day.value,
+          start_time: "12:00",
+          end_time: "20:00",
+          is_active: day.value >= 1 && day.value <= 5,
+        }));
+        break;
+      case "weekend":
+        newHours = DAYS_OF_WEEK.map((day) => ({
+          ...workingHours.find((h) => h.day_of_week === day.value),
+          day_of_week: day.value,
+          start_time: "09:00",
+          end_time: "17:00",
+          is_active: day.value === 0 || day.value === 6,
+        }));
+        break;
+      case "fullweek":
+        newHours = DAYS_OF_WEEK.map((day) => ({
+          ...workingHours.find((h) => h.day_of_week === day.value),
+          day_of_week: day.value,
+          start_time: "09:00",
+          end_time: "17:00",
+          is_active: true,
+        }));
+        break;
+      default:
+        return;
+    }
+    
+    setWorkingHours(newHours);
+    toast.success("Preset applied - remember to save!");
+  };
+
   if (isLoading) {
     return <div className="py-4 text-center text-muted-foreground">Loading working hours...</div>;
   }
 
   return (
     <div className="space-y-6">
+      {/* Quick Presets */}
+      <div>
+        <h4 className="mb-2 flex items-center gap-2 font-medium text-sm">
+          <Zap className="h-4 w-4" />
+          Quick Presets
+        </h4>
+        <div className="flex flex-wrap gap-2">
+          {AVAILABILITY_PRESETS.map((preset) => (
+            <Button
+              key={preset.id}
+              variant="outline"
+              size="sm"
+              onClick={() => applyPreset(preset.id)}
+              className="h-auto py-1.5 px-2.5"
+            >
+              <span className="mr-1">{preset.icon}</span>
+              <span className="text-xs">{preset.label}</span>
+            </Button>
+          ))}
+        </div>
+      </div>
+
       {/* Weekly Schedule */}
       <div>
         <h4 className="mb-3 flex items-center gap-2 font-medium text-sm">

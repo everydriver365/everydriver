@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { User, Clock, Bell, FileText, Camera, Upload, Loader2, Settings } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette } from "lucide-react";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -8,12 +7,17 @@ import { CancellationPolicyEditor } from "@/components/instructor/CancellationPo
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -129,27 +133,24 @@ export default function InstructorSettings() {
         <p className="text-sm text-muted-foreground">Manage your profile and preferences</p>
       </div>
 
-      <div className="p-4 space-y-4">
-        {/* Profile Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
+      <div className="p-4">
+        <Accordion type="single" collapsible defaultValue="profile" className="space-y-3">
+          {/* Profile Section */}
+          <AccordionItem value="profile" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-primary" />
-                Profile
-              </CardTitle>
-              <CardDescription className="text-xs">Your public instructor profile</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+                <span className="font-medium">Profile</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <p className="text-xs text-muted-foreground mb-4">Your public instructor profile</p>
               {loading ? (
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
               ) : profile ? (
-                <>
+                <div className="space-y-4">
                   {/* Profile Photo */}
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
@@ -229,60 +230,66 @@ export default function InstructorSettings() {
                     {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                     Save Profile
                   </Button>
-                </>
+                </div>
               ) : (
                 <p className="text-muted-foreground text-center py-4">Profile not found</p>
               )}
-            </CardContent>
-          </Card>
-        </motion.div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Working Hours Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
+          {/* Working Hours Section */}
+          <AccordionItem value="working-hours" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
-                Working Hours
-              </CardTitle>
-              <CardDescription className="text-xs">Set your availability for lessons</CardDescription>
-            </CardHeader>
-            <CardContent>
+                <span className="font-medium">Working Hours</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <p className="text-xs text-muted-foreground mb-4">Set your availability for lessons</p>
               <WorkingHoursEditor instructorId={MOCK_INSTRUCTOR_ID} />
-            </CardContent>
-          </Card>
-        </motion.div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Notifications Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <PushNotificationSettings instructorId={MOCK_INSTRUCTOR_ID} />
-        </motion.div>
+          {/* Notifications Section */}
+          <AccordionItem value="notifications" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <div className="flex items-center gap-2">
+                <Bell className="h-4 w-4 text-primary" />
+                <span className="font-medium">Notifications</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <PushNotificationSettings instructorId={MOCK_INSTRUCTOR_ID} />
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Cancellation Policy Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <CancellationPolicyEditor instructorId={MOCK_INSTRUCTOR_ID} />
-        </motion.div>
+          {/* Cancellation Policy Section */}
+          <AccordionItem value="cancellation" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <span className="font-medium">Cancellation Policy</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <CancellationPolicyEditor instructorId={MOCK_INSTRUCTOR_ID} />
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Pupil App Branding Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <PupilAppBrandingEditor instructorId={MOCK_INSTRUCTOR_ID} />
-        </motion.div>
+          {/* Pupil App Branding Section */}
+          <AccordionItem value="branding" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-primary" />
+                <span className="font-medium">Pupil App Branding</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <PupilAppBrandingEditor instructorId={MOCK_INSTRUCTOR_ID} />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </div>
   );
