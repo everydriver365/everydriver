@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { QrCode, CreditCard, Copy, Check, User, PoundSterling, Send, MessageSquare, Link2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { QrCode, CreditCard, Copy, Check, User, PoundSterling, Send, MessageSquare, ExternalLink, Clock, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,14 +18,31 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 interface Pupil {
   id: string;
   name: string;
   account_balance?: number | null;
   phone?: string | null;
+}
+
+interface PaymentLinkTracking {
+  id: string;
+  link_code: string;
+  pupil_id: string | null;
+  amount_requested: number | null;
+  sent_at: string;
+  sent_via: string;
+  opened_at: string | null;
+  opened_count: number;
+  paid_at: string | null;
+  status: string;
+  pupils?: { name: string } | null;
 }
 
 interface PaymentQRModalProps {
@@ -36,6 +53,10 @@ interface PaymentQRModalProps {
   instructorId?: string;
   instructorName?: string;
   onPaymentRecorded?: () => void;
+}
+
+function generateLinkCode(): string {
+  return `PAY${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 }
 
 export function PaymentQRModal({ 
@@ -53,14 +74,46 @@ export function PaymentQRModal({
   const [sendSms, setSendSms] = useState(true);
   const [recording, setRecording] = useState(false);
   const [sendingLink, setSendingLink] = useState(false);
+  const [linkHistory, setLinkHistory] = useState<PaymentLinkTracking[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   
-  const paymentLink = "https://pay.example.com/instructor/abc123";
-  
+  const baseUrl = `${window.location.origin}/pay`;
   const selectedPupil = pupils.find(p => p.id === selectedPupilId);
-  
-  const handleCopy = async () => {
+
+  // Fetch link history when modal opens
+  useEffect(() => {
+    if (open && instructorId) {
+      fetchLinkHistory();
+    }
+  }, [open, instructorId]);
+
+  const fetchLinkHistory = async () => {
+    if (!instructorId) return;
+    setLoadingHistory(true);
     try {
-      await navigator.clipboard.writeText(paymentLink);
+      const { data, error } = await supabase
+        .from("payment_link_tracking")
+        .select("*, pupils(name)")
+        .eq("instructor_id", instructorId)
+        .order("sent_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setLinkHistory(data || []);
+    } catch (error) {
+      console.error("Error fetching link history:", error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const generatePaymentLink = (code: string) => {
+    return `${baseUrl}/${code}`;
+  };
+  
+  const handleCopy = async (link: string) => {
+    try {
+      await navigator.clipboard.writeText(link);
       setCopied(true);
       toast({
         title: "Copied!",
@@ -77,7 +130,7 @@ export function PaymentQRModal({
   };
 
   const handleSendPaymentLink = async () => {
-    if (!selectedPupilId) {
+    if (!selectedPupilId || !instructorId) {
       toast({
         title: "Select a pupil",
         description: "Please select which pupil to send the link to",
@@ -97,19 +150,47 @@ export function PaymentQRModal({
 
     setSendingLink(true);
     try {
-      const { error } = await supabase.functions.invoke("send-gap-sms", {
+      // Generate unique link code
+      const linkCode = generateLinkCode();
+      const paymentLink = generatePaymentLink(linkCode);
+      const amount = paymentAmount ? parseFloat(paymentAmount) : null;
+
+      // Save tracking record
+      const { error: trackingError } = await supabase
+        .from("payment_link_tracking")
+        .insert({
+          instructor_id: instructorId,
+          pupil_id: selectedPupilId,
+          link_code: linkCode,
+          amount_requested: amount,
+          sent_via: "sms",
+          status: "sent",
+        });
+
+      if (trackingError) throw trackingError;
+
+      // Send SMS with payment link
+      const message = amount 
+        ? `Hi ${selectedPupil.name}, here's your payment link for £${amount.toFixed(2)} from ${instructorName}: ${paymentLink}`
+        : `Hi ${selectedPupil.name}, here's your payment link from ${instructorName}: ${paymentLink}`;
+
+      const { error: smsError } = await supabase.functions.invoke("send-gap-sms", {
         body: {
           to: selectedPupil.phone,
-          message: `Hi ${selectedPupil.name}, here's your payment link from ${instructorName}: ${paymentLink}`,
+          message,
         },
       });
 
-      if (error) throw error;
+      if (smsError) throw smsError;
 
       toast({
         title: "Link sent!",
         description: `Payment link texted to ${selectedPupil.name}`,
       });
+
+      // Refresh history
+      fetchLinkHistory();
+      setPaymentAmount("");
     } catch (error) {
       console.error("Error sending payment link:", error);
       toast({
@@ -163,7 +244,7 @@ export function PaymentQRModal({
       if (updateError) throw updateError;
 
       if (instructorId) {
-        const { error: historyError } = await supabase
+        await supabase
           .from("payment_history")
           .insert({
             instructor_id: instructorId,
@@ -172,10 +253,6 @@ export function PaymentQRModal({
             payment_method: "manual",
             notes: `Payment recorded via Take Payment modal`,
           });
-
-        if (historyError) {
-          console.error("Error recording payment history:", historyError);
-        }
       }
 
       if (sendSms && selectedPupil?.phone) {
@@ -222,6 +299,17 @@ export function PaymentQRModal({
     onOpenChange(open);
   };
 
+  const getStatusBadge = (status: string, openedCount: number) => {
+    switch (status) {
+      case "paid":
+        return <Badge className="bg-emerald-500 text-white text-[10px]">Paid</Badge>;
+      case "opened":
+        return <Badge variant="secondary" className="text-[10px] gap-0.5"><Eye className="h-2.5 w-2.5" />{openedCount}</Badge>;
+      default:
+        return <Badge variant="outline" className="text-[10px]">Sent</Badge>;
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-sm max-h-[85vh] overflow-y-auto p-4">
@@ -233,18 +321,22 @@ export function PaymentQRModal({
         </DialogHeader>
         
         <Tabs defaultValue="record" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-9">
-            <TabsTrigger value="record" className="text-xs gap-1">
+          <TabsList className="grid w-full grid-cols-4 h-9">
+            <TabsTrigger value="record" className="text-[10px] gap-0.5 px-1">
               <PoundSterling className="h-3 w-3" />
               Record
             </TabsTrigger>
-            <TabsTrigger value="link" className="text-xs gap-1">
+            <TabsTrigger value="link" className="text-[10px] gap-0.5 px-1">
               <MessageSquare className="h-3 w-3" />
-              Text Link
+              Text
             </TabsTrigger>
-            <TabsTrigger value="qr" className="text-xs gap-1">
+            <TabsTrigger value="qr" className="text-[10px] gap-0.5 px-1">
               <QrCode className="h-3 w-3" />
-              QR Code
+              QR
+            </TabsTrigger>
+            <TabsTrigger value="history" className="text-[10px] gap-0.5 px-1">
+              <Clock className="h-3 w-3" />
+              History
             </TabsTrigger>
           </TabsList>
           
@@ -349,22 +441,22 @@ export function PaymentQRModal({
               </Select>
             </div>
 
-            <div className="bg-muted rounded-md p-2">
-              <p className="text-xs text-muted-foreground mb-1">Payment link:</p>
-              <div className="flex items-center gap-1.5">
-                <code className="text-xs truncate flex-1">{paymentLink}</code>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="h-6 w-6 shrink-0"
-                  onClick={handleCopy}
-                >
-                  {copied ? (
-                    <Check className="h-3 w-3 text-emerald-500" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                </Button>
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1">
+                <PoundSterling className="h-3 w-3" />
+                Amount (optional)
+              </Label>
+              <div className="relative">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">£</span>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  className="pl-6 h-9"
+                />
               </div>
             </div>
 
@@ -411,13 +503,13 @@ export function PaymentQRModal({
               
               <div className="w-full flex gap-1.5">
                 <div className="flex-1 bg-muted rounded px-2 py-1.5 text-xs truncate">
-                  {paymentLink}
+                  {baseUrl}/...
                 </div>
                 <Button 
                   variant="outline" 
                   size="icon"
                   className="h-8 w-8 shrink-0"
-                  onClick={handleCopy}
+                  onClick={() => handleCopy(`${baseUrl}/${instructorId}`)}
                 >
                   {copied ? (
                     <Check className="h-3.5 w-3.5 text-emerald-500" />
@@ -427,6 +519,45 @@ export function PaymentQRModal({
                 </Button>
               </div>
             </div>
+          </TabsContent>
+
+          {/* History Tab */}
+          <TabsContent value="history" className="mt-3">
+            <ScrollArea className="h-[200px]">
+              {loadingHistory ? (
+                <div className="flex items-center justify-center h-20">
+                  <p className="text-xs text-muted-foreground">Loading...</p>
+                </div>
+              ) : linkHistory.length === 0 ? (
+                <div className="flex items-center justify-center h-20">
+                  <p className="text-xs text-muted-foreground">No payment links sent yet</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {linkHistory.map((link) => (
+                    <div key={link.id} className="border rounded-md p-2 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium truncate max-w-[120px]">
+                          {link.pupils?.name || "Unknown"}
+                        </span>
+                        {getStatusBadge(link.status, link.opened_count)}
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                        <span>
+                          {link.amount_requested ? `£${link.amount_requested.toFixed(2)}` : "No amount"}
+                        </span>
+                        <span>{format(new Date(link.sent_at), "dd MMM HH:mm")}</span>
+                      </div>
+                      {link.opened_at && (
+                        <p className="text-[10px] text-muted-foreground">
+                          Opened: {format(new Date(link.opened_at), "dd MMM HH:mm")}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       </DialogContent>
