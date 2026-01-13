@@ -32,6 +32,7 @@ export function InstructorHomepageManager() {
   const [progressLabel, setProgressLabel] = useState("");
   const [quickActions, setQuickActions] = useState<QuickAction[]>([]);
   const [promoBanners, setPromoBanners] = useState<PromoBanner[]>([]);
+  const [secondaryPromoBanners, setSecondaryPromoBanners] = useState<PromoBanner[]>([]);
 
   useEffect(() => {
     if (content) {
@@ -42,6 +43,7 @@ export function InstructorHomepageManager() {
       setProgressLabel(content.progress_label);
       setQuickActions(content.quick_actions);
       setPromoBanners(content.promo_banners);
+      setSecondaryPromoBanners(content.secondary_promo_banners || []);
     }
   }, [content]);
 
@@ -54,7 +56,8 @@ export function InstructorHomepageManager() {
       show_progress_indicator: showProgress,
       progress_label: progressLabel,
       quick_actions: quickActions as any,
-      promo_banners: promoBanners as any
+      promo_banners: promoBanners as any,
+      secondary_promo_banners: secondaryPromoBanners as any
     });
 
     if (success) {
@@ -109,6 +112,29 @@ export function InstructorHomepageManager() {
 
   const removePromoBanner = (index: number) => {
     setPromoBanners(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addSecondaryPromoBanner = () => {
+    setSecondaryPromoBanners([
+      ...secondaryPromoBanners,
+      {
+        id: `sec-banner-${Date.now()}`,
+        title: "New Banner",
+        subtitle: "Banner description",
+        image_url: null,
+        link: "/instructor/portal"
+      }
+    ]);
+  };
+
+  const updateSecondaryPromoBanner = (index: number, updates: Partial<PromoBanner>) => {
+    setSecondaryPromoBanners(prev => prev.map((banner, i) => 
+      i === index ? { ...banner, ...updates } : banner
+    ));
+  };
+
+  const removeSecondaryPromoBanner = (index: number) => {
+    setSecondaryPromoBanners(prev => prev.filter((_, i) => i !== index));
   };
 
   if (loading) {
@@ -307,6 +333,72 @@ export function InstructorHomepageManager() {
                   <Input
                     value={banner.image_url || ""}
                     onChange={(e) => updatePromoBanner(index, { image_url: e.target.value || null })}
+                    className="h-8"
+                    placeholder="https://example.com/banner.jpg"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Secondary Promo Banners */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Secondary Promotional Banners</CardTitle>
+          <Button size="sm" variant="outline" onClick={addSecondaryPromoBanner}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            These banners appear in a second carousel below the primary banners.
+          </p>
+          {secondaryPromoBanners.map((banner, index) => (
+            <div key={banner.id} className="p-3 border rounded-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-sm">Banner {index + 1}</span>
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="text-destructive hover:text-destructive h-8 w-8"
+                  onClick={() => removeSecondaryPromoBanner(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Title</Label>
+                  <Input
+                    value={banner.title}
+                    onChange={(e) => updateSecondaryPromoBanner(index, { title: e.target.value })}
+                    className="h-8"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Link</Label>
+                  <Input
+                    value={banner.link}
+                    onChange={(e) => updateSecondaryPromoBanner(index, { link: e.target.value })}
+                    className="h-8"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-xs">Subtitle</Label>
+                  <Input
+                    value={banner.subtitle}
+                    onChange={(e) => updateSecondaryPromoBanner(index, { subtitle: e.target.value })}
+                    className="h-8"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-xs">Image URL (optional)</Label>
+                  <Input
+                    value={banner.image_url || ""}
+                    onChange={(e) => updateSecondaryPromoBanner(index, { image_url: e.target.value || null })}
                     className="h-8"
                     placeholder="https://example.com/banner.jpg"
                   />

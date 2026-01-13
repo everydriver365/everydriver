@@ -707,6 +707,7 @@ export type Database = {
           progress_label: string | null
           promo_banners: Json | null
           quick_actions: Json | null
+          secondary_promo_banners: Json | null
           show_progress_indicator: boolean | null
           updated_at: string
         }
@@ -720,6 +721,7 @@ export type Database = {
           progress_label?: string | null
           promo_banners?: Json | null
           quick_actions?: Json | null
+          secondary_promo_banners?: Json | null
           show_progress_indicator?: boolean | null
           updated_at?: string
         }
@@ -733,6 +735,7 @@ export type Database = {
           progress_label?: string | null
           promo_banners?: Json | null
           quick_actions?: Json | null
+          secondary_promo_banners?: Json | null
           show_progress_indicator?: boolean | null
           updated_at?: string
         }
