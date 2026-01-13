@@ -5,14 +5,17 @@ import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav
 import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 import { MainLayout } from "@/components/layout/MainLayout";
 import TelematicsTracker from "@/components/instructor/TelematicsTracker";
+import GeneratedDrivingReport from "@/components/instructor/GeneratedDrivingReport";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
-import { Car, User, Clock, MapPin } from "lucide-react";
+import { Car, User, Clock, MapPin, FileText } from "lucide-react";
 import { format } from "date-fns";
+import { useTelematics } from "@/hooks/useTelematics";
 
 const MOCK_INSTRUCTOR_ID = "550e8400-e29b-41d4-a716-446655440000";
 
@@ -35,6 +38,8 @@ export default function InstructorTrackLesson() {
   const [selectedLessonId, setSelectedLessonId] = useState<string | undefined>();
   const [selectedPupilId, setSelectedPupilId] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
+  const [showReportSheet, setShowReportSheet] = useState(false);
+  const [lastTelematicsId, setLastTelematicsId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTodaysLessons = async () => {
@@ -99,6 +104,29 @@ export default function InstructorTrackLesson() {
   };
 
   const selectedLesson = todaysLessons.find(l => l.id === selectedLessonId);
+  const selectedPupilName = selectedLesson?.pupil?.name || "Pupil";
+
+  // Check for recent telematics session to offer report generation
+  useEffect(() => {
+    const checkRecentSession = async () => {
+      if (!selectedPupilId) return;
+      
+      const { data } = await supabase
+        .from("lesson_telematics")
+        .select("id, ended_at")
+        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("pupil_id", selectedPupilId)
+        .not("ended_at", "is", null)
+        .order("ended_at", { ascending: false })
+        .limit(1);
+
+      if (data && data.length > 0) {
+        setLastTelematicsId(data[0].id);
+      }
+    };
+    
+    checkRecentSession();
+  }, [selectedPupilId]);
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(":");
@@ -191,6 +219,18 @@ export default function InstructorTrackLesson() {
           pupilId={selectedPupilId}
         />
 
+        {/* Generate Report Button - shown when there's tracking data */}
+        {lastTelematicsId && selectedPupilId && (
+          <Button 
+            onClick={() => setShowReportSheet(true)} 
+            variant="outline" 
+            className="w-full gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Generate AI Feedback Report
+          </Button>
+        )}
+
         {/* Info Card */}
         <Card className="bg-muted/30 border-dashed">
           <CardContent className="p-4">
@@ -199,11 +239,29 @@ export default function InstructorTrackLesson() {
               <li>• Select a lesson to link tracking data to a pupil</li>
               <li>• Tap "Start Tracking" to begin GPS monitoring</li>
               <li>• Driving behavior (braking, acceleration) is analyzed</li>
-              <li>• Data is saved automatically for lesson reports</li>
+              <li>• After tracking, generate AI-powered feedback reports</li>
             </ul>
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Report Sheet */}
+      <Sheet open={showReportSheet} onOpenChange={setShowReportSheet}>
+        <SheetContent side={isMobile ? "bottom" : "right"} className={isMobile ? "h-[90vh]" : "sm:max-w-lg"}>
+          <SheetHeader>
+            <SheetTitle>Lesson Feedback</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 overflow-y-auto max-h-[calc(100%-4rem)]">
+            {lastTelematicsId && (
+              <GeneratedDrivingReport 
+                telematicsId={lastTelematicsId}
+                pupilName={selectedPupilName}
+                onClose={() => setShowReportSheet(false)}
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {isMobile && <InstructorBottomNav />}
     </div>
