@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
-import { Clock, Plus, Trash2, Calendar, Zap } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Clock, Plus, Trash2, Calendar, Zap, CalendarOff, CalendarCheck, Loader2, Check, Unlink, ExternalLink } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -23,6 +25,13 @@ const AVAILABILITY_PRESETS = [
   { id: "late", label: "Late Hours", description: "Mon-Fri 12-8", icon: "🌙" },
   { id: "weekend", label: "Weekends Only", description: "Sat-Sun 9-5", icon: "🎉" },
   { id: "fullweek", label: "Full Week", description: "All days 9-5", icon: "💪" },
+];
+
+// Day off quick actions
+const DAY_OFF_ACTIONS = [
+  { id: "today", label: "Today Off", description: "Mark today as unavailable" },
+  { id: "tomorrow", label: "Tomorrow Off", description: "Mark tomorrow as unavailable" },
+  { id: "thisWeek", label: "Rest of Week", description: "Off until Sunday" },
 ];
 
 const DAYS_OF_WEEK = [
@@ -57,6 +66,7 @@ interface WorkingHoursEditorProps {
 }
 
 export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,10 +78,38 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     start_time: "09:00",
     end_time: "17:00",
   });
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+
+  // Google Calendar integration
+  const {
+    isConnecting,
+    isChecking,
+    calendarStatus,
+    checkConnection,
+    getAuthUrl,
+    handleAuthCallback,
+    disconnect,
+  } = useGoogleCalendar(instructorId);
 
   useEffect(() => {
     fetchData();
-  }, [instructorId]);
+    checkConnection();
+  }, [instructorId, checkConnection]);
+
+  // Handle OAuth callback
+  useEffect(() => {
+    const code = searchParams.get("code");
+    const isCallback = searchParams.get("calendar_callback");
+
+    if (code && isCallback) {
+      handleAuthCallback(code).then(() => {
+        searchParams.delete("code");
+        searchParams.delete("calendar_callback");
+        searchParams.delete("scope");
+        setSearchParams(searchParams, { replace: true });
+      });
+    }
+  }, [searchParams, handleAuthCallback, setSearchParams]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -295,6 +333,68 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     toast.success("Preset applied - remember to save!");
   };
 
+  const addDayOff = async (actionId: string) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let startDate: Date;
+    let endDate: Date | null = null;
+
+    switch (actionId) {
+      case "today":
+        startDate = today;
+        break;
+      case "tomorrow":
+        startDate = new Date(today);
+        startDate.setDate(today.getDate() + 1);
+        break;
+      case "thisWeek":
+        startDate = today;
+        const daysUntilSunday = 7 - today.getDay();
+        endDate = new Date(today);
+        endDate.setDate(today.getDate() + daysUntilSunday);
+        break;
+      default:
+        return;
+    }
+
+    try {
+      const overrideData = {
+        instructor_id: instructorId,
+        override_date: format(startDate, "yyyy-MM-dd"),
+        override_end_date: endDate ? format(endDate, "yyyy-MM-dd") : format(startDate, "yyyy-MM-dd"),
+        start_time: null,
+        end_time: null,
+        is_available: false,
+      };
+
+      const { error } = await supabase
+        .from("instructor_date_overrides")
+        .insert(overrideData);
+
+      if (error) throw error;
+
+      toast.success("Day off added successfully");
+      fetchData();
+    } catch (error) {
+      console.error("Error adding day off:", error);
+      toast.error("Failed to add day off");
+    }
+  };
+
+  const handleConnectCalendar = async () => {
+    const authUrl = await getAuthUrl();
+    if (authUrl) {
+      window.location.href = authUrl;
+    }
+  };
+
+  const handleDisconnectCalendar = async () => {
+    setIsDisconnecting(true);
+    await disconnect();
+    setIsDisconnecting(false);
+  };
+
   if (isLoading) {
     return <div className="py-4 text-center text-muted-foreground">Loading working hours...</div>;
   }
@@ -384,14 +484,93 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
         </Button>
       </div>
 
+      {/* Google Calendar Sync */}
+      <div className="rounded-lg border p-3 bg-muted/30">
+        <h4 className="mb-2 flex items-center gap-2 font-medium text-sm">
+          <CalendarCheck className="h-4 w-4" />
+          Google Calendar Sync
+        </h4>
+        {isChecking ? (
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Checking connection...
+          </div>
+        ) : calendarStatus?.connected ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs">
+                <Check className="h-3 w-3 mr-1" />
+                Connected
+              </Badge>
+              <span className="text-xs text-muted-foreground truncate">
+                {calendarStatus.calendarName || "Primary"}
+              </span>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDisconnectCalendar}
+              disabled={isDisconnecting}
+              className="w-full gap-2 text-xs h-8"
+            >
+              {isDisconnecting ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Unlink className="h-3 w-3" />
+              )}
+              Disconnect
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              Sync to block lesson times automatically.
+            </p>
+            <Button
+              onClick={handleConnectCalendar}
+              disabled={isConnecting}
+              size="sm"
+              className="w-full gap-2 text-xs h-8"
+            >
+              {isConnecting ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <ExternalLink className="h-3 w-3" />
+              )}
+              Connect Google Calendar
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* Date Overrides */}
       <div>
-        <h4 className="mb-3 flex items-center gap-2 font-medium text-sm">
+        <h4 className="mb-2 flex items-center gap-2 font-medium text-sm">
           <Calendar className="h-4 w-4" />
           Date Overrides
         </h4>
+        
+        {/* Day Off Quick Actions */}
+        <div className="mb-3">
+          <p className="mb-2 text-xs text-muted-foreground">Quick day off:</p>
+          <div className="flex flex-wrap gap-2">
+            {DAY_OFF_ACTIONS.map((action) => (
+              <Button
+                key={action.id}
+                variant="outline"
+                size="sm"
+                onClick={() => addDayOff(action.id)}
+                className="h-auto py-1.5 px-2.5 gap-1.5 border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+              >
+                <CalendarOff className="h-3 w-3" />
+                <span className="text-xs">{action.label}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+
         <p className="mb-3 text-xs text-muted-foreground">
-          Set custom hours or mark dates as unavailable.
+          Or set custom hours for specific dates:
         </p>
 
         <div className="mb-4 space-y-3 rounded-lg border p-3">
