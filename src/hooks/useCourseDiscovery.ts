@@ -304,27 +304,16 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
           return distance <= radiusMiles;
         });
 
-        if (instructorsNearby.length === 0) {
-          toast({ 
-            title: "No instructors in this area", 
-            description: `No instructors found within ${radius} miles of ${areaName || cleanPostcode}. Try increasing the radius.`,
-            variant: "destructive" 
-          });
-        } else {
-          // Find first available date for instructors in this area
+        // If instructors found in area, jump to their first available date
+        if (instructorsNearby.length > 0) {
           const firstAvailable = findFirstAvailableDateForInstructors(instructorsNearby, workingHours, dateOverrides);
           if (firstAvailable) {
             setSelectedMonth(firstAvailable.month);
             setSelectedDate(firstAvailable.date);
-            toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
-          } else {
-            toast({ 
-              title: "No availability", 
-              description: `Instructors near ${areaName || cleanPostcode} have no available dates in the next 18 months.`,
-              variant: "destructive" 
-            });
           }
         }
+        
+        toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
       } else {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
       }
