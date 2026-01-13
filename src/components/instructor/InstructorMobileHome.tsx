@@ -11,10 +11,13 @@ import {
   Settings,
   Car,
   ChevronRight,
-  Receipt
+  Receipt,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import logoDark from "@/assets/logo-instructor-dark.png";
@@ -35,6 +38,7 @@ interface InstructorMobileHomeProps {
   instructor: {
     name: string;
     profile_image_url: string | null;
+    is_active?: boolean;
   } | null;
   todaysLessonCount: number;
   onPaymentClick: () => void;
@@ -77,11 +81,26 @@ export function InstructorMobileHome({
           className="h-7 object-contain"
         />
         
-        {/* Avatar and name on the right */}
-        <div className="flex items-center gap-3">
-          <span className="text-primary-foreground text-sm font-medium">
-            {instructor?.name || "Instructor"}
-          </span>
+        {/* Visibility badge and Avatar on the right */}
+        <div className="flex items-center gap-2">
+          {instructor && instructor.is_active !== undefined && (
+            <Badge 
+              variant="secondary" 
+              className={`gap-1 text-xs ${instructor.is_active ? "bg-emerald-500/90 text-white" : "bg-amber-500/90 text-white"}`}
+            >
+              {instructor.is_active ? (
+                <>
+                  <Eye className="h-3 w-3" />
+                  Visible
+                </>
+              ) : (
+                <>
+                  <EyeOff className="h-3 w-3" />
+                  Hidden
+                </>
+              )}
+            </Badge>
+          )}
           <Avatar className="h-9 w-9 border-2 border-primary-foreground/30">
             <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
             <AvatarFallback className="bg-primary-foreground text-primary font-semibold text-sm">
