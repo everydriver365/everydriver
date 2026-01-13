@@ -236,11 +236,11 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     <div className="space-y-6">
       {/* Weekly Schedule */}
       <div>
-        <h4 className="mb-4 flex items-center gap-2 font-medium">
+        <h4 className="mb-3 flex items-center gap-2 font-medium text-sm">
           <Clock className="h-4 w-4" />
           Weekly Schedule
         </h4>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {DAYS_OF_WEEK.map((day) => {
             const hour = workingHours.find((h) => h.day_of_week === day.value);
             if (!hour) return null;
@@ -249,38 +249,40 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
               <div
                 key={day.value}
                 className={cn(
-                  "flex items-center gap-4 rounded-lg border p-3",
+                  "rounded-lg border p-3",
                   !hour.is_active && "bg-muted/50 opacity-60"
                 )}
               >
-                <div className="flex w-28 items-center gap-2">
-                  <Switch
-                    checked={hour.is_active}
-                    onCheckedChange={(checked) =>
-                      handleWorkingHourChange(day.value, "is_active", checked)
-                    }
-                  />
-                  <span className="text-sm font-medium">{day.label}</span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={hour.is_active}
+                      onCheckedChange={(checked) =>
+                        handleWorkingHourChange(day.value, "is_active", checked)
+                      }
+                    />
+                    <span className="text-sm font-medium">{day.label}</span>
+                  </div>
                 </div>
 
                 {hour.is_active && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 pl-8">
                     <Input
                       type="time"
                       value={hour.start_time}
                       onChange={(e) =>
                         handleWorkingHourChange(day.value, "start_time", e.target.value)
                       }
-                      className="w-32"
+                      className="flex-1 text-sm"
                     />
-                    <span className="text-muted-foreground">to</span>
+                    <span className="text-muted-foreground text-xs">to</span>
                     <Input
                       type="time"
                       value={hour.end_time}
                       onChange={(e) =>
                         handleWorkingHourChange(day.value, "end_time", e.target.value)
                       }
-                      className="w-32"
+                      className="flex-1 text-sm"
                     />
                   </div>
                 )}
@@ -288,30 +290,31 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
             );
           })}
         </div>
-        <Button onClick={saveWorkingHours} className="mt-4">
+        <Button onClick={saveWorkingHours} className="mt-4 w-full" size="sm">
           Save Weekly Schedule
         </Button>
       </div>
 
       {/* Date Overrides */}
       <div>
-        <h4 className="mb-4 flex items-center gap-2 font-medium">
+        <h4 className="mb-3 flex items-center gap-2 font-medium text-sm">
           <Calendar className="h-4 w-4" />
-          Date-Specific Overrides
+          Date Overrides
         </h4>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Set custom hours or mark date ranges as unavailable. Leave end date blank for ongoing overrides.
+        <p className="mb-3 text-xs text-muted-foreground">
+          Set custom hours or mark dates as unavailable.
         </p>
 
-        <div className="mb-4 space-y-4 rounded-lg border p-4">
-          <div className="flex flex-wrap items-end gap-3">
+        <div className="mb-4 space-y-3 rounded-lg border p-3">
+          {/* Date Selection */}
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="mb-2 block text-sm">Start Date</Label>
+              <Label className="mb-1.5 block text-xs">Start Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-40 justify-start">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {selectedStartDate ? format(selectedStartDate, "dd MMM yyyy") : "Pick date"}
+                  <Button variant="outline" size="sm" className="w-full justify-start text-xs">
+                    <Calendar className="mr-1.5 h-3 w-3" />
+                    {selectedStartDate ? format(selectedStartDate, "dd MMM") : "Pick"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -328,16 +331,17 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
             </div>
 
             <div>
-              <Label className="mb-2 block text-sm">End Date</Label>
+              <Label className="mb-1.5 block text-xs">End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className={cn("w-40 justify-start", isForever && "opacity-50")}
+                    size="sm"
+                    className={cn("w-full justify-start text-xs", isForever && "opacity-50")}
                     disabled={isForever}
                   >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {isForever ? "Forever" : (selectedEndDate ? format(selectedEndDate, "dd MMM yyyy") : "Pick date")}
+                    <Calendar className="mr-1.5 h-3 w-3" />
+                    {isForever ? "Forever" : (selectedEndDate ? format(selectedEndDate, "dd MMM") : "Pick")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -352,63 +356,61 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
                 </PopoverContent>
               </Popover>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Switch
-                id="override-forever"
-                checked={isForever}
-                onCheckedChange={(checked) => {
-                  setIsForever(checked);
-                  if (checked) setSelectedEndDate(undefined);
-                }}
-              />
-              <Label htmlFor="override-forever" className="text-sm">
-                Forever
-              </Label>
-            </div>
           </div>
 
-          <div className="flex flex-wrap items-end gap-3">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="override-forever"
+              checked={isForever}
+              onCheckedChange={(checked) => {
+                setIsForever(checked);
+                if (checked) setSelectedEndDate(undefined);
+              }}
+            />
+            <Label htmlFor="override-forever" className="text-xs">
+              Ongoing (no end date)
+            </Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id="override-available"
+              checked={newOverride.is_available}
+              onCheckedChange={(checked) =>
+                setNewOverride((prev) => ({ ...prev, is_available: checked }))
+              }
+            />
+            <Label htmlFor="override-available" className="text-xs">
+              Available on this date
+            </Label>
+          </div>
+
+          {newOverride.is_available && (
             <div className="flex items-center gap-2">
-              <Switch
-                id="override-available"
-                checked={newOverride.is_available}
-                onCheckedChange={(checked) =>
-                  setNewOverride((prev) => ({ ...prev, is_available: checked }))
+              <Input
+                type="time"
+                value={newOverride.start_time}
+                onChange={(e) =>
+                  setNewOverride((prev) => ({ ...prev, start_time: e.target.value }))
                 }
+                className="flex-1 text-sm"
               />
-              <Label htmlFor="override-available" className="text-sm">
-                Available
-              </Label>
+              <span className="text-muted-foreground text-xs">to</span>
+              <Input
+                type="time"
+                value={newOverride.end_time}
+                onChange={(e) =>
+                  setNewOverride((prev) => ({ ...prev, end_time: e.target.value }))
+                }
+                className="flex-1 text-sm"
+              />
             </div>
+          )}
 
-            {newOverride.is_available && (
-              <div className="flex items-center gap-2">
-                <Input
-                  type="time"
-                  value={newOverride.start_time}
-                  onChange={(e) =>
-                    setNewOverride((prev) => ({ ...prev, start_time: e.target.value }))
-                  }
-                  className="w-32"
-                />
-                <span className="text-muted-foreground">to</span>
-                <Input
-                  type="time"
-                  value={newOverride.end_time}
-                  onChange={(e) =>
-                    setNewOverride((prev) => ({ ...prev, end_time: e.target.value }))
-                  }
-                  className="w-32"
-                />
-              </div>
-            )}
-
-            <Button onClick={addDateOverride} size="sm">
-              <Plus className="mr-1 h-4 w-4" />
-              Add Override
-            </Button>
-          </div>
+          <Button onClick={addDateOverride} size="sm" className="w-full">
+            <Plus className="mr-1 h-4 w-4" />
+            Add Override
+          </Button>
         </div>
 
         {dateOverrides.length > 0 ? (
@@ -417,30 +419,31 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
               <div
                 key={override.id}
                 className={cn(
-                  "flex items-center justify-between rounded-lg border p-3",
+                  "flex items-center justify-between rounded-lg border p-2.5",
                   !override.is_available && "bg-destructive/10 border-destructive/30"
                 )}
               >
-                <div className="flex items-center gap-4">
-                  <span className="font-medium">
-                    {format(new Date(override.override_date), "dd MMM yyyy")}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">
+                    {format(new Date(override.override_date), "dd MMM")}
                     {override.override_end_date ? (
-                      <span> → {format(new Date(override.override_end_date), "dd MMM yyyy")}</span>
+                      <span> → {format(new Date(override.override_end_date), "dd MMM")}</span>
                     ) : (
-                      <span className="text-muted-foreground"> → Forever</span>
+                      <span className="text-muted-foreground"> → Ongoing</span>
                     )}
-                  </span>
+                  </p>
                   {override.is_available ? (
-                    <span className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {override.start_time} - {override.end_time}
-                    </span>
+                    </p>
                   ) : (
-                    <span className="text-sm font-medium text-destructive">Unavailable</span>
+                    <p className="text-xs font-medium text-destructive">Unavailable</p>
                   )}
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
+                  className="h-8 w-8 p-0 flex-shrink-0"
                   onClick={() => override.id && deleteDateOverride(override.id)}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -449,7 +452,7 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No date overrides set</p>
+          <p className="text-xs text-muted-foreground">No date overrides set</p>
         )}
       </div>
     </div>

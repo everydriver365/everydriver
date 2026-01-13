@@ -119,7 +119,7 @@ export default function InstructorSettings() {
   };
 
   const content = (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={`min-h-screen bg-background ${isMobile ? "pb-20" : ""}`}>
       {/* Page Title */}
       <div className="px-4 py-4 border-b">
         <h1 className="text-xl font-bold flex items-center gap-2">
@@ -129,19 +129,19 @@ export default function InstructorSettings() {
         <p className="text-sm text-muted-foreground">Manage your profile and preferences</p>
       </div>
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-4">
         {/* Profile Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <User className="h-4 w-4 text-primary" />
                 Profile
               </CardTitle>
-              <CardDescription>Your public instructor profile</CardDescription>
+              <CardDescription className="text-xs">Your public instructor profile</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {loading ? (
@@ -152,9 +152,9 @@ export default function InstructorSettings() {
                 <>
                   {/* Profile Photo */}
                   <div className="flex items-center gap-4">
-                    <Avatar className="h-20 w-20">
+                    <Avatar className="h-16 w-16">
                       <AvatarImage src={profile.profile_image_url || undefined} />
-                      <AvatarFallback className="text-2xl">
+                      <AvatarFallback className="text-xl">
                         {profile.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
@@ -182,8 +182,8 @@ export default function InstructorSettings() {
                   </div>
 
                   {/* Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="name" className="text-sm">Name</Label>
                     <Input
                       id="name"
                       value={profile.name}
@@ -192,8 +192,8 @@ export default function InstructorSettings() {
                   </div>
 
                   {/* Email */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-sm">Email</Label>
                     <Input
                       id="email"
                       type="email"
@@ -203,8 +203,8 @@ export default function InstructorSettings() {
                   </div>
 
                   {/* Phone */}
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" className="text-sm">Phone</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -214,8 +214,8 @@ export default function InstructorSettings() {
                   </div>
 
                   {/* Bio */}
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="bio" className="text-sm">Bio</Label>
                     <Textarea
                       id="bio"
                       value={profile.bio || ""}
@@ -244,12 +244,12 @@ export default function InstructorSettings() {
           transition={{ delay: 0.1 }}
         >
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Clock className="h-4 w-4 text-primary" />
                 Working Hours
               </CardTitle>
-              <CardDescription>Set your availability for lessons</CardDescription>
+              <CardDescription className="text-xs">Set your availability for lessons</CardDescription>
             </CardHeader>
             <CardContent>
               <WorkingHoursEditor instructorId={MOCK_INSTRUCTOR_ID} />
@@ -292,8 +292,8 @@ export default function InstructorSettings() {
     return (
       <div className="min-h-screen bg-background">
         <InstructorMobileHeader 
-          instructorName={profile?.name} 
-          profileImageUrl={profile?.profile_image_url}
+          instructorName={headerProfile?.name} 
+          profileImageUrl={headerProfile?.profile_image_url}
         />
         {content}
         <InstructorBottomNav />
@@ -305,7 +305,6 @@ export default function InstructorSettings() {
   return (
     <MainLayout>
       {content}
-      <InstructorBottomNav />
     </MainLayout>
   );
 }
