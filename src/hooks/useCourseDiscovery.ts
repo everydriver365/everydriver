@@ -285,7 +285,46 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
         setSearchedPostcode(cleanPostcode);
         setSearchedAreaName(areaName || null);
         setSortBy("nearest");
-        toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
+        
+        // Find instructors in the searched area
+        const radiusMiles = parseInt(radius);
+        const instructorsNearby = instructors.filter((instructor) => {
+          const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+          const instructorLocation = result.geoCache[instructorPostcode];
+          
+          if (!instructorLocation) return false;
+          
+          const distance = calculateDistance(
+            location.lat,
+            location.lng,
+            instructorLocation.lat,
+            instructorLocation.lng
+          );
+          
+          return distance <= radiusMiles;
+        });
+
+        if (instructorsNearby.length === 0) {
+          toast({ 
+            title: "No instructors in this area", 
+            description: `No instructors found within ${radius} miles of ${areaName || cleanPostcode}. Try increasing the radius.`,
+            variant: "destructive" 
+          });
+        } else {
+          // Find first available date for instructors in this area
+          const firstAvailable = findFirstAvailableDateForInstructors(instructorsNearby, workingHours, dateOverrides);
+          if (firstAvailable) {
+            setSelectedMonth(firstAvailable.month);
+            setSelectedDate(firstAvailable.date);
+            toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
+          } else {
+            toast({ 
+              title: "No availability", 
+              description: `Instructors near ${areaName || cleanPostcode} have no available dates in the next 18 months.`,
+              variant: "destructive" 
+            });
+          }
+        }
       } else {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
       }
@@ -294,12 +333,67 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
     }
   };
 
+  const findFirstAvailableDateForInstructors = useCallback((instructorsList: Instructor[], workingHoursList: WorkingHours[], dateOverridesList: DateOverride[]) => {
+    const today = startOfDay(new Date());
+    
+    for (const monthOption of monthOptions) {
+      const [year, month] = monthOption.value.split("-").map(Number);
+      const monthStart = startOfMonth(new Date(year, month - 1));
+      const monthEnd = endOfMonth(monthStart);
+      const searchStart = isAfter(monthStart, today) ? monthStart : today;
+      
+      if (isBefore(monthEnd, today)) continue;
+      
+      const daysInMonth = eachDayOfInterval({ start: searchStart, end: monthEnd });
+      
+      for (const day of daysInMonth) {
+        const dayOfWeek = getDay(day);
+        const dateStr = format(day, "yyyy-MM-dd");
+        
+        const isAvailable = instructorsList.some((instructor) => {
+          if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+            return false;
+          }
+
+          const override = dateOverridesList.find(
+            (o) =>
+              o.instructor_id === instructor.id &&
+              (o.override_date === dateStr ||
+                (o.override_end_date &&
+                  dateStr >= o.override_date &&
+                  dateStr <= o.override_end_date))
+          );
+          if (override) return override.is_available;
+
+          return workingHoursList.some(
+            (wh) =>
+              wh.instructor_id === instructor.id &&
+              wh.day_of_week === dayOfWeek &&
+              wh.is_active
+          );
+        });
+        
+        if (isAvailable) {
+          return { date: day, month: monthOption.value };
+        }
+      }
+    }
+    return null;
+  }, [monthOptions]);
+
   const clearSearch = () => {
     setPostcode("");
     setUserLocation(null);
     setSearchedPostcode(null);
     setSearchedAreaName(null);
     setSortBy("soonest");
+    
+    // Jump back to first available date for all instructors
+    const firstAvailable = findFirstAvailableDate(instructors, workingHours, dateOverrides);
+    if (firstAvailable) {
+      setSelectedMonth(firstAvailable.month);
+      setSelectedDate(firstAvailable.date);
+    }
   };
 
   // Filter instructors by location when a postcode search is active
