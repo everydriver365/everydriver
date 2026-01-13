@@ -15,6 +15,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { useSiteImages } from "@/hooks/useSiteImages";
 import { useFeaturedCourses } from "@/hooks/useFeaturedCourses";
 import { useDVSANews } from "@/hooks/useDVSANews";
@@ -56,6 +60,7 @@ export default function Index() {
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
   const { getImage, getAlt } = useSiteImages();
   const { courses: featuredCourses, loading: featuredLoading } = useFeaturedCourses(3);
   const { news: dvsaNews, loading: newsLoading } = useDVSANews();
@@ -98,8 +103,9 @@ export default function Index() {
   const featureCancellation = getImage("feature_cancellation", featureCancellationFallback);
   const featurePayments = getImage("feature_payments", featurePaymentsFallback);
   
-  // Dynamic video thumbnail
+  // Dynamic video thumbnail and video URL
   const videoThumbnailImg = getImage("video_thumbnail", videoThumbnail);
+  const welcomeVideoUrl = getImage("welcome_video", "");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -773,7 +779,11 @@ export default function Index() {
                   className="h-full w-full object-cover"
                 />
                 {/* Play Button Overlay */}
-                <button className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors hover:bg-black/30">
+                <button 
+                  onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                  className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors hover:bg-black/30 cursor-pointer"
+                  disabled={!welcomeVideoUrl}
+                >
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg transition-transform hover:scale-110">
                     <Play className="h-6 w-6 fill-primary text-primary ml-1" />
                   </div>
@@ -802,18 +812,38 @@ export default function Index() {
                 From nervous first-timers to confident road users, we've been part of thousands of driving journeys. Watch our intro to see what makes us different.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button className="gap-2 bg-amber-500 hover:bg-amber-600">
+                <Button 
+                  onClick={() => welcomeVideoUrl && setVideoModalOpen(true)}
+                  className="gap-2 bg-amber-500 hover:bg-amber-600"
+                  disabled={!welcomeVideoUrl}
+                >
                   <Play className="h-4 w-4 fill-white" />
                   Play Video
                 </Button>
-                <Button variant="outline" className="gap-2">
-                  Learn More
+                <Button variant="outline" className="gap-2" asChild>
+                  <Link to="/about">Learn More</Link>
                 </Button>
               </div>
             </motion.div>
           </div>
         </div>
       </section>
+
+      {/* Video Modal */}
+      <Dialog open={videoModalOpen} onOpenChange={setVideoModalOpen}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black">
+          <div className="aspect-video">
+            {welcomeVideoUrl && videoModalOpen && (
+              <video
+                src={welcomeVideoUrl}
+                className="h-full w-full"
+                controls
+                autoPlay
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Latest News Section */}
       <section className="bg-background py-16">
