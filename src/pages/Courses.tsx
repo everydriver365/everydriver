@@ -108,6 +108,7 @@ interface SidebarCalendarProps {
   setSelectedMonth: (month: string) => void;
   selectedDate: Date | null;
   availableDates: Date[];
+  courseCounts: { [dateStr: string]: number };
   onSelectDate: (date: Date) => void;
   loading: boolean;
   monthOptions: { value: string; label: string }[];
@@ -117,7 +118,8 @@ function SidebarCalendar({
   selectedMonth, 
   setSelectedMonth, 
   selectedDate, 
-  availableDates, 
+  availableDates,
+  courseCounts,
   onSelectDate, 
   loading,
   monthOptions 
@@ -139,12 +141,16 @@ function SidebarCalendar({
       paddedDays.push(null);
     }
     
-    return paddedDays.map(day => ({
-      date: day,
-      isAvailable: day ? availableDates.some(d => isSameDay(d, day)) : false,
-      isPast: day ? isBefore(day, today) : false,
-    }));
-  }, [selectedMonth, availableDates, today]);
+    return paddedDays.map(day => {
+      const dateStr = day ? format(day, "yyyy-MM-dd") : "";
+      return {
+        date: day,
+        isAvailable: day ? availableDates.some(d => isSameDay(d, day)) : false,
+        isPast: day ? isBefore(day, today) : false,
+        courseCount: day ? (courseCounts[dateStr] || 0) : 0,
+      };
+    });
+  }, [selectedMonth, availableDates, courseCounts, today]);
 
   const currentMonthIndex = monthOptions.findIndex(m => m.value === selectedMonth);
 
@@ -232,7 +238,7 @@ function SidebarCalendar({
                   key={day.date.toISOString()}
                   onClick={() => day.isAvailable && onSelectDate(day.date!)}
                   disabled={!day.isAvailable || day.isPast}
-                  className={`relative flex h-9 items-center justify-center rounded-md text-sm font-medium transition-all ${
+                  className={`relative flex h-10 flex-col items-center justify-center rounded-md text-sm font-medium transition-all ${
                     isSelected
                       ? "bg-primary text-primary-foreground shadow-md"
                       : day.isAvailable
@@ -242,7 +248,14 @@ function SidebarCalendar({
                           : "text-muted-foreground/50 cursor-not-allowed"
                   } ${isToday && !isSelected ? "ring-1 ring-primary/40" : ""}`}
                 >
-                  {format(day.date, "d")}
+                  <span>{format(day.date, "d")}</span>
+                  {day.isAvailable && day.courseCount > 0 && (
+                    <span className={`text-[9px] font-semibold leading-none ${
+                      isSelected ? "text-primary-foreground/80" : "text-emerald-600 dark:text-emerald-400"
+                    }`}>
+                      {day.courseCount}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -441,6 +454,59 @@ export default function Courses() {
       });
     });
   }, [selectedMonth, relevantInstructors, workingHours, dateOverrides]);
+
+  // Calculate course counts for each available date in the month
+  const courseCountsInMonth = useMemo(() => {
+    const counts: { [dateStr: string]: number } = {};
+    
+    for (const day of availableDatesInMonth) {
+      const dayOfWeek = getDay(day);
+      const dateStr = format(day, "yyyy-MM-dd");
+      let count = 0;
+
+      for (const instructor of relevantInstructors) {
+        if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
+          continue;
+        }
+
+        const override = dateOverrides.find(
+          (o) =>
+            o.instructor_id === instructor.id &&
+            (o.override_date === dateStr ||
+              (o.override_end_date &&
+                dateStr >= o.override_date &&
+                dateStr <= o.override_end_date))
+        );
+
+        let isAvailable = false;
+        if (override) {
+          isAvailable = override.is_available;
+        } else {
+          isAvailable = workingHours.some(
+            (wh) =>
+              wh.instructor_id === instructor.id &&
+              wh.day_of_week === dayOfWeek &&
+              wh.is_active
+          );
+        }
+
+        if (!isAvailable) continue;
+
+        const offeredCourses = instructorCourses.filter(
+          (c) => c.instructor_id === instructor.id
+        );
+
+        for (const hours of DISPLAY_HOURS) {
+          const courseData = offeredCourses.find((c) => c.course_hours === hours);
+          if (courseData) count++;
+        }
+      }
+
+      counts[dateStr] = count;
+    }
+
+    return counts;
+  }, [availableDatesInMonth, relevantInstructors, instructorCourses, workingHours, dateOverrides]);
 
   // Generate courses for the selected date
   const coursesForSelectedDate = useMemo(() => {
@@ -823,6 +889,7 @@ export default function Courses() {
                 setSelectedMonth={setSelectedMonth}
                 selectedDate={selectedDate}
                 availableDates={availableDatesInMonth}
+                courseCounts={courseCountsInMonth}
                 onSelectDate={setSelectedDate}
                 loading={loading}
                 monthOptions={monthOptions}
