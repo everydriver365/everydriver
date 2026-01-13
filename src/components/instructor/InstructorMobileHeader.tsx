@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import logoImage from "@/assets/logo.png";
+import logoImage from "@/assets/logo-instructor.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;
