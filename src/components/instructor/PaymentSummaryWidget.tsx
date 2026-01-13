@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PoundSterling, TrendingUp, AlertCircle, Users, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -121,105 +120,90 @@ export function PaymentSummaryWidget({ instructorId, instructorName, compact = f
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader className="pb-2">
-          <Skeleton className="h-5 w-32" />
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <Skeleton className="h-16" />
-            <Skeleton className="h-16" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Skeleton className="h-5 w-32" />
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-20 rounded-xl" />
+          <Skeleton className="h-20 rounded-xl" />
+        </div>
+      </div>
     );
   }
 
   if (compact) {
     return (
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <PoundSterling className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Payment Summary</span>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <PoundSterling className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Payment Summary</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-success/10 rounded-lg p-3">
+            <div className="text-lg font-bold text-success">
+              {formatCurrency(stats?.totalThisMonth || 0)}
             </div>
+            <div className="text-xs text-muted-foreground">This Month</div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-success/10 rounded-lg p-3">
-              <div className="text-lg font-bold text-success">
-                {formatCurrency(stats?.totalThisMonth || 0)}
-              </div>
-              <div className="text-xs text-muted-foreground">This Month</div>
+          <div className={`rounded-lg p-3 ${(stats?.totalOutstanding || 0) > 0 ? 'bg-destructive/10' : 'bg-muted'}`}>
+            <div className={`text-lg font-bold ${(stats?.totalOutstanding || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+              {formatCurrency(stats?.totalOutstanding || 0)}
             </div>
-            <div className={`rounded-lg p-3 ${(stats?.totalOutstanding || 0) > 0 ? 'bg-destructive/10' : 'bg-muted'}`}>
-              <div className={`text-lg font-bold ${(stats?.totalOutstanding || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {formatCurrency(stats?.totalOutstanding || 0)}
-              </div>
-              <div className="text-xs text-muted-foreground">Outstanding</div>
-            </div>
+            <div className="text-xs text-muted-foreground">Outstanding</div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <PoundSterling className="h-5 w-5 text-accent" />
-            Payment Summary
-          </CardTitle>
-          {(stats?.pupilsWithBalance || 0) > 0 && instructorName && (
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={handleSendReminders}
-              disabled={sendingReminders}
-              className="gap-1.5"
-            >
-              {sendingReminders ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Send className="h-3.5 w-3.5" />
-              )}
-              Send Reminders
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-success/10 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-success" />
-              <span className="text-sm text-muted-foreground">This Month</span>
-            </div>
-            <div className="text-2xl font-bold text-success">
-              {formatCurrency(stats?.totalThisMonth || 0)}
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {stats?.paymentsCount || 0} payment{stats?.paymentsCount !== 1 ? 's' : ''} received
-            </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">Monthly earnings & outstanding balances</span>
+        {(stats?.pupilsWithBalance || 0) > 0 && instructorName && (
+          <Button 
+            size="sm" 
+            variant="outline"
+            onClick={handleSendReminders}
+            disabled={sendingReminders}
+            className="gap-1.5"
+          >
+            {sendingReminders ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="h-3.5 w-3.5" />
+            )}
+            Send Reminders
+          </Button>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-success/10 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="h-4 w-4 text-success" />
+            <span className="text-sm text-muted-foreground">This Month</span>
           </div>
-          
-          <div className={`rounded-xl p-4 ${(stats?.totalOutstanding || 0) > 0 ? 'bg-destructive/10' : 'bg-muted/50'}`}>
-            <div className="flex items-center gap-2 mb-2">
-              <AlertCircle className={`h-4 w-4 ${(stats?.totalOutstanding || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
-              <span className="text-sm text-muted-foreground">Outstanding</span>
-            </div>
-            <div className={`text-2xl font-bold ${(stats?.totalOutstanding || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-              {formatCurrency(stats?.totalOutstanding || 0)}
-            </div>
-            <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <Users className="h-3 w-3" />
-              {stats?.pupilsWithBalance || 0} pupil{stats?.pupilsWithBalance !== 1 ? 's' : ''} owe money
-            </div>
+          <div className="text-2xl font-bold text-success">
+            {formatCurrency(stats?.totalThisMonth || 0)}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            {stats?.paymentsCount || 0} payment{stats?.paymentsCount !== 1 ? 's' : ''} received
           </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        <div className={`rounded-xl p-4 ${(stats?.totalOutstanding || 0) > 0 ? 'bg-destructive/10' : 'bg-muted/50'}`}>
+          <div className="flex items-center gap-2 mb-2">
+            <AlertCircle className={`h-4 w-4 ${(stats?.totalOutstanding || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`} />
+            <span className="text-sm text-muted-foreground">Outstanding</span>
+          </div>
+          <div className={`text-2xl font-bold ${(stats?.totalOutstanding || 0) > 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+            {formatCurrency(stats?.totalOutstanding || 0)}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            {stats?.pupilsWithBalance || 0} pupil{stats?.pupilsWithBalance !== 1 ? 's' : ''} owe money
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
