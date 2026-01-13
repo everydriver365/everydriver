@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Clock, Bell, FileText, Camera, Upload, Loader2 } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Upload, Loader2, Settings } from "lucide-react";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
+import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const MOCK_INSTRUCTOR_ID = "123e4567-e89b-12d3-a456-426614174000";
 
@@ -30,6 +32,7 @@ export default function InstructorSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchProfile();
@@ -112,11 +115,14 @@ export default function InstructorSettings() {
     }
   };
 
-  return (
+  const content = (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <div className="bg-primary px-4 py-6">
-        <h1 className="text-xl font-bold text-primary-foreground">Settings</h1>
+        <h1 className="text-xl font-bold text-primary-foreground flex items-center gap-2">
+          <Settings className="h-5 w-5" />
+          Settings
+        </h1>
         <p className="text-sm text-primary-foreground/70">Manage your profile and preferences</p>
       </div>
 
@@ -275,8 +281,24 @@ export default function InstructorSettings() {
           <PupilAppBrandingEditor instructorId={MOCK_INSTRUCTOR_ID} />
         </motion.div>
       </div>
-
-      <InstructorBottomNav />
     </div>
+  );
+
+  // Mobile Layout - No header
+  if (isMobile) {
+    return (
+      <>
+        {content}
+        <InstructorBottomNav />
+      </>
+    );
+  }
+
+  // Desktop Layout
+  return (
+    <MainLayout>
+      {content}
+      <InstructorBottomNav />
+    </MainLayout>
   );
 }
