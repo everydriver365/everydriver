@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Briefcase, MapPin, Clock, User, Calendar, FileText, ChevronRight, X, Check } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Briefcase, MapPin, Clock, User, Calendar, FileText, ChevronRight, X, Check, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,12 +34,71 @@ export default function InstructorJobs() {
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<JobEnquiry | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [jobDistances, setJobDistances] = useState<Record<string, number | null>>({});
   const isMobile = useIsMobile();
   const { profile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
+
+  // Calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 3959; // Earth's radius in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Fetch distances for all jobs
+  const fetchDistances = useCallback(async (jobList: JobEnquiry[]) => {
+    if (!profile?.home_postcode || jobList.length === 0) return;
+
+    try {
+      const postcodes = [profile.home_postcode, ...jobList.map(j => j.postcode)];
+      const { data, error } = await supabase.functions.invoke("geocode-postcode", {
+        body: { postcodes },
+      });
+
+      if (error) throw error;
+
+      const results = data?.results || [];
+      const homeCoords = results[0];
+      
+      if (!homeCoords?.latitude || !homeCoords?.longitude) return;
+
+      const distances: Record<string, number | null> = {};
+      jobList.forEach((job, index) => {
+        const jobCoords = results[index + 1];
+        if (jobCoords?.latitude && jobCoords?.longitude) {
+          distances[job.id] = calculateDistance(
+            homeCoords.latitude, 
+            homeCoords.longitude, 
+            jobCoords.latitude, 
+            jobCoords.longitude
+          );
+        } else {
+          distances[job.id] = null;
+        }
+      });
+
+      setJobDistances(distances);
+    } catch (err) {
+      console.error("Error calculating distances:", err);
+    }
+  }, [profile?.home_postcode]);
 
   useEffect(() => {
     fetchJobs();
   }, []);
+
+  // Fetch distances when jobs or profile changes
+  useEffect(() => {
+    if (jobs.length > 0 && profile?.home_postcode) {
+      fetchDistances(jobs);
+    }
+  }, [jobs, profile?.home_postcode, fetchDistances]);
 
   const fetchJobs = async () => {
     try {
@@ -170,6 +229,12 @@ export default function InstructorJobs() {
                         <MapPin className="h-3.5 w-3.5" />
                         <span>{job.postcode}</span>
                       </div>
+                      {jobDistances[job.id] !== undefined && jobDistances[job.id] !== null && (
+                        <div className="flex items-center gap-1">
+                          <Navigation className="h-3.5 w-3.5" />
+                          <span>{jobDistances[job.id]!.toFixed(1)} mi</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
                         <span>{job.preferred_timing}</span>
@@ -206,13 +271,13 @@ export default function InstructorJobs() {
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   <div className="bg-muted/50 rounded-lg p-3">
                     <div className="flex items-center gap-2 text-muted-foreground mb-1">
                       <Clock className="h-4 w-4" />
                       <span className="text-xs uppercase">Hours</span>
                     </div>
-                    <p className="font-semibold">{selectedJob.requested_hours || 10} hours</p>
+                    <p className="font-semibold">{selectedJob.requested_hours || 10}hrs</p>
                   </div>
                   <div className="bg-muted/50 rounded-lg p-3">
                     <div className="flex items-center gap-2 text-muted-foreground mb-1">
@@ -221,6 +286,17 @@ export default function InstructorJobs() {
                     </div>
                     <p className="font-semibold text-green-600">
                       £{calculateEarnings(selectedJob.requested_hours || 10)}
+                    </p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Navigation className="h-4 w-4" />
+                      <span className="text-xs uppercase">Distance</span>
+                    </div>
+                    <p className="font-semibold">
+                      {jobDistances[selectedJob.id] !== undefined && jobDistances[selectedJob.id] !== null
+                        ? `${jobDistances[selectedJob.id]!.toFixed(1)} mi`
+                        : "—"}
                     </p>
                   </div>
                 </div>
