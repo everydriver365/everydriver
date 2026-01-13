@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface InstructorProfile {
   name: string;
   profile_image_url: string | null;
+  hourly_rate: number | null;
 }
 
 export function useInstructorProfile(instructorId: string) {
@@ -15,7 +16,7 @@ export function useInstructorProfile(instructorId: string) {
       try {
         const { data, error } = await supabase
           .from("instructors")
-          .select("name, profile_image_url")
+          .select("name, profile_image_url, hourly_rate")
           .eq("id", instructorId)
           .single();
 
