@@ -109,10 +109,10 @@ export default function InstructorPortal() {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  // Mobile Layout
+  // Mobile Layout - No header, standalone experience
   if (isMobile) {
     return (
-      <MainLayout>
+      <>
         <InstructorMobileHome 
           instructor={instructor}
           todaysLessonCount={todaysLessonCount}
@@ -130,7 +130,7 @@ export default function InstructorPortal() {
         />
 
         <InstructorBottomNav />
-      </MainLayout>
+      </>
     );
   }
 
