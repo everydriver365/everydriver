@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { PostcodeMapPreview } from "@/components/instructor/PostcodeMapPreview";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -223,6 +224,15 @@ export default function InstructorJobs() {
                     </p>
                   </div>
                 </div>
+
+                {/* Map Preview */}
+                <PostcodeMapPreview 
+                  postcode={selectedJob.postcode} 
+                  className="h-32"
+                  onClick={() => {
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.address + ', ' + selectedJob.postcode)}`, '_blank');
+                  }}
+                />
 
                 {/* Location */}
                 <div className="bg-muted/50 rounded-lg p-3">
