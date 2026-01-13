@@ -1,6 +1,7 @@
 import { Calendar } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -23,10 +24,11 @@ export default function InstructorSchedule() {
   // Mobile Layout - No header
   if (isMobile) {
     return (
-      <>
+      <div className="min-h-screen bg-background">
+        <InstructorMobileHeader />
         {content}
         <InstructorBottomNav />
-      </>
+      </div>
     );
   }
 

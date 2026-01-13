@@ -5,6 +5,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -138,10 +139,11 @@ export default function InstructorJobs() {
   // Mobile Layout - No header
   if (isMobile) {
     return (
-      <>
+      <div className="min-h-screen bg-background">
+        <InstructorMobileHeader />
         {content}
         <InstructorBottomNav />
-      </>
+      </div>
     );
   }
 
