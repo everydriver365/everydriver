@@ -139,6 +139,7 @@ export function CourseGrid({
                 isPopular={course.isPopular}
                 availableFrom={course.availableFrom}
                 distance={course.distance}
+                features={course.features}
               />
             </motion.div>
           ))}

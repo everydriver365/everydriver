@@ -28,6 +28,7 @@ interface CourseTemplate {
   course_hours: number;
   default_image_url: string | null;
   is_popular: boolean | null;
+  features: string[] | null;
 }
 
 interface WorkingHours {
@@ -50,6 +51,7 @@ export interface FeaturedCourse {
   courseImageUrl: string | null;
   isPopular: boolean;
   availableFrom: string | null;
+  features: string[] | null;
 }
 
 const DISPLAY_HOURS = [10, 20, 30, 40, 28];
@@ -160,7 +162,8 @@ export function useFeaturedCourses(limit: number = 3) {
               bookableDate: availableDate,
               courseImageUrl: instructorCourse?.course_image_url || template?.default_image_url || null,
               isPopular: template?.is_popular || false,
-              availableFrom: instructor.available_from
+              availableFrom: instructor.available_from,
+              features: template?.features || null
             });
           }
         }

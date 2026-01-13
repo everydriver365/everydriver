@@ -44,6 +44,7 @@ interface CourseTemplate {
   course_name: string;
   default_image_url: string | null;
   is_popular: boolean | null;
+  features: string[] | null;
 }
 
 interface WorkingHours {
@@ -67,6 +68,7 @@ interface CourseWithInstructor {
   isPopular: boolean;
   availableFrom: string | null;
   distance?: number;
+  features: string[] | null;
 }
 
 interface GeoCache {
@@ -565,6 +567,7 @@ export default function Courses() {
             isPopular: template?.is_popular || false,
             availableFrom: instructor.available_from,
             distance: undefined,
+            features: template?.features || null,
           });
         }
       }
@@ -684,7 +687,7 @@ export default function Courses() {
       const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
         supabase.from("instructors").select("*").eq("is_active", true),
         supabase.from("instructor_courses").select("*").eq("is_active", true),
-        supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular").eq("is_active", true),
+        supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, features").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
         supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
       ]);
@@ -999,6 +1002,7 @@ export default function Courses() {
                           isPopular={course.isPopular}
                           availableFrom={course.availableFrom}
                           distance={course.distance}
+                          features={course.features}
                         />
                       </motion.div>
                     ))}
