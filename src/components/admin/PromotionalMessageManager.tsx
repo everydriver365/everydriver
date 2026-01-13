@@ -63,6 +63,28 @@ export function PromotionalMessageManager() {
     setSaving(null);
   }
 
+  async function handleToggleActive(message: PromoMessage, checked: boolean) {
+    // Update local state immediately
+    updateMessage(message.id, { is_active: checked });
+    
+    // Save to database
+    const { error } = await supabase
+      .from("promotional_messages")
+      .update({
+        is_active: checked,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", message.id);
+
+    if (error) {
+      // Revert on error
+      updateMessage(message.id, { is_active: !checked });
+      toast.error("Failed to update status");
+    } else {
+      toast.success(checked ? "Banner activated" : "Banner deactivated");
+    }
+  }
+
   async function handleAdd() {
     const { data, error } = await supabase
       .from("promotional_messages")
@@ -139,7 +161,7 @@ export function PromotionalMessageManager() {
                     <Switch
                       checked={message.is_active}
                       onCheckedChange={(checked) =>
-                        updateMessage(message.id, { is_active: checked })
+                        handleToggleActive(message, checked)
                       }
                     />
                     <Label className="text-sm">Active</Label>
