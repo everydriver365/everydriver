@@ -35,6 +35,7 @@ export interface CourseTemplate {
   default_image_url: string | null;
   is_popular: boolean | null;
   is_intensive: boolean | null;
+  features: string[] | null;
 }
 
 export interface WorkingHours {
@@ -59,6 +60,7 @@ export interface CourseWithInstructor {
   availableFrom: string | null;
   distance?: number;
   courseName: string;
+  features: string[] | null;
 }
 
 interface GeoCache {
@@ -227,7 +229,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
       const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
         supabase.from("instructors").select("*").eq("is_active", true),
         supabase.from("instructor_courses").select("*").eq("is_active", true),
-        supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive").eq("is_active", true),
+        supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, is_intensive, features").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
         supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
       ]);
@@ -513,6 +515,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
             availableFrom: instructor.available_from,
             distance: undefined,
             courseName: template?.course_name || `${hours} Hour Course`,
+            features: template?.features || null,
           });
         }
       }

@@ -600,6 +600,7 @@ export default function Index() {
                     courseImageUrl={course.courseImageUrl}
                     isPopular={course.isPopular}
                     availableFrom={course.availableFrom}
+                    features={course.features}
                   />
                 </motion.div>
               ))

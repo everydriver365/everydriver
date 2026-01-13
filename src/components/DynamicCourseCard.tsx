@@ -26,6 +26,7 @@ interface DynamicCourseCardProps {
   isPopular?: boolean;
   availableFrom?: string | null;
   distance?: number;
+  features?: string[] | null;
 }
 
 export function DynamicCourseCard({ 
@@ -35,7 +36,8 @@ export function DynamicCourseCard({
   courseImageUrl,
   isPopular = false,
   availableFrom,
-  distance
+  distance,
+  features
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
@@ -195,19 +197,26 @@ export function DynamicCourseCard({
               {instructor.bio || `Experienced ${instructor.car_type.toLowerCase()} driving instructor ready to help you pass your test.`}
             </p>
 
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
-                <span>Free re-test if needed</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
-                <span>Theory test support included</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
-                <span>Pick-up from home/work</span>
-              </div>
+            <div className="mt-4 space-y-1.5 max-h-[100px] overflow-y-auto">
+              {features && features.length > 0 ? (
+                features.slice(0, 5).map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2 text-sm text-white/80">
+                    <CheckCircle className="h-4 w-4 flex-shrink-0 text-emerald-400" />
+                    <span className="line-clamp-1">{feature}</span>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-white/80">
+                    <CheckCircle className="h-4 w-4 text-emerald-400" />
+                    <span>Theory test support included</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-white/80">
+                    <CheckCircle className="h-4 w-4 text-emerald-400" />
+                    <span>Pick-up from home/work</span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="mt-4 flex items-center justify-between border-t border-primary-foreground/20 pt-4">
