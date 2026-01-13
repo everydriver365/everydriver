@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
+import useEmblaCarousel from "embla-carousel-react";
 import { Link } from "react-router-dom";
 import { 
   Calendar, 
@@ -245,20 +246,43 @@ export function InstructorMobileHome({
   );
 }
 
-// Promo Banner Carousel Component
+// Promo Banner Carousel Component with Swipe Support
 function PromoBannerCarousel({ banners }: { banners: PromoBanner[] }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: true,
+    align: 'start',
+    skipSnaps: false,
+    dragFree: false
+  });
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setActiveIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onSelect);
+    return () => {
+      emblaApi.off('select', onSelect);
+      emblaApi.off('reInit', onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const scrollTo = useCallback((index: number) => {
+    if (emblaApi) emblaApi.scrollTo(index);
+  }, [emblaApi]);
 
   return (
     <div className="mt-6">
-      {/* Carousel Container */}
-      <div className="relative overflow-hidden">
-        <div 
-          className="flex transition-transform duration-300 ease-out"
-          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
-        >
-          {banners.map((banner, index) => (
-            <div key={banner.id} className="w-full flex-shrink-0 px-4">
+      {/* Carousel Container with Swipe Support */}
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {banners.map((banner) => (
+            <div key={banner.id} className="flex-[0_0_100%] min-w-0 px-4">
               <Link to={banner.link}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -313,7 +337,7 @@ function PromoBannerCarousel({ banners }: { banners: PromoBanner[] }) {
           {banners.map((_, index) => (
             <button
               key={index}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => scrollTo(index)}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
                 index === activeIndex 
                   ? "bg-primary w-3 h-3" 
