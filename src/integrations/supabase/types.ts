@@ -863,6 +863,7 @@ export type Database = {
           linkedin_url: string | null
           logo_url: string | null
           name: string
+          payment_link_base_url: string | null
           payment_qr_url: string | null
           personal_website_url: string | null
           phone: string | null
@@ -875,6 +876,7 @@ export type Database = {
           school_skim_percentage: number | null
           secondary_colour: string | null
           special_skills: string | null
+          stripe_account_id: string | null
           twitter_url: string | null
           updated_at: string
           welcome_video_url: string | null
@@ -917,6 +919,7 @@ export type Database = {
           linkedin_url?: string | null
           logo_url?: string | null
           name: string
+          payment_link_base_url?: string | null
           payment_qr_url?: string | null
           personal_website_url?: string | null
           phone?: string | null
@@ -929,6 +932,7 @@ export type Database = {
           school_skim_percentage?: number | null
           secondary_colour?: string | null
           special_skills?: string | null
+          stripe_account_id?: string | null
           twitter_url?: string | null
           updated_at?: string
           welcome_video_url?: string | null
@@ -971,6 +975,7 @@ export type Database = {
           linkedin_url?: string | null
           logo_url?: string | null
           name?: string
+          payment_link_base_url?: string | null
           payment_qr_url?: string | null
           personal_website_url?: string | null
           phone?: string | null
@@ -983,6 +988,7 @@ export type Database = {
           school_skim_percentage?: number | null
           secondary_colour?: string | null
           special_skills?: string | null
+          stripe_account_id?: string | null
           twitter_url?: string | null
           updated_at?: string
           welcome_video_url?: string | null
@@ -1184,6 +1190,69 @@ export type Database = {
           },
           {
             foreignKeyName: "payment_history_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_link_tracking: {
+        Row: {
+          amount_requested: number | null
+          created_at: string
+          id: string
+          instructor_id: string
+          link_code: string
+          opened_at: string | null
+          opened_count: number
+          paid_amount: number | null
+          paid_at: string | null
+          pupil_id: string | null
+          sent_at: string
+          sent_via: string
+          status: string
+        }
+        Insert: {
+          amount_requested?: number | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          link_code: string
+          opened_at?: string | null
+          opened_count?: number
+          paid_amount?: number | null
+          paid_at?: string | null
+          pupil_id?: string | null
+          sent_at?: string
+          sent_via?: string
+          status?: string
+        }
+        Update: {
+          amount_requested?: number | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          link_code?: string
+          opened_at?: string | null
+          opened_count?: number
+          paid_amount?: number | null
+          paid_at?: string | null
+          pupil_id?: string | null
+          sent_at?: string
+          sent_via?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_link_tracking_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_link_tracking_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"

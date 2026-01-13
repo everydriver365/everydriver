@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.postcode-autocomplete]
 verify_jwt = false
+
+[functions.track-payment-link]
+verify_jwt = false
