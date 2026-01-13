@@ -14,7 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
-import logoImage from "@/assets/logo-instructor.png";
+import logoDark from "@/assets/logo-instructor-dark.png";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -57,41 +57,40 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {/* Header Bar - matches other instructor pages */}
+      <div className="bg-primary px-4 py-4 flex items-center justify-between">
+        {/* Logo on the left */}
+        <img 
+          src={logoDark} 
+          alt="Logo" 
+          className="h-8 object-contain"
+        />
+        
+        {/* Avatar and name on the right */}
+        <div className="flex items-center gap-3">
+          <span className="text-primary-foreground text-sm font-medium">
+            {instructor?.name || "Instructor"}
+          </span>
+          <Avatar className="h-9 w-9 border-2 border-primary-foreground/30">
+            <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
+            <AvatarFallback className="bg-primary-foreground text-primary font-semibold text-sm">
+              {instructor?.name ? getInitials(instructor.name) : "?"}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div className="relative">
         {/* Hero Image */}
-        <div className="h-64 overflow-hidden">
+        <div className="h-48 overflow-hidden">
           <img 
             src={heroImage}
             alt="Driving"
             className="w-full h-full object-cover"
           />
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
-        </div>
-
-        {/* Header Overlay */}
-        <div className="absolute top-0 left-0 right-0 p-4 pt-6 flex items-center justify-between">
-          {/* Logo on the left */}
-          <img 
-            src={logoImage} 
-            alt="Logo" 
-            className="h-8 object-contain"
-          />
-          
-          {/* Avatar and greeting on the right */}
-          <div className="flex items-center gap-3">
-            <div className="text-white text-right">
-              <p className="text-xs opacity-80">Welcome back</p>
-              <p className="font-semibold text-sm">{instructor?.name || "Instructor"}</p>
-            </div>
-            <Avatar className="h-10 w-10 border-2 border-white/50 shadow-lg">
-              <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-              <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
-                {instructor?.name ? getInitials(instructor.name) : "?"}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-transparent" />
         </div>
 
         {/* Curved bottom */}
