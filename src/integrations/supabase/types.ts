@@ -570,6 +570,8 @@ export type Database = {
           course_image_url: string | null
           course_name: string
           created_at: string
+          custom_features: string[] | null
+          discounted_price: number | null
           id: string
           instructor_id: string
           is_active: boolean
@@ -579,6 +581,8 @@ export type Database = {
           course_image_url?: string | null
           course_name: string
           created_at?: string
+          custom_features?: string[] | null
+          discounted_price?: number | null
           id?: string
           instructor_id: string
           is_active?: boolean
@@ -588,6 +592,8 @@ export type Database = {
           course_image_url?: string | null
           course_name?: string
           created_at?: string
+          custom_features?: string[] | null
+          discounted_price?: number | null
           id?: string
           instructor_id?: string
           is_active?: boolean

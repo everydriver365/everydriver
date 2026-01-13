@@ -22,6 +22,8 @@ interface InstructorCourse {
   course_hours: number;
   is_active: boolean;
   course_image_url: string | null;
+  discounted_price: number | null;
+  custom_features: string[] | null;
 }
 
 interface CourseTemplate {
@@ -29,6 +31,7 @@ interface CourseTemplate {
   default_image_url: string | null;
   is_popular: boolean | null;
   features: string[] | null;
+  is_intensive: boolean | null;
 }
 
 interface WorkingHours {
@@ -52,6 +55,9 @@ export interface FeaturedCourse {
   isPopular: boolean;
   availableFrom: string | null;
   features: string[] | null;
+  isIntensive: boolean;
+  discountedPrice: number | null;
+  customFeatures: string[] | null;
 }
 
 const DISPLAY_HOURS = [10, 20, 30, 40, 28];
@@ -163,7 +169,10 @@ export function useFeaturedCourses(limit: number = 3) {
               courseImageUrl: instructorCourse?.course_image_url || template?.default_image_url || null,
               isPopular: template?.is_popular || false,
               availableFrom: instructor.available_from,
-              features: template?.features || null
+              features: template?.features || null,
+              isIntensive: template?.is_intensive || false,
+              discountedPrice: instructorCourse?.discounted_price || null,
+              customFeatures: instructorCourse?.custom_features || null,
             });
           }
         }
