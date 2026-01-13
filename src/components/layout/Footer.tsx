@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Car, Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import logo from "@/assets/logo-everydriver-dark.png";
 
 export function Footer() {
   return (
@@ -8,11 +9,8 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent">
-                <Car className="h-5 w-5 text-accent-foreground" />
-              </div>
-              <span className="text-xl font-bold">DriveTime</span>
+            <Link to="/" className="flex items-center">
+              <img src={logo} alt="EveryDriver" className="h-10" />
             </Link>
             <p className="text-sm text-primary-foreground/70">
               Professional driving instruction to help you pass your test with confidence.
