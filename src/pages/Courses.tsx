@@ -832,17 +832,41 @@ export default function Courses() {
               </Button>
             </div>
 
-            <div className="mt-4 flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className="gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                Filters
-                <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-              </Button>
+            {/* Transmission Filter Pills */}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium text-muted-foreground">Transmission:</span>
+              <div className="flex gap-2">
+                {[
+                  { value: "all", label: "All" },
+                  { value: "manual", label: "Manual" },
+                  { value: "automatic", label: "Automatic" },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setTransmission(option.value)}
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                      transmission === option.value
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              
+              <div className="ml-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  More Filters
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
+                </Button>
+              </div>
             </div>
 
             {showFilters && (
