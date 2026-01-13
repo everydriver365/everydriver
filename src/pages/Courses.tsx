@@ -305,6 +305,9 @@ export default function Courses() {
   // Date selection state
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  
+  // Instructor filter state
+  const [selectedInstructorId, setSelectedInstructorId] = useState<string | null>(null);
 
   // Data from Supabase
   const [instructors, setInstructors] = useState<Instructor[]>([]);
@@ -757,6 +760,11 @@ export default function Courses() {
 
   const filteredCourses = coursesWithDistance
     .filter((course) => {
+      // Filter by selected instructor
+      if (selectedInstructorId && course.instructor.id !== selectedInstructorId) {
+        return false;
+      }
+      
       if (transmission !== "all") {
         const carType = course.instructor.car_type.toLowerCase();
         if (transmission === "manual" && !carType.includes("manual") && carType !== "both") {
@@ -791,6 +799,26 @@ export default function Courses() {
           return 0;
       }
     });
+  
+  // Get unique instructors from courses for the filter tile
+  const availableInstructorsForFilter = useMemo(() => {
+    const instructorMap = new Map<string, { instructor: Instructor; distance?: number }>();
+    
+    for (const course of coursesWithDistance) {
+      if (!instructorMap.has(course.instructor.id)) {
+        instructorMap.set(course.instructor.id, {
+          instructor: course.instructor,
+          distance: course.distance,
+        });
+      }
+    }
+    
+    return Array.from(instructorMap.values()).sort((a, b) => {
+      if (a.distance === undefined) return 1;
+      if (b.distance === undefined) return -1;
+      return a.distance - b.distance;
+    });
+  }, [coursesWithDistance]);
 
   return (
     <MainLayout>
@@ -917,9 +945,9 @@ export default function Courses() {
       {/* Two Column Layout: Calendar + Courses */}
       <section className="container py-8">
         <div className="flex flex-col gap-8 lg:flex-row">
-          {/* Left Column: Calendar */}
+          {/* Left Column: Calendar + Instructors */}
           <div className="w-full lg:w-80 lg:flex-shrink-0">
-            <div className="sticky top-20">
+            <div className="sticky top-20 space-y-4">
               <SidebarCalendar
                 selectedMonth={selectedMonth}
                 setSelectedMonth={setSelectedMonth}
@@ -930,6 +958,69 @@ export default function Courses() {
                 loading={loading}
                 monthOptions={monthOptions}
               />
+              
+              {/* Instructors Filter Tile */}
+              {availableInstructorsForFilter.length > 0 && (
+                <div className="rounded-xl border bg-card p-4 shadow-sm">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">
+                      Instructors {userLocation ? "Nearby" : "Available"}
+                    </h3>
+                    {selectedInstructorId && (
+                      <button
+                        onClick={() => setSelectedInstructorId(null)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Show all
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {availableInstructorsForFilter.map(({ instructor, distance }) => (
+                      <button
+                        key={instructor.id}
+                        onClick={() => setSelectedInstructorId(
+                          selectedInstructorId === instructor.id ? null : instructor.id
+                        )}
+                        className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-all ${
+                          selectedInstructorId === instructor.id
+                            ? "bg-primary/10 ring-2 ring-primary"
+                            : "hover:bg-muted"
+                        }`}
+                      >
+                        <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                          {instructor.profile_image_url ? (
+                            <img
+                              src={instructor.profile_image_url}
+                              alt={instructor.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-primary/10 text-sm font-semibold text-primary">
+                              {instructor.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm font-medium">{instructor.name}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="capitalize">{instructor.car_type}</span>
+                            {distance !== undefined && (
+                              <>
+                                <span>•</span>
+                                <span>{distance.toFixed(1)} mi</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {selectedInstructorId === instructor.id && (
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
