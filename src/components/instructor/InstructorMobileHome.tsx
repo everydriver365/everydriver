@@ -68,18 +68,27 @@ export function InstructorMobileHome({
         </div>
 
         {/* Header Overlay */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
-          <Avatar className="h-10 w-10 border-2 border-white/50 shadow-lg">
-            <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-            <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
-              {instructor?.name ? getInitials(instructor.name) : "?"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="text-white text-center">
-            <p className="text-xs opacity-80">Welcome back</p>
-            <p className="font-semibold">{instructor?.name || "Instructor"}</p>
+        <div className="absolute top-0 left-0 right-0 p-4 pt-6 flex items-center justify-between">
+          {/* Logo on the left */}
+          <img 
+            src="/lovable-uploads/e8a1a9dc-11e3-4bec-bdd1-edf010ac7bfd.png" 
+            alt="Logo" 
+            className="h-8 object-contain"
+          />
+          
+          {/* Avatar and greeting on the right */}
+          <div className="flex items-center gap-3">
+            <div className="text-white text-right">
+              <p className="text-xs opacity-80">Welcome back</p>
+              <p className="font-semibold text-sm">{instructor?.name || "Instructor"}</p>
+            </div>
+            <Avatar className="h-10 w-10 border-2 border-white/50 shadow-lg">
+              <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
+              <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
+                {instructor?.name ? getInitials(instructor.name) : "?"}
+              </AvatarFallback>
+            </Avatar>
           </div>
-          <div className="w-10" /> {/* Spacer for alignment */}
         </div>
 
         {/* Curved bottom */}
