@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus, CreditCard, Navigation, Car } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus, CreditCard, Navigation, Car, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
 import { TodayScheduleView } from "@/components/instructor/TodayScheduleView";
@@ -40,6 +41,7 @@ interface Instructor {
   name: string;
   profile_image_url: string | null;
   payment_qr_url: string | null;
+  is_active: boolean;
 }
 
 export default function InstructorPortal() {
@@ -60,7 +62,7 @@ export default function InstructorPortal() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("name, profile_image_url, payment_qr_url")
+        .select("name, profile_image_url, payment_qr_url, is_active")
         .eq("id", MOCK_INSTRUCTOR_ID)
         .single();
 
@@ -154,7 +156,27 @@ export default function InstructorPortal() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold md:text-3xl">{instructor?.name || "Instructor Dashboard"}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold md:text-3xl">{instructor?.name || "Instructor Dashboard"}</h1>
+                {instructor && (
+                  <Badge 
+                    variant={instructor.is_active ? "default" : "secondary"} 
+                    className={`gap-1 ${instructor.is_active ? "bg-emerald-500 hover:bg-emerald-600" : "bg-amber-500 hover:bg-amber-600 text-white"}`}
+                  >
+                    {instructor.is_active ? (
+                      <>
+                        <Eye className="h-3 w-3" />
+                        Visible
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3" />
+                        Hidden
+                      </>
+                    )}
+                  </Badge>
+                )}
+              </div>
               <p className="text-muted-foreground">Welcome back</p>
             </div>
           </motion.div>
