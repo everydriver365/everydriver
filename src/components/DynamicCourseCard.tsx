@@ -246,23 +246,23 @@ export function DynamicCourseCard({
               {instructor.bio || `Experienced ${instructor.car_type.toLowerCase()} driving instructor ready to help you pass your test.`}
             </p>
 
-            <div className="mt-4 space-y-1.5 max-h-[100px] overflow-y-auto">
+            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 max-h-[100px] overflow-y-auto">
               {displayFeatures && displayFeatures.length > 0 ? (
-                displayFeatures.slice(0, 5).map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm text-white/80">
-                    <CheckCircle className="h-4 w-4 flex-shrink-0 text-emerald-400" />
+                displayFeatures.slice(0, 6).map((feature, index) => (
+                  <div key={index} className="flex items-center gap-1.5 text-xs text-white/80">
+                    <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 text-emerald-400" />
                     <span className="line-clamp-1">{feature}</span>
                   </div>
                 ))
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-sm text-white/80">
-                    <CheckCircle className="h-4 w-4 text-emerald-400" />
-                    <span>Theory test support included</span>
+                  <div className="flex items-center gap-1.5 text-xs text-white/80">
+                    <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Theory support</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-white/80">
-                    <CheckCircle className="h-4 w-4 text-emerald-400" />
-                    <span>Pick-up from home/work</span>
+                  <div className="flex items-center gap-1.5 text-xs text-white/80">
+                    <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Home pick-up</span>
                   </div>
                 </>
               )}
