@@ -387,14 +387,14 @@ function SecondaryPromoCards({ banners }: { banners: PromoBanner[] }) {
       
       {/* Horizontal Scroll Container */}
       <div className="overflow-x-auto scrollbar-hide">
-        <div className="flex gap-3 px-4 pb-2">
+        <div className="flex gap-2 px-4 pb-2">
           {banners.map((banner, index) => (
             <Link key={banner.id} to={banner.link} className="shrink-0">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 + index * 0.05 }}
-                className="relative w-44 h-32 rounded-xl overflow-hidden group"
+                className="relative w-[calc(50vw-24px)] h-28 rounded-xl overflow-hidden group"
               >
                 {/* Background Image */}
                 {banner.image_url ? (
