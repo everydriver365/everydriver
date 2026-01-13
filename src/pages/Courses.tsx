@@ -364,6 +364,40 @@ export default function Courses() {
     }
   }, [initialPostcode, loading, instructors.length]);
 
+  const instructorIdsWithCourses = useMemo(() => {
+    const ids = new Set<string>();
+    for (const c of instructorCourses) {
+      if (c.is_active) ids.add(c.instructor_id);
+    }
+    return ids;
+  }, [instructorCourses]);
+
+  const instructorsInArea = useMemo(() => {
+    if (!userLocation) return instructors;
+
+    const radiusMiles = parseInt(radius);
+
+    return instructors.filter((instructor) => {
+      const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+      const instructorLocation = geoCache[instructorPostcode];
+      if (!instructorLocation) return false;
+
+      const distance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        instructorLocation.lat,
+        instructorLocation.lng
+      );
+
+      return distance <= radiusMiles;
+    });
+  }, [instructors, userLocation, radius, geoCache]);
+
+  const relevantInstructors = useMemo(() => {
+    const base = userLocation ? instructorsInArea : instructors;
+    return base.filter((i) => instructorIdsWithCourses.has(i.id));
+  }, [instructors, instructorsInArea, instructorIdsWithCourses, userLocation]);
+
   // Get available dates for the selected month
   const availableDatesInMonth = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
@@ -373,15 +407,14 @@ export default function Courses() {
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-    // For each day, check if any instructor is available
+    // For each day, check if any relevant instructor (in area + has courses) is available
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
 
       const dayOfWeek = getDay(day); // 0 = Sunday, 1 = Monday, etc.
       const dateStr = format(day, "yyyy-MM-dd");
 
-      // Check if any instructor works on this day
-      return instructors.some((instructor) => {
+      return relevantInstructors.some((instructor) => {
         // Check available_from restriction
         if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
           return false;
@@ -407,7 +440,7 @@ export default function Courses() {
         );
       });
     });
-  }, [selectedMonth, instructors, workingHours, dateOverrides]);
+  }, [selectedMonth, relevantInstructors, workingHours, dateOverrides]);
 
   // Generate courses for the selected date
   const coursesForSelectedDate = useMemo(() => {
@@ -417,7 +450,7 @@ export default function Courses() {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     const courses: CourseWithInstructor[] = [];
 
-    for (const instructor of instructors) {
+    for (const instructor of relevantInstructors) {
       // Check available_from restriction
       if (instructor.available_from && isAfter(parseISO(instructor.available_from), selectedDate)) {
         continue;
@@ -472,7 +505,7 @@ export default function Courses() {
     }
 
     return courses;
-  }, [selectedDate, instructors, instructorCourses, courseTemplates, workingHours, dateOverrides]);
+  }, [selectedDate, relevantInstructors, instructorCourses, courseTemplates, workingHours, dateOverrides]);
 
   // Geocode postcodes via edge function
   const geocodePostcodes = useCallback(async (postcodes: string[]): Promise<{ geoCache: GeoCache; areaCache: { [postcode: string]: string | null } }> => {
@@ -519,15 +552,51 @@ export default function Courses() {
       const location = result.geoCache[cleanPostcode];
       const areaName = result.areaCache[cleanPostcode];
 
-      if (location) {
-        setUserLocation(location);
-        setSearchedPostcode(cleanPostcode);
-        setSearchedAreaName(areaName || null);
-        setSortBy("nearest");
-        toast({ title: "Location found!", description: "Sorting by nearest instructors" });
-      } else {
+      if (!location) {
         toast({ title: "Postcode not found", description: "Please check your postcode", variant: "destructive" });
+        return;
       }
+
+      setUserLocation(location);
+      setSearchedPostcode(cleanPostcode);
+      setSearchedAreaName(areaName || null);
+      setSortBy("nearest");
+      setSearchParams({ postcode: cleanPostcode });
+
+      // Jump to the next available date for instructors in the searched area
+      const fullGeoCache = { ...geoCache, ...result.geoCache };
+      const radiusMiles = parseInt(radius);
+      const instructorIds = new Set(
+        instructorCourses.filter((c) => c.is_active).map((c) => c.instructor_id)
+      );
+
+      const instructorsNearby = instructors.filter((instructor) => {
+        if (!instructorIds.has(instructor.id)) return false;
+
+        const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+        const instructorLocation = fullGeoCache[instructorPostcode];
+        if (!instructorLocation) return false;
+
+        const distance = calculateDistance(
+          location.lat,
+          location.lng,
+          instructorLocation.lat,
+          instructorLocation.lng
+        );
+
+        return distance <= radiusMiles;
+      });
+
+      const firstAvailable = findFirstAvailableDate(instructorsNearby, workingHours, dateOverrides);
+      if (firstAvailable) {
+        setSelectedMonth(firstAvailable.month);
+        setSelectedDate(firstAvailable.date);
+      } else {
+        // No availability in this area  clear selection so we don't show "No courses available" for a global date
+        setSelectedDate(null);
+      }
+
+      toast({ title: "Location found!", description: `Showing courses near ${areaName || cleanPostcode}` });
     } finally {
       setIsSearching(false);
     }
