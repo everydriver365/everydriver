@@ -1,25 +1,21 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, Plus, CreditCard, Navigation, Car, Eye, EyeOff } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
 import { TodayScheduleView } from "@/components/instructor/TodayScheduleView";
 import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleView";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
-import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
+import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import TelematicsTracker from "@/components/instructor/TelematicsTracker";
-import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
-import VehicleHealthManager from "@/components/instructor/VehicleHealthManager";
-import DrivingSkillsHeatmap from "@/components/instructor/DrivingSkillsHeatmap";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -34,7 +30,6 @@ interface Pupil {
   phone: string | null;
 }
 
-// Mock instructor ID - in production this would come from auth
 const MOCK_INSTRUCTOR_ID = "b7987d5e-348f-4047-a8d4-ee71fab1f01d";
 
 interface Instructor {
@@ -111,7 +106,7 @@ export default function InstructorPortal() {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  // Mobile Layout - No header, standalone experience
+  // Mobile Layout
   if (isMobile) {
     return (
       <>
@@ -120,7 +115,6 @@ export default function InstructorPortal() {
           todaysLessonCount={todaysLessonCount}
           onPaymentClick={() => setPaymentModalOpen(true)}
         />
-
         <PaymentQRModal 
           open={paymentModalOpen} 
           onOpenChange={setPaymentModalOpen}
@@ -130,261 +124,212 @@ export default function InstructorPortal() {
           instructorName={instructor?.name}
           onPaymentRecorded={fetchPupils}
         />
-
         <InstructorBottomNav />
       </>
     );
   }
 
-  // Desktop Layout (existing)
+  // Desktop Layout - Clean, organized structure
   return (
     <MainLayout>
-      <div className="container py-8">
-        {/* Job Offer Alerts - At the top for visibility */}
-        <JobOfferAlert instructorId={MOCK_INSTRUCTOR_ID} />
-
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="container py-6 space-y-6">
+        
+        {/* Header Section */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-4"
           >
-            <Avatar className="h-14 w-14 border-2 border-primary">
+            <Avatar className="h-12 w-12 border-2 border-primary">
               <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-              <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-lg">
+              <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                 {instructor?.name ? getInitials(instructor.name) : "?"}
               </AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold md:text-3xl">{instructor?.name || "Instructor Dashboard"}</h1>
+                <h1 className="text-xl font-bold">{instructor?.name || "Dashboard"}</h1>
                 {instructor && (
                   <Badge 
-                    variant={instructor.is_active ? "default" : "secondary"} 
-                    className={`gap-1 ${instructor.is_active ? "bg-emerald-500 hover:bg-emerald-600" : "bg-amber-500 hover:bg-amber-600 text-white"}`}
+                    variant="secondary" 
+                    className={`gap-1 text-xs ${instructor.is_active ? "bg-emerald-500/10 text-emerald-600 border-emerald-200" : "bg-amber-500/10 text-amber-600 border-amber-200"}`}
                   >
-                    {instructor.is_active ? (
-                      <>
-                        <Eye className="h-3 w-3" />
-                        Visible
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="h-3 w-3" />
-                        Hidden
-                      </>
-                    )}
+                    {instructor.is_active ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                    {instructor.is_active ? "Visible" : "Hidden"}
                   </Badge>
                 )}
               </div>
-              <p className="text-muted-foreground">Welcome back</p>
+              <p className="text-sm text-muted-foreground">Welcome back</p>
             </div>
           </motion.div>
+          
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex gap-3"
+            transition={{ delay: 0.05 }}
+            className="flex gap-2"
           >
-            <Button onClick={() => setPaymentModalOpen(true)}>
-              <CreditCard className="mr-2 h-4 w-4" />
+            <Button size="sm" onClick={() => setPaymentModalOpen(true)}>
+              <CreditCard className="mr-1.5 h-4 w-4" />
               Take Payment
             </Button>
-            <Button variant="outline" size="sm">
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Button>
+            <Link to="/instructor/settings">
+              <Button variant="outline" size="sm">
+                <Settings className="mr-1.5 h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
           </motion.div>
         </div>
 
-        {/* Stats */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { icon: Calendar, label: "Today's Lessons", value: String(todaysLessonCount), change: "+2 this week" },
-            { icon: Users, label: "Active Pupils", value: String(pupils.length || 0), change: "+3 new" },
-            { icon: Clock, label: "Hours This Week", value: "32", change: "On track" },
-            { icon: TrendingUp, label: "Earnings (Month)", value: "£2,450", change: "+12%" },
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <stat.icon className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-xs text-success">{stat.change}</span>
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+        {/* Job Alerts */}
+        <JobOfferAlert instructorId={MOCK_INSTRUCTOR_ID} />
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Today's & Tomorrow's Schedule */}
+        {/* Stats Row */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid gap-3 grid-cols-2 lg:grid-cols-4"
+        >
+          {[
+            { icon: Calendar, label: "Today's Lessons", value: String(todaysLessonCount), color: "text-blue-500" },
+            { icon: Users, label: "Active Pupils", value: String(pupils.length), color: "text-emerald-500" },
+            { icon: Clock, label: "Hours This Week", value: "32", color: "text-amber-500" },
+            { icon: TrendingUp, label: "Month Earnings", value: "£2,450", color: "text-purple-500" },
+          ].map((stat) => (
+            <Card key={stat.label} className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg bg-muted ${stat.color}`}>
+                  <stat.icon className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-xl font-bold">{stat.value}</div>
+                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </motion.div>
+
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          
+          {/* Left Column - Schedule */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="lg:col-span-2 space-y-4"
+          >
+            <Tabs defaultValue="today" className="w-full">
+              <TabsList className="w-full grid grid-cols-3">
+                <TabsTrigger value="today">Today</TabsTrigger>
+                <TabsTrigger value="tomorrow">Tomorrow</TabsTrigger>
+                <TabsTrigger value="gaps">Fill Gaps</TabsTrigger>
+              </TabsList>
+              <TabsContent value="today" className="mt-4">
+                <TodayScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
+              </TabsContent>
+              <TabsContent value="tomorrow" className="mt-4">
+                <TomorrowScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
+              </TabsContent>
+              <TabsContent value="gaps" className="mt-4">
+                <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
+              </TabsContent>
+            </Tabs>
+          </motion.div>
+
+          {/* Right Column - Sidebar */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="lg:col-span-2 space-y-6"
+            className="space-y-4"
           >
-            <TodayScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
-            <TomorrowScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
-          </motion.div>
+            {/* Payment Summary */}
+            <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} instructorName={instructor?.name} />
 
-          {/* Active Pupils */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
+            {/* Active Pupils */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-accent" />
-                  Active Pupils
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-base">
+                  <span className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    Pupils
+                  </span>
+                  <Badge variant="secondary" className="text-xs">{pupils.length}</Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="pt-0">
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
                   {pupils.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No pupils yet
-                    </p>
+                    <p className="text-sm text-muted-foreground text-center py-4">No pupils yet</p>
                   ) : (
-                    pupils.map((pupil) => (
-                      <div
-                        key={pupil.id}
-                        className="flex items-center gap-3 rounded-lg border p-3"
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                          {pupil.name.split(" ").map((n) => n[0]).join("")}
+                    pupils.slice(0, 5).map((pupil) => (
+                      <div key={pupil.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium">
+                          {pupil.name.split(" ").map(n => n[0]).join("")}
                         </div>
-                        <div className="flex-1">
-                          <div className="font-medium">{pupil.name}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">{pupil.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {pupil.lessons_completed || 0} lessons • {pupil.progress || 0}% complete
+                            {pupil.lessons_completed || 0} lessons
                           </div>
                         </div>
+                        <div className="text-xs text-muted-foreground">{pupil.progress || 0}%</div>
                       </div>
                     ))
                   )}
                 </div>
                 <Link to="/instructor/pupils">
-                  <Button variant="outline" className="mt-4 w-full">
-                    View All Pupils
+                  <Button variant="ghost" className="w-full mt-3 text-xs h-8">
+                    View All <ChevronRight className="h-3 w-3 ml-1" />
                   </Button>
                 </Link>
               </CardContent>
             </Card>
-          </motion.div>
-        </div>
 
-        {/* Payment Summary & Settings Row */}
-        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Payment Summary Widget */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-          >
-            <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} instructorName={instructor?.name} />
-          </motion.div>
-
-          {/* Push Notification Settings */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <PushNotificationSettings instructorId={MOCK_INSTRUCTOR_ID} />
-          </motion.div>
-
-          {/* Cancellation Policy */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-          >
-            <CancellationPolicyEditor instructorId={MOCK_INSTRUCTOR_ID} />
-          </motion.div>
-
-          {/* Calendar Sync Notice */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card className="border-accent/50 bg-accent/5 h-full">
-              <CardContent className="flex flex-col justify-center gap-4 p-6 h-full">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
-                    <Calendar className="h-6 w-6 text-accent-foreground" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">Google Calendar Sync</div>
-                    <div className="text-sm text-muted-foreground">
-                      Your availability is synced with Google Calendar
-                    </div>
-                  </div>
+            {/* Quick Links */}
+            <Card>
+              <CardContent className="p-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <Link to="/instructor/schedule">
+                    <Button variant="outline" size="sm" className="w-full text-xs h-9">
+                      <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                      Schedule
+                    </Button>
+                  </Link>
+                  <Link to="/instructor/jobs">
+                    <Button variant="outline" size="sm" className="w-full text-xs h-9">
+                      <Briefcase className="h-3.5 w-3.5 mr-1.5" />
+                      Jobs
+                    </Button>
+                  </Link>
+                  <Link to="/instructor/expenses">
+                    <Button variant="outline" size="sm" className="w-full text-xs h-9">
+                      <CreditCard className="h-3.5 w-3.5 mr-1.5" />
+                      Expenses
+                    </Button>
+                  </Link>
+                  <Link to="/instructor/track">
+                    <Button variant="outline" size="sm" className="w-full text-xs h-9">
+                      <Car className="h-3.5 w-3.5 mr-1.5" />
+                      Track
+                    </Button>
+                  </Link>
                 </div>
-                <Button variant="outline" className="w-full mt-2">Manage Sync</Button>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {/* Telematics & Vehicle Health Section */}
-        <div className="mt-8 grid gap-6 lg:grid-cols-2">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55 }}
-          >
-            <TelematicsTracker instructorId={MOCK_INSTRUCTOR_ID} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <VehicleHealthManager instructorId={MOCK_INSTRUCTOR_ID} />
-          </motion.div>
-        </div>
-
-        {/* Driving Skills Heatmap - All Pupils */}
+        {/* Bottom Section - Tests */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65 }}
-          className="mt-8"
-        >
-          <DrivingSkillsHeatmap instructorId={MOCK_INSTRUCTOR_ID} height="350px" />
-        </motion.div>
-
-        {/* Gaps Filler - Bottom Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mt-8"
-        >
-          <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
-        </motion.div>
-
-        {/* Upcoming Tests */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mt-6"
+          transition={{ delay: 0.25 }}
         >
           <UpcomingTestsView instructorId={MOCK_INSTRUCTOR_ID} />
         </motion.div>
@@ -393,6 +338,10 @@ export default function InstructorPortal() {
           open={paymentModalOpen} 
           onOpenChange={setPaymentModalOpen}
           paymentQrUrl={instructor?.payment_qr_url}
+          pupils={pupils}
+          instructorId={MOCK_INSTRUCTOR_ID}
+          instructorName={instructor?.name}
+          onPaymentRecorded={fetchPupils}
         />
       </div>
     </MainLayout>
