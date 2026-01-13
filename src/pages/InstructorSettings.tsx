@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Clock, Bell, FileText, Camera, Upload, Loader2, Settings } from "lucide-react";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
@@ -117,13 +118,13 @@ export default function InstructorSettings() {
 
   const content = (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="bg-primary px-4 py-6">
-        <h1 className="text-xl font-bold text-primary-foreground flex items-center gap-2">
-          <Settings className="h-5 w-5" />
+      {/* Page Title */}
+      <div className="px-4 py-4 border-b">
+        <h1 className="text-xl font-bold flex items-center gap-2">
+          <Settings className="h-5 w-5 text-primary" />
           Settings
         </h1>
-        <p className="text-sm text-primary-foreground/70">Manage your profile and preferences</p>
+        <p className="text-sm text-muted-foreground">Manage your profile and preferences</p>
       </div>
 
       <div className="p-4 space-y-6">
@@ -284,13 +285,17 @@ export default function InstructorSettings() {
     </div>
   );
 
-  // Mobile Layout - No header
+  // Mobile Layout
   if (isMobile) {
     return (
-      <>
+      <div className="min-h-screen bg-background">
+        <InstructorMobileHeader 
+          instructorName={profile?.name} 
+          profileImageUrl={profile?.profile_image_url}
+        />
         {content}
         <InstructorBottomNav />
-      </>
+      </div>
     );
   }
 

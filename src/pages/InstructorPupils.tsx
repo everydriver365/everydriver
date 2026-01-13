@@ -58,6 +58,7 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -686,10 +687,11 @@ export default function InstructorPupils() {
   if (loading) {
     if (isMobile) {
       return (
-        <>
+        <div className="min-h-screen bg-background">
+          <InstructorMobileHeader />
           {loadingContent}
           <InstructorBottomNav />
-        </>
+        </div>
       );
     }
     return (
@@ -700,13 +702,14 @@ export default function InstructorPupils() {
     );
   }
 
-  // Mobile Layout - No header
+  // Mobile Layout
   if (isMobile) {
     return (
-      <>
+      <div className="min-h-screen bg-background">
+        <InstructorMobileHeader />
         {mainContent}
         <InstructorBottomNav />
-      </>
+      </div>
     );
   }
 

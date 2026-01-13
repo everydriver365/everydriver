@@ -4,6 +4,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { supabase } from "@/integrations/supabase/client";
@@ -238,11 +239,12 @@ export default function InstructorPay() {
   // Mobile Layout - No header
   if (isMobile) {
     return (
-      <>
+      <div className="min-h-screen bg-background">
+        <InstructorMobileHeader />
         {content}
         {modal}
         <InstructorBottomNav />
-      </>
+      </div>
     );
   }
 
