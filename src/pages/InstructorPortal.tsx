@@ -249,7 +249,11 @@ export default function InstructorPortal() {
             className="space-y-4"
           >
             {/* Payment Summary */}
-            <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} instructorName={instructor?.name} />
+            <Card>
+              <CardContent className="p-4">
+                <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} instructorName={instructor?.name} />
+              </CardContent>
+            </Card>
 
             {/* Active Pupils */}
             <Card>
