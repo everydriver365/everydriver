@@ -244,7 +244,7 @@ function PromoBannerCarousel({ banners }: { banners: PromoBanner[] }) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="relative rounded-2xl overflow-hidden h-52"
+                  className="relative rounded-2xl overflow-hidden h-28"
                 >
                   {/* Background Image */}
                   {banner.image_url ? (
@@ -261,25 +261,24 @@ function PromoBannerCarousel({ banners }: { banners: PromoBanner[] }) {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                   
                   {/* Content */}
-                  <div className="absolute inset-0 p-5 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-white font-bold text-2xl leading-tight">
+                  <div className="absolute inset-0 p-4 flex items-center justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-white font-bold text-lg leading-tight">
                         {banner.title}
                       </h3>
-                      <p className="text-white/90 text-base mt-2 leading-snug max-w-[75%]">
+                      <p className="text-white/90 text-sm mt-1 leading-snug">
                         {banner.subtitle}
                       </p>
                     </div>
                     
                     {/* CTA Button */}
-                    <div>
-                      <Button 
-                        variant="secondary" 
-                        className="bg-white text-foreground hover:bg-white/90 font-semibold px-6 rounded-full"
-                      >
-                        Learn more
-                      </Button>
-                    </div>
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      className="bg-white text-foreground hover:bg-white/90 font-semibold px-4 rounded-full shrink-0 ml-3"
+                    >
+                      Learn more
+                    </Button>
                   </div>
                 </motion.div>
               </Link>
