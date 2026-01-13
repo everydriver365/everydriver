@@ -240,16 +240,29 @@ export function InstructorMobileHome({
         </div>
       </div>
 
-      {/* Promo Banners - Full Width Carousel Style */}
+      {/* Primary Promo Banners */}
       {content?.promo_banners && content.promo_banners.length > 0 && (
-        <PromoBannerCarousel banners={content.promo_banners} />
+        <PromoBannerCarousel banners={content.promo_banners} title="Featured" />
+      )}
+
+      {/* Secondary Promo Banners */}
+      {content?.secondary_promo_banners && content.secondary_promo_banners.length > 0 && (
+        <PromoBannerCarousel banners={content.secondary_promo_banners} title="More for You" variant="secondary" />
       )}
     </div>
   );
 }
 
 // Promo Banner Carousel Component with Swipe Support
-function PromoBannerCarousel({ banners }: { banners: PromoBanner[] }) {
+function PromoBannerCarousel({ 
+  banners, 
+  title,
+  variant = "primary" 
+}: { 
+  banners: PromoBanner[];
+  title?: string;
+  variant?: "primary" | "secondary";
+}) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true,
     align: 'start',
@@ -278,8 +291,17 @@ function PromoBannerCarousel({ banners }: { banners: PromoBanner[] }) {
     if (emblaApi) emblaApi.scrollTo(index);
   }, [emblaApi]);
 
+  const isSecondary = variant === "secondary";
+
   return (
     <div className="mt-6">
+      {/* Section Title */}
+      {title && (
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-4 mb-3">
+          {title}
+        </h3>
+      )}
+      
       {/* Carousel Container with Swipe Support */}
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
@@ -290,7 +312,7 @@ function PromoBannerCarousel({ banners }: { banners: PromoBanner[] }) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="relative rounded-2xl overflow-hidden h-28"
+                  className={`relative rounded-2xl overflow-hidden ${isSecondary ? "h-24" : "h-28"}`}
                 >
                   {/* Background Image */}
                   {banner.image_url ? (

@@ -26,6 +26,7 @@ export interface InstructorHomepageContent {
   progress_label: string;
   quick_actions: QuickAction[];
   promo_banners: PromoBanner[];
+  secondary_promo_banners: PromoBanner[];
 }
 
 export function useInstructorHomepageContent() {
@@ -46,7 +47,8 @@ export function useInstructorHomepageContent() {
       setContent({
         ...data,
         quick_actions: (data.quick_actions as unknown as QuickAction[]) || [],
-        promo_banners: (data.promo_banners as unknown as PromoBanner[]) || []
+        promo_banners: (data.promo_banners as unknown as PromoBanner[]) || [],
+        secondary_promo_banners: (data.secondary_promo_banners as unknown as PromoBanner[]) || []
       });
     } catch (error) {
       console.error("Error fetching instructor homepage content:", error);
@@ -64,7 +66,8 @@ export function useInstructorHomepageContent() {
         .update({
           ...updates,
           quick_actions: updates.quick_actions as unknown as any,
-          promo_banners: updates.promo_banners as unknown as any
+          promo_banners: updates.promo_banners as unknown as any,
+          secondary_promo_banners: updates.secondary_promo_banners as unknown as any
         })
         .eq("id", content.id);
 
