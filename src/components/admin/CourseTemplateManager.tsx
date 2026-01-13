@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Upload, X, Plus, Save, Image as ImageIcon, Video, FileText, Backpack, AlertCircle, CreditCard, ScrollText } from "lucide-react";
+import { Upload, X, Plus, Save, Image as ImageIcon, Video, FileText, Backpack, AlertCircle, CreditCard, ScrollText, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +51,7 @@ export function CourseTemplateManager() {
   const [loading, setLoading] = useState(true);
   const [editingTemplate, setEditingTemplate] = useState<CourseTemplate | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
 
   useEffect(() => {
@@ -75,41 +76,157 @@ export function CourseTemplateManager() {
 
   const handleEdit = (template: CourseTemplate) => {
     setEditingTemplate({ ...template });
+    setIsCreating(false);
     setDialogOpen(true);
+  };
+
+  const handleCreate = () => {
+    const newTemplate: CourseTemplate = {
+      id: "",
+      course_hours: 10,
+      course_name: "New Course",
+      short_description: null,
+      full_description: null,
+      features: [],
+      default_image_url: null,
+      is_intensive: false,
+      is_popular: false,
+      display_order: templates.length,
+      is_active: true,
+      what_to_bring: [],
+      prerequisites: [],
+      theory_test_details: null,
+      driving_test_details: null,
+      payment_terms: null,
+      terms_conditions: null,
+      explainer_video_url: null,
+    };
+    setEditingTemplate(newTemplate);
+    setIsCreating(true);
+    setDialogOpen(true);
+  };
+
+  const handleDuplicate = async (template: CourseTemplate, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const { data, error } = await supabase
+      .from("course_templates")
+      .insert({
+        course_hours: template.course_hours,
+        course_name: `${template.course_name} (Copy)`,
+        short_description: template.short_description,
+        full_description: template.full_description,
+        features: template.features,
+        default_image_url: template.default_image_url,
+        is_intensive: template.is_intensive,
+        is_popular: false,
+        display_order: templates.length,
+        is_active: false,
+        what_to_bring: template.what_to_bring,
+        prerequisites: template.prerequisites,
+        theory_test_details: template.theory_test_details,
+        driving_test_details: template.driving_test_details,
+        payment_terms: template.payment_terms,
+        terms_conditions: template.terms_conditions,
+        explainer_video_url: template.explainer_video_url,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error duplicating template:", error);
+      toast.error("Failed to duplicate template");
+    } else {
+      toast.success("Template duplicated");
+      fetchTemplates();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!editingTemplate || !editingTemplate.id) return;
+    
+    const { error } = await supabase
+      .from("course_templates")
+      .delete()
+      .eq("id", editingTemplate.id);
+
+    if (error) {
+      console.error("Error deleting template:", error);
+      toast.error("Failed to delete template");
+    } else {
+      toast.success("Template deleted");
+      setDialogOpen(false);
+      fetchTemplates();
+    }
   };
 
   const handleSave = async () => {
     if (!editingTemplate) return;
 
-    const { error } = await supabase
-      .from("course_templates")
-      .update({
-        course_name: editingTemplate.course_name,
-        short_description: editingTemplate.short_description,
-        full_description: editingTemplate.full_description,
-        features: editingTemplate.features,
-        default_image_url: editingTemplate.default_image_url,
-        is_intensive: editingTemplate.is_intensive,
-        is_popular: editingTemplate.is_popular,
-        is_active: editingTemplate.is_active,
-        // New fields
-        what_to_bring: editingTemplate.what_to_bring,
-        prerequisites: editingTemplate.prerequisites,
-        theory_test_details: editingTemplate.theory_test_details,
-        driving_test_details: editingTemplate.driving_test_details,
-        payment_terms: editingTemplate.payment_terms,
-        terms_conditions: editingTemplate.terms_conditions,
-        explainer_video_url: editingTemplate.explainer_video_url,
-      })
-      .eq("id", editingTemplate.id);
+    if (isCreating) {
+      // Insert new template
+      const { error } = await supabase
+        .from("course_templates")
+        .insert({
+          course_hours: editingTemplate.course_hours,
+          course_name: editingTemplate.course_name,
+          short_description: editingTemplate.short_description,
+          full_description: editingTemplate.full_description,
+          features: editingTemplate.features,
+          default_image_url: editingTemplate.default_image_url,
+          is_intensive: editingTemplate.is_intensive,
+          is_popular: editingTemplate.is_popular,
+          display_order: editingTemplate.display_order,
+          is_active: editingTemplate.is_active,
+          what_to_bring: editingTemplate.what_to_bring,
+          prerequisites: editingTemplate.prerequisites,
+          theory_test_details: editingTemplate.theory_test_details,
+          driving_test_details: editingTemplate.driving_test_details,
+          payment_terms: editingTemplate.payment_terms,
+          terms_conditions: editingTemplate.terms_conditions,
+          explainer_video_url: editingTemplate.explainer_video_url,
+        });
 
-    if (error) {
-      console.error("Error saving template:", error);
-      toast.error("Failed to save template");
+      if (error) {
+        console.error("Error creating template:", error);
+        toast.error("Failed to create template");
+      } else {
+        toast.success("Course template created");
+        setDialogOpen(false);
+        fetchTemplates();
+      }
     } else {
-      toast.success("Course template saved");
-      setDialogOpen(false);
-      fetchTemplates();
+      // Update existing template
+      const { error } = await supabase
+        .from("course_templates")
+        .update({
+          course_hours: editingTemplate.course_hours,
+          course_name: editingTemplate.course_name,
+          short_description: editingTemplate.short_description,
+          full_description: editingTemplate.full_description,
+          features: editingTemplate.features,
+          default_image_url: editingTemplate.default_image_url,
+          is_intensive: editingTemplate.is_intensive,
+          is_popular: editingTemplate.is_popular,
+          is_active: editingTemplate.is_active,
+          what_to_bring: editingTemplate.what_to_bring,
+          prerequisites: editingTemplate.prerequisites,
+          theory_test_details: editingTemplate.theory_test_details,
+          driving_test_details: editingTemplate.driving_test_details,
+          payment_terms: editingTemplate.payment_terms,
+          terms_conditions: editingTemplate.terms_conditions,
+          explainer_video_url: editingTemplate.explainer_video_url,
+        })
+        .eq("id", editingTemplate.id);
+
+      if (error) {
+        console.error("Error saving template:", error);
+        toast.error("Failed to save template");
+      } else {
+        toast.success("Course template saved");
+        setDialogOpen(false);
+        fetchTemplates();
+      }
     }
   };
 
@@ -245,6 +362,10 @@ export function CourseTemplateManager() {
             Manage default course details, descriptions, and images
           </p>
         </div>
+        <Button onClick={handleCreate} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add Template
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -301,6 +422,17 @@ export function CourseTemplateManager() {
                   </Badge>
                 )}
               </div>
+              <div className="mt-3 pt-3 border-t flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => handleDuplicate(template, e)}
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  Duplicate
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -310,9 +442,9 @@ export function CourseTemplateManager() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Course Template</DialogTitle>
+            <DialogTitle>{isCreating ? "Create Course Template" : "Edit Course Template"}</DialogTitle>
             <DialogDescription>
-              Update the default details for this course type
+              {isCreating ? "Set up a new course type with default details" : "Update the default details for this course type"}
             </DialogDescription>
           </DialogHeader>
 
@@ -366,6 +498,24 @@ export function CourseTemplateManager() {
                   </div>
                 </div>
               </div>
+
+              {/* Course Hours - only editable when creating */}
+              {isCreating && (
+                <div className="space-y-2">
+                  <Label>Course Hours</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={editingTemplate.course_hours}
+                    onChange={(e) =>
+                      setEditingTemplate({
+                        ...editingTemplate,
+                        course_hours: parseInt(e.target.value) || 1,
+                      })
+                    }
+                  />
+                </div>
+              )}
 
               {/* Course Name */}
               <div className="space-y-2">
@@ -754,14 +904,22 @@ export function CourseTemplateManager() {
               </div>
 
               {/* Save Button */}
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSave} className="gap-2">
-                  <Save className="h-4 w-4" />
-                  Save Template
-                </Button>
+              <div className="flex justify-between gap-3 pt-4 border-t">
+                {!isCreating && (
+                  <Button variant="destructive" onClick={handleDelete} className="gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
+                )}
+                <div className={`flex gap-3 ${isCreating ? 'ml-auto' : ''}`}>
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSave} className="gap-2">
+                    <Save className="h-4 w-4" />
+                    {isCreating ? "Create Template" : "Save Template"}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
