@@ -302,6 +302,29 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
     setSortBy("soonest");
   };
 
+  // Filter instructors by location when a postcode search is active
+  const instructorsInArea = useMemo(() => {
+    if (!userLocation) return instructors;
+    
+    const radiusMiles = parseInt(radius);
+    
+    return instructors.filter((instructor) => {
+      const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
+      const instructorLocation = geoCache[instructorPostcode];
+      
+      if (!instructorLocation) return false;
+      
+      const distance = calculateDistance(
+        userLocation.lat,
+        userLocation.lng,
+        instructorLocation.lat,
+        instructorLocation.lng
+      );
+      
+      return distance <= radiusMiles;
+    });
+  }, [instructors, userLocation, radius, geoCache]);
+
   const availableDatesInMonth = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
     const monthStart = startOfMonth(new Date(year, month - 1));
@@ -310,13 +333,16 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
 
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
+    // Use filtered instructors based on location search
+    const relevantInstructors = userLocation ? instructorsInArea : instructors;
+
     return allDays.filter((day) => {
       if (isBefore(day, today)) return false;
 
       const dayOfWeek = getDay(day);
       const dateStr = format(day, "yyyy-MM-dd");
 
-      return instructors.some((instructor) => {
+      return relevantInstructors.some((instructor) => {
         if (instructor.available_from && isAfter(parseISO(instructor.available_from), day)) {
           return false;
         }
@@ -339,7 +365,7 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
         );
       });
     });
-  }, [selectedMonth, instructors, workingHours, dateOverrides]);
+  }, [selectedMonth, instructors, instructorsInArea, workingHours, dateOverrides, userLocation]);
 
   const coursesForSelectedDate = useMemo(() => {
     if (!selectedDate) return [];
