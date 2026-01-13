@@ -61,7 +61,7 @@ export function InstructorBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border shadow-lg md:hidden">
       <div className="flex items-center justify-around h-16 px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -74,8 +74,8 @@ export function InstructorBottomNav() {
               onClick={handleNavClick}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors relative ${
                 isActive
-                  ? "text-white"
-                  : "text-primary-foreground/60 hover:text-primary-foreground/80"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <div className="relative">
@@ -90,14 +90,14 @@ export function InstructorBottomNav() {
               </div>
               <span className="text-[10px] font-medium">{item.label}</span>
               {isActive && (
-                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-white" />
+                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
               )}
             </Link>
           );
         })}
       </div>
       {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom bg-primary" />
+      <div className="h-safe-area-inset-bottom bg-white" />
     </nav>
   );
 }
