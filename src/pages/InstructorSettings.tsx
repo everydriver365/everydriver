@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye } from "lucide-react";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import {
   Accordion,
   AccordionContent,
@@ -31,6 +32,7 @@ interface InstructorProfile {
   phone: string | null;
   bio: string | null;
   profile_image_url: string | null;
+  is_active: boolean;
 }
 
 export default function InstructorSettings() {
@@ -49,7 +51,7 @@ export default function InstructorSettings() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("name, email, phone, bio, profile_image_url")
+        .select("name, email, phone, bio, profile_image_url, is_active")
         .eq("id", MOCK_INSTRUCTOR_ID)
         .single();
 
@@ -119,6 +121,34 @@ export default function InstructorSettings() {
       toast({ title: "Error", description: "Failed to upload photo", variant: "destructive" });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleVisibilityToggle = async (isVisible: boolean) => {
+    if (!profile) return;
+    
+    // Optimistic update
+    setProfile({ ...profile, is_active: isVisible });
+    
+    try {
+      const { error } = await supabase
+        .from("instructors")
+        .update({ is_active: isVisible })
+        .eq("id", MOCK_INSTRUCTOR_ID);
+
+      if (error) throw error;
+      
+      toast({ 
+        title: isVisible ? "Now visible" : "Hidden from website", 
+        description: isVisible 
+          ? "Your profile is now listed on the main website" 
+          : "You won't appear in course searches but can still use all features"
+      });
+    } catch (error) {
+      // Revert on error
+      setProfile({ ...profile, is_active: !isVisible });
+      console.error("Error updating visibility:", error);
+      toast({ title: "Error", description: "Failed to update visibility", variant: "destructive" });
     }
   };
 
@@ -234,6 +264,44 @@ export default function InstructorSettings() {
               ) : (
                 <p className="text-muted-foreground text-center py-4">Profile not found</p>
               )}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Visibility Section */}
+          <AccordionItem value="visibility" className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline py-3">
+              <div className="flex items-center gap-2">
+                <Eye className="h-4 w-4 text-primary" />
+                <span className="font-medium">Visibility</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-4">
+              <p className="text-xs text-muted-foreground mb-4">Control whether you appear on the main website</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="visibility-toggle" className="text-sm font-medium">
+                      Listed on website
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      When enabled, your courses will appear in search results on the main website
+                    </p>
+                  </div>
+                  <Switch
+                    id="visibility-toggle"
+                    checked={profile?.is_active ?? true}
+                    onCheckedChange={handleVisibilityToggle}
+                  />
+                </div>
+                {profile && !profile.is_active && (
+                  <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+                    <p className="text-sm text-amber-700 dark:text-amber-400">
+                      You're currently hidden from the website. Your courses won't appear in search results, 
+                      but you can still use all instructor features including managing pupils and scheduling lessons.
+                    </p>
+                  </div>
+                )}
+              </div>
             </AccordionContent>
           </AccordionItem>
 
