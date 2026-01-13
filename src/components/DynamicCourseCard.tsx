@@ -165,7 +165,10 @@ export function DynamicCourseCard({
         </div>
 
         {/* Back of Card */}
-        <div className="absolute inset-0 overflow-hidden border border-primary/30 bg-primary text-primary-foreground shadow-lg shadow-black/10 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div 
+          className="absolute inset-0 overflow-hidden border shadow-lg shadow-black/10 [backface-visibility:hidden] [transform:rotateY(180deg)]"
+          style={{ backgroundColor: brandColour, borderColor: `${brandColour}50` }}
+        >
           <div className="flex h-full flex-col p-5">
             <h3 className="text-lg font-bold text-primary-foreground uppercase">{courseName}</h3>
             
