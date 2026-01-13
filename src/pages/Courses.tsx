@@ -988,7 +988,16 @@ export default function Courses() {
                             : "hover:bg-muted"
                         }`}
                       >
-                        <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                        <div 
+                          className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full"
+                          style={{
+                            backgroundColor: instructor.brand_colour 
+                              ? `${instructor.brand_colour}20` 
+                              : undefined,
+                            borderWidth: instructor.brand_colour ? '2px' : undefined,
+                            borderColor: instructor.brand_colour || undefined,
+                          }}
+                        >
                           {instructor.profile_image_url ? (
                             <img
                               src={instructor.profile_image_url}
@@ -996,7 +1005,15 @@ export default function Courses() {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-primary/10 text-sm font-semibold text-primary">
+                            <div 
+                              className="flex h-full w-full items-center justify-center text-sm font-semibold"
+                              style={{
+                                backgroundColor: instructor.brand_colour 
+                                  ? `${instructor.brand_colour}20` 
+                                  : undefined,
+                                color: instructor.brand_colour || undefined,
+                              }}
+                            >
                               {instructor.name.charAt(0)}
                             </div>
                           )}
@@ -1013,7 +1030,13 @@ export default function Courses() {
                             )}
                           </div>
                         </div>
-                        {selectedInstructorId === instructor.id && (
+                        {instructor.brand_colour && (
+                          <div 
+                            className="h-3 w-3 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: instructor.brand_colour }}
+                          />
+                        )}
+                        {selectedInstructorId === instructor.id && !instructor.brand_colour && (
                           <div className="h-2 w-2 rounded-full bg-primary" />
                         )}
                       </button>
