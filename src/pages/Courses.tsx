@@ -976,71 +976,79 @@ export default function Courses() {
                     )}
                   </div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {availableInstructorsForFilter.map(({ instructor, distance }) => (
-                      <button
-                        key={instructor.id}
-                        onClick={() => setSelectedInstructorId(
-                          selectedInstructorId === instructor.id ? null : instructor.id
-                        )}
-                        className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-all ${
-                          selectedInstructorId === instructor.id
-                            ? "bg-primary/10 ring-2 ring-primary"
-                            : "hover:bg-muted"
-                        }`}
-                      >
-                        <div 
-                          className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full"
+                    {availableInstructorsForFilter.map(({ instructor, distance }) => {
+                      // Convert hex to rgba for background with opacity
+                      const getBrandBgColor = (hex: string | null) => {
+                        if (!hex) return undefined;
+                        const r = parseInt(hex.slice(1, 3), 16);
+                        const g = parseInt(hex.slice(3, 5), 16);
+                        const b = parseInt(hex.slice(5, 7), 16);
+                        return `rgba(${r}, ${g}, ${b}, 0.15)`;
+                      };
+                      
+                      return (
+                        <button
+                          key={instructor.id}
+                          onClick={() => setSelectedInstructorId(
+                            selectedInstructorId === instructor.id ? null : instructor.id
+                          )}
+                          className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-all ${
+                            selectedInstructorId === instructor.id
+                              ? "ring-2 ring-primary"
+                              : "hover:bg-muted"
+                          }`}
                           style={{
-                            backgroundColor: instructor.brand_colour 
-                              ? `${instructor.brand_colour}20` 
+                            backgroundColor: selectedInstructorId === instructor.id && instructor.brand_colour
+                              ? getBrandBgColor(instructor.brand_colour)
                               : undefined,
-                            borderWidth: instructor.brand_colour ? '2px' : undefined,
-                            borderColor: instructor.brand_colour || undefined,
                           }}
                         >
-                          {instructor.profile_image_url ? (
-                            <img
-                              src={instructor.profile_image_url}
-                              alt={instructor.name}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div 
-                              className="flex h-full w-full items-center justify-center text-sm font-semibold"
-                              style={{
-                                backgroundColor: instructor.brand_colour 
-                                  ? `${instructor.brand_colour}20` 
-                                  : undefined,
-                                color: instructor.brand_colour || undefined,
-                              }}
-                            >
-                              {instructor.name.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="truncate text-sm font-medium">{instructor.name}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span className="capitalize">{instructor.car_type}</span>
-                            {distance !== undefined && (
-                              <>
-                                <span>•</span>
-                                <span>{distance.toFixed(1)} mi</span>
-                              </>
+                          <div 
+                            className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border-2"
+                            style={{
+                              backgroundColor: getBrandBgColor(instructor.brand_colour) || 'hsl(var(--muted))',
+                              borderColor: instructor.brand_colour || 'hsl(var(--border))',
+                            }}
+                          >
+                            {instructor.profile_image_url ? (
+                              <img
+                                src={instructor.profile_image_url}
+                                alt={instructor.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div 
+                                className="flex h-full w-full items-center justify-center text-sm font-semibold"
+                                style={{
+                                  color: instructor.brand_colour || 'hsl(var(--primary))',
+                                }}
+                              >
+                                {instructor.name.charAt(0)}
+                              </div>
                             )}
                           </div>
-                        </div>
-                        {instructor.brand_colour && (
+                          <div className="flex-1 min-w-0">
+                            <p className="truncate text-sm font-medium">{instructor.name}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="capitalize">{instructor.car_type}</span>
+                              {distance !== undefined && (
+                                <>
+                                  <span>•</span>
+                                  <span>{distance.toFixed(1)} mi</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
                           <div 
-                            className="h-3 w-3 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: instructor.brand_colour }}
+                            className="h-3 w-3 rounded-full flex-shrink-0 border"
+                            style={{ 
+                              backgroundColor: instructor.brand_colour || 'hsl(var(--primary))',
+                              borderColor: instructor.brand_colour || 'hsl(var(--primary))',
+                            }}
                           />
-                        )}
-                        {selectedInstructorId === instructor.id && !instructor.brand_colour && (
-                          <div className="h-2 w-2 rounded-full bg-primary" />
-                        )}
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
