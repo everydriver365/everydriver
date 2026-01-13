@@ -62,7 +62,7 @@ export function InstructorBottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-white via-white to-gray-50/95 border-t border-gray-100 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.08)] md:hidden">
-      <div className="flex items-center justify-between h-14 px-4">
+      <div className="flex items-center justify-around h-12 w-full px-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
@@ -72,7 +72,7 @@ export function InstructorBottomNav() {
               key={item.path}
               to={item.path}
               onClick={handleNavClick}
-              className={`flex flex-col items-center justify-center gap-0.5 px-3 h-full transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-all duration-200 ${
                 isActive
                   ? "text-primary"
                   : "text-gray-400 hover:text-gray-600"
@@ -80,7 +80,7 @@ export function InstructorBottomNav() {
             >
               <div className="relative">
                 <item.icon
-                  className={`h-5 w-5 transition-all duration-200`}
+                  className="h-4 w-4 transition-all duration-200"
                   strokeWidth={isActive ? 2.5 : 1.5}
                 />
                 {showNotification && (
