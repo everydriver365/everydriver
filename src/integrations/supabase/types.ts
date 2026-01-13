@@ -646,6 +646,56 @@ export type Database = {
           },
         ]
       }
+      instructor_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          expense_date: string
+          id: string
+          instructor_id: string
+          receipt_url: string | null
+          updated_at: string
+          xero_sync_date: string | null
+          xero_synced: boolean | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          description?: string | null
+          expense_date?: string
+          id?: string
+          instructor_id: string
+          receipt_url?: string | null
+          updated_at?: string
+          xero_sync_date?: string | null
+          xero_synced?: boolean | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          expense_date?: string
+          id?: string
+          instructor_id?: string
+          receipt_url?: string | null
+          updated_at?: string
+          xero_sync_date?: string | null
+          xero_synced?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_expenses_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_homepage_content: {
         Row: {
           created_at: string

@@ -10,7 +10,8 @@ import {
   Clock, 
   Settings,
   Car,
-  ChevronRight
+  ChevronRight,
+  Receipt
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   CreditCard,
   Clock,
   Settings,
-  Car
+  Car,
+  Receipt
 };
 
 interface InstructorMobileHomeProps {
