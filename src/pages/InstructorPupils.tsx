@@ -97,10 +97,20 @@ export default function InstructorPupils() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPupil, setSelectedPupil] = useState<Pupil | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDrivingReportOpen, setIsDrivingReportOpen] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Pupil>>({});
+  const [addForm, setAddForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    postcode: "",
+    course_type: "",
+    notes: "",
+  });
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const isMobile = useIsMobile();
@@ -160,6 +170,48 @@ export default function InstructorPupils() {
     } catch (error) {
       console.error("Error updating pupil:", error);
       toast.error("Failed to update pupil");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddPupil = async () => {
+    if (!addForm.name || !addForm.address || !addForm.postcode) {
+      toast.error("Please fill in name, address and postcode");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("pupils").insert({
+        instructor_id: MOCK_INSTRUCTOR_ID,
+        name: addForm.name,
+        email: addForm.email || null,
+        phone: addForm.phone || null,
+        address: addForm.address,
+        postcode: addForm.postcode,
+        course_type: addForm.course_type || null,
+        notes: addForm.notes || null,
+        lessons_completed: 0,
+        progress: 0,
+      });
+
+      if (error) throw error;
+
+      toast.success("Pupil added successfully");
+      setIsAddOpen(false);
+      setAddForm({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        postcode: "",
+        course_type: "",
+        notes: "",
+      });
+      fetchPupils();
+    } catch (error) {
+      console.error("Error adding pupil:", error);
+      toast.error("Failed to add pupil");
     } finally {
       setSaving(false);
     }
@@ -249,12 +301,18 @@ export default function InstructorPupils() {
             </p>
           </div>
         </div>
-        <Link to="/instructor/diary">
-          <Button variant="outline" className="gap-2">
-            <History className="h-4 w-4" />
-            View All History
+        <div className="flex gap-2">
+          <Button onClick={() => setIsAddOpen(true)} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Pupil
           </Button>
-        </Link>
+          <Link to="/instructor/diary">
+            <Button variant="outline" className="gap-2">
+              <History className="h-4 w-4" />
+              <span className="hidden sm:inline">View All History</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -636,6 +694,119 @@ export default function InstructorPupils() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
               Save Changes
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Add Pupil Sheet */}
+      <Sheet open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <SheetContent className="sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Add New Pupil</SheetTitle>
+            <SheetDescription>Enter the pupil's details</SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="add-name">Name *</Label>
+              <Input
+                id="add-name"
+                placeholder="Full name"
+                value={addForm.name}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-email">Email</Label>
+              <Input
+                id="add-email"
+                type="email"
+                placeholder="email@example.com"
+                value={addForm.email}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, email: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-phone">Phone</Label>
+              <Input
+                id="add-phone"
+                type="tel"
+                placeholder="07xxx xxxxxx"
+                value={addForm.phone}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, phone: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-address">Address *</Label>
+              <Input
+                id="add-address"
+                placeholder="Street address"
+                value={addForm.address}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, address: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-postcode">Postcode *</Label>
+              <Input
+                id="add-postcode"
+                placeholder="e.g. SW1A 1AA"
+                value={addForm.postcode}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, postcode: e.target.value.toUpperCase() })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-course-type">Course Type</Label>
+              <select
+                id="add-course-type"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={addForm.course_type}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, course_type: e.target.value })
+                }
+              >
+                <option value="">Select course type</option>
+                <option value="intensive">Intensive</option>
+                <option value="semi-intensive">Semi-Intensive</option>
+                <option value="weekly">Weekly</option>
+                <option value="refresher">Refresher</option>
+                <option value="pass-plus">Pass Plus</option>
+                <option value="motorway">Motorway</option>
+                <option value="other">Custom</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-notes">Notes</Label>
+              <Textarea
+                id="add-notes"
+                rows={3}
+                placeholder="Any additional notes..."
+                value={addForm.notes}
+                onChange={(e) =>
+                  setAddForm({ ...addForm, notes: e.target.value })
+                }
+              />
+            </div>
+            <Button
+              className="w-full"
+              onClick={handleAddPupil}
+              disabled={saving}
+            >
+              {saving ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
+              Add Pupil
             </Button>
           </div>
         </SheetContent>
