@@ -58,12 +58,12 @@ export function InstructorMobileHome({
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header Bar - matches other instructor pages */}
-      <div className="bg-primary px-4 py-4 flex items-center justify-between">
+      <div className="bg-primary px-4 py-3 flex items-center justify-between">
         {/* Logo on the left */}
         <img 
           src={logoDark} 
           alt="Logo" 
-          className="h-8 object-contain"
+          className="h-7 object-contain"
         />
         
         {/* Avatar and name on the right */}
