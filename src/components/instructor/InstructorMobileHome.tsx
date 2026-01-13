@@ -52,13 +52,6 @@ export function InstructorMobileHome({
     return Icon;
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
-  };
-
   // Default hero image
   const heroImage = content?.hero_image_url || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80";
 
@@ -85,13 +78,6 @@ export function InstructorMobileHome({
             </AvatarFallback>
           </Avatar>
         </div>
-      </div>
-
-      {/* Welcome Greeting */}
-      <div className="px-4 py-3 bg-muted/30">
-        <p className="text-lg font-semibold text-foreground">
-          {getGreeting()}, {instructor?.name?.split(' ')[0] || "Instructor"}! 👋
-        </p>
       </div>
 
       {/* Hero Section */}
