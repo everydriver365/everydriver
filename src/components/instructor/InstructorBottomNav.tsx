@@ -61,7 +61,7 @@ export function InstructorBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-white via-white to-gray-50/95 border-t border-gray-100 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-white via-white to-gray-50/95 border-t border-gray-100 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.08)] md:hidden">
       <div className="flex items-center justify-between h-14 px-4">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
