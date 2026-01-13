@@ -37,6 +37,8 @@ interface InstructorCourse {
   course_hours: number;
   is_active: boolean;
   course_image_url: string | null;
+  discounted_price: number | null;
+  custom_features: string[] | null;
 }
 
 interface CourseTemplate {
@@ -45,6 +47,7 @@ interface CourseTemplate {
   default_image_url: string | null;
   is_popular: boolean | null;
   features: string[] | null;
+  is_intensive: boolean | null;
 }
 
 interface WorkingHours {
@@ -69,6 +72,9 @@ interface CourseWithInstructor {
   availableFrom: string | null;
   distance?: number;
   features: string[] | null;
+  isIntensive: boolean;
+  discountedPrice: number | null;
+  customFeatures: string[] | null;
 }
 
 interface GeoCache {
@@ -568,6 +574,9 @@ export default function Courses() {
             availableFrom: instructor.available_from,
             distance: undefined,
             features: template?.features || null,
+            isIntensive: template?.is_intensive || false,
+            discountedPrice: courseData.discounted_price || null,
+            customFeatures: courseData.custom_features || null,
           });
         }
       }
@@ -687,7 +696,7 @@ export default function Courses() {
       const [instructorsRes, coursesRes, templatesRes, workingHoursRes, overridesRes] = await Promise.all([
         supabase.from("instructors").select("*").eq("is_active", true),
         supabase.from("instructor_courses").select("*").eq("is_active", true),
-        supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, features").eq("is_active", true),
+        supabase.from("course_templates").select("course_hours, course_name, default_image_url, is_popular, features, is_intensive").eq("is_active", true),
         supabase.from("instructor_working_hours").select("instructor_id, day_of_week, is_active"),
         supabase.from("instructor_date_overrides").select("instructor_id, override_date, override_end_date, is_available"),
       ]);
@@ -1003,6 +1012,9 @@ export default function Courses() {
                           availableFrom={course.availableFrom}
                           distance={course.distance}
                           features={course.features}
+                          isIntensive={course.isIntensive}
+                          discountedPrice={course.discountedPrice}
+                          customFeatures={course.customFeatures}
                         />
                       </motion.div>
                     ))}

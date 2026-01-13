@@ -601,6 +601,9 @@ export default function Index() {
                     isPopular={course.isPopular}
                     availableFrom={course.availableFrom}
                     features={course.features}
+                    isIntensive={course.isIntensive}
+                    discountedPrice={course.discountedPrice}
+                    customFeatures={course.customFeatures}
                   />
                 </motion.div>
               ))

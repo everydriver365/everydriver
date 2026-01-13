@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Clock, User, PoundSterling, Star, CheckCircle } from "lucide-react";
+import { MapPin, Clock, User, PoundSterling, Star, CheckCircle, Car, Zap, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,6 +27,9 @@ interface DynamicCourseCardProps {
   availableFrom?: string | null;
   distance?: number;
   features?: string[] | null;
+  isIntensive?: boolean;
+  discountedPrice?: number | null;
+  customFeatures?: string[] | null;
 }
 
 export function DynamicCourseCard({ 
@@ -37,15 +40,35 @@ export function DynamicCourseCard({
   isPopular = false,
   availableFrom,
   distance,
-  features
+  features,
+  isIntensive,
+  discountedPrice,
+  customFeatures
 }: DynamicCourseCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
   const hourlyRate = instructor.hourly_rate || 40;
   const totalPrice = hours * hourlyRate;
+  const finalPrice = discountedPrice || totalPrice;
+  const hasDiscount = discountedPrice && discountedPrice < totalPrice;
   const courseName = hours === 28 ? "TEST IN A WEEK" : `${hours} HOUR COURSE`;
   const brandColour = instructor.brand_colour || "#1e3a5f";
+
+  // Determine transmission type
+  const carType = instructor.car_type.toLowerCase();
+  const isAutomatic = carType.includes("automatic") || carType === "auto";
+  const isManual = carType.includes("manual");
+  const isBoth = carType === "both" || (carType.includes("automatic") && carType.includes("manual"));
+  const transmissionLabel = isBoth ? "Auto & Manual" : isAutomatic ? "Automatic" : "Manual";
+
+  // Determine course intensity - semi-intensive if 30-40 hours, intensive if is_intensive flag or specific hour ranges
+  const isSemiIntensive = !isIntensive && hours >= 30 && hours <= 40;
+  const showIntensiveBadge = isIntensive || isSemiIntensive;
+  const intensiveLabel = isIntensive ? "Intensive" : "Semi-Intensive";
+
+  // Use custom features if available, otherwise fall back to template features
+  const displayFeatures = customFeatures && customFeatures.length > 0 ? customFeatures : features;
 
   const handleBookNow = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -82,14 +105,24 @@ export function DynamicCourseCard({
       >
         {/* Front of Card */}
         <div className="overflow-hidden border border-border/50 bg-card shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15">
-          {/* Popular Badge */}
-          {isPopular && (
-            <div className="absolute top-3 left-3 z-20">
+          {/* Badges Row */}
+          <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-1.5">
+            {isPopular && (
               <Badge className="border-0 bg-emerald-500 text-white">
                 Popular
               </Badge>
-            </div>
-          )}
+            )}
+            {showIntensiveBadge && (
+              <Badge className={`border-0 text-white ${isIntensive ? "bg-primary" : "bg-amber-500"}`}>
+                {isIntensive ? <Zap className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
+                {intensiveLabel}
+              </Badge>
+            )}
+            <Badge variant="secondary" className="bg-white/90 text-foreground">
+              <Car className="h-3 w-3 mr-1" />
+              {transmissionLabel}
+            </Badge>
+          </div>
           
           {/* Hero Image Section */}
           <div className="relative h-48 overflow-hidden">
@@ -104,6 +137,15 @@ export function DynamicCourseCard({
               <div className="absolute right-3 top-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-primary px-2.5 py-1.5 rounded-lg shadow-lg">
                 <MapPin className="h-3.5 w-3.5" />
                 <span className="text-sm font-bold">{distance.toFixed(1)} mi</span>
+              </div>
+            )}
+            
+            {/* Discount badge */}
+            {hasDiscount && (
+              <div className="absolute left-3 bottom-3 bg-red-500 text-white px-2.5 py-1 rounded-md shadow-lg">
+                <span className="text-sm font-bold">
+                  Save £{(totalPrice - discountedPrice!).toFixed(0)}
+                </span>
               </div>
             )}
           </div>
@@ -144,10 +186,17 @@ export function DynamicCourseCard({
                 <span className="text-sm">With {instructor.name}</span>
               </div>
 
-              {/* Price with icon */}
+              {/* Price with icon - show discount if available */}
               <div className="flex items-center gap-2 text-foreground">
                 <PoundSterling className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm font-semibold">£{totalPrice.toFixed(2)}</span>
+                {hasDiscount ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm line-through text-muted-foreground">£{totalPrice.toFixed(0)}</span>
+                    <span className="text-sm font-bold text-red-600">£{finalPrice.toFixed(0)}</span>
+                  </div>
+                ) : (
+                  <span className="text-sm font-semibold">£{totalPrice.toFixed(2)}</span>
+                )}
               </div>
 
               {/* Payment Options */}
@@ -198,8 +247,8 @@ export function DynamicCourseCard({
             </p>
 
             <div className="mt-4 space-y-1.5 max-h-[100px] overflow-y-auto">
-              {features && features.length > 0 ? (
-                features.slice(0, 5).map((feature, index) => (
+              {displayFeatures && displayFeatures.length > 0 ? (
+                displayFeatures.slice(0, 5).map((feature, index) => (
                   <div key={index} className="flex items-center gap-2 text-sm text-white/80">
                     <CheckCircle className="h-4 w-4 flex-shrink-0 text-emerald-400" />
                     <span className="line-clamp-1">{feature}</span>
@@ -221,10 +270,24 @@ export function DynamicCourseCard({
 
             <div className="mt-4 flex items-center justify-between border-t border-primary-foreground/20 pt-4">
               <div>
-                <span className="text-2xl font-bold text-primary-foreground">£{totalPrice}</span>
-                <div className="text-xs text-primary-foreground/70">
-                  or from £{Math.round(totalPrice / 4)}/month
-                </div>
+                {hasDiscount ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg line-through text-white/50">£{totalPrice}</span>
+                      <span className="text-2xl font-bold text-white">£{finalPrice}</span>
+                    </div>
+                    <div className="text-xs text-primary-foreground/70">
+                      or from £{Math.round(finalPrice / 4)}/month
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xl font-bold text-primary-foreground">£{totalPrice}</span>
+                    <div className="text-xs text-primary-foreground/70">
+                      or from £{Math.round(totalPrice / 4)}/month
+                    </div>
+                  </>
+                )}
               </div>
               <Button size="sm" variant="secondary" onClick={handleBookNow}>
                 Learn More

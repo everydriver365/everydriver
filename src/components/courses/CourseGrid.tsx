@@ -140,6 +140,9 @@ export function CourseGrid({
                 availableFrom={course.availableFrom}
                 distance={course.distance}
                 features={course.features}
+                isIntensive={course.isIntensive}
+                discountedPrice={course.discountedPrice}
+                customFeatures={course.customFeatures}
               />
             </motion.div>
           ))}

@@ -27,6 +27,8 @@ export interface InstructorCourse {
   course_hours: number;
   is_active: boolean;
   course_image_url: string | null;
+  discounted_price: number | null;
+  custom_features: string[] | null;
 }
 
 export interface CourseTemplate {
@@ -61,6 +63,9 @@ export interface CourseWithInstructor {
   distance?: number;
   courseName: string;
   features: string[] | null;
+  isIntensive: boolean;
+  discountedPrice: number | null;
+  customFeatures: string[] | null;
 }
 
 interface GeoCache {
@@ -516,6 +521,9 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
             distance: undefined,
             courseName: template?.course_name || `${hours} Hour Course`,
             features: template?.features || null,
+            isIntensive: template?.is_intensive || false,
+            discountedPrice: courseData.discounted_price || null,
+            customFeatures: courseData.custom_features || null,
           });
         }
       }
