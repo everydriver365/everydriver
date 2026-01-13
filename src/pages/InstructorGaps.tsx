@@ -1,26 +1,22 @@
-import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 
 const MOCK_INSTRUCTOR_ID = "550e8400-e29b-41d4-a716-446655440000";
 
 export default function InstructorGaps() {
   const isMobile = useIsMobile();
+  const { profile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
 
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="bg-primary px-4 py-3 flex items-center gap-3">
-        <Link to="/instructor">
-          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <h1 className="text-lg font-semibold text-primary-foreground">Fill Gaps</h1>
-      </div>
+      <InstructorMobileHeader 
+        instructorName={profile?.name}
+        profileImageUrl={profile?.profile_image_url}
+      />
 
       {/* Content */}
       <div className="p-4">
