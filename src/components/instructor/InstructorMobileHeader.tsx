@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import logoImage from "@/assets/logo.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;
@@ -17,7 +18,7 @@ export function InstructorMobileHeader({
     <div className="bg-primary px-4 py-4 flex items-center justify-between">
       {/* Logo on the left */}
       <img 
-        src="/lovable-uploads/e8a1a9dc-11e3-4bec-bdd1-edf010ac7bfd.png" 
+        src={logoImage} 
         alt="Logo" 
         className="h-8 object-contain"
       />

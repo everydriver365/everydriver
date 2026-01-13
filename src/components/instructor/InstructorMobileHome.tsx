@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
+import logoImage from "@/assets/logo.png";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -73,7 +74,7 @@ export function InstructorMobileHome({
         <div className="absolute top-0 left-0 right-0 p-4 pt-6 flex items-center justify-between">
           {/* Logo on the left */}
           <img 
-            src="/lovable-uploads/e8a1a9dc-11e3-4bec-bdd1-edf010ac7bfd.png" 
+            src={logoImage} 
             alt="Logo" 
             className="h-8 object-contain"
           />
