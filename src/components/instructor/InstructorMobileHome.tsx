@@ -245,9 +245,9 @@ export function InstructorMobileHome({
         <PromoBannerCarousel banners={content.promo_banners} title="Featured" />
       )}
 
-      {/* Secondary Promo Banners */}
+      {/* Secondary Promo Banners - Horizontal Scroll Cards */}
       {content?.secondary_promo_banners && content.secondary_promo_banners.length > 0 && (
-        <PromoBannerCarousel banners={content.secondary_promo_banners} title="More for You" variant="secondary" />
+        <SecondaryPromoCards banners={content.secondary_promo_banners} />
       )}
     </div>
   );
@@ -372,6 +372,63 @@ function PromoBannerCarousel({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// Secondary Promo Cards - Horizontal Scrollable Layout
+function SecondaryPromoCards({ banners }: { banners: PromoBanner[] }) {
+  return (
+    <div className="mt-6">
+      {/* Section Title */}
+      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-4 mb-3">
+        More for You
+      </h3>
+      
+      {/* Horizontal Scroll Container */}
+      <div className="overflow-x-auto scrollbar-hide">
+        <div className="flex gap-3 px-4 pb-2">
+          {banners.map((banner, index) => (
+            <Link key={banner.id} to={banner.link} className="shrink-0">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 + index * 0.05 }}
+                className="relative w-44 h-32 rounded-xl overflow-hidden group"
+              >
+                {/* Background Image */}
+                {banner.image_url ? (
+                  <img 
+                    src={banner.image_url} 
+                    alt={banner.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/70" />
+                )}
+                
+                {/* Dark Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                
+                {/* Content */}
+                <div className="absolute inset-0 p-3 flex flex-col justify-end">
+                  <h4 className="text-white font-semibold text-sm leading-tight line-clamp-2">
+                    {banner.title}
+                  </h4>
+                  <p className="text-white/80 text-xs mt-1 line-clamp-1">
+                    {banner.subtitle}
+                  </p>
+                </div>
+
+                {/* Hover Arrow */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ChevronRight className="h-4 w-4 text-white" />
+                </div>
+              </motion.div>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
