@@ -286,11 +286,13 @@ export function useCourseDiscovery(courseTypeFilter: CourseTypeFilter = "all") {
         setSearchedAreaName(areaName || null);
         setSortBy("nearest");
         
-        // Find instructors in the searched area
+        // Find instructors in the searched area using the full geoCache (includes previously geocoded instructor postcodes)
         const radiusMiles = parseInt(radius);
+        const fullGeoCache = { ...geoCache, ...result.geoCache };
+        
         const instructorsNearby = instructors.filter((instructor) => {
           const instructorPostcode = instructor.home_postcode.replace(/\s+/g, "").toUpperCase();
-          const instructorLocation = result.geoCache[instructorPostcode];
+          const instructorLocation = fullGeoCache[instructorPostcode];
           
           if (!instructorLocation) return false;
           
