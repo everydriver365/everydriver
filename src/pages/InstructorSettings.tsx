@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 
 const MOCK_INSTRUCTOR_ID = "123e4567-e89b-12d3-a456-426614174000";
 
@@ -34,6 +35,7 @@ export default function InstructorSettings() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const isMobile = useIsMobile();
+  const { profile: headerProfile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
 
   useEffect(() => {
     fetchProfile();

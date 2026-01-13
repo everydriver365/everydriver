@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 
 const MOCK_INSTRUCTOR_ID = "b7987d5e-348f-4047-a8d4-ee71fab1f01d";
 
@@ -30,6 +31,7 @@ export default function InstructorJobs() {
   const [jobs, setJobs] = useState<JobEnquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
+  const { profile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
 
   useEffect(() => {
     fetchJobs();
@@ -136,11 +138,14 @@ export default function InstructorJobs() {
     </div>
   );
 
-  // Mobile Layout - No header
+  // Mobile Layout
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background">
-        <InstructorMobileHeader />
+        <InstructorMobileHeader 
+          instructorName={profile?.name}
+          profileImageUrl={profile?.profile_image_url}
+        />
         {content}
         <InstructorBottomNav />
       </div>
