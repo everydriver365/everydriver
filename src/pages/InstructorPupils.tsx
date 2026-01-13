@@ -61,6 +61,7 @@ import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav
 import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 
 interface Pupil {
   id: string;
@@ -103,6 +104,7 @@ export default function InstructorPupils() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const isMobile = useIsMobile();
+  const { profile: instructorProfile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
 
   useEffect(() => {
     fetchPupils();
@@ -688,7 +690,10 @@ export default function InstructorPupils() {
     if (isMobile) {
       return (
         <div className="min-h-screen bg-background">
-          <InstructorMobileHeader />
+          <InstructorMobileHeader 
+            instructorName={instructorProfile?.name}
+            profileImageUrl={instructorProfile?.profile_image_url}
+          />
           {loadingContent}
           <InstructorBottomNav />
         </div>
@@ -706,7 +711,10 @@ export default function InstructorPupils() {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background">
-        <InstructorMobileHeader />
+        <InstructorMobileHeader 
+          instructorName={instructorProfile?.name}
+          profileImageUrl={instructorProfile?.profile_image_url}
+        />
         {mainContent}
         <InstructorBottomNav />
       </div>
