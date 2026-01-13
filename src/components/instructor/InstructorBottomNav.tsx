@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Calendar, Users, Briefcase, CreditCard, Settings } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/instructor" },
@@ -12,49 +11,9 @@ const navItems = [
   { label: "Settings", icon: Settings, path: "/instructor/settings" },
 ];
 
-// Mock instructor ID for demo
-const MOCK_INSTRUCTOR_ID = "550e8400-e29b-41d4-a716-446655440000";
-
 export function InstructorBottomNav() {
   const location = useLocation();
-  const [pendingJobsCount, setPendingJobsCount] = useState(0);
-
-  useEffect(() => {
-    const fetchPendingJobs = async () => {
-      const { count, error } = await supabase
-        .from("course_enquiries")
-        .select("*", { count: "exact", head: true })
-        .eq("assigned_instructor_id", MOCK_INSTRUCTOR_ID)
-        .eq("status", "pending");
-
-      if (!error && count) {
-        setPendingJobsCount(count);
-      }
-    };
-
-    fetchPendingJobs();
-
-    // Subscribe to realtime changes
-    const channel = supabase
-      .channel("job-offers")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "course_enquiries",
-          filter: `assigned_instructor_id=eq.${MOCK_INSTRUCTOR_ID}`,
-        },
-        () => {
-          fetchPendingJobs();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  const pendingJobsCount = usePendingJobsCount();
 
   const handleNavClick = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
