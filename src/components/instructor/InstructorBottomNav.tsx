@@ -61,8 +61,8 @@ export function InstructorBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border shadow-lg md:hidden">
-      <div className="flex items-center justify-around h-16 px-1">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-white via-white to-gray-50/95 border-t border-gray-100 md:hidden">
+      <div className="flex items-center justify-around h-20 px-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
@@ -72,26 +72,30 @@ export function InstructorBottomNav() {
               key={item.path}
               to={item.path}
               onClick={handleNavClick}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors relative ${
+              className={`flex flex-col items-center justify-center gap-1.5 flex-1 h-full transition-all duration-200 ${
                 isActive
                   ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-gray-400 hover:text-gray-600"
               }`}
             >
               <div className="relative">
                 <item.icon
-                  className={`h-5 w-5 ${isActive ? "scale-110" : ""} transition-transform`}
+                  className={`h-6 w-6 transition-all duration-200 ${
+                    isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
+                  }`}
+                  strokeWidth={isActive ? 2.5 : 1.5}
                 />
                 {showNotification && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] font-medium">{item.label}</span>
-              {isActive && (
-                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
-              )}
+              <span className={`text-xs tracking-wide transition-all duration-200 ${
+                isActive ? "font-semibold" : "font-medium"
+              }`}>
+                {item.label}
+              </span>
             </Link>
           );
         })}
