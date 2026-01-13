@@ -620,15 +620,17 @@ export default function Courses() {
     }
   }, [geoCache, areaCache]);
 
-  const handleSearch = async () => {
-    if (!postcode.trim()) {
+  const handleSearch = async (searchPostcode?: string) => {
+    const postcodeToSearch = searchPostcode || postcode;
+    
+    if (!postcodeToSearch.trim()) {
       toast({ title: "Please enter a postcode", variant: "destructive" });
       return;
     }
 
     setIsSearching(true);
     try {
-      const cleanPostcode = postcode.replace(/\s+/g, "").toUpperCase();
+      const cleanPostcode = postcodeToSearch.replace(/\s+/g, "").toUpperCase();
       const result = await geocodePostcodes([cleanPostcode]);
       const location = result.geoCache[cleanPostcode];
       const areaName = result.areaCache[cleanPostcode];
@@ -681,6 +683,13 @@ export default function Courses() {
     } finally {
       setIsSearching(false);
     }
+  };
+
+  // Handle postcode selection from autocomplete - auto search
+  const handlePostcodeSelect = (selectedPostcode: string) => {
+    setPostcode(selectedPostcode);
+    // Trigger search immediately with the selected postcode
+    handleSearch(selectedPostcode);
   };
 
   const clearSearch = () => {
@@ -836,6 +845,7 @@ export default function Courses() {
               <PostcodeAutocomplete
                 value={postcode}
                 onChange={setPostcode}
+                onSelect={handlePostcodeSelect}
                 placeholder="Enter your postcode"
                 className="flex-1"
                 inputClassName="h-11 border-0 bg-secondary"
@@ -850,7 +860,7 @@ export default function Courses() {
                 <option value="15">15 miles</option>
                 <option value="25">25 miles</option>
               </select>
-              <Button variant="accent" size="lg" className="h-11" onClick={handleSearch} disabled={isSearching}>
+              <Button variant="accent" size="lg" className="h-11" onClick={() => handleSearch()} disabled={isSearching}>
                 {isSearching ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
