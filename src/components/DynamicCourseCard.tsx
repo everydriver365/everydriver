@@ -249,18 +249,18 @@ export function DynamicCourseCard({
             <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5">
               {displayFeatures && displayFeatures.length > 0 ? (
                 displayFeatures.slice(0, 8).map((feature, index) => (
-                  <div key={index} className="flex items-center gap-1.5 text-xs text-white/80">
+                  <div key={index} className="flex items-center gap-1.5 text-sm text-white/80">
                     <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 text-emerald-400" />
                     <span className="line-clamp-1">{feature}</span>
                   </div>
                 ))
               ) : (
                 <>
-                  <div className="flex items-center gap-1.5 text-xs text-white/80">
+                  <div className="flex items-center gap-1.5 text-sm text-white/80">
                     <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
                     <span>Theory support</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-white/80">
+                  <div className="flex items-center gap-1.5 text-sm text-white/80">
                     <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
                     <span>Home pick-up</span>
                   </div>
