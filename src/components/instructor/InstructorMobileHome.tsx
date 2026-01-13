@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
@@ -11,6 +12,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 
 // Icon mapping
@@ -215,36 +217,92 @@ export function InstructorMobileHome({
         </div>
       </div>
 
-      {/* Promo Banners */}
+      {/* Promo Banners - Full Width Carousel Style */}
       {content?.promo_banners && content.promo_banners.length > 0 && (
-        <div className="px-4 mt-6">
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            {content.promo_banners.map((banner, index) => (
-              <motion.div
-                key={banner.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                className="flex-shrink-0 w-[280px]"
-              >
-                <Link to={banner.link}>
-                  <div className="relative rounded-2xl overflow-hidden h-36 bg-gradient-to-br from-primary to-primary/80">
-                    {banner.image_url && (
-                      <img 
-                        src={banner.image_url} 
-                        alt={banner.title}
-                        className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-50"
-                      />
-                    )}
-                    <div className="absolute inset-0 p-4 flex flex-col justify-end">
-                      <h3 className="text-white font-bold text-lg">{banner.title}</h3>
-                      <p className="text-white/80 text-sm">{banner.subtitle}</p>
+        <PromoBannerCarousel banners={content.promo_banners} />
+      )}
+    </div>
+  );
+}
+
+// Promo Banner Carousel Component
+function PromoBannerCarousel({ banners }: { banners: PromoBanner[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  return (
+    <div className="mt-6">
+      {/* Carousel Container */}
+      <div className="relative overflow-hidden">
+        <div 
+          className="flex transition-transform duration-300 ease-out"
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+        >
+          {banners.map((banner, index) => (
+            <div key={banner.id} className="w-full flex-shrink-0 px-4">
+              <Link to={banner.link}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="relative rounded-2xl overflow-hidden h-52"
+                >
+                  {/* Background Image */}
+                  {banner.image_url ? (
+                    <img 
+                      src={banner.image_url} 
+                      alt={banner.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/70" />
+                  )}
+                  
+                  {/* Dark Overlay for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  
+                  {/* Content */}
+                  <div className="absolute inset-0 p-5 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-2xl leading-tight">
+                        {banner.title}
+                      </h3>
+                      <p className="text-white/90 text-base mt-2 leading-snug max-w-[75%]">
+                        {banner.subtitle}
+                      </p>
+                    </div>
+                    
+                    {/* CTA Button */}
+                    <div>
+                      <Button 
+                        variant="secondary" 
+                        className="bg-white text-foreground hover:bg-white/90 font-semibold px-6 rounded-full"
+                      >
+                        Learn more
+                      </Button>
                     </div>
                   </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Pagination Dots */}
+      {banners.length > 1 && (
+        <div className="flex justify-center gap-2 mt-4 pb-2">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveIndex(index)}
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                index === activeIndex 
+                  ? "bg-primary w-3 h-3" 
+                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
       )}
     </div>
