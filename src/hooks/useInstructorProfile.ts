@@ -5,6 +5,7 @@ interface InstructorProfile {
   name: string;
   profile_image_url: string | null;
   hourly_rate: number | null;
+  home_postcode: string | null;
 }
 
 export function useInstructorProfile(instructorId: string) {
@@ -16,7 +17,7 @@ export function useInstructorProfile(instructorId: string) {
       try {
         const { data, error } = await supabase
           .from("instructors")
-          .select("name, profile_image_url, hourly_rate")
+          .select("name, profile_image_url, hourly_rate, home_postcode")
           .eq("id", instructorId)
           .single();
 
