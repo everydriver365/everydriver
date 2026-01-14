@@ -11,7 +11,8 @@ import {
   MessageSquare,
   CheckCircle,
   ArrowRight,
-  Star
+  Star,
+  Eye
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -117,6 +118,17 @@ export default function InstructorAppHome() {
                 asChild
               >
                 <Link to="/instructor-app/pricing">View Pricing</Link>
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 h-12 px-8"
+                asChild
+              >
+                <Link to="/i/sarah-mitchell">
+                  <Eye className="mr-2 h-5 w-5" />
+                  See Demo
+                </Link>
               </Button>
             </div>
 
