@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,10 @@ import {
   AlertTriangle,
   CheckCircle,
   MapPin,
-  TrendingUp
+  TrendingUp,
+  Maximize2,
+  Minimize2,
+  X
 } from 'lucide-react';
 import { useTelematics } from '@/hooks/useTelematics';
 import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-leaflet';
@@ -43,6 +46,8 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   pupilId,
   compact = false
 }) => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  
   const {
     isTracking,
     currentSpeed,
@@ -142,68 +147,127 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
 
         {/* Live Map */}
         {isTracking && (
-          <div className="relative h-48 rounded-lg overflow-hidden border">
-            <MapContainer
-              center={currentPosition || defaultCenter}
-              zoom={15}
-              className="h-full w-full"
-              style={{ zIndex: 0 }}
-              zoomControl={false}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              
-              {/* Route polyline */}
-              {routeCoordinates.length >= 2 && (
-                <Polyline
-                  positions={routeCoordinates}
-                  pathOptions={{ 
-                    color: '#3b82f6', 
-                    weight: 4,
-                    opacity: 0.8
-                  }}
+          <>
+            {/* Fullscreen Map Overlay */}
+            {isFullscreen && (
+              <div className="fixed inset-0 z-50 bg-background">
+                <MapContainer
+                  center={currentPosition || defaultCenter}
+                  zoom={16}
+                  className="h-full w-full"
+                  style={{ zIndex: 0 }}
+                  zoomControl={true}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  
+                  {routeCoordinates.length >= 2 && (
+                    <Polyline
+                      positions={routeCoordinates}
+                      pathOptions={{ color: '#3b82f6', weight: 5, opacity: 0.9 }}
+                    />
+                  )}
+                  
+                  {currentPosition && (
+                    <CircleMarker
+                      center={currentPosition}
+                      radius={10}
+                      pathOptions={{ fillColor: '#22c55e', fillOpacity: 1, color: '#ffffff', weight: 3 }}
+                    />
+                  )}
+                  
+                  {routeCoordinates.length > 0 && (
+                    <CircleMarker
+                      center={routeCoordinates[0]}
+                      radius={8}
+                      pathOptions={{ fillColor: '#f59e0b', fillOpacity: 1, color: '#ffffff', weight: 2 }}
+                    />
+                  )}
+                  
+                  <MapUpdater position={currentPosition} />
+                </MapContainer>
+                
+                {/* Fullscreen controls overlay */}
+                <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
+                  <div className="bg-background/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg flex items-center gap-3">
+                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="font-medium text-sm">Live Route</span>
+                    <span className="text-muted-foreground text-sm">|</span>
+                    <span className="text-sm">{currentSpeed.toFixed(0)} km/h</span>
+                    <span className="text-muted-foreground text-sm">|</span>
+                    <span className="text-sm">{totalDistance.toFixed(2)} km</span>
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="h-10 w-10 shadow-lg"
+                    onClick={() => setIsFullscreen(false)}
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Inline Map */}
+            <div className="relative h-48 rounded-lg overflow-hidden border">
+              <MapContainer
+                center={currentPosition || defaultCenter}
+                zoom={15}
+                className="h-full w-full"
+                style={{ zIndex: 0 }}
+                zoomControl={false}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-              )}
+                
+                {routeCoordinates.length >= 2 && (
+                  <Polyline
+                    positions={routeCoordinates}
+                    pathOptions={{ color: '#3b82f6', weight: 4, opacity: 0.8 }}
+                  />
+                )}
+                
+                {currentPosition && (
+                  <CircleMarker
+                    center={currentPosition}
+                    radius={8}
+                    pathOptions={{ fillColor: '#22c55e', fillOpacity: 1, color: '#ffffff', weight: 3 }}
+                  />
+                )}
+                
+                {routeCoordinates.length > 0 && (
+                  <CircleMarker
+                    center={routeCoordinates[0]}
+                    radius={6}
+                    pathOptions={{ fillColor: '#f59e0b', fillOpacity: 1, color: '#ffffff', weight: 2 }}
+                  />
+                )}
+                
+                <MapUpdater position={currentPosition} />
+              </MapContainer>
               
-              {/* Current position marker */}
-              {currentPosition && (
-                <CircleMarker
-                  center={currentPosition}
-                  radius={8}
-                  pathOptions={{
-                    fillColor: '#22c55e',
-                    fillOpacity: 1,
-                    color: '#ffffff',
-                    weight: 3
-                  }}
-                />
-              )}
+              {/* Map overlay controls */}
+              <div className="absolute top-2 left-2 bg-background/90 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                Live Route
+              </div>
               
-              {/* Start position marker */}
-              {routeCoordinates.length > 0 && (
-                <CircleMarker
-                  center={routeCoordinates[0]}
-                  radius={6}
-                  pathOptions={{
-                    fillColor: '#f59e0b',
-                    fillOpacity: 1,
-                    color: '#ffffff',
-                    weight: 2
-                  }}
-                />
-              )}
-              
-              <MapUpdater position={currentPosition} />
-            </MapContainer>
-            
-            {/* Map overlay label */}
-            <div className="absolute top-2 left-2 bg-background/90 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
-              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-              Live Route
+              {/* Fullscreen toggle button */}
+              <Button
+                size="icon"
+                variant="secondary"
+                className="absolute top-2 right-2 h-8 w-8 bg-background/90 hover:bg-background"
+                onClick={() => setIsFullscreen(true)}
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
             </div>
-          </div>
+          </>
         )}
 
         {/* Waiting for GPS message when not tracking */}
