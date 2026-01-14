@@ -1,16 +1,24 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
-import logo from "@/assets/logo-everydriver-transparent.png";
+import everyDriverLogo from "@/assets/logo-everydriver-transparent.png";
+import drive365Logo from "@/assets/logo-drive365.png";
 
 export function Footer() {
+  const location = useLocation();
+  const isInstructorApp = location.pathname.startsWith("/instructor-app");
+  
+  const logo = isInstructorApp ? drive365Logo : everyDriverLogo;
+  const logoAlt = isInstructorApp ? "Drive365" : "EveryDriver";
+  const homeLink = isInstructorApp ? "/instructor-app" : "/";
+
   return (
     <footer className="border-t bg-primary text-primary-foreground">
       <div className="container py-12">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center">
-              <img src={logo} alt="EveryDriver" className="h-10" />
+            <Link to={homeLink} className="flex items-center">
+              <img src={logo} alt={logoAlt} className="h-10" />
             </Link>
             <p className="text-sm text-primary-foreground/70">
               Professional driving instruction to help you pass your test with confidence.
