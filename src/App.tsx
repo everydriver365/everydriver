@@ -34,6 +34,7 @@ import About from "./pages/About";
 import Intensives from "./pages/Intensives";
 import SemiIntensive from "./pages/SemiIntensive";
 import NotFound from "./pages/NotFound";
+import InstructorMiniWebsite from "./pages/InstructorMiniWebsite";
 import InstallInstructor from "./pages/InstallInstructor";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
@@ -68,6 +69,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/intensives" element={<Intensives />} />
             <Route path="/semi-intensive" element={<SemiIntensive />} />
+            <Route path="/i/:slug" element={<InstructorMiniWebsite />} />
 
             {/* Instructor SaaS Marketing (InstructorPro branding) */}
             <Route path="/instructor-app" element={<InstructorAppHome />} />
