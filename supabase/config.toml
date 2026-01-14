@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.track-payment-link]
 verify_jwt = false
+
+[functions.twentyi-api]
+verify_jwt = false
