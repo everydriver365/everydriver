@@ -7,7 +7,8 @@ import {
   ArrowRight,
   Star,
   Eye,
-  Loader2
+  Loader2,
+  Globe
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
@@ -157,6 +158,38 @@ export default function InstructorAppHome() {
                 </motion.div>
               ))}
             </div>
+
+            {/* Domains Promo Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mt-12"
+            >
+              <Card className="bg-gradient-to-r from-primary to-primary/90 border-0 overflow-hidden">
+                <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
+                      <Globe className="h-7 w-7 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-1">Get Your Professional Domain</h3>
+                      <p className="text-white/80">Secure your .com, .co.uk or any TLD for your driving school website</p>
+                    </div>
+                  </div>
+                  <Button 
+                    size="lg" 
+                    className="bg-white text-primary hover:bg-white/90 whitespace-nowrap"
+                    asChild
+                  >
+                    <Link to="/instructor-app/domains">
+                      Browse Domains
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
         </section>
       )}
