@@ -27,6 +27,11 @@ interface HostingPackage {
   features: string[];
 }
 
+// Helper function to encode API key to base64
+function encodeToBase64(str: string): string {
+  return btoa(str);
+}
+
 // Helper function to make 20i API requests
 async function make20iRequest(
   endpoint: string, 
@@ -40,11 +45,14 @@ async function make20iRequest(
   const url = `${TWENTYI_BASE_URL}${endpoint}`;
   console.log(`Making 20i API request: ${method} ${url}`);
 
+  // 20i API requires base64 encoded bearer token
+  const encodedToken = encodeToBase64(TWENTYI_API_KEY);
+
   try {
     const options: RequestInit = {
       method,
       headers: {
-        'Authorization': `Bearer ${TWENTYI_API_KEY}`,
+        'Authorization': `Bearer ${encodedToken}`,
         'Content-Type': 'application/json',
       },
     };
