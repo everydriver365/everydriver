@@ -82,11 +82,8 @@ export function InstructorMobileHome({
           className="h-7 object-contain"
         />
         
-        {/* Name, Visibility badge and Avatar on the right */}
+        {/* Visibility badge and Avatar on the right */}
         <div className="flex items-center gap-2">
-          <span className="text-nav-foreground text-sm font-medium">
-            {instructor?.name || "Instructor"}
-          </span>
           {instructor && instructor.is_active !== undefined && (
             <Badge 
               variant="secondary" 
