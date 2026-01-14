@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Globe, Server, Shield, Check, Loader2, ExternalLink, ShoppingCart } from "lucide-react";
+import { Search, Globe, Server, Shield, Check, Loader2, ShoppingCart, ExternalLink } from "lucide-react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,24 +13,47 @@ import { toast } from "sonner";
 interface DomainResult {
   domain: string;
   available: boolean;
+  premium?: boolean;
   price?: number;
   currency?: string;
   period?: number;
   error?: boolean;
 }
 
-interface HostingPlan {
+interface HostingPackage {
+  id: string;
   name: string;
+  type: string;
   price: number;
-  period: string;
+  currency: string;
   features: string[];
 }
 
-const hostingPlans: HostingPlan[] = [
-  { name: 'Starter', price: 4.99, period: 'month', features: ['1 Website', '30GB Storage', 'Free SSL', 'Email Support'] },
-  { name: 'Economy', price: 7.99, period: 'month', features: ['1 Website', '100GB Storage', 'Free SSL', 'Free Domain', '24/7 Support'] },
-  { name: 'Deluxe', price: 9.99, period: 'month', features: ['Unlimited Websites', 'Unlimited Storage', 'Free SSL', 'Free Domain', 'Priority Support'] },
-  { name: 'Ultimate', price: 14.99, period: 'month', features: ['Unlimited Websites', 'Unlimited Storage', 'Free SSL', 'Free Domain', 'Premium DNS', 'Priority Support', 'Daily Backups'] },
+const defaultHostingPackages: HostingPackage[] = [
+  {
+    id: 'starter',
+    name: 'Starter Hosting',
+    type: 'shared',
+    price: 4.99,
+    currency: 'GBP',
+    features: ['5GB Storage', '50GB Bandwidth', '1 Website', 'Free SSL', 'Email Hosting']
+  },
+  {
+    id: 'business',
+    name: 'Business Hosting',
+    type: 'shared',
+    price: 9.99,
+    currency: 'GBP',
+    features: ['25GB Storage', '250GB Bandwidth', '10 Websites', 'Free SSL', 'Email Hosting', 'Daily Backups']
+  },
+  {
+    id: 'professional',
+    name: 'Professional Hosting',
+    type: 'shared',
+    price: 19.99,
+    currency: 'GBP',
+    features: ['Unlimited Storage', 'Unlimited Bandwidth', 'Unlimited Websites', 'Free SSL', 'Email Hosting', 'Daily Backups', 'Priority Support']
+  },
 ];
 
 export default function InstructorDomains() {
@@ -39,6 +62,8 @@ export default function InstructorDomains() {
   const [domainResults, setDomainResults] = useState<DomainResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [hostingPackages, setHostingPackages] = useState<HostingPackage[]>(defaultHostingPackages);
+  const [isLoadingHosting, setIsLoadingHosting] = useState(false);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -51,9 +76,9 @@ export default function InstructorDomains() {
     setAvailabilityError(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('godaddy-api', {
+      const { data, error } = await supabase.functions.invoke('twentyi-api', {
         body: {
-          action: 'check',
+          action: 'check-multiple',
           domain: searchQuery.toLowerCase().replace(/\s+/g, ''),
         },
       });
@@ -62,13 +87,6 @@ export default function InstructorDomains() {
 
       if (!Array.isArray(data)) {
         throw new Error('Invalid response from domain lookup');
-      }
-
-      const hasProviderError = data.some((r: DomainResult) => Boolean(r?.error));
-      if (hasProviderError) {
-        setAvailabilityError(
-          'We could not check availability right now (provider access denied). Please try again later or contact support.'
-        );
       }
 
       setDomainResults(data);
@@ -82,36 +100,90 @@ export default function InstructorDomains() {
       // Show mock results for demo
       const mockDomain = searchQuery.toLowerCase().replace(/\s+/g, '');
       setDomainResults([
-        { domain: `${mockDomain}.com`, available: true, price: 12.99, currency: 'GBP', period: 1 },
         { domain: `${mockDomain}.co.uk`, available: true, price: 9.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.uk`, available: false, price: 7.99, currency: 'GBP', period: 1 },
+        { domain: `${mockDomain}.com`, available: true, price: 12.99, currency: 'GBP', period: 1 },
+        { domain: `${mockDomain}.uk`, available: false, price: 5.99, currency: 'GBP', period: 1 },
+        { domain: `${mockDomain}.org`, available: true, price: 14.99, currency: 'GBP', period: 1 },
         { domain: `${mockDomain}.net`, available: true, price: 14.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.org`, available: false, price: 13.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.io`, available: true, price: 39.99, currency: 'GBP', period: 1 },
+        { domain: `${mockDomain}.info`, available: true, price: 4.99, currency: 'GBP', period: 1 },
+        { domain: `${mockDomain}.biz`, available: false, price: 14.99, currency: 'GBP', period: 1 },
+        { domain: `${mockDomain}.me`, available: true, price: 19.99, currency: 'GBP', period: 1 },
       ]);
     } finally {
       setIsSearching(false);
     }
   };
 
+  const loadHostingPackages = async () => {
+    setIsLoadingHosting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('twentyi-api', {
+        body: { action: 'get-hosting-packages' },
+      });
+
+      if (error) throw error;
+
+      if (Array.isArray(data) && data.length > 0) {
+        setHostingPackages(data);
+      }
+    } catch (error) {
+      console.error('Error loading hosting packages:', error);
+      // Keep default packages
+    } finally {
+      setIsLoadingHosting(false);
+    }
+  };
+
   const handlePurchase = async (domain: string) => {
     toast.info(`Initiating purchase for ${domain}...`);
-    // This would integrate with the full purchase flow
     try {
-      const { data, error } = await supabase.functions.invoke('godaddy-api', {
+      const { data, error } = await supabase.functions.invoke('twentyi-api', {
         body: {
-          action: 'purchase',
+          action: 'register-domain',
           domain,
           period: 1,
+          contact: {
+            firstName: 'Contact',
+            lastName: 'Required',
+            email: 'contact@example.com',
+          },
         },
       });
 
       if (error) throw error;
 
-      toast.success(`Order created for ${domain}! Complete payment to finalize.`);
+      if (data?.success) {
+        toast.success(`Domain ${domain} registered successfully!`);
+      } else {
+        toast.error(data?.error || "Failed to register domain");
+      }
     } catch (error) {
       console.error('Error purchasing domain:', error);
       toast.error("Please log in as an instructor to purchase domains.");
+    }
+  };
+
+  const handleHostingPurchase = async (packageId: string, packageName: string) => {
+    toast.info(`Initiating ${packageName} hosting setup...`);
+    try {
+      const { data, error } = await supabase.functions.invoke('twentyi-api', {
+        body: {
+          action: 'provision-hosting',
+          packageId,
+          domain: 'example.com', // Would be replaced with actual domain selection
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success(`${packageName} hosting provisioned successfully!`);
+      } else {
+        toast.error(data?.error || "Failed to provision hosting");
+      }
+    } catch (error) {
+      console.error('Error provisioning hosting:', error);
+      toast.error("Please log in as an instructor to purchase hosting.");
     }
   };
 
@@ -133,7 +205,7 @@ export default function InstructorDomains() {
               Get Your Perfect Domain
             </h1>
             <p className="text-lg text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-              Secure your professional driving school domain and hosting. Build your online presence with trusted, reliable services.
+              Secure your professional driving school domain and hosting. Build your online presence with trusted, reliable services powered by 20i.
             </p>
 
             {/* Domain Search */}
@@ -172,7 +244,11 @@ export default function InstructorDomains() {
       {/* Main Content */}
       <section className="py-12">
         <div className="container max-w-6xl">
-          <Tabs defaultValue="domains" className="w-full">
+          <Tabs defaultValue="domains" className="w-full" onValueChange={(value) => {
+            if (value === 'hosting') {
+              loadHostingPackages();
+            }
+          }}>
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
               <TabsTrigger value="domains">
                 <Globe className="w-4 h-4 mr-2" />
@@ -207,7 +283,7 @@ export default function InstructorDomains() {
                         key={result.domain}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
+                        transition={{ delay: index * 0.05 }}
                       >
                         <Card
                           className={
@@ -234,9 +310,14 @@ export default function InstructorDomains() {
                               <div>
                                 <p className="font-semibold">{result.domain}</p>
                                 {result.error ? (
-                                  <p className="text-sm text-destructive">Couldn’t check availability</p>
+                                  <p className="text-sm text-destructive">Couldn't check availability</p>
                                 ) : result.available ? (
-                                  <p className="text-sm text-accent">Available</p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm text-accent">Available</p>
+                                    {result.premium && (
+                                      <Badge variant="secondary" className="text-xs">Premium</Badge>
+                                    )}
+                                  </div>
                                 ) : (
                                   <p className="text-sm text-muted-foreground">Taken</p>
                                 )}
@@ -308,14 +389,16 @@ export default function InstructorDomains() {
               {/* Popular TLDs Pricing */}
               <div>
                 <h2 className="text-2xl font-bold mb-6">Popular Domain Extensions</h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { tld: '.com', price: 12.99, desc: 'Most popular worldwide' },
                     { tld: '.co.uk', price: 9.99, desc: 'Perfect for UK businesses' },
-                    { tld: '.uk', price: 7.99, desc: 'Short UK domain' },
+                    { tld: '.com', price: 12.99, desc: 'Most popular worldwide' },
+                    { tld: '.uk', price: 5.99, desc: 'Short UK domain' },
+                    { tld: '.org', price: 14.99, desc: 'For organizations' },
                     { tld: '.net', price: 14.99, desc: 'Great alternative' },
-                    { tld: '.org', price: 13.99, desc: 'For organizations' },
-                    { tld: '.io', price: 39.99, desc: 'Tech-focused' },
+                    { tld: '.info', price: 4.99, desc: 'Information sites' },
+                    { tld: '.biz', price: 14.99, desc: 'Business focused' },
+                    { tld: '.me', price: 19.99, desc: 'Personal branding' },
                   ].map((item) => (
                     <Card key={item.tld} className="hover:shadow-md transition-shadow">
                       <CardContent className="py-4">
@@ -340,51 +423,59 @@ export default function InstructorDomains() {
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold mb-2">Web Hosting Plans</h2>
                 <p className="text-muted-foreground">
-                  Reliable hosting for your driving school website
+                  Reliable hosting for your driving school website, powered by 20i
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {hostingPlans.map((plan, index) => (
-                  <motion.div
-                    key={plan.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className={`h-full ${index === 2 ? 'border-accent ring-2 ring-accent/20' : ''}`}>
-                      {index === 2 && (
-                        <div className="bg-accent text-accent-foreground text-center py-1 text-sm font-medium">
-                          Most Popular
-                        </div>
-                      )}
-                      <CardHeader>
-                        <CardTitle>{plan.name}</CardTitle>
-                        <div className="mt-4">
-                          <span className="text-3xl font-bold">£{plan.price}</span>
-                          <span className="text-muted-foreground">/{plan.period}</span>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-3 mb-6">
-                          {plan.features.map((feature) => (
-                            <li key={feature} className="flex items-center gap-2">
-                              <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                              <span className="text-sm">{feature}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        <Button 
-                          className="w-full" 
-                          variant={index === 2 ? 'accent' : 'outline'}
-                        >
-                          Get Started
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
+              {isLoadingHosting ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-3 gap-6">
+                  {hostingPackages.map((plan, index) => (
+                    <motion.div
+                      key={plan.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className={`h-full ${index === 1 ? 'border-accent ring-2 ring-accent/20' : ''}`}>
+                        {index === 1 && (
+                          <div className="bg-accent text-accent-foreground text-center py-1 text-sm font-medium">
+                            Most Popular
+                          </div>
+                        )}
+                        <CardHeader>
+                          <CardTitle>{plan.name}</CardTitle>
+                          <CardDescription className="capitalize">{plan.type} Hosting</CardDescription>
+                          <div className="mt-4">
+                            <span className="text-3xl font-bold">£{plan.price}</span>
+                            <span className="text-muted-foreground">/month</span>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-3 mb-6">
+                            {plan.features.map((feature) => (
+                              <li key={feature} className="flex items-center gap-2">
+                                <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                                <span className="text-sm">{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <Button 
+                            className="w-full" 
+                            variant={index === 1 ? 'accent' : 'outline'}
+                            onClick={() => handleHostingPurchase(plan.id, plan.name)}
+                          >
+                            Get Started
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
 
               {/* Hosting Features */}
               <div className="mt-12 grid md:grid-cols-3 gap-6">
@@ -408,7 +499,7 @@ export default function InstructorDomains() {
                   <CardHeader>
                     <CardTitle className="text-lg">1-Click WordPress</CardTitle>
                     <CardDescription>
-                      Install WordPress instantly and start building your site in minutes.
+                      Install WordPress with a single click and start building immediately.
                     </CardDescription>
                   </CardHeader>
                 </Card>
