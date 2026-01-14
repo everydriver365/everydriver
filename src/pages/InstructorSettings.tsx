@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe } from "lucide-react";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { GoogleCalendarConnect } from "@/components/instructor/GoogleCalendarConnect";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
+import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -323,6 +324,16 @@ export default function InstructorSettings() {
           ) : (
             <p className="text-muted-foreground text-center py-4">Profile not found</p>
           )}
+        </SettingsTile>
+
+        {/* Mini-Website Section */}
+        <SettingsTile 
+          id="mini-website" 
+          icon={Globe} 
+          title="Mini-Website" 
+          description="Share your instructor profile"
+        >
+          <MiniWebsiteShare instructorId={instructorId} />
         </SettingsTile>
 
         {/* Visibility Section */}
