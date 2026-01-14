@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
+import { AdminAuthProvider } from "@/context/AdminAuthContext";
+import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import BookingSummary from "./pages/BookingSummary";
@@ -22,6 +24,7 @@ import InstructorGaps from "./pages/InstructorGaps";
 import InstructorExpenses from "./pages/InstructorExpenses";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
+import AdminLogin from "./pages/AdminLogin";
 import BrandedPupilPortal from "./pages/BrandedPupilPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
 import CollageDemo from "./pages/CollageDemo";
@@ -53,59 +56,69 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <InstructorAuthProvider>
-          <Routes>
-            {/* Learner-facing routes (EveryDriver branding) */}
-            <Route path="/" element={<Index />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/book/:instructorId" element={<BookingSummary />} />
-            <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-            <Route path="/pupil" element={<PupilPortal />} />
-            <Route path="/p/:slug" element={<BrandedPupilPortal />} />
-            <Route path="/theory" element={<Theory />} />
-            <Route path="/faqs" element={<FAQs />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/intensives" element={<Intensives />} />
-            <Route path="/semi-intensive" element={<SemiIntensive />} />
-            <Route path="/i/:slug" element={<InstructorMiniWebsite />} />
+        <AdminAuthProvider>
+          <InstructorAuthProvider>
+            <Routes>
+              {/* Learner-facing routes (EveryDriver branding) */}
+              <Route path="/" element={<Index />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/book/:instructorId" element={<BookingSummary />} />
+              <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+              <Route path="/pupil" element={<PupilPortal />} />
+              <Route path="/p/:slug" element={<BrandedPupilPortal />} />
+              <Route path="/theory" element={<Theory />} />
+              <Route path="/faqs" element={<FAQs />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/intensives" element={<Intensives />} />
+              <Route path="/semi-intensive" element={<SemiIntensive />} />
+              <Route path="/i/:slug" element={<InstructorMiniWebsite />} />
 
-            {/* Instructor SaaS Marketing (InstructorPro branding) */}
-            <Route path="/instructor-app" element={<InstructorAppHome />} />
-            <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
-            <Route path="/instructor-app/login" element={<InstructorLogin />} />
-            <Route path="/instructor-app/signup" element={<InstructorSignup />} />
+              {/* Instructor SaaS Marketing (InstructorPro branding) */}
+              <Route path="/instructor-app" element={<InstructorAppHome />} />
+              <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
+              <Route path="/instructor-app/login" element={<InstructorLogin />} />
+              <Route path="/instructor-app/signup" element={<InstructorSignup />} />
 
-            {/* Instructor Portal (Authenticated) */}
-            <Route path="/instructor" element={<InstructorPortal />} />
-            <Route path="/instructor/pupils" element={<InstructorPupils />} />
-            <Route path="/instructor/schedule" element={<InstructorSchedule />} />
-            <Route path="/instructor/diary" element={<InstructorDiary />} />
-            <Route path="/instructor/jobs" element={<InstructorJobs />} />
-            <Route path="/instructor/pay" element={<InstructorPay />} />
-            <Route path="/instructor/contact" element={<InstructorContact />} />
-            <Route path="/instructor/settings" element={<InstructorSettings />} />
-            <Route path="/instructor/gaps" element={<InstructorGaps />} />
-            <Route path="/instructor/expenses" element={<InstructorExpenses />} />
-            <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
-            <Route path="/instructor/install" element={<InstallInstructor />} />
+              {/* Instructor Portal (Authenticated) */}
+              <Route path="/instructor" element={<InstructorPortal />} />
+              <Route path="/instructor/pupils" element={<InstructorPupils />} />
+              <Route path="/instructor/schedule" element={<InstructorSchedule />} />
+              <Route path="/instructor/diary" element={<InstructorDiary />} />
+              <Route path="/instructor/jobs" element={<InstructorJobs />} />
+              <Route path="/instructor/pay" element={<InstructorPay />} />
+              <Route path="/instructor/contact" element={<InstructorContact />} />
+              <Route path="/instructor/settings" element={<InstructorSettings />} />
+              <Route path="/instructor/gaps" element={<InstructorGaps />} />
+              <Route path="/instructor/expenses" element={<InstructorExpenses />} />
+              <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
+              <Route path="/instructor/install" element={<InstallInstructor />} />
 
-            {/* Other portals */}
-            <Route path="/parent" element={<ParentPortal />} />
-            <Route path="/admin" element={<AdminPortal />} />
-            <Route path="/pupil/install" element={<InstallPupil />} />
-            <Route path="/parent/install" element={<InstallParent />} />
+              {/* Other portals */}
+              <Route path="/parent" element={<ParentPortal />} />
+              
+              {/* Admin Portal (Protected) */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={
+                <ProtectedAdminRoute>
+                  <AdminPortal />
+                </ProtectedAdminRoute>
+              } />
+              
+              <Route path="/pupil/install" element={<InstallPupil />} />
+              <Route path="/parent/install" element={<InstallParent />} />
 
-            {/* Demo routes */}
-            <Route path="/hero-demo" element={<HeroLayoutDemo />} />
-            <Route path="/collage-demo" element={<CollageDemo />} />
-            <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
+              {/* Demo routes */}
+              <Route path="/hero-demo" element={<HeroLayoutDemo />} />
+              <Route path="/collage-demo" element={<CollageDemo />} />
+              <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </InstructorAuthProvider>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </InstructorAuthProvider>
+        </AdminAuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
