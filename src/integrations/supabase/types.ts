@@ -1635,6 +1635,7 @@ export type Database = {
           test_date: string | null
           test_time: string | null
           updated_at: string
+          what3words: string | null
         }
         Insert: {
           account_balance?: number | null
@@ -1657,6 +1658,7 @@ export type Database = {
           test_date?: string | null
           test_time?: string | null
           updated_at?: string
+          what3words?: string | null
         }
         Update: {
           account_balance?: number | null
@@ -1679,6 +1681,7 @@ export type Database = {
           test_date?: string | null
           test_time?: string | null
           updated_at?: string
+          what3words?: string | null
         }
         Relationships: [
           {
@@ -1806,6 +1809,7 @@ export type Database = {
           payment_status: string
           pickup_location: string | null
           pickup_postcode: string | null
+          pickup_what3words: string | null
           prepaid_hours_used: number | null
           pupil_id: string
           start_time: string
@@ -1824,6 +1828,7 @@ export type Database = {
           payment_status?: string
           pickup_location?: string | null
           pickup_postcode?: string | null
+          pickup_what3words?: string | null
           prepaid_hours_used?: number | null
           pupil_id: string
           start_time: string
@@ -1842,6 +1847,7 @@ export type Database = {
           payment_status?: string
           pickup_location?: string | null
           pickup_postcode?: string | null
+          pickup_what3words?: string | null
           prepaid_hours_used?: number | null
           pupil_id?: string
           start_time?: string
