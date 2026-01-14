@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, Loader2, AlertCircle } from 'lucide-react';
+import { Shield, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,15 +17,31 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+const emailSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+});
+
+type ViewMode = 'login' | 'signup' | 'forgot' | 'reset';
+
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('login');
   const { signIn, isAdmin, user } = useAdminAuth();
   const navigate = useNavigate();
+
+  // Check if this is a password reset callback
+  useState(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    if (hashParams.get('type') === 'recovery') {
+      setViewMode('reset');
+    }
+  });
 
   // Redirect if already logged in as admin
   if (user && isAdmin) {
@@ -38,7 +54,59 @@ export default function AdminLogin() {
     setError('');
     setSuccess('');
 
-    // Validate input
+    if (viewMode === 'forgot') {
+      const validation = emailSchema.safeParse({ email });
+      if (!validation.success) {
+        setError(validation.error.errors[0].message);
+        return;
+      }
+
+      setLoading(true);
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/admin/login`,
+      });
+
+      if (resetError) {
+        setError(resetError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccess('Password reset email sent! Check your inbox.');
+      setLoading(false);
+      return;
+    }
+
+    if (viewMode === 'reset') {
+      if (newPassword !== confirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
+      if (newPassword.length < 6) {
+        setError('Password must be at least 6 characters');
+        return;
+      }
+
+      setLoading(true);
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccess('Password updated successfully! You can now sign in.');
+      setViewMode('login');
+      setNewPassword('');
+      setConfirmPassword('');
+      setLoading(false);
+      return;
+    }
+
+    // Login or Signup
     const validation = loginSchema.safeParse({ email, password });
     if (!validation.success) {
       setError(validation.error.errors[0].message);
@@ -47,7 +115,7 @@ export default function AdminLogin() {
 
     setLoading(true);
 
-    if (isSignUp) {
+    if (viewMode === 'signup') {
       const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -63,7 +131,7 @@ export default function AdminLogin() {
       }
 
       setSuccess('Account created! Please contact an administrator to grant you admin access, then sign in.');
-      setIsSignUp(false);
+      setViewMode('login');
       setLoading(false);
       return;
     }
@@ -76,10 +144,27 @@ export default function AdminLogin() {
       return;
     }
 
-    // Wait a moment for the auth state to update and role to be checked
     setTimeout(() => {
       setLoading(false);
     }, 1500);
+  };
+
+  const getTitle = () => {
+    switch (viewMode) {
+      case 'signup': return 'Admin Sign Up';
+      case 'forgot': return 'Reset Password';
+      case 'reset': return 'Set New Password';
+      default: return 'Admin Login';
+    }
+  };
+
+  const getDescription = () => {
+    switch (viewMode) {
+      case 'signup': return 'Create an account to request admin access';
+      case 'forgot': return 'Enter your email to receive a reset link';
+      case 'reset': return 'Enter your new password';
+      default: return 'Sign in with your admin credentials';
+    }
   };
 
   return (
@@ -95,12 +180,8 @@ export default function AdminLogin() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <Shield className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle>{isSignUp ? 'Admin Sign Up' : 'Admin Login'}</CardTitle>
-              <CardDescription>
-                {isSignUp 
-                  ? 'Create an account to request admin access' 
-                  : 'Sign in with your admin credentials'}
-              </CardDescription>
+              <CardTitle>{getTitle()}</CardTitle>
+              <CardDescription>{getDescription()}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,66 +198,129 @@ export default function AdminLogin() {
                   </Alert>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@example.com"
-                    required
-                    disabled={loading}
-                  />
-                </div>
+                {viewMode === 'reset' ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">New Password</Label>
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="admin@example.com"
+                        required
+                        disabled={loading}
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    disabled={loading}
-                  />
-                </div>
+                    {viewMode !== 'forgot' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          required
+                          disabled={loading}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
 
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isSignUp ? 'Creating account...' : 'Signing in...'}
+                      {viewMode === 'signup' ? 'Creating account...' : 
+                       viewMode === 'forgot' ? 'Sending...' :
+                       viewMode === 'reset' ? 'Updating...' : 'Signing in...'}
                     </>
                   ) : (
-                    isSignUp ? 'Sign Up' : 'Sign In'
+                    viewMode === 'signup' ? 'Sign Up' : 
+                    viewMode === 'forgot' ? 'Send Reset Link' :
+                    viewMode === 'reset' ? 'Update Password' : 'Sign In'
                   )}
                 </Button>
 
-                <div className="text-center text-sm text-muted-foreground">
-                  {isSignUp ? (
+                <div className="text-center text-sm text-muted-foreground space-y-2">
+                  {viewMode === 'login' && (
                     <>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => { setViewMode('forgot'); setError(''); setSuccess(''); }}
+                          className="text-primary hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                      <div>
+                        Need an account?{' '}
+                        <button
+                          type="button"
+                          onClick={() => { setViewMode('signup'); setError(''); setSuccess(''); }}
+                          className="text-primary hover:underline"
+                        >
+                          Sign up
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {viewMode === 'signup' && (
+                    <div>
                       Already have an account?{' '}
                       <button
                         type="button"
-                        onClick={() => { setIsSignUp(false); setError(''); setSuccess(''); }}
+                        onClick={() => { setViewMode('login'); setError(''); setSuccess(''); }}
                         className="text-primary hover:underline"
                       >
                         Sign in
                       </button>
-                    </>
-                  ) : (
-                    <>
-                      Need an account?{' '}
+                    </div>
+                  )}
+
+                  {(viewMode === 'forgot' || viewMode === 'reset') && (
+                    <div>
                       <button
                         type="button"
-                        onClick={() => { setIsSignUp(true); setError(''); setSuccess(''); }}
-                        className="text-primary hover:underline"
+                        onClick={() => { setViewMode('login'); setError(''); setSuccess(''); }}
+                        className="inline-flex items-center text-primary hover:underline"
                       >
-                        Sign up
+                        <ArrowLeft className="mr-1 h-3 w-3" />
+                        Back to sign in
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
               </form>
