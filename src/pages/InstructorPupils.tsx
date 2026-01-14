@@ -21,12 +21,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -37,21 +31,15 @@ import {
   MapPin,
   Calendar,
   Clock,
-  MoreVertical,
-  Edit,
-  Trash2,
   GraduationCap,
   Phone,
   Mail,
-  ChevronRight,
   TrendingUp,
   Target,
   BookOpen,
   Loader2,
   ArrowLeft,
-  User,
   History,
-  Navigation,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
@@ -59,6 +47,8 @@ import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
+import { ExpandablePupilCard } from "@/components/instructor/ExpandablePupilCard";
+import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 
 interface Pupil {
   id: string;
@@ -73,6 +63,10 @@ interface Pupil {
   progress: number | null;
   notes: string | null;
   created_at: string;
+  what3words?: string | null;
+  account_balance?: number | null;
+  prepaid_hours?: number | null;
+  test_date?: string | null;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -107,9 +101,11 @@ export default function InstructorPupils() {
     postcode: "",
     course_type: "",
     notes: "",
+    what3words: "",
   });
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [isLookingUpW3W, setIsLookingUpW3W] = useState(false);
 
   useEffect(() => {
     if (instructorId) {
@@ -157,6 +153,7 @@ export default function InstructorPupils() {
           lessons_completed: editForm.lessons_completed,
           progress: editForm.progress,
           notes: editForm.notes,
+          what3words: editForm.what3words,
         })
         .eq("id", selectedPupil.id);
 
@@ -195,6 +192,7 @@ export default function InstructorPupils() {
         postcode: addForm.postcode,
         course_type: addForm.course_type || null,
         notes: addForm.notes || null,
+        what3words: addForm.what3words || null,
         lessons_completed: 0,
         progress: 0,
       }).select();
@@ -215,6 +213,7 @@ export default function InstructorPupils() {
         postcode: "",
         course_type: "",
         notes: "",
+        what3words: "",
       });
       fetchPupils();
     } catch (error: any) {
@@ -455,120 +454,22 @@ export default function InstructorPupils() {
           </Card>
         ) : (
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence>
-              {filteredPupils.map((pupil, index) => (
-                <motion.div
-                  key={pupil.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <CardContent className="p-0">
-                      {/* Header */}
-                      <div className="flex items-start justify-between p-4 pb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
-                            {pupil.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </div>
-                          <div>
-                            <h3 className="font-semibold">{pupil.name}</h3>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <MapPin className="h-3 w-3" />
-                              {pupil.postcode}
-                            </div>
-                          </div>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditPupil(pupil)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedPupil(pupil);
-                                setIsHistoryOpen(true);
-                              }}
-                            >
-                              <History className="mr-2 h-4 w-4" />
-                              Lesson History
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedPupil(pupil);
-                                setIsDrivingReportOpen(true);
-                              }}
-                            >
-                              <Navigation className="mr-2 h-4 w-4" />
-                              Driving Report
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeletePupil(pupil)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Remove Pupil
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      {/* Progress */}
-                      <div className="px-4 pb-3">
-                        <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-muted-foreground">Progress</span>
-                          <span className="font-medium">{pupil.progress || 0}%</span>
-                        </div>
-                        <Progress value={pupil.progress || 0} className="h-2" />
-                      </div>
-
-                      {/* Stats */}
-                      <div className="grid grid-cols-2 gap-2 px-4 pb-4">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{pupil.lessons_completed || 0} lessons</span>
-                        </div>
-                        {pupil.course_type && (
-                          <Badge variant="secondary" className="justify-center text-xs">
-                            {courseTypeLabels[pupil.course_type] || pupil.course_type}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Contact */}
-                      <div className="border-t px-4 py-3 flex gap-2">
-                        {pupil.phone && (
-                          <Button variant="outline" size="sm" className="flex-1" asChild>
-                            <a href={`tel:${pupil.phone}`}>
-                              <Phone className="h-4 w-4 mr-1" />
-                              Call
-                            </a>
-                          </Button>
-                        )}
-                        {pupil.email && (
-                          <Button variant="outline" size="sm" className="flex-1" asChild>
-                            <a href={`mailto:${pupil.email}`}>
-                              <Mail className="h-4 w-4 mr-1" />
-                              Email
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+            {filteredPupils.map((pupil, index) => (
+              <ExpandablePupilCard
+                key={pupil.id}
+                pupil={pupil}
+                onEdit={handleEditPupil}
+                onDelete={handleDeletePupil}
+                onViewHistory={(p) => {
+                  setSelectedPupil(p);
+                  setIsHistoryOpen(true);
+                }}
+                onViewReport={(p) => {
+                  setSelectedPupil(p);
+                  setIsDrivingReportOpen(true);
+                }}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -582,7 +483,7 @@ export default function InstructorPupils() {
               Enter the pupil's details below
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
             <div className="space-y-2">
               <Label>Name *</Label>
               <Input
@@ -620,11 +521,48 @@ export default function InstructorPupils() {
             </div>
             <div className="space-y-2">
               <Label>Postcode *</Label>
-              <Input
+              <PostcodeAutocomplete
                 value={addForm.postcode}
-                onChange={(e) => setAddForm({ ...addForm, postcode: e.target.value })}
-                placeholder="Postcode"
+                onChange={(value) => setAddForm({ ...addForm, postcode: value })}
+                onSelect={async (postcode) => {
+                  setAddForm(prev => ({ ...prev, postcode }));
+                  // Lookup What3Words
+                  setIsLookingUpW3W(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke('convert-to-what3words', {
+                      body: { postcode }
+                    });
+                    if (data?.what3words) {
+                      setAddForm(prev => ({ ...prev, what3words: data.what3words }));
+                      toast.success(`What3Words: ///${data.what3words}`);
+                    }
+                  } catch (err) {
+                    console.error("What3Words lookup failed:", err);
+                  } finally {
+                    setIsLookingUpW3W(false);
+                  }
+                }}
+                placeholder="Start typing postcode..."
+                showGeolocation={true}
               />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                What3Words
+                {isLookingUpW3W && <Loader2 className="h-3 w-3 animate-spin" />}
+              </Label>
+              <div className="flex gap-2">
+                <span className="flex items-center px-3 bg-muted rounded-l-md border border-r-0 text-muted-foreground text-sm">///</span>
+                <Input
+                  value={addForm.what3words}
+                  onChange={(e) => setAddForm({ ...addForm, what3words: e.target.value })}
+                  placeholder="word.word.word"
+                  className="rounded-l-none"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Automatically looked up from postcode, or enter manually
+              </p>
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>
@@ -651,7 +589,7 @@ export default function InstructorPupils() {
               Update {selectedPupil?.name}'s details
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
             <div className="space-y-2">
               <Label>Name</Label>
               <Input
@@ -685,10 +623,39 @@ export default function InstructorPupils() {
             </div>
             <div className="space-y-2">
               <Label>Postcode</Label>
-              <Input
+              <PostcodeAutocomplete
                 value={editForm.postcode || ""}
-                onChange={(e) => setEditForm({ ...editForm, postcode: e.target.value })}
+                onChange={(value) => setEditForm({ ...editForm, postcode: value })}
+                onSelect={async (postcode) => {
+                  setEditForm(prev => ({ ...prev, postcode }));
+                  // Lookup What3Words
+                  try {
+                    const { data } = await supabase.functions.invoke('convert-to-what3words', {
+                      body: { postcode }
+                    });
+                    if (data?.what3words) {
+                      setEditForm(prev => ({ ...prev, what3words: data.what3words }));
+                      toast.success(`What3Words: ///${data.what3words}`);
+                    }
+                  } catch (err) {
+                    console.error("What3Words lookup failed:", err);
+                  }
+                }}
+                placeholder="Start typing postcode..."
+                showGeolocation={true}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>What3Words</Label>
+              <div className="flex gap-2">
+                <span className="flex items-center px-3 bg-muted rounded-l-md border border-r-0 text-muted-foreground text-sm">///</span>
+                <Input
+                  value={editForm.what3words || ""}
+                  onChange={(e) => setEditForm({ ...editForm, what3words: e.target.value })}
+                  placeholder="word.word.word"
+                  className="rounded-l-none"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>
