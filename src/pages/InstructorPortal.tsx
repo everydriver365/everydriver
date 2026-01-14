@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,8 +38,9 @@ interface InstructorData {
 }
 
 export default function InstructorPortal() {
-  const { instructor: authInstructor } = useInstructorAuth();
+  const { instructor: authInstructor, loading: authLoading, user } = useInstructorAuth();
   const instructorId = authInstructor?.id;
+  const navigate = useNavigate();
   
   const [instructorData, setInstructorData] = useState<InstructorData | null>(null);
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -47,6 +48,13 @@ export default function InstructorPortal() {
   const [todaysLessonCount, setTodaysLessonCount] = useState(0);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // Redirect to login if not authenticated (after loading completes)
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/instructor-app/login");
+    }
+  }, [authLoading, user, navigate]);
 
   useEffect(() => {
     if (instructorId) {
@@ -112,14 +120,33 @@ export default function InstructorPortal() {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  if (!instructorId) {
+  // Show loading while auth is being checked
+  if (authLoading) {
     return (
       <InstructorPortalLayout>
         <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
       </InstructorPortalLayout>
     );
+  }
+
+  // User is authenticated but has no instructor profile
+  if (!instructorId && user) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+          <p className="text-muted-foreground mb-4">No instructor profile found for this account.</p>
+          <Button onClick={() => navigate("/instructor-app/signup")}>
+            Complete Signup
+          </Button>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
+
+  if (!instructorId) {
+    return null; // Will redirect to login via useEffect
   }
 
   // Mobile Layout - uses InstructorMobileHome component
