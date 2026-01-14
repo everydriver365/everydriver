@@ -81,8 +81,11 @@ export function InstructorMobileHome({
           className="h-7 object-contain"
         />
         
-        {/* Visibility badge and Avatar on the right */}
+        {/* Name, Visibility badge and Avatar on the right */}
         <div className="flex items-center gap-2">
+          <span className="text-nav-foreground text-sm font-medium">
+            {instructor?.name || "Instructor"}
+          </span>
           {instructor && instructor.is_active !== undefined && (
             <Badge 
               variant="secondary" 
@@ -110,21 +113,15 @@ export function InstructorMobileHome({
         </div>
       </div>
 
-      {/* Hero Section */}
-      <div className="relative">
-        {/* Hero Image */}
-        <div className="h-48 overflow-hidden">
-          <img 
-            src={heroImage}
-            alt="Driving"
-            className="w-full h-full object-cover"
-          />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-transparent" />
-        </div>
-
-        {/* Curved bottom */}
-        <div className="absolute -bottom-4 left-0 right-0 h-8 bg-background rounded-t-[2rem]" />
+      {/* Hero Image - directly under header */}
+      <div className="relative h-40 overflow-hidden">
+        <img 
+          src={heroImage}
+          alt="Driving"
+          className="w-full h-full object-cover"
+        />
+        {/* Gradient Overlay for bottom fade */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       </div>
 
       {/* Motivational Card */}

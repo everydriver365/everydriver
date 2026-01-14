@@ -11,6 +11,7 @@ interface InstructorProfile {
   brand_colour: string | null;
   secondary_colour: string | null;
   logo_url: string | null;
+  is_active: boolean;
 }
 
 interface Subscription {
@@ -82,7 +83,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       // Fetch instructor profile linked to this auth user
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
-        .select('id, name, email, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url')
+        .select('id, name, email, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active')
         .eq('auth_user_id', userId)
         .maybeSingle();
 
