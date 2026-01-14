@@ -31,6 +31,7 @@ interface InstructorAuthContextType {
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
   hasFeature: (feature: string) => boolean;
 }
 
@@ -225,6 +226,13 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     setSubscription(null);
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/instructor-app/login`,
+    });
+    return { error: error as Error | null };
+  };
+
   const hasFeature = (feature: string): boolean => {
     if (!subscription?.features) return false;
     return subscription.features.includes(feature);
@@ -241,6 +249,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         signUp,
         signIn,
         signOut,
+        resetPassword,
         hasFeature,
       }}
     >

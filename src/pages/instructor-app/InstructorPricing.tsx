@@ -63,7 +63,7 @@ const plans = [
 export default function InstructorPricing() {
   return (
     <InstructorSaaSLayout>
-      <section className="py-20">
+      <section className="py-20 bg-background">
         <div className="container">
           {/* Header */}
           <motion.div
@@ -71,10 +71,10 @@ export default function InstructorPricing() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-16"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Simple, Transparent Pricing
             </h1>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Start free, upgrade when you need more. No hidden fees, cancel anytime.
             </p>
           </motion.div>
@@ -91,27 +91,27 @@ export default function InstructorPricing() {
                 <Card 
                   className={`relative h-full ${
                     plan.popular 
-                      ? "bg-gradient-to-b from-emerald-500/10 to-cyan-500/10 border-emerald-500/50" 
-                      : "bg-white/5 border-white/10"
+                      ? "border-accent shadow-lg shadow-accent/10" 
+                      : "border-border"
                   }`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white border-0">
+                      <Badge className="bg-accent text-accent-foreground">
                         Most Popular
                       </Badge>
                     </div>
                   )}
                   
                   <CardHeader className="text-center pb-4">
-                    <CardTitle className="text-white">{plan.name}</CardTitle>
-                    <p className="text-slate-400 text-sm">{plan.description}</p>
+                    <CardTitle className="text-foreground">{plan.name}</CardTitle>
+                    <p className="text-muted-foreground text-sm">{plan.description}</p>
                     <div className="pt-4">
-                      <span className="text-4xl font-bold text-white">
+                      <span className="text-4xl font-bold text-foreground">
                         £{plan.price}
                       </span>
                       {plan.price > 0 && (
-                        <span className="text-slate-400">/month</span>
+                        <span className="text-muted-foreground">/month</span>
                       )}
                     </div>
                   </CardHeader>
@@ -120,18 +120,15 @@ export default function InstructorPricing() {
                     <ul className="space-y-3 mb-6">
                       {plan.features.map((feature) => (
                         <li key={feature} className="flex items-start gap-3">
-                          <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                          <span className="text-slate-300 text-sm">{feature}</span>
+                          <Check className="h-5 w-5 text-success shrink-0 mt-0.5" />
+                          <span className="text-muted-foreground text-sm">{feature}</span>
                         </li>
                       ))}
                     </ul>
                     
                     <Button 
-                      className={`w-full ${
-                        plan.popular 
-                          ? "bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white border-0"
-                          : "bg-white/10 hover:bg-white/20 text-white border-0"
-                      }`}
+                      variant={plan.popular ? "accent" : "outline"}
+                      className="w-full"
                       asChild
                     >
                       <Link to={`/instructor-app/signup?plan=${plan.slug}`}>
@@ -146,8 +143,8 @@ export default function InstructorPricing() {
 
           {/* FAQ or additional info */}
           <div className="mt-16 text-center">
-            <p className="text-slate-400">
-              Questions? <Link to="/contact" className="text-emerald-400 hover:underline">Contact us</Link>
+            <p className="text-muted-foreground">
+              Questions? <Link to="/contact" className="text-primary hover:underline">Contact us</Link>
             </p>
           </div>
         </div>
