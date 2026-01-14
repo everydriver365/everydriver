@@ -44,6 +44,7 @@ import InstallParent from "./pages/InstallParent";
 
 // Instructor SaaS pages
 import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
+import InstructorFeatures from "./pages/instructor-app/InstructorFeatures";
 import InstructorPricing from "./pages/instructor-app/InstructorPricing";
 import InstructorLogin from "./pages/instructor-app/InstructorLogin";
 import InstructorSignup from "./pages/instructor-app/InstructorSignup";
@@ -75,8 +76,9 @@ const App = () => (
               <Route path="/semi-intensive" element={<SemiIntensive />} />
               <Route path="/i/:slug" element={<InstructorMiniWebsite />} />
 
-              {/* Instructor SaaS Marketing (InstructorPro branding) */}
+              {/* Instructor SaaS Marketing (Drive365 branding) */}
               <Route path="/instructor-app" element={<InstructorAppHome />} />
+              <Route path="/instructor-app/features" element={<InstructorFeatures />} />
               <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
               <Route path="/instructor-app/login" element={<InstructorLogin />} />
               <Route path="/instructor-app/signup" element={<InstructorSignup />} />

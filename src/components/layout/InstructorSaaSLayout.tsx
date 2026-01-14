@@ -9,6 +9,7 @@ import { MobileBottomNav } from "./MobileBottomNav";
 
 const navLinks = [
   { href: "/instructor-app", label: "Home" },
+  { href: "/instructor-app/features", label: "Features" },
   { href: "/instructor-app/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
