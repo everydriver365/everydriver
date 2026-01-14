@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
+import heroImage from "@/assets/drive365-hero.jpg";
 
 export default function InstructorAppHome() {
   const { hero, features, testimonials, getSection, isSectionVisible, loading } = useInstructorAppContent();
@@ -32,75 +33,95 @@ export default function InstructorAppHome() {
   return (
     <InstructorSaaSLayout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
+      <section className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
         <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-5" />
         <div className="container relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl mx-auto text-center"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 border border-accent/30 text-accent text-sm mb-6">
-              <Star className="h-4 w-4" />
-              {hero.badge_text}
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
-              {hero.headline_part1}{" "}
-              <span className="text-accent">
-                {hero.headline_highlight}
-              </span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-              {hero.subtext}
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                variant="accent"
-                className="h-12 px-8"
-                asChild
-              >
-                <Link to={hero.primary_cta_link}>
-                  {hero.primary_cta_text}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-12 px-8"
-                asChild
-              >
-                <Link to={hero.secondary_cta_link}>{hero.secondary_cta_text}</Link>
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-accent/50 text-accent hover:bg-accent/10 h-12 px-8"
-                asChild
-              >
-                <Link to={hero.demo_cta_link}>
-                  <Eye className="mr-2 h-5 w-5" />
-                  {hero.demo_cta_text}
-                </Link>
-              </Button>
-            </div>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center lg:text-left"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 border border-accent/30 text-accent text-sm mb-6">
+                <Star className="h-4 w-4" />
+                {hero.badge_text}
+              </div>
+              
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
+                {hero.headline_part1}{" "}
+                <span className="text-accent">
+                  {hero.headline_highlight}
+                </span>
+              </h1>
+              
+              <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-2xl">
+                {hero.subtext}
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button 
+                  size="lg" 
+                  variant="accent"
+                  className="h-12 px-8"
+                  asChild
+                >
+                  <Link to={hero.primary_cta_link}>
+                    {hero.primary_cta_text}
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-12 px-8"
+                  asChild
+                >
+                  <Link to={hero.secondary_cta_link}>{hero.secondary_cta_text}</Link>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-accent/50 text-accent hover:bg-accent/10 h-12 px-8"
+                  asChild
+                >
+                  <Link to={hero.demo_cta_link}>
+                    <Eye className="mr-2 h-5 w-5" />
+                    {hero.demo_cta_text}
+                  </Link>
+                </Button>
+              </div>
 
-            <div className="flex items-center justify-center gap-6 mt-10 text-sm text-primary-foreground/70">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-accent" />
-                {hero.trust_badge1}
+              <div className="flex items-center justify-center lg:justify-start gap-6 mt-10 text-sm text-primary-foreground/70">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-accent" />
+                  {hero.trust_badge1}
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-accent" />
+                  {hero.trust_badge2}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-accent" />
-                {hero.trust_badge2}
+            </motion.div>
+
+            {/* Hero Image */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="hidden lg:block"
+            >
+              <div className="relative">
+                <div className="absolute -inset-4 bg-accent/20 rounded-2xl blur-2xl" />
+                <img 
+                  src={heroImage} 
+                  alt="Driving instructor teaching a learner"
+                  className="relative rounded-2xl shadow-2xl w-full object-cover aspect-square"
+                />
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
