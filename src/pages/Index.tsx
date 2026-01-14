@@ -4,6 +4,7 @@ import { MapPin, ChevronRight, Calendar, Award, Users, Heart, Star, Clock, Zap, 
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
+import { SEOHead } from "@/components/SEOHead";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { Badge } from "@/components/ui/badge";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
@@ -114,6 +115,7 @@ export default function Index() {
 
   return (
     <MainLayout>
+      <SEOHead />
       {/* Hero Section - Matching Reference Design */}
       <section className="relative min-h-[600px] overflow-hidden bg-white py-12 lg:py-20">
         <div className="container relative">

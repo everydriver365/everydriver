@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Shield, Users, Calendar, CreditCard, Settings, BarChart3, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -28,6 +28,7 @@ import { HomepageHeroManager } from "@/components/admin/HomepageHeroManager";
 import { IncludedFeaturesManager } from "@/components/admin/IncludedFeaturesManager";
 import { InstructorHomepageManager } from "@/components/admin/InstructorHomepageManager";
 import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
+import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -140,6 +141,7 @@ export default function AdminPortal() {
             <TabsTrigger value="courses">Course Templates</TabsTrigger>
             <TabsTrigger value="pwa-apps">Mobile Apps</TabsTrigger>
             <TabsTrigger value="instructor-home">Instructor App</TabsTrigger>
+            <TabsTrigger value="site-settings">Site Settings</TabsTrigger>
             <TabsTrigger value="hero">Hero Section</TabsTrigger>
             <TabsTrigger value="stats">Stats</TabsTrigger>
             <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
@@ -544,6 +546,25 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <PromotionalMessageManager />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="site-settings">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-accent" />
+                    Site Settings & SEO
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SiteSettingsManager />
                 </CardContent>
               </Card>
             </motion.div>
