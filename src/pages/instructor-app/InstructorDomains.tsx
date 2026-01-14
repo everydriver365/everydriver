@@ -127,7 +127,7 @@ export default function InstructorDomains() {
           >
             <Badge className="mb-4 bg-accent/20 text-accent border-accent/30">
               <Globe className="w-3 h-3 mr-1" />
-              Powered by GoDaddy
+              Domain & Hosting Services
             </Badge>
             <h1 className="text-3xl md:text-5xl font-bold text-primary-foreground mb-4">
               Get Your Perfect Domain
