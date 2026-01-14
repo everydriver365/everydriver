@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,8 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useTelematics } from '@/hooks/useTelematics';
+import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface TelematicsTrackerProps {
   instructorId: string;
@@ -21,6 +23,19 @@ interface TelematicsTrackerProps {
   pupilId?: string;
   compact?: boolean;
 }
+
+// Component to auto-pan map to latest position
+const MapUpdater = ({ position }: { position: [number, number] | null }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (position) {
+      map.setView(position, map.getZoom());
+    }
+  }, [position, map]);
+  
+  return null;
+};
 
 const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   instructorId,
@@ -33,6 +48,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     currentSpeed,
     totalDistance,
     drivingEvents,
+    gpsPoints,
     error,
     startTracking,
     stopTracking
@@ -48,6 +64,15 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   ).length;
 
   const drivingScore = Math.max(0, Math.min(100, 100 - (badEvents * 10) + (goodEvents * 5)));
+
+  // Convert GPS points to route coordinates
+  const routeCoordinates: [number, number][] = gpsPoints.map(p => [p.latitude, p.longitude]);
+  const currentPosition: [number, number] | null = gpsPoints.length > 0 
+    ? [gpsPoints[gpsPoints.length - 1].latitude, gpsPoints[gpsPoints.length - 1].longitude]
+    : null;
+
+  // Default center (UK)
+  const defaultCenter: [number, number] = [51.5074, -0.1278];
 
   if (compact) {
     return (
@@ -112,6 +137,82 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
         {error && (
           <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
             {error}
+          </div>
+        )}
+
+        {/* Live Map */}
+        {isTracking && (
+          <div className="relative h-48 rounded-lg overflow-hidden border">
+            <MapContainer
+              center={currentPosition || defaultCenter}
+              zoom={15}
+              className="h-full w-full"
+              style={{ zIndex: 0 }}
+              zoomControl={false}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              {/* Route polyline */}
+              {routeCoordinates.length >= 2 && (
+                <Polyline
+                  positions={routeCoordinates}
+                  pathOptions={{ 
+                    color: '#3b82f6', 
+                    weight: 4,
+                    opacity: 0.8
+                  }}
+                />
+              )}
+              
+              {/* Current position marker */}
+              {currentPosition && (
+                <CircleMarker
+                  center={currentPosition}
+                  radius={8}
+                  pathOptions={{
+                    fillColor: '#22c55e',
+                    fillOpacity: 1,
+                    color: '#ffffff',
+                    weight: 3
+                  }}
+                />
+              )}
+              
+              {/* Start position marker */}
+              {routeCoordinates.length > 0 && (
+                <CircleMarker
+                  center={routeCoordinates[0]}
+                  radius={6}
+                  pathOptions={{
+                    fillColor: '#f59e0b',
+                    fillOpacity: 1,
+                    color: '#ffffff',
+                    weight: 2
+                  }}
+                />
+              )}
+              
+              <MapUpdater position={currentPosition} />
+            </MapContainer>
+            
+            {/* Map overlay label */}
+            <div className="absolute top-2 left-2 bg-background/90 px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+              Live Route
+            </div>
+          </div>
+        )}
+
+        {/* Waiting for GPS message when not tracking */}
+        {!isTracking && (
+          <div className="h-32 rounded-lg border border-dashed flex items-center justify-center bg-muted/20">
+            <div className="text-center text-muted-foreground">
+              <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Start tracking to see live map</p>
+            </div>
           </div>
         )}
 
