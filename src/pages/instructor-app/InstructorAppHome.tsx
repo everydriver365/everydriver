@@ -33,8 +33,7 @@ export default function InstructorAppHome() {
   return (
     <InstructorSaaSLayout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
-        <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-5" />
+      <section className="relative overflow-hidden py-16 md:py-24 bg-white">
         <div className="container relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
@@ -44,19 +43,19 @@ export default function InstructorAppHome() {
               transition={{ duration: 0.6 }}
               className="text-center lg:text-left"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 border border-accent/30 text-accent text-sm mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 text-sm mb-6">
                 <Star className="h-4 w-4" />
                 {hero.badge_text}
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-6 leading-tight">
                 {hero.headline_part1}{" "}
                 <span className="text-emerald-500">
                   {hero.headline_highlight}
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-2xl">
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl">
                 {hero.subtext}
               </p>
               
@@ -74,7 +73,7 @@ export default function InstructorAppHome() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-12 px-8"
+                  className="border-border text-foreground hover:bg-secondary h-12 px-8"
                   asChild
                 >
                   <Link to={hero.secondary_cta_link}>{hero.secondary_cta_text}</Link>
@@ -82,7 +81,7 @@ export default function InstructorAppHome() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-accent/50 text-accent hover:bg-accent/10 h-12 px-8"
+                  className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-50 h-12 px-8"
                   asChild
                 >
                   <Link to={hero.demo_cta_link}>
@@ -92,13 +91,13 @@ export default function InstructorAppHome() {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-center lg:justify-start gap-6 mt-10 text-sm text-primary-foreground/70">
+              <div className="flex items-center justify-center lg:justify-start gap-6 mt-10 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-accent" />
+                  <CheckCircle className="h-4 w-4 text-emerald-500" />
                   {hero.trust_badge1}
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-accent" />
+                  <CheckCircle className="h-4 w-4 text-emerald-500" />
                   {hero.trust_badge2}
                 </div>
               </div>
@@ -112,7 +111,7 @@ export default function InstructorAppHome() {
               className="hidden lg:block"
             >
               <div className="relative">
-                <div className="absolute -inset-4 bg-accent/20 rounded-2xl blur-2xl" />
+                <div className="absolute -inset-4 bg-emerald-500/20 rounded-2xl blur-2xl" />
                 <img 
                   src={hero.hero_image_url || defaultHeroImage} 
                   alt="Driving instructor teaching a learner"
