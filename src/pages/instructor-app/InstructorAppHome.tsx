@@ -51,7 +51,7 @@ export default function InstructorAppHome() {
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
                 {hero.headline_part1}{" "}
-                <span className="text-accent">
+                <span className="text-emerald-500">
                   {hero.headline_highlight}
                 </span>
               </h1>
@@ -63,7 +63,7 @@ export default function InstructorAppHome() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
-                  className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-12 px-8"
+                  className="bg-emerald-500 text-white hover:bg-emerald-600 h-12 px-8"
                   asChild
                 >
                   <Link to={hero.primary_cta_link}>
@@ -218,7 +218,7 @@ export default function InstructorAppHome() {
               </p>
               <Button 
                 size="lg" 
-                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-12 px-8"
+                className="bg-emerald-500 text-white hover:bg-emerald-600 h-12 px-8"
                 asChild
               >
                 <Link to={hero.primary_cta_link}>
