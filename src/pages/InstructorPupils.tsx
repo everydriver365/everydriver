@@ -337,91 +337,29 @@ export default function InstructorPupils() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">{stats.total}</div>
-                    <div className="text-sm text-muted-foreground">Total Pupils</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                    <TrendingUp className="h-5 w-5 text-emerald-500" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">{stats.active}</div>
-                    <div className="text-sm text-muted-foreground">Active Learners</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                    <GraduationCap className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">{stats.completed}</div>
-                    <div className="text-sm text-muted-foreground">Passed</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                    <BookOpen className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">{stats.totalLessons}</div>
-                    <div className="text-sm text-muted-foreground">Total Lessons</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        {/* Stats Row - Compact Tabs */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
+            <span className="text-lg font-bold">{stats.total}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Pupils</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
+            <span className="text-lg font-bold text-emerald-600">{stats.active}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Active</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
+            <span className="text-lg font-bold text-amber-600">{stats.completed}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Passed</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
+            <span className="text-lg font-bold text-blue-600">{stats.totalLessons}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Lessons</span>
+          </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-3">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search by name, postcode, or email..."
@@ -430,11 +368,11 @@ export default function InstructorPupils() {
               className="pl-10"
             />
           </div>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
-              <TabsTrigger value="active">Active ({stats.active})</TabsTrigger>
-              <TabsTrigger value="completed">Passed ({stats.completed})</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full grid grid-cols-3">
+              <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+              <TabsTrigger value="active" className="text-xs">Active</TabsTrigger>
+              <TabsTrigger value="completed" className="text-xs">Passed</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
