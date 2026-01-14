@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Save, Plus, Trash2, Star, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useInstructorAppAdmin, InstructorAppHero, InstructorAppFeature, InstructorAppTestimonial, InstructorAppSection } from '@/hooks/useInstructorAppContent';
+import { CMSImageUpload } from './CMSImageUpload';
 
 export function InstructorAppCMSManager() {
   const { hero, features, testimonials, sections, loading, updateHero, updateFeature, addFeature, deleteFeature, updateTestimonial, addTestimonial, deleteTestimonial, updateSection } = useInstructorAppAdmin();
@@ -113,6 +114,13 @@ export function InstructorAppCMSManager() {
           <CardContent className="space-y-4">
             {editedHero && (
               <>
+                <CMSImageUpload
+                  value={editedHero.hero_image_url}
+                  onChange={(url) => setEditedHero({ ...editedHero, hero_image_url: url })}
+                  bucket="instructor-images"
+                  folder="drive365"
+                  label="Hero Image"
+                />
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Badge Text</Label>

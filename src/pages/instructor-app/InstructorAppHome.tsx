@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
-import heroImage from "@/assets/drive365-hero.jpg";
+import defaultHeroImage from "@/assets/drive365-hero.jpg";
 
 export default function InstructorAppHome() {
   const { hero, features, testimonials, getSection, isSectionVisible, loading } = useInstructorAppContent();
@@ -115,7 +115,7 @@ export default function InstructorAppHome() {
               <div className="relative">
                 <div className="absolute -inset-4 bg-accent/20 rounded-2xl blur-2xl" />
                 <img 
-                  src={heroImage} 
+                  src={hero.hero_image_url || defaultHeroImage} 
                   alt="Driving instructor teaching a learner"
                   className="relative rounded-2xl shadow-2xl w-full object-cover aspect-square"
                 />

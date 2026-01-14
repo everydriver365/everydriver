@@ -562,6 +562,7 @@ export type Database = {
           demo_cta_text: string
           headline_highlight: string
           headline_part1: string
+          hero_image_url: string | null
           id: string
           is_active: boolean | null
           primary_cta_link: string
@@ -580,6 +581,7 @@ export type Database = {
           demo_cta_text?: string
           headline_highlight?: string
           headline_part1?: string
+          hero_image_url?: string | null
           id?: string
           is_active?: boolean | null
           primary_cta_link?: string
@@ -598,6 +600,7 @@ export type Database = {
           demo_cta_text?: string
           headline_highlight?: string
           headline_part1?: string
+          hero_image_url?: string | null
           id?: string
           is_active?: boolean | null
           primary_cta_link?: string
