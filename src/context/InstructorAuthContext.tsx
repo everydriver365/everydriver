@@ -34,6 +34,7 @@ interface InstructorAuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   hasFeature: (feature: string) => boolean;
+  refreshInstructor: () => Promise<void>;
 }
 
 const InstructorAuthContext = createContext<InstructorAuthContextType | undefined>(undefined);
@@ -239,6 +240,12 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
     return subscription.features.includes(feature);
   };
 
+  const refreshInstructor = async () => {
+    if (user?.id) {
+      await fetchInstructorProfile(user.id);
+    }
+  };
+
   return (
     <InstructorAuthContext.Provider
       value={{
@@ -252,6 +259,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
         signOut,
         resetPassword,
         hasFeature,
+        refreshInstructor,
       }}
     >
       {children}
