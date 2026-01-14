@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { BookOpen, Calendar, Clock, Star, ArrowLeft, Filter, Search } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { BookOpen, Calendar, Clock, Star, ArrowLeft, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,12 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, subMonths } from "date-fns";
 import { Link } from "react-router-dom";
-
-const MOCK_INSTRUCTOR_ID = "b7987d5e-348f-4047-a8d4-ee71fab1f01d";
 
 interface LessonRecord {
   id: string;
@@ -42,6 +40,9 @@ interface LessonStat {
 }
 
 export default function InstructorDiary() {
+  const { instructor } = useInstructorAuth();
+  const instructorId = instructor?.id;
+  
   const [stats, setStats] = useState<LessonStat>({ totalLessons: 0, totalHours: 0, uniquePupils: 0 });
   const [lessons, setLessons] = useState<LessonRecord[]>([]);
   const [allPupils, setAllPupils] = useState<Pupil[]>([]);
@@ -51,19 +52,24 @@ export default function InstructorDiary() {
   const [dateRange, setDateRange] = useState<string>("30");
 
   useEffect(() => {
-    fetchPupils();
-  }, []);
+    if (instructorId) {
+      fetchPupils();
+    }
+  }, [instructorId]);
 
   useEffect(() => {
-    fetchData();
-  }, [dateRange, selectedPupil]);
+    if (instructorId) {
+      fetchData();
+    }
+  }, [instructorId, dateRange, selectedPupil]);
 
   const fetchPupils = async () => {
+    if (!instructorId) return;
     try {
       const { data } = await supabase
         .from("pupils")
         .select("id, name")
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .order("name");
       setAllPupils(data || []);
     } catch (error) {
@@ -72,6 +78,7 @@ export default function InstructorDiary() {
   };
 
   const fetchData = async () => {
+    if (!instructorId) return;
     try {
       setLoading(true);
       const daysAgo = parseInt(dateRange);
@@ -82,7 +89,7 @@ export default function InstructorDiary() {
       let query = supabase
         .from("lesson_history")
         .select("id, lesson_date, start_time, duration_minutes, notes, rating, skills_practiced, pupils(id, name)")
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .gte("lesson_date", startDate)
         .order("lesson_date", { ascending: false });
 
@@ -115,9 +122,19 @@ export default function InstructorDiary() {
     return pupilName.includes(searchQuery.toLowerCase()) || notes.includes(searchQuery.toLowerCase());
   });
 
+  if (!instructorId) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
+
   return (
-    <MainLayout>
-      <div className="px-3 md:container py-4 pb-24 space-y-4">
+    <InstructorPortalLayout>
+      <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center gap-3">
           <Link to="/instructor/pupils">
@@ -259,7 +276,6 @@ export default function InstructorDiary() {
           </CardContent>
         </Card>
       </div>
-      <InstructorBottomNav />
-    </MainLayout>
+    </InstructorPortalLayout>
   );
 }

@@ -1,18 +1,14 @@
 import { useState } from "react";
-import { Phone, Mail, Send } from "lucide-react";
+import { Phone, Mail, Send, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useInstructorProfile } from "@/hooks/useInstructorProfile";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
-
-const MOCK_INSTRUCTOR_ID = "550e8400-e29b-41d4-a716-446655440000";
 
 const CONTACT_TOPICS = [
   "Schedule Query",
@@ -26,8 +22,7 @@ const CONTACT_TOPICS = [
 ];
 
 export default function InstructorContact() {
-  const isMobile = useIsMobile();
-  const { profile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
+  const { instructor } = useInstructorAuth();
   
   const [topic, setTopic] = useState("");
   const [subject, setSubject] = useState("");
@@ -54,28 +49,34 @@ export default function InstructorContact() {
     setSending(false);
   };
 
+  if (!instructor) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <InstructorMobileHeader 
-        instructorName={profile?.name}
-        profileImageUrl={profile?.profile_image_url}
-      />
+    <InstructorPortalLayout>
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <h1 className="text-xl font-bold">Contact Office</h1>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">Get in touch with support</p>
+        </div>
 
-      {/* Page Title */}
-      <div className="px-4 py-4 border-b border-border">
-        <h1 className="text-xl font-bold text-foreground">Contact Office</h1>
-        <p className="text-sm text-muted-foreground">Get in touch with support</p>
-      </div>
-
-      <div className="p-4 space-y-4">
         {/* Quick Contact Options */}
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="p-4">
             <h3 className="font-medium mb-3 text-foreground">Need immediate help?</h3>
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" className="gap-2 h-12" asChild>
-                <a href="tel:+441onal234567">
+                <a href="tel:+441234567890">
                   <Phone className="h-4 w-4" />
                   Call Office
                 </a>
@@ -179,8 +180,6 @@ export default function InstructorContact() {
           </CardContent>
         </Card>
       </div>
-
-      {isMobile && <InstructorBottomNav />}
-    </div>
+    </InstructorPortalLayout>
   );
 }

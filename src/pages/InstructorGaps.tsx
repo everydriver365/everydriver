@@ -1,29 +1,32 @@
 import { GapsFiller } from "@/components/instructor/GapsFiller";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useInstructorProfile } from "@/hooks/useInstructorProfile";
-
-const MOCK_INSTRUCTOR_ID = "550e8400-e29b-41d4-a716-446655440000";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { MapPin } from "lucide-react";
 
 export default function InstructorGaps() {
-  const isMobile = useIsMobile();
-  const { profile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
+  const { instructor } = useInstructorAuth();
+  const instructorId = instructor?.id;
+
+  if (!instructorId) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <InstructorMobileHeader 
-        instructorName={profile?.name}
-        profileImageUrl={profile?.profile_image_url}
-      />
+    <InstructorPortalLayout>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-primary" />
+          <h1 className="text-xl font-bold">Fill Gaps</h1>
+        </div>
 
-      {/* Content */}
-      <div className="p-4">
-        <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
+        <GapsFiller instructorId={instructorId} />
       </div>
-
-      {isMobile && <InstructorBottomNav />}
-    </div>
+    </InstructorPortalLayout>
   );
 }
