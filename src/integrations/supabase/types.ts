@@ -362,6 +362,45 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_sections: {
+        Row: {
+          badge_text: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          is_visible: boolean | null
+          section_key: string
+          section_name: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          badge_text?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          section_key: string
+          section_name: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          badge_text?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_visible?: boolean | null
+          section_key?: string
+          section_name?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       homepage_stats: {
         Row: {
           created_at: string
