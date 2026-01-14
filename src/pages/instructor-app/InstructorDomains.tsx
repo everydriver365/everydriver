@@ -38,6 +38,7 @@ export default function InstructorDomains() {
   const [isSearching, setIsSearching] = useState(false);
   const [domainResults, setDomainResults] = useState<DomainResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -47,6 +48,7 @@ export default function InstructorDomains() {
 
     setIsSearching(true);
     setHasSearched(true);
+    setAvailabilityError(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('godaddy-api', {
@@ -58,10 +60,25 @@ export default function InstructorDomains() {
 
       if (error) throw error;
 
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid response from domain lookup');
+      }
+
+      const hasProviderError = data.some((r: DomainResult) => Boolean(r?.error));
+      if (hasProviderError) {
+        setAvailabilityError(
+          'We could not check availability right now (provider access denied). Please try again later or contact support.'
+        );
+      }
+
       setDomainResults(data);
     } catch (error) {
       console.error('Error searching domains:', error);
       toast.error("Failed to search domains. Please try again.");
+      setAvailabilityError(
+        'Domain lookup is currently unavailable. Showing demo results for now.'
+      );
+
       // Show mock results for demo
       const mockDomain = searchQuery.toLowerCase().replace(/\s+/g, '');
       setDomainResults([
@@ -176,6 +193,14 @@ export default function InstructorDomains() {
                   className="mb-12"
                 >
                   <h2 className="text-2xl font-bold mb-6">Search Results</h2>
+
+                  {availabilityError && (
+                    <div className="mb-4 rounded-lg border border-border bg-muted/30 p-4 text-sm">
+                      <p className="font-medium">Notice</p>
+                      <p className="text-muted-foreground">{availabilityError}</p>
+                    </div>
+                  )}
+
                   <div className="grid gap-3">
                     {domainResults.map((result, index) => (
                       <motion.div
@@ -184,28 +209,51 @@ export default function InstructorDomains() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                       >
-                        <Card className={`${result.available ? 'border-emerald-200 bg-emerald-50/50' : 'border-border bg-muted/30'}`}>
+                        <Card
+                          className={
+                            result.error
+                              ? 'border-destructive/30 bg-destructive/5'
+                              : result.available
+                                ? 'border-accent/30 bg-accent/5'
+                                : 'border-border bg-muted/30'
+                          }
+                        >
                           <CardContent className="flex items-center justify-between py-4">
                             <div className="flex items-center gap-4">
-                              <Globe className={`h-5 w-5 ${result.available ? 'text-emerald-600' : 'text-muted-foreground'}`} />
+                              <Globe
+                                className={
+                                  `h-5 w-5 ${
+                                    result.error
+                                      ? 'text-destructive'
+                                      : result.available
+                                        ? 'text-accent'
+                                        : 'text-muted-foreground'
+                                  }`
+                                }
+                              />
                               <div>
                                 <p className="font-semibold">{result.domain}</p>
-                                {result.available ? (
-                                  <p className="text-sm text-emerald-600">Available</p>
+                                {result.error ? (
+                                  <p className="text-sm text-destructive">Couldn’t check availability</p>
+                                ) : result.available ? (
+                                  <p className="text-sm text-accent">Available</p>
                                 ) : (
                                   <p className="text-sm text-muted-foreground">Taken</p>
                                 )}
                               </div>
                             </div>
                             <div className="flex items-center gap-4">
-                              {result.available && result.price && (
-                                <span className="font-bold text-lg">
-                                  £{result.price.toFixed(2)}/yr
-                                </span>
+                              {!result.error && result.available && result.price && (
+                                <span className="font-bold text-lg">£{result.price.toFixed(2)}/yr</span>
                               )}
-                              {result.available ? (
-                                <Button 
-                                  variant="accent" 
+
+                              {result.error ? (
+                                <Button variant="outline" size="sm" disabled>
+                                  Check failed
+                                </Button>
+                              ) : result.available ? (
+                                <Button
+                                  variant="accent"
                                   size="sm"
                                   onClick={() => handlePurchase(result.domain)}
                                 >
