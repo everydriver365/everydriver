@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight } from "lucide-react";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { GoogleCalendarConnect } from "@/components/instructor/GoogleCalendarConnect";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,11 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useInstructorProfile } from "@/hooks/useInstructorProfile";
 import { cn } from "@/lib/utils";
-
-const MOCK_INSTRUCTOR_ID = "123e4567-e89b-12d3-a456-426614174000";
 
 interface InstructorProfile {
   name: string;
@@ -35,23 +30,28 @@ interface InstructorProfile {
 }
 
 export default function InstructorSettings() {
+  const { instructor: authInstructor } = useInstructorAuth();
+  const instructorId = authInstructor?.id;
+  
   const [profile, setProfile] = useState<InstructorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const isMobile = useIsMobile();
-  const { profile: headerProfile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
+  const [openSections, setOpenSections] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (instructorId) {
+      fetchProfile();
+    }
+  }, [instructorId]);
 
   const fetchProfile = async () => {
+    if (!instructorId) return;
     try {
       const { data, error } = await supabase
         .from("instructors")
         .select("name, email, phone, bio, profile_image_url, is_active")
-        .eq("id", MOCK_INSTRUCTOR_ID)
+        .eq("id", instructorId)
         .single();
 
       if (error) throw error;
@@ -64,7 +64,7 @@ export default function InstructorSettings() {
   };
 
   const handleProfileUpdate = async () => {
-    if (!profile) return;
+    if (!profile || !instructorId) return;
     setSaving(true);
     try {
       const { error } = await supabase
@@ -75,7 +75,7 @@ export default function InstructorSettings() {
           phone: profile.phone,
           bio: profile.bio,
         })
-        .eq("id", MOCK_INSTRUCTOR_ID);
+        .eq("id", instructorId);
 
       if (error) throw error;
       toast({ title: "Profile updated", description: "Your changes have been saved" });
@@ -88,13 +88,14 @@ export default function InstructorSettings() {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!instructorId) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     try {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${MOCK_INSTRUCTOR_ID}/profile.${fileExt}`;
+      const fileName = `${instructorId}/profile.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("instructor-images")
@@ -109,7 +110,7 @@ export default function InstructorSettings() {
       const { error: updateError } = await supabase
         .from("instructors")
         .update({ profile_image_url: publicUrl })
-        .eq("id", MOCK_INSTRUCTOR_ID);
+        .eq("id", instructorId);
 
       if (updateError) throw updateError;
 
@@ -124,7 +125,7 @@ export default function InstructorSettings() {
   };
 
   const handleVisibilityToggle = async (isVisible: boolean) => {
-    if (!profile) return;
+    if (!profile || !instructorId) return;
     
     // Optimistic update
     setProfile({ ...profile, is_active: isVisible });
@@ -133,7 +134,7 @@ export default function InstructorSettings() {
       const { error } = await supabase
         .from("instructors")
         .update({ is_active: isVisible })
-        .eq("id", MOCK_INSTRUCTOR_ID);
+        .eq("id", instructorId);
 
       if (error) throw error;
       
@@ -150,8 +151,6 @@ export default function InstructorSettings() {
       toast({ title: "Error", description: "Failed to update visibility", variant: "destructive" });
     }
   };
-
-  const [openSections, setOpenSections] = useState<string[]>([]);
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => 
@@ -207,18 +206,27 @@ export default function InstructorSettings() {
     </Card>
   );
 
-  const content = (
-    <div className={`min-h-screen bg-background ${isMobile ? "pb-20" : ""}`}>
-      {/* Page Title */}
-      <div className="px-4 py-4 border-b">
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <Settings className="h-5 w-5 text-primary" />
-          Settings
-        </h1>
-        <p className="text-sm text-muted-foreground">Manage your profile and preferences</p>
-      </div>
+  if (!instructorId) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
 
-      <div className="p-4 space-y-3">
+  return (
+    <InstructorPortalLayout>
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <Settings className="h-5 w-5 text-primary" />
+            <h1 className="text-xl font-bold">Settings</h1>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">Manage your profile and preferences</p>
+        </div>
+
         {/* Profile Section */}
         <SettingsTile 
           id="profile" 
@@ -358,7 +366,7 @@ export default function InstructorSettings() {
           description="Monthly earnings & outstanding"
         >
           <PaymentSummaryWidget 
-            instructorId={MOCK_INSTRUCTOR_ID} 
+            instructorId={instructorId} 
             instructorName={profile?.name}
             compact={false}
           />
@@ -371,7 +379,7 @@ export default function InstructorSettings() {
           title="Google Calendar Sync" 
           description="Sync lessons to your calendar"
         >
-          <GoogleCalendarConnect instructorId={MOCK_INSTRUCTOR_ID} />
+          <GoogleCalendarConnect instructorId={instructorId} />
         </SettingsTile>
 
         {/* Push Notifications Section */}
@@ -381,7 +389,7 @@ export default function InstructorSettings() {
           title="Push Notifications" 
           description="Manage notification preferences"
         >
-          <PushNotificationSettings instructorId={MOCK_INSTRUCTOR_ID} />
+          <PushNotificationSettings instructorId={instructorId} />
         </SettingsTile>
 
         {/* Cancellation Policy Section */}
@@ -391,7 +399,7 @@ export default function InstructorSettings() {
           title="Cancellation Policy" 
           description="Set notice period & charges"
         >
-          <CancellationPolicyEditor instructorId={MOCK_INSTRUCTOR_ID} />
+          <CancellationPolicyEditor instructorId={instructorId} />
         </SettingsTile>
 
         {/* Working Hours Section */}
@@ -401,7 +409,7 @@ export default function InstructorSettings() {
           title="Working Hours" 
           description="Set your availability"
         >
-          <WorkingHoursEditor instructorId={MOCK_INSTRUCTOR_ID} />
+          <WorkingHoursEditor instructorId={instructorId} />
         </SettingsTile>
 
         {/* Pupil App Branding Section */}
@@ -411,30 +419,9 @@ export default function InstructorSettings() {
           title="Pupil App Branding" 
           description="Customise your pupil portal"
         >
-          <PupilAppBrandingEditor instructorId={MOCK_INSTRUCTOR_ID} />
+          <PupilAppBrandingEditor instructorId={instructorId} />
         </SettingsTile>
       </div>
-    </div>
-  );
-
-  // Mobile Layout
-  if (isMobile) {
-    return (
-      <div className="min-h-screen bg-background">
-        <InstructorMobileHeader 
-          instructorName={headerProfile?.name} 
-          profileImageUrl={headerProfile?.profile_image_url}
-        />
-        {content}
-        <InstructorBottomNav />
-      </div>
-    );
-  }
-
-  // Desktop Layout
-  return (
-    <MainLayout>
-      {content}
-    </MainLayout>
+    </InstructorPortalLayout>
   );
 }

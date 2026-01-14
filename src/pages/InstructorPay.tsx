@@ -1,18 +1,13 @@
 import { useState, useEffect } from "react";
 import { CreditCard, TrendingUp, PoundSterling, Calendar, Gift } from "lucide-react";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths } from "date-fns";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useInstructorProfile } from "@/hooks/useInstructorProfile";
-
-const MOCK_INSTRUCTOR_ID = "b7987d5e-348f-4047-a8d4-ee71fab1f01d";
 
 interface EarningsSummary {
   thisWeek: number;
@@ -30,6 +25,9 @@ interface Pupil {
 }
 
 export default function InstructorPay() {
+  const { instructor: authInstructor } = useInstructorAuth();
+  const instructorId = authInstructor?.id;
+  
   const [earnings, setEarnings] = useState<EarningsSummary>({
     thisWeek: 0,
     thisMonth: 0,
@@ -43,20 +41,21 @@ export default function InstructorPay() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pupils, setPupils] = useState<Pupil[]>([]);
-  const isMobile = useIsMobile();
-  const { profile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
 
   useEffect(() => {
-    fetchData();
-    fetchPupils();
-  }, []);
+    if (instructorId) {
+      fetchData();
+      fetchPupils();
+    }
+  }, [instructorId]);
 
   const fetchPupils = async () => {
+    if (!instructorId) return;
     try {
       const { data, error } = await supabase
         .from("pupils")
         .select("id, name, account_balance, phone")
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .order("name", { ascending: true });
 
       if (error) throw error;
@@ -67,12 +66,13 @@ export default function InstructorPay() {
   };
 
   const fetchData = async () => {
+    if (!instructorId) return;
     try {
       // Fetch instructor hourly rate, payment QR, name, and bonus
       const { data: instructor } = await supabase
         .from("instructors")
         .select("hourly_rate, payment_qr_url, bonus_earned, name")
-        .eq("id", MOCK_INSTRUCTOR_ID)
+        .eq("id", instructorId)
         .single();
 
       if (instructor) {
@@ -95,21 +95,21 @@ export default function InstructorPay() {
       const { data: thisWeekData } = await supabase
         .from("lesson_history")
         .select("duration_minutes")
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .gte("lesson_date", weekStart)
         .lte("lesson_date", weekEnd);
 
       const { data: thisMonthData } = await supabase
         .from("lesson_history")
         .select("duration_minutes")
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .gte("lesson_date", monthStart)
         .lte("lesson_date", monthEnd);
 
       const { data: lastMonthData } = await supabase
         .from("lesson_history")
         .select("duration_minutes")
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .gte("lesson_date", lastMonthStart)
         .lte("lesson_date", lastMonthEnd);
 
@@ -132,133 +132,119 @@ export default function InstructorPay() {
     }
   };
 
-  const content = (
-    <div className="px-3 md:container py-4 pb-24 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <CreditCard className="h-5 w-5 text-primary" />
-          Earnings & Payments
-        </h1>
-      </div>
-
-      {/* Take Payment Button */}
-      <Button 
-        className="w-full gap-2" 
-        size="lg"
-        onClick={() => setPaymentModalOpen(true)}
-      >
-        <CreditCard className="h-5 w-5" />
-        Take Payment (Show QR)
-      </Button>
-
-      {/* Earnings Summary */}
-      <div className="grid grid-cols-2 gap-3">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Calendar className="h-4 w-4" />
-              <span className="text-xs">This Week</span>
-            </div>
-            <div className="text-2xl font-bold">£{earnings.thisWeek}</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-primary text-primary-foreground">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-primary-foreground/70 mb-1">
-              <TrendingUp className="h-4 w-4" />
-              <span className="text-xs">This Month</span>
-            </div>
-            <div className="text-2xl font-bold">£{earnings.thisMonth}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Bonus Earned */}
-      <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 text-white/80 mb-1">
-            <Gift className="h-4 w-4" />
-            <span className="text-xs">Bonus Earned</span>
-          </div>
-          <div className="text-2xl font-bold">£{earnings.bonusEarned}</div>
-          <p className="text-xs text-white/70 mt-1">£50 per completed course</p>
-        </CardContent>
-      </Card>
-
-      {/* Details */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Earnings Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex justify-between items-center py-2 border-b">
-            <span className="text-muted-foreground">Hourly Rate</span>
-            <span className="font-semibold">£{hourlyRate}/hr</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b">
-            <span className="text-muted-foreground">Hours This Month</span>
-            <span className="font-semibold">{earnings.hoursThisMonth} hrs</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b">
-            <span className="text-muted-foreground">Last Month</span>
-            <span className="font-semibold">£{earnings.lastMonth}</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment History */}
-      <PaymentHistory instructorId={MOCK_INSTRUCTOR_ID} limit={15} />
-
-      {/* Outstanding Payments */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base flex items-center gap-2">
-            <PoundSterling className="h-4 w-4" />
-            Outstanding from Pupils
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No outstanding payments
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-
-  const modal = (
-    <PaymentQRModal 
-      open={paymentModalOpen} 
-      onOpenChange={setPaymentModalOpen}
-      paymentQrUrl={paymentQrUrl}
-      pupils={pupils}
-      instructorId={MOCK_INSTRUCTOR_ID}
-      instructorName={instructorName}
-      onPaymentRecorded={fetchPupils}
-    />
-  );
-
-  // Mobile Layout
-  if (isMobile) {
+  if (!instructorId) {
     return (
-      <div className="min-h-screen bg-background">
-        <InstructorMobileHeader 
-          instructorName={profile?.name}
-          profileImageUrl={profile?.profile_image_url}
-        />
-        {content}
-        {modal}
-        <InstructorBottomNav />
-      </div>
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </InstructorPortalLayout>
     );
   }
 
-  // Desktop Layout
   return (
-    <MainLayout>
-      {content}
-      {modal}
-      <InstructorBottomNav />
-    </MainLayout>
+    <InstructorPortalLayout>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-primary" />
+            Earnings & Payments
+          </h1>
+        </div>
+
+        {/* Take Payment Button */}
+        <Button 
+          className="w-full gap-2" 
+          size="lg"
+          onClick={() => setPaymentModalOpen(true)}
+        >
+          <CreditCard className="h-5 w-5" />
+          Take Payment (Show QR)
+        </Button>
+
+        {/* Earnings Summary */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Calendar className="h-4 w-4" />
+                <span className="text-xs">This Week</span>
+              </div>
+              <div className="text-2xl font-bold">£{earnings.thisWeek}</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-primary text-primary-foreground">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 text-primary-foreground/70 mb-1">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-xs">This Month</span>
+              </div>
+              <div className="text-2xl font-bold">£{earnings.thisMonth}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Bonus Earned */}
+        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-white/80 mb-1">
+              <Gift className="h-4 w-4" />
+              <span className="text-xs">Bonus Earned</span>
+            </div>
+            <div className="text-2xl font-bold">£{earnings.bonusEarned}</div>
+            <p className="text-xs text-white/70 mt-1">£50 per completed course</p>
+          </CardContent>
+        </Card>
+
+        {/* Details */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Earnings Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-muted-foreground">Hourly Rate</span>
+              <span className="font-semibold">£{hourlyRate}/hr</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-muted-foreground">Hours This Month</span>
+              <span className="font-semibold">{earnings.hoursThisMonth} hrs</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-muted-foreground">Last Month</span>
+              <span className="font-semibold">£{earnings.lastMonth}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Payment History */}
+        <PaymentHistory instructorId={instructorId} limit={15} />
+
+        {/* Outstanding Payments */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <PoundSterling className="h-4 w-4" />
+              Outstanding from Pupils
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No outstanding payments
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <PaymentQRModal 
+        open={paymentModalOpen} 
+        onOpenChange={setPaymentModalOpen}
+        paymentQrUrl={paymentQrUrl}
+        pupils={pupils}
+        instructorId={instructorId}
+        instructorName={instructorName}
+        onPaymentRecorded={fetchPupils}
+      />
+    </InstructorPortalLayout>
   );
 }

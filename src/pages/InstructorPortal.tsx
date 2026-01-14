@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,8 +14,9 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -30,9 +30,7 @@ interface Pupil {
   phone: string | null;
 }
 
-const MOCK_INSTRUCTOR_ID = "b7987d5e-348f-4047-a8d4-ee71fab1f01d";
-
-interface Instructor {
+interface InstructorData {
   name: string;
   profile_image_url: string | null;
   payment_qr_url: string | null;
@@ -40,7 +38,10 @@ interface Instructor {
 }
 
 export default function InstructorPortal() {
-  const [instructor, setInstructor] = useState<Instructor | null>(null);
+  const { instructor: authInstructor } = useInstructorAuth();
+  const instructorId = authInstructor?.id;
+  
+  const [instructorData, setInstructorData] = useState<InstructorData | null>(null);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [pupilsLoading, setPupilsLoading] = useState(true);
   const [todaysLessonCount, setTodaysLessonCount] = useState(0);
@@ -48,32 +49,36 @@ export default function InstructorPortal() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    fetchInstructor();
-    fetchPupils();
-    fetchTodaysLessonCount();
-  }, []);
+    if (instructorId) {
+      fetchInstructor();
+      fetchPupils();
+      fetchTodaysLessonCount();
+    }
+  }, [instructorId]);
 
   const fetchInstructor = async () => {
+    if (!instructorId) return;
     try {
       const { data, error } = await supabase
         .from("instructors")
         .select("name, profile_image_url, payment_qr_url, is_active")
-        .eq("id", MOCK_INSTRUCTOR_ID)
+        .eq("id", instructorId)
         .single();
 
       if (error) throw error;
-      setInstructor(data);
+      setInstructorData(data);
     } catch (error) {
       console.error("Error fetching instructor:", error);
     }
   };
 
   const fetchPupils = async () => {
+    if (!instructorId) return;
     try {
       const { data, error } = await supabase
         .from("pupils")
         .select("id, name, lessons_completed, next_lesson, progress, account_balance, phone")
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .order("name", { ascending: true });
 
       if (error) throw error;
@@ -86,12 +91,13 @@ export default function InstructorPortal() {
   };
 
   const fetchTodaysLessonCount = async () => {
+    if (!instructorId) return;
     try {
       const today = new Date().toISOString().split("T")[0];
       const { count, error } = await supabase
         .from("scheduled_lessons")
         .select("*", { count: "exact", head: true })
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .eq("lesson_date", today)
         .neq("status", "cancelled");
 
@@ -106,33 +112,42 @@ export default function InstructorPortal() {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  // Mobile Layout
+  if (!instructorId) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
+
+  // Mobile Layout - uses InstructorMobileHome component
   if (isMobile) {
     return (
-      <>
+      <InstructorPortalLayout>
         <InstructorMobileHome 
-          instructor={instructor}
+          instructor={instructorData}
           todaysLessonCount={todaysLessonCount}
           onPaymentClick={() => setPaymentModalOpen(true)}
         />
         <PaymentQRModal 
           open={paymentModalOpen} 
           onOpenChange={setPaymentModalOpen}
-          paymentQrUrl={instructor?.payment_qr_url}
+          paymentQrUrl={instructorData?.payment_qr_url}
           pupils={pupils}
-          instructorId={MOCK_INSTRUCTOR_ID}
-          instructorName={instructor?.name}
+          instructorId={instructorId}
+          instructorName={instructorData?.name}
           onPaymentRecorded={fetchPupils}
         />
-        <InstructorBottomNav />
-      </>
+      </InstructorPortalLayout>
     );
   }
 
   // Desktop Layout - Clean, organized structure
   return (
-    <MainLayout>
-      <div className="container py-6 space-y-6">
+    <InstructorPortalLayout>
+      <div className="space-y-6">
         
         {/* Header Section */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -142,21 +157,21 @@ export default function InstructorPortal() {
             className="flex items-center gap-4"
           >
             <Avatar className="h-12 w-12 border-2 border-primary">
-              <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
+              <AvatarImage src={instructorData?.profile_image_url || undefined} alt={instructorData?.name} />
               <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                {instructor?.name ? getInitials(instructor.name) : "?"}
+                {instructorData?.name ? getInitials(instructorData.name) : "?"}
               </AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold">{instructor?.name || "Dashboard"}</h1>
-                {instructor && (
+                <h1 className="text-xl font-bold">{instructorData?.name || "Dashboard"}</h1>
+                {instructorData && (
                   <Badge 
                     variant="secondary" 
-                    className={`gap-1 text-xs ${instructor.is_active ? "bg-emerald-500/10 text-emerald-600 border-emerald-200" : "bg-amber-500/10 text-amber-600 border-amber-200"}`}
+                    className={`gap-1 text-xs ${instructorData.is_active ? "bg-emerald-500/10 text-emerald-600 border-emerald-200" : "bg-amber-500/10 text-amber-600 border-amber-200"}`}
                   >
-                    {instructor.is_active ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                    {instructor.is_active ? "Visible" : "Hidden"}
+                    {instructorData.is_active ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                    {instructorData.is_active ? "Visible" : "Hidden"}
                   </Badge>
                 )}
               </div>
@@ -184,7 +199,7 @@ export default function InstructorPortal() {
         </div>
 
         {/* Job Alerts */}
-        <JobOfferAlert instructorId={MOCK_INSTRUCTOR_ID} />
+        <JobOfferAlert instructorId={instructorId} />
 
         {/* Stats Row */}
         <motion.div 
@@ -230,13 +245,13 @@ export default function InstructorPortal() {
                 <TabsTrigger value="gaps">Fill Gaps</TabsTrigger>
               </TabsList>
               <TabsContent value="today" className="mt-4">
-                <TodayScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
+                <TodayScheduleView instructorId={instructorId} />
               </TabsContent>
               <TabsContent value="tomorrow" className="mt-4">
-                <TomorrowScheduleView instructorId={MOCK_INSTRUCTOR_ID} />
+                <TomorrowScheduleView instructorId={instructorId} />
               </TabsContent>
               <TabsContent value="gaps" className="mt-4">
-                <GapsFiller instructorId={MOCK_INSTRUCTOR_ID} />
+                <GapsFiller instructorId={instructorId} />
               </TabsContent>
             </Tabs>
           </motion.div>
@@ -251,7 +266,7 @@ export default function InstructorPortal() {
             {/* Payment Summary */}
             <Card>
               <CardContent className="p-4">
-                <PaymentSummaryWidget instructorId={MOCK_INSTRUCTOR_ID} instructorName={instructor?.name} />
+                <PaymentSummaryWidget instructorId={instructorId} instructorName={instructorData?.name} />
               </CardContent>
             </Card>
 
@@ -317,7 +332,7 @@ export default function InstructorPortal() {
                       Expenses
                     </Button>
                   </Link>
-                  <Link to="/instructor/track">
+                  <Link to="/instructor/track-lesson">
                     <Button variant="outline" size="sm" className="w-full text-xs h-9">
                       <Car className="h-3.5 w-3.5 mr-1.5" />
                       Track
@@ -335,19 +350,19 @@ export default function InstructorPortal() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          <UpcomingTestsView instructorId={MOCK_INSTRUCTOR_ID} />
+          <UpcomingTestsView instructorId={instructorId} />
         </motion.div>
 
         <PaymentQRModal
           open={paymentModalOpen} 
           onOpenChange={setPaymentModalOpen}
-          paymentQrUrl={instructor?.payment_qr_url}
+          paymentQrUrl={instructorData?.payment_qr_url}
           pupils={pupils}
-          instructorId={MOCK_INSTRUCTOR_ID}
-          instructorName={instructor?.name}
+          instructorId={instructorId}
+          instructorName={instructorData?.name}
           onPaymentRecorded={fetchPupils}
         />
       </div>
-    </MainLayout>
+    </InstructorPortalLayout>
   );
 }

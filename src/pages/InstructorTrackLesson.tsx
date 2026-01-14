@@ -1,23 +1,17 @@
 import { useState, useEffect } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import { useInstructorProfile } from "@/hooks/useInstructorProfile";
-import { MainLayout } from "@/components/layout/MainLayout";
 import TelematicsTracker from "@/components/instructor/TelematicsTracker";
 import GeneratedDrivingReport from "@/components/instructor/GeneratedDrivingReport";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { Car, User, Clock, MapPin, FileText } from "lucide-react";
 import { format } from "date-fns";
-import { useTelematics } from "@/hooks/useTelematics";
-
-const MOCK_INSTRUCTOR_ID = "550e8400-e29b-41d4-a716-446655440000";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ScheduledLesson {
   id: string;
@@ -32,8 +26,10 @@ interface ScheduledLesson {
 }
 
 export default function InstructorTrackLesson() {
+  const { instructor } = useInstructorAuth();
+  const instructorId = instructor?.id;
   const isMobile = useIsMobile();
-  const { profile } = useInstructorProfile(MOCK_INSTRUCTOR_ID);
+  
   const [todaysLessons, setTodaysLessons] = useState<ScheduledLesson[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string | undefined>();
   const [selectedPupilId, setSelectedPupilId] = useState<string | undefined>();
@@ -42,60 +38,63 @@ export default function InstructorTrackLesson() {
   const [lastTelematicsId, setLastTelematicsId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTodaysLessons = async () => {
-      try {
-        const today = format(new Date(), "yyyy-MM-dd");
-        const { data: lessonsData, error } = await supabase
-          .from("scheduled_lessons")
-          .select("id, lesson_date, start_time, duration_minutes, pickup_location, pupil_id")
-          .eq("instructor_id", MOCK_INSTRUCTOR_ID)
-          .eq("lesson_date", today)
-          .neq("status", "cancelled")
-          .order("start_time", { ascending: true });
+    if (instructorId) {
+      fetchTodaysLessons();
+    }
+  }, [instructorId]);
 
-        if (error) throw error;
+  const fetchTodaysLessons = async () => {
+    if (!instructorId) return;
+    try {
+      const today = format(new Date(), "yyyy-MM-dd");
+      const { data: lessonsData, error } = await supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes, pickup_location, pupil_id")
+        .eq("instructor_id", instructorId)
+        .eq("lesson_date", today)
+        .neq("status", "cancelled")
+        .order("start_time", { ascending: true });
 
-        // Fetch pupils separately
-        const pupilIds = (lessonsData || []).map(l => l.pupil_id).filter(Boolean) as string[];
-        let pupilsMap: Record<string, { id: string; name: string }> = {};
+      if (error) throw error;
+
+      // Fetch pupils separately
+      const pupilIds = (lessonsData || []).map(l => l.pupil_id).filter(Boolean) as string[];
+      let pupilsMap: Record<string, { id: string; name: string }> = {};
+      
+      if (pupilIds.length > 0) {
+        const { data: pupilsData } = await supabase
+          .from("pupils")
+          .select("id, name")
+          .in("id", pupilIds);
         
-        if (pupilIds.length > 0) {
-          const { data: pupilsData } = await supabase
-            .from("pupils")
-            .select("id, name")
-            .in("id", pupilIds);
-          
-          pupilsMap = (pupilsData || []).reduce((acc, p) => {
-            acc[p.id] = p;
-            return acc;
-          }, {} as Record<string, { id: string; name: string }>);
-        }
-
-        const lessons: ScheduledLesson[] = (lessonsData || []).map((lesson) => ({
-          id: lesson.id,
-          lesson_date: lesson.lesson_date,
-          start_time: lesson.start_time,
-          duration_minutes: lesson.duration_minutes,
-          pickup_location: lesson.pickup_location,
-          pupil: lesson.pupil_id ? pupilsMap[lesson.pupil_id] || null : null
-        }));
-
-        setTodaysLessons(lessons);
-        
-        // Auto-select first lesson if available
-        if (lessons.length > 0 && !selectedLessonId) {
-          setSelectedLessonId(lessons[0].id);
-          setSelectedPupilId(lessons[0].pupil?.id);
-        }
-      } catch (error) {
-        console.error("Error fetching lessons:", error);
-      } finally {
-        setLoading(false);
+        pupilsMap = (pupilsData || []).reduce((acc, p) => {
+          acc[p.id] = p;
+          return acc;
+        }, {} as Record<string, { id: string; name: string }>);
       }
-    };
 
-    fetchTodaysLessons();
-  }, []);
+      const lessons: ScheduledLesson[] = (lessonsData || []).map((lesson) => ({
+        id: lesson.id,
+        lesson_date: lesson.lesson_date,
+        start_time: lesson.start_time,
+        duration_minutes: lesson.duration_minutes,
+        pickup_location: lesson.pickup_location,
+        pupil: lesson.pupil_id ? pupilsMap[lesson.pupil_id] || null : null
+      }));
+
+      setTodaysLessons(lessons);
+      
+      // Auto-select first lesson if available
+      if (lessons.length > 0 && !selectedLessonId) {
+        setSelectedLessonId(lessons[0].id);
+        setSelectedPupilId(lessons[0].pupil?.id);
+      }
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLessonChange = (lessonId: string) => {
     setSelectedLessonId(lessonId);
@@ -109,12 +108,12 @@ export default function InstructorTrackLesson() {
   // Check for recent telematics session to offer report generation
   useEffect(() => {
     const checkRecentSession = async () => {
-      if (!selectedPupilId) return;
+      if (!selectedPupilId || !instructorId) return;
       
       const { data } = await supabase
         .from("lesson_telematics")
         .select("id, ended_at")
-        .eq("instructor_id", MOCK_INSTRUCTOR_ID)
+        .eq("instructor_id", instructorId)
         .eq("pupil_id", selectedPupilId)
         .not("ended_at", "is", null)
         .order("ended_at", { ascending: false })
@@ -126,7 +125,7 @@ export default function InstructorTrackLesson() {
     };
     
     checkRecentSession();
-  }, [selectedPupilId]);
+  }, [selectedPupilId, instructorId]);
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(":");
@@ -136,16 +135,19 @@ export default function InstructorTrackLesson() {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
-  const content = (
-    <div className={`${isMobile ? "pb-20" : ""}`}>
-      {isMobile && (
-        <InstructorMobileHeader 
-          instructorName={profile?.name}
-          profileImageUrl={profile?.profile_image_url}
-        />
-      )}
+  if (!instructorId) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
 
-      <div className="p-4 space-y-4">
+  return (
+    <InstructorPortalLayout>
+      <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-full">
             <Car className="h-5 w-5 text-primary" />
@@ -214,7 +216,7 @@ export default function InstructorTrackLesson() {
 
         {/* Telematics Tracker */}
         <TelematicsTracker
-          instructorId={MOCK_INSTRUCTOR_ID}
+          instructorId={instructorId}
           lessonId={selectedLessonId}
           pupilId={selectedPupilId}
         />
@@ -262,14 +264,6 @@ export default function InstructorTrackLesson() {
           </div>
         </SheetContent>
       </Sheet>
-
-      {isMobile && <InstructorBottomNav />}
-    </div>
+    </InstructorPortalLayout>
   );
-
-  if (isMobile) {
-    return content;
-  }
-
-  return <MainLayout>{content}</MainLayout>;
 }
