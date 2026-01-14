@@ -149,10 +149,10 @@ export default function InstructorPortal() {
     return null; // Will redirect to login via useEffect
   }
 
-  // Mobile Layout - uses InstructorMobileHome component
+  // Mobile Layout - uses InstructorMobileHome component (no layout wrapper - has its own header)
   if (isMobile) {
     return (
-      <InstructorPortalLayout>
+      <>
         <InstructorMobileHome 
           instructor={instructorData}
           todaysLessonCount={todaysLessonCount}
@@ -167,7 +167,7 @@ export default function InstructorPortal() {
           instructorName={instructorData?.name}
           onPaymentRecorded={fetchPupils}
         />
-      </InstructorPortalLayout>
+      </>
     );
   }
 
