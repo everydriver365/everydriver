@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
+import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import logoDark from "@/assets/logo-instructor-dark.png";
 
 // Icon mapping
@@ -265,6 +266,9 @@ export function InstructorMobileHome({
       {content?.secondary_promo_banners && content.secondary_promo_banners.length > 0 && (
         <SecondaryPromoCards banners={content.secondary_promo_banners} />
       )}
+
+      {/* Bottom Navigation */}
+      <InstructorBottomNav />
     </div>
   );
 }
