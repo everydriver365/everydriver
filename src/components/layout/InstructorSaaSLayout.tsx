@@ -1,16 +1,115 @@
-import { Header } from "./Header";
+import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import logo from "@/assets/logo-drive365.png";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
+
+const navLinks = [
+  { href: "/instructor-app", label: "Home" },
+  { href: "/instructor-app/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+];
 
 interface InstructorSaaSLayoutProps {
   children: React.ReactNode;
 }
 
 export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-nav/20 bg-nav">
+        <nav className="container max-w-7xl flex h-16 items-center justify-between">
+          <Link to="/instructor-app" className="flex items-center">
+            <img src={logo} alt="Drive365" className="h-10" />
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-6 md:flex">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                to={link.href}
+                className={`text-sm font-medium transition-colors hover:text-accent ${
+                  location.pathname === link.href ? "text-accent" : "text-nav-foreground/80"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="hidden items-center gap-3 md:flex">
+            <Button variant="ghost" className="text-nav-foreground/80 hover:text-nav-foreground hover:bg-nav-foreground/10" asChild>
+              <Link to="/instructor-app/login">Log in</Link>
+            </Button>
+            <Button variant="accent" asChild>
+              <Link to="/instructor-app/signup">Get Started Free</Link>
+            </Button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden text-nav-foreground hover:bg-nav-foreground/10"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </nav>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="border-t bg-background md:hidden"
+            >
+              <div className="container py-4">
+                <div className="flex flex-col gap-2">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  
+                  <div className="border-t border-border mt-2 pt-2 flex flex-col gap-2">
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link to="/instructor-app/login" onClick={() => setIsMobileMenuOpen(false)}>
+                        Log in
+                      </Link>
+                    </Button>
+                    <Button variant="accent" className="w-full" asChild>
+                      <Link to="/instructor-app/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                        Get Started Free
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      {/* Main Content */}
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
+      
       <Footer />
       <MobileBottomNav />
     </div>
