@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Shield, Users, Calendar, CreditCard, Settings, BarChart3, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -29,6 +29,7 @@ import { IncludedFeaturesManager } from "@/components/admin/IncludedFeaturesMana
 import { InstructorHomepageManager } from "@/components/admin/InstructorHomepageManager";
 import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
 import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
+import { HomepageSectionsManager } from "@/components/admin/HomepageSectionsManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -142,6 +143,7 @@ export default function AdminPortal() {
             <TabsTrigger value="pwa-apps">Mobile Apps</TabsTrigger>
             <TabsTrigger value="instructor-home">Instructor App</TabsTrigger>
             <TabsTrigger value="site-settings">Site Settings</TabsTrigger>
+            <TabsTrigger value="sections">Page Sections</TabsTrigger>
             <TabsTrigger value="hero">Hero Section</TabsTrigger>
             <TabsTrigger value="stats">Stats</TabsTrigger>
             <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
@@ -394,6 +396,25 @@ export default function AdminPortal() {
                 </CardHeader>
                 <CardContent>
                   <InstructorHomepageManager />
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="sections">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Layers className="h-5 w-5 text-accent" />
+                    Homepage Sections
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <HomepageSectionsManager />
                 </CardContent>
               </Card>
             </motion.div>
