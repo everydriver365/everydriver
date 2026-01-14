@@ -31,7 +31,7 @@ interface InstructorProfile {
 }
 
 export default function InstructorSettings() {
-  const { instructor: authInstructor } = useInstructorAuth();
+  const { instructor: authInstructor, refreshInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   
   const [profile, setProfile] = useState<InstructorProfile | null>(null);
@@ -138,6 +138,9 @@ export default function InstructorSettings() {
         .eq("id", instructorId);
 
       if (error) throw error;
+      
+      // Refresh the auth context so all components get the updated visibility
+      await refreshInstructor();
       
       toast({ 
         title: isVisible ? "Now visible" : "Hidden from website", 
