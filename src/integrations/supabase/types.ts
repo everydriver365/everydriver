@@ -747,6 +747,60 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          instructor_id: string
+          plan_id: string
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          instructor_id: string
+          plan_id: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          instructor_id?: string
+          plan_id?: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_subscriptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_test_centres: {
         Row: {
           created_at: string
@@ -829,6 +883,7 @@ export type Database = {
           adi_code_of_practice: boolean | null
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
+          auth_user_id: string | null
           available_from: string | null
           bio: string | null
           bonus_earned: number | null
@@ -885,6 +940,7 @@ export type Database = {
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
+          auth_user_id?: string | null
           available_from?: string | null
           bio?: string | null
           bonus_earned?: number | null
@@ -941,6 +997,7 @@ export type Database = {
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
+          auth_user_id?: string | null
           available_from?: string | null
           bio?: string | null
           bonus_earned?: number | null
@@ -1581,6 +1638,51 @@ export type Database = {
           image_url?: string
           is_active?: boolean | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          max_pupils: number | null
+          name: string
+          price_monthly: number
+          price_yearly: number | null
+          slug: string
+          sms_credits_monthly: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_pupils?: number | null
+          name: string
+          price_monthly?: number
+          price_yearly?: number | null
+          slug: string
+          sms_credits_monthly?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_pupils?: number | null
+          name?: string
+          price_monthly?: number
+          price_yearly?: number | null
+          slug?: string
+          sms_credits_monthly?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
