@@ -77,8 +77,8 @@ export default function InstructorAbout() {
               <Card key={value.title} className="border-border/50">
                 <CardContent className="p-6 flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
-                      <value.icon className="w-6 h-6 text-accent" />
+                    <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <value.icon className="w-6 h-6 text-emerald-500" />
                     </div>
                   </div>
                   <div>
@@ -92,7 +92,7 @@ export default function InstructorAbout() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center bg-accent/10 rounded-2xl p-8 md:p-12">
+        <div className="text-center bg-emerald-500/10 rounded-2xl p-8 md:p-12">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
             Ready to Transform Your Business?
           </h2>
@@ -100,7 +100,7 @@ export default function InstructorAbout() {
             Join thousands of instructors who have simplified their admin and grown their business with Drive365.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="accent" size="lg" asChild>
+            <Button className="bg-emerald-500 text-white hover:bg-emerald-600" size="lg" asChild>
               <Link to="/instructor-app/signup">Get Started Free</Link>
             </Button>
             <Button variant="outline" size="lg" asChild>

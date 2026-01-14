@@ -142,8 +142,7 @@ export default function InstructorLogin() {
 
                 <Button 
                   type="submit" 
-                  variant="accent"
-                  className="w-full h-12"
+                  className="w-full h-12 bg-emerald-500 text-white hover:bg-emerald-600"
                   disabled={loading}
                 >
                   {loading ? (

@@ -197,7 +197,7 @@ export default function InstructorSignup() {
                     />
                   </div>
 
-                  <Button type="submit" variant="accent" className="w-full h-12" disabled={loading}>
+                  <Button type="submit" className="w-full h-12 bg-emerald-500 text-white hover:bg-emerald-600" disabled={loading}>
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

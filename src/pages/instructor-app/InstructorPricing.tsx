@@ -91,13 +91,13 @@ export default function InstructorPricing() {
                 <Card 
                   className={`relative h-full ${
                     plan.popular 
-                      ? "border-accent shadow-lg shadow-accent/10" 
+                      ? "border-emerald-500 shadow-lg shadow-emerald-500/10" 
                       : "border-border"
                   }`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-accent text-accent-foreground">
+                      <Badge className="bg-emerald-500 text-white">
                         Most Popular
                       </Badge>
                     </div>
@@ -127,8 +127,8 @@ export default function InstructorPricing() {
                     </ul>
                     
                     <Button 
-                      variant={plan.popular ? "accent" : "outline"}
-                      className="w-full"
+                      className={plan.popular ? "w-full bg-emerald-500 text-white hover:bg-emerald-600" : "w-full"}
+                      variant={plan.popular ? undefined : "outline"}
                       asChild
                     >
                       <Link to={`/instructor-app/signup?plan=${plan.slug}`}>
