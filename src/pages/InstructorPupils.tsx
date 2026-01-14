@@ -307,34 +307,13 @@ export default function InstructorPupils() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/instructor">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold md:text-3xl">Pupil Management</h1>
-              <p className="text-muted-foreground">
-                Track progress and manage your pupils
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={() => setIsAddOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Pupil
-            </Button>
-            <Link to="/instructor/diary">
-              <Button variant="outline" className="gap-2">
-                <History className="h-4 w-4" />
-                <span className="hidden sm:inline">View All History</span>
-              </Button>
-            </Link>
-          </div>
+      <div className="space-y-4">
+        {/* Add Pupil Button */}
+        <div className="flex justify-end">
+          <Button onClick={() => setIsAddOpen(true)} size="sm" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Pupil
+          </Button>
         </div>
 
         {/* Stats Row - Compact Tabs */}
