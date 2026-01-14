@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import logo from "@/assets/logo-drive365.png";
+import logo from "@/assets/logo-drive365-dark.png";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
 
