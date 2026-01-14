@@ -50,7 +50,7 @@ import InstructorLogin from "./pages/instructor-app/InstructorLogin";
 import InstructorSignup from "./pages/instructor-app/InstructorSignup";
 import InstructorAbout from "./pages/instructor-app/InstructorAbout";
 import InstructorContactPage from "./pages/instructor-app/InstructorContact";
-
+import InstructorDomains from "./pages/instructor-app/InstructorDomains";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -84,6 +84,7 @@ const App = () => (
               <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
               <Route path="/instructor-app/about" element={<InstructorAbout />} />
               <Route path="/instructor-app/contact" element={<InstructorContactPage />} />
+              <Route path="/instructor-app/domains" element={<InstructorDomains />} />
               <Route path="/instructor-app/login" element={<InstructorLogin />} />
               <Route path="/instructor-app/signup" element={<InstructorSignup />} />
 

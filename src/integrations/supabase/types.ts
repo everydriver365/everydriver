@@ -225,6 +225,62 @@ export type Database = {
         }
         Relationships: []
       }
+      domain_orders: {
+        Row: {
+          auto_renew: boolean | null
+          created_at: string
+          currency: string
+          domain_name: string
+          godaddy_order_id: string | null
+          id: string
+          instructor_id: string
+          order_type: string
+          period_years: number
+          price_amount: number
+          status: string
+          tld: string
+          updated_at: string
+        }
+        Insert: {
+          auto_renew?: boolean | null
+          created_at?: string
+          currency?: string
+          domain_name: string
+          godaddy_order_id?: string | null
+          id?: string
+          instructor_id: string
+          order_type: string
+          period_years?: number
+          price_amount: number
+          status?: string
+          tld: string
+          updated_at?: string
+        }
+        Update: {
+          auto_renew?: boolean | null
+          created_at?: string
+          currency?: string
+          domain_name?: string
+          godaddy_order_id?: string | null
+          id?: string
+          instructor_id?: string
+          order_type?: string
+          period_years?: number
+          price_amount?: number
+          status?: string
+          tld?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "domain_orders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driving_behavior_events: {
         Row: {
           event_type: string
