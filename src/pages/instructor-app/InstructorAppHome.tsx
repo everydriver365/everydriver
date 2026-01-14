@@ -19,7 +19,7 @@ export default function InstructorAppHome() {
     return (
       <InstructorSaaSLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </InstructorSaaSLayout>
     );
@@ -32,8 +32,8 @@ export default function InstructorAppHome() {
   return (
     <InstructorSaaSLayout>
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10" />
+      <section className="relative overflow-hidden py-20 md:py-32 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
+        <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-5" />
         <div className="container relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -41,26 +41,27 @@ export default function InstructorAppHome() {
             transition={{ duration: 0.6 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 border border-accent/30 text-accent text-sm mb-6">
               <Star className="h-4 w-4" />
               {hero.badge_text}
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
               {hero.headline_part1}{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              <span className="text-accent">
                 {hero.headline_highlight}
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
               {hero.subtext}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white border-0 h-12 px-8"
+                variant="accent"
+                className="h-12 px-8"
                 asChild
               >
                 <Link to={hero.primary_cta_link}>
@@ -71,7 +72,7 @@ export default function InstructorAppHome() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-white/20 text-white hover:bg-white/10 h-12 px-8"
+                className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 h-12 px-8"
                 asChild
               >
                 <Link to={hero.secondary_cta_link}>{hero.secondary_cta_text}</Link>
@@ -79,7 +80,7 @@ export default function InstructorAppHome() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 h-12 px-8"
+                className="border-accent/50 text-accent hover:bg-accent/10 h-12 px-8"
                 asChild
               >
                 <Link to={hero.demo_cta_link}>
@@ -89,13 +90,13 @@ export default function InstructorAppHome() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-center gap-6 mt-10 text-sm text-slate-400">
+            <div className="flex items-center justify-center gap-6 mt-10 text-sm text-primary-foreground/70">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
+                <CheckCircle className="h-4 w-4 text-accent" />
                 {hero.trust_badge1}
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
+                <CheckCircle className="h-4 w-4 text-accent" />
                 {hero.trust_badge2}
               </div>
             </div>
@@ -105,13 +106,13 @@ export default function InstructorAppHome() {
 
       {/* Features Section */}
       {isSectionVisible('features') && (
-        <section className="py-20 border-t border-white/10">
+        <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 {featuresSection?.title || 'Everything You Need to Succeed'}
               </h2>
-              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 {featuresSection?.subtitle || 'From managing your diary to getting paid, we\'ve got you covered.'}
               </p>
             </div>
@@ -125,13 +126,13 @@ export default function InstructorAppHome() {
                   transition={{ delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors h-full">
+                  <Card className="bg-card border-border hover:shadow-lg transition-shadow h-full">
                     <CardContent className="p-6">
-                      <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center mb-4">
-                        <feature.icon className="h-6 w-6 text-emerald-400" />
+                      <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                        <feature.icon className="h-6 w-6 text-primary" />
                       </div>
-                      <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                      <p className="text-slate-400">{feature.description}</p>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
+                      <p className="text-muted-foreground">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -143,13 +144,13 @@ export default function InstructorAppHome() {
 
       {/* Testimonials Section */}
       {isSectionVisible('testimonials') && (
-        <section className="py-20 border-t border-white/10">
+        <section className="py-20 bg-secondary">
           <div className="container">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 {testimonialsSection?.title || 'Loved by Instructors'}
               </h2>
-              <p className="text-lg text-slate-400">
+              <p className="text-lg text-muted-foreground">
                 {testimonialsSection?.subtitle || 'See what other driving instructors are saying about InstructorPro.'}
               </p>
             </div>
@@ -163,17 +164,17 @@ export default function InstructorAppHome() {
                   transition={{ delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="bg-white/5 border-white/10 h-full">
+                  <Card className="bg-card border-border h-full">
                     <CardContent className="p-6">
                       <div className="flex gap-1 mb-4">
                         {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star key={i} className="h-4 w-4 fill-accent text-accent" />
                         ))}
                       </div>
-                      <p className="text-slate-300 mb-4">"{testimonial.content}"</p>
+                      <p className="text-foreground mb-4">"{testimonial.content}"</p>
                       <div>
-                        <p className="font-medium text-white">{testimonial.name}</p>
-                        <p className="text-sm text-slate-500">{testimonial.role}</p>
+                        <p className="font-medium text-foreground">{testimonial.name}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -186,18 +187,19 @@ export default function InstructorAppHome() {
 
       {/* CTA Section */}
       {isSectionVisible('cta') && (
-        <section className="py-20 border-t border-white/10">
+        <section className="py-20 bg-primary">
           <div className="container">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
                 {ctaSection?.title || 'Ready to Grow Your Business?'}
               </h2>
-              <p className="text-lg text-slate-400 mb-8">
+              <p className="text-lg text-primary-foreground/80 mb-8">
                 {ctaSection?.subtitle || 'Join hundreds of driving instructors who trust InstructorPro to manage their business.'}
               </p>
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white border-0 h-12 px-8"
+                variant="accent"
+                className="h-12 px-8"
                 asChild
               >
                 <Link to={hero.primary_cta_link}>
