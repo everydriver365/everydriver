@@ -521,6 +521,171 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_app_features: {
+        Row: {
+          created_at: string
+          description: string
+          display_order: number
+          icon_name: string
+          id: string
+          is_active: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          display_order?: number
+          icon_name?: string
+          id?: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          display_order?: number
+          icon_name?: string
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      instructor_app_hero: {
+        Row: {
+          badge_text: string
+          created_at: string
+          demo_cta_link: string
+          demo_cta_text: string
+          headline_highlight: string
+          headline_part1: string
+          id: string
+          is_active: boolean | null
+          primary_cta_link: string
+          primary_cta_text: string
+          secondary_cta_link: string
+          secondary_cta_text: string
+          subtext: string
+          trust_badge1: string
+          trust_badge2: string
+          updated_at: string
+        }
+        Insert: {
+          badge_text?: string
+          created_at?: string
+          demo_cta_link?: string
+          demo_cta_text?: string
+          headline_highlight?: string
+          headline_part1?: string
+          id?: string
+          is_active?: boolean | null
+          primary_cta_link?: string
+          primary_cta_text?: string
+          secondary_cta_link?: string
+          secondary_cta_text?: string
+          subtext?: string
+          trust_badge1?: string
+          trust_badge2?: string
+          updated_at?: string
+        }
+        Update: {
+          badge_text?: string
+          created_at?: string
+          demo_cta_link?: string
+          demo_cta_text?: string
+          headline_highlight?: string
+          headline_part1?: string
+          id?: string
+          is_active?: boolean | null
+          primary_cta_link?: string
+          primary_cta_text?: string
+          secondary_cta_link?: string
+          secondary_cta_text?: string
+          subtext?: string
+          trust_badge1?: string
+          trust_badge2?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      instructor_app_sections: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_visible: boolean | null
+          section_key: string
+          section_name: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean | null
+          section_key: string
+          section_name: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean | null
+          section_key?: string
+          section_name?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      instructor_app_testimonials: {
+        Row: {
+          content: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean | null
+          name: string
+          photo_url: string | null
+          rating: number
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          name: string
+          photo_url?: string | null
+          rating?: number
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          photo_url?: string | null
+          rating?: number
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       instructor_calendar_events: {
         Row: {
           end_time: string
