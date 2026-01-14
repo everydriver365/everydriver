@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import BookingSummary from "./pages/BookingSummary";
@@ -37,6 +38,12 @@ import InstallInstructor from "./pages/InstallInstructor";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
 
+// Instructor SaaS pages
+import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
+import InstructorPricing from "./pages/instructor-app/InstructorPricing";
+import InstructorLogin from "./pages/instructor-app/InstructorLogin";
+import InstructorSignup from "./pages/instructor-app/InstructorSignup";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -45,42 +52,58 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/courses" element={<Courses />} />
-          <Route path="/book/:instructorId" element={<BookingSummary />} />
-          <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-          <Route path="/pupil" element={<PupilPortal />} />
-          <Route path="/p/:slug" element={<BrandedPupilPortal />} />
-          <Route path="/instructor" element={<InstructorPortal />} />
-          <Route path="/instructor/pupils" element={<InstructorPupils />} />
-          <Route path="/instructor/schedule" element={<InstructorSchedule />} />
-          <Route path="/instructor/diary" element={<InstructorDiary />} />
-          <Route path="/instructor/jobs" element={<InstructorJobs />} />
-          <Route path="/instructor/pay" element={<InstructorPay />} />
-          <Route path="/instructor/contact" element={<InstructorContact />} />
-          <Route path="/instructor/settings" element={<InstructorSettings />} />
-          <Route path="/instructor/gaps" element={<InstructorGaps />} />
-          <Route path="/instructor/expenses" element={<InstructorExpenses />} />
-          <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
-          <Route path="/parent" element={<ParentPortal />} />
-          <Route path="/admin" element={<AdminPortal />} />
-          <Route path="/theory" element={<Theory />} />
-          <Route path="/faqs" element={<FAQs />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/intensives" element={<Intensives />} />
-          <Route path="/semi-intensive" element={<SemiIntensive />} />
-          <Route path="/hero-demo" element={<HeroLayoutDemo />} />
-          <Route path="/collage-demo" element={<CollageDemo />} />
-          <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
-          <Route path="/instructor/install" element={<InstallInstructor />} />
-          <Route path="/pupil/install" element={<InstallPupil />} />
-          <Route path="/parent/install" element={<InstallParent />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <InstructorAuthProvider>
+          <Routes>
+            {/* Learner-facing routes (EveryDriver branding) */}
+            <Route path="/" element={<Index />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/book/:instructorId" element={<BookingSummary />} />
+            <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+            <Route path="/pupil" element={<PupilPortal />} />
+            <Route path="/p/:slug" element={<BrandedPupilPortal />} />
+            <Route path="/theory" element={<Theory />} />
+            <Route path="/faqs" element={<FAQs />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/intensives" element={<Intensives />} />
+            <Route path="/semi-intensive" element={<SemiIntensive />} />
+
+            {/* Instructor SaaS Marketing (InstructorPro branding) */}
+            <Route path="/instructor-app" element={<InstructorAppHome />} />
+            <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
+            <Route path="/instructor-app/login" element={<InstructorLogin />} />
+            <Route path="/instructor-app/signup" element={<InstructorSignup />} />
+
+            {/* Instructor Portal (Authenticated) */}
+            <Route path="/instructor" element={<InstructorPortal />} />
+            <Route path="/instructor/pupils" element={<InstructorPupils />} />
+            <Route path="/instructor/schedule" element={<InstructorSchedule />} />
+            <Route path="/instructor/diary" element={<InstructorDiary />} />
+            <Route path="/instructor/jobs" element={<InstructorJobs />} />
+            <Route path="/instructor/pay" element={<InstructorPay />} />
+            <Route path="/instructor/contact" element={<InstructorContact />} />
+            <Route path="/instructor/settings" element={<InstructorSettings />} />
+            <Route path="/instructor/gaps" element={<InstructorGaps />} />
+            <Route path="/instructor/expenses" element={<InstructorExpenses />} />
+            <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
+            <Route path="/instructor/install" element={<InstallInstructor />} />
+
+            {/* Other portals */}
+            <Route path="/parent" element={<ParentPortal />} />
+            <Route path="/admin" element={<AdminPortal />} />
+            <Route path="/pupil/install" element={<InstallPupil />} />
+            <Route path="/parent/install" element={<InstallParent />} />
+
+            {/* Demo routes */}
+            <Route path="/hero-demo" element={<HeroLayoutDemo />} />
+            <Route path="/collage-demo" element={<CollageDemo />} />
+            <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
+
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </InstructorAuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
