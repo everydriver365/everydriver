@@ -47,7 +47,7 @@ export function Footer() {
               <li><Link to="/parent" className="hover:text-accent">Parent Portal</Link></li>
               <li><Link to="/instructor-app/login" className="hover:text-accent">Instructor Login</Link></li>
               <li><Link to="/instructor-app" className="hover:text-accent">Become an Instructor</Link></li>
-              <li><Link to="/admin" className="hover:text-accent text-primary-foreground/50 text-xs">Admin</Link></li>
+              <li><Link to="/admin/login" className="hover:text-accent text-primary-foreground/50 text-xs">Admin</Link></li>
             </ul>
           </div>
 
