@@ -82,13 +82,13 @@ export default function InstructorFeatures() {
           >
             <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6">
               Everything You Need to{" "}
-              <span className="text-accent">Grow Your Business</span>
+              <span className="text-emerald-500">Grow Your Business</span>
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
               Drive365 gives you all the tools to manage your diary, pupils, and payments — so you can focus on teaching.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="accent" className="h-12 px-8" asChild>
+              <Button size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600 h-12 px-8" asChild>
                 <Link to="/instructor-app/signup">
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -295,7 +295,7 @@ export default function InstructorFeatures() {
               Join thousands of driving instructors who've streamlined their business with Drive365.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="accent" className="h-12 px-8" asChild>
+              <Button size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600 h-12 px-8" asChild>
                 <Link to="/instructor-app/signup">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />

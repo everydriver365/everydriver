@@ -81,7 +81,7 @@ export default function InstructorContactPage() {
                     />
                   </div>
                   
-                  <Button type="submit" variant="accent" className="w-full" disabled={isSubmitting}>
+                  <Button type="submit" className="w-full bg-emerald-500 text-white hover:bg-emerald-600" disabled={isSubmitting}>
                     {isSubmitting ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
@@ -94,8 +94,8 @@ export default function InstructorContactPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-5 h-5 text-accent" />
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">Email Us</h3>
@@ -109,8 +109,8 @@ export default function InstructorContactPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-5 h-5 text-accent" />
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">Call Us</h3>
@@ -124,8 +124,8 @@ export default function InstructorContactPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="w-5 h-5 text-accent" />
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">Live Chat</h3>
@@ -138,8 +138,8 @@ export default function InstructorContactPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-5 h-5 text-accent" />
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">Response Time</h3>
