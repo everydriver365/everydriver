@@ -63,8 +63,7 @@ export default function InstructorAppHome() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   size="lg" 
-                  variant="accent"
-                  className="h-12 px-8"
+                  className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-12 px-8"
                   asChild
                 >
                   <Link to={hero.primary_cta_link}>
@@ -219,8 +218,7 @@ export default function InstructorAppHome() {
               </p>
               <Button 
                 size="lg" 
-                variant="accent"
-                className="h-12 px-8"
+                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-12 px-8"
                 asChild
               >
                 <Link to={hero.primary_cta_link}>
