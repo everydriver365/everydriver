@@ -174,14 +174,19 @@ export default function InstructorPupils() {
   };
 
   const handleAddPupil = async () => {
-    if (!instructorId) return;
+    if (!instructorId) {
+      console.error("No instructor ID available");
+      toast.error("Not logged in. Please refresh and try again.");
+      return;
+    }
     if (!addForm.name || !addForm.address || !addForm.postcode) {
       toast.error("Please fill in name, address and postcode");
       return;
     }
     setSaving(true);
     try {
-      const { error } = await supabase.from("pupils").insert({
+      console.log("Adding pupil for instructor:", instructorId);
+      const { data, error } = await supabase.from("pupils").insert({
         instructor_id: instructorId,
         name: addForm.name,
         email: addForm.email || null,
@@ -192,10 +197,14 @@ export default function InstructorPupils() {
         notes: addForm.notes || null,
         lessons_completed: 0,
         progress: 0,
-      });
+      }).select();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
+      console.log("Pupil added successfully:", data);
       toast.success("Pupil added successfully");
       setIsAddOpen(false);
       setAddForm({
@@ -208,9 +217,9 @@ export default function InstructorPupils() {
         notes: "",
       });
       fetchPupils();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding pupil:", error);
-      toast.error("Failed to add pupil");
+      toast.error(error?.message || "Failed to add pupil");
     } finally {
       setSaving(false);
     }
