@@ -16,6 +16,7 @@ export interface InstructorAppHero {
   demo_cta_link: string;
   trust_badge1: string;
   trust_badge2: string;
+  hero_image_url: string | null;
 }
 
 export interface InstructorAppFeature {
@@ -60,6 +61,7 @@ const defaultHero: InstructorAppHero = {
   demo_cta_link: '/i/sarah-mitchell',
   trust_badge1: 'No credit card required',
   trust_badge2: 'Free plan available',
+  hero_image_url: null,
 };
 
 const getIconComponent = (iconName: string): React.ComponentType<{ className?: string }> => {
