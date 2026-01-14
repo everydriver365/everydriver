@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAdminAuth } from '@/context/AdminAuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -20,7 +21,9 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { signIn, isAdmin, user } = useAdminAuth();
   const navigate = useNavigate();
 
@@ -33,6 +36,7 @@ export default function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     // Validate input
     const validation = loginSchema.safeParse({ email, password });
@@ -42,6 +46,27 @@ export default function AdminLogin() {
     }
 
     setLoading(true);
+
+    if (isSignUp) {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/admin`,
+        },
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccess('Account created! Please contact an administrator to grant you admin access, then sign in.');
+      setIsSignUp(false);
+      setLoading(false);
+      return;
+    }
     
     const { error: signInError } = await signIn(email, password);
     
@@ -70,9 +95,11 @@ export default function AdminLogin() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <Shield className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle>Admin Login</CardTitle>
+              <CardTitle>{isSignUp ? 'Admin Sign Up' : 'Admin Login'}</CardTitle>
               <CardDescription>
-                Sign in with your admin credentials
+                {isSignUp 
+                  ? 'Create an account to request admin access' 
+                  : 'Sign in with your admin credentials'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -81,6 +108,12 @@ export default function AdminLogin() {
                   <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                {success && (
+                  <Alert>
+                    <AlertDescription>{success}</AlertDescription>
                   </Alert>
                 )}
 
@@ -114,12 +147,38 @@ export default function AdminLogin() {
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
+                      {isSignUp ? 'Creating account...' : 'Signing in...'}
                     </>
                   ) : (
-                    'Sign In'
+                    isSignUp ? 'Sign Up' : 'Sign In'
                   )}
                 </Button>
+
+                <div className="text-center text-sm text-muted-foreground">
+                  {isSignUp ? (
+                    <>
+                      Already have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => { setIsSignUp(false); setError(''); setSuccess(''); }}
+                        className="text-primary hover:underline"
+                      >
+                        Sign in
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      Need an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => { setIsSignUp(true); setError(''); setSuccess(''); }}
+                        className="text-primary hover:underline"
+                      >
+                        Sign up
+                      </button>
+                    </>
+                  )}
+                </div>
               </form>
             </CardContent>
           </Card>
