@@ -121,18 +121,19 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
             GPS Telematics
           </CardTitle>
           <Button
+            size="sm"
             variant={isTracking ? 'destructive' : 'default'}
             onClick={() => isTracking ? stopTracking() : startTracking(lessonId, pupilId)}
           >
             {isTracking ? (
               <>
-                <Square className="h-4 w-4 mr-2" />
-                Stop Tracking
+                <Square className="h-4 w-4 mr-1.5" />
+                <span className="hidden sm:inline">Stop</span>
               </>
             ) : (
               <>
-                <Play className="h-4 w-4 mr-2" />
-                Start Tracking
+                <Play className="h-4 w-4 mr-1.5" />
+                <span className="hidden sm:inline">Start</span>
               </>
             )}
           </Button>
