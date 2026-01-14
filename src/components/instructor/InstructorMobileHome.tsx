@@ -72,8 +72,8 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header Bar - matches other instructor pages */}
-      <div className="bg-primary px-4 py-3 flex items-center justify-between">
+      {/* Header Bar - matches nav bar color */}
+      <div className="sticky top-0 z-40 bg-nav px-4 py-3 flex items-center justify-between border-b border-nav-foreground/10">
         {/* Logo on the left */}
         <img 
           src={logoDark} 
@@ -101,9 +101,9 @@ export function InstructorMobileHome({
               )}
             </Badge>
           )}
-          <Avatar className="h-9 w-9 border-2 border-primary-foreground/30">
+          <Avatar className="h-9 w-9 border-2 border-nav-foreground/30">
             <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-            <AvatarFallback className="bg-primary-foreground text-primary font-semibold text-sm">
+            <AvatarFallback className="bg-nav-foreground text-nav font-semibold text-sm">
               {instructor?.name ? getInitials(instructor.name) : "?"}
             </AvatarFallback>
           </Avatar>

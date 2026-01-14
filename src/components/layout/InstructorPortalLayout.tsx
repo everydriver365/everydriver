@@ -58,19 +58,19 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        {/* Mobile Header */}
-        <header className="sticky top-0 z-40 bg-background border-b">
+        {/* Mobile Header - matches nav bar color */}
+        <header className="sticky top-0 z-40 bg-nav border-b border-nav-foreground/10">
           <div className="flex items-center justify-between px-4 h-14">
             <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
+              <Avatar className="h-8 w-8 border border-nav-foreground/20">
                 <AvatarImage src={instructor?.profile_image_url || undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                <AvatarFallback className="bg-nav-foreground text-nav text-xs font-semibold">
                   {instructor?.name?.charAt(0) || "I"}
                 </AvatarFallback>
               </Avatar>
-              <span className="font-medium text-sm">{instructor?.name || "Instructor"}</span>
+              <span className="font-medium text-sm text-nav-foreground">{instructor?.name || "Instructor"}</span>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleSignOut}>
+            <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-nav-foreground hover:bg-nav-foreground/10">
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
