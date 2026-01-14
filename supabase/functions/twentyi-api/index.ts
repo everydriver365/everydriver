@@ -89,12 +89,12 @@ async function make20iRequest(
   }
 }
 
-// Search for domain availability
+// Search for domain availability using the correct 20i endpoint
 async function searchDomain(domain: string): Promise<DomainSearchResult> {
-  const { data, error, status } = await make20iRequest(`/domain/${encodeURIComponent(domain)}`);
+  const { data, error, status } = await make20iRequest(`/domain-search/${encodeURIComponent(domain)}`);
   
   if (error) {
-    console.log(`Domain search failed for ${domain}, returning as unavailable`);
+    console.log(`Domain search failed for ${domain}: ${error}`);
     return {
       domain,
       available: false,
@@ -102,45 +102,53 @@ async function searchDomain(domain: string): Promise<DomainSearchResult> {
     };
   }
 
-  const result = data as { available?: boolean; premium?: boolean; price?: number };
+  // 20i returns an array of results for the domain search
+  const results = data as Array<{ name?: string; available?: boolean; premium?: boolean; price?: number }>;
+  const match = Array.isArray(results) ? results.find(r => r.name === domain || r.name?.toLowerCase() === domain.toLowerCase()) : null;
   
   return {
     domain,
-    available: result?.available ?? false,
-    premium: result?.premium ?? false,
-    price: result?.price,
+    available: match?.available ?? false,
+    premium: match?.premium ?? false,
+    price: match?.price,
     currency: 'GBP',
     period: 1,
   };
 }
 
-// Check multiple domains at once
+// Check multiple domains using the search endpoint
 async function checkMultipleDomains(baseName: string, tlds?: string[]): Promise<DomainSearchResult[]> {
-  const defaultTlds = ['co.uk', 'com', 'uk', 'org', 'net', 'info', 'biz', 'me'];
-  const tldsToCheck = tlds || defaultTlds;
-  
   // Clean the base name - remove any existing TLD
   const cleanBaseName = baseName.replace(/\.[a-z.]+$/i, '').toLowerCase().trim();
   
-  console.log(`Checking domains for base: ${cleanBaseName} with TLDs: ${tldsToCheck.join(', ')}`);
+  console.log(`Searching domains for: ${cleanBaseName}`);
   
-  const results: DomainSearchResult[] = [];
+  // Use the domain-search endpoint which returns results for multiple TLDs
+  const { data, error } = await make20iRequest(`/domain-search/${encodeURIComponent(cleanBaseName)}`);
   
-  // Check domains in parallel (limit to 5 concurrent requests)
-  const batchSize = 5;
-  for (let i = 0; i < tldsToCheck.length; i += batchSize) {
-    const batch = tldsToCheck.slice(i, i + batchSize);
-    const batchResults = await Promise.all(
-      batch.map(tld => {
-        const fullDomain = `${cleanBaseName}.${tld}`;
-        return searchDomain(fullDomain);
-      })
-    );
-    results.push(...batchResults);
+  if (error || !data) {
+    console.log(`Domain search failed: ${error}`);
+    return [];
   }
   
-  return results;
+  // Map the 20i response to our format
+  const results = data as Array<{ name?: string; available?: boolean; premium?: boolean; price?: number }>;
+  
+  if (!Array.isArray(results)) {
+    console.log('Unexpected response format:', data);
+    return [];
+  }
+  
+  return results.map(r => ({
+    domain: r.name || '',
+    available: r.available ?? false,
+    premium: r.premium ?? false,
+    price: r.price,
+    currency: 'GBP',
+    period: 1,
+  })).filter(r => r.domain);
 }
+
 
 // Get available TLDs and pricing
 async function getTLDPricing(): Promise<{ tlds: { tld: string; price: number; currency: string }[] }> {
