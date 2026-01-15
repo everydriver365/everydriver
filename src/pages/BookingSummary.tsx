@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar } from "lucide-react";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -11,7 +11,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -104,7 +103,6 @@ export default function BookingSummary() {
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
   const [locationName, setLocationName] = useState<string>("");
-  const [showMoreInfo, setShowMoreInfo] = useState(false);
   
   // Pupil details form state
   const [pupilName, setPupilName] = useState("");
@@ -622,6 +620,130 @@ export default function BookingSummary() {
       </div>
 
       <div className="container py-6">
+        {/* Course Details Section - Always Visible First */}
+        <div className="space-y-4 mb-8">
+          {/* Instructor Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="p-4">
+              <div className="flex items-start gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={instructor.profile_image_url || undefined} />
+                  <AvatarFallback 
+                    style={{ backgroundColor: brandColour, color: "white" }}
+                    className="text-lg"
+                  >
+                    {instructor.name.split(" ").map((n) => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">{instructor.name}</h3>
+                  <p className="text-sm text-muted-foreground">{instructor.car_type} Driving Instructor</p>
+                  
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {instructor.instructor_grade && (
+                      <Badge variant="secondary" className="text-xs gap-1">
+                        <Award className="h-3 w-3" />
+                        Grade {instructor.instructor_grade}
+                      </Badge>
+                    )}
+                    {instructor.cpd_certified && (
+                      <Badge variant="secondary" className="text-xs gap-1 bg-emerald-100 text-emerald-700">
+                        <CheckCircle className="h-3 w-3" />
+                        CPD
+                      </Badge>
+                    )}
+                    {instructor.adi_code_of_practice && (
+                      <Badge variant="secondary" className="text-xs gap-1 bg-blue-100 text-blue-700">
+                        <ShieldCheck className="h-3 w-3" />
+                        ADI
+                      </Badge>
+                    )}
+                  </div>
+
+                  {instructor.bio && (
+                    <p className="mt-3 text-sm text-muted-foreground">{instructor.bio}</p>
+                  )}
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* Course Description */}
+          {courseDescription && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">About This Course</h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{courseDescription}</p>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Features */}
+          {features && features.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="p-4">
+                <h3 className="font-semibold mb-3">What's Included</h3>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Reviews */}
+          {reviews.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <Card className="p-4">
+                <h3 className="font-semibold flex items-center gap-2 mb-3">
+                  <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                  Student Reviews
+                </h3>
+                <div className="space-y-3">
+                  {reviews.slice(0, 3).map((review) => (
+                    <div key={review.id} className="border-b pb-3 last:border-0 last:pb-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-sm">{review.reviewer_name}</span>
+                        <div className="flex">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={`h-3 w-3 ${i < review.rating ? "text-amber-400 fill-amber-400" : "text-gray-300"}`} />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{review.review_text}</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Booking Section Header */}
+        <div className="border-t pt-6 mb-6">
+          <h2 className="text-xl font-bold mb-2">Book Your Course</h2>
+          <p className="text-sm text-muted-foreground">Complete the steps below to secure your lessons</p>
+        </div>
+
         {/* Progress Indicator */}
         <div className="flex items-center justify-between mb-6 px-2">
           <div className="flex items-center gap-3">
@@ -656,6 +778,7 @@ export default function BookingSummary() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
         >
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -718,7 +841,7 @@ export default function BookingSummary() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.25 }}
           className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
         >
           <div className="flex items-center justify-between mb-4">
@@ -751,8 +874,8 @@ export default function BookingSummary() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
+          transition={{ delay: 0.3 }}
+          className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm"
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -768,9 +891,9 @@ export default function BookingSummary() {
           {!canSubmit && (
             <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 mb-4 text-center">
               <span className="text-amber-700 text-sm font-medium">
-                {!isFullyScheduled 
-                  ? `Please schedule all ${hours} hours first` 
-                  : "Please complete all your details above"}
+                {!isPupilDetailsComplete 
+                  ? "Please complete all your details above"
+                  : `Please schedule all ${hours} hours first`}
               </span>
             </div>
           )}
@@ -849,110 +972,6 @@ export default function BookingSummary() {
             </button>
           </div>
         </motion.div>
-
-        {/* Collapsible Course Details */}
-        <Collapsible open={showMoreInfo} onOpenChange={setShowMoreInfo}>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full gap-2 text-muted-foreground hover:text-foreground mb-4">
-              {showMoreInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              {showMoreInfo ? "Hide" : "Show"} course details & instructor info
-            </Button>
-          </CollapsibleTrigger>
-          
-          <CollapsibleContent className="space-y-6">
-            {/* Instructor Card */}
-            <Card className="p-4">
-              <div className="flex items-start gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={instructor.profile_image_url || undefined} />
-                  <AvatarFallback 
-                    style={{ backgroundColor: brandColour, color: "white" }}
-                    className="text-lg"
-                  >
-                    {instructor.name.split(" ").map((n) => n[0]).join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">{instructor.name}</h3>
-                  <p className="text-sm text-muted-foreground">{instructor.car_type} Driving Instructor</p>
-                  
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {instructor.instructor_grade && (
-                      <Badge variant="secondary" className="text-xs gap-1">
-                        <Award className="h-3 w-3" />
-                        Grade {instructor.instructor_grade}
-                      </Badge>
-                    )}
-                    {instructor.cpd_certified && (
-                      <Badge variant="secondary" className="text-xs gap-1 bg-emerald-100 text-emerald-700">
-                        <CheckCircle className="h-3 w-3" />
-                        CPD
-                      </Badge>
-                    )}
-                    {instructor.adi_code_of_practice && (
-                      <Badge variant="secondary" className="text-xs gap-1 bg-blue-100 text-blue-700">
-                        <ShieldCheck className="h-3 w-3" />
-                        ADI
-                      </Badge>
-                    )}
-                  </div>
-
-                  {instructor.bio && (
-                    <p className="mt-3 text-sm text-muted-foreground">{instructor.bio}</p>
-                  )}
-                </div>
-              </div>
-            </Card>
-
-            {/* Course Description */}
-            {courseDescription && (
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2">About This Course</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">{courseDescription}</p>
-              </Card>
-            )}
-
-            {/* Features */}
-            {features && features.length > 0 && (
-              <Card className="p-4">
-                <h3 className="font-semibold mb-3">What's Included</h3>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                      {feature}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            {/* Reviews */}
-            {reviews.length > 0 && (
-              <Card className="p-4">
-                <h3 className="font-semibold flex items-center gap-2 mb-3">
-                  <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                  Student Reviews
-                </h3>
-                <div className="space-y-3">
-                  {reviews.slice(0, 3).map((review) => (
-                    <div key={review.id} className="border-b pb-3 last:border-0 last:pb-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-sm">{review.reviewer_name}</span>
-                        <div className="flex">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} className={`h-3 w-3 ${i < review.rating ? "text-amber-400 fill-amber-400" : "text-gray-300"}`} />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{review.review_text}</p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
       </div>
     </MainLayout>
   );
