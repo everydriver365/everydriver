@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
+import { KlarnaPaymentWidget } from "@/components/booking/KlarnaPaymentWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
@@ -116,6 +117,21 @@ export default function BookingSummary() {
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
   const [isNPILoading, setIsNPILoading] = useState(false);
   const [isElavonLoading, setIsElavonLoading] = useState(false);
+  
+  // Klarna inline widget state
+  const [klarnaSession, setKlarnaSession] = useState<{
+    clientToken: string;
+    sessionId: string;
+    paymentMethodCategories: Array<{ identifier: string; name: string }>;
+    orderDetails: {
+      amount: number;
+      currency: string;
+      merchantReference: string;
+      confirmUrl: string;
+      cancelUrl: string;
+    };
+  } | null>(null);
+  const [showKlarnaWidget, setShowKlarnaWidget] = useState(false);
 
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
@@ -398,111 +414,23 @@ export default function BookingSummary() {
         return;
       }
 
-      // Handle Klarna Payments API response with client token
-      if (data?.clientToken) {
-        const klarnaWindow = window.open("", "_blank", "width=500,height=700");
-        if (klarnaWindow) {
-          const confirmUrl = data.orderDetails?.confirmUrl || `${currentUrl}/booking-confirmation?klarna=success&ref=${merchantReference}`;
-          const cancelUrl = data.orderDetails?.cancelUrl || `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`;
-          
-          klarnaWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <title>Klarna Payment</title>
-              <script src="https://x.klarnacdn.net/kp/lib/v1/api.js" async></script>
-              <style>
-                body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-                .container { max-width: 450px; margin: 0 auto; }
-                .header { text-align: center; margin-bottom: 20px; }
-                .header h1 { font-size: 1.5rem; color: #333; margin: 0 0 8px 0; }
-                .header p { color: #666; margin: 0; }
-                .amount { font-size: 1.25rem; font-weight: 600; color: #17120F; }
-                #klarna-container { background: white; border-radius: 8px; padding: 20px; min-height: 200px; }
-                .loading { text-align: center; padding: 40px; color: #666; }
-                .error { text-align: center; padding: 40px; color: #dc2626; }
-                .btn { display: block; width: 100%; padding: 14px; margin-top: 16px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-                .btn-primary { background: #FFB3C7; color: #17120F; }
-                .btn-primary:hover { background: #ffa0b8; }
-                .btn-secondary { background: #e5e5e5; color: #333; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>Complete Your Payment</h1>
-                  <p>Amount: <span class="amount">£${(data.orderDetails?.amount / 100).toFixed(2)}</span></p>
-                </div>
-                <div id="klarna-container">
-                  <div class="loading">Loading Klarna payment options...</div>
-                </div>
-                <button id="pay-btn" class="btn btn-primary" style="display:none;">Pay with Klarna</button>
-                <button class="btn btn-secondary" onclick="window.location.href='${cancelUrl}'">Cancel</button>
-              </div>
-              <script>
-                const clientToken = "${data.clientToken}";
-                const confirmUrl = "${confirmUrl}";
-                
-                window.Klarna.Payments.init({ client_token: clientToken });
-                
-                const categories = ${JSON.stringify(data.paymentMethodCategories || [])};
-                const category = categories[0]?.identifier || "pay_later";
-                
-                window.Klarna.Payments.load({
-                  container: "#klarna-container",
-                  payment_method_category: category
-                }, function(res) {
-                  if (res.show_form) {
-                    document.getElementById("pay-btn").style.display = "block";
-                  } else {
-                    document.getElementById("klarna-container").innerHTML = '<div class="error">Klarna is not available for this purchase. Please try another payment method.</div>';
-                  }
-                });
-                
-                document.getElementById("pay-btn").addEventListener("click", function() {
-                  this.disabled = true;
-                  this.textContent = "Processing...";
-                  
-                  window.Klarna.Payments.authorize({
-                    payment_method_category: category
-                  }, {}, function(res) {
-                    if (res.approved) {
-                      window.location.href = confirmUrl + "&authorization_token=" + res.authorization_token;
-                    } else if (res.show_form) {
-                      document.getElementById("pay-btn").disabled = false;
-                      document.getElementById("pay-btn").textContent = "Pay with Klarna";
-                    } else {
-                      document.getElementById("klarna-container").innerHTML = '<div class="error">Payment was not approved. Please try again or use another payment method.</div>';
-                      document.getElementById("pay-btn").style.display = "none";
-                    }
-                  });
-                });
-              </script>
-            </body>
-            </html>
-          `);
-          klarnaWindow.document.close();
-        } else {
-          toast.error("Please allow popups for Klarna checkout");
-        }
-      } else if (data?.htmlSnippet) {
-        // Legacy Checkout API response
-        const klarnaWindow = window.open("", "_blank");
-        if (klarnaWindow) {
-          klarnaWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head><title>Klarna Checkout</title></head>
-            <body style="margin:0;padding:20px;font-family:sans-serif;">
-              <div id="klarna-checkout-container">${data.htmlSnippet}</div>
-            </body>
-            </html>
-          `);
-          klarnaWindow.document.close();
-        } else {
-          toast.error("Please allow popups for Klarna checkout");
-        }
+      // Handle Klarna Payments API response with client token - use inline widget
+      if (data?.clientToken && data?.sessionId) {
+        setKlarnaSession({
+          clientToken: data.clientToken,
+          sessionId: data.sessionId,
+          paymentMethodCategories: data.paymentMethodCategories || [],
+          orderDetails: {
+            amount: data.orderDetails?.amount || Math.round(totalPrice * 100),
+            currency: data.orderDetails?.currency || "GBP",
+            merchantReference: data.orderDetails?.merchantReference || merchantReference,
+            confirmUrl: data.orderDetails?.confirmUrl || `${currentUrl}/booking-confirmation?klarna=success&ref=${merchantReference}`,
+            cancelUrl: data.orderDetails?.cancelUrl || `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`,
+          },
+        });
+        setShowKlarnaWidget(true);
       } else if (data?.redirectUrl) {
+        // Direct redirect flow
         window.location.href = data.redirectUrl;
       } else {
         console.error("Klarna response missing expected fields:", data);
@@ -514,6 +442,24 @@ export default function BookingSummary() {
     } finally {
       setIsKlarnaLoading(false);
     }
+  };
+
+  const handleKlarnaAuthorized = (authorizationToken: string) => {
+    if (klarnaSession) {
+      const confirmUrl = klarnaSession.orderDetails.confirmUrl;
+      window.location.href = `${confirmUrl}&authorization_token=${authorizationToken}`;
+    }
+  };
+
+  const handleKlarnaError = (error: string) => {
+    toast.error(error);
+    setShowKlarnaWidget(false);
+    setKlarnaSession(null);
+  };
+
+  const handleKlarnaCancel = () => {
+    setShowKlarnaWidget(false);
+    setKlarnaSession(null);
   };
 
   const handleNPICheckout = async () => {
@@ -1259,6 +1205,36 @@ export default function BookingSummary() {
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
             </button>
           </div>
+
+          {/* Klarna Inline Widget */}
+          {showKlarnaWidget && klarnaSession && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-4 rounded-lg border-2 border-[#FFB3C7] bg-[#FFB3C7]/5"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <span className="rounded bg-[#FFB3C7] px-2 py-0.5 text-xs font-bold text-black">
+                    Klarna.
+                  </span>
+                  Complete Your Payment
+                </h3>
+                <span className="text-lg font-bold">
+                  £{(klarnaSession.orderDetails.amount / 100).toFixed(2)}
+                </span>
+              </div>
+              <KlarnaPaymentWidget
+                clientToken={klarnaSession.clientToken}
+                sessionId={klarnaSession.sessionId}
+                paymentMethodCategories={klarnaSession.paymentMethodCategories}
+                orderDetails={klarnaSession.orderDetails}
+                onAuthorized={handleKlarnaAuthorized}
+                onError={handleKlarnaError}
+                onCancel={handleKlarnaCancel}
+              />
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </MainLayout>

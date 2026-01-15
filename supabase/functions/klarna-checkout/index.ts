@@ -90,9 +90,9 @@ serve(async (req: Request) => {
       total_tax_amount: 0,
     }));
 
-    // Klarna Payments API session payload
+    // Klarna Payments API session payload - optimized for mobile with IN_APP channel
     const sessionPayload = {
-      acquiring_channel: "ECOMMERCE",
+      acquiring_channel: "IN_APP", // Changed from ECOMMERCE for better mobile support
       purchase_country: country,
       purchase_currency: currency,
       locale: locale,
@@ -103,6 +103,7 @@ serve(async (req: Request) => {
       merchant_reference1: data.merchantReference,
       merchant_urls: {
         confirmation: data.redirectUrls.confirmUrl,
+        cancel: data.redirectUrls.cancelUrl,
         notification: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "?klarna_notification=true",
       },
       billing_address: data.billing
