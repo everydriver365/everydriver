@@ -26,33 +26,33 @@ interface ElavonCheckoutRequest {
 async function createSignature(data: Record<string, string>, secretKey: string): Promise<string> {
   // Sort fields alphabetically by key
   const sortedKeys = Object.keys(data).sort();
-  
-  // Build URL-encoded query string (matching PHP http_build_query)
-  const queryParts: string[] = [];
+
+  // Build query string using application/x-www-form-urlencoded rules
+  // (PHP http_build_query() default RFC1738: spaces become '+')
+  const params = new URLSearchParams();
   for (const key of sortedKeys) {
-    const encodedKey = encodeURIComponent(key);
-    const encodedValue = encodeURIComponent(data[key] || '');
-    queryParts.push(`${encodedKey}=${encodedValue}`);
+    params.append(key, data[key] ?? "");
   }
-  let queryString = queryParts.join('&');
-  
+
+  let queryString = params.toString();
+
   // Normalize line endings (CRNL|NLCR|NL|CR) to just NL (%0A)
   queryString = queryString
-    .replace(/%0D%0A/g, '%0A')
-    .replace(/%0A%0D/g, '%0A')
-    .replace(/%0D/g, '%0A');
-  
+    .replace(/%0D%0A/g, "%0A")
+    .replace(/%0A%0D/g, "%0A")
+    .replace(/%0D/g, "%0A");
+
   // Append secret key
   const signatureInput = queryString + secretKey;
-  
+
   console.log("Signature input (without secret):", queryString);
-  
+
   // Hash with SHA-512
   const encoder = new TextEncoder();
   const dataBuffer = encoder.encode(signatureInput);
   const hashBuffer = await crypto.subtle.digest("SHA-512", dataBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 serve(async (req: Request) => {
