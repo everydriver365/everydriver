@@ -122,6 +122,7 @@ export default function BookingSummary() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClearpayLoading, setIsClearpayLoading] = useState(false);
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
+  const [isNPILoading, setIsNPILoading] = useState(false);
 
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
@@ -463,6 +464,50 @@ export default function BookingSummary() {
       toast.error("Something went wrong with Klarna. Please try again.");
     } finally {
       setIsKlarnaLoading(false);
+    }
+  };
+
+  const handleNPICheckout = async () => {
+    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
+      toast.error("Please complete all details and schedule all lessons first");
+      return;
+    }
+
+    setIsNPILoading(true);
+    try {
+      const orderReference = `NPI-${instructor.id.slice(0, 8)}-${Date.now()}`;
+      const currentUrl = window.location.origin;
+
+      const { data, error } = await supabase.functions.invoke("npi-checkout", {
+        body: {
+          amount: totalPrice,
+          currency: "GBP",
+          orderReference,
+          customerEmail: pupilEmail.trim(),
+          customerName: pupilName.trim(),
+          description: `${courseName} - ${hours} Hour Driving Course`,
+          returnUrl: `${currentUrl}/booking-confirmation?npi=success&ref=${orderReference}`,
+          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
+          instructorId: instructor.id,
+        },
+      });
+
+      if (error) {
+        console.error("NPI checkout error:", error);
+        toast.error("Failed to start NPI checkout. Please try again.");
+        return;
+      }
+
+      if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        toast.error("Could not get NPI checkout URL");
+      }
+    } catch (err) {
+      console.error("NPI error:", err);
+      toast.error("Something went wrong with NPI Payments. Please try again.");
+    } finally {
+      setIsNPILoading(false);
     }
   };
 
@@ -1173,6 +1218,31 @@ export default function BookingSummary() {
                     {isFullyScheduled && isPupilDetailsComplete && (
                       <div className="mt-2 text-xs text-center text-emerald-600 font-medium">
                         Click to pay with Clearpay →
+                      </div>
+                    )}
+                  </button>
+
+                  {/* NPI Payments */}
+                  <button
+                    onClick={handleNPICheckout}
+                    disabled={!isFullyScheduled || !isPupilDetailsComplete || isNPILoading}
+                    className="w-full rounded-lg border p-3 bg-blue-50 hover:bg-blue-100 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
+                        NPI
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {isNPILoading ? "Loading..." : "Card Payment"}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-sm">
+                      <span className="text-muted-foreground">Secure card payment</span>
+                      <span className="font-medium">£{totalPrice.toFixed(2)}</span>
+                    </div>
+                    {isFullyScheduled && isPupilDetailsComplete && (
+                      <div className="mt-2 text-xs text-center text-blue-600 font-medium">
+                        Click to pay with card →
                       </div>
                     )}
                   </button>
