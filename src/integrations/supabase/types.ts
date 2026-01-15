@@ -1100,6 +1100,65 @@ export type Database = {
           },
         ]
       }
+      instructor_website_pages: {
+        Row: {
+          content_blocks: Json | null
+          created_at: string
+          display_order: number
+          hero_heading: string | null
+          hero_image_url: string | null
+          hero_subheading: string | null
+          id: string
+          instructor_id: string
+          is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
+          page_title: string
+          page_type: string
+          updated_at: string
+        }
+        Insert: {
+          content_blocks?: Json | null
+          created_at?: string
+          display_order?: number
+          hero_heading?: string | null
+          hero_image_url?: string | null
+          hero_subheading?: string | null
+          id?: string
+          instructor_id: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          page_title: string
+          page_type: string
+          updated_at?: string
+        }
+        Update: {
+          content_blocks?: Json | null
+          created_at?: string
+          display_order?: number
+          hero_heading?: string | null
+          hero_image_url?: string | null
+          hero_subheading?: string | null
+          id?: string
+          instructor_id?: string
+          is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          page_title?: string
+          page_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_website_pages_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_working_hours: {
         Row: {
           created_at: string
