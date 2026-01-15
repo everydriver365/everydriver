@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +16,44 @@ interface NPICheckoutRequest {
   cancelUrl: string;
   instructorId?: string;
   pupilId?: string;
+}
+
+// Create signature following NPI documentation:
+// 1. Sort fields alphabetically by key
+// 2. Build URL-encoded query string
+// 3. Normalize line endings
+// 4. Append secret key
+// 5. Hash with SHA-512
+async function createNPISignature(data: Record<string, string>, secretKey: string): Promise<string> {
+  // Sort fields alphabetically by key
+  const sortedKeys = Object.keys(data).sort();
+  
+  // Build URL-encoded query string (matching PHP http_build_query)
+  const queryParts: string[] = [];
+  for (const key of sortedKeys) {
+    const encodedKey = encodeURIComponent(key);
+    const encodedValue = encodeURIComponent(data[key] || '');
+    queryParts.push(`${encodedKey}=${encodedValue}`);
+  }
+  let queryString = queryParts.join('&');
+  
+  // Normalize line endings (CRNL|NLCR|NL|CR) to just NL (%0A)
+  queryString = queryString
+    .replace(/%0D%0A/g, '%0A')
+    .replace(/%0A%0D/g, '%0A')
+    .replace(/%0D/g, '%0A');
+  
+  // Append secret key
+  const signatureInput = queryString + secretKey;
+  
+  console.log("Signature input (without secret):", queryString);
+  
+  // Hash with SHA-512
+  const encoder = new TextEncoder();
+  const dataBuffer = encoder.encode(signatureInput);
+  const hashBuffer = await crypto.subtle.digest("SHA-512", dataBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 serve(async (req: Request) => {
@@ -46,13 +83,10 @@ serve(async (req: Request) => {
 
     const {
       amount,
-      currency = "GBP",
       orderReference,
       customerEmail,
       customerName,
-      description,
       returnUrl,
-      cancelUrl,
     } = body;
 
     // Validate required fields
@@ -66,23 +100,11 @@ serve(async (req: Request) => {
     // NPI Payments UK HPP expects amount in pence/cents
     const amountInPence = Math.round(amount * 100);
 
-    // Generate timestamp for the request
-    const timestamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0];
+    // Generate unique transaction ID
+    const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Create signature for the request using SHA-512 as per NPI documentation
-    // NPI requires fields in specific order: action + amount + countryCode + currencyCode + merchantID + orderRef
-    const signatureData = `action=SALE&amount=${amountInPence}&countryCode=826&currencyCode=826&merchantID=${merchantId}&orderRef=${orderReference}${merchantSecret}`;
-    const encoder = new TextEncoder();
-    const data = encoder.encode(signatureData);
-    const hashBuffer = await crypto.subtle.digest("SHA-512", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const signature = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-
-    // NPI Payments UK HPP endpoint (provided by merchant)
-    const npiBaseUrl = "https://payments.npigateway.ie/hosted/";
-
-    // Build the HPP form data per NPI specification
-    const hppParams = new URLSearchParams({
+    // Build the request data object (signature is calculated from all fields except signature itself)
+    const requestData: Record<string, string> = {
       merchantID: merchantId,
       action: "SALE",
       type: "1",
@@ -90,15 +112,31 @@ serve(async (req: Request) => {
       currencyCode: "826", // GBP
       amount: amountInPence.toString(),
       orderRef: orderReference,
-      customerEmail: customerEmail || "",
-      customerName: customerName || "",
-      transactionUnique: `${orderReference}-${timestamp}`,
+      transactionUnique: transactionUnique,
       redirectURL: returnUrl,
-      callbackURL: returnUrl,
-      signature: signature,
-    });
+    };
 
-    // Construct the redirect URL
+    // Add optional fields only if they have values
+    if (customerEmail) {
+      requestData.customerEmail = customerEmail;
+    }
+    if (customerName) {
+      requestData.customerName = customerName;
+    }
+
+    // Calculate signature from all fields
+    const signature = await createNPISignature(requestData, merchantSecret);
+    
+    console.log("Generated signature:", signature.substring(0, 32) + "...");
+
+    // Add signature to the request
+    requestData.signature = signature;
+
+    // NPI Payments UK HPP endpoint
+    const npiBaseUrl = "https://payments.npigateway.ie/hosted/";
+
+    // Build the HPP URL with all parameters
+    const hppParams = new URLSearchParams(requestData);
     const redirectUrl = `${npiBaseUrl}?${hppParams.toString()}`;
 
     console.log("NPI HPP redirect URL generated for order:", orderReference);
