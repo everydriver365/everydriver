@@ -49,6 +49,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
 import { ExpandablePupilCard } from "@/components/instructor/ExpandablePupilCard";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 
 interface Pupil {
   id: string;
@@ -430,23 +431,15 @@ export default function InstructorPupils() {
             </div>
             <div className="space-y-2">
               <Label>Address *</Label>
-              <Input
+              <GoogleAddressAutocomplete
                 value={addForm.address}
-                onChange={(e) => setAddForm({ ...addForm, address: e.target.value })}
-                placeholder="Street address"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Postcode *</Label>
-              <PostcodeAutocomplete
-                value={addForm.postcode}
-                onChange={(value) => setAddForm({ ...addForm, postcode: value })}
-                onSelect={async (postcode) => {
+                onChange={(address) => setAddForm({ ...addForm, address })}
+                onPostcodeChange={async (postcode) => {
                   setAddForm(prev => ({ ...prev, postcode }));
-                  // Lookup What3Words
+                  // Lookup What3Words when postcode is auto-filled
                   setIsLookingUpW3W(true);
                   try {
-                    const { data, error } = await supabase.functions.invoke('convert-to-what3words', {
+                    const { data } = await supabase.functions.invoke('convert-to-what3words', {
                       body: { postcode }
                     });
                     if (data?.what3words) {
@@ -459,8 +452,18 @@ export default function InstructorPupils() {
                     setIsLookingUpW3W(false);
                   }
                 }}
-                placeholder="Start typing postcode..."
-                showGeolocation={true}
+                placeholder="Start typing an address..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Type to search – postcode auto-fills when you select
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Postcode *</Label>
+              <Input
+                value={addForm.postcode}
+                onChange={(e) => setAddForm({ ...addForm, postcode: e.target.value })}
+                placeholder="Auto-filled from address"
               />
             </div>
             <div className="space-y-2">
@@ -533,19 +536,12 @@ export default function InstructorPupils() {
             </div>
             <div className="space-y-2">
               <Label>Address</Label>
-              <Input
+              <GoogleAddressAutocomplete
                 value={editForm.address || ""}
-                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Postcode</Label>
-              <PostcodeAutocomplete
-                value={editForm.postcode || ""}
-                onChange={(value) => setEditForm({ ...editForm, postcode: value })}
-                onSelect={async (postcode) => {
+                onChange={(address) => setEditForm({ ...editForm, address })}
+                onPostcodeChange={async (postcode) => {
                   setEditForm(prev => ({ ...prev, postcode }));
-                  // Lookup What3Words
+                  // Lookup What3Words when postcode is auto-filled
                   try {
                     const { data } = await supabase.functions.invoke('convert-to-what3words', {
                       body: { postcode }
@@ -558,8 +554,18 @@ export default function InstructorPupils() {
                     console.error("What3Words lookup failed:", err);
                   }
                 }}
-                placeholder="Start typing postcode..."
-                showGeolocation={true}
+                placeholder="Start typing an address..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Type to search – postcode auto-fills when you select
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Postcode</Label>
+              <Input
+                value={editForm.postcode || ""}
+                onChange={(e) => setEditForm({ ...editForm, postcode: e.target.value })}
+                placeholder="Auto-filled from address"
               />
             </div>
             <div className="space-y-2">
