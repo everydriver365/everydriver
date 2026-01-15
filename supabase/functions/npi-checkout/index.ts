@@ -69,31 +69,33 @@ serve(async (req: Request) => {
     // Generate timestamp for the request
     const timestamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0];
 
-    // Create signature for the request
-    // NPI typically uses: merchantId + orderReference + amount + currency + secret
-    const signatureData = `${merchantId}${orderReference}${amountInPence}${currency}${merchantSecret}`;
+    // Create signature for the request using SHA-512 as per NPI documentation
+    // NPI requires fields in specific order: action + amount + countryCode + currencyCode + merchantID + orderRef
+    const signatureData = `action=SALE&amount=${amountInPence}&countryCode=826&currencyCode=826&merchantID=${merchantId}&orderRef=${orderReference}${merchantSecret}`;
     const encoder = new TextEncoder();
     const data = encoder.encode(signatureData);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashBuffer = await crypto.subtle.digest("SHA-512", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const signature = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 
-    // NPI Payments UK HPP endpoint (production)
-    // Note: Replace with sandbox URL for testing
-    const npiBaseUrl = "https://payments.npipaymentsuk.com/hpp";
+    // NPI Payments UK HPP endpoint
+    // Using the standard NPI gateway URL
+    const npiBaseUrl = "https://gateway.npi.ie/hosted/modal";
 
-    // Build the HPP form data
+    // Build the HPP form data per NPI specification
     const hppParams = new URLSearchParams({
-      merchant_id: merchantId,
-      order_reference: orderReference,
+      merchantID: merchantId,
+      action: "SALE",
+      type: "1",
+      countryCode: "826", // UK
+      currencyCode: "826", // GBP
       amount: amountInPence.toString(),
-      currency: currency,
-      customer_email: customerEmail || "",
-      customer_name: customerName || "",
-      description: description || `Payment for ${orderReference}`,
-      return_url: returnUrl,
-      cancel_url: cancelUrl || returnUrl,
-      timestamp: timestamp,
+      orderRef: orderReference,
+      customerEmail: customerEmail || "",
+      customerName: customerName || "",
+      transactionUnique: `${orderReference}-${timestamp}`,
+      redirectURL: returnUrl,
+      callbackURL: returnUrl,
       signature: signature,
     });
 
