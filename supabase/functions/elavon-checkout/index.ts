@@ -19,22 +19,23 @@ interface ElavonCheckoutRequest {
 
 // Create signature following Cardstream documentation:
 // 1. Sort fields alphabetically by key
-// 2. Build URL-encoded query string
+// 2. Build URL-encoded query string using encodeURIComponent (RFC3986)
 // 3. Normalize line endings
 // 4. Append secret key
 // 5. Hash with SHA-512
-async function createSignature(data: Record<string, string>, secretKey: string): Promise<string> {
+async function createSignature(fields: Record<string, string>, secretKey: string): Promise<string> {
   // Sort fields alphabetically by key
-  const sortedKeys = Object.keys(data).sort();
+  const sortedKeys = Object.keys(fields).sort();
 
-  // Build query string using application/x-www-form-urlencoded rules
-  // (PHP http_build_query() default RFC1738: spaces become '+')
-  const params = new URLSearchParams();
+  // Build query string using encodeURIComponent for BOTH key and value
+  // This ensures consistent encoding with RFC3986 (spaces as %20)
+  const queryParts: string[] = [];
   for (const key of sortedKeys) {
-    params.append(key, data[key] ?? "");
+    const encodedKey = encodeURIComponent(key);
+    const encodedValue = encodeURIComponent(fields[key] ?? "");
+    queryParts.push(`${encodedKey}=${encodedValue}`);
   }
-
-  let queryString = params.toString();
+  let queryString = queryParts.join("&");
 
   // Normalize line endings (CRNL|NLCR|NL|CR) to just NL (%0A)
   queryString = queryString
@@ -42,10 +43,10 @@ async function createSignature(data: Record<string, string>, secretKey: string):
     .replace(/%0A%0D/g, "%0A")
     .replace(/%0D/g, "%0A");
 
-  // Append secret key
+  // Append secret key (NOT URL encoded)
   const signatureInput = queryString + secretKey;
 
-  console.log("Signature input (without secret):", queryString);
+  console.log("Signature query string:", queryString);
 
   // Hash with SHA-512
   const encoder = new TextEncoder();
@@ -53,6 +54,18 @@ async function createSignature(data: Record<string, string>, secretKey: string):
   const hashBuffer = await crypto.subtle.digest("SHA-512", dataBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Build redirect URL using SAME encoding as signature (encodeURIComponent)
+function buildRedirectUrl(baseUrl: string, fields: Record<string, string>): string {
+  const sortedKeys = Object.keys(fields).sort();
+  const queryParts: string[] = [];
+  for (const key of sortedKeys) {
+    const encodedKey = encodeURIComponent(key);
+    const encodedValue = encodeURIComponent(fields[key] ?? "");
+    queryParts.push(`${encodedKey}=${encodedValue}`);
+  }
+  return `${baseUrl}?${queryParts.join("&")}`;
 }
 
 serve(async (req: Request) => {
@@ -63,7 +76,6 @@ serve(async (req: Request) => {
 
   try {
     // Get Cardstream credentials from environment
-    // These are stored as "ELAVON_" but are actually Cardstream credentials
     const merchantAlias = Deno.env.get("ELAVON_MERCHANT_ALIAS");
     const secretKey = Deno.env.get("ELAVON_SECRET_KEY");
 
@@ -76,7 +88,7 @@ serve(async (req: Request) => {
     }
 
     const body: ElavonCheckoutRequest = await req.json();
-    console.log("Cardstream checkout request received:", {
+    console.log("Cardstream checkout request:", {
       amount: body.amount,
       orderReference: body.orderReference,
       customerEmail: body.customerEmail,
@@ -105,6 +117,7 @@ serve(async (req: Request) => {
     const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     // Build the request data object (signature is calculated from all fields except signature itself)
+    // Start with MINIMAL required fields to isolate signature issue
     const requestData: Record<string, string> = {
       merchantID: merchantAlias,
       action: "SALE",
@@ -125,6 +138,8 @@ serve(async (req: Request) => {
       requestData.customerName = customerName;
     }
 
+    console.log("Request data (before signature):", JSON.stringify(requestData, null, 2));
+
     // Calculate signature from all fields
     const signature = await createSignature(requestData, secretKey);
     
@@ -133,13 +148,13 @@ serve(async (req: Request) => {
     // Add signature to the request
     requestData.signature = signature;
 
-    // Cardstream HPP endpoint (same gateway as NPI)
+    // Cardstream HPP endpoint
     const hppBaseUrl = "https://gateway.cardstream.com/hosted/";
 
-    // Build the HPP URL with all parameters
-    const hppParams = new URLSearchParams(requestData);
-    const redirectUrl = `${hppBaseUrl}?${hppParams.toString()}`;
+    // Build the HPP URL with SAME encoding as signature calculation
+    const redirectUrl = buildRedirectUrl(hppBaseUrl, requestData);
 
+    console.log("Redirect URL (first 200 chars):", redirectUrl.substring(0, 200) + "...");
     console.log("Cardstream HPP redirect URL generated for order:", orderReference);
 
     return new Response(
