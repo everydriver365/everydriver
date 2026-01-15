@@ -625,20 +625,20 @@ export default function BookingSummary() {
         {/* Progress Indicator */}
         <div className="flex items-center justify-between mb-6 px-2">
           <div className="flex items-center gap-3">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${isFullyScheduled ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}>
-              {isFullyScheduled ? <CheckCircle className="h-5 w-5" /> : '1'}
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${isPupilDetailsComplete ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}>
+              {isPupilDetailsComplete ? <CheckCircle className="h-5 w-5" /> : '1'}
             </div>
-            <span className={`text-sm font-medium ${isFullyScheduled ? 'text-emerald-600' : 'text-foreground'}`}>
-              Choose slots
+            <span className={`text-sm font-medium ${isPupilDetailsComplete ? 'text-emerald-600' : 'text-foreground'}`}>
+              Your details
             </span>
           </div>
           <div className="flex-1 h-0.5 bg-border mx-3" />
           <div className="flex items-center gap-3">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${isPupilDetailsComplete ? 'bg-emerald-500 text-white' : isFullyScheduled ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
-              {isPupilDetailsComplete ? <CheckCircle className="h-5 w-5" /> : '2'}
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${isFullyScheduled ? 'bg-emerald-500 text-white' : isPupilDetailsComplete ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+              {isFullyScheduled ? <CheckCircle className="h-5 w-5" /> : '2'}
             </div>
-            <span className={`text-sm font-medium ${isPupilDetailsComplete ? 'text-emerald-600' : isFullyScheduled ? 'text-foreground' : 'text-muted-foreground'}`}>
-              Your details
+            <span className={`text-sm font-medium ${isFullyScheduled ? 'text-emerald-600' : isPupilDetailsComplete ? 'text-foreground' : 'text-muted-foreground'}`}>
+              Choose slots
             </span>
           </div>
           <div className="flex-1 h-0.5 bg-border mx-3" />
@@ -652,43 +652,10 @@ export default function BookingSummary() {
           </div>
         </div>
 
-        {/* Step 1: Lesson Scheduler */}
+        {/* Step 1: Your Details */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                Select Your Lesson Slots
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Schedule {hours} hours across multiple lessons
-              </p>
-            </div>
-            <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
-              {scheduledHours}/{hours}h
-            </Badge>
-          </div>
-          
-          <LessonScheduler
-            instructorId={instructor.id}
-            totalHours={hours}
-            maxLessonLength={instructor.preferred_lesson_length}
-            bookingAdvanceDays={instructor.booking_advance_days || 28}
-            availableFrom={instructor.available_from}
-            allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
-            onSlotsChange={handleSlotsChange}
-          />
-        </motion.div>
-
-        {/* Step 2: Your Details */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
           className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
         >
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -745,6 +712,39 @@ export default function BookingSummary() {
               />
             </div>
           </div>
+        </motion.div>
+
+        {/* Step 2: Lesson Scheduler */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                Select Your Lesson Slots
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Schedule {hours} hours across multiple lessons
+              </p>
+            </div>
+            <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
+              {scheduledHours}/{hours}h
+            </Badge>
+          </div>
+          
+          <LessonScheduler
+            instructorId={instructor.id}
+            totalHours={hours}
+            maxLessonLength={instructor.preferred_lesson_length}
+            bookingAdvanceDays={instructor.booking_advance_days || 28}
+            availableFrom={instructor.available_from}
+            allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
+            onSlotsChange={handleSlotsChange}
+          />
         </motion.div>
 
         {/* Step 3: Payment Options */}
