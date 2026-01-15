@@ -832,21 +832,37 @@ export default function BookingSummary() {
               className="grid gap-4 sm:grid-cols-2"
             >
               {template?.theory_test_details && (
-                <Card className="p-4">
-                  <h3 className="font-semibold flex items-center gap-2 mb-2">
-                    <FileText className="h-4 w-4 text-primary" />
-                    Theory Test
-                  </h3>
-                  <p className="text-sm text-muted-foreground whitespace-pre-line">{template.theory_test_details}</p>
+                <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200/50 dark:border-blue-800/50">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-xl bg-blue-500/10 dark:bg-blue-500/20">
+                      <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1.5">
+                        Theory Test
+                      </h3>
+                      <p className="text-sm text-blue-700/80 dark:text-blue-300/80 whitespace-pre-line leading-relaxed">
+                        {template.theory_test_details}
+                      </p>
+                    </div>
+                  </div>
                 </Card>
               )}
               {template?.driving_test_details && (
-                <Card className="p-4">
-                  <h3 className="font-semibold flex items-center gap-2 mb-2">
-                    <Car className="h-4 w-4 text-primary" />
-                    Driving Test
-                  </h3>
-                  <p className="text-sm text-muted-foreground whitespace-pre-line">{template.driving_test_details}</p>
+                <Card className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-emerald-200/50 dark:border-emerald-800/50">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20">
+                      <Car className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-emerald-900 dark:text-emerald-100 mb-1.5">
+                        Driving Test
+                      </h3>
+                      <p className="text-sm text-emerald-700/80 dark:text-emerald-300/80 whitespace-pre-line leading-relaxed">
+                        {template.driving_test_details}
+                      </p>
+                    </div>
+                  </div>
                 </Card>
               )}
             </motion.div>
