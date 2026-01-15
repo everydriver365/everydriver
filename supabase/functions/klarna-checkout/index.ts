@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface KlarnaCheckoutRequest {
+interface KlarnaPaymentRequest {
   amount: number;
   currency?: string;
   merchantReference: string;
@@ -52,8 +52,8 @@ serve(async (req: Request) => {
       );
     }
 
-    const data: KlarnaCheckoutRequest = await req.json();
-    console.log("Klarna checkout request:", JSON.stringify(data, null, 2));
+    const data: KlarnaPaymentRequest = await req.json();
+    console.log("Klarna payment request:", JSON.stringify(data, null, 2));
 
     if (!data.amount || !data.merchantReference || !data.consumer || !data.redirectUrls) {
       return new Response(
@@ -62,8 +62,7 @@ serve(async (req: Request) => {
       );
     }
 
-    // Klarna credentials are region-scoped. If the account is not EU, api.klarna.com will 401.
-    // We try the known regional endpoints to avoid requiring a separate region setting.
+    // Klarna Payments API endpoints - try multiple regions
     const baseUrls = isSandbox
       ? ["https://api.playground.klarna.com"]
       : [
@@ -80,7 +79,7 @@ serve(async (req: Request) => {
     // Convert amount to minor units (pence)
     const orderAmount = Math.round(data.amount * 100);
 
-    // Build order lines
+    // Build order lines for Payments API
     const orderLines = data.items.map((item) => ({
       type: "physical",
       name: item.name,
@@ -91,19 +90,20 @@ serve(async (req: Request) => {
       total_tax_amount: 0,
     }));
 
-    const checkoutPayload = {
+    // Klarna Payments API session payload
+    const sessionPayload = {
+      acquiring_channel: "ECOMMERCE",
       purchase_country: country,
       purchase_currency: currency,
       locale: locale,
       order_amount: orderAmount,
       order_tax_amount: 0,
       order_lines: orderLines,
+      intent: "buy",
       merchant_reference1: data.merchantReference,
       merchant_urls: {
-        terms: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "/terms",
-        checkout: data.redirectUrls.cancelUrl,
         confirmation: data.redirectUrls.confirmUrl,
-        push: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "?klarna_push=true",
+        notification: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "?klarna_notification=true",
       },
       billing_address: data.billing
         ? {
@@ -119,7 +119,7 @@ serve(async (req: Request) => {
         : undefined,
     };
 
-    console.log("Sending to Klarna:", JSON.stringify(checkoutPayload, null, 2));
+    console.log("Sending to Klarna Payments API:", JSON.stringify(sessionPayload, null, 2));
 
     let lastStatus = 0;
     let lastBaseUrl = baseUrls[0];
@@ -128,13 +128,14 @@ serve(async (req: Request) => {
     for (const baseUrl of baseUrls) {
       lastBaseUrl = baseUrl;
 
-      const response = await fetch(`${baseUrl}/checkout/v3/orders`, {
+      // Create a Klarna Payments session
+      const response = await fetch(`${baseUrl}/payments/v1/sessions`, {
         method: "POST",
         headers: {
           Authorization: `Basic ${authHeader}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(checkoutPayload),
+        body: JSON.stringify(sessionPayload),
       });
 
       lastStatus = response.status;
@@ -144,32 +145,38 @@ serve(async (req: Request) => {
       console.log("Klarna response:", JSON.stringify(lastResult, null, 2));
 
       if (response.ok) {
-        // Return the checkout HTML snippet and order ID
+        // Return session data for frontend to load Klarna SDK
         return new Response(
           JSON.stringify({
-            orderId: lastResult.order_id,
-            htmlSnippet: lastResult.html_snippet,
-            redirectUrl: lastResult.html_snippet
-              ? null
-              : `${baseUrl}/checkout/v3/orders/${lastResult.order_id}`,
+            sessionId: lastResult.session_id,
+            clientToken: lastResult.client_token,
+            paymentMethodCategories: lastResult.payment_method_categories,
+            // Include order details for the frontend
+            orderDetails: {
+              amount: orderAmount,
+              currency: currency,
+              merchantReference: data.merchantReference,
+              confirmUrl: data.redirectUrls.confirmUrl,
+              cancelUrl: data.redirectUrls.cancelUrl,
+            },
           }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      // If unauthorized or not found, try the next region endpoint.
+      // If unauthorized or not found, try the next region endpoint
       if (response.status !== 401 && response.status !== 404) break;
     }
 
     console.error("Klarna API error:", lastResult);
-    
-    let errorMessage = lastResult?.error_message || lastResult?.error_messages?.[0] || "Klarna checkout failed";
+
+    let errorMessage = lastResult?.error_message || lastResult?.error_messages?.[0] || "Klarna payment session failed";
     if (lastStatus === 401) {
-      errorMessage = "Klarna authorization failed. Please verify: 1) Credentials are for PRODUCTION (not Playground), 2) Checkout API is enabled, 3) Credentials are active and not expired.";
+      errorMessage = "Klarna authorization failed. Please verify: 1) Credentials are for PRODUCTION (not Playground), 2) Payments API is enabled, 3) Credentials are active and not expired.";
     } else if (lastStatus === 404) {
-      errorMessage = "Klarna endpoint not found. The credentials may be for a different region or the Checkout API may not be enabled.";
+      errorMessage = "Klarna endpoint not found. The credentials may be for a different region or the Payments API may not be enabled.";
     }
-    
+
     return new Response(
       JSON.stringify({
         error: errorMessage,
@@ -182,8 +189,6 @@ serve(async (req: Request) => {
       }),
       { status: lastStatus || 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
-
   } catch (error) {
     console.error("Error in klarna-checkout:", error);
     return new Response(

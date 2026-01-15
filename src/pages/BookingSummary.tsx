@@ -398,7 +398,95 @@ export default function BookingSummary() {
         return;
       }
 
-      if (data?.htmlSnippet) {
+      // Handle Klarna Payments API response with client token
+      if (data?.clientToken) {
+        const klarnaWindow = window.open("", "_blank", "width=500,height=700");
+        if (klarnaWindow) {
+          const confirmUrl = data.orderDetails?.confirmUrl || `${currentUrl}/booking-confirmation?klarna=success&ref=${merchantReference}`;
+          const cancelUrl = data.orderDetails?.cancelUrl || `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`;
+          
+          klarnaWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Klarna Payment</title>
+              <script src="https://x.klarnacdn.net/kp/lib/v1/api.js" async></script>
+              <style>
+                body { margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+                .container { max-width: 450px; margin: 0 auto; }
+                .header { text-align: center; margin-bottom: 20px; }
+                .header h1 { font-size: 1.5rem; color: #333; margin: 0 0 8px 0; }
+                .header p { color: #666; margin: 0; }
+                .amount { font-size: 1.25rem; font-weight: 600; color: #17120F; }
+                #klarna-container { background: white; border-radius: 8px; padding: 20px; min-height: 200px; }
+                .loading { text-align: center; padding: 40px; color: #666; }
+                .error { text-align: center; padding: 40px; color: #dc2626; }
+                .btn { display: block; width: 100%; padding: 14px; margin-top: 16px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+                .btn-primary { background: #FFB3C7; color: #17120F; }
+                .btn-primary:hover { background: #ffa0b8; }
+                .btn-secondary { background: #e5e5e5; color: #333; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>Complete Your Payment</h1>
+                  <p>Amount: <span class="amount">£${(data.orderDetails?.amount / 100).toFixed(2)}</span></p>
+                </div>
+                <div id="klarna-container">
+                  <div class="loading">Loading Klarna payment options...</div>
+                </div>
+                <button id="pay-btn" class="btn btn-primary" style="display:none;">Pay with Klarna</button>
+                <button class="btn btn-secondary" onclick="window.location.href='${cancelUrl}'">Cancel</button>
+              </div>
+              <script>
+                const clientToken = "${data.clientToken}";
+                const confirmUrl = "${confirmUrl}";
+                
+                window.Klarna.Payments.init({ client_token: clientToken });
+                
+                const categories = ${JSON.stringify(data.paymentMethodCategories || [])};
+                const category = categories[0]?.identifier || "pay_later";
+                
+                window.Klarna.Payments.load({
+                  container: "#klarna-container",
+                  payment_method_category: category
+                }, function(res) {
+                  if (res.show_form) {
+                    document.getElementById("pay-btn").style.display = "block";
+                  } else {
+                    document.getElementById("klarna-container").innerHTML = '<div class="error">Klarna is not available for this purchase. Please try another payment method.</div>';
+                  }
+                });
+                
+                document.getElementById("pay-btn").addEventListener("click", function() {
+                  this.disabled = true;
+                  this.textContent = "Processing...";
+                  
+                  window.Klarna.Payments.authorize({
+                    payment_method_category: category
+                  }, {}, function(res) {
+                    if (res.approved) {
+                      window.location.href = confirmUrl + "&authorization_token=" + res.authorization_token;
+                    } else if (res.show_form) {
+                      document.getElementById("pay-btn").disabled = false;
+                      document.getElementById("pay-btn").textContent = "Pay with Klarna";
+                    } else {
+                      document.getElementById("klarna-container").innerHTML = '<div class="error">Payment was not approved. Please try again or use another payment method.</div>';
+                      document.getElementById("pay-btn").style.display = "none";
+                    }
+                  });
+                });
+              </script>
+            </body>
+            </html>
+          `);
+          klarnaWindow.document.close();
+        } else {
+          toast.error("Please allow popups for Klarna checkout");
+        }
+      } else if (data?.htmlSnippet) {
+        // Legacy Checkout API response
         const klarnaWindow = window.open("", "_blank");
         if (klarnaWindow) {
           klarnaWindow.document.write(`
@@ -417,7 +505,8 @@ export default function BookingSummary() {
       } else if (data?.redirectUrl) {
         window.location.href = data.redirectUrl;
       } else {
-        toast.error("Could not get Klarna checkout");
+        console.error("Klarna response missing expected fields:", data);
+        toast.error("Could not start Klarna checkout. Please try another payment method.");
       }
     } catch (err) {
       console.error("Klarna error:", err);
