@@ -37,6 +37,7 @@ import About from "./pages/About";
 import Intensives from "./pages/Intensives";
 import SemiIntensive from "./pages/SemiIntensive";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 import InstructorMiniWebsite from "./pages/InstructorMiniWebsite";
 import MiniWebsiteHome from "./pages/mini-website/MiniWebsiteHome";
@@ -83,6 +84,7 @@ const App = () => (
               <Route path="/intensives" element={<Intensives />} />
               <Route path="/semi-intensive" element={<SemiIntensive />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/i/:slug" element={<MiniWebsiteHome />} />
               <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
               <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />
