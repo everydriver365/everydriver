@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
 
 interface Instructor {
   id: string;
@@ -1100,7 +1101,7 @@ export default function BookingSummary() {
             >
               <div className="flex items-center justify-between mb-2">
                 <img 
-                  src="/src/assets/logo-ideal4finance.png" 
+                  src={ideal4FinanceLogo} 
                   alt="Ideal4Finance" 
                   className="h-6 object-contain"
                 />
