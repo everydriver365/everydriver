@@ -8,6 +8,7 @@ import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { CourseImageEditor } from "./CourseImageEditor";
 import { AdminWebsiteManager } from "./AdminWebsiteManager";
+import { GoogleAddressAutocomplete } from "./GoogleAddressAutocomplete";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -129,6 +130,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
   const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
   const [selectedTestCentres, setSelectedTestCentres] = useState<string[]>([]);
   const [allowedLessonLengths, setAllowedLessonLengths] = useState<number[]>([60, 120]);
+  const [addressVerified, setAddressVerified] = useState(false);
 
   const form = useForm<InstructorFormData>({
     resolver: zodResolver(instructorSchema),
@@ -766,8 +768,23 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                 <FormItem className="sm:col-span-2">
                   <FormLabel>Home Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="123 Main Street, London" {...field} />
+                    <GoogleAddressAutocomplete
+                      value={field.value || ""}
+                      onChange={(address) => {
+                        field.onChange(address);
+                      }}
+                      onPostcodeChange={(postcode) => {
+                        form.setValue("home_postcode", postcode);
+                      }}
+                      onAddressVerified={(verified) => {
+                        setAddressVerified(verified);
+                      }}
+                      placeholder="Start typing an address..."
+                    />
                   </FormControl>
+                  <FormDescription className="text-xs">
+                    Type to search and select a verified UK address
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -780,8 +797,15 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                 <FormItem>
                   <FormLabel>Home Postcode *</FormLabel>
                   <FormControl>
-                    <Input placeholder="SW1A 1AA" {...field} />
+                    <Input 
+                      placeholder="SW1A 1AA" 
+                      {...field} 
+                      className={addressVerified ? "border-green-500" : ""}
+                    />
                   </FormControl>
+                  {addressVerified && (
+                    <p className="text-xs text-green-600">Auto-filled from verified address</p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
