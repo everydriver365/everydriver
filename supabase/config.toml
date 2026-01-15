@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.twentyi-api]
 verify_jwt = false
+
+[functions.google-calendar-sync]
+verify_jwt = false
+
+[functions.sync-all-calendars]
+verify_jwt = false

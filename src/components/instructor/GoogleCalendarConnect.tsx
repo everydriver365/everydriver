@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, ExternalLink, Loader2, Unlink } from "lucide-react";
+import { Check, ExternalLink, Loader2, RefreshCw, Unlink, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
+import { formatDistanceToNow } from "date-fns";
 
 interface GoogleCalendarConnectProps {
   instructorId: string;
@@ -14,11 +15,13 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
   const {
     isConnecting,
     isChecking,
+    isSyncing,
     calendarStatus,
     checkConnection,
     getAuthUrl,
     handleAuthCallback,
     disconnect,
+    syncExternalEvents,
   } = useGoogleCalendar(instructorId);
 
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -57,6 +60,19 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
     setIsDisconnecting(false);
   };
 
+  const handleSyncNow = async () => {
+    await syncExternalEvents();
+  };
+
+  const formatLastSync = (timestamp: string | null | undefined) => {
+    if (!timestamp) return "Never";
+    try {
+      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+    } catch {
+      return "Unknown";
+    }
+  };
+
   return (
     <div className="space-y-4">
       {isChecking ? (
@@ -75,9 +91,42 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
               to {calendarStatus.calendarName || "Primary Calendar"}
             </span>
           </div>
+          
+          <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Two-Way Sync</span>
+              </div>
+              {(calendarStatus.externalEventCount ?? 0) > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  {calendarStatus.externalEventCount} events blocking
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              External calendar events are imported to block availability. Last synced: {formatLastSync(calendarStatus.lastExternalSync)}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSyncNow}
+              disabled={isSyncing}
+              className="gap-2 w-full"
+            >
+              {isSyncing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Sync Now
+            </Button>
+          </div>
+
           <p className="text-sm text-muted-foreground">
-            All new bookings will automatically appear as "Busy" in your Google Calendar.
+            New lessons appear as "Busy" in Google Calendar, and external events block booking slots.
           </p>
+          
           <Button
             variant="outline"
             size="sm"
@@ -96,12 +145,12 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Connect your Google Calendar to:
+            Connect your Google Calendar for two-way sync:
           </p>
           <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
-            <li>Block lesson times automatically</li>
-            <li>Show slots as "Busy" to prevent conflicts</li>
-            <li>Get reminders for upcoming lessons</li>
+            <li>New lessons automatically show as "Busy"</li>
+            <li>External events block booking availability</li>
+            <li>Prevent double-booking conflicts</li>
           </ul>
           <Button
             onClick={handleConnect}

@@ -793,6 +793,7 @@ export type Database = {
           created_at: string
           id: string
           instructor_id: string
+          last_external_sync: string | null
           refresh_token: string
           token_expiry: string
           updated_at: string
@@ -803,6 +804,7 @@ export type Database = {
           created_at?: string
           id?: string
           instructor_id: string
+          last_external_sync?: string | null
           refresh_token: string
           token_expiry: string
           updated_at?: string
@@ -813,6 +815,7 @@ export type Database = {
           created_at?: string
           id?: string
           instructor_id?: string
+          last_external_sync?: string | null
           refresh_token?: string
           token_expiry?: string
           updated_at?: string
