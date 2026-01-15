@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.clearpay-capture]
 verify_jwt = false
+
+[functions.klarna-checkout]
+verify_jwt = false

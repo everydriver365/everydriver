@@ -1,0 +1,156 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+interface KlarnaCheckoutRequest {
+  amount: number;
+  currency?: string;
+  merchantReference: string;
+  consumer: {
+    givenName: string;
+    familyName: string;
+    email: string;
+    phone?: string;
+  };
+  billing?: {
+    streetAddress: string;
+    postalCode: string;
+    city: string;
+    country: string;
+  };
+  items: Array<{
+    name: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
+  redirectUrls: {
+    confirmUrl: string;
+    cancelUrl: string;
+  };
+}
+
+serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const apiUsername = Deno.env.get("KLARNA_API_USERNAME");
+    const apiPassword = Deno.env.get("KLARNA_API_PASSWORD");
+
+    if (!apiUsername || !apiPassword) {
+      console.error("Klarna credentials not configured");
+      return new Response(
+        JSON.stringify({ error: "Klarna not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const data: KlarnaCheckoutRequest = await req.json();
+    console.log("Klarna checkout request:", JSON.stringify(data, null, 2));
+
+    if (!data.amount || !data.merchantReference || !data.consumer || !data.redirectUrls) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Klarna API - EU playground or live
+    const isSandbox = Deno.env.get("KLARNA_SANDBOX") === "true";
+    const baseUrl = isSandbox 
+      ? "https://api.playground.klarna.com"
+      : "https://api.klarna.com";
+
+    const authHeader = btoa(`${apiUsername}:${apiPassword}`);
+    const currency = data.currency || "GBP";
+    const country = data.billing?.country || "GB";
+    const locale = country === "GB" ? "en-GB" : "en-US";
+
+    // Convert amount to minor units (pence)
+    const orderAmount = Math.round(data.amount * 100);
+
+    // Build order lines
+    const orderLines = data.items.map(item => ({
+      type: "physical",
+      name: item.name,
+      quantity: item.quantity,
+      unit_price: Math.round(item.unitPrice * 100),
+      total_amount: Math.round(item.unitPrice * item.quantity * 100),
+      tax_rate: 0,
+      total_tax_amount: 0,
+    }));
+
+    const checkoutPayload = {
+      purchase_country: country,
+      purchase_currency: currency,
+      locale: locale,
+      order_amount: orderAmount,
+      order_tax_amount: 0,
+      order_lines: orderLines,
+      merchant_reference1: data.merchantReference,
+      merchant_urls: {
+        terms: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "/terms",
+        checkout: data.redirectUrls.cancelUrl,
+        confirmation: data.redirectUrls.confirmUrl,
+        push: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "?klarna_push=true",
+      },
+      billing_address: data.billing ? {
+        given_name: data.consumer.givenName,
+        family_name: data.consumer.familyName,
+        email: data.consumer.email,
+        phone: data.consumer.phone || "",
+        street_address: data.billing.streetAddress,
+        postal_code: data.billing.postalCode,
+        city: data.billing.city,
+        country: country,
+      } : undefined,
+    };
+
+    console.log("Sending to Klarna:", JSON.stringify(checkoutPayload, null, 2));
+
+    const response = await fetch(`${baseUrl}/checkout/v3/orders`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${authHeader}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(checkoutPayload),
+    });
+
+    const result = await response.json();
+    console.log("Klarna response status:", response.status);
+    console.log("Klarna response:", JSON.stringify(result, null, 2));
+
+    if (!response.ok) {
+      console.error("Klarna API error:", result);
+      return new Response(
+        JSON.stringify({ 
+          error: result.error_message || result.error_messages?.[0] || "Klarna checkout failed",
+          details: result 
+        }),
+        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Return the checkout HTML snippet and order ID
+    return new Response(
+      JSON.stringify({
+        orderId: result.order_id,
+        htmlSnippet: result.html_snippet,
+        redirectUrl: result.html_snippet ? null : `${baseUrl}/checkout/v3/orders/${result.order_id}`,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
+  } catch (error) {
+    console.error("Error in klarna-checkout:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});

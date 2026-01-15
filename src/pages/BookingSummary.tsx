@@ -121,6 +121,7 @@ export default function BookingSummary() {
   const [pupilPostcode, setPupilPostcode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClearpayLoading, setIsClearpayLoading] = useState(false);
+  const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
 
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
@@ -381,6 +382,87 @@ export default function BookingSummary() {
       toast.error("Something went wrong with Clearpay. Please try again.");
     } finally {
       setIsClearpayLoading(false);
+    }
+  };
+
+  const handleKlarnaCheckout = async () => {
+    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
+      toast.error("Please complete all details and schedule all lessons first");
+      return;
+    }
+
+    setIsKlarnaLoading(true);
+    try {
+      const merchantReference = `${instructor.id}-${Date.now()}`;
+      const currentUrl = window.location.origin;
+      
+      const nameParts = pupilName.trim().split(" ");
+      const givenName = nameParts[0] || pupilName.trim();
+      const familyName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : givenName;
+
+      const { data, error } = await supabase.functions.invoke("klarna-checkout", {
+        body: {
+          amount: totalPrice,
+          currency: "GBP",
+          merchantReference,
+          consumer: {
+            givenName,
+            familyName,
+            email: pupilEmail.trim(),
+            phone: pupilPhone.trim(),
+          },
+          billing: {
+            streetAddress: pupilAddress.trim(),
+            postalCode: pupilPostcode.trim().toUpperCase(),
+            city: locationName || "UK",
+            country: "GB",
+          },
+          items: [{
+            name: `${courseName} - ${hours} Hour Driving Course`,
+            quantity: 1,
+            unitPrice: totalPrice,
+          }],
+          redirectUrls: {
+            confirmUrl: `${currentUrl}/booking-confirmation?klarna=success&ref=${merchantReference}`,
+            cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`,
+          },
+        },
+      });
+
+      if (error) {
+        console.error("Klarna checkout error:", error);
+        toast.error("Failed to start Klarna checkout. Please try again.");
+        return;
+      }
+
+      // Klarna returns HTML snippet - we need to render it or redirect
+      if (data?.htmlSnippet) {
+        // Open in new window with the Klarna checkout widget
+        const klarnaWindow = window.open("", "_blank");
+        if (klarnaWindow) {
+          klarnaWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head><title>Klarna Checkout</title></head>
+            <body style="margin:0;padding:20px;font-family:sans-serif;">
+              <div id="klarna-checkout-container">${data.htmlSnippet}</div>
+            </body>
+            </html>
+          `);
+          klarnaWindow.document.close();
+        } else {
+          toast.error("Please allow popups for Klarna checkout");
+        }
+      } else if (data?.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        toast.error("Could not get Klarna checkout");
+      }
+    } catch (err) {
+      console.error("Klarna error:", err);
+      toast.error("Something went wrong with Klarna. Please try again.");
+    } finally {
+      setIsKlarnaLoading(false);
     }
   };
 
@@ -1046,18 +1128,29 @@ export default function BookingSummary() {
                   <p className="text-sm font-medium text-foreground">Pay in instalments</p>
                   
                   {/* Klarna */}
-                  <div className="rounded-lg border p-3 bg-[#ffb3c7]/10">
+                  <button
+                    onClick={handleKlarnaCheckout}
+                    disabled={!isFullyScheduled || !isPupilDetailsComplete || isKlarnaLoading}
+                    className="w-full rounded-lg border p-3 bg-[#ffb3c7]/10 hover:bg-[#ffb3c7]/20 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
                         Klarna.
                       </span>
-                      <span className="text-xs text-muted-foreground">Pay in 3</span>
+                      <span className="text-xs text-muted-foreground">
+                        {isKlarnaLoading ? "Loading..." : "Pay in 3"}
+                      </span>
                     </div>
                     <div className="mt-2 flex justify-between text-sm">
                       <span className="text-muted-foreground">3 × £{(totalPrice / 3).toFixed(2)}</span>
                       <span className="font-medium">£{(totalPrice / 3).toFixed(2)}/mo</span>
                     </div>
-                  </div>
+                    {isFullyScheduled && isPupilDetailsComplete && (
+                      <div className="mt-2 text-xs text-center text-pink-600 font-medium">
+                        Click to pay with Klarna →
+                      </div>
+                    )}
+                  </button>
 
                   {/* Clearpay */}
                   <button
