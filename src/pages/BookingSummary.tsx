@@ -684,7 +684,7 @@ export default function BookingSummary() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl">
               {/* Explainer Video */}
               {template?.explainer_video_url && (
                 <Card className="overflow-hidden">
@@ -696,10 +696,10 @@ export default function BookingSummary() {
                       poster=""
                     />
                   </div>
-                  <div className="p-3">
-                    <div className="flex items-center gap-2">
-                      <Play className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">Course Explainer</span>
+                  <div className="p-2">
+                    <div className="flex items-center gap-1.5">
+                      <Play className="h-3 w-3 text-primary" />
+                      <span className="font-medium text-xs">Course Explainer</span>
                     </div>
                   </div>
                 </Card>
@@ -725,10 +725,10 @@ export default function BookingSummary() {
                     />
                   )}
                 </div>
-                <div className="p-3">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-primary" />
-                    <span className="font-medium text-sm">
+                <div className="p-2">
+                  <div className="flex items-center gap-1.5">
+                    <User className="h-3 w-3 text-primary" />
+                    <span className="font-medium text-xs">
                       {instructor.welcome_video_url 
                         ? `Meet ${instructor.name.split(" ")[0]}`
                         : "About EveryDriver"
