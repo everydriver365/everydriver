@@ -17,50 +17,18 @@ interface ElavonCheckoutRequest {
   pupilId?: string;
 }
 
-// Cardstream expects application/x-www-form-urlencoded (RFC1738) name/value pairs.
-// We MUST build the signature string using the exact same encoding rules
-// as the data that will be submitted (spaces become '+').
-async function createSignature(data: Record<string, string>, secretKey: string): Promise<string> {
-  const sortedKeys = Object.keys(data).sort();
-
-  const params = new URLSearchParams();
-  for (const key of sortedKeys) {
-    params.append(key, data[key] ?? "");
-  }
-
-  let queryString = params.toString();
-
-  // Normalize line endings (CRNL|NLCR|NL|CR) to just NL (%0A)
-  queryString = queryString
-    .replace(/%0D%0A/g, "%0A")
-    .replace(/%0A%0D/g, "%0A")
-    .replace(/%0D/g, "%0A");
-
-  const signatureInput = queryString + secretKey;
-
-  console.log("Signature query string:", queryString);
-
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(signatureInput);
-  const hashBuffer = await crypto.subtle.digest("SHA-512", dataBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const merchantAliasRaw = Deno.env.get("ELAVON_MERCHANT_ALIAS") ?? "";
-    const secretKeyRaw = Deno.env.get("ELAVON_SECRET_KEY") ?? "";
-
-    const merchantAlias = merchantAliasRaw.trim();
-    const secretKey = secretKeyRaw.trim();
+    // Elavon Converge credentials
+    const merchantAlias = Deno.env.get("ELAVON_MERCHANT_ALIAS")?.trim() ?? "";
+    const secretKey = Deno.env.get("ELAVON_SECRET_KEY")?.trim() ?? "";
 
     if (!merchantAlias || !secretKey) {
-      console.error("Missing Cardstream credentials");
+      console.error("Missing Elavon Converge credentials");
       return new Response(
         JSON.stringify({ error: "Payment gateway not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -68,7 +36,7 @@ serve(async (req: Request) => {
     }
 
     const body: ElavonCheckoutRequest = await req.json();
-    console.log("Cardstream checkout request:", {
+    console.log("Elavon Converge checkout request:", {
       amount: body.amount,
       orderReference: body.orderReference,
       customerEmail: body.customerEmail,
@@ -83,36 +51,42 @@ serve(async (req: Request) => {
       );
     }
 
-    const amountInMinorUnits = Math.round(amount * 100);
+    // Elavon Converge uses decimal amount format (e.g., "10.00" not "1000")
+    const amountDecimal = amount.toFixed(2);
     const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // NOTE: Some Cardstream setups reject GET querystring submissions and require POST.
-    // We'll return formAction + formFields so the frontend can POST as x-www-form-urlencoded.
+    // Elavon Converge HPP form fields
     const formFields: Record<string, string> = {
-      merchantID: merchantAlias,
-      action: "SALE",
-      type: "1",
-      countryCode: "826",
-      currencyCode: "826",
-      amount: amountInMinorUnits.toString(),
-      orderRef: orderReference,
-      transactionUnique,
-      redirectURL: returnUrl,
+      ssl_merchant_id: merchantAlias,
+      ssl_pin: secretKey,
+      ssl_transaction_type: "ccsale",
+      ssl_amount: amountDecimal,
+      ssl_invoice_number: orderReference,
+      ssl_show_form: "true",
+      ssl_result_format: "HTML",
+      ssl_receipt_link_url: returnUrl,
+      ssl_receipt_link_text: "Return to EveryDriver",
     };
 
-    if (customerEmail) formFields.customerEmail = customerEmail;
-    if (customerName) formFields.customerName = customerName;
+    // Add optional customer details
+    if (customerEmail) formFields.ssl_email = customerEmail;
+    if (customerName) formFields.ssl_first_name = customerName.split(' ')[0] || '';
+    if (customerName && customerName.includes(' ')) {
+      formFields.ssl_last_name = customerName.split(' ').slice(1).join(' ');
+    }
 
-    console.log("Request fields (pre-signature):", JSON.stringify(formFields, null, 2));
+    console.log("Converge form fields (excluding PIN):", {
+      ...formFields,
+      ssl_pin: "[REDACTED]",
+    });
 
-    const signature = await createSignature(formFields, secretKey);
-    formFields.signature = signature;
+    // Elavon Converge HPP endpoint (production)
+    // For demo/testing use: https://api.demo.convergepay.com/VirtualMerchantDemo/process.do
+    const formAction = "https://api.convergepay.com/VirtualMerchant/process.do";
 
-    // Cardstream HPP endpoint
-    const formAction = "https://gateway.cardstream.com/hosted/";
-
-    // Keep legacy GET redirect for debugging/fallback.
-    const legacyRedirectUrl = `${formAction}?${new URLSearchParams(formFields).toString()}`;
+    // Build redirect URL for legacy GET method (fallback)
+    const params = new URLSearchParams(formFields);
+    const legacyRedirectUrl = `${formAction}?${params.toString()}`;
 
     return new Response(
       JSON.stringify({
@@ -125,7 +99,7 @@ serve(async (req: Request) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Cardstream checkout error:", error);
+    console.error("Elavon Converge checkout error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ error: "Failed to process checkout", details: errorMessage }),
