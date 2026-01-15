@@ -53,6 +53,16 @@ export function InstructorMobileHome({
   const { content, loading } = useInstructorHomepageContent();
   const pendingJobsCount = usePendingJobsCount();
 
+  // Default quick actions fallback
+  const defaultQuickActions: QuickAction[] = [
+    { id: 'schedule', title: 'View Schedule', icon: 'Calendar', route: '/instructor/schedule', display_order: 1 },
+    { id: 'pupils', title: 'My Pupils', icon: 'Users', route: '/instructor/pupils', display_order: 2 },
+    { id: 'jobs', title: 'Job Offers', icon: 'Briefcase', route: '/instructor/jobs', display_order: 3 },
+    { id: 'payments', title: 'Payments', icon: 'CreditCard', route: '/instructor/pay', display_order: 4 },
+  ];
+
+  const quickActions = content?.quick_actions?.length ? content.quick_actions : defaultQuickActions;
+
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
@@ -178,80 +188,96 @@ export function InstructorMobileHome({
 
       {/* Quick Actions */}
       <div className="px-4 mt-6 space-y-3">
-        {content?.quick_actions
-          .sort((a, b) => a.display_order - b.display_order)
-          .map((action, index) => {
-            const Icon = getIcon(action.icon);
-            const isWide = index === 0; // First action is full width
-            const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
-            
-            if (isWide) {
-              return (
-                <motion.div
-                  key={action.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <Link to={action.route}>
-                    <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-4 hover:bg-muted/50 transition-colors">
-                      <div className="relative w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <Icon className="h-6 w-6 text-primary" />
-                        {showBadge && (
-                          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
-                            {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                          </span>
-                        )}
-                      </div>
-                      <span className="font-medium text-foreground">{action.title}</span>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            }
-            return null;
-          })}
+        {/* Loading skeleton */}
+        {loading && (
+          <div className="space-y-3">
+            <div className="bg-card rounded-xl border border-border p-4 h-16 animate-pulse" />
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-card rounded-xl border border-border p-4 h-20 animate-pulse" />
+              ))}
+            </div>
+          </div>
+        )}
 
-        {/* 2-column grid for remaining actions */}
-        <div className="grid grid-cols-2 gap-3">
-          {content?.quick_actions
-            .sort((a, b) => a.display_order - b.display_order)
-            .slice(1)
-            .map((action, index) => {
-              const Icon = getIcon(action.icon);
-              const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
-              return (
-                <motion.div
-                  key={action.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 + index * 0.05 }}
-                >
-                  <Link to={action.route}>
-                    <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors min-h-[80px]">
-                      <div className="relative w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <Icon className="h-5 w-5 text-primary" />
-                        {showBadge && (
-                          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-sm">
-                            {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+        {!loading && quickActions.length > 0 && (
+          <>
+            {quickActions
+              .sort((a, b) => a.display_order - b.display_order)
+              .map((action, index) => {
+                const Icon = getIcon(action.icon);
+                const isWide = index === 0; // First action is full width
+                const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
+                
+                if (isWide) {
+                  return (
+                    <motion.div
+                      key={action.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      <Link to={action.route}>
+                        <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-4 hover:bg-muted/50 transition-colors">
+                          <div className="relative w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Icon className="h-6 w-6 text-primary" />
+                            {showBadge && (
+                              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-medium text-foreground">{action.title}</span>
+                          <ChevronRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                        </div>
+                      </Link>
+                    </motion.div>
+                  );
+                }
+                return null;
+              })}
+
+            {/* 2-column grid for remaining actions */}
+            <div className="grid grid-cols-2 gap-3">
+              {quickActions
+                .sort((a, b) => a.display_order - b.display_order)
+                .slice(1)
+                .map((action, index) => {
+                  const Icon = getIcon(action.icon);
+                  const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
+                  return (
+                    <motion.div
+                      key={action.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 + index * 0.05 }}
+                    >
+                      <Link to={action.route}>
+                        <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors min-h-[80px]">
+                          <div className="relative w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <Icon className="h-5 w-5 text-primary" />
+                            {showBadge && (
+                              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-sm">
+                                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-medium text-foreground text-sm leading-tight">
+                            {action.title.split(' ').map((word, i) => (
+                              <span key={i}>
+                                {word}
+                                {i < action.title.split(' ').length - 1 && <br />}
+                              </span>
+                            ))}
                           </span>
-                        )}
-                      </div>
-                      <span className="font-medium text-foreground text-sm leading-tight">
-                        {action.title.split(' ').map((word, i) => (
-                          <span key={i}>
-                            {word}
-                            {i < action.title.split(' ').length - 1 && <br />}
-                          </span>
-                        ))}
-                      </span>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-        </div>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Primary Promo Banners */}
