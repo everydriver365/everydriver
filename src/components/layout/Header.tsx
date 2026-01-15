@@ -10,10 +10,8 @@ import { SecondaryNav } from "./SecondaryNav";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/courses", label: "Upcoming Courses" },
+  { href: "/courses", label: "Courses" },
   { href: "/about", label: "About" },
-  { href: "/intensives", label: "Intensives" },
-  { href: "/semi-intensive", label: "Semi-Intensive" },
   { href: "/faqs", label: "FAQs" },
   { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact" },
