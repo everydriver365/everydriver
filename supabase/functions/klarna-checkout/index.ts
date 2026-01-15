@@ -40,6 +40,9 @@ serve(async (req: Request) => {
   try {
     const apiUsername = Deno.env.get("KLARNA_API_USERNAME");
     const apiPassword = Deno.env.get("KLARNA_API_PASSWORD");
+    const isSandbox = Deno.env.get("KLARNA_SANDBOX") === "true";
+
+    console.log("Klarna environment:", isSandbox ? "SANDBOX/PLAYGROUND" : "PRODUCTION");
 
     if (!apiUsername || !apiPassword) {
       console.error("Klarna credentials not configured");
@@ -58,9 +61,6 @@ serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Klarna API - playground (sandbox) or live (production)
-    const isSandbox = Deno.env.get("KLARNA_SANDBOX") === "true";
 
     // Klarna credentials are region-scoped. If the account is not EU, api.klarna.com will 401.
     // We try the known regional endpoints to avoid requiring a separate region setting.
@@ -157,17 +157,23 @@ serve(async (req: Request) => {
         );
       }
 
-      // If unauthorized, try the next region endpoint.
-      if (response.status !== 401) break;
+      // If unauthorized or not found, try the next region endpoint.
+      if (response.status !== 401 && response.status !== 404) break;
     }
 
     console.error("Klarna API error:", lastResult);
+    
+    let errorMessage = lastResult?.error_message || lastResult?.error_messages?.[0] || "Klarna checkout failed";
+    if (lastStatus === 401) {
+      errorMessage = "Klarna authorization failed. Please verify: 1) Credentials are for PRODUCTION (not Playground), 2) Checkout API is enabled, 3) Credentials are active and not expired.";
+    } else if (lastStatus === 404) {
+      errorMessage = "Klarna endpoint not found. The credentials may be for a different region or the Checkout API may not be enabled.";
+    }
+    
     return new Response(
       JSON.stringify({
-        error:
-          lastStatus === 401
-            ? "Klarna authorization failed (check production Checkout API credentials and region)."
-            : lastResult?.error_message || lastResult?.error_messages?.[0] || "Klarna checkout failed",
+        error: errorMessage,
+        environment: isSandbox ? "sandbox" : "production",
         details: {
           tried_base_urls: baseUrls,
           last_base_url: lastBaseUrl,
