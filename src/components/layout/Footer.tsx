@@ -81,7 +81,11 @@ export function Footer() {
 
         <div className="mt-8 border-t border-primary-foreground/10 pt-8 text-center text-sm text-primary-foreground/50">
           <p>© {new Date().getFullYear()} EveryDriver. All rights reserved.</p>
-          <Link to="/privacy-policy" className="hover:text-accent mt-2 inline-block">Privacy Policy</Link>
+          <div className="mt-2 flex justify-center gap-4">
+            <a href="/privacy-policy/index.html" className="hover:text-accent">Privacy Policy</a>
+            <span>|</span>
+            <Link to="/terms" className="hover:text-accent">Terms of Service</Link>
+          </div>
         </div>
       </div>
     </footer>
