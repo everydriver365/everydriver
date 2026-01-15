@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import TelematicsTracker from "@/components/instructor/TelematicsTracker";
 import GeneratedDrivingReport from "@/components/instructor/GeneratedDrivingReport";
+import { TelematicsSessionHistory } from "@/components/instructor/TelematicsSessionHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
-import { Car, User, Clock, MapPin, FileText } from "lucide-react";
+import { Car, User, Clock, MapPin, FileText, History } from "lucide-react";
 import { format } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -35,7 +36,9 @@ export default function InstructorTrackLesson() {
   const [selectedPupilId, setSelectedPupilId] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [showReportSheet, setShowReportSheet] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [lastTelematicsId, setLastTelematicsId] = useState<string | null>(null);
+  const [historyPupilName, setHistoryPupilName] = useState<string>("Pupil");
 
   useEffect(() => {
     if (instructorId) {
@@ -145,106 +148,135 @@ export default function InstructorTrackLesson() {
     );
   }
 
+  const handleSelectHistorySession = (sessionId: string, pupilName: string) => {
+    setLastTelematicsId(sessionId);
+    setHistoryPupilName(pupilName);
+    setShowHistory(false);
+    setShowReportSheet(true);
+  };
+
   return (
     <InstructorPortalLayout>
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-full">
-            <Car className="h-5 w-5 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <Car className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Track Lesson</h1>
+              <p className="text-sm text-muted-foreground">Monitor driving behavior in real-time</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold">Track Lesson</h1>
-            <p className="text-sm text-muted-foreground">Monitor driving behavior in real-time</p>
-          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1.5"
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">History</span>
+          </Button>
         </div>
 
-        {/* Lesson Selector */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Select Lesson</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {loading ? (
-              <div className="text-center text-muted-foreground py-4">Loading lessons...</div>
-            ) : todaysLessons.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">No lessons scheduled for today</p>
-                <p className="text-sm text-muted-foreground mt-1">You can still track without a lesson</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label>Today's Lessons</Label>
-                  <Select value={selectedLessonId} onValueChange={handleLessonChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a lesson" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {todaysLessons.map((lesson) => (
-                        <SelectItem key={lesson.id} value={lesson.id}>
-                          {formatTime(lesson.start_time)} - {lesson.pupil?.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+        {/* Show History or Main Content */}
+        {showHistory ? (
+          <TelematicsSessionHistory
+            instructorId={instructorId}
+            onBack={() => setShowHistory(false)}
+            onSelectSession={handleSelectHistorySession}
+          />
+        ) : (
+          <>
+            {/* Lesson Selector */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Select Lesson</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loading ? (
+                  <div className="text-center text-muted-foreground py-4">Loading lessons...</div>
+                ) : todaysLessons.length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground">No lessons scheduled for today</p>
+                    <p className="text-sm text-muted-foreground mt-1">You can still track without a lesson</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Today's Lessons</Label>
+                      <Select value={selectedLessonId} onValueChange={handleLessonChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a lesson" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {todaysLessons.map((lesson) => (
+                            <SelectItem key={lesson.id} value={lesson.id}>
+                              {formatTime(lesson.start_time)} - {lesson.pupil?.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {selectedLesson && (
-                  <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">
-                        {selectedLesson.pupil?.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>{formatTime(selectedLesson.start_time)} ({Math.round(selectedLesson.duration_minutes / 60)}h)</span>
-                    </div>
-                    {selectedLesson.pickup_location && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span className="truncate">{selectedLesson.pickup_location}</span>
+                    {selectedLesson && (
+                      <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">
+                            {selectedLesson.pupil?.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          <span>{formatTime(selectedLesson.start_time)} ({Math.round(selectedLesson.duration_minutes / 60)}h)</span>
+                        </div>
+                        {selectedLesson.pickup_location && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            <span className="truncate">{selectedLesson.pickup_location}</span>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
-              </>
+              </CardContent>
+            </Card>
+
+            {/* Telematics Tracker */}
+            <TelematicsTracker
+              instructorId={instructorId}
+              lessonId={selectedLessonId}
+              pupilId={selectedPupilId}
+            />
+
+            {/* Generate Report Button - shown when there's tracking data */}
+            {lastTelematicsId && selectedPupilId && (
+              <Button 
+                onClick={() => setShowReportSheet(true)} 
+                variant="outline" 
+                className="w-full gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Generate AI Feedback Report
+              </Button>
             )}
-          </CardContent>
-        </Card>
 
-        {/* Telematics Tracker */}
-        <TelematicsTracker
-          instructorId={instructorId}
-          lessonId={selectedLessonId}
-          pupilId={selectedPupilId}
-        />
-
-        {/* Generate Report Button - shown when there's tracking data */}
-        {lastTelematicsId && selectedPupilId && (
-          <Button 
-            onClick={() => setShowReportSheet(true)} 
-            variant="outline" 
-            className="w-full gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Generate AI Feedback Report
-          </Button>
+            {/* Info Card */}
+            <Card className="bg-muted/30 border-dashed">
+              <CardContent className="p-4">
+                <h3 className="font-medium text-sm mb-2">How it works</h3>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>• Select a lesson to link tracking data to a pupil</li>
+                  <li>• Tap "Start Tracking" to begin GPS monitoring</li>
+                  <li>• Driving behavior (braking, acceleration) is analyzed</li>
+                  <li>• After tracking, generate AI-powered feedback reports</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </>
         )}
-
-        {/* Info Card */}
-        <Card className="bg-muted/30 border-dashed">
-          <CardContent className="p-4">
-            <h3 className="font-medium text-sm mb-2">How it works</h3>
-            <ul className="text-xs text-muted-foreground space-y-1">
-              <li>• Select a lesson to link tracking data to a pupil</li>
-              <li>• Tap "Start Tracking" to begin GPS monitoring</li>
-              <li>• Driving behavior (braking, acceleration) is analyzed</li>
-              <li>• After tracking, generate AI-powered feedback reports</li>
-            </ul>
-          </CardContent>
-        </Card>
       </div>
 
       {/* AI Report Sheet */}
@@ -257,7 +289,7 @@ export default function InstructorTrackLesson() {
             {lastTelematicsId && (
               <GeneratedDrivingReport 
                 telematicsId={lastTelematicsId}
-                pupilName={selectedPupilName}
+                pupilName={showHistory ? historyPupilName : selectedPupilName}
                 onClose={() => setShowReportSheet(false)}
               />
             )}
