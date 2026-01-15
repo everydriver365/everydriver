@@ -80,7 +80,8 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-primary-foreground/10 pt-8 text-center text-sm text-primary-foreground/50">
-          <p>© {new Date().getFullYear()} DriveTime. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} EveryDriver. All rights reserved.</p>
+          <Link to="/privacy-policy" className="hover:text-accent mt-2 inline-block">Privacy Policy</Link>
         </div>
       </div>
     </footer>
