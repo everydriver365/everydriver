@@ -307,11 +307,22 @@ export function LessonScheduler({
       });
     };
 
+    const now = new Date();
+    const isToday = isSameDay(date, now);
+
     for (const time of TIME_SLOTS) {
       if (time >= startTime && time < endTime) {
         // Check if there's enough time for the selected lesson duration
         const slotEnd = addMinutesToTime(time, selectedDuration);
         if (slotEnd <= endTime) {
+          // Skip slots in the past for today
+          if (isToday) {
+            const slotDateTime = new Date(`${dateStr}T${time}:00`);
+            if (slotDateTime <= now) {
+              continue;
+            }
+          }
+
           // Check if slot conflicts with already selected slots
           const conflictsWithSelected = selectedSlots.some(
             (s) =>
