@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Car, Edit2, Trash2, User, MoreVertical } from "lucide-react";
+import { MapPin, Car, Edit2, Trash2, User, MoreVertical, UserX, Users, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ReassignPupilsDialog } from "./ReassignPupilsDialog";
 
 interface Instructor {
   id: string;
@@ -47,7 +49,10 @@ interface InstructorListProps {
 
 export function InstructorList({ instructors, onEdit, onRefresh }: InstructorListProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [reassignInstructor, setReassignInstructor] = useState<Instructor | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -73,6 +78,40 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
     } finally {
       setIsDeleting(false);
       setDeleteId(null);
+    }
+  };
+
+  const handleDeactivate = async () => {
+    if (!deactivateId) return;
+
+    const instructor = instructors.find((i) => i.id === deactivateId);
+    const newStatus = !instructor?.is_active;
+
+    setIsDeactivating(true);
+    try {
+      const { error } = await supabase
+        .from("instructors")
+        .update({ is_active: newStatus })
+        .eq("id", deactivateId);
+
+      if (error) throw error;
+
+      toast.success(
+        newStatus
+          ? "Instructor activated successfully"
+          : "Instructor deactivated successfully"
+      );
+      onRefresh();
+    } catch (error: unknown) {
+      console.error("Error updating instructor status:", error);
+      const message =
+        typeof error === "object" && error && "message" in error
+          ? String((error as { message: string }).message)
+          : "Failed to update instructor status";
+      toast.error(message);
+    } finally {
+      setIsDeactivating(false);
+      setDeactivateId(null);
     }
   };
 
@@ -127,6 +166,17 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
                       <DropdownMenuItem onClick={() => onEdit(instructor)}>
                         <Edit2 className="mr-2 h-4 w-4" />
                         Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setReassignInstructor(instructor)}>
+                        <Users className="mr-2 h-4 w-4" />
+                        Reassign Pupils
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setDeactivateId(instructor.id)}
+                      >
+                        <Power className="mr-2 h-4 w-4" />
+                        {instructor.is_active ? "Deactivate" : "Activate"}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => setDeleteId(instructor.id)}
@@ -184,7 +234,9 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Instructor</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this instructor? This action cannot be undone.
+              Are you sure you want to delete this instructor? This will permanently remove all their data including pupils, lessons, and payment history. This action cannot be undone.
+              <br /><br />
+              <strong>Consider deactivating instead</strong> to keep historical data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -194,11 +246,51 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Deleting..." : "Delete Permanently"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Deactivate Confirmation Dialog */}
+      <AlertDialog open={!!deactivateId} onOpenChange={() => setDeactivateId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {instructors.find((i) => i.id === deactivateId)?.is_active
+                ? "Deactivate Instructor"
+                : "Activate Instructor"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {instructors.find((i) => i.id === deactivateId)?.is_active
+                ? "This instructor will be hidden from public searches and course discovery, but all their data will be preserved. They can be reactivated at any time."
+                : "This instructor will become visible in public searches and course discovery."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeactivate}
+              disabled={isDeactivating}
+            >
+              {isDeactivating
+                ? "Updating..."
+                : instructors.find((i) => i.id === deactivateId)?.is_active
+                  ? "Deactivate"
+                  : "Activate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reassign Pupils Dialog */}
+      <ReassignPupilsDialog
+        open={!!reassignInstructor}
+        onOpenChange={(open) => !open && setReassignInstructor(null)}
+        sourceInstructor={reassignInstructor}
+        allInstructors={instructors}
+        onComplete={onRefresh}
+      />
     </>
   );
 }
