@@ -59,11 +59,18 @@ serve(async (req: Request) => {
       );
     }
 
-    // Klarna API - EU playground or live
+    // Klarna API - playground (sandbox) or live (production)
     const isSandbox = Deno.env.get("KLARNA_SANDBOX") === "true";
-    const baseUrl = isSandbox 
-      ? "https://api.playground.klarna.com"
-      : "https://api.klarna.com";
+
+    // Klarna credentials are region-scoped. If the account is not EU, api.klarna.com will 401.
+    // We try the known regional endpoints to avoid requiring a separate region setting.
+    const baseUrls = isSandbox
+      ? ["https://api.playground.klarna.com"]
+      : [
+          "https://api.klarna.com", // EU/UK
+          "https://api-na.klarna.com", // North America
+          "https://api-oc.klarna.com", // Oceania
+        ];
 
     const authHeader = btoa(`${apiUsername}:${apiPassword}`);
     const currency = data.currency || "GBP";
@@ -74,7 +81,7 @@ serve(async (req: Request) => {
     const orderAmount = Math.round(data.amount * 100);
 
     // Build order lines
-    const orderLines = data.items.map(item => ({
+    const orderLines = data.items.map((item) => ({
       type: "physical",
       name: item.name,
       quantity: item.quantity,
@@ -98,53 +105,78 @@ serve(async (req: Request) => {
         confirmation: data.redirectUrls.confirmUrl,
         push: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "?klarna_push=true",
       },
-      billing_address: data.billing ? {
-        given_name: data.consumer.givenName,
-        family_name: data.consumer.familyName,
-        email: data.consumer.email,
-        phone: data.consumer.phone || "",
-        street_address: data.billing.streetAddress,
-        postal_code: data.billing.postalCode,
-        city: data.billing.city,
-        country: country,
-      } : undefined,
+      billing_address: data.billing
+        ? {
+            given_name: data.consumer.givenName,
+            family_name: data.consumer.familyName,
+            email: data.consumer.email,
+            phone: data.consumer.phone || "",
+            street_address: data.billing.streetAddress,
+            postal_code: data.billing.postalCode,
+            city: data.billing.city,
+            country: country,
+          }
+        : undefined,
     };
 
     console.log("Sending to Klarna:", JSON.stringify(checkoutPayload, null, 2));
 
-    const response = await fetch(`${baseUrl}/checkout/v3/orders`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Basic ${authHeader}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(checkoutPayload),
-    });
+    let lastStatus = 0;
+    let lastBaseUrl = baseUrls[0];
+    let lastResult: any = null;
 
-    const result = await response.json();
-    console.log("Klarna response status:", response.status);
-    console.log("Klarna response:", JSON.stringify(result, null, 2));
+    for (const baseUrl of baseUrls) {
+      lastBaseUrl = baseUrl;
 
-    if (!response.ok) {
-      console.error("Klarna API error:", result);
-      return new Response(
-        JSON.stringify({ 
-          error: result.error_message || result.error_messages?.[0] || "Klarna checkout failed",
-          details: result 
-        }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      const response = await fetch(`${baseUrl}/checkout/v3/orders`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${authHeader}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(checkoutPayload),
+      });
+
+      lastStatus = response.status;
+      lastResult = await response.json().catch(() => ({}));
+
+      console.log("Klarna response status:", response.status, "baseUrl:", baseUrl);
+      console.log("Klarna response:", JSON.stringify(lastResult, null, 2));
+
+      if (response.ok) {
+        // Return the checkout HTML snippet and order ID
+        return new Response(
+          JSON.stringify({
+            orderId: lastResult.order_id,
+            htmlSnippet: lastResult.html_snippet,
+            redirectUrl: lastResult.html_snippet
+              ? null
+              : `${baseUrl}/checkout/v3/orders/${lastResult.order_id}`,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // If unauthorized, try the next region endpoint.
+      if (response.status !== 401) break;
     }
 
-    // Return the checkout HTML snippet and order ID
+    console.error("Klarna API error:", lastResult);
     return new Response(
       JSON.stringify({
-        orderId: result.order_id,
-        htmlSnippet: result.html_snippet,
-        redirectUrl: result.html_snippet ? null : `${baseUrl}/checkout/v3/orders/${result.order_id}`,
+        error:
+          lastStatus === 401
+            ? "Klarna authorization failed (check production Checkout API credentials and region)."
+            : lastResult?.error_message || lastResult?.error_messages?.[0] || "Klarna checkout failed",
+        details: {
+          tried_base_urls: baseUrls,
+          last_base_url: lastBaseUrl,
+          klarna_response: lastResult,
+        },
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: lastStatus || 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
 
   } catch (error) {
     console.error("Error in klarna-checkout:", error);
