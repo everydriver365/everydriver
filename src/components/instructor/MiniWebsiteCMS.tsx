@@ -6,7 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useInstructorWebsitePages, WebsitePage } from "@/hooks/useInstructorWebsitePages";
 import { toast } from "sonner";
 
@@ -104,14 +109,14 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug }: MiniWebsiteCMSP
           </div>
         ))}
 
-        {/* Edit Dialog */}
-        {editingPage && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
-              <CardHeader>
-                <CardTitle>Edit {editingPage.page_title} Page</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+        {/* Edit Dialog - Using proper Dialog component */}
+        <Dialog open={!!editingPage} onOpenChange={(open) => !open && setEditingPage(null)}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit {editingPage?.page_title} Page</DialogTitle>
+            </DialogHeader>
+            {editingPage && (
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label>Published</Label>
                   <Switch
@@ -176,10 +181,10 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug }: MiniWebsiteCMSP
                     {saving ? "Saving..." : "Save"}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
