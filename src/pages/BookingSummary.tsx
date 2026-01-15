@@ -678,57 +678,67 @@ export default function BookingSummary() {
             </Card>
           </motion.div>
 
-          {/* Explainer Video */}
-          {template?.explainer_video_url && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-            >
-              <Card className="overflow-hidden">
-                <div className="relative aspect-video bg-muted">
-                  <video
-                    src={template.explainer_video_url}
-                    className="h-full w-full object-cover"
-                    controls
-                    poster=""
-                  />
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Play className="h-4 w-4 text-primary" />
-                    <span className="font-medium text-sm">Course Explainer Video</span>
+          {/* Video Section - Two side-by-side smaller videos */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Explainer Video */}
+              {template?.explainer_video_url && (
+                <Card className="overflow-hidden">
+                  <div className="relative aspect-video bg-muted">
+                    <video
+                      src={template.explainer_video_url}
+                      className="h-full w-full object-cover"
+                      controls
+                      poster=""
+                    />
                   </div>
-                </div>
-              </Card>
-            </motion.div>
-          )}
+                  <div className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Play className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-sm">Course Explainer</span>
+                    </div>
+                  </div>
+                </Card>
+              )}
 
-          {/* Welcome Video from Instructor */}
-          {instructor.welcome_video_url && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.08 }}
-            >
+              {/* Instructor Intro Video OR About EveryDriver fallback */}
               <Card className="overflow-hidden">
                 <div className="relative aspect-video bg-muted">
-                  <video
-                    src={instructor.welcome_video_url}
-                    className="h-full w-full object-cover"
-                    controls
-                    poster=""
-                  />
+                  {instructor.welcome_video_url ? (
+                    <video
+                      src={instructor.welcome_video_url}
+                      className="h-full w-full object-cover"
+                      controls
+                      poster=""
+                    />
+                  ) : (
+                    <iframe
+                      src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0"
+                      title="About EveryDriver"
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  )}
                 </div>
-                <div className="p-4">
+                <div className="p-3">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-primary" />
-                    <span className="font-medium text-sm">Meet {instructor.name.split(" ")[0]}</span>
+                    <span className="font-medium text-sm">
+                      {instructor.welcome_video_url 
+                        ? `Meet ${instructor.name.split(" ")[0]}`
+                        : "About EveryDriver"
+                      }
+                    </span>
                   </div>
                 </div>
               </Card>
-            </motion.div>
-          )}
+            </div>
+          </motion.div>
 
           {/* Course Description */}
           {courseDescription && (
