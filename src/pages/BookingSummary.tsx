@@ -1092,23 +1092,29 @@ export default function BookingSummary() {
           )}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            {/* Pay in Full */}
-            <Button 
-              size="lg"
-              className="w-full gap-2 h-auto py-4"
-              disabled={!canSubmit}
+            {/* Ideal4Finance - Provisional Booking */}
+            <button
               onClick={handleBookingSubmit}
+              disabled={!canSubmit || isSubmitting}
+              className="w-full rounded-lg border-2 border-orange-400 p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 hover:from-orange-100 hover:to-amber-100 dark:hover:from-orange-950/50 dark:hover:to-amber-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <CreditCard className="h-5 w-5" />
-              )}
-              <div className="text-left">
-                <div className="font-semibold">{isSubmitting ? "Processing..." : "Book Now - Pay Later"}</div>
-                <div className="text-xs opacity-80">Confirm booking, pay when lessons start</div>
+              <div className="flex items-center justify-between mb-2">
+                <img 
+                  src="/src/assets/logo-ideal4finance.png" 
+                  alt="Ideal4Finance" 
+                  className="h-6 object-contain"
+                />
+                <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  {isSubmitting ? "Processing..." : "Finance Available"}
+                </span>
               </div>
-            </Button>
+              <div className="font-semibold text-sm text-orange-900 dark:text-orange-100">
+                {isSubmitting ? "Creating Booking..." : "Provisional Booking"}
+              </div>
+              <div className="text-xs text-orange-700/80 dark:text-orange-300/80">
+                Reserve your slots now, arrange finance after
+              </div>
+            </button>
 
             {/* Elavon Card Payment */}
             <button
