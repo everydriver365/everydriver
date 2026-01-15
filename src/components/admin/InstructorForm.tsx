@@ -3,10 +3,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode, Layout } from "lucide-react";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { CourseImageEditor } from "./CourseImageEditor";
+import { AdminWebsiteManager } from "./AdminWebsiteManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -106,6 +107,7 @@ interface InstructorFormProps {
     cpd_certified?: boolean;
     adi_code_of_practice?: boolean;
     instructor_grade?: string;
+    app_slug?: string;
   }>;
 }
 
@@ -1311,6 +1313,20 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           <div className="rounded-lg border p-4">
             <h3 className="mb-4 text-lg font-semibold">Working Hours & Availability</h3>
             <WorkingHoursEditor instructorId={initialData.id} />
+          </div>
+        )}
+
+        {/* Mini-Website Pages - Only show for existing instructors */}
+        {initialData?.id && initialData?.app_slug && (
+          <div className="rounded-lg border p-4">
+            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
+              <Layout className="h-5 w-5" /> Mini-Website Pages
+            </h3>
+            <AdminWebsiteManager 
+              instructorId={initialData.id} 
+              instructorSlug={initialData.app_slug}
+              instructorName={initialData.name || "Instructor"}
+            />
           </div>
         )}
 

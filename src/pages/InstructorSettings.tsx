@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout } from "lucide-react";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
@@ -7,6 +7,7 @@ import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBranding
 import { GoogleCalendarConnect } from "@/components/instructor/GoogleCalendarConnect";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
+import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -329,7 +330,7 @@ export default function InstructorSettings() {
           )}
         </SettingsTile>
 
-        {/* Mini-Website Section */}
+        {/* Mini-Website Share Section */}
         <SettingsTile 
           id="mini-website" 
           icon={Globe} 
@@ -337,6 +338,25 @@ export default function InstructorSettings() {
           description="Share your instructor profile"
         >
           <MiniWebsiteShare instructorId={instructorId} />
+        </SettingsTile>
+
+        {/* Mini-Website CMS Section */}
+        <SettingsTile 
+          id="website-pages" 
+          icon={Layout} 
+          title="Website Pages" 
+          description="Edit your 5-page mini-website"
+        >
+          {authInstructor?.app_slug ? (
+            <MiniWebsiteCMS 
+              instructorId={instructorId} 
+              instructorSlug={authInstructor.app_slug} 
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Your website URL is being set up. Please refresh in a moment.
+            </p>
+          )}
         </SettingsTile>
 
         {/* Visibility Section */}
