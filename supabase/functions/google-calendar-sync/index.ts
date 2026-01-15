@@ -16,6 +16,14 @@ interface LessonEvent {
   duration: number;
 }
 
+interface GoogleCalendarEvent {
+  id: string;
+  summary?: string;
+  start?: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
+  transparency?: string;
+}
+
 async function getValidAccessToken(supabase: any, instructorId: string): Promise<string | null> {
   const { data: tokenData, error } = await supabase
     .from("instructor_calendar_tokens")
@@ -156,6 +164,141 @@ async function deleteCalendarEvent(
   }
 }
 
+async function fetchExternalEvents(
+  supabase: any,
+  accessToken: string,
+  calendarId: string,
+  instructorId: string
+): Promise<{ synced: number; deleted: number }> {
+  const now = new Date();
+  const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const timeMin = now.toISOString();
+  const timeMax = thirtyDaysLater.toISOString();
+
+  console.log(`Fetching external events for instructor ${instructorId} from ${timeMin} to ${timeMax}`);
+
+  try {
+    // Fetch events from Google Calendar
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
+      new URLSearchParams({
+        timeMin,
+        timeMax,
+        singleEvents: "true",
+        orderBy: "startTime",
+        maxResults: "250",
+      }),
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to fetch calendar events:", errorText);
+      throw new Error("Failed to fetch calendar events");
+    }
+
+    const data = await response.json();
+    const events: GoogleCalendarEvent[] = data.items || [];
+
+    console.log(`Fetched ${events.length} events from Google Calendar`);
+
+    // Get existing platform-created events to exclude them
+    const { data: platformEvents } = await supabase
+      .from("calendar_events")
+      .select("google_event_id")
+      .eq("instructor_id", instructorId);
+
+    const platformEventIds = new Set((platformEvents || []).map((e: any) => e.google_event_id));
+
+    // Get existing external events for this instructor
+    const { data: existingExternalEvents } = await supabase
+      .from("instructor_calendar_events")
+      .select("google_event_id")
+      .eq("instructor_id", instructorId);
+
+  const existingExternalIds = new Set<string>((existingExternalEvents || []).map((e: any) => e.google_event_id as string));
+
+    // Filter to only external busy events (not created by our platform)
+    const externalBusyEvents = events.filter((event) => {
+      // Skip events we created
+      if (platformEventIds.has(event.id)) return false;
+      
+      // Only include opaque (busy) events - transparent events show as "free"
+      if (event.transparency === "transparent") return false;
+      
+      // Must have start and end times
+      if (!event.start?.dateTime || !event.end?.dateTime) return false;
+      
+      return true;
+    });
+
+    console.log(`Found ${externalBusyEvents.length} external busy events`);
+
+    // Track which event IDs we're seeing in this sync
+    const currentEventIds = new Set<string>();
+
+    let syncedCount = 0;
+
+    // Upsert external events
+    for (const event of externalBusyEvents) {
+      currentEventIds.add(event.id);
+
+      const eventData = {
+        instructor_id: instructorId,
+        google_event_id: event.id,
+        title: event.summary || "Busy",
+        start_time: event.start!.dateTime,
+        end_time: event.end!.dateTime,
+        is_busy: true,
+        synced_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from("instructor_calendar_events")
+        .upsert(eventData, {
+          onConflict: "instructor_id,google_event_id",
+        });
+
+      if (error) {
+        console.error("Error upserting event:", error);
+      } else {
+        syncedCount++;
+      }
+    }
+
+    // Delete events that no longer exist in Google Calendar
+    let deletedCount = 0;
+    for (const existingId of existingExternalIds) {
+      if (!currentEventIds.has(existingId)) {
+        await supabase
+          .from("instructor_calendar_events")
+          .delete()
+          .eq("instructor_id", instructorId)
+          .eq("google_event_id", existingId);
+        deletedCount++;
+      }
+    }
+
+    // Update last sync timestamp
+    await supabase
+      .from("instructor_calendar_tokens")
+      .update({ last_external_sync: new Date().toISOString() })
+      .eq("instructor_id", instructorId);
+
+    console.log(`Synced ${syncedCount} events, deleted ${deletedCount} stale events`);
+
+    return { synced: syncedCount, deleted: deletedCount };
+  } catch (error) {
+    console.error("Error fetching external events:", error);
+    throw error;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -171,7 +314,7 @@ serve(async (req) => {
     // Check if instructor has calendar connected
     const { data: tokenData } = await supabase
       .from("instructor_calendar_tokens")
-      .select("calendar_id")
+      .select("calendar_id, last_external_sync")
       .eq("instructor_id", instructorId)
       .maybeSingle();
 
@@ -258,6 +401,21 @@ serve(async (req) => {
       );
     }
 
+    if (action === "fetchExternalEvents") {
+      // Fetch external events from Google Calendar and store them
+      const result = await fetchExternalEvents(supabase, accessToken, calendarId, instructorId);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          synced: result.synced, 
+          deleted: result.deleted,
+          lastSync: new Date().toISOString()
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "checkConnection") {
       // Verify calendar connection is working
       try {
@@ -270,11 +428,21 @@ serve(async (req) => {
 
         if (response.ok) {
           const calendar = await response.json();
+          
+          // Get count of external events
+          const { count } = await supabase
+            .from("instructor_calendar_events")
+            .select("*", { count: "exact", head: true })
+            .eq("instructor_id", instructorId)
+            .eq("is_busy", true);
+
           return new Response(
             JSON.stringify({ 
               connected: true, 
               calendarName: calendar.summary,
-              calendarId: calendar.id 
+              calendarId: calendar.id,
+              lastExternalSync: tokenData.last_external_sync,
+              externalEventCount: count || 0
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );

@@ -29,6 +29,11 @@ interface DateOverride {
   is_available: boolean;
 }
 
+interface ExternalCalendarEvent {
+  start_time: string;
+  end_time: string;
+}
+
 interface SelectedSlot {
   date: Date;
   startTime: string;
@@ -74,6 +79,7 @@ export function LessonScheduler({
 }: LessonSchedulerProps) {
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
+  const [externalEvents, setExternalEvents] = useState<ExternalCalendarEvent[]>([]);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [loading, setLoading] = useState(true);
@@ -183,6 +189,14 @@ export function LessonScheduler({
         // and only fetch overrides that could affect the currently bookable window
         .lte("override_date", maxDateStr);
 
+      // Fetch external calendar events (Google Calendar busy times)
+      const { data: calendarEvents } = await supabase
+        .from("instructor_calendar_events")
+        .select("start_time, end_time")
+        .eq("instructor_id", instructorId)
+        .eq("is_busy", true)
+        .gte("start_time", todayStr);
+
       setWorkingHours(
         (hours || []).map((h) => ({
           day_of_week: h.day_of_week,
@@ -199,6 +213,13 @@ export function LessonScheduler({
           start_time: o.start_time?.slice(0, 5) || null,
           end_time: o.end_time?.slice(0, 5) || null,
           is_available: o.is_available,
+        }))
+      );
+
+      setExternalEvents(
+        (calendarEvents || []).map((e) => ({
+          start_time: e.start_time,
+          end_time: e.end_time,
         }))
       );
     } catch (error) {
@@ -266,6 +287,25 @@ export function LessonScheduler({
 
     const { startTime, endTime } = availability;
     const slots: string[] = [];
+    const dateStr = format(date, "yyyy-MM-dd");
+
+    // Helper to check if a slot conflicts with external calendar events
+    const conflictsWithExternalEvents = (slotStart: string, slotEnd: string) => {
+      const slotStartDateTime = new Date(`${dateStr}T${slotStart}:00`);
+      const slotEndDateTime = new Date(`${dateStr}T${slotEnd}:00`);
+
+      return externalEvents.some((event) => {
+        const eventStart = new Date(event.start_time);
+        const eventEnd = new Date(event.end_time);
+        
+        // Check if the slot overlaps with the external event
+        return (
+          (slotStartDateTime >= eventStart && slotStartDateTime < eventEnd) ||
+          (slotEndDateTime > eventStart && slotEndDateTime <= eventEnd) ||
+          (slotStartDateTime < eventStart && slotEndDateTime > eventStart)
+        );
+      });
+    };
 
     for (const time of TIME_SLOTS) {
       if (time >= startTime && time < endTime) {
@@ -273,14 +313,18 @@ export function LessonScheduler({
         const slotEnd = addMinutesToTime(time, selectedDuration);
         if (slotEnd <= endTime) {
           // Check if slot conflicts with already selected slots
-          const conflicts = selectedSlots.some(
+          const conflictsWithSelected = selectedSlots.some(
             (s) =>
               isSameDay(s.date, date) &&
               ((time >= s.startTime && time < s.endTime) ||
                 (slotEnd > s.startTime && slotEnd <= s.endTime) ||
                 (time < s.startTime && slotEnd > s.startTime))
           );
-          if (!conflicts) {
+          
+          // Check if slot conflicts with external calendar events
+          const conflictsWithExternal = conflictsWithExternalEvents(time, slotEnd);
+          
+          if (!conflictsWithSelected && !conflictsWithExternal) {
             slots.push(time);
           }
         }

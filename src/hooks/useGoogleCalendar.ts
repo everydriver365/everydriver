@@ -6,12 +6,15 @@ interface CalendarStatus {
   connected: boolean;
   calendarName?: string;
   calendarId?: string;
+  lastExternalSync?: string | null;
+  externalEventCount?: number;
 }
 
 export function useGoogleCalendar(instructorId: string) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [calendarStatus, setCalendarStatus] = useState<CalendarStatus | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const checkConnection = useCallback(async () => {
     if (!instructorId) return;
@@ -111,13 +114,45 @@ export function useGoogleCalendar(instructorId: string) {
     }
   }, [instructorId]);
 
+  const syncExternalEvents = useCallback(async () => {
+    if (!instructorId) return null;
+
+    setIsSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("google-calendar-sync", {
+        body: { action: "fetchExternalEvents", instructorId },
+      });
+
+      if (error) {
+        console.error("Error syncing external events:", error);
+        toast.error("Failed to sync calendar events");
+        return null;
+      }
+
+      toast.success(`Synced ${data.synced} events from Google Calendar`);
+      
+      // Refresh connection status to get updated count
+      await checkConnection();
+      
+      return data;
+    } catch (err) {
+      console.error("Error syncing external events:", err);
+      toast.error("Failed to sync calendar events");
+      return null;
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [instructorId, checkConnection]);
+
   return {
     isConnecting,
     isChecking,
+    isSyncing,
     calendarStatus,
     checkConnection,
     getAuthUrl,
     handleAuthCallback,
     disconnect,
+    syncExternalEvents,
   };
 }
