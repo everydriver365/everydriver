@@ -40,16 +40,24 @@ export function useInstructorHomepageContent() {
         .select("*")
         .eq("is_active", true)
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching instructor homepage content:", error);
+        setLoading(false);
+        return;
+      }
       
-      setContent({
-        ...data,
-        quick_actions: (data.quick_actions as unknown as QuickAction[]) || [],
-        promo_banners: (data.promo_banners as unknown as PromoBanner[]) || [],
-        secondary_promo_banners: (data.secondary_promo_banners as unknown as PromoBanner[]) || []
-      });
+      if (data) {
+        setContent({
+          ...data,
+          quick_actions: (data.quick_actions as unknown as QuickAction[]) || [],
+          promo_banners: (data.promo_banners as unknown as PromoBanner[]) || [],
+          secondary_promo_banners: (data.secondary_promo_banners as unknown as PromoBanner[]) || []
+        });
+      } else {
+        console.warn("No active instructor homepage content found");
+      }
     } catch (error) {
       console.error("Error fetching instructor homepage content:", error);
     } finally {
