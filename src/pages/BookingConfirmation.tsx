@@ -43,6 +43,16 @@ export default function BookingConfirmation() {
   const [searchParams] = useSearchParams();
   const pupilId = searchParams.get("pupilId");
   
+  // Elavon Converge response parameters
+  const sslResult = searchParams.get("ssl_result");
+  const sslResultMessage = searchParams.get("ssl_result_message");
+  const sslTxnId = searchParams.get("ssl_txn_id");
+  const sslApprovalCode = searchParams.get("ssl_approval_code");
+  const sslAmount = searchParams.get("ssl_amount");
+  
+  // Payment was successful if ssl_result is "0"
+  const paymentSuccessful = sslResult === "0" || sslResult === null; // null means direct booking without payment
+  
   const [pupil, setPupil] = useState<PupilDetails | null>(null);
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,6 +120,31 @@ export default function BookingConfirmation() {
     );
   }
 
+  // Payment failed state
+  if (!paymentSuccessful) {
+    return (
+      <MainLayout>
+        <div className="container py-16 text-center">
+          <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center">
+            <span className="text-4xl">❌</span>
+          </div>
+          <h1 className="text-2xl font-bold text-destructive">Payment Failed</h1>
+          <p className="mt-2 text-muted-foreground max-w-md mx-auto">
+            {sslResultMessage || "Your payment could not be processed. Please try again."}
+          </p>
+          {sslResult && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Error code: {sslResult}
+            </p>
+          )}
+          <Button asChild className="mt-6">
+            <Link to="/courses">Try Again</Link>
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
   const totalHours = lessons.reduce((acc, l) => acc + l.duration_minutes / 60, 0);
 
   return (
@@ -143,6 +178,19 @@ export default function BookingConfirmation() {
           >
             Your {pupil.prepaid_hours || totalHours} hour {pupil.course_type || "driving course"} has been booked with {pupil.instructor.name}.
           </motion.p>
+
+          {/* Payment confirmation details */}
+          {sslTxnId && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="mt-4 text-sm text-emerald-100"
+            >
+              {sslAmount && <span>Payment of £{sslAmount} confirmed</span>}
+              {sslApprovalCode && <span className="ml-2">• Approval: {sslApprovalCode}</span>}
+            </motion.div>
+          )}
         </div>
       </div>
 
