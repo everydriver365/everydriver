@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText } from "lucide-react";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -666,17 +666,76 @@ export default function BookingSummary() {
                   {instructor.bio && (
                     <p className="mt-3 text-sm text-muted-foreground">{instructor.bio}</p>
                   )}
+                  
+                  {instructor.special_skills && (
+                    <div className="mt-2">
+                      <span className="text-xs font-medium text-muted-foreground">Specialties: </span>
+                      <span className="text-xs text-muted-foreground">{instructor.special_skills}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
           </motion.div>
+
+          {/* Explainer Video */}
+          {template?.explainer_video_url && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
+              <Card className="overflow-hidden">
+                <div className="relative aspect-video bg-muted">
+                  <video
+                    src={template.explainer_video_url}
+                    className="h-full w-full object-cover"
+                    controls
+                    poster=""
+                  />
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center gap-2">
+                    <Play className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">Course Explainer Video</span>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Welcome Video from Instructor */}
+          {instructor.welcome_video_url && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+            >
+              <Card className="overflow-hidden">
+                <div className="relative aspect-video bg-muted">
+                  <video
+                    src={instructor.welcome_video_url}
+                    className="h-full w-full object-cover"
+                    controls
+                    poster=""
+                  />
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">Meet {instructor.name.split(" ")[0]}</span>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
 
           {/* Course Description */}
           {courseDescription && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
+              transition={{ delay: 0.1 }}
             >
               <Card className="p-4">
                 <h3 className="font-semibold mb-2">About This Course</h3>
@@ -685,12 +744,12 @@ export default function BookingSummary() {
             </motion.div>
           )}
 
-          {/* Features */}
+          {/* Features / What's Included */}
           {features && features.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.12 }}
             >
               <Card className="p-4">
                 <h3 className="font-semibold mb-3">What's Included</h3>
@@ -706,12 +765,120 @@ export default function BookingSummary() {
             </motion.div>
           )}
 
+          {/* What to Bring */}
+          {template?.what_to_bring && template.what_to_bring.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.14 }}
+            >
+              <Card className="p-4">
+                <h3 className="font-semibold flex items-center gap-2 mb-3">
+                  <Backpack className="h-4 w-4 text-primary" />
+                  What to Bring
+                </h3>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {template.what_to_bring.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Prerequisites */}
+          {template?.prerequisites && template.prerequisites.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.16 }}
+            >
+              <Card className="p-4">
+                <h3 className="font-semibold flex items-center gap-2 mb-3">
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                  Prerequisites
+                </h3>
+                <div className="space-y-2">
+                  {template.prerequisites.map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-sm">
+                      <div className="h-2 w-2 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Theory & Driving Test Details */}
+          {(template?.theory_test_details || template?.driving_test_details) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18 }}
+              className="grid gap-4 sm:grid-cols-2"
+            >
+              {template?.theory_test_details && (
+                <Card className="p-4">
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    Theory Test
+                  </h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">{template.theory_test_details}</p>
+                </Card>
+              )}
+              {template?.driving_test_details && (
+                <Card className="p-4">
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    <Car className="h-4 w-4 text-primary" />
+                    Driving Test
+                  </h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-line">{template.driving_test_details}</p>
+                </Card>
+              )}
+            </motion.div>
+          )}
+
+          {/* Payment Terms */}
+          {template?.payment_terms && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="p-4">
+                <h3 className="font-semibold flex items-center gap-2 mb-2">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  Payment Terms
+                </h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{template.payment_terms}</p>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Terms & Conditions */}
+          {template?.terms_conditions && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.22 }}
+            >
+              <Card className="p-4">
+                <h3 className="font-semibold mb-2">Terms & Conditions</h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-line">{template.terms_conditions}</p>
+              </Card>
+            </motion.div>
+          )}
+
           {/* Reviews */}
           {reviews.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.24 }}
             >
               <Card className="p-4">
                 <h3 className="font-semibold flex items-center gap-2 mb-3">
