@@ -120,6 +120,7 @@ export default function BookingSummary() {
   const [pupilAddress, setPupilAddress] = useState("");
   const [pupilPostcode, setPupilPostcode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isClearpayLoading, setIsClearpayLoading] = useState(false);
 
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
@@ -316,6 +317,70 @@ export default function BookingSummary() {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleClearpayCheckout = async () => {
+    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
+      toast.error("Please complete all details and schedule all lessons first");
+      return;
+    }
+
+    setIsClearpayLoading(true);
+    try {
+      const merchantReference = `${instructor.id}-${Date.now()}`;
+      const currentUrl = window.location.origin;
+      
+      const nameParts = pupilName.trim().split(" ");
+      const givenNames = nameParts.slice(0, -1).join(" ") || nameParts[0];
+      const surname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+
+      const { data, error } = await supabase.functions.invoke("clearpay-checkout", {
+        body: {
+          amount: totalPrice,
+          currency: "GBP",
+          merchantReference,
+          consumer: {
+            givenNames,
+            surname: surname || givenNames,
+            email: pupilEmail.trim(),
+            phoneNumber: pupilPhone.trim(),
+          },
+          billing: {
+            name: pupilName.trim(),
+            line1: pupilAddress.trim(),
+            postcode: pupilPostcode.trim().toUpperCase(),
+            countryCode: "GB",
+          },
+          items: [{
+            name: `${courseName} - ${hours} Hour Driving Course`,
+            quantity: 1,
+            price: totalPrice,
+          }],
+          redirectUrls: {
+            confirmUrl: `${currentUrl}/booking-confirmation?clearpay=success&ref=${merchantReference}`,
+            cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&clearpay=cancelled`,
+          },
+        },
+      });
+
+      if (error) {
+        console.error("Clearpay checkout error:", error);
+        toast.error("Failed to start Clearpay checkout. Please try again.");
+        return;
+      }
+
+      if (data?.redirectUrl) {
+        // Redirect to Clearpay checkout
+        window.location.href = data.redirectUrl;
+      } else {
+        toast.error("Could not get Clearpay checkout URL");
+      }
+    } catch (err) {
+      console.error("Clearpay error:", err);
+      toast.error("Something went wrong with Clearpay. Please try again.");
+    } finally {
+      setIsClearpayLoading(false);
     }
   };
 
@@ -995,18 +1060,29 @@ export default function BookingSummary() {
                   </div>
 
                   {/* Clearpay */}
-                  <div className="rounded-lg border p-3 bg-[#b2fce4]/10">
+                  <button
+                    onClick={handleClearpayCheckout}
+                    disabled={!isFullyScheduled || !isPupilDetailsComplete || isClearpayLoading}
+                    className="w-full rounded-lg border p-3 bg-[#b2fce4]/10 hover:bg-[#b2fce4]/20 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
                         clearpay
                       </span>
-                      <span className="text-xs text-muted-foreground">Pay in 4</span>
+                      <span className="text-xs text-muted-foreground">
+                        {isClearpayLoading ? "Loading..." : "Pay in 4"}
+                      </span>
                     </div>
                     <div className="mt-2 flex justify-between text-sm">
                       <span className="text-muted-foreground">4 × £{(totalPrice / 4).toFixed(2)}</span>
                       <span className="font-medium">£{(totalPrice / 4).toFixed(2)}/mo</span>
                     </div>
-                  </div>
+                    {isFullyScheduled && isPupilDetailsComplete && (
+                      <div className="mt-2 text-xs text-center text-emerald-600 font-medium">
+                        Click to pay with Clearpay →
+                      </div>
+                    )}
+                  </button>
                 </div>
               </div>
 

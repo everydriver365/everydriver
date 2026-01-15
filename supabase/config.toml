@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.sync-all-calendars]
 verify_jwt = false
+
+[functions.clearpay-checkout]
+verify_jwt = false
+
+[functions.clearpay-capture]
+verify_jwt = false
