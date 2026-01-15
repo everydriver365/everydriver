@@ -63,9 +63,13 @@ export function InstructorList({ instructors, onEdit, onRefresh }: InstructorLis
 
       toast.success("Instructor deleted successfully");
       onRefresh();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error deleting instructor:", error);
-      toast.error("Failed to delete instructor");
+      const message =
+        typeof error === "object" && error && "message" in error
+          ? String((error as any).message)
+          : "Failed to delete instructor";
+      toast.error(message);
     } finally {
       setIsDeleting(false);
       setDeleteId(null);
