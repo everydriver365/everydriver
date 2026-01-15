@@ -78,9 +78,8 @@ serve(async (req: Request) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const signature = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 
-    // NPI Payments UK HPP endpoint
-    // Using the standard NPI gateway URL
-    const npiBaseUrl = "https://gateway.npi.ie/hosted/modal";
+    // NPI Payments UK HPP endpoint (provided by merchant)
+    const npiBaseUrl = "https://payments.npigateway.ie/hosted/";
 
     // Build the HPP form data per NPI specification
     const hppParams = new URLSearchParams({
