@@ -38,6 +38,11 @@ import Intensives from "./pages/Intensives";
 import SemiIntensive from "./pages/SemiIntensive";
 import NotFound from "./pages/NotFound";
 import InstructorMiniWebsite from "./pages/InstructorMiniWebsite";
+import MiniWebsiteHome from "./pages/mini-website/MiniWebsiteHome";
+import MiniWebsiteAbout from "./pages/mini-website/MiniWebsiteAbout";
+import MiniWebsiteServices from "./pages/mini-website/MiniWebsiteServices";
+import MiniWebsiteReviews from "./pages/mini-website/MiniWebsiteReviews";
+import MiniWebsiteContact from "./pages/mini-website/MiniWebsiteContact";
 import InstallInstructor from "./pages/InstallInstructor";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
@@ -76,7 +81,11 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/intensives" element={<Intensives />} />
               <Route path="/semi-intensive" element={<SemiIntensive />} />
-              <Route path="/i/:slug" element={<InstructorMiniWebsite />} />
+              <Route path="/i/:slug" element={<MiniWebsiteHome />} />
+              <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
+              <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />
+              <Route path="/i/:slug/reviews" element={<MiniWebsiteReviews />} />
+              <Route path="/i/:slug/contact" element={<MiniWebsiteContact />} />
 
               {/* Instructor SaaS Marketing (Drive365 branding) */}
               <Route path="/instructor-app" element={<InstructorAppHome />} />
