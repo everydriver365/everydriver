@@ -542,6 +542,28 @@ export default function BookingSummary() {
         return;
       }
 
+      // Cardstream docs commonly require POST application/x-www-form-urlencoded.
+      // If the backend returns form fields, submit a POST form to the HPP.
+      if (data?.formAction && data?.formFields) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.formAction;
+        form.style.display = "none";
+
+        Object.entries(data.formFields as Record<string, string>).forEach(([name, value]) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = name;
+          input.value = String(value ?? "");
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        return;
+      }
+
+      // Fallback: legacy GET redirect
       if (data?.redirectUrl) {
         window.location.href = data.redirectUrl;
       } else {

@@ -17,25 +17,18 @@ interface ElavonCheckoutRequest {
   pupilId?: string;
 }
 
-// Create signature following Cardstream documentation:
-// 1. Sort fields alphabetically by key
-// 2. Build URL-encoded query string using encodeURIComponent (RFC3986)
-// 3. Normalize line endings
-// 4. Append secret key
-// 5. Hash with SHA-512
-async function createSignature(fields: Record<string, string>, secretKey: string): Promise<string> {
-  // Sort fields alphabetically by key
-  const sortedKeys = Object.keys(fields).sort();
+// Cardstream expects application/x-www-form-urlencoded (RFC1738) name/value pairs.
+// We MUST build the signature string using the exact same encoding rules
+// as the data that will be submitted (spaces become '+').
+async function createSignature(data: Record<string, string>, secretKey: string): Promise<string> {
+  const sortedKeys = Object.keys(data).sort();
 
-  // Build query string using encodeURIComponent for BOTH key and value
-  // This ensures consistent encoding with RFC3986 (spaces as %20)
-  const queryParts: string[] = [];
+  const params = new URLSearchParams();
   for (const key of sortedKeys) {
-    const encodedKey = encodeURIComponent(key);
-    const encodedValue = encodeURIComponent(fields[key] ?? "");
-    queryParts.push(`${encodedKey}=${encodedValue}`);
+    params.append(key, data[key] ?? "");
   }
-  let queryString = queryParts.join("&");
+
+  let queryString = params.toString();
 
   // Normalize line endings (CRNL|NLCR|NL|CR) to just NL (%0A)
   queryString = queryString
@@ -43,12 +36,10 @@ async function createSignature(fields: Record<string, string>, secretKey: string
     .replace(/%0A%0D/g, "%0A")
     .replace(/%0D/g, "%0A");
 
-  // Append secret key (NOT URL encoded)
   const signatureInput = queryString + secretKey;
 
   console.log("Signature query string:", queryString);
 
-  // Hash with SHA-512
   const encoder = new TextEncoder();
   const dataBuffer = encoder.encode(signatureInput);
   const hashBuffer = await crypto.subtle.digest("SHA-512", dataBuffer);
@@ -56,28 +47,17 @@ async function createSignature(fields: Record<string, string>, secretKey: string
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Build redirect URL using SAME encoding as signature (encodeURIComponent)
-function buildRedirectUrl(baseUrl: string, fields: Record<string, string>): string {
-  const sortedKeys = Object.keys(fields).sort();
-  const queryParts: string[] = [];
-  for (const key of sortedKeys) {
-    const encodedKey = encodeURIComponent(key);
-    const encodedValue = encodeURIComponent(fields[key] ?? "");
-    queryParts.push(`${encodedKey}=${encodedValue}`);
-  }
-  return `${baseUrl}?${queryParts.join("&")}`;
-}
-
 serve(async (req: Request) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Get Cardstream credentials from environment
-    const merchantAlias = Deno.env.get("ELAVON_MERCHANT_ALIAS");
-    const secretKey = Deno.env.get("ELAVON_SECRET_KEY");
+    const merchantAliasRaw = Deno.env.get("ELAVON_MERCHANT_ALIAS") ?? "";
+    const secretKeyRaw = Deno.env.get("ELAVON_SECRET_KEY") ?? "";
+
+    const merchantAlias = merchantAliasRaw.trim();
+    const secretKey = secretKeyRaw.trim();
 
     if (!merchantAlias || !secretKey) {
       console.error("Missing Cardstream credentials");
@@ -94,15 +74,8 @@ serve(async (req: Request) => {
       customerEmail: body.customerEmail,
     });
 
-    const {
-      amount,
-      orderReference,
-      customerEmail,
-      customerName,
-      returnUrl,
-    } = body;
+    const { amount, orderReference, customerEmail, customerName, returnUrl } = body;
 
-    // Validate required fields
     if (!amount || !orderReference || !returnUrl) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: amount, orderReference, returnUrl" }),
@@ -110,58 +83,44 @@ serve(async (req: Request) => {
       );
     }
 
-    // Amount in pence/cents
-    const amountInPence = Math.round(amount * 100);
-
-    // Generate unique transaction ID
+    const amountInMinorUnits = Math.round(amount * 100);
     const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Build the request data object (signature is calculated from all fields except signature itself)
-    // Start with MINIMAL required fields to isolate signature issue
-    const requestData: Record<string, string> = {
+    // NOTE: Some Cardstream setups reject GET querystring submissions and require POST.
+    // We'll return formAction + formFields so the frontend can POST as x-www-form-urlencoded.
+    const formFields: Record<string, string> = {
       merchantID: merchantAlias,
       action: "SALE",
       type: "1",
-      countryCode: "826", // UK
-      currencyCode: "826", // GBP
-      amount: amountInPence.toString(),
+      countryCode: "826",
+      currencyCode: "826",
+      amount: amountInMinorUnits.toString(),
       orderRef: orderReference,
-      transactionUnique: transactionUnique,
+      transactionUnique,
       redirectURL: returnUrl,
     };
 
-    // Add optional fields only if they have values
-    if (customerEmail) {
-      requestData.customerEmail = customerEmail;
-    }
-    if (customerName) {
-      requestData.customerName = customerName;
-    }
+    if (customerEmail) formFields.customerEmail = customerEmail;
+    if (customerName) formFields.customerName = customerName;
 
-    console.log("Request data (before signature):", JSON.stringify(requestData, null, 2));
+    console.log("Request fields (pre-signature):", JSON.stringify(formFields, null, 2));
 
-    // Calculate signature from all fields
-    const signature = await createSignature(requestData, secretKey);
-    
-    console.log("Generated signature:", signature.substring(0, 32) + "...");
-
-    // Add signature to the request
-    requestData.signature = signature;
+    const signature = await createSignature(formFields, secretKey);
+    formFields.signature = signature;
 
     // Cardstream HPP endpoint
-    const hppBaseUrl = "https://gateway.cardstream.com/hosted/";
+    const formAction = "https://gateway.cardstream.com/hosted/";
 
-    // Build the HPP URL with SAME encoding as signature calculation
-    const redirectUrl = buildRedirectUrl(hppBaseUrl, requestData);
-
-    console.log("Redirect URL (first 200 chars):", redirectUrl.substring(0, 200) + "...");
-    console.log("Cardstream HPP redirect URL generated for order:", orderReference);
+    // Keep legacy GET redirect for debugging/fallback.
+    const legacyRedirectUrl = `${formAction}?${new URLSearchParams(formFields).toString()}`;
 
     return new Response(
       JSON.stringify({
         success: true,
-        redirectUrl: redirectUrl,
         transactionId: transactionUnique,
+        formAction,
+        formFields,
+        redirectUrl: legacyRedirectUrl,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -169,10 +128,7 @@ serve(async (req: Request) => {
     console.error("Cardstream checkout error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
-      JSON.stringify({ 
-        error: "Failed to process checkout",
-        details: errorMessage 
-      }),
+      JSON.stringify({ error: "Failed to process checkout", details: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
