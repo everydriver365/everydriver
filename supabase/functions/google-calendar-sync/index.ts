@@ -171,10 +171,10 @@ async function fetchExternalEvents(
   instructorId: string
 ): Promise<{ synced: number; deleted: number }> {
   const now = new Date();
-  const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
 
   const timeMin = now.toISOString();
-  const timeMax = thirtyDaysLater.toISOString();
+  const timeMax = oneYearLater.toISOString();
 
   console.log(`Fetching external events for instructor ${instructorId} from ${timeMin} to ${timeMax}`);
 
@@ -187,7 +187,7 @@ async function fetchExternalEvents(
         timeMax,
         singleEvents: "true",
         orderBy: "startTime",
-        maxResults: "250",
+        maxResults: "2500",
       }),
       {
         headers: {
