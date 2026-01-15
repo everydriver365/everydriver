@@ -43,15 +43,15 @@ export default function BookingConfirmation() {
   const [searchParams] = useSearchParams();
   const pupilId = searchParams.get("pupilId");
   
-  // Elavon Converge response parameters
-  const sslResult = searchParams.get("ssl_result");
-  const sslResultMessage = searchParams.get("ssl_result_message");
-  const sslTxnId = searchParams.get("ssl_txn_id");
-  const sslApprovalCode = searchParams.get("ssl_approval_code");
-  const sslAmount = searchParams.get("ssl_amount");
+  // Cardstream response parameters
+  const responseCode = searchParams.get("responseCode");
+  const responseMessage = searchParams.get("responseMessage");
+  const transactionId = searchParams.get("xref") || searchParams.get("transactionUnique");
+  const authorisationCode = searchParams.get("authorisationCode");
+  const amountReceived = searchParams.get("amountReceived");
   
-  // Payment was successful if ssl_result is "0"
-  const paymentSuccessful = sslResult === "0" || sslResult === null; // null means direct booking without payment
+  // Payment was successful if responseCode is "0" (approved)
+  const paymentSuccessful = responseCode === "0" || responseCode === null; // null means direct booking without payment
   
   const [pupil, setPupil] = useState<PupilDetails | null>(null);
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
@@ -130,11 +130,11 @@ export default function BookingConfirmation() {
           </div>
           <h1 className="text-2xl font-bold text-destructive">Payment Failed</h1>
           <p className="mt-2 text-muted-foreground max-w-md mx-auto">
-            {sslResultMessage || "Your payment could not be processed. Please try again."}
+            {responseMessage || "Your payment could not be processed. Please try again."}
           </p>
-          {sslResult && (
+          {responseCode && (
             <p className="mt-2 text-sm text-muted-foreground">
-              Error code: {sslResult}
+              Error code: {responseCode}
             </p>
           )}
           <Button asChild className="mt-6">
@@ -180,15 +180,15 @@ export default function BookingConfirmation() {
           </motion.p>
 
           {/* Payment confirmation details */}
-          {sslTxnId && (
+          {transactionId && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
               className="mt-4 text-sm text-emerald-100"
             >
-              {sslAmount && <span>Payment of £{sslAmount} confirmed</span>}
-              {sslApprovalCode && <span className="ml-2">• Approval: {sslApprovalCode}</span>}
+              {amountReceived && <span>Payment of £{(parseInt(amountReceived) / 100).toFixed(2)} confirmed</span>}
+              {authorisationCode && <span className="ml-2">• Auth: {authorisationCode}</span>}
             </motion.div>
           )}
         </div>
