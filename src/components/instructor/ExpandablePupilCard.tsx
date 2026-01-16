@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Phone, 
@@ -14,11 +14,20 @@ import {
   Calendar,
   GraduationCap,
   FileText,
-  ExternalLink
+  ExternalLink,
+  MessageSquare,
+  Star,
+  Send,
+  Check,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { format, parseISO } from "date-fns";
 
 interface Pupil {
   id: string;
@@ -37,6 +46,13 @@ interface Pupil {
   account_balance?: number | null;
   prepaid_hours?: number | null;
   test_date?: string | null;
+}
+
+interface LatestFeedback {
+  id: string;
+  lesson_date: string;
+  notes: string | null;
+  rating: number | null;
 }
 
 interface ExpandablePupilCardProps {
@@ -65,6 +81,110 @@ export function ExpandablePupilCard({
   onViewReport,
 }: ExpandablePupilCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
+  const [isAddingFeedback, setIsAddingFeedback] = useState(false);
+  const [newFeedback, setNewFeedback] = useState("");
+  const [newRating, setNewRating] = useState(0);
+  const [savingFeedback, setSavingFeedback] = useState(false);
+
+  // Fetch latest feedback when card expands
+  useEffect(() => {
+    if (isExpanded) {
+      fetchLatestFeedback();
+    }
+  }, [isExpanded, pupil.id]);
+
+  const fetchLatestFeedback = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("lesson_history")
+        .select("id, lesson_date, notes, rating")
+        .eq("pupil_id", pupil.id)
+        .order("lesson_date", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!error && data) {
+        setLatestFeedback(data);
+      }
+    } catch (error) {
+      // No feedback yet is fine
+    }
+  };
+
+  const handleSaveFeedback = async () => {
+    if (!newFeedback.trim()) {
+      toast.error("Please enter feedback");
+      return;
+    }
+
+    setSavingFeedback(true);
+    try {
+      // Get instructor_id from an existing lesson or context
+      const { data: existingLesson } = await supabase
+        .from("lesson_history")
+        .select("instructor_id")
+        .eq("pupil_id", pupil.id)
+        .limit(1)
+        .single();
+
+      const instructorId = existingLesson?.instructor_id;
+
+      if (!instructorId) {
+        // Try to get from scheduled lessons
+        const { data: scheduled } = await supabase
+          .from("scheduled_lessons")
+          .select("instructor_id")
+          .eq("pupil_id", pupil.id)
+          .limit(1)
+          .single();
+
+        if (!scheduled?.instructor_id) {
+          toast.error("Unable to find instructor");
+          return;
+        }
+
+        // Create new lesson feedback
+        const { error } = await supabase
+          .from("lesson_history")
+          .insert({
+            pupil_id: pupil.id,
+            instructor_id: scheduled.instructor_id,
+            lesson_date: format(new Date(), "yyyy-MM-dd"),
+            duration_minutes: 0,
+            notes: newFeedback,
+            rating: newRating > 0 ? newRating : null,
+          });
+
+        if (error) throw error;
+      } else {
+        // Create new lesson feedback with existing instructor
+        const { error } = await supabase
+          .from("lesson_history")
+          .insert({
+            pupil_id: pupil.id,
+            instructor_id: instructorId,
+            lesson_date: format(new Date(), "yyyy-MM-dd"),
+            duration_minutes: 0,
+            notes: newFeedback,
+            rating: newRating > 0 ? newRating : null,
+          });
+
+        if (error) throw error;
+      }
+
+      toast.success("Feedback saved! Visible to pupil & parents");
+      setIsAddingFeedback(false);
+      setNewFeedback("");
+      setNewRating(0);
+      fetchLatestFeedback();
+    } catch (error) {
+      console.error("Error saving feedback:", error);
+      toast.error("Failed to save feedback");
+    } finally {
+      setSavingFeedback(false);
+    }
+  };
 
   const getInitials = (name: string) => {
     return name.split(" ").map((n) => n[0]).join("").toUpperCase();
@@ -230,7 +350,127 @@ export function ExpandablePupilCard({
                 </div>
               )}
 
-              {/* Action Buttons - Top Row */}
+              {/* Lesson Feedback Section */}
+              <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">Lesson Feedback</span>
+                  </div>
+                  {!isAddingFeedback && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsAddingFeedback(true);
+                      }}
+                    >
+                      <Send className="h-3 w-3 mr-1" />
+                      Add Feedback
+                    </Button>
+                  )}
+                </div>
+
+                {/* Latest Feedback Display */}
+                {latestFeedback?.notes && !isAddingFeedback && (
+                  <div className="bg-background/60 rounded-lg p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {format(parseISO(latestFeedback.lesson_date), 'EEE, d MMM')}
+                      </span>
+                      {latestFeedback.rating && (
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-3 w-3 ${star <= latestFeedback.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted'}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm text-foreground">{latestFeedback.notes}</p>
+                    <p className="text-xs text-muted-foreground italic">
+                      Visible to pupil & parents
+                    </p>
+                  </div>
+                )}
+
+                {!latestFeedback?.notes && !isAddingFeedback && (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    No feedback yet. Add your first lesson note!
+                  </p>
+                )}
+
+                {/* Add Feedback Form */}
+                {isAddingFeedback && (
+                  <div className="space-y-3">
+                    <Textarea
+                      placeholder="How did the lesson go? What should they focus on next?"
+                      value={newFeedback}
+                      onChange={(e) => setNewFeedback(e.target.value)}
+                      className="min-h-[80px] text-sm"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    
+                    {/* Star Rating */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Rating:</span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setNewRating(star === newRating ? 0 : star);
+                            }}
+                            className="p-0.5"
+                          >
+                            <Star
+                              className={`h-5 w-5 transition-colors ${star <= newRating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground hover:text-amber-300'}`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsAddingFeedback(false);
+                          setNewFeedback("");
+                          setNewRating(0);
+                        }}
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSaveFeedback();
+                        }}
+                        disabled={savingFeedback}
+                      >
+                        {savingFeedback ? (
+                          <Clock className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <Check className="h-4 w-4 mr-1" />
+                        )}
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-4 gap-2">
                 <Button
                   variant="outline"
