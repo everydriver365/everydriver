@@ -56,19 +56,24 @@ export function KlarnaExpressButton({
   const initAttemptedRef = useRef(false);
   const sdkLoadedRef = useRef(false);
 
+  const amountInMinorUnits = Math.round(amount * 100);
+  
   const orderPayload = {
     purchase_country: "GB",
     purchase_currency: currency,
     locale: "en-GB",
-    order_amount: Math.round(amount * 100),
+    order_amount: amountInMinorUnits,
+    order_tax_amount: 0, // VAT-inclusive or exempt services
     order_lines: [
       {
-        type: "physical",
+        type: "digital", // Driving lessons are services
         reference: merchantReference,
-        name: orderDescription,
+        name: orderDescription.substring(0, 255), // Max 255 chars
         quantity: 1,
-        unit_price: Math.round(amount * 100),
-        total_amount: Math.round(amount * 100),
+        unit_price: amountInMinorUnits,
+        tax_rate: 0,
+        total_amount: amountInMinorUnits,
+        total_tax_amount: 0,
       },
     ],
     merchant_reference1: merchantReference,
