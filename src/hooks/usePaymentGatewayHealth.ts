@@ -12,6 +12,7 @@ interface PaymentHealthResponse {
   klarna: GatewayStatus;
   npi: GatewayStatus;
   square: GatewayStatus;
+  elavon: GatewayStatus;
 }
 
 // CONFIRMED WORKING gateways - Square has credential issues
@@ -20,6 +21,7 @@ const defaultHealth: PaymentHealthResponse = {
   klarna: { available: true, configured: true },
   npi: { available: true, configured: true },
   square: { available: false, configured: true, error: "Credentials not configured for production" },
+  elavon: { available: true, configured: true },
 };
 
 export function usePaymentGatewayHealth() {
@@ -27,7 +29,7 @@ export function usePaymentGatewayHealth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now, use hardcoded defaults since we know Square/Klarna have credential issues
+    // For now, use hardcoded defaults since we know Square has credential issues
     // The health check API exists but doesn't validate credentials actually work
     setHealth(defaultHealth);
     setLoading(false);
