@@ -1444,6 +1444,15 @@ export type Database = {
         Row: {
           avg_speed_kmh: number | null
           created_at: string
+          damoov_acceleration_score: number | null
+          damoov_braking_score: number | null
+          damoov_cornering_score: number | null
+          damoov_crash_detected: boolean | null
+          damoov_crash_timestamp: string | null
+          damoov_overall_score: number | null
+          damoov_phone_score: number | null
+          damoov_speeding_score: number | null
+          damoov_trip_token: string | null
           ended_at: string | null
           id: string
           instructor_id: string
@@ -1456,6 +1465,15 @@ export type Database = {
         Insert: {
           avg_speed_kmh?: number | null
           created_at?: string
+          damoov_acceleration_score?: number | null
+          damoov_braking_score?: number | null
+          damoov_cornering_score?: number | null
+          damoov_crash_detected?: boolean | null
+          damoov_crash_timestamp?: string | null
+          damoov_overall_score?: number | null
+          damoov_phone_score?: number | null
+          damoov_speeding_score?: number | null
+          damoov_trip_token?: string | null
           ended_at?: string | null
           id?: string
           instructor_id: string
@@ -1468,6 +1486,15 @@ export type Database = {
         Update: {
           avg_speed_kmh?: number | null
           created_at?: string
+          damoov_acceleration_score?: number | null
+          damoov_braking_score?: number | null
+          damoov_cornering_score?: number | null
+          damoov_crash_detected?: boolean | null
+          damoov_crash_timestamp?: string | null
+          damoov_overall_score?: number | null
+          damoov_phone_score?: number | null
+          damoov_speeding_score?: number | null
+          damoov_trip_token?: string | null
           ended_at?: string | null
           id?: string
           instructor_id?: string
@@ -1681,17 +1708,72 @@ export type Database = {
         }
         Relationships: []
       }
+      pupil_leaderboard: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          pupil_id: string
+          rank: number | null
+          updated_at: string
+          week_start: string
+          weekly_coins_earned: number | null
+          weekly_score: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          pupil_id: string
+          rank?: number | null
+          updated_at?: string
+          week_start: string
+          weekly_coins_earned?: number | null
+          weekly_score?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+          rank?: number | null
+          updated_at?: string
+          week_start?: string
+          weekly_coins_earned?: number | null
+          weekly_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_leaderboard_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_leaderboard_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupils: {
         Row: {
           account_balance: number | null
           address: string
           course_type: string | null
           created_at: string
+          current_streak: number | null
+          damoov_device_token: string | null
+          drive_coins: number | null
           email: string | null
           enquiry_id: string | null
           id: string
           instructor_id: string
           lessons_completed: number | null
+          longest_streak: number | null
           name: string
           next_lesson: string | null
           notes: string | null
@@ -1702,6 +1784,7 @@ export type Database = {
           test_centre_id: string | null
           test_date: string | null
           test_time: string | null
+          total_trips: number | null
           updated_at: string
           what3words: string | null
         }
@@ -1710,11 +1793,15 @@ export type Database = {
           address: string
           course_type?: string | null
           created_at?: string
+          current_streak?: number | null
+          damoov_device_token?: string | null
+          drive_coins?: number | null
           email?: string | null
           enquiry_id?: string | null
           id?: string
           instructor_id: string
           lessons_completed?: number | null
+          longest_streak?: number | null
           name: string
           next_lesson?: string | null
           notes?: string | null
@@ -1725,6 +1812,7 @@ export type Database = {
           test_centre_id?: string | null
           test_date?: string | null
           test_time?: string | null
+          total_trips?: number | null
           updated_at?: string
           what3words?: string | null
         }
@@ -1733,11 +1821,15 @@ export type Database = {
           address?: string
           course_type?: string | null
           created_at?: string
+          current_streak?: number | null
+          damoov_device_token?: string | null
+          drive_coins?: number | null
           email?: string | null
           enquiry_id?: string | null
           id?: string
           instructor_id?: string
           lessons_completed?: number | null
+          longest_streak?: number | null
           name?: string
           next_lesson?: string | null
           notes?: string | null
@@ -1748,6 +1840,7 @@ export type Database = {
           test_centre_id?: string | null
           test_date?: string | null
           test_time?: string | null
+          total_trips?: number | null
           updated_at?: string
           what3words?: string | null
         }
