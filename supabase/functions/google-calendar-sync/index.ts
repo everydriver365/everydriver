@@ -141,6 +141,56 @@ async function createCalendarEvent(
   }
 }
 
+async function updateCalendarEvent(
+  accessToken: string,
+  calendarId: string,
+  eventId: string,
+  event: LessonEvent
+): Promise<boolean> {
+  const startDateTime = `${event.date}T${event.startTime}:00`;
+  const endDateTime = `${event.date}T${event.endTime}:00`;
+
+  const calendarEvent = {
+    summary: `🚗 Lesson: ${event.pupilName}`,
+    description: `Driving lesson with ${event.pupilName}\nDuration: ${event.duration} minutes\nPickup: ${event.pickupLocation}`,
+    location: event.pickupLocation,
+    start: {
+      dateTime: startDateTime,
+      timeZone: "Europe/London",
+    },
+    end: {
+      dateTime: endDateTime,
+      timeZone: "Europe/London",
+    },
+    transparency: "opaque",
+  };
+
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(calendarEvent),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to update calendar event:", errorText);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error updating calendar event:", error);
+    return false;
+  }
+}
+
 async function deleteCalendarEvent(
   accessToken: string,
   calendarId: string,
@@ -160,6 +210,102 @@ async function deleteCalendarEvent(
     return response.ok || response.status === 404; // 404 means already deleted
   } catch (error) {
     console.error("Error deleting calendar event:", error);
+    return false;
+  }
+}
+
+async function setupWebhookChannel(
+  supabase: any,
+  accessToken: string,
+  calendarId: string,
+  instructorId: string,
+  webhookUrl: string
+): Promise<{ success: boolean; channelId?: string; expiration?: string }> {
+  // Generate a unique channel ID
+  const channelId = `instructor-${instructorId}-${Date.now()}`;
+  
+  // Watch channels expire after max 7 days, we'll set for 6 days to renew before expiry
+  const expiration = Date.now() + 6 * 24 * 60 * 60 * 1000;
+
+  console.log(`Setting up webhook channel ${channelId} for instructor ${instructorId}`);
+
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/watch`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: channelId,
+          type: "web_hook",
+          address: webhookUrl,
+          expiration: expiration.toString(),
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to setup webhook channel:", errorText);
+      return { success: false };
+    }
+
+    const watchData = await response.json();
+    console.log("Webhook channel created:", watchData);
+
+    // Store the channel info for later management
+    const { error: upsertError } = await supabase
+      .from("calendar_webhook_channels")
+      .upsert({
+        instructor_id: instructorId,
+        channel_id: watchData.id,
+        resource_id: watchData.resourceId,
+        expiration: new Date(parseInt(watchData.expiration)).toISOString(),
+      }, { onConflict: "instructor_id" });
+
+    if (upsertError) {
+      console.error("Error storing channel info:", upsertError);
+    }
+
+    return {
+      success: true,
+      channelId: watchData.id,
+      expiration: new Date(parseInt(watchData.expiration)).toISOString(),
+    };
+  } catch (error) {
+    console.error("Error setting up webhook:", error);
+    return { success: false };
+  }
+}
+
+async function stopWebhookChannel(
+  accessToken: string,
+  channelId: string,
+  resourceId: string
+): Promise<boolean> {
+  try {
+    const response = await fetch(
+      "https://www.googleapis.com/calendar/v3/channels/stop",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: channelId,
+          resourceId: resourceId,
+        }),
+      }
+    );
+
+    // 404 is okay - means channel already stopped
+    return response.ok || response.status === 404;
+  } catch (error) {
+    console.error("Error stopping webhook channel:", error);
     return false;
   }
 }
@@ -221,7 +367,7 @@ async function fetchExternalEvents(
       .select("google_event_id")
       .eq("instructor_id", instructorId);
 
-  const existingExternalIds = new Set<string>((existingExternalEvents || []).map((e: any) => e.google_event_id as string));
+    const existingExternalIds = new Set<string>((existingExternalEvents || []).map((e: any) => e.google_event_id as string));
 
     // Filter to only external busy events (not created by our platform)
     const externalBusyEvents = events.filter((event) => {
@@ -305,7 +451,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, instructorId, lessons, lessonId } = await req.json();
+    const { action, instructorId, lessons, lessonId, lesson } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -340,33 +486,33 @@ serve(async (req) => {
       // Sync multiple lessons to calendar
       const results = [];
 
-      for (const lesson of lessons as LessonEvent[]) {
+      for (const lessonItem of lessons as LessonEvent[]) {
         // Check if already synced
         const { data: existingEvent } = await supabase
           .from("calendar_events")
           .select("google_event_id")
-          .eq("lesson_id", lesson.lessonId)
+          .eq("lesson_id", lessonItem.lessonId)
           .maybeSingle();
 
         if (existingEvent) {
-          results.push({ lessonId: lesson.lessonId, status: "already_synced" });
+          results.push({ lessonId: lessonItem.lessonId, status: "already_synced" });
           continue;
         }
 
-        const eventId = await createCalendarEvent(accessToken, calendarId, lesson);
+        const eventId = await createCalendarEvent(accessToken, calendarId, lessonItem);
 
         if (eventId) {
           // Store the event mapping
           await supabase.from("calendar_events").insert({
             instructor_id: instructorId,
-            lesson_id: lesson.lessonId,
+            lesson_id: lessonItem.lessonId,
             google_event_id: eventId,
             event_type: "lesson",
           });
 
-          results.push({ lessonId: lesson.lessonId, status: "synced", eventId });
+          results.push({ lessonId: lessonItem.lessonId, status: "synced", eventId });
         } else {
-          results.push({ lessonId: lesson.lessonId, status: "failed" });
+          results.push({ lessonId: lessonItem.lessonId, status: "failed" });
         }
       }
 
@@ -380,6 +526,38 @@ serve(async (req) => {
         JSON.stringify({ success: true, results }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    if (action === "updateLesson") {
+      // Update an existing lesson in Google Calendar
+      const { data: eventData } = await supabase
+        .from("calendar_events")
+        .select("google_event_id")
+        .eq("lesson_id", lessonId)
+        .maybeSingle();
+
+      if (eventData) {
+        const updated = await updateCalendarEvent(accessToken, calendarId, eventData.google_event_id, lesson);
+        return new Response(
+          JSON.stringify({ success: updated }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } else {
+        // No existing event, create new one
+        const eventId = await createCalendarEvent(accessToken, calendarId, lesson);
+        if (eventId) {
+          await supabase.from("calendar_events").insert({
+            instructor_id: instructorId,
+            lesson_id: lessonId,
+            google_event_id: eventId,
+            event_type: "lesson",
+          });
+        }
+        return new Response(
+          JSON.stringify({ success: !!eventId, eventId }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     if (action === "deleteLesson") {
@@ -416,6 +594,55 @@ serve(async (req) => {
       );
     }
 
+    if (action === "setupWebhook") {
+      // Setup push notifications for real-time sync
+      const webhookUrl = `${supabaseUrl}/functions/v1/google-calendar-webhook`;
+      
+      // First, stop any existing channel
+      const { data: existingChannel } = await supabase
+        .from("calendar_webhook_channels")
+        .select("channel_id, resource_id")
+        .eq("instructor_id", instructorId)
+        .maybeSingle();
+
+      if (existingChannel) {
+        await stopWebhookChannel(accessToken, existingChannel.channel_id, existingChannel.resource_id);
+        await supabase
+          .from("calendar_webhook_channels")
+          .delete()
+          .eq("instructor_id", instructorId);
+      }
+
+      const result = await setupWebhookChannel(supabase, accessToken, calendarId, instructorId, webhookUrl);
+
+      return new Response(
+        JSON.stringify(result),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "stopWebhook") {
+      // Stop push notifications
+      const { data: existingChannel } = await supabase
+        .from("calendar_webhook_channels")
+        .select("channel_id, resource_id")
+        .eq("instructor_id", instructorId)
+        .maybeSingle();
+
+      if (existingChannel) {
+        await stopWebhookChannel(accessToken, existingChannel.channel_id, existingChannel.resource_id);
+        await supabase
+          .from("calendar_webhook_channels")
+          .delete()
+          .eq("instructor_id", instructorId);
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "checkConnection") {
       // Verify calendar connection is working
       try {
@@ -436,13 +663,24 @@ serve(async (req) => {
             .eq("instructor_id", instructorId)
             .eq("is_busy", true);
 
+          // Check if webhook is active
+          const { data: webhookChannel } = await supabase
+            .from("calendar_webhook_channels")
+            .select("channel_id, expiration")
+            .eq("instructor_id", instructorId)
+            .maybeSingle();
+
+          const webhookActive = webhookChannel && new Date(webhookChannel.expiration) > new Date();
+
           return new Response(
             JSON.stringify({ 
               connected: true, 
               calendarName: calendar.summary,
               calendarId: calendar.id,
               lastExternalSync: tokenData.last_external_sync,
-              externalEventCount: count || 0
+              externalEventCount: count || 0,
+              webhookActive,
+              webhookExpiration: webhookChannel?.expiration || null
             }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
