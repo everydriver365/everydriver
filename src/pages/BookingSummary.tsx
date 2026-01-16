@@ -637,8 +637,12 @@ export default function BookingSummary() {
         return;
       }
 
-      if (data?.orderId) {
-        // Store WooCommerce order details and show in-app payment options
+      if (data?.checkoutUrl) {
+        // Redirect directly to WooCommerce checkout page
+        toast.success("Redirecting to payment...");
+        window.location.href = data.checkoutUrl;
+      } else if (data?.orderId) {
+        // Fallback: Store WooCommerce order details and show in-app payment options
         setWooOrder({
           orderId: data.orderId,
           orderKey: data.orderKey,
