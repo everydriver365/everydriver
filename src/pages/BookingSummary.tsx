@@ -121,6 +121,7 @@ export default function BookingSummary() {
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
   const [isNPILoading, setIsNPILoading] = useState(false);
   const [isSquareLoading, setIsSquareLoading] = useState(false);
+  const [isElavonLoading, setIsElavonLoading] = useState(false);
   const [isWooLoading, setIsWooLoading] = useState(false);
   const [bookingPupilId, setBookingPupilId] = useState<string | null>(null);
   
@@ -608,6 +609,69 @@ export default function BookingSummary() {
       toast.error("Something went wrong with Square. Please try again.");
     } finally {
       setIsSquareLoading(false);
+    }
+  };
+
+  const handleElavonCheckout = async () => {
+    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
+      toast.error("Please complete all details and schedule all lessons first");
+      return;
+    }
+
+    setIsElavonLoading(true);
+    try {
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+
+      const orderReference = `ELV-${instructor.id.slice(0, 8)}-${Date.now()}`;
+      const currentUrl = window.location.origin;
+
+      const { data, error } = await supabase.functions.invoke("elavon-checkout", {
+        body: {
+          amount: totalPrice,
+          orderReference,
+          customerEmail: pupilEmail.trim(),
+          customerName: pupilName.trim(),
+          description: `${courseName} - ${hours} Hour Driving Course`,
+          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&elavon=success&ref=${orderReference}`,
+          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&elavon=cancelled`,
+          instructorId: instructor.id,
+          pupilId: pupilId,
+        },
+      });
+
+      if (error) {
+        console.error("Elavon checkout error:", error);
+        toast.error("Failed to start Elavon checkout. Please try again.");
+        return;
+      }
+
+      // Elavon HPP requires form POST submission (same as NPI)
+      if (data?.formAction && data?.formFields) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.formAction;
+        form.style.display = 'none';
+
+        for (const [key, value] of Object.entries(data.formFields)) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        toast.success("Redirecting to payment page...");
+        form.submit();
+      } else {
+        toast.error("Could not get Elavon payment form data");
+      }
+    } catch (err) {
+      console.error("Elavon error:", err);
+      toast.error("Something went wrong with Elavon. Please try again.");
+    } finally {
+      setIsElavonLoading(false);
     }
   };
 
@@ -1606,6 +1670,37 @@ export default function BookingSummary() {
                 </div>
                 <div className="font-semibold text-sm text-muted-foreground">3 × £{(totalPrice / 3).toFixed(2)}</div>
                 <div className="text-xs text-muted-foreground">Interest-free instalments</div>
+              </div>
+            )}
+
+            {/* Elavon Card Payment */}
+            {gatewayHealth.elavon.available ? (
+              <button
+                onClick={handleElavonCheckout}
+                disabled={!canSubmit || isElavonLoading}
+                className="w-full rounded-lg border p-4 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-950/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
+                    Elavon
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {isElavonLoading ? "Loading..." : "Pay now"}
+                  </span>
+                </div>
+                <div className="font-semibold text-sm">Pay by Card</div>
+                <div className="text-xs text-muted-foreground">Visa, Mastercard, Amex</div>
+              </button>
+            ) : (
+              <div className="w-full rounded-lg border border-dashed p-4 bg-muted/30 text-left opacity-60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    Elavon
+                  </span>
+                  <span className="text-xs text-amber-600">Coming Soon</span>
+                </div>
+                <div className="font-semibold text-sm text-muted-foreground">Pay by Card</div>
+                <div className="text-xs text-muted-foreground">Visa, Mastercard, Amex</div>
               </div>
             )}
           </div>
