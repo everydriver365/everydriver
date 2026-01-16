@@ -14,10 +14,10 @@ interface PaymentHealthResponse {
   square: GatewayStatus;
 }
 
-// CONFIRMED WORKING gateways only - Square and Klarna have credential issues
+// CONFIRMED WORKING gateways - Square has credential issues
 const defaultHealth: PaymentHealthResponse = {
   clearpay: { available: true, configured: true },
-  klarna: { available: false, configured: true, error: "Credentials not configured for production" },
+  klarna: { available: true, configured: true },
   npi: { available: true, configured: true },
   square: { available: false, configured: true, error: "Credentials not configured for production" },
 };
