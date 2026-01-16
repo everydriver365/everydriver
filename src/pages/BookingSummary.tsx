@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote } from "lucide-react";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -14,6 +14,7 @@ import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaPaymentWidget } from "@/components/booking/KlarnaPaymentWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
 
 interface Instructor {
@@ -105,6 +106,9 @@ export default function BookingSummary() {
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [reviews, setReviews] = useState<CourseReview[]>([]);
   const [locationName, setLocationName] = useState<string>("");
+  
+  // Payment gateway health
+  const { health: gatewayHealth } = usePaymentGatewayHealth();
   
   // Pupil details form state
   const [pupilName, setPupilName] = useState("");
@@ -511,6 +515,7 @@ export default function BookingSummary() {
           returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&npi=success&ref=${orderReference}`,
           cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
           instructorId: instructor.id,
+          pupilId: pupilId, // Pass pupilId for callback to record payment
         },
       });
 
@@ -1172,47 +1177,33 @@ export default function BookingSummary() {
               </div>
             </button>
 
-            {/* Square Card Payment */}
+            {/* NPI Card Payment - Confirmed Working */}
             <button
-              onClick={handleSquareCheckout}
-              disabled={!canSubmit || isSquareLoading}
-              className="w-full rounded-lg border-2 border-primary p-4 bg-primary/5 hover:bg-primary/10 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleNPICheckout}
+              disabled={!canSubmit || isNPILoading || !gatewayHealth.npi.available}
+              className="w-full rounded-lg border-2 border-emerald-500 p-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 hover:from-emerald-100 hover:to-green-100 dark:hover:from-emerald-950/50 dark:hover:to-green-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed relative"
             >
+              <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                Recommended
+              </div>
               <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-primary px-2 py-0.5 text-xs font-bold text-white">
+                <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white flex items-center gap-1">
+                  <Banknote className="h-3 w-3" />
                   Card
                 </span>
-                <span className="text-xs text-muted-foreground">
-                  {isSquareLoading ? "Loading..." : "Pay now"}
+                <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                  {isNPILoading ? "Loading..." : "Secure Payment"}
                 </span>
               </div>
-              <div className="font-semibold text-sm">Pay by Card</div>
-              <div className="text-xs text-muted-foreground">Visa, Mastercard, Apple Pay, Google Pay</div>
+              <div className="font-semibold text-sm text-emerald-900 dark:text-emerald-100">Pay by Debit/Credit Card</div>
+              <div className="text-xs text-emerald-700/80 dark:text-emerald-300/80">Visa, Mastercard, Amex</div>
             </button>
 
-            {/* Klarna */}
-            <button
-              onClick={handleKlarnaCheckout}
-              disabled={!canSubmit || isKlarnaLoading}
-              className="w-full rounded-lg border p-4 bg-[#ffb3c7]/10 hover:bg-[#ffb3c7]/20 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
-                  Klarna.
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {isKlarnaLoading ? "Loading..." : "Pay in 3"}
-                </span>
-              </div>
-              <div className="font-semibold text-sm">3 × £{(totalPrice / 3).toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground">Interest-free instalments</div>
-            </button>
-
-            {/* Clearpay */}
+            {/* Clearpay - Confirmed Working */}
             <button
               onClick={handleClearpayCheckout}
-              disabled={!canSubmit || isClearpayLoading}
-              className="w-full rounded-lg border p-4 bg-[#b2fce4]/10 hover:bg-[#b2fce4]/20 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available}
+              className="w-full rounded-lg border-2 border-[#b2fce4] p-4 bg-[#b2fce4]/10 hover:bg-[#b2fce4]/20 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
@@ -1225,6 +1216,68 @@ export default function BookingSummary() {
               <div className="font-semibold text-sm">4 × £{(totalPrice / 4).toFixed(2)}</div>
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
             </button>
+
+            {/* Square Card Payment - Needs Credential Fix */}
+            {gatewayHealth.square.available ? (
+              <button
+                onClick={handleSquareCheckout}
+                disabled={!canSubmit || isSquareLoading}
+                className="w-full rounded-lg border p-4 bg-primary/5 hover:bg-primary/10 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-primary px-2 py-0.5 text-xs font-bold text-white">
+                    Square
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {isSquareLoading ? "Loading..." : "Pay now"}
+                  </span>
+                </div>
+                <div className="font-semibold text-sm">Pay with Apple/Google Pay</div>
+                <div className="text-xs text-muted-foreground">Digital wallets supported</div>
+              </button>
+            ) : (
+              <div className="w-full rounded-lg border border-dashed p-4 bg-muted/30 text-left opacity-60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    Square
+                  </span>
+                  <span className="text-xs text-amber-600">Coming Soon</span>
+                </div>
+                <div className="font-semibold text-sm text-muted-foreground">Apple Pay / Google Pay</div>
+                <div className="text-xs text-muted-foreground">Digital wallets</div>
+              </div>
+            )}
+
+            {/* Klarna - Needs Credential Fix */}
+            {gatewayHealth.klarna.available ? (
+              <button
+                onClick={handleKlarnaCheckout}
+                disabled={!canSubmit || isKlarnaLoading}
+                className="w-full rounded-lg border p-4 bg-[#ffb3c7]/10 hover:bg-[#ffb3c7]/20 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
+                    Klarna.
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {isKlarnaLoading ? "Loading..." : "Pay in 3"}
+                  </span>
+                </div>
+                <div className="font-semibold text-sm">3 × £{(totalPrice / 3).toFixed(2)}</div>
+                <div className="text-xs text-muted-foreground">Interest-free instalments</div>
+              </button>
+            ) : (
+              <div className="w-full rounded-lg border border-dashed p-4 bg-muted/30 text-left opacity-60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-[#ffb3c7]/50 px-2 py-0.5 text-xs font-bold text-muted-foreground">
+                    Klarna.
+                  </span>
+                  <span className="text-xs text-amber-600">Coming Soon</span>
+                </div>
+                <div className="font-semibold text-sm text-muted-foreground">3 × £{(totalPrice / 3).toFixed(2)}</div>
+                <div className="text-xs text-muted-foreground">Interest-free instalments</div>
+              </div>
+            )}
           </div>
 
           {/* Klarna Inline Widget */}
