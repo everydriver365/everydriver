@@ -322,84 +322,75 @@ async function fetchExternalEvents(
   const timeMin = now.toISOString();
   const timeMax = oneYearLater.toISOString();
 
-  console.log(`Fetching external events for instructor ${instructorId} from ${timeMin} to ${timeMax}`);
+  console.log(`Fetching busy times for instructor ${instructorId} from ${timeMin} to ${timeMax}`);
 
   try {
-    // Fetch events from Google Calendar
+    // Use FreeBusy API - only requires calendar.freebusy scope (less sensitive)
     const response = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?` +
-      new URLSearchParams({
-        timeMin,
-        timeMax,
-        singleEvents: "true",
-        orderBy: "startTime",
-        maxResults: "2500",
-      }),
+      "https://www.googleapis.com/calendar/v3/freeBusy",
       {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          timeMin,
+          timeMax,
+          items: [{ id: calendarId }],
+        }),
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Failed to fetch calendar events:", errorText);
-      throw new Error("Failed to fetch calendar events");
+      console.error("Failed to fetch free/busy times:", errorText);
+      throw new Error("Failed to fetch free/busy times");
     }
 
     const data = await response.json();
-    const events: GoogleCalendarEvent[] = data.items || [];
+    const busyPeriods = data.calendars?.[calendarId]?.busy || [];
 
-    console.log(`Fetched ${events.length} events from Google Calendar`);
+    console.log(`Fetched ${busyPeriods.length} busy periods from Google Calendar`);
 
-    // Get existing platform-created events to exclude them
+    // Get existing platform-created events to exclude their time slots
     const { data: platformEvents } = await supabase
       .from("calendar_events")
       .select("google_event_id")
       .eq("instructor_id", instructorId);
 
-    const platformEventIds = new Set((platformEvents || []).map((e: any) => e.google_event_id));
-
     // Get existing external events for this instructor
     const { data: existingExternalEvents } = await supabase
       .from("instructor_calendar_events")
-      .select("google_event_id")
+      .select("id, start_time, end_time")
       .eq("instructor_id", instructorId);
 
-    const existingExternalIds = new Set<string>((existingExternalEvents || []).map((e: any) => e.google_event_id as string));
+    const existingPeriods = new Map<string, string>();
+    for (const event of existingExternalEvents || []) {
+      const key = `${event.start_time}_${event.end_time}`;
+      existingPeriods.set(key, event.id);
+    }
 
-    // Filter to only external busy events (not created by our platform)
-    const externalBusyEvents = events.filter((event) => {
-      // Skip events we created
-      if (platformEventIds.has(event.id)) return false;
-      
-      // Only include opaque (busy) events - transparent events show as "free"
-      if (event.transparency === "transparent") return false;
-      
-      // Must have start and end times
-      if (!event.start?.dateTime || !event.end?.dateTime) return false;
-      
-      return true;
-    });
-
-    console.log(`Found ${externalBusyEvents.length} external busy events`);
-
-    // Track which event IDs we're seeing in this sync
-    const currentEventIds = new Set<string>();
+    // Track which periods we're seeing in this sync
+    const currentPeriodKeys = new Set<string>();
 
     let syncedCount = 0;
 
-    // Upsert external events
-    for (const event of externalBusyEvents) {
-      currentEventIds.add(event.id);
+    // Upsert busy periods as blocking events
+    for (let i = 0; i < busyPeriods.length; i++) {
+      const period = busyPeriods[i];
+      const periodKey = `${period.start}_${period.end}`;
+      currentPeriodKeys.add(periodKey);
+
+      // Generate a consistent ID based on the time period
+      const syntheticEventId = `freebusy_${instructorId}_${i}_${new Date(period.start).getTime()}`;
 
       const eventData = {
         instructor_id: instructorId,
-        google_event_id: event.id,
-        title: event.summary || "Busy",
-        start_time: event.start!.dateTime,
-        end_time: event.end!.dateTime,
+        google_event_id: syntheticEventId,
+        title: "Busy", // FreeBusy API doesn't provide event titles (privacy)
+        start_time: period.start,
+        end_time: period.end,
         is_busy: true,
         synced_at: new Date().toISOString(),
       };
@@ -411,21 +402,20 @@ async function fetchExternalEvents(
         });
 
       if (error) {
-        console.error("Error upserting event:", error);
+        console.error("Error upserting busy period:", error);
       } else {
         syncedCount++;
       }
     }
 
-    // Delete events that no longer exist in Google Calendar
+    // Delete stale events that no longer match any busy period
     let deletedCount = 0;
-    for (const existingId of existingExternalIds) {
-      if (!currentEventIds.has(existingId)) {
+    for (const [key, id] of existingPeriods) {
+      if (!currentPeriodKeys.has(key)) {
         await supabase
           .from("instructor_calendar_events")
           .delete()
-          .eq("instructor_id", instructorId)
-          .eq("google_event_id", existingId);
+          .eq("id", id);
         deletedCount++;
       }
     }
@@ -436,11 +426,11 @@ async function fetchExternalEvents(
       .update({ last_external_sync: new Date().toISOString() })
       .eq("instructor_id", instructorId);
 
-    console.log(`Synced ${syncedCount} events, deleted ${deletedCount} stale events`);
+    console.log(`Synced ${syncedCount} busy periods, deleted ${deletedCount} stale entries`);
 
     return { synced: syncedCount, deleted: deletedCount };
   } catch (error) {
-    console.error("Error fetching external events:", error);
+    console.error("Error fetching busy times:", error);
     throw error;
   }
 }
