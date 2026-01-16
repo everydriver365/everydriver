@@ -41,13 +41,6 @@ const stats = [
   { icon: CreditCard, label: "Revenue (Month)", value: "£48,250", change: "+18%", trend: "up" },
 ];
 
-const recentUsers = [
-  { name: "Alex Thompson", type: "Pupil", joined: "2 hours ago", status: "active" },
-  { name: "Sarah Johnson", type: "Instructor", joined: "1 day ago", status: "pending" },
-  { name: "Mike Williams", type: "Pupil", joined: "2 days ago", status: "active" },
-  { name: "Emma Davis", type: "Parent", joined: "3 days ago", status: "active" },
-];
-
 const alerts = [
   { type: "warning", message: "3 instructors haven't updated availability", action: "Remind" },
   { type: "info", message: "12 pending payment approvals", action: "Review" },
@@ -177,13 +170,12 @@ export default function AdminPortal() {
               ))}
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-3">
+            <div className="grid gap-8">
               {/* Alerts */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="lg:col-span-2"
               >
                 <Card>
                   <CardHeader>
@@ -248,56 +240,6 @@ export default function AdminPortal() {
                         <span>Payments</span>
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              {/* Recent Users */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <UserPlus className="h-5 w-5 text-accent" />
-                      Recent Users
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {recentUsers.map((user) => (
-                        <div
-                          key={user.name}
-                          className="flex items-center gap-3 rounded-lg border p-3"
-                        >
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                            {user.name.split(" ").map((n) => n[0]).join("")}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{user.name}</span>
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-xs ${
-                                  user.status === "active"
-                                    ? "bg-success/10 text-success"
-                                    : "bg-warning/10 text-warning"
-                                }`}
-                              >
-                                {user.status}
-                              </span>
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {user.type} • {user.joined}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <Button variant="outline" className="mt-4 w-full">
-                      View All Users
-                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>
