@@ -54,8 +54,10 @@ export const useTelematics = (instructorId: string) => {
   const [gpsQuality, setGpsQuality] = useState<GPSQuality>({ status: 'unavailable', accuracy_m: null, message: 'GPS not active' });
   const [motionData, setMotionData] = useState<MotionData>({ acceleration: null, rotationRate: null, gForce: 0 });
   const [hasMotionPermission, setHasMotionPermission] = useState<boolean | null>(null);
+  const [isScreenAwake, setIsScreenAwake] = useState(false);
 
   const watchIdRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const lastPositionRef = useRef<GeolocationPosition | null>(null);
   const lastPositionTimeRef = useRef<number | null>(null);
   const speedHistoryRef = useRef<number[]>([]);
@@ -129,6 +131,57 @@ export const useTelematics = (instructorId: string) => {
     }
     return { status: 'unavailable', accuracy_m: accuracy, message: 'GPS too inaccurate - recording paused' };
   }, []);
+
+  // Request wake lock to keep screen on during tracking
+  const requestWakeLock = useCallback(async (): Promise<boolean> => {
+    if (!('wakeLock' in navigator)) {
+      console.log('Wake Lock API not supported');
+      return false;
+    }
+
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request('screen');
+      setIsScreenAwake(true);
+      console.log('Screen wake lock acquired');
+
+      // Handle visibility change - reacquire wake lock when page becomes visible again
+      wakeLockRef.current.addEventListener('release', () => {
+        console.log('Screen wake lock released');
+        setIsScreenAwake(false);
+      });
+
+      return true;
+    } catch (err) {
+      console.error('Failed to acquire wake lock:', err);
+      return false;
+    }
+  }, []);
+
+  // Release wake lock
+  const releaseWakeLock = useCallback(async () => {
+    if (wakeLockRef.current) {
+      try {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+        setIsScreenAwake(false);
+        console.log('Screen wake lock released manually');
+      } catch (err) {
+        console.error('Failed to release wake lock:', err);
+      }
+    }
+  }, []);
+
+  // Reacquire wake lock when page becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && isTracking && !wakeLockRef.current) {
+        await requestWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isTracking, requestWakeLock]);
 
   // Request motion permission (required on iOS)
   const requestMotionPermission = useCallback(async (): Promise<boolean> => {
@@ -342,6 +395,9 @@ export const useTelematics = (instructorId: string) => {
     }
 
     try {
+      // Request wake lock to keep screen on
+      await requestWakeLock();
+
       // Request motion permission on iOS
       const motionGranted = await requestMotionPermission();
       setHasMotionPermission(motionGranted);
@@ -497,7 +553,7 @@ export const useTelematics = (instructorId: string) => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start tracking');
     }
-  }, [instructorId, detectDrivingEvents, evaluateGPSQuality, calculateSpeedFromPositions, requestMotionPermission, handleDeviceMotion]);
+  }, [instructorId, detectDrivingEvents, evaluateGPSQuality, calculateSpeedFromPositions, requestMotionPermission, requestWakeLock, handleDeviceMotion]);
 
   // Stop tracking session
   const stopTracking = useCallback(async () => {
@@ -505,6 +561,9 @@ export const useTelematics = (instructorId: string) => {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
+
+    // Release wake lock
+    await releaseWakeLock();
 
     // Remove motion listener
     window.removeEventListener('devicemotion', handleDeviceMotion);
@@ -538,7 +597,7 @@ export const useTelematics = (instructorId: string) => {
     gForceHistoryRef.current = [];
     setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'GPS not active' });
     setMotionData({ acceleration: null, rotationRate: null, gForce: 0 });
-  }, [currentSession, totalDistance, handleDeviceMotion]);
+  }, [currentSession, totalDistance, handleDeviceMotion, releaseWakeLock]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -547,6 +606,10 @@ export const useTelematics = (instructorId: string) => {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
       window.removeEventListener('devicemotion', handleDeviceMotion);
+      // Release wake lock on unmount
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release();
+      }
     };
   }, [handleDeviceMotion]);
 
@@ -561,6 +624,7 @@ export const useTelematics = (instructorId: string) => {
     gpsQuality,
     motionData,
     hasMotionPermission,
+    isScreenAwake,
     startTracking,
     stopTracking
   };

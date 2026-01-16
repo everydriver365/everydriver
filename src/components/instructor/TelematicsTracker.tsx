@@ -61,6 +61,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     gpsQuality,
     motionData,
     hasMotionPermission,
+    isScreenAwake,
     startTracking,
     stopTracking
   } = useTelematics(instructorId);
@@ -431,10 +432,18 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
 
         {/* Status indicator */}
         {isTracking && (
-          <div className="flex items-center gap-2 text-sm text-green-600">
-            <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-            GPS tracking active
-            {hasMotionPermission && <span className="text-muted-foreground">+ Motion sensors</span>}
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2 text-green-600">
+              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+              GPS tracking active
+              {hasMotionPermission && <span className="text-muted-foreground">+ Motion</span>}
+            </div>
+            {isScreenAwake && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Smartphone className="h-3 w-3" />
+                Screen stays on
+              </span>
+            )}
           </div>
         )}
       </CardContent>
