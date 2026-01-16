@@ -30,7 +30,9 @@ serve(async (req: Request) => {
 
     const username = Deno.env.get("KLARNA_API_USERNAME");
     const password = Deno.env.get("KLARNA_API_PASSWORD");
-    const sandboxMode = Deno.env.get("KLARNA_SANDBOX") !== "false";
+    // Default to production since most merchants have live credentials
+    // Set KLARNA_SANDBOX=true explicitly for sandbox testing
+    const sandboxMode = Deno.env.get("KLARNA_SANDBOX") === "true";
 
     if (!username || !password) {
       console.error("Missing Klarna credentials");
