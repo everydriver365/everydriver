@@ -30,6 +30,7 @@ interface TelematicsTrackerProps {
   lessonId?: string;
   pupilId?: string;
   compact?: boolean;
+  onSessionEnd?: (telematicsId: string) => void;
 }
 
 // Component to auto-pan map to latest position
@@ -49,10 +50,18 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   instructorId,
   lessonId,
   pupilId,
-  compact = false
+  compact = false,
+  onSessionEnd
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
+  const [sessionSummary, setSessionSummary] = useState<{
+    distance: number;
+    duration: number;
+    eventCount: number;
+    score: number;
+  } | null>(null);
   
   const {
     isTracking,
@@ -68,9 +77,13 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     damoovScores,
     damoovProcessing,
     coinsEarned,
+    currentSession,
     startTracking,
     stopTracking
   } = useTelematics(instructorId);
+  
+  // Track session start time locally
+  const [trackingStartTime, setTrackingStartTime] = useState<Date | null>(null);
 
   // Show results when processing completes
   useEffect(() => {
@@ -79,27 +92,57 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     }
   }, [damoovScores, damoovProcessing]);
 
-  // Reset results when starting new tracking
-  const handleStartTracking = () => {
-    setShowResults(false);
-    startTracking(lessonId, pupilId);
-  };
-
-  const goodEvents = drivingEvents.filter(e => 
+  const goodEventsCount = drivingEvents.filter(e => 
     e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration' || e.event_type === 'smooth_cornering'
   ).length;
   
-  const badEvents = drivingEvents.filter(e => 
+  const badEventsCount = drivingEvents.filter(e => 
     e.event_type === 'harsh_brake' || e.event_type === 'harsh_acceleration' || 
     e.event_type === 'speeding' || e.event_type === 'sharp_turn' || e.event_type === 'hard_impact'
   ).length;
 
   // Enhanced scoring: weight events and consider distance
   const distanceKm = totalDistance > 0 ? totalDistance : 1;
-  const eventsPerKm = (badEvents / distanceKm);
-  const baseScore = 100 - (badEvents * 8) + (goodEvents * 3);
+  const eventsPerKm = (badEventsCount / distanceKm);
+  const baseScore = 100 - (badEventsCount * 8) + (goodEventsCount * 3);
   const consistencyBonus = eventsPerKm < 0.5 ? 5 : eventsPerKm < 1 ? 2 : 0;
   const drivingScore = Math.max(0, Math.min(100, baseScore + consistencyBonus));
+
+  // Reset results when starting new tracking
+  const handleStartTracking = () => {
+    setShowResults(false);
+    setSessionEnded(false);
+    setSessionSummary(null);
+    setTrackingStartTime(new Date());
+    startTracking(lessonId, pupilId);
+  };
+
+  // Handle stop tracking and show session summary
+  const handleStopTracking = async () => {
+    const startTime = trackingStartTime;
+    const finalDistance = totalDistance;
+    const finalEvents = drivingEvents.length;
+    const finalScore = drivingScore;
+    
+    await stopTracking();
+    
+    // Calculate duration
+    const durationMs = startTime ? Date.now() - startTime.getTime() : 0;
+    const durationMin = Math.round(durationMs / 60000);
+    
+    setSessionSummary({
+      distance: finalDistance,
+      duration: durationMin,
+      eventCount: finalEvents,
+      score: finalScore
+    });
+    setSessionEnded(true);
+    
+    // Notify parent component with session ID
+    if (currentSession?.id && onSessionEnd) {
+      onSessionEnd(currentSession.id);
+    }
+  };
 
   // Convert GPS points to route coordinates
   const routeCoordinates: [number, number][] = gpsPoints.map(p => [p.latitude, p.longitude]);
@@ -151,7 +194,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
             <Button
               size="sm"
               variant={isTracking ? 'destructive' : 'default'}
-              onClick={() => isTracking ? stopTracking() : handleStartTracking()}
+              onClick={() => isTracking ? handleStopTracking() : handleStartTracking()}
             >
               {isTracking ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </Button>
@@ -172,7 +215,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
           <Button
             size="sm"
             variant={isTracking ? 'destructive' : 'default'}
-            onClick={() => isTracking ? stopTracking() : handleStartTracking()}
+            onClick={() => isTracking ? handleStopTracking() : handleStartTracking()}
           >
             {isTracking ? (
               <>
@@ -372,8 +415,41 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
           </>
         )}
 
-        {/* Waiting for GPS message when not tracking */}
-        {!isTracking && (
+        {/* Session Summary - shown when tracking ends */}
+        {!isTracking && sessionEnded && sessionSummary && (
+          <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-lg space-y-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <h3 className="font-semibold">Session Complete!</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="text-center p-2 bg-background/60 rounded-lg">
+                <p className="text-2xl font-bold tabular-nums">{sessionSummary.distance.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">km traveled</p>
+              </div>
+              <div className="text-center p-2 bg-background/60 rounded-lg">
+                <p className="text-2xl font-bold tabular-nums">{sessionSummary.duration}</p>
+                <p className="text-xs text-muted-foreground">minutes</p>
+              </div>
+              <div className="text-center p-2 bg-background/60 rounded-lg">
+                <p className="text-2xl font-bold tabular-nums">{sessionSummary.score}</p>
+                <p className="text-xs text-muted-foreground">score</p>
+              </div>
+              <div className="text-center p-2 bg-background/60 rounded-lg">
+                <p className="text-2xl font-bold tabular-nums">{sessionSummary.eventCount}</p>
+                <p className="text-xs text-muted-foreground">events</p>
+              </div>
+            </div>
+            
+            <p className="text-sm text-muted-foreground text-center">
+              {damoovProcessing ? 'Analyzing driving behavior...' : 'Session data recorded successfully'}
+            </p>
+          </div>
+        )}
+
+        {/* Waiting for GPS message when not tracking and no session ended */}
+        {!isTracking && !sessionEnded && (
           <div className="h-32 rounded-lg border border-dashed flex items-center justify-center bg-muted/20">
             <div className="text-center text-muted-foreground">
               <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -407,7 +483,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
               <CheckCircle className="h-5 w-5 text-green-500" />
               <AlertTriangle className="h-5 w-5 text-amber-500" />
             </div>
-            <p className="text-2xl font-bold tabular-nums">{goodEvents}/{badEvents}</p>
+            <p className="text-2xl font-bold tabular-nums">{goodEventsCount}/{badEventsCount}</p>
             <p className="text-xs text-muted-foreground">events</p>
           </div>
         </div>

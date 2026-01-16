@@ -251,6 +251,9 @@ export default function InstructorTrackLesson() {
               instructorId={instructorId}
               lessonId={selectedLessonId}
               pupilId={selectedPupilId}
+              onSessionEnd={(sessionId) => {
+                setLastTelematicsId(sessionId);
+              }}
             />
 
             {/* Generate Report Buttons - shown when there's tracking data */}
