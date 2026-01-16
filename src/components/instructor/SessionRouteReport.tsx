@@ -69,15 +69,27 @@ interface SessionRouteReportProps {
 const SessionRouteReport: React.FC<SessionRouteReportProps> = ({ telematicsId, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<RouteReport | null>(null);
+  const [insufficientData, setInsufficientData] = useState<{ message: string; pointsRecorded: number } | null>(null);
 
   const generateReport = async () => {
     setLoading(true);
+    setInsufficientData(null);
     try {
       const { data, error } = await supabase.functions.invoke('generate-route-report', {
         body: { telematicsId }
       });
 
       if (error) throw error;
+      
+      // Check for insufficient GPS data response
+      if (data.error === 'insufficient_gps_data') {
+        setInsufficientData({
+          message: data.message,
+          pointsRecorded: data.pointsRecorded
+        });
+        return;
+      }
+      
       if (!data.success) throw new Error(data.error || 'Failed to generate report');
 
       setReport(data);
@@ -155,6 +167,48 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
   // Calculate compliance score
   const complianceScore = report ? 
     Math.round((report.segments.filter(s => s.compliance !== 'over').length / report.segments.length) * 100) : 0;
+
+  // Show insufficient data message
+  if (insufficientData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Route className="h-5 w-5 text-primary" />
+            Route Report
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6 space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-amber-500/10 flex items-center justify-center">
+              <AlertTriangle className="h-8 w-8 text-amber-500" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Insufficient GPS Data</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                {insufficientData.message}
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              <span>{insufficientData.pointsRecorded} GPS points recorded</span>
+            </div>
+            <div className="pt-2 space-y-2">
+              <p className="text-xs text-muted-foreground font-medium">Tips for better tracking:</p>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                <li>• Ensure location permission is granted</li>
+                <li>• Track for at least 1-2 minutes while moving</li>
+                <li>• Stay in areas with good GPS signal</li>
+              </ul>
+            </div>
+            <Button variant="outline" onClick={() => setInsufficientData(null)}>
+              Try Again
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!report) {
     return (
