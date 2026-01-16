@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Settings } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,11 +51,16 @@ export function InstructorMobileHeader({
         />
       </div>
       
-      {/* Name, visibility badge, and avatar on the right */}
+      {/* Settings, visibility badge, and avatar on the right */}
       <div className="flex items-center gap-2">
-        <span className="text-nav-foreground text-sm font-medium">
-          {instructorName}
-        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/instructor/settings")}
+          className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
         {isActive !== undefined && (
           <Badge 
             variant="secondary" 
