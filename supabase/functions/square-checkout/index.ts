@@ -88,7 +88,7 @@ serve(async (req: Request) => {
         location_id: locationId
       },
       checkout_options: {
-        redirect_url: `${returnUrl}${returnUrl.includes('?') ? '&' : '?'}square=success&ref=${orderReference}`,
+        redirect_url: returnUrl,
         ask_for_shipping_address: false
       },
       pre_populated_data: {

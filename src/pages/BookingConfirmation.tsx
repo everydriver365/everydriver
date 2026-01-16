@@ -50,12 +50,23 @@ export default function BookingConfirmation() {
   const authorisationCode = searchParams.get("authorisationCode");
   const amountReceived = searchParams.get("amountReceived");
   
-  // Square payment parameters
+  // Payment provider parameters
+  const clearpaySuccess = searchParams.get("clearpay") === "success";
+  const klarnaSuccess = searchParams.get("klarna") === "success";
+  const npiSuccess = searchParams.get("npi") === "success";
+  const elavonSuccess = searchParams.get("elavon") === "success";
   const squareSuccess = searchParams.get("square") === "success";
-  const squareRef = searchParams.get("ref");
+  const paymentRef = searchParams.get("ref");
   
-  // Payment was successful if responseCode is "0" (approved) or Square success
-  const paymentSuccessful = responseCode === "0" || squareSuccess || responseCode === null; // null means direct booking without payment
+  // Payment was successful if Cardstream approved OR provider success flag OR direct booking (no payment params)
+  const paymentSuccessful =
+    responseCode === "0" ||
+    responseCode === null ||
+    clearpaySuccess ||
+    klarnaSuccess ||
+    npiSuccess ||
+    elavonSuccess ||
+    squareSuccess;
   
   const [pupil, setPupil] = useState<PupilDetails | null>(null);
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
@@ -184,7 +195,7 @@ export default function BookingConfirmation() {
           </motion.p>
 
           {/* Payment confirmation details */}
-          {(transactionId || squareRef) && (
+          {(transactionId || paymentRef) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -193,7 +204,7 @@ export default function BookingConfirmation() {
             >
               {amountReceived && <span>Payment of £{(parseInt(amountReceived) / 100).toFixed(2)} confirmed</span>}
               {authorisationCode && <span className="ml-2">• Auth: {authorisationCode}</span>}
-              {squareRef && <span>Booking Reference: {squareRef}</span>}
+              {paymentRef && <span>Reference: {paymentRef}</span>}
             </motion.div>
           )}
         </div>
