@@ -524,7 +524,7 @@ export default function BookingSummary() {
           returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&npi=success&ref=${orderReference}`,
           cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
           instructorId: instructor.id,
-          pupilId: pupilId, // Pass pupilId for callback to record payment
+          pupilId: pupilId,
         },
       });
 
@@ -534,10 +534,28 @@ export default function BookingSummary() {
         return;
       }
 
-      if (data?.redirectUrl) {
-        window.location.href = data.redirectUrl;
+      // NPI HPP requires form POST submission (not URL redirect)
+      if (data?.gatewayUrl && data?.formData) {
+        // Create and submit hidden form to NPI gateway
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.gatewayUrl;
+        form.style.display = 'none';
+
+        // Add all form fields from the response
+        for (const [key, value] of Object.entries(data.formData)) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        toast.success("Redirecting to payment page...");
+        form.submit();
       } else {
-        toast.error("Could not get NPI checkout URL");
+        toast.error("Could not get NPI payment form data");
       }
     } catch (err) {
       console.error("NPI error:", err);

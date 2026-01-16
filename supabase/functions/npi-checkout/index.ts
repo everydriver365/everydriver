@@ -18,37 +18,36 @@ interface NPICheckoutRequest {
   pupilId?: string;
 }
 
-// Create signature following NPI/Cardstream documentation:
-// 1. Sort fields alphabetically by key
-// 2. Build URL-encoded query string (PHP http_build_query style - spaces as +)
-// 3. Normalize line endings
-// 4. Append secret key
+// Create signature following NPI/Cardstream documentation exactly as PHP example:
+// 1. Sort fields alphabetically by key (ksort)
+// 2. Build URL-encoded query string (http_build_query style)
+// 3. Normalize line endings (CRNL|NLCR|NL|CR) to just NL (%0A)
+// 4. Append secret key directly (no separator)
 // 5. Hash with SHA-512
 async function createNPISignature(data: Record<string, string>, secretKey: string): Promise<string> {
-  // Sort fields alphabetically by key
+  // Sort fields alphabetically by key (matching PHP ksort)
   const sortedKeys = Object.keys(data).sort();
   
   // Build URL-encoded query string matching PHP http_build_query
-  // PHP uses RFC 1738 encoding where spaces become + not %20
+  // PHP's http_build_query uses RFC 1738 encoding where spaces become +
   const queryParts: string[] = [];
   for (const key of sortedKeys) {
-    // encodeURIComponent then replace %20 with + to match PHP's http_build_query
     const encodedKey = encodeURIComponent(key).replace(/%20/g, '+');
     const encodedValue = encodeURIComponent(data[key] || '').replace(/%20/g, '+');
     queryParts.push(`${encodedKey}=${encodedValue}`);
   }
   let queryString = queryParts.join('&');
   
-  // Normalize line endings (CRNL|NLCR|NL|CR) to just NL (%0A)
+  // Normalise all line endings (CRNL|NLCR|NL|CR) to just NL (%0A)
   queryString = queryString
     .replace(/%0D%0A/g, '%0A')
     .replace(/%0A%0D/g, '%0A')
     .replace(/%0D/g, '%0A');
   
-  // Append secret key
+  // Hash the signature string and the key together (key appended directly)
   const signatureInput = queryString + secretKey;
   
-  console.log("Signature input (without secret):", queryString);
+  console.log("Signature query string:", queryString.substring(0, 200) + "...");
   
   // Hash with SHA-512
   const encoder = new TextEncoder();
@@ -139,20 +138,19 @@ serve(async (req: Request) => {
     // Add signature to the request
     requestData.signature = signature;
 
-    // NPI Payments UK HPP endpoint
-    const npiBaseUrl = "https://payments.npigateway.ie/hosted/";
+    // NPI Payments HPP gateway URL
+    const gatewayUrl = "https://gateway.cardstream.com/hosted/";
 
-    // Build the HPP URL with all parameters
-    const hppParams = new URLSearchParams(requestData);
-    const redirectUrl = `${npiBaseUrl}?${hppParams.toString()}`;
+    console.log("NPI HPP form data generated for order:", orderReference);
+    console.log("Gateway URL:", gatewayUrl);
+    console.log("Form fields count:", Object.keys(requestData).length);
 
-    console.log("NPI HPP redirect URL generated for order:", orderReference);
-    console.log("Redirect URL length:", redirectUrl.length);
-
+    // Return form data for frontend to POST submit (not a redirect URL)
     return new Response(
       JSON.stringify({
         success: true,
-        redirectUrl: redirectUrl,
+        gatewayUrl: gatewayUrl,
+        formData: requestData,
         orderReference: orderReference,
       }),
       {
