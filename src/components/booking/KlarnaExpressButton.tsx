@@ -124,7 +124,9 @@ export function KlarnaExpressButton({
         },
         (loadResult) => {
           console.log("Klarna button load result:", loadResult);
-          if (loadResult.show_button) {
+          const anyResult = loadResult as any;
+          const shouldShow = Boolean(anyResult?.show_button ?? anyResult?.show_form);
+          if (shouldShow) {
             setStatus('visible');
           } else {
             setErrorMessage("Klarna is not available for this purchase");
