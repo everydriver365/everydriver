@@ -117,6 +117,7 @@ export default function BookingSummary() {
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
   const [isNPILoading, setIsNPILoading] = useState(false);
   const [isSquareLoading, setIsSquareLoading] = useState(false);
+  const [bookingPupilId, setBookingPupilId] = useState<string | null>(null);
   
   // Klarna inline widget state
   const [klarnaSession, setKlarnaSession] = useState<{
@@ -260,39 +261,49 @@ export default function BookingSummary() {
   const isPupilDetailsComplete = pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim();
   const canSubmit = isFullyScheduled && isPupilDetailsComplete && !isSubmitting;
 
+  const ensureBookingCreated = async (): Promise<string | null> => {
+    if (!courseDetails) return null;
+    if (bookingPupilId) return bookingPupilId;
+
+    const { data, error } = await supabase.functions.invoke("create-booking", {
+      body: {
+        instructorId: instructor.id,
+        pupilName: pupilName.trim(),
+        pupilEmail: pupilEmail.trim(),
+        pupilPhone: pupilPhone.trim(),
+        pupilAddress: pupilAddress.trim(),
+        pupilPostcode: pupilPostcode.trim().toUpperCase(),
+        courseType: courseName,
+        courseHours: hours,
+        totalPrice,
+        slots: selectedSlots.map((slot) => ({
+          date: format(slot.date, "yyyy-MM-dd"),
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          duration: slot.duration,
+        })),
+      },
+    });
+
+    if (error) {
+      console.error("Booking error:", error);
+      toast.error("Failed to create your booking. Please try again.");
+      return null;
+    }
+
+    setBookingPupilId(data.pupilId);
+    toast.success(`Booking confirmed! ${data.lessonsCreated} lessons scheduled.`);
+    return data.pupilId as string;
+  };
+
   const handleBookingSubmit = async () => {
     if (!canSubmit || !courseDetails) return;
-    
+
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-booking", {
-        body: {
-          instructorId: instructor.id,
-          pupilName: pupilName.trim(),
-          pupilEmail: pupilEmail.trim(),
-          pupilPhone: pupilPhone.trim(),
-          pupilAddress: pupilAddress.trim(),
-          pupilPostcode: pupilPostcode.trim().toUpperCase(),
-          courseType: courseName,
-          courseHours: hours,
-          totalPrice,
-          slots: selectedSlots.map(slot => ({
-            date: format(slot.date, "yyyy-MM-dd"),
-            startTime: slot.startTime,
-            endTime: slot.endTime,
-            duration: slot.duration,
-          })),
-        },
-      });
-
-      if (error) {
-        console.error("Booking error:", error);
-        toast.error("Failed to complete booking. Please try again.");
-        return;
-      }
-
-      toast.success(`Booking confirmed! ${data.lessonsCreated} lessons scheduled.`);
-      navigate(`/booking-confirmation?pupilId=${data.pupilId}`);
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+      navigate(`/booking-confirmation?pupilId=${pupilId}`);
     } catch (err) {
       console.error("Booking error:", err);
       toast.error("Something went wrong. Please try again.");
@@ -309,9 +320,12 @@ export default function BookingSummary() {
 
     setIsClearpayLoading(true);
     try {
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+
       const merchantReference = `${instructor.id}-${Date.now()}`;
       const currentUrl = window.location.origin;
-      
+
       const nameParts = pupilName.trim().split(" ");
       const givenNames = nameParts.slice(0, -1).join(" ") || nameParts[0];
       const surname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
@@ -333,13 +347,15 @@ export default function BookingSummary() {
             postcode: pupilPostcode.trim().toUpperCase(),
             countryCode: "GB",
           },
-          items: [{
-            name: `${courseName} - ${hours} Hour Driving Course`,
-            quantity: 1,
-            price: totalPrice,
-          }],
+          items: [
+            {
+              name: `${courseName} - ${hours} Hour Driving Course`,
+              quantity: 1,
+              price: totalPrice,
+            },
+          ],
           redirectUrls: {
-            confirmUrl: `${currentUrl}/booking-confirmation?clearpay=success&ref=${merchantReference}`,
+            confirmUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&clearpay=success&ref=${merchantReference}`,
             cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&clearpay=cancelled`,
           },
         },
@@ -372,9 +388,15 @@ export default function BookingSummary() {
 
     setIsKlarnaLoading(true);
     try {
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+
       const merchantReference = `${instructor.id}-${Date.now()}`;
       const currentUrl = window.location.origin;
-      
+
+      const confirmUrl = `${currentUrl}/booking-confirmation?pupilId=${pupilId}&klarna=success&ref=${merchantReference}`;
+      const cancelUrl = `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`;
+
       const nameParts = pupilName.trim().split(" ");
       const givenName = nameParts[0] || pupilName.trim();
       const familyName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : givenName;
@@ -396,14 +418,16 @@ export default function BookingSummary() {
             city: locationName || "UK",
             country: "GB",
           },
-          items: [{
-            name: `${courseName} - ${hours} Hour Driving Course`,
-            quantity: 1,
-            unitPrice: totalPrice,
-          }],
+          items: [
+            {
+              name: `${courseName} - ${hours} Hour Driving Course`,
+              quantity: 1,
+              unitPrice: totalPrice,
+            },
+          ],
           redirectUrls: {
-            confirmUrl: `${currentUrl}/booking-confirmation?klarna=success&ref=${merchantReference}`,
-            cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`,
+            confirmUrl,
+            cancelUrl,
           },
         },
       });
@@ -424,8 +448,8 @@ export default function BookingSummary() {
             amount: data.orderDetails?.amount || Math.round(totalPrice * 100),
             currency: data.orderDetails?.currency || "GBP",
             merchantReference: data.orderDetails?.merchantReference || merchantReference,
-            confirmUrl: data.orderDetails?.confirmUrl || `${currentUrl}/booking-confirmation?klarna=success&ref=${merchantReference}`,
-            cancelUrl: data.orderDetails?.cancelUrl || `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`,
+            confirmUrl: data.orderDetails?.confirmUrl || confirmUrl,
+            cancelUrl: data.orderDetails?.cancelUrl || cancelUrl,
           },
         });
         setShowKlarnaWidget(true);
@@ -470,6 +494,9 @@ export default function BookingSummary() {
 
     setIsNPILoading(true);
     try {
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+
       const orderReference = `NPI-${instructor.id.slice(0, 8)}-${Date.now()}`;
       const currentUrl = window.location.origin;
 
@@ -481,7 +508,7 @@ export default function BookingSummary() {
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
           description: `${courseName} - ${hours} Hour Driving Course`,
-          returnUrl: `${currentUrl}/booking-confirmation?npi=success&ref=${orderReference}`,
+          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&npi=success&ref=${orderReference}`,
           cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
           instructorId: instructor.id,
         },
@@ -514,13 +541,16 @@ export default function BookingSummary() {
 
     setIsSquareLoading(true);
     try {
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+
       const orderReference = `SQ-${instructor.id.slice(0, 8)}-${Date.now()}`;
       const currentUrl = window.location.origin;
 
       // Build lesson slots for order metadata
-      const lessonSlots = selectedSlots.map(slot => ({
+      const lessonSlots = selectedSlots.map((slot) => ({
         date: format(slot.date, "yyyy-MM-dd"),
-        time: slot.startTime
+        time: slot.startTime,
       }));
 
       const { data, error } = await supabase.functions.invoke("square-checkout", {
@@ -532,9 +562,10 @@ export default function BookingSummary() {
           customerPhone: pupilPhone.trim(),
           courseName: courseName,
           description: `${courseName} - ${hours} Hour Driving Course`,
-          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${instructor.id}&square=success&ref=${orderReference}`,
+          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&square=success&ref=${orderReference}`,
           cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&square=cancelled`,
           instructorId: instructor.id,
+          pupilId,
           lessonSlots,
         },
       });
