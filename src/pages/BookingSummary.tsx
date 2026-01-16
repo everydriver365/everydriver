@@ -700,7 +700,7 @@ export default function BookingSummary() {
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
           description: `${courseName} - ${hours} Hour Driving Course`,
-          confirmUrl: `${currentUrl}/booking-confirmation?pupilId=${bookingPupilId}&npi=success&ref=${orderReference}&wooOrderId=${wooOrder.orderId}`,
+          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${bookingPupilId}&npi=success&ref=${orderReference}&wooOrderId=${wooOrder.orderId}`,
           cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
           instructorId: instructor.id,
           pupilId: bookingPupilId,
