@@ -22,6 +22,8 @@ import {
 import { useTelematics } from '@/hooks/useTelematics';
 import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import DamoovScoresDisplay from './DamoovScoresDisplay';
+import PupilGamificationStats from './PupilGamificationStats';
 
 interface TelematicsTrackerProps {
   instructorId: string;
@@ -50,6 +52,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   compact = false
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   
   const {
     isTracking,
@@ -62,9 +65,25 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     motionData,
     hasMotionPermission,
     isScreenAwake,
+    damoovScores,
+    damoovProcessing,
+    coinsEarned,
     startTracking,
     stopTracking
   } = useTelematics(instructorId);
+
+  // Show results when processing completes
+  useEffect(() => {
+    if (damoovScores && !damoovProcessing) {
+      setShowResults(true);
+    }
+  }, [damoovScores, damoovProcessing]);
+
+  // Reset results when starting new tracking
+  const handleStartTracking = () => {
+    setShowResults(false);
+    startTracking(lessonId, pupilId);
+  };
 
   const goodEvents = drivingEvents.filter(e => 
     e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration' || e.event_type === 'smooth_cornering'
@@ -132,7 +151,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
             <Button
               size="sm"
               variant={isTracking ? 'destructive' : 'default'}
-              onClick={() => isTracking ? stopTracking() : startTracking(lessonId, pupilId)}
+              onClick={() => isTracking ? stopTracking() : handleStartTracking()}
             >
               {isTracking ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </Button>
@@ -153,7 +172,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
           <Button
             size="sm"
             variant={isTracking ? 'destructive' : 'default'}
-            onClick={() => isTracking ? stopTracking() : startTracking(lessonId, pupilId)}
+            onClick={() => isTracking ? stopTracking() : handleStartTracking()}
           >
             {isTracking ? (
               <>
@@ -445,6 +464,23 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
               </span>
             )}
           </div>
+        )}
+
+        {/* Damoov Scores Display - shown when processing or after completion */}
+        {(damoovProcessing || showResults) && (
+          <DamoovScoresDisplay
+            scores={damoovScores}
+            coinsEarned={coinsEarned}
+            isProcessing={damoovProcessing}
+          />
+        )}
+
+        {/* Pupil Gamification Stats - shown after scores are received */}
+        {showResults && pupilId && (
+          <PupilGamificationStats 
+            pupilId={pupilId} 
+            refreshTrigger={coinsEarned}
+          />
         )}
       </CardContent>
     </Card>
