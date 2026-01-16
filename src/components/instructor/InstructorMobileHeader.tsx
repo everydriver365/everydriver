@@ -1,8 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Settings } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Settings, Moon, Sun } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/context/ThemeContext";
 import logoDark from "@/assets/logo-instructor-dark.png";
 
 interface InstructorMobileHeaderProps {
@@ -18,6 +19,7 @@ export function InstructorMobileHeader({
 }: InstructorMobileHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { resolvedTheme, setTheme } = useTheme();
   
   // Show back button on all pages except the main instructor home
   const showBackButton = location.pathname !== "/instructor";
@@ -28,6 +30,10 @@ export function InstructorMobileHeader({
 
   const handleBack = () => {
     navigate("/instructor");
+  };
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -52,7 +58,19 @@ export function InstructorMobileHeader({
       </div>
       
       {/* Settings, visibility badge, and avatar on the right */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+        >
+          {resolvedTheme === 'dark' ? (
+            <Moon className="h-5 w-5" />
+          ) : (
+            <Sun className="h-5 w-5" />
+          )}
+        </Button>
         <Button
           variant="ghost"
           size="icon"
