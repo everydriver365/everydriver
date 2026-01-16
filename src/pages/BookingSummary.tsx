@@ -1583,24 +1583,6 @@ export default function BookingSummary() {
               <div className="text-xs text-emerald-700/80 dark:text-emerald-300/80">Visa, Mastercard, Amex</div>
             </button>
 
-            {/* NPI Hosted Fields - Embedded Card Form */}
-            <button
-              onClick={handleShowHostedFields}
-              disabled={!canSubmit || showHostedFields || !gatewayHealth.npi.available}
-              className="w-full rounded-lg border-2 border-blue-500 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-950/50 dark:hover:to-indigo-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white flex items-center gap-1">
-                  <CreditCard className="h-3 w-3" />
-                  Inline
-                </span>
-                <span className="text-xs text-blue-600 dark:text-blue-400">
-                  {showHostedFields ? "Active" : "Pay Here"}
-                </span>
-              </div>
-              <div className="font-semibold text-sm text-blue-900 dark:text-blue-100">Pay Without Leaving</div>
-              <div className="text-xs text-blue-700/80 dark:text-blue-300/80">Enter card details below</div>
-            </button>
 
             {/* Clearpay - Confirmed Working */}
             <button
