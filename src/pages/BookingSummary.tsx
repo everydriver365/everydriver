@@ -15,6 +15,7 @@ import { KlarnaPaymentWidget } from "@/components/booking/KlarnaPaymentWidget";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
 
 interface Instructor {
@@ -109,6 +110,9 @@ export default function BookingSummary() {
   
   // Payment gateway health
   const { health: gatewayHealth } = usePaymentGatewayHealth();
+  
+  // Site settings for payment page branding
+  const { getSetting } = useSiteSettings();
   
   // Pupil details form state
   const [pupilName, setPupilName] = useState("");
@@ -516,6 +520,9 @@ export default function BookingSummary() {
           cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
           instructorId: instructor.id,
           pupilId: pupilId,
+          // HPP customization from CMS
+          formResponsive: true,
+          merchantName: getSetting("npi_merchant_name") || undefined,
         },
       });
 
