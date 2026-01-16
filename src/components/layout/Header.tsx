@@ -7,6 +7,8 @@ import { useState } from "react";
 import logo from "@/assets/logo-everydriver-transparent.png";
 import { PromoBanner } from "./PromoBanner";
 import { SecondaryNav } from "./SecondaryNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -54,7 +56,9 @@ export function Header() {
           ))}
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2 md:flex">
+          <LanguageToggle />
+          <ThemeToggle />
           {/* Postcode Search */}
           <form onSubmit={handleSearch} className="flex items-center">
             <div className="flex items-center rounded-full bg-white pl-3 pr-1 py-1">
