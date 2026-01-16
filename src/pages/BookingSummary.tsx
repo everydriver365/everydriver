@@ -124,6 +124,14 @@ export default function BookingSummary() {
   const [isWooLoading, setIsWooLoading] = useState(false);
   const [bookingPupilId, setBookingPupilId] = useState<string | null>(null);
   
+  // WooCommerce hybrid flow state
+  const [wooOrder, setWooOrder] = useState<{
+    orderId: number;
+    orderKey: string;
+    orderRef: string;
+  } | null>(null);
+  const [showWooPaymentOptions, setShowWooPaymentOptions] = useState(false);
+  
   // Klarna inline widget state
   const [klarnaSession, setKlarnaSession] = useState<{
     clientToken: string;
@@ -595,6 +603,7 @@ export default function BookingSummary() {
     }
   };
 
+  // Step 1: Create WooCommerce order and show in-app payment options
   const handleWooCommerceCheckout = async () => {
     if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
       toast.error("Please complete all details and schedule all lessons first");
@@ -624,14 +633,21 @@ export default function BookingSummary() {
 
       if (error) {
         console.error("WooCommerce checkout error:", error);
-        toast.error("Failed to start WooCommerce checkout. Please try again.");
+        toast.error("Failed to create WooCommerce order. Please try again.");
         return;
       }
 
-      if (data?.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+      if (data?.orderId) {
+        // Store WooCommerce order details and show in-app payment options
+        setWooOrder({
+          orderId: data.orderId,
+          orderKey: data.orderKey,
+          orderRef,
+        });
+        setShowWooPaymentOptions(true);
+        toast.success("Order created! Choose your payment method below.");
       } else {
-        toast.error("Could not get WooCommerce checkout URL");
+        toast.error("Could not create WooCommerce order");
       }
     } catch (err) {
       console.error("WooCommerce error:", err);
@@ -639,6 +655,227 @@ export default function BookingSummary() {
     } finally {
       setIsWooLoading(false);
     }
+  };
+
+  // Step 2: After in-app payment succeeds, mark WooCommerce order as paid
+  const markWooOrderPaid = async (paymentMethod: string, transactionId?: string) => {
+    if (!wooOrder) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("woocommerce-update-order", {
+        body: {
+          orderId: wooOrder.orderId,
+          status: "completed",
+          transactionId: transactionId || wooOrder.orderRef,
+          paymentMethod: paymentMethod.toLowerCase(),
+          paymentMethodTitle: paymentMethod,
+        },
+      });
+
+      if (error) {
+        console.error("Failed to update WooCommerce order:", error);
+        // Don't block the user - payment succeeded, just log the sync issue
+      } else {
+        console.log("WooCommerce order marked as paid:", data);
+      }
+    } catch (err) {
+      console.error("WooCommerce sync error:", err);
+    }
+  };
+
+  // Modified payment handlers for WooCommerce hybrid flow
+  const handleWooNPIPayment = async () => {
+    if (!wooOrder || !courseDetails) return;
+    
+    setIsNPILoading(true);
+    try {
+      const orderReference = wooOrder.orderRef;
+      const currentUrl = window.location.origin;
+
+      const { data, error } = await supabase.functions.invoke("npi-checkout", {
+        body: {
+          amount: totalPrice,
+          currency: "GBP",
+          orderReference,
+          customerEmail: pupilEmail.trim(),
+          customerName: pupilName.trim(),
+          description: `${courseName} - ${hours} Hour Driving Course`,
+          confirmUrl: `${currentUrl}/booking-confirmation?pupilId=${bookingPupilId}&npi=success&ref=${orderReference}&wooOrderId=${wooOrder.orderId}`,
+          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
+          instructorId: instructor.id,
+          pupilId: bookingPupilId,
+        },
+      });
+
+      if (error) {
+        console.error("NPI checkout error:", error);
+        toast.error("Failed to start card payment. Please try again.");
+        return;
+      }
+
+      if (data?.redirectUrl) {
+        // Mark WooCommerce order as processing before redirect
+        await markWooOrderPaid("Card (NPI)", orderReference);
+        window.location.href = data.redirectUrl;
+      } else {
+        toast.error("Could not get payment URL");
+      }
+    } catch (err) {
+      console.error("NPI error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsNPILoading(false);
+    }
+  };
+
+  const handleWooClearpayPayment = async () => {
+    if (!wooOrder || !courseDetails) return;
+
+    setIsClearpayLoading(true);
+    try {
+      const merchantReference = wooOrder.orderRef;
+      const currentUrl = window.location.origin;
+
+      const nameParts = pupilName.trim().split(" ");
+      const givenNames = nameParts.slice(0, -1).join(" ") || nameParts[0];
+      const surname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+
+      const { data, error } = await supabase.functions.invoke("clearpay-checkout", {
+        body: {
+          amount: totalPrice,
+          currency: "GBP",
+          merchantReference,
+          consumer: {
+            givenNames,
+            surname: surname || givenNames,
+            email: pupilEmail.trim(),
+            phoneNumber: pupilPhone.trim(),
+          },
+          billing: {
+            name: pupilName.trim(),
+            line1: pupilAddress.trim(),
+            postcode: pupilPostcode.trim().toUpperCase(),
+            countryCode: "GB",
+          },
+          items: [
+            {
+              name: `${courseName} - ${hours} Hour Driving Course`,
+              quantity: 1,
+              price: totalPrice,
+            },
+          ],
+          redirectUrls: {
+            confirmUrl: `${currentUrl}/booking-confirmation?pupilId=${bookingPupilId}&clearpay=success&ref=${merchantReference}&wooOrderId=${wooOrder.orderId}`,
+            cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&clearpay=cancelled`,
+          },
+        },
+      });
+
+      if (error) {
+        console.error("Clearpay checkout error:", error);
+        toast.error("Failed to start Clearpay checkout. Please try again.");
+        return;
+      }
+
+      if (data?.redirectUrl) {
+        await markWooOrderPaid("Clearpay", merchantReference);
+        window.location.href = data.redirectUrl;
+      } else {
+        toast.error("Could not get Clearpay checkout URL");
+      }
+    } catch (err) {
+      console.error("Clearpay error:", err);
+      toast.error("Something went wrong with Clearpay. Please try again.");
+    } finally {
+      setIsClearpayLoading(false);
+    }
+  };
+
+  const handleWooKlarnaPayment = async () => {
+    if (!wooOrder || !courseDetails) return;
+
+    setIsKlarnaLoading(true);
+    try {
+      const merchantReference = wooOrder.orderRef;
+      const currentUrl = window.location.origin;
+
+      const confirmUrl = `${currentUrl}/booking-confirmation?pupilId=${bookingPupilId}&klarna=success&ref=${merchantReference}&wooOrderId=${wooOrder.orderId}`;
+      const cancelUrl = `${currentUrl}/book/${instructor.id}?hours=${hours}&klarna=cancelled`;
+
+      const nameParts = pupilName.trim().split(" ");
+      const givenName = nameParts[0] || pupilName.trim();
+      const familyName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : givenName;
+
+      const { data, error } = await supabase.functions.invoke("klarna-checkout", {
+        body: {
+          amount: totalPrice,
+          currency: "GBP",
+          merchantReference,
+          consumer: {
+            givenName,
+            familyName,
+            email: pupilEmail.trim(),
+            phone: pupilPhone.trim(),
+          },
+          billing: {
+            streetAddress: pupilAddress.trim(),
+            postalCode: pupilPostcode.trim().toUpperCase(),
+            city: locationName || "UK",
+            country: "GB",
+          },
+          items: [
+            {
+              name: `${courseName} - ${hours} Hour Driving Course`,
+              quantity: 1,
+              unitPrice: totalPrice,
+            },
+          ],
+          redirectUrls: {
+            confirmUrl,
+            cancelUrl,
+          },
+        },
+      });
+
+      if (error) {
+        console.error("Klarna checkout error:", error);
+        toast.error("Failed to start Klarna checkout. Please try again.");
+        return;
+      }
+
+      if (data?.clientToken && data?.sessionId) {
+        setKlarnaSession({
+          clientToken: data.clientToken,
+          sessionId: data.sessionId,
+          paymentMethodCategories: data.paymentMethodCategories || [],
+          orderDetails: {
+            amount: data.orderDetails?.amount || Math.round(totalPrice * 100),
+            currency: data.orderDetails?.currency || "GBP",
+            merchantReference: data.orderDetails?.merchantReference || merchantReference,
+            confirmUrl: data.orderDetails?.confirmUrl || confirmUrl,
+            cancelUrl: data.orderDetails?.cancelUrl || cancelUrl,
+          },
+        });
+        setShowKlarnaWidget(true);
+        setShowWooPaymentOptions(false);
+      } else if (data?.redirectUrl) {
+        await markWooOrderPaid("Klarna", merchantReference);
+        window.location.href = data.redirectUrl;
+      } else {
+        toast.error("Could not start Klarna checkout. Please try another payment method.");
+      }
+    } catch (err) {
+      console.error("Klarna error:", err);
+      toast.error("Something went wrong with Klarna. Please try again.");
+    } finally {
+      setIsKlarnaLoading(false);
+    }
+  };
+
+  const handleCancelWooPayment = () => {
+    setShowWooPaymentOptions(false);
+    setWooOrder(null);
+    toast.info("Payment cancelled. You can choose another option.");
   };
 
   if (loading) {
@@ -1264,23 +1501,39 @@ export default function BookingSummary() {
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
             </button>
 
-            {/* WooCommerce Checkout */}
-            <button
-              onClick={handleWooCommerceCheckout}
-              disabled={!canSubmit || isWooLoading}
-              className="w-full rounded-lg border-2 border-purple-400 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-950/50 dark:hover:to-indigo-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-purple-600 px-2 py-0.5 text-xs font-bold text-white">
-                  WooCommerce
-                </span>
-                <span className="text-xs text-purple-600 dark:text-purple-400">
-                  {isWooLoading ? "Loading..." : "Secure Checkout"}
-                </span>
+            {/* WooCommerce Checkout - Hybrid Flow */}
+            {!showWooPaymentOptions ? (
+              <button
+                onClick={handleWooCommerceCheckout}
+                disabled={!canSubmit || isWooLoading}
+                className="w-full rounded-lg border-2 border-purple-400 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-950/50 dark:hover:to-indigo-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-purple-600 px-2 py-0.5 text-xs font-bold text-white">
+                    WooCommerce
+                  </span>
+                  <span className="text-xs text-purple-600 dark:text-purple-400">
+                    {isWooLoading ? "Creating order..." : "In-App Payment"}
+                  </span>
+                </div>
+                <div className="font-semibold text-sm text-purple-900 dark:text-purple-100">Pay via WooCommerce</div>
+                <div className="text-xs text-purple-700/80 dark:text-purple-300/80">Card, Clearpay, or Klarna</div>
+              </button>
+            ) : (
+              <div className="w-full rounded-lg border-2 border-purple-500 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-purple-600 px-2 py-0.5 text-xs font-bold text-white flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Order Created
+                  </span>
+                  <span className="text-xs text-purple-600 dark:text-purple-400">
+                    #{wooOrder?.orderId}
+                  </span>
+                </div>
+                <div className="font-semibold text-sm text-purple-900 dark:text-purple-100 mb-1">Select Payment Below</div>
+                <div className="text-xs text-purple-700/80 dark:text-purple-300/80">Choose how you'd like to pay</div>
               </div>
-              <div className="font-semibold text-sm text-purple-900 dark:text-purple-100">Pay via WooCommerce</div>
-              <div className="text-xs text-purple-700/80 dark:text-purple-300/80">Multiple payment options</div>
-            </button>
+            )}
 
             {/* Square Card Payment - Needs Credential Fix */}
             {gatewayHealth.square.available ? (
@@ -1372,6 +1625,88 @@ export default function BookingSummary() {
                 onError={handleKlarnaError}
                 onCancel={handleKlarnaCancel}
               />
+            </motion.div>
+          )}
+
+          {/* WooCommerce In-App Payment Options */}
+          {showWooPaymentOptions && wooOrder && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-4 rounded-lg border-2 border-purple-500 bg-gradient-to-br from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <span className="rounded bg-purple-600 px-2 py-0.5 text-xs font-bold text-white">
+                    WooCommerce
+                  </span>
+                  Choose Payment Method
+                </h3>
+                <button 
+                  onClick={handleCancelWooPayment}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+              
+              <p className="text-sm text-muted-foreground mb-4">
+                Order <span className="font-medium">#{wooOrder.orderId}</span> created. 
+                Select how you'd like to pay:
+              </p>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                {/* NPI Card Payment */}
+                <button
+                  onClick={handleWooNPIPayment}
+                  disabled={isNPILoading}
+                  className="w-full rounded-lg border-2 border-emerald-400 p-3 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 hover:from-emerald-100 hover:to-green-100 transition-all text-left disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Banknote className="h-4 w-4 text-emerald-600" />
+                    <span className="font-semibold text-sm text-emerald-900 dark:text-emerald-100">
+                      {isNPILoading ? "Loading..." : "Debit/Credit Card"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-emerald-700/80 dark:text-emerald-300/80">
+                    Visa, Mastercard, Amex
+                  </div>
+                </button>
+
+                {/* Clearpay */}
+                <button
+                  onClick={handleWooClearpayPayment}
+                  disabled={isClearpayLoading}
+                  className="w-full rounded-lg border-2 border-[#b2fce4] p-3 bg-[#b2fce4]/10 hover:bg-[#b2fce4]/20 transition-colors text-left disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="rounded bg-[#b2fce4] px-1.5 py-0.5 text-xs font-bold text-black">
+                      clearpay
+                    </span>
+                  </div>
+                  <div className="font-semibold text-sm">
+                    {isClearpayLoading ? "Loading..." : `4 × £${(totalPrice / 4).toFixed(2)}`}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Interest-free</div>
+                </button>
+
+                {/* Klarna */}
+                <button
+                  onClick={handleWooKlarnaPayment}
+                  disabled={isKlarnaLoading}
+                  className="w-full rounded-lg border-2 border-[#ffb3c7] p-3 bg-[#ffb3c7]/10 hover:bg-[#ffb3c7]/20 transition-colors text-left disabled:opacity-50"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="rounded bg-[#ffb3c7] px-1.5 py-0.5 text-xs font-bold text-black">
+                      Klarna.
+                    </span>
+                  </div>
+                  <div className="font-semibold text-sm">
+                    {isKlarnaLoading ? "Loading..." : `3 × £${(totalPrice / 3).toFixed(2)}`}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Pay in 3</div>
+                </button>
+              </div>
             </motion.div>
           )}
         </motion.div>
