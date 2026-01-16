@@ -147,6 +147,7 @@ serve(async (req: Request) => {
     const redirectUrl = `${npiBaseUrl}?${hppParams.toString()}`;
 
     console.log("NPI HPP redirect URL generated for order:", orderReference);
+    console.log("Redirect URL length:", redirectUrl.length);
 
     return new Response(
       JSON.stringify({
