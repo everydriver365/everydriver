@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
+// Klarna Live Client Identifier (client-side only, no server session needed)
+const KLARNA_CLIENT_ID = "klarna_live_client_YyNvRz94c2R5ZVBBTktrdi16by9CZ3NjNzVqelI4UzYsMzY4NDE1Y2ItMzE2ZS00OWJkLWExZjgtNDQyMmM1OTBmNGIxLDEsU1poL1djaHR1ZllHRFZuT1ZsemZlYVNXNDNXU2NpK1JZTlhoMVpzMGFubz0";
 
 interface KlarnaExpressButtonProps {
   amount: number;
@@ -14,22 +16,10 @@ interface KlarnaExpressButtonProps {
   disabled?: boolean;
 }
 
-interface KlarnaPayments {
-  init: (config: { client_token: string }) => void;
-  load: (
-    options: { container: string; payment_method_category?: string },
-    data: any,
-    callback: (result: { show_form: boolean; error?: any }) => void
-  ) => void;
-  authorize: (
-    options: { payment_method_category?: string },
-    data: any,
-    callback: (result: { approved?: boolean; authorization_token?: string; show_form?: boolean; error?: any }) => void
-  ) => void;
-}
-
-const getKlarnaPayments = (): KlarnaPayments | undefined => {
-  return (window as any).Klarna?.Payments as KlarnaPayments | undefined;
+// Access Klarna from window without global type declaration to avoid conflicts
+const getKlarnaButtons = () => {
+  const klarna = (window as any).Klarna;
+  return klarna?.Payments?.Buttons;
 };
 
 export function KlarnaExpressButton({
@@ -43,109 +33,103 @@ export function KlarnaExpressButton({
   disabled = false,
 }: KlarnaExpressButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState<'loading' | 'initializing' | 'ready' | 'visible' | 'error' | 'processing'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'visible' | 'error' | 'processing'>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [clientToken, setClientToken] = useState<string | null>(null);
   const initAttemptedRef = useRef(false);
   const sdkLoadedRef = useRef(false);
-  const sessionCreatedRef = useRef(false);
 
   const amountInMinorUnits = Math.round(amount * 100);
 
-  // Create server-side session to get client_token
-  const createSession = useCallback(async () => {
-    if (sessionCreatedRef.current) return;
-    sessionCreatedRef.current = true;
+  // Order payload for Klarna - fully client-side
+  const orderPayload = {
+    purchase_country: "GB",
+    purchase_currency: currency,
+    locale: "en-GB",
+    order_amount: amountInMinorUnits,
+    order_tax_amount: 0,
+    order_lines: [
+      {
+        type: "digital",
+        reference: merchantReference,
+        name: orderDescription.substring(0, 255),
+        quantity: 1,
+        unit_price: amountInMinorUnits,
+        tax_rate: 0,
+        total_amount: amountInMinorUnits,
+        total_tax_amount: 0,
+      },
+    ],
+    merchant_reference1: merchantReference,
+  };
 
-    console.log("Creating Klarna session via edge function...");
-    setStatus('initializing');
-
-    try {
-      const { data, error } = await supabase.functions.invoke('klarna-session', {
-        body: {
-          amount,
-          currency,
-          merchantReference,
-          orderDescription,
-        },
-      });
-
-      if (error) {
-        console.error("Session creation failed:", error);
-        setErrorMessage("Failed to initialize Klarna");
-        setStatus('error');
-        return;
-      }
-
-      if (data?.client_token) {
-        console.log("Got client token, initializing Klarna SDK...");
-        setClientToken(data.client_token);
-        setStatus('ready');
-      } else {
-        console.error("No client token in response:", data);
-        setErrorMessage(data?.error || "Klarna not available");
-        setStatus('error');
-      }
-    } catch (err) {
-      console.error("Session error:", err);
-      setErrorMessage("Failed to connect to Klarna");
-      setStatus('error');
-    }
-  }, [amount, currency, merchantReference, orderDescription]);
-
-  // Initialize Klarna widget with client_token
-  const initializeKlarnaWidget = useCallback(() => {
-    if (!containerRef.current || !clientToken) {
-      console.log("Container or token not ready");
+  const initializeKlarnaButton = useCallback(() => {
+    if (!containerRef.current) {
+      console.log("Klarna: Container not ready");
       return false;
     }
 
-    const klarnaPayments = getKlarnaPayments();
-    if (!klarnaPayments) {
-      console.error("Klarna Payments not available");
+    const klarnaButtons = getKlarnaButtons();
+    if (!klarnaButtons) {
+      console.error("Klarna Payments Buttons not available on window");
       setErrorMessage("Klarna not available");
       setStatus('error');
       return false;
     }
 
-    console.log("Initializing Klarna with client token...");
+    console.log("Klarna: Initializing button with client_id...");
 
     try {
-      // Initialize with client token from session
-      klarnaPayments.init({ client_token: clientToken });
+      const instance = klarnaButtons.init({
+        client_id: KLARNA_CLIENT_ID,
+      });
 
-      // Load the payment widget
-      klarnaPayments.load(
+      instance.load(
         {
-          container: "#klarna-payments-container",
-          payment_method_category: "pay_later",
-        },
-        {},
-        (result) => {
-          console.log("Klarna load result:", result);
-          if (result.show_form) {
-            setStatus('visible');
-          } else if (result.error) {
-            console.error("Klarna load error:", result.error);
-            setErrorMessage("Klarna not available for this purchase");
-            setStatus('error');
-          } else {
-            // Try pay_over_time as fallback
-            klarnaPayments.load(
-              {
-                container: "#klarna-payments-container",
-                payment_method_category: "pay_over_time",
+          container: containerRef.current,
+          theme: "default",
+          shape: "default",
+          locale: "en-GB",
+          on_click: (authorize) => {
+            console.log("Klarna: Button clicked, starting authorization...");
+            setStatus('processing');
+            
+            authorize(
+              { 
+                auto_finalize: true, 
+                collect_shipping_address: false 
               },
-              {},
-              (result2) => {
-                if (result2.show_form) {
+              orderPayload,
+              (result) => {
+                console.log("Klarna authorization result:", result);
+                
+                if (result.approved && result.authorization_token) {
+                  console.log("Klarna: Payment approved!");
+                  onSuccess(result.authorization_token, merchantReference);
+                } else if (result.error) {
+                  console.error("Klarna authorization error:", result.error);
                   setStatus('visible');
+                  const errorMsg = typeof result.error === 'object' 
+                    ? result.error.message || JSON.stringify(result.error)
+                    : String(result.error);
+                  onError(errorMsg);
                 } else {
-                  setErrorMessage("Klarna not available");
-                  setStatus('error');
+                  console.log("Klarna: Payment cancelled or declined");
+                  setStatus('visible');
+                  onCancel();
                 }
               }
             );
+          },
+        },
+        (loadResult) => {
+          console.log("Klarna button load result:", loadResult);
+          if (loadResult?.show_button) {
+            console.log("Klarna: Button ready to display");
+            setStatus('visible');
+          } else {
+            console.warn("Klarna: Button not available for this purchase");
+            setErrorMessage("Klarna not available for this order");
+            setStatus('error');
           }
         }
       );
@@ -156,59 +140,7 @@ export function KlarnaExpressButton({
       setStatus('error');
       return false;
     }
-  }, [clientToken]);
-
-  // Handle authorize button click
-  const handleAuthorize = useCallback(() => {
-    const klarnaPayments = getKlarnaPayments();
-    if (!klarnaPayments) {
-      onError("Klarna not available");
-      return;
-    }
-
-    setStatus('processing');
-    console.log("Authorizing Klarna payment...");
-
-    const orderData = {
-      purchase_country: "GB",
-      purchase_currency: currency,
-      locale: "en-GB",
-      order_amount: amountInMinorUnits,
-      order_tax_amount: 0,
-      order_lines: [
-        {
-          type: "digital",
-          reference: merchantReference,
-          name: orderDescription.substring(0, 255),
-          quantity: 1,
-          unit_price: amountInMinorUnits,
-          tax_rate: 0,
-          total_amount: amountInMinorUnits,
-          total_tax_amount: 0,
-        },
-      ],
-    };
-
-    klarnaPayments.authorize(
-      {},
-      orderData,
-      (result) => {
-        console.log("Klarna authorize result:", result);
-        if (result.approved && result.authorization_token) {
-          onSuccess(result.authorization_token, merchantReference);
-        } else if (result.show_form) {
-          // User needs to complete something in the form
-          setStatus('visible');
-        } else if (result.error) {
-          setStatus('visible');
-          onError(result.error?.message || "Payment authorization failed");
-        } else {
-          setStatus('visible');
-          onCancel();
-        }
-      }
-    );
-  }, [currency, amountInMinorUnits, merchantReference, orderDescription, onSuccess, onError, onCancel]);
+  }, [amount, currency, merchantReference, orderDescription, onSuccess, onError, onCancel, amountInMinorUnits, orderPayload]);
 
   // Load SDK
   useEffect(() => {
@@ -216,13 +148,19 @@ export function KlarnaExpressButton({
     sdkLoadedRef.current = true;
 
     // Check if SDK is already loaded
-    if (getKlarnaPayments()) {
-      console.log("Klarna Payments SDK already available");
-      createSession();
+    if (getKlarnaButtons()) {
+      console.log("Klarna SDK already available");
+      setStatus('ready');
       return;
     }
 
-    // Remove existing script
+    // Set up async callback
+    (window as any).klarnaAsyncCallback = () => {
+      console.log("Klarna SDK loaded via async callback");
+      setStatus('ready');
+    };
+
+    // Remove existing script if any
     const existingScript = document.querySelector('script[src*="klarnacdn.net/kp/lib"]');
     if (existingScript) {
       existingScript.remove();
@@ -234,35 +172,45 @@ export function KlarnaExpressButton({
     script.async = true;
 
     script.onload = () => {
-      console.log("Klarna SDK loaded");
+      console.log("Klarna script onload fired");
+      // Give SDK time to initialize
       setTimeout(() => {
-        if (getKlarnaPayments()) {
-          createSession();
+        if (getKlarnaButtons()) {
+          console.log("Klarna Payments Buttons now available");
+          setStatus('ready');
         } else {
-          setErrorMessage("Klarna SDK failed to initialize");
+          console.error("Klarna SDK loaded but Payments.Buttons not available");
+          setErrorMessage("Klarna initialization failed");
           setStatus('error');
         }
-      }, 300);
+      }, 500);
     };
 
     script.onerror = () => {
-      console.error("Failed to load Klarna SDK");
+      console.error("Failed to load Klarna SDK script");
       setErrorMessage("Failed to load Klarna");
       setStatus('error');
     };
 
     document.head.appendChild(script);
-  }, [createSession]);
 
-  // Initialize widget when SDK is ready AND we have client token
+    return () => {
+      delete (window as any).klarnaAsyncCallback;
+    };
+  }, []);
+
+  // Initialize button when SDK is ready AND container exists
   useEffect(() => {
-    if (status === 'ready' && clientToken && containerRef.current && !initAttemptedRef.current) {
+    if (status === 'ready' && containerRef.current && !initAttemptedRef.current) {
       initAttemptedRef.current = true;
+      // Use requestAnimationFrame to ensure DOM is ready
       requestAnimationFrame(() => {
-        initializeKlarnaWidget();
+        setTimeout(() => {
+          initializeKlarnaButton();
+        }, 100);
       });
     }
-  }, [status, clientToken, initializeKlarnaWidget]);
+  }, [status, initializeKlarnaButton]);
 
   if (disabled) {
     return (
@@ -304,34 +252,18 @@ export function KlarnaExpressButton({
         </div>
       )}
       
-      {/* Klarna widget container */}
+      {/* Klarna button container - SDK renders button here */}
       <div 
-        id="klarna-payments-container"
         ref={containerRef}
-        className="w-full min-h-[100px]"
+        className="w-full min-h-[56px]"
         style={{ display: status === 'visible' ? 'block' : 'none' }}
       />
       
-      {/* Authorize button when widget is visible */}
-      {status === 'visible' && (
-        <Button 
-          onClick={handleAuthorize}
-          className="w-full h-14 bg-[#FFB3C7] hover:bg-[#FF9AB3] text-black mt-2"
-        >
-          <img 
-            src="https://x.klarnacdn.net/payment-method/assets/badges/generic/klarna.svg" 
-            alt="Klarna" 
-            className="h-6 mr-2"
-          />
-          Complete with Klarna
-        </Button>
-      )}
-      
-      {/* Loading states */}
-      {(status === 'loading' || status === 'initializing' || status === 'ready') && (
+      {/* Loading state while SDK loads or initializes */}
+      {(status === 'loading' || status === 'ready') && (
         <Button disabled className="w-full h-14 bg-[#FFB3C7] text-black">
           <Loader2 className="h-5 w-5 animate-spin mr-2" />
-          {status === 'initializing' ? 'Connecting to Klarna...' : 'Loading Klarna...'}
+          Loading Klarna...
         </Button>
       )}
     </div>
