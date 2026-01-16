@@ -50,8 +50,12 @@ export default function BookingConfirmation() {
   const authorisationCode = searchParams.get("authorisationCode");
   const amountReceived = searchParams.get("amountReceived");
   
-  // Payment was successful if responseCode is "0" (approved)
-  const paymentSuccessful = responseCode === "0" || responseCode === null; // null means direct booking without payment
+  // Square payment parameters
+  const squareSuccess = searchParams.get("square") === "success";
+  const squareRef = searchParams.get("ref");
+  
+  // Payment was successful if responseCode is "0" (approved) or Square success
+  const paymentSuccessful = responseCode === "0" || squareSuccess || responseCode === null; // null means direct booking without payment
   
   const [pupil, setPupil] = useState<PupilDetails | null>(null);
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
@@ -180,7 +184,7 @@ export default function BookingConfirmation() {
           </motion.p>
 
           {/* Payment confirmation details */}
-          {transactionId && (
+          {(transactionId || squareRef) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -189,6 +193,7 @@ export default function BookingConfirmation() {
             >
               {amountReceived && <span>Payment of £{(parseInt(amountReceived) / 100).toFixed(2)} confirmed</span>}
               {authorisationCode && <span className="ml-2">• Auth: {authorisationCode}</span>}
+              {squareRef && <span>Booking Reference: {squareRef}</span>}
             </motion.div>
           )}
         </div>
