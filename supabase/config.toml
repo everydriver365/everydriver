@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.woocommerce-checkout]
 verify_jwt = false
+
+[functions.woocommerce-update-order]
+verify_jwt = false
