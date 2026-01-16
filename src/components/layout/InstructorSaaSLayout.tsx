@@ -6,6 +6,8 @@ import { useState } from "react";
 import logo from "@/assets/logo-drive365-dark.png";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 const navLinks = [
   { href: "/instructor-app", label: "Home" },
@@ -48,7 +50,9 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
             ))}
           </div>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="hidden items-center gap-2 md:flex">
+            <LanguageToggle />
+            <ThemeToggle />
             <Button variant="ghost" className="text-nav-foreground/80 hover:text-nav-foreground hover:bg-nav-foreground/10" asChild>
               <Link to="/instructor-app/login">Log in</Link>
             </Button>
