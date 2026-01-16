@@ -30,7 +30,7 @@ serve(async (req) => {
 
     if (action === "getAuthUrl") {
       // Generate OAuth URL for instructor to connect their Google Calendar
-      const scope = encodeURIComponent("https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events");
+      const scope = encodeURIComponent("https://www.googleapis.com/auth/calendar");
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&access_type=offline&prompt=consent&state=${instructorId}`;
       
       return new Response(
