@@ -80,9 +80,8 @@ export function KlarnaExpressButton({
       merchant_reference1: merchantReference,
     };
 
-    // Define the async callback before loading the script
-    (window as any).klarnaAsyncCallback = () => {
-      console.log("Klarna SDK loaded, initializing buttons...");
+    const initializeKlarnaButton = () => {
+      console.log("Initializing Klarna button...");
       
       const klarnaButtons = getKlarnaPaymentsButtons();
       if (!klarnaButtons) {
@@ -139,16 +138,41 @@ export function KlarnaExpressButton({
       }
     };
 
-    // Load the Klarna script
+    // Check if Klarna SDK is already loaded
+    if (getKlarnaPaymentsButtons()) {
+      console.log("Klarna SDK already available");
+      initializeKlarnaButton();
+      return;
+    }
+
+    // Set up async callback for SDK
+    (window as any).klarnaAsyncCallback = () => {
+      console.log("Klarna SDK loaded via async callback");
+      initializeKlarnaButton();
+    };
+
+    // Remove any existing Klarna script
     const existingScript = document.querySelector('script[src*="klarnacdn.net/kp/lib"]');
     if (existingScript) {
       existingScript.remove();
     }
 
+    // Load the Klarna script
     const script = document.createElement("script");
     script.src = "https://x.klarnacdn.net/kp/lib/v1/api.js";
     script.defer = true;
     script.async = true;
+
+    // Also use onload as fallback
+    script.onload = () => {
+      console.log("Klarna script onload fired");
+      // Give SDK a moment to initialize, then check
+      setTimeout(() => {
+        if (getKlarnaPaymentsButtons() && isLoading) {
+          initializeKlarnaButton();
+        }
+      }, 500);
+    };
 
     script.onerror = () => {
       console.error("Failed to load Klarna SDK");
