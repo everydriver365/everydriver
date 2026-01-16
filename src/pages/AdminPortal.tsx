@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
-  Shield, Users, Calendar, CreditCard, Settings, BarChart3, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, LogOut
+  Users, Calendar, CreditCard, 
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +31,7 @@ import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
 import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
 import { HomepageSectionsManager } from "@/components/admin/HomepageSectionsManager";
 import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSManager";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -72,12 +71,34 @@ interface Instructor {
   is_active: boolean;
 }
 
+// Section metadata for breadcrumbs
+const sectionMeta: Record<string, { title: string; group: string; icon: React.ElementType }> = {
+  overview: { title: "Overview", group: "Dashboard", icon: LayoutDashboard },
+  instructors: { title: "Instructors", group: "Users", icon: Users },
+  courses: { title: "Course Templates", group: "Content", icon: BookOpen },
+  hero: { title: "Hero Section", group: "Homepage CMS", icon: Sparkles },
+  sections: { title: "Page Sections", group: "Homepage CMS", icon: Layers },
+  stats: { title: "Stats", group: "Homepage CMS", icon: LayoutDashboard },
+  testimonials: { title: "Testimonials", group: "Homepage CMS", icon: MessageSquareQuote },
+  features: { title: "Features", group: "Homepage CMS", icon: Rocket },
+  included: { title: "What's Included", group: "Homepage CMS", icon: Sparkles },
+  images: { title: "Site Images", group: "Media", icon: ImageIcon },
+  videos: { title: "Videos", group: "Media", icon: Video },
+  "instructor-home": { title: "App Homepage", group: "Instructor Platform", icon: Smartphone },
+  "instructor-marketing": { title: "Marketing Page", group: "Instructor Platform", icon: Globe },
+  "pwa-apps": { title: "PWA Config", group: "Mobile Apps", icon: Download },
+  promotions: { title: "Promotions", group: "Marketing", icon: Megaphone },
+  bonuses: { title: "Bonuses", group: "Marketing", icon: Gift },
+  "site-settings": { title: "Site Settings & SEO", group: "Settings", icon: Globe },
+};
+
 export default function AdminPortal() {
+  const [activeSection, setActiveSection] = useState("overview");
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
-  const { signOut, user } = useAdminAuth();
+  const { signOut } = useAdminAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -117,60 +138,13 @@ export default function AdminPortal() {
     setIsFormOpen(true);
   };
 
-  return (
-    <MainLayout>
-      <div className="container py-8">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-2xl font-bold md:text-3xl">Admin Dashboard</h1>
-            <p className="text-muted-foreground">System overview and management</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex gap-3"
-          >
-            <Button variant="outline" size="sm">
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Reports
-            </Button>
-            <Button variant="accent" size="sm">
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </motion.div>
-        </div>
+  const currentMeta = sectionMeta[activeSection] || sectionMeta.overview;
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="flex-wrap">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="instructors">Instructors</TabsTrigger>
-            <TabsTrigger value="courses">Course Templates</TabsTrigger>
-            <TabsTrigger value="pwa-apps">Mobile Apps</TabsTrigger>
-            <TabsTrigger value="instructor-home">Instructor App</TabsTrigger>
-            <TabsTrigger value="instructor-marketing">Instructor Marketing</TabsTrigger>
-            <TabsTrigger value="site-settings">Site Settings</TabsTrigger>
-            <TabsTrigger value="sections">Page Sections</TabsTrigger>
-            <TabsTrigger value="hero">Hero Section</TabsTrigger>
-            <TabsTrigger value="stats">Stats</TabsTrigger>
-            <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
-            <TabsTrigger value="included">What's Included</TabsTrigger>
-            <TabsTrigger value="features">Features</TabsTrigger>
-            <TabsTrigger value="images">Site Images</TabsTrigger>
-            <TabsTrigger value="videos">Videos</TabsTrigger>
-            <TabsTrigger value="promotions">Promotions</TabsTrigger>
-            <TabsTrigger value="bonuses">Bonuses</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
+  const renderContent = () => {
+    switch (activeSection) {
+      case "overview":
+        return (
+          <>
             {/* Stats Grid */}
             <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {stats.map((stat, index) => (
@@ -257,7 +231,11 @@ export default function AdminPortal() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-3 sm:grid-cols-3">
-                      <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+                      <Button 
+                        variant="outline" 
+                        className="h-auto flex-col gap-2 py-4"
+                        onClick={() => setActiveSection("instructors")}
+                      >
                         <Users className="h-6 w-6" />
                         <span>Manage Users</span>
                       </Button>
@@ -324,349 +302,333 @@ export default function AdminPortal() {
                 </Card>
               </motion.div>
             </div>
-          </TabsContent>
+          </>
+        );
 
-          <TabsContent value="instructors">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <UserPlus className="h-5 w-5 text-accent" />
-                    Manage Instructors
-                  </CardTitle>
-                  <Button onClick={() => setIsFormOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Instructor
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                    </div>
-                  ) : (
-                    <InstructorList
-                      instructors={instructors}
-                      onEdit={handleEdit}
-                      onRefresh={fetchInstructors}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "instructors":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5 text-accent" />
+                  Manage Instructors
+                </CardTitle>
+                <Button onClick={() => setIsFormOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Instructor
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                  </div>
+                ) : (
+                  <InstructorList
+                    instructors={instructors}
+                    onEdit={handleEdit}
+                    onRefresh={fetchInstructors}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="courses">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-accent" />
-                    Course Templates
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CourseTemplateManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "courses":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-accent" />
+                  Course Templates
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CourseTemplateManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="pwa-apps">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Download className="h-5 w-5 text-accent" />
-                    Mobile App Configuration
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <PWAConfigManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "pwa-apps":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Download className="h-5 w-5 text-accent" />
+                  Mobile App Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PWAConfigManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="instructor-home">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Smartphone className="h-5 w-5 text-accent" />
-                    Instructor Mobile Homepage
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <InstructorHomepageManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "instructor-home":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Smartphone className="h-5 w-5 text-accent" />
+                  Instructor Mobile Homepage
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <InstructorHomepageManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="instructor-marketing">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Rocket className="h-5 w-5 text-accent" />
-                    Instructor App Marketing Page
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <InstructorAppCMSManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "instructor-marketing":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Rocket className="h-5 w-5 text-accent" />
+                  Instructor App Marketing Page
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <InstructorAppCMSManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="sections">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Layers className="h-5 w-5 text-accent" />
-                    Homepage Sections
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <HomepageSectionsManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "sections":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layers className="h-5 w-5 text-accent" />
+                  Homepage Sections
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HomepageSectionsManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="hero">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Type className="h-5 w-5 text-accent" />
-                    Hero Section Content
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <HomepageHeroManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "hero":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Type className="h-5 w-5 text-accent" />
+                  Hero Section Content
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HomepageHeroManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="stats">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <LayoutDashboard className="h-5 w-5 text-accent" />
-                    Homepage Statistics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <HomepageStatsManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "stats":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LayoutDashboard className="h-5 w-5 text-accent" />
+                  Homepage Statistics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HomepageStatsManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="testimonials">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquareQuote className="h-5 w-5 text-accent" />
-                    Testimonials
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <HomepageTestimonialsManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "testimonials":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquareQuote className="h-5 w-5 text-accent" />
+                  Testimonials
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HomepageTestimonialsManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="included">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-accent" />
-                    What's Included Features
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <IncludedFeaturesManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "included":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-accent" />
+                  What's Included Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <IncludedFeaturesManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="features">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-accent" />
-                    Homepage Features
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <HomepageFeaturesManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "features":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-accent" />
+                  Homepage Features
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HomepageFeaturesManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="images">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ImageIcon className="h-5 w-5 text-accent" />
-                    Site Images
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SiteImageManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "images":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-accent" />
+                  Site Images
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SiteImageManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="videos">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Video className="h-5 w-5 text-accent" />
-                    Site Videos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SiteVideoManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "videos":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Video className="h-5 w-5 text-accent" />
+                  Site Videos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SiteVideoManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="promotions">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Megaphone className="h-5 w-5 text-accent" />
-                    Promotional Banner
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <PromotionalMessageManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "promotions":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5 text-accent" />
+                  Promotional Banner
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PromotionalMessageManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="site-settings">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-accent" />
-                    Site Settings & SEO
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SiteSettingsManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+      case "site-settings":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-accent" />
+                  Site Settings & SEO
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SiteSettingsManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-          <TabsContent value="bonuses">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Gift className="h-5 w-5 text-amber-500" />
-                    Instructor Bonuses
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <InstructorBonusManager />
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
-        </Tabs>
+      case "bonuses":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Gift className="h-5 w-5 text-amber-500" />
+                  Instructor Bonuses
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <InstructorBonusManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
 
-        {/* Instructor Form Dialog */}
-        <Dialog open={isFormOpen} onOpenChange={(open) => {
-          setIsFormOpen(open);
-          if (!open) setEditingInstructor(null);
-        }}>
-          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {editingInstructor ? "Edit Instructor" : "Add New Instructor"}
-              </DialogTitle>
-            </DialogHeader>
-            <InstructorForm
-              onSuccess={handleFormSuccess}
-              onCancel={() => {
-                setIsFormOpen(false);
-                setEditingInstructor(null);
-              }}
-              initialData={editingInstructor || undefined}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-    </MainLayout>
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      <AdminLayout
+        activeSection={activeSection}
+        sectionTitle={currentMeta.title}
+        groupTitle={currentMeta.group}
+        onSectionChange={setActiveSection}
+        onLogout={handleLogout}
+      >
+        {renderContent()}
+      </AdminLayout>
+
+      {/* Instructor Form Dialog */}
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        setIsFormOpen(open);
+        if (!open) setEditingInstructor(null);
+      }}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingInstructor ? "Edit Instructor" : "Add New Instructor"}
+            </DialogTitle>
+          </DialogHeader>
+          <InstructorForm
+            onSuccess={handleFormSuccess}
+            onCancel={() => {
+              setIsFormOpen(false);
+              setEditingInstructor(null);
+            }}
+            initialData={editingInstructor || undefined}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
