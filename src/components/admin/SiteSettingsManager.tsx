@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Globe, Save, Loader2, Info } from "lucide-react";
+import { Globe, Save, Loader2, Info, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,6 +105,33 @@ export function SiteSettingsManager() {
           />
         );
       
+      case "color":
+        return (
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={value || "#3b82f6"}
+              onChange={(e) => handleChange(setting.setting_key, e.target.value)}
+              className="h-10 w-14 rounded border cursor-pointer"
+            />
+            <Input
+              type="text"
+              value={value}
+              onChange={(e) => handleChange(setting.setting_key, e.target.value)}
+              placeholder="#3b82f6"
+              className="w-32 font-mono text-sm"
+            />
+            {value && (
+              <div 
+                className="h-10 flex-1 rounded border flex items-center justify-center text-sm"
+                style={{ backgroundColor: value, color: value > "#888888" ? "#000" : "#fff" }}
+              >
+                Preview
+              </div>
+            )}
+          </div>
+        );
+      
       default:
         return (
           <div className="space-y-1">
@@ -140,6 +167,9 @@ export function SiteSettingsManager() {
   );
   const contactSettings = settings.filter(s => 
     ["contact_email", "contact_phone", "footer_copyright"].includes(s.setting_key)
+  );
+  const paymentSettings = settings.filter(s => 
+    ["npi_merchant_name", "npi_brand_color"].includes(s.setting_key)
   );
 
   return (
@@ -221,6 +251,36 @@ export function SiteSettingsManager() {
           ))}
         </CardContent>
       </Card>
+
+      {/* Payment Page Settings */}
+      {paymentSettings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Payment Page Branding
+            </CardTitle>
+            <CardDescription>
+              Customize the hosted payment page appearance for NPI/Cardstream
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {paymentSettings.map((setting) => (
+              <div key={setting.id} className="space-y-2">
+                <Label htmlFor={setting.setting_key} className="flex items-center gap-2">
+                  {setting.label}
+                  {setting.description && (
+                    <span className="text-xs text-muted-foreground font-normal">
+                      — {setting.description}
+                    </span>
+                  )}
+                </Label>
+                {renderInput(setting)}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Info Note */}
       <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-4 flex gap-3">
