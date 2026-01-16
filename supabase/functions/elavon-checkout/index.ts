@@ -56,14 +56,14 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Use NPI Cardstream credentials (same gateway, different branding)
-    const merchantId = Deno.env.get("NPI_MERCHANT_ID")?.trim() ?? "";
-    const secretKey = Deno.env.get("NPI_MERCHANT_SECRET")?.trim() ?? "";
+    // Elavon Cardstream credentials
+    const merchantId = Deno.env.get("ELAVON_MERCHANT_ALIAS")?.trim() ?? "";
+    const secretKey = Deno.env.get("ELAVON_SECRET_KEY")?.trim() ?? "";
 
     if (!merchantId || !secretKey) {
-      console.error("Missing Cardstream credentials");
+      console.error("Missing Elavon Cardstream credentials");
       return new Response(
-        JSON.stringify({ error: "Payment gateway not configured" }),
+        JSON.stringify({ error: "Elavon payment gateway not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
