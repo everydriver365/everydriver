@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.payment-health]
 verify_jwt = false
+
+[functions.woocommerce-checkout]
+verify_jwt = false
