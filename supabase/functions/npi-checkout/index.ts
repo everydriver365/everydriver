@@ -18,9 +18,9 @@ interface NPICheckoutRequest {
   pupilId?: string;
 }
 
-// Create signature following NPI documentation:
+// Create signature following NPI/Cardstream documentation:
 // 1. Sort fields alphabetically by key
-// 2. Build URL-encoded query string
+// 2. Build URL-encoded query string (PHP http_build_query style - spaces as +)
 // 3. Normalize line endings
 // 4. Append secret key
 // 5. Hash with SHA-512
@@ -28,11 +28,13 @@ async function createNPISignature(data: Record<string, string>, secretKey: strin
   // Sort fields alphabetically by key
   const sortedKeys = Object.keys(data).sort();
   
-  // Build URL-encoded query string (matching PHP http_build_query)
+  // Build URL-encoded query string matching PHP http_build_query
+  // PHP uses RFC 1738 encoding where spaces become + not %20
   const queryParts: string[] = [];
   for (const key of sortedKeys) {
-    const encodedKey = encodeURIComponent(key);
-    const encodedValue = encodeURIComponent(data[key] || '');
+    // encodeURIComponent then replace %20 with + to match PHP's http_build_query
+    const encodedKey = encodeURIComponent(key).replace(/%20/g, '+');
+    const encodedValue = encodeURIComponent(data[key] || '').replace(/%20/g, '+');
     queryParts.push(`${encodedKey}=${encodedValue}`);
   }
   let queryString = queryParts.join('&');
