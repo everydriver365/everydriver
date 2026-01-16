@@ -1267,6 +1267,11 @@ export type Database = {
           stripe_account_id: string | null
           twitter_url: string | null
           updated_at: string
+          website_button_color: string | null
+          website_font: string | null
+          website_footer_bg: string | null
+          website_header_style: string | null
+          website_theme: string | null
           welcome_video_url: string | null
         }
         Insert: {
@@ -1326,6 +1331,11 @@ export type Database = {
           stripe_account_id?: string | null
           twitter_url?: string | null
           updated_at?: string
+          website_button_color?: string | null
+          website_font?: string | null
+          website_footer_bg?: string | null
+          website_header_style?: string | null
+          website_theme?: string | null
           welcome_video_url?: string | null
         }
         Update: {
@@ -1385,6 +1395,11 @@ export type Database = {
           stripe_account_id?: string | null
           twitter_url?: string | null
           updated_at?: string
+          website_button_color?: string | null
+          website_font?: string | null
+          website_footer_bg?: string | null
+          website_header_style?: string | null
+          website_theme?: string | null
           welcome_video_url?: string | null
         }
         Relationships: []
