@@ -70,7 +70,7 @@ serve(async (req: Request) => {
 
     // Create WooCommerce order
     const orderPayload = {
-      payment_method: "bacs", // Will be updated on checkout
+      payment_method: "bacs", // placeholder; user chooses actual method on Woo checkout
       payment_method_title: "Online Payment",
       set_paid: false,
       status: "pending",
@@ -80,12 +80,14 @@ serve(async (req: Request) => {
         email: customerEmail,
         phone: customerPhone || "",
       },
-      line_items: [
+      // For service-style payments (driving lessons) it's safer to create an order using fee_lines
+      // because line_items typically require an existing product_id.
+      line_items: [],
+      fee_lines: [
         {
           name: `${courseName} - ${courseHours} Hour Course`,
-          quantity: 1,
           total: amount.toFixed(2),
-        }
+        },
       ],
       meta_data: [
         { key: "order_ref", value: orderRef },
@@ -100,48 +102,82 @@ serve(async (req: Request) => {
 
     // Clean up store URL (remove trailing slash)
     const cleanStoreUrl = storeUrl.replace(/\/$/, '');
-    
-    // Create order via WooCommerce REST API
-    const authString = btoa(`${consumerKey}:${consumerSecret}`);
-    const orderResponse = await fetch(`${cleanStoreUrl}/wp-json/wc/v3/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${authString}`,
-      },
-      body: JSON.stringify(orderPayload),
-    });
 
-    if (!orderResponse.ok) {
-      const errorText = await orderResponse.text();
-      console.error("WooCommerce API error:", orderResponse.status, errorText);
-      return new Response(
-        JSON.stringify({ 
-          error: "Failed to create WooCommerce order",
-          details: errorText 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Some WordPress setups don't expose /wp-json (or block Authorization headers),
+    // so we try multiple REST routes + auth styles.
+    const qp = `consumer_key=${encodeURIComponent(consumerKey)}&consumer_secret=${encodeURIComponent(consumerSecret)}`;
+    const authString = btoa(`${consumerKey}:${consumerSecret}`);
+
+    const attempts: Array<{ url: string; headers: Record<string, string> }> = [
+      {
+        url: `${cleanStoreUrl}/wp-json/wc/v3/orders`,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${authString}`,
+        },
+      },
+      {
+        url: `${cleanStoreUrl}/wp-json/wc/v3/orders?${qp}`,
+        headers: { 'Content-Type': 'application/json' },
+      },
+      {
+        url: `${cleanStoreUrl}/?rest_route=/wc/v3/orders&${qp}`,
+        headers: { 'Content-Type': 'application/json' },
+      },
+      {
+        url: `${cleanStoreUrl}/index.php?rest_route=/wc/v3/orders&${qp}`,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    ];
+
+    let lastStatus = 0;
+    let lastBody = '';
+
+    for (const attempt of attempts) {
+      console.log(`Attempting WooCommerce order create via: ${attempt.url}`);
+
+      const res = await fetch(attempt.url, {
+        method: 'POST',
+        headers: attempt.headers,
+        body: JSON.stringify(orderPayload),
+      });
+
+      if (res.ok) {
+        const orderData = await res.json();
+        console.log("WooCommerce order created:", orderData.id);
+
+        // Build checkout URL - WooCommerce uses order-pay endpoint
+        const checkoutUrl = `${cleanStoreUrl}/checkout/order-pay/${orderData.id}/?pay_for_order=true&key=${orderData.order_key}`;
+
+        console.log("Redirecting to checkout:", checkoutUrl);
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            checkoutUrl,
+            orderId: orderData.id,
+            orderKey: orderData.order_key,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      lastStatus = res.status;
+      lastBody = await res.text();
+      console.error("WooCommerce API error:", res.status, `(${attempt.url})`, lastBody.slice(0, 1200));
+
+      // If it's clearly an application-level error (400/401/403), don't keep hammering.
+      if ([400, 401, 403].includes(res.status)) break;
     }
 
-    const orderData = await orderResponse.json();
-    console.log("WooCommerce order created:", orderData.id);
-
-    // Build checkout URL - WooCommerce uses order-pay endpoint
-    const checkoutUrl = `${cleanStoreUrl}/checkout/order-pay/${orderData.id}/?pay_for_order=true&key=${orderData.order_key}`;
-
-    console.log("Redirecting to checkout:", checkoutUrl);
-
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        checkoutUrl,
-        orderId: orderData.id,
-        orderKey: orderData.order_key,
+      JSON.stringify({
+        error: "Failed to create WooCommerce order",
+        status: lastStatus,
+        details: lastBody?.slice(0, 800) || "",
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
     console.error("WooCommerce checkout error:", errorMessage);
