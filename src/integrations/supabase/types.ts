@@ -1777,6 +1777,9 @@ export type Database = {
           name: string
           next_lesson: string | null
           notes: string | null
+          parent_email: string | null
+          parent_name: string | null
+          parent_phone: string | null
           phone: string | null
           postcode: string
           prepaid_hours: number | null
@@ -1805,6 +1808,9 @@ export type Database = {
           name: string
           next_lesson?: string | null
           notes?: string | null
+          parent_email?: string | null
+          parent_name?: string | null
+          parent_phone?: string | null
           phone?: string | null
           postcode: string
           prepaid_hours?: number | null
@@ -1833,6 +1839,9 @@ export type Database = {
           name?: string
           next_lesson?: string | null
           notes?: string | null
+          parent_email?: string | null
+          parent_name?: string | null
+          parent_phone?: string | null
           phone?: string | null
           postcode?: string
           prepaid_hours?: number | null
