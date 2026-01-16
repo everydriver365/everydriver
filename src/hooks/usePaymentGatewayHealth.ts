@@ -14,11 +14,12 @@ interface PaymentHealthResponse {
   square: GatewayStatus;
 }
 
+// CONFIRMED WORKING gateways only - Square and Klarna have credential issues
 const defaultHealth: PaymentHealthResponse = {
-  clearpay: { available: true, configured: true }, // Confirmed working
-  klarna: { available: false, configured: true, error: "Credentials issue" },
-  npi: { available: true, configured: true }, // Confirmed working
-  square: { available: false, configured: true, error: "Credentials issue" },
+  clearpay: { available: true, configured: true },
+  klarna: { available: false, configured: true, error: "Credentials not configured for production" },
+  npi: { available: true, configured: true },
+  square: { available: false, configured: true, error: "Credentials not configured for production" },
 };
 
 export function usePaymentGatewayHealth() {
@@ -26,25 +27,10 @@ export function usePaymentGatewayHealth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("payment-health");
-        
-        if (error) {
-          console.warn("Payment health check failed:", error);
-          setHealth(defaultHealth);
-        } else if (data) {
-          setHealth(data as PaymentHealthResponse);
-        }
-      } catch (err) {
-        console.warn("Payment health check error:", err);
-        setHealth(defaultHealth);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkHealth();
+    // For now, use hardcoded defaults since we know Square/Klarna have credential issues
+    // The health check API exists but doesn't validate credentials actually work
+    setHealth(defaultHealth);
+    setLoading(false);
   }, []);
 
   return { health, loading };
