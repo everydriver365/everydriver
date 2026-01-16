@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaPaymentWidget } from "@/components/booking/KlarnaPaymentWidget";
-import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { NPIHostedFields } from "@/components/booking/NPIHostedFields";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -1603,41 +1602,25 @@ export default function BookingSummary() {
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
             </button>
 
-            {/* Klarna Express Checkout */}
-            <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-[#ffb3c7]/10">
-              <div className="flex items-center justify-between mb-3">
+            {/* Klarna - Hosted Checkout */}
+            <button
+              onClick={handleKlarnaCheckout}
+              disabled={!canSubmit || isKlarnaLoading}
+              className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-[#ffb3c7]/10 hover:bg-[#ffb3c7]/20 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center justify-between mb-2">
                 <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
                   Klarna.
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  Pay in 3 instalments
+                  {isKlarnaLoading ? "Loading..." : "Pay in 3"}
                 </span>
               </div>
-              <div className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</div>
-              <KlarnaExpressButton
-                amount={totalPrice}
-                merchantReference={`KL-${instructor.id.slice(0, 8)}-${Date.now()}`}
-                orderDescription={courseDetails?.courseName || "Driving Course"}
-                disabled={!canSubmit}
-                onSuccess={async (authorizationToken, orderId) => {
-                  console.log("Klarna Express success:", { authorizationToken, orderId });
-                  toast.success("Payment authorized with Klarna!");
-                  // Create booking if not exists
-                  const pupilId = await ensureBookingCreated();
-                  if (pupilId) {
-                    navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
-                  }
-                }}
-                onError={(error) => {
-                  console.error("Klarna Express error:", error);
-                  toast.error(error || "Klarna payment failed");
-                }}
-                onCancel={() => {
-                  console.log("Klarna Express cancelled");
-                  toast.info("Klarna payment cancelled");
-                }}
-              />
-            </div>
+              <div className="font-semibold text-sm">3 × £{(totalPrice / 3).toFixed(2)}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {isKlarnaLoading ? "Redirecting to Klarna..." : "Pay with Klarna on a secure checkout page"}
+              </div>
+            </button>
           </div>
 
           {/* Klarna Inline Widget */}

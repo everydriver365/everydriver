@@ -99,12 +99,19 @@ serve(async (req: Request) => {
       order_tax_amount: 0,
       order_lines: orderLines,
       merchant_reference1: data.merchantReference,
-      merchant_urls: {
-        terms: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "/terms",
-        checkout: data.redirectUrls.cancelUrl,
-        confirmation: data.redirectUrls.confirmUrl,
-        push: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "?klarna_push=true",
-      },
+      merchant_urls: (() => {
+        const confirm = new URL(data.redirectUrls.confirmUrl);
+        const origin = confirm.origin;
+
+        return {
+          // Use a real, always-available terms page
+          terms: `${origin}/terms-of-service`,
+          checkout: data.redirectUrls.cancelUrl,
+          confirmation: data.redirectUrls.confirmUrl,
+          // Push URL must be HTTPS and reachable; booking-confirmation is an existing route
+          push: `${data.redirectUrls.confirmUrl}${data.redirectUrls.confirmUrl.includes("?") ? "&" : "?"}klarna_push=true`,
+        };
+      })(),
       billing_address: {
         given_name: data.consumer.givenName,
         family_name: data.consumer.familyName,
