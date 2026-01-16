@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 const KLARNA_CLIENT_ID = "klarna_live_client_YyNvRz94c2R5ZVBBTktrdi16by9CZ3NjNzVqelI4UzYsMzY4NDE1Y2ItMzE2ZS00OWJkLWExZjgtNDQyMmM1OTBmNGIxLDEsU1poL1djaHR1ZllHRFZuT1ZsemZlYVNXNDNXU2NpK1JZTlhoMVpzMGFubz0";
 
 interface KlarnaExpressButtonProps {
-  amount: number; // in pounds
+  amount: number;
   currency?: string;
   merchantReference: string;
   orderDescription: string;
@@ -16,12 +16,11 @@ interface KlarnaExpressButtonProps {
   disabled?: boolean;
 }
 
-// Local Klarna type to avoid conflicts with other Klarna declarations
 interface KlarnaPaymentsButtons {
   init: (config: { client_id: string }) => {
     load: (
       options: {
-        container: string;
+        container: string | HTMLElement;
         theme?: string;
         shape?: string;
         locale?: string;
@@ -52,132 +51,138 @@ export function KlarnaExpressButton({
   disabled = false,
 }: KlarnaExpressButtonProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [sdkError, setSdkError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [buttonVisible, setButtonVisible] = useState(false);
-  const initRef = useRef(false);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'visible' | 'error' | 'processing'>('loading');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const initAttemptedRef = useRef(false);
+  const sdkLoadedRef = useRef(false);
 
-  useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
+  const orderPayload = {
+    purchase_country: "GB",
+    purchase_currency: currency,
+    locale: "en-GB",
+    order_amount: Math.round(amount * 100),
+    order_lines: [
+      {
+        type: "physical",
+        reference: merchantReference,
+        name: orderDescription,
+        quantity: 1,
+        unit_price: Math.round(amount * 100),
+        total_amount: Math.round(amount * 100),
+      },
+    ],
+    merchant_reference1: merchantReference,
+  };
 
-    const orderPayload = {
-      purchase_country: "GB",
-      purchase_currency: currency,
-      locale: "en-GB",
-      order_amount: Math.round(amount * 100),
-      order_lines: [
+  const initializeKlarnaButton = useCallback(() => {
+    if (!containerRef.current) {
+      console.log("Container not ready, waiting...");
+      return false;
+    }
+
+    const klarnaButtons = getKlarnaPaymentsButtons();
+    if (!klarnaButtons) {
+      console.error("Klarna Payments Buttons not available");
+      setErrorMessage("Klarna Payments not available");
+      setStatus('error');
+      return false;
+    }
+
+    console.log("Initializing Klarna button with container element...");
+
+    try {
+      klarnaButtons.init({
+        client_id: KLARNA_CLIENT_ID,
+      }).load(
         {
-          type: "physical",
-          reference: merchantReference,
-          name: orderDescription,
-          quantity: 1,
-          unit_price: Math.round(amount * 100),
-          total_amount: Math.round(amount * 100),
-        },
-      ],
-      merchant_reference1: merchantReference,
-    };
-
-    const initializeKlarnaButton = () => {
-      console.log("Initializing Klarna button...");
-      
-      const klarnaButtons = getKlarnaPaymentsButtons();
-      if (!klarnaButtons) {
-        console.error("Klarna Payments Buttons not available");
-        setSdkError("Klarna Payments not available");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        klarnaButtons.init({
-          client_id: KLARNA_CLIENT_ID,
-        }).load(
-          {
-            container: "#klarna-payments-container",
-            theme: "default",
-            shape: "default",
-            locale: "en-GB",
-            on_click: (authorize) => {
-              console.log("Klarna button clicked, authorizing...");
-              setIsProcessing(true);
-              
-              authorize(
-                { auto_finalize: true, collect_shipping_address: false },
-                orderPayload,
-                (result) => {
-                  console.log("Klarna authorization result:", result);
-                  setIsProcessing(false);
-                  
-                  if (result.approved && result.authorization_token) {
-                    onSuccess(result.authorization_token, merchantReference);
-                  } else if (result.error) {
-                    onError(result.error?.message || "Payment authorization failed");
-                  } else {
-                    onCancel();
-                  }
+          container: containerRef.current, // Pass the actual element, not selector
+          theme: "default",
+          shape: "default",
+          locale: "en-GB",
+          on_click: (authorize) => {
+            console.log("Klarna button clicked, authorizing...");
+            setStatus('processing');
+            
+            authorize(
+              { auto_finalize: true, collect_shipping_address: false },
+              orderPayload,
+              (result) => {
+                console.log("Klarna authorization result:", result);
+                
+                if (result.approved && result.authorization_token) {
+                  onSuccess(result.authorization_token, merchantReference);
+                } else if (result.error) {
+                  setStatus('visible');
+                  onError(result.error?.message || "Payment authorization failed");
+                } else {
+                  setStatus('visible');
+                  onCancel();
                 }
-              );
-            },
+              }
+            );
           },
-          (loadResult) => {
-            console.log("Klarna button load result:", loadResult);
-            setIsLoading(false);
-            setButtonVisible(loadResult.show_button);
-            if (!loadResult.show_button) {
-              setSdkError("Klarna is not available for this purchase");
-            }
+        },
+        (loadResult) => {
+          console.log("Klarna button load result:", loadResult);
+          if (loadResult.show_button) {
+            setStatus('visible');
+          } else {
+            setErrorMessage("Klarna is not available for this purchase");
+            setStatus('error');
           }
-        );
-      } catch (error) {
-        console.error("Error initializing Klarna:", error);
-        setSdkError("Failed to initialize Klarna");
-        setIsLoading(false);
-      }
-    };
+        }
+      );
+      return true;
+    } catch (error) {
+      console.error("Error initializing Klarna:", error);
+      setErrorMessage("Failed to initialize Klarna");
+      setStatus('error');
+      return false;
+    }
+  }, [amount, currency, merchantReference, orderDescription, onSuccess, onError, onCancel]);
 
-    // Check if Klarna SDK is already loaded
+  // Load SDK
+  useEffect(() => {
+    if (sdkLoadedRef.current) return;
+    sdkLoadedRef.current = true;
+
+    // Check if SDK is already loaded
     if (getKlarnaPaymentsButtons()) {
       console.log("Klarna SDK already available");
-      initializeKlarnaButton();
+      setStatus('ready');
       return;
     }
 
-    // Set up async callback for SDK
+    // Set up async callback
     (window as any).klarnaAsyncCallback = () => {
       console.log("Klarna SDK loaded via async callback");
-      initializeKlarnaButton();
+      setStatus('ready');
     };
 
-    // Remove any existing Klarna script
+    // Remove existing script
     const existingScript = document.querySelector('script[src*="klarnacdn.net/kp/lib"]');
     if (existingScript) {
       existingScript.remove();
     }
 
-    // Load the Klarna script
     const script = document.createElement("script");
     script.src = "https://x.klarnacdn.net/kp/lib/v1/api.js";
     script.defer = true;
     script.async = true;
 
-    // Also use onload as fallback
     script.onload = () => {
       console.log("Klarna script onload fired");
-      // Give SDK a moment to initialize, then check
       setTimeout(() => {
-        if (getKlarnaPaymentsButtons() && isLoading) {
-          initializeKlarnaButton();
+        if (getKlarnaPaymentsButtons()) {
+          setStatus('ready');
         }
-      }, 500);
+      }, 300);
     };
 
     script.onerror = () => {
       console.error("Failed to load Klarna SDK");
-      setSdkError("Failed to load Klarna");
-      setIsLoading(false);
+      setErrorMessage("Failed to load Klarna");
+      setStatus('error');
     };
 
     document.head.appendChild(script);
@@ -185,7 +190,18 @@ export function KlarnaExpressButton({
     return () => {
       delete (window as any).klarnaAsyncCallback;
     };
-  }, [amount, currency, merchantReference, orderDescription, onSuccess, onError, onCancel]);
+  }, []);
+
+  // Initialize button when SDK is ready AND container exists
+  useEffect(() => {
+    if (status === 'ready' && containerRef.current && !initAttemptedRef.current) {
+      initAttemptedRef.current = true;
+      // Small delay to ensure DOM is fully ready
+      requestAnimationFrame(() => {
+        initializeKlarnaButton();
+      });
+    }
+  }, [status, initializeKlarnaButton]);
 
   if (disabled) {
     return (
@@ -200,16 +216,7 @@ export function KlarnaExpressButton({
     );
   }
 
-  if (isLoading) {
-    return (
-      <Button disabled className="w-full h-14 bg-[#FFB3C7] text-black">
-        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        Loading Klarna...
-      </Button>
-    );
-  }
-
-  if (sdkError) {
+  if (status === 'error') {
     return (
       <Button disabled className="w-full h-14 bg-[#FFB3C7] text-black opacity-50">
         <img 
@@ -224,26 +231,25 @@ export function KlarnaExpressButton({
 
   return (
     <div className="w-full">
-      {isProcessing && (
+      {status === 'processing' && (
         <div className="flex items-center justify-center p-4 bg-[#FFB3C7]/20 rounded-lg mb-2">
           <Loader2 className="h-5 w-5 animate-spin mr-2 text-[#FFB3C7]" />
           <span className="text-sm">Processing with Klarna...</span>
         </div>
       )}
+      
+      {/* Always render container for Klarna to mount into */}
       <div 
-        id="klarna-payments-container" 
         ref={containerRef}
         className="w-full min-h-[56px]"
-        style={{ display: buttonVisible ? 'block' : 'none' }}
+        style={{ display: status === 'visible' ? 'block' : 'none' }}
       />
-      {!buttonVisible && !isLoading && !sdkError && (
-        <Button disabled className="w-full h-14 bg-[#FFB3C7] text-black opacity-50">
-          <img 
-            src="https://x.klarnacdn.net/payment-method/assets/badges/generic/klarna.svg" 
-            alt="Klarna" 
-            className="h-6 mr-2"
-          />
-          Klarna loading...
+      
+      {/* Show loading state while SDK loads or initializes */}
+      {(status === 'loading' || status === 'ready') && (
+        <Button disabled className="w-full h-14 bg-[#FFB3C7] text-black">
+          <Loader2 className="h-5 w-5 animate-spin mr-2" />
+          Loading Klarna...
         </Button>
       )}
     </div>
