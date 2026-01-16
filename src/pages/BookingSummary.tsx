@@ -1577,72 +1577,7 @@ export default function BookingSummary() {
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
             </button>
 
-            {/* WooCommerce Checkout - Hybrid Flow */}
-            {!showWooPaymentOptions ? (
-              <button
-                onClick={handleWooCommerceCheckout}
-                disabled={!canSubmit || isWooLoading}
-                className="w-full rounded-lg border-2 border-purple-400 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-950/50 dark:hover:to-indigo-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-purple-600 px-2 py-0.5 text-xs font-bold text-white">
-                    WooCommerce
-                  </span>
-                  <span className="text-xs text-purple-600 dark:text-purple-400">
-                    {isWooLoading ? "Creating order..." : "In-App Payment"}
-                  </span>
-                </div>
-                <div className="font-semibold text-sm text-purple-900 dark:text-purple-100">Pay via WooCommerce</div>
-                <div className="text-xs text-purple-700/80 dark:text-purple-300/80">Card, Clearpay, or Klarna</div>
-              </button>
-            ) : (
-              <div className="w-full rounded-lg border-2 border-purple-500 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-purple-600 px-2 py-0.5 text-xs font-bold text-white flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3" />
-                    Order Created
-                  </span>
-                  <span className="text-xs text-purple-600 dark:text-purple-400">
-                    #{wooOrder?.orderId}
-                  </span>
-                </div>
-                <div className="font-semibold text-sm text-purple-900 dark:text-purple-100 mb-1">Select Payment Below</div>
-                <div className="text-xs text-purple-700/80 dark:text-purple-300/80">Choose how you'd like to pay</div>
-              </div>
-            )}
-
-            {/* Square Card Payment - Needs Credential Fix */}
-            {gatewayHealth.square.available ? (
-              <button
-                onClick={handleSquareCheckout}
-                disabled={!canSubmit || isSquareLoading}
-                className="w-full rounded-lg border p-4 bg-primary/5 hover:bg-primary/10 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-primary px-2 py-0.5 text-xs font-bold text-white">
-                    Square
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {isSquareLoading ? "Loading..." : "Pay now"}
-                  </span>
-                </div>
-                <div className="font-semibold text-sm">Pay with Apple/Google Pay</div>
-                <div className="text-xs text-muted-foreground">Digital wallets supported</div>
-              </button>
-            ) : (
-              <div className="w-full rounded-lg border border-dashed p-4 bg-muted/30 text-left opacity-60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                    Square
-                  </span>
-                  <span className="text-xs text-amber-600">Coming Soon</span>
-                </div>
-                <div className="font-semibold text-sm text-muted-foreground">Apple Pay / Google Pay</div>
-                <div className="text-xs text-muted-foreground">Digital wallets</div>
-              </div>
-            )}
-
-            {/* Klarna - Needs Credential Fix */}
+            {/* Klarna */}
             {gatewayHealth.klarna.available ? (
               <button
                 onClick={handleKlarnaCheckout}
@@ -1670,37 +1605,6 @@ export default function BookingSummary() {
                 </div>
                 <div className="font-semibold text-sm text-muted-foreground">3 × £{(totalPrice / 3).toFixed(2)}</div>
                 <div className="text-xs text-muted-foreground">Interest-free instalments</div>
-              </div>
-            )}
-
-            {/* Elavon Card Payment */}
-            {gatewayHealth.elavon.available ? (
-              <button
-                onClick={handleElavonCheckout}
-                disabled={!canSubmit || isElavonLoading}
-                className="w-full rounded-lg border p-4 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-950/50 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
-                    Elavon
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {isElavonLoading ? "Loading..." : "Pay now"}
-                  </span>
-                </div>
-                <div className="font-semibold text-sm">Pay by Card</div>
-                <div className="text-xs text-muted-foreground">Visa, Mastercard, Amex</div>
-              </button>
-            ) : (
-              <div className="w-full rounded-lg border border-dashed p-4 bg-muted/30 text-left opacity-60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                    Elavon
-                  </span>
-                  <span className="text-xs text-amber-600">Coming Soon</span>
-                </div>
-                <div className="font-semibold text-sm text-muted-foreground">Pay by Card</div>
-                <div className="text-xs text-muted-foreground">Visa, Mastercard, Amex</div>
               </div>
             )}
           </div>
