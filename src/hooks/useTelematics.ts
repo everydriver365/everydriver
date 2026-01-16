@@ -407,6 +407,18 @@ export const useTelematics = (instructorId: string) => {
       return;
     }
 
+    // First check if we have location permission
+    try {
+      const permissionStatus = await navigator.permissions?.query({ name: 'geolocation' });
+      if (permissionStatus?.state === 'denied') {
+        setError('Location permission denied. Please enable location access in your browser settings.');
+        return;
+      }
+    } catch (permErr) {
+      // permissions API not supported, continue anyway
+      console.log('Permissions API not supported, continuing...');
+    }
+
     try {
       // Request wake lock to keep screen on
       await requestWakeLock();
@@ -417,6 +429,8 @@ export const useTelematics = (instructorId: string) => {
       
       if (motionGranted) {
         window.addEventListener('devicemotion', handleDeviceMotion);
+      } else {
+        console.log('Motion permission not granted - tracking without motion sensors');
       }
 
       // Create telematics session in database
@@ -453,6 +467,9 @@ export const useTelematics = (instructorId: string) => {
       speedHistoryRef.current = [];
       calculatedSpeedHistoryRef.current = [];
       gForceHistoryRef.current = [];
+
+      // Set initial GPS status
+      setGpsQuality({ status: 'fair', accuracy_m: null, message: 'Acquiring GPS signal...' });
 
       // Start watching position
       watchIdRef.current = navigator.geolocation.watchPosition(
@@ -555,9 +572,27 @@ export const useTelematics = (instructorId: string) => {
           lastPositionRef.current = position;
           lastPositionTimeRef.current = position.timestamp;
         },
-        (error) => {
-          setError(`GPS Error: ${error.message}`);
-          setGpsQuality({ status: 'unavailable', accuracy_m: null, message: error.message });
+        (geoError) => {
+          let errorMessage = 'GPS Error';
+          let statusMessage = geoError.message;
+          
+          switch (geoError.code) {
+            case geoError.PERMISSION_DENIED:
+              errorMessage = 'Location permission denied. Please allow location access and try again.';
+              statusMessage = 'Permission denied - check browser settings';
+              break;
+            case geoError.POSITION_UNAVAILABLE:
+              errorMessage = 'GPS signal unavailable. Please ensure you are outdoors or have a clear view of the sky.';
+              statusMessage = 'No GPS signal - try moving outdoors';
+              break;
+            case geoError.TIMEOUT:
+              errorMessage = 'GPS taking too long. Retrying...';
+              statusMessage = 'GPS timeout - waiting for signal';
+              break;
+          }
+          
+          setError(errorMessage);
+          setGpsQuality({ status: 'unavailable', accuracy_m: null, message: statusMessage });
         },
         {
           enableHighAccuracy: true,
