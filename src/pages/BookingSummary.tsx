@@ -116,7 +116,7 @@ export default function BookingSummary() {
   const [isClearpayLoading, setIsClearpayLoading] = useState(false);
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
   const [isNPILoading, setIsNPILoading] = useState(false);
-  const [isElavonLoading, setIsElavonLoading] = useState(false);
+  const [isSquareLoading, setIsSquareLoading] = useState(false);
   
   // Klarna inline widget state
   const [klarnaSession, setKlarnaSession] = useState<{
@@ -506,65 +506,55 @@ export default function BookingSummary() {
     }
   };
 
-  const handleElavonCheckout = async () => {
+  const handleSquareCheckout = async () => {
     if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
       toast.error("Please complete all details and schedule all lessons first");
       return;
     }
 
-    setIsElavonLoading(true);
+    setIsSquareLoading(true);
     try {
-      const orderReference = `ELV-${instructor.id.slice(0, 8)}-${Date.now()}`;
+      const orderReference = `SQ-${instructor.id.slice(0, 8)}-${Date.now()}`;
       const currentUrl = window.location.origin;
 
-      const { data, error } = await supabase.functions.invoke("elavon-checkout", {
+      // Build lesson slots for order metadata
+      const lessonSlots = selectedSlots.map(slot => ({
+        date: format(slot.date, "yyyy-MM-dd"),
+        time: slot.startTime
+      }));
+
+      const { data, error } = await supabase.functions.invoke("square-checkout", {
         body: {
           amount: totalPrice,
           orderReference,
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
+          customerPhone: pupilPhone.trim(),
+          courseName: courseName,
           description: `${courseName} - ${hours} Hour Driving Course`,
-          returnUrl: `${currentUrl}/booking-confirmation?elavon=success&ref=${orderReference}`,
-          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&elavon=cancelled`,
+          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${instructor.id}&square=success&ref=${orderReference}`,
+          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&square=cancelled`,
           instructorId: instructor.id,
+          lessonSlots,
         },
       });
 
       if (error) {
-        console.error("Elavon checkout error:", error);
-        toast.error("Failed to start Elavon checkout. Please try again.");
+        console.error("Square checkout error:", error);
+        toast.error("Failed to start Square checkout. Please try again.");
         return;
       }
 
-      if (data?.formAction && data?.formFields) {
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = data.formAction;
-        form.style.display = "none";
-
-        Object.entries(data.formFields as Record<string, string>).forEach(([name, value]) => {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = name;
-          input.value = String(value ?? "");
-          form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-        return;
-      }
-
-      if (data?.redirectUrl) {
-        window.location.href = data.redirectUrl;
+      if (data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
       } else {
-        toast.error("Could not get Elavon checkout URL");
+        toast.error("Could not get Square checkout URL");
       }
     } catch (err) {
-      console.error("Elavon error:", err);
-      toast.error("Something went wrong with Elavon. Please try again.");
+      console.error("Square error:", err);
+      toast.error("Something went wrong with Square. Please try again.");
     } finally {
-      setIsElavonLoading(false);
+      setIsSquareLoading(false);
     }
   };
 
@@ -1151,10 +1141,10 @@ export default function BookingSummary() {
               </div>
             </button>
 
-            {/* Elavon Card Payment */}
+            {/* Square Card Payment */}
             <button
-              onClick={handleElavonCheckout}
-              disabled={!canSubmit || isElavonLoading}
+              onClick={handleSquareCheckout}
+              disabled={!canSubmit || isSquareLoading}
               className="w-full rounded-lg border-2 border-primary p-4 bg-primary/5 hover:bg-primary/10 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-between mb-2">
@@ -1162,11 +1152,11 @@ export default function BookingSummary() {
                   Card
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {isElavonLoading ? "Loading..." : "Pay now"}
+                  {isSquareLoading ? "Loading..." : "Pay now"}
                 </span>
               </div>
               <div className="font-semibold text-sm">Pay by Card</div>
-              <div className="text-xs text-muted-foreground">Visa, Mastercard, Amex</div>
+              <div className="text-xs text-muted-foreground">Visa, Mastercard, Apple Pay, Google Pay</div>
             </button>
 
             {/* Klarna */}
