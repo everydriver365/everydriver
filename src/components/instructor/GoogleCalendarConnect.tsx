@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, ExternalLink, Loader2, RefreshCw, Unlink, Calendar } from "lucide-react";
+import { Check, ExternalLink, Loader2, RefreshCw, Unlink, Calendar, Zap, ZapOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
@@ -16,12 +16,15 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
     isConnecting,
     isChecking,
     isSyncing,
+    isSettingUpWebhook,
     calendarStatus,
     checkConnection,
     getAuthUrl,
     handleAuthCallback,
     disconnect,
     syncExternalEvents,
+    setupWebhook,
+    stopWebhook,
   } = useGoogleCalendar(instructorId);
 
   const [isDisconnecting, setIsDisconnecting] = useState(false);
@@ -64,6 +67,14 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
     await syncExternalEvents();
   };
 
+  const handleToggleWebhook = async () => {
+    if (calendarStatus?.webhookActive) {
+      await stopWebhook();
+    } else {
+      await setupWebhook();
+    }
+  };
+
   const formatLastSync = (timestamp: string | null | undefined) => {
     if (!timestamp) return "Never";
     try {
@@ -83,7 +94,7 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
       ) : calendarStatus?.connected ? (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
               <Check className="h-3 w-3 mr-1" />
               Connected
             </Badge>
@@ -92,6 +103,47 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
             </span>
           </div>
           
+          {/* Real-time sync status */}
+          <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm">
+                <Zap className={`h-4 w-4 ${calendarStatus.webhookActive ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                <span className="font-medium">Real-Time Sync</span>
+              </div>
+              {calendarStatus.webhookActive ? (
+                <Badge variant="outline" className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-300">
+                  Active
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs">
+                  Polling
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {calendarStatus.webhookActive 
+                ? "Changes sync instantly via push notifications." 
+                : "Calendar syncs every 15 minutes. Enable real-time for instant updates."}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleToggleWebhook}
+              disabled={isSettingUpWebhook}
+              className="gap-2 w-full"
+            >
+              {isSettingUpWebhook ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : calendarStatus.webhookActive ? (
+                <ZapOff className="h-4 w-4" />
+              ) : (
+                <Zap className="h-4 w-4" />
+              )}
+              {calendarStatus.webhookActive ? "Disable Real-Time" : "Enable Real-Time"}
+            </Button>
+          </div>
+
+          {/* Two-way sync info */}
           <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm">
@@ -150,6 +202,7 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
           <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
             <li>New lessons automatically show as "Busy"</li>
             <li>External events block booking availability</li>
+            <li>Real-time push notifications for instant sync</li>
             <li>Prevent double-booking conflicts</li>
           </ul>
           <Button

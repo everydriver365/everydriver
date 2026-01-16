@@ -56,6 +56,41 @@ export type Database = {
           },
         ]
       }
+      calendar_webhook_channels: {
+        Row: {
+          channel_id: string
+          created_at: string
+          expiration: string
+          id: string
+          instructor_id: string
+          resource_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          expiration: string
+          id?: string
+          instructor_id: string
+          resource_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          expiration?: string
+          id?: string
+          instructor_id?: string
+          resource_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_webhook_channels_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_enquiries: {
         Row: {
           additional_notes: string | null
