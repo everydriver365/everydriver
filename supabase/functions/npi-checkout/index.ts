@@ -103,6 +103,11 @@ serve(async (req: Request) => {
     // Generate unique transaction ID
     const transactionUnique = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+    // Build callback URL that goes through our payment-callback function
+    // This handles NPI's POST response and redirects to confirmation page
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const callbackUrl = `${supabaseUrl}/functions/v1/payment-callback?provider=npi&pupilId=${body.pupilId || ""}&ref=${orderReference}`;
+
     // Build the request data object (signature is calculated from all fields except signature itself)
     const requestData: Record<string, string> = {
       merchantID: merchantId,
@@ -113,7 +118,7 @@ serve(async (req: Request) => {
       amount: amountInPence.toString(),
       orderRef: orderReference,
       transactionUnique: transactionUnique,
-      redirectURL: returnUrl,
+      redirectURL: callbackUrl,
     };
 
     // Add optional fields only if they have values
