@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import TelematicsTracker from "@/components/instructor/TelematicsTracker";
 import GeneratedDrivingReport from "@/components/instructor/GeneratedDrivingReport";
+import SessionRouteReport from "@/components/instructor/SessionRouteReport";
 import { TelematicsSessionHistory } from "@/components/instructor/TelematicsSessionHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -9,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Car, User, Clock, MapPin, FileText, History } from "lucide-react";
+import { Car, User, Clock, MapPin, FileText, History, Route } from "lucide-react";
 import { format } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -251,16 +253,26 @@ export default function InstructorTrackLesson() {
               pupilId={selectedPupilId}
             />
 
-            {/* Generate Report Button - shown when there's tracking data */}
+            {/* Generate Report Buttons - shown when there's tracking data */}
             {lastTelematicsId && selectedPupilId && (
-              <Button 
-                onClick={() => setShowReportSheet(true)} 
-                variant="outline" 
-                className="w-full gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                Generate AI Feedback Report
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowReportSheet(true)} 
+                  variant="outline" 
+                  className="flex-1 gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  AI Feedback
+                </Button>
+                <Button 
+                  onClick={() => setShowReportSheet(true)} 
+                  variant="default" 
+                  className="flex-1 gap-2"
+                >
+                  <Route className="h-4 w-4" />
+                  Route Report
+                </Button>
+              </div>
             )}
 
             {/* Info Card */}
@@ -279,19 +291,33 @@ export default function InstructorTrackLesson() {
         )}
       </div>
 
-      {/* AI Report Sheet */}
+      {/* Reports Sheet */}
       <Sheet open={showReportSheet} onOpenChange={setShowReportSheet}>
         <SheetContent side={isMobile ? "bottom" : "right"} className={isMobile ? "h-[90vh]" : "sm:max-w-lg"}>
           <SheetHeader>
-            <SheetTitle>Lesson Feedback</SheetTitle>
+            <SheetTitle>Session Reports</SheetTitle>
           </SheetHeader>
           <div className="mt-4 overflow-y-auto max-h-[calc(100%-4rem)]">
             {lastTelematicsId && (
-              <GeneratedDrivingReport 
-                telematicsId={lastTelematicsId}
-                pupilName={showHistory ? historyPupilName : selectedPupilName}
-                onClose={() => setShowReportSheet(false)}
-              />
+              <Tabs defaultValue="route" className="w-full">
+                <TabsList className="w-full grid grid-cols-2">
+                  <TabsTrigger value="route">Route Report</TabsTrigger>
+                  <TabsTrigger value="feedback">AI Feedback</TabsTrigger>
+                </TabsList>
+                <TabsContent value="route" className="mt-4">
+                  <SessionRouteReport 
+                    telematicsId={lastTelematicsId}
+                    onClose={() => setShowReportSheet(false)}
+                  />
+                </TabsContent>
+                <TabsContent value="feedback" className="mt-4">
+                  <GeneratedDrivingReport 
+                    telematicsId={lastTelematicsId}
+                    pupilName={showHistory ? historyPupilName : selectedPupilName}
+                    onClose={() => setShowReportSheet(false)}
+                  />
+                </TabsContent>
+              </Tabs>
             )}
           </div>
         </SheetContent>
