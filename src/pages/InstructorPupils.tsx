@@ -68,6 +68,8 @@ interface Pupil {
   account_balance?: number | null;
   prepaid_hours?: number | null;
   test_date?: string | null;
+  parent_phone?: string | null;
+  parent_name?: string | null;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -103,6 +105,8 @@ export default function InstructorPupils() {
     course_type: "",
     notes: "",
     what3words: "",
+    parent_phone: "",
+    parent_name: "",
   });
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -155,6 +159,8 @@ export default function InstructorPupils() {
           progress: editForm.progress,
           notes: editForm.notes,
           what3words: editForm.what3words,
+          parent_phone: editForm.parent_phone,
+          parent_name: editForm.parent_name,
         })
         .eq("id", selectedPupil.id);
 
@@ -194,6 +200,8 @@ export default function InstructorPupils() {
         course_type: addForm.course_type || null,
         notes: addForm.notes || null,
         what3words: addForm.what3words || null,
+        parent_phone: addForm.parent_phone || null,
+        parent_name: addForm.parent_name || null,
         lessons_completed: 0,
         progress: 0,
       }).select();
@@ -215,6 +223,8 @@ export default function InstructorPupils() {
         course_type: "",
         notes: "",
         what3words: "",
+        parent_phone: "",
+        parent_name: "",
       });
       fetchPupils();
     } catch (error: any) {
@@ -492,6 +502,33 @@ export default function InstructorPupils() {
                 placeholder="Any additional notes..."
               />
             </div>
+            <div className="border-t pt-4 mt-4">
+              <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Parent/Guardian (for Parent Portal access)
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Parent Name</Label>
+                  <Input
+                    value={addForm.parent_name}
+                    onChange={(e) => setAddForm({ ...addForm, parent_name: e.target.value })}
+                    placeholder="Parent's name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Parent Phone</Label>
+                  <Input
+                    value={addForm.parent_phone}
+                    onChange={(e) => setAddForm({ ...addForm, parent_phone: e.target.value })}
+                    placeholder="07XXX XXXXXX"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Parent can use this phone to access the Parent Portal
+              </p>
+            </div>
             <Button onClick={handleAddPupil} disabled={saving} className="w-full">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Add Pupil
@@ -586,6 +623,33 @@ export default function InstructorPupils() {
                 value={editForm.notes || ""}
                 onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
               />
+            </div>
+            <div className="border-t pt-4 mt-4">
+              <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Parent/Guardian (for Parent Portal access)
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Parent Name</Label>
+                  <Input
+                    value={editForm.parent_name || ""}
+                    onChange={(e) => setEditForm({ ...editForm, parent_name: e.target.value })}
+                    placeholder="Parent's name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Parent Phone</Label>
+                  <Input
+                    value={editForm.parent_phone || ""}
+                    onChange={(e) => setEditForm({ ...editForm, parent_phone: e.target.value })}
+                    placeholder="07XXX XXXXXX"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Parent can use this phone to access the Parent Portal
+              </p>
             </div>
             <Button onClick={handleSavePupil} disabled={saving} className="w-full">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
