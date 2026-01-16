@@ -377,6 +377,9 @@ export default function InstructorSettings() {
               secondary_colour: authInstructor?.secondary_colour,
               website_button_color: authInstructor?.website_button_color,
               website_footer_bg: authInstructor?.website_footer_bg,
+              logo_url: authInstructor?.logo_url,
+              phone: authInstructor?.phone,
+              email: authInstructor?.email,
             }}
             onUpdate={refreshInstructor}
           />

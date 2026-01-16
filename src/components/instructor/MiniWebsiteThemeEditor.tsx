@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
-import { Palette, Type, Layout, Check, Sparkles } from "lucide-react";
+import { useState, useRef } from "react";
+import { Palette, Type, Layout, Check, Sparkles, Upload, Phone, Mail, Loader2, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,9 @@ interface ThemeSettings {
   secondary_colour: string;
   website_button_color: string;
   website_footer_bg: string;
+  logo_url: string;
+  phone: string;
+  email: string;
 }
 
 interface PresetTheme {
@@ -140,6 +144,8 @@ export function MiniWebsiteThemeEditor({
   currentSettings,
   onUpdate,
 }: MiniWebsiteThemeEditorProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [settings, setSettings] = useState<ThemeSettings>({
     website_theme: currentSettings.website_theme || "modern",
     website_font: currentSettings.website_font || "Inter",
@@ -148,8 +154,54 @@ export function MiniWebsiteThemeEditor({
     secondary_colour: currentSettings.secondary_colour || "#3b82f6",
     website_button_color: currentSettings.website_button_color || "#3b82f6",
     website_footer_bg: currentSettings.website_footer_bg || "#111827",
+    logo_url: currentSettings.logo_url || "",
+    phone: currentSettings.phone || "",
+    email: currentSettings.email || "",
   });
   const [saving, setSaving] = useState(false);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be less than 2MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${instructorId}/logo.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("instructor-images")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("instructor-images")
+        .getPublicUrl(fileName);
+
+      // Add cache buster
+      const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
+      setSettings(prev => ({ ...prev, logo_url: urlWithCacheBuster }));
+      toast.success("Logo uploaded!");
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      toast.error("Failed to upload logo");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleApplyPreset = (preset: PresetTheme) => {
     setSettings({
@@ -177,6 +229,9 @@ export function MiniWebsiteThemeEditor({
           secondary_colour: settings.secondary_colour,
           website_button_color: settings.website_button_color,
           website_footer_bg: settings.website_footer_bg,
+          logo_url: settings.logo_url || null,
+          phone: settings.phone || null,
+          email: settings.email || null,
         })
         .eq("id", instructorId);
 
@@ -194,18 +249,22 @@ export function MiniWebsiteThemeEditor({
   return (
     <div className="space-y-6">
       <Tabs defaultValue="presets" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="presets" className="gap-2">
-            <Sparkles className="h-4 w-4" />
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="presets" className="gap-1 text-xs">
+            <Sparkles className="h-3 w-3" />
             Presets
           </TabsTrigger>
-          <TabsTrigger value="colors" className="gap-2">
-            <Palette className="h-4 w-4" />
+          <TabsTrigger value="colors" className="gap-1 text-xs">
+            <Palette className="h-3 w-3" />
             Colors
           </TabsTrigger>
-          <TabsTrigger value="style" className="gap-2">
-            <Type className="h-4 w-4" />
+          <TabsTrigger value="style" className="gap-1 text-xs">
+            <Type className="h-3 w-3" />
             Style
+          </TabsTrigger>
+          <TabsTrigger value="branding" className="gap-1 text-xs">
+            <Image className="h-3 w-3" />
+            Branding
           </TabsTrigger>
         </TabsList>
 
@@ -459,6 +518,112 @@ export function MiniWebsiteThemeEditor({
               ))}
             </RadioGroup>
           </div>
+        </TabsContent>
+
+        {/* Branding Tab */}
+        <TabsContent value="branding" className="mt-4 space-y-6">
+          {/* Logo Upload */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2">
+              <Image className="h-4 w-4" />
+              Website Logo
+            </Label>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-20 w-20 rounded-lg">
+                <AvatarImage src={settings.logo_url} className="object-contain" />
+                <AvatarFallback className="rounded-lg bg-muted">
+                  <Upload className="h-6 w-6 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="space-y-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Logo
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Recommended: Square image, max 2MB
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Details */}
+          <div className="space-y-4">
+            <Label className="text-sm font-medium">Contact Details (shown on mini-site)</Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="mini-phone" className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4" />
+                Phone Number
+              </Label>
+              <Input
+                id="mini-phone"
+                type="tel"
+                value={settings.phone}
+                onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                placeholder="07XXX XXXXXX"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mini-email" className="flex items-center gap-2 text-sm">
+                <Mail className="h-4 w-4" />
+                Email Address
+              </Label>
+              <Input
+                id="mini-email"
+                type="email"
+                value={settings.email}
+                onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                placeholder="your@email.com"
+              />
+            </div>
+          </div>
+
+          {/* Preview */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Contact Preview</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {settings.phone && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4" />
+                  {settings.phone}
+                </div>
+              )}
+              {settings.email && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Mail className="h-4 w-4" />
+                  {settings.email}
+                </div>
+              )}
+              {!settings.phone && !settings.email && (
+                <p className="text-muted-foreground italic">No contact details added yet</p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
