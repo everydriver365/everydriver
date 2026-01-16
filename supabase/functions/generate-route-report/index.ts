@@ -232,9 +232,29 @@ serve(async (req) => {
       .order("recorded_at", { ascending: true });
 
     if (gpsError || !gpsPoints || gpsPoints.length === 0) {
+      console.log(`No GPS points found for session ${telematicsId}`);
       return new Response(
-        JSON.stringify({ error: "No GPS data found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          success: false,
+          error: "insufficient_gps_data",
+          message: "No GPS data was recorded for this session. This can happen if location permission was denied, GPS signal was poor, or the tracking session was too short.",
+          pointsRecorded: gpsPoints?.length || 0
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Need minimum points for meaningful route analysis
+    if (gpsPoints.length < 5) {
+      console.log(`Insufficient GPS points (${gpsPoints.length}) for session ${telematicsId}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "insufficient_gps_data",
+          message: `Only ${gpsPoints.length} GPS points were recorded. At least 5 points are needed for route analysis. Try tracking for longer with a good GPS signal.`,
+          pointsRecorded: gpsPoints.length
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
