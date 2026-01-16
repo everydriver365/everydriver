@@ -169,7 +169,7 @@ export function SiteSettingsManager() {
     ["contact_email", "contact_phone", "footer_copyright"].includes(s.setting_key)
   );
   const paymentSettings = settings.filter(s => 
-    ["npi_merchant_name", "npi_brand_color"].includes(s.setting_key)
+    ["npi_merchant_name", "npi_brand_color", "npi_merchant_logo"].includes(s.setting_key)
   );
 
   return (
