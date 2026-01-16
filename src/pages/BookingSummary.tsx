@@ -121,6 +121,7 @@ export default function BookingSummary() {
   const [isKlarnaLoading, setIsKlarnaLoading] = useState(false);
   const [isNPILoading, setIsNPILoading] = useState(false);
   const [isSquareLoading, setIsSquareLoading] = useState(false);
+  const [isWooLoading, setIsWooLoading] = useState(false);
   const [bookingPupilId, setBookingPupilId] = useState<string | null>(null);
   
   // Klarna inline widget state
@@ -591,6 +592,52 @@ export default function BookingSummary() {
       toast.error("Something went wrong with Square. Please try again.");
     } finally {
       setIsSquareLoading(false);
+    }
+  };
+
+  const handleWooCommerceCheckout = async () => {
+    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
+      toast.error("Please complete all details and schedule all lessons first");
+      return;
+    }
+
+    setIsWooLoading(true);
+    try {
+      const pupilId = await ensureBookingCreated();
+      if (!pupilId) return;
+
+      const orderRef = `WOO-${instructor.id.slice(0, 8)}-${Date.now()}`;
+
+      const { data, error } = await supabase.functions.invoke("woocommerce-checkout", {
+        body: {
+          amount: totalPrice,
+          courseName: courseName,
+          courseHours: hours,
+          customerEmail: pupilEmail.trim(),
+          customerName: pupilName.trim(),
+          customerPhone: pupilPhone.trim(),
+          orderRef,
+          instructorId: instructor.id,
+          pupilId,
+        },
+      });
+
+      if (error) {
+        console.error("WooCommerce checkout error:", error);
+        toast.error("Failed to start WooCommerce checkout. Please try again.");
+        return;
+      }
+
+      if (data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        toast.error("Could not get WooCommerce checkout URL");
+      }
+    } catch (err) {
+      console.error("WooCommerce error:", err);
+      toast.error("Something went wrong with WooCommerce. Please try again.");
+    } finally {
+      setIsWooLoading(false);
     }
   };
 
@@ -1215,6 +1262,24 @@ export default function BookingSummary() {
               </div>
               <div className="font-semibold text-sm">4 × £{(totalPrice / 4).toFixed(2)}</div>
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
+            </button>
+
+            {/* WooCommerce Checkout */}
+            <button
+              onClick={handleWooCommerceCheckout}
+              disabled={!canSubmit || isWooLoading}
+              className="w-full rounded-lg border-2 border-purple-400 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-950/50 dark:hover:to-indigo-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="rounded bg-purple-600 px-2 py-0.5 text-xs font-bold text-white">
+                  WooCommerce
+                </span>
+                <span className="text-xs text-purple-600 dark:text-purple-400">
+                  {isWooLoading ? "Loading..." : "Secure Checkout"}
+                </span>
+              </div>
+              <div className="font-semibold text-sm text-purple-900 dark:text-purple-100">Pay via WooCommerce</div>
+              <div className="text-xs text-purple-700/80 dark:text-purple-300/80">Multiple payment options</div>
             </button>
 
             {/* Square Card Payment - Needs Credential Fix */}
