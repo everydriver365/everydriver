@@ -43,6 +43,15 @@ interface MotionData {
   gForce: number;
 }
 
+interface DamoovScores {
+  overallScore: number | null;
+  accelerationScore: number | null;
+  brakingScore: number | null;
+  corneringScore: number | null;
+  speedingScore: number | null;
+  phoneScore: number | null;
+}
+
 export const useTelematics = (instructorId: string) => {
   const [isTracking, setIsTracking] = useState(false);
   const [currentSession, setCurrentSession] = useState<TelematicsSession | null>(null);
@@ -55,6 +64,9 @@ export const useTelematics = (instructorId: string) => {
   const [motionData, setMotionData] = useState<MotionData>({ acceleration: null, rotationRate: null, gForce: 0 });
   const [hasMotionPermission, setHasMotionPermission] = useState<boolean | null>(null);
   const [isScreenAwake, setIsScreenAwake] = useState(false);
+  const [damoovScores, setDamoovScores] = useState<DamoovScores | null>(null);
+  const [damoovProcessing, setDamoovProcessing] = useState(false);
+  const [coinsEarned, setCoinsEarned] = useState<number>(0);
 
   const watchIdRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -64,6 +76,7 @@ export const useTelematics = (instructorId: string) => {
   const gForceHistoryRef = useRef<number[]>([]);
   const calculatedSpeedHistoryRef = useRef<number[]>([]);
   const sessionIdRef = useRef<string | null>(null);
+  const pupilIdRef = useRef<string | null>(null);
 
   // Calculate distance between two GPS points using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -421,6 +434,7 @@ export const useTelematics = (instructorId: string) => {
       if (sessionError) throw sessionError;
 
       sessionIdRef.current = session.id;
+      pupilIdRef.current = pupilId || null;
       setCurrentSession({
         id: session.id,
         lesson_id: session.lesson_id,
@@ -434,6 +448,8 @@ export const useTelematics = (instructorId: string) => {
       setGpsPoints([]);
       setDrivingEvents([]);
       setTotalDistance(0);
+      setDamoovScores(null);
+      setCoinsEarned(0);
       speedHistoryRef.current = [];
       calculatedSpeedHistoryRef.current = [];
       gForceHistoryRef.current = [];
@@ -555,7 +571,7 @@ export const useTelematics = (instructorId: string) => {
     }
   }, [instructorId, detectDrivingEvents, evaluateGPSQuality, calculateSpeedFromPositions, requestMotionPermission, requestWakeLock, handleDeviceMotion]);
 
-  // Stop tracking session
+  // Stop tracking session and process Damoov
   const stopTracking = useCallback(async () => {
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
@@ -567,6 +583,9 @@ export const useTelematics = (instructorId: string) => {
 
     // Remove motion listener
     window.removeEventListener('devicemotion', handleDeviceMotion);
+
+    const sessionId = currentSession?.id;
+    const pupilId = pupilIdRef.current;
 
     if (currentSession) {
       const avgSpeed = speedHistoryRef.current.length > 0
@@ -590,6 +609,7 @@ export const useTelematics = (instructorId: string) => {
     setIsTracking(false);
     setCurrentSession(null);
     sessionIdRef.current = null;
+    pupilIdRef.current = null;
     lastPositionRef.current = null;
     lastPositionTimeRef.current = null;
     speedHistoryRef.current = [];
@@ -597,6 +617,55 @@ export const useTelematics = (instructorId: string) => {
     gForceHistoryRef.current = [];
     setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'GPS not active' });
     setMotionData({ acceleration: null, rotationRate: null, gForce: 0 });
+
+    // Process with Damoov if pupil is assigned
+    if (sessionId && pupilId) {
+      setDamoovProcessing(true);
+      try {
+        // Step 1: Ensure pupil is registered with Damoov
+        const { data: pupil } = await supabase
+          .from('pupils')
+          .select('damoov_device_token')
+          .eq('id', pupilId)
+          .single();
+
+        let deviceToken = pupil?.damoov_device_token;
+
+        if (!deviceToken) {
+          console.log('Registering pupil with Damoov...');
+          const { data: registerResult } = await supabase.functions.invoke('damoov-register', {
+            body: { pupilId }
+          });
+          deviceToken = registerResult?.deviceToken;
+        }
+
+        if (deviceToken) {
+          // Step 2: Submit trip data to Damoov
+          console.log('Submitting trip to Damoov...');
+          await supabase.functions.invoke('damoov-submit-trip', {
+            body: { telematicsId: sessionId, deviceToken }
+          });
+
+          // Step 3: Wait for Damoov processing and fetch scores
+          console.log('Waiting for Damoov analysis...');
+          await new Promise(resolve => setTimeout(resolve, 4000));
+
+          const { data: scoresResult } = await supabase.functions.invoke('damoov-get-scores', {
+            body: { telematicsId: sessionId, deviceToken, pupilId }
+          });
+
+          if (scoresResult?.scores) {
+            setDamoovScores(scoresResult.scores);
+            setCoinsEarned(scoresResult.coinsEarned || 0);
+          }
+        }
+      } catch (damoovError) {
+        console.error('Damoov processing error:', damoovError);
+        // Don't throw - Damoov processing is supplementary
+      } finally {
+        setDamoovProcessing(false);
+      }
+    }
   }, [currentSession, totalDistance, handleDeviceMotion, releaseWakeLock]);
 
   // Cleanup on unmount
@@ -625,6 +694,9 @@ export const useTelematics = (instructorId: string) => {
     motionData,
     hasMotionPermission,
     isScreenAwake,
+    damoovScores,
+    damoovProcessing,
+    coinsEarned,
     startTracking,
     stopTracking
   };
