@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface KlarnaPaymentRequest {
+interface KlarnaCheckoutRequest {
   amount: number;
   currency?: string;
   merchantReference: string;
@@ -52,8 +52,8 @@ serve(async (req: Request) => {
       );
     }
 
-    const data: KlarnaPaymentRequest = await req.json();
-    console.log("Klarna payment request:", JSON.stringify(data, null, 2));
+    const data: KlarnaCheckoutRequest = await req.json();
+    console.log("Klarna checkout request:", JSON.stringify(data, null, 2));
 
     if (!data.amount || !data.merchantReference || !data.consumer || !data.redirectUrls) {
       return new Response(
@@ -62,12 +62,12 @@ serve(async (req: Request) => {
       );
     }
 
-    // Klarna Payments API endpoints - try multiple regions
+    // Klarna Checkout API endpoints - region-specific
     const baseUrls = isSandbox
       ? ["https://api.playground.klarna.com"]
       : [
           "https://api.klarna.com", // EU/UK
-          "https://api-na.klarna.com", // North America
+          "https://api-na.klarna.com", // North America  
           "https://api-oc.klarna.com", // Oceania
         ];
 
@@ -76,10 +76,10 @@ serve(async (req: Request) => {
     const country = data.billing?.country || "GB";
     const locale = country === "GB" ? "en-GB" : "en-US";
 
-    // Convert amount to minor units (pence)
+    // Convert amount to minor units (pence/cents)
     const orderAmount = Math.round(data.amount * 100);
 
-    // Build order lines for Payments API
+    // Build order lines for Checkout API
     const orderLines = data.items.map((item) => ({
       type: "physical",
       name: item.name,
@@ -90,37 +90,38 @@ serve(async (req: Request) => {
       total_tax_amount: 0,
     }));
 
-    // Klarna Payments API session payload - optimized for mobile with IN_APP channel
-    const sessionPayload = {
-      acquiring_channel: "IN_APP", // Changed from ECOMMERCE for better mobile support
+    // Klarna Checkout API order payload (Hosted Payment Page flow)
+    const checkoutPayload = {
       purchase_country: country,
       purchase_currency: currency,
       locale: locale,
       order_amount: orderAmount,
       order_tax_amount: 0,
       order_lines: orderLines,
-      intent: "buy",
       merchant_reference1: data.merchantReference,
       merchant_urls: {
+        terms: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "/terms",
+        checkout: data.redirectUrls.cancelUrl,
         confirmation: data.redirectUrls.confirmUrl,
-        cancel: data.redirectUrls.cancelUrl,
-        notification: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "?klarna_notification=true",
+        push: data.redirectUrls.confirmUrl.replace(/\?.*$/, "") + "?klarna_push=true",
       },
-      billing_address: data.billing
-        ? {
-            given_name: data.consumer.givenName,
-            family_name: data.consumer.familyName,
-            email: data.consumer.email,
-            phone: data.consumer.phone || "",
-            street_address: data.billing.streetAddress,
-            postal_code: data.billing.postalCode,
-            city: data.billing.city,
-            country: country,
-          }
-        : undefined,
+      billing_address: {
+        given_name: data.consumer.givenName,
+        family_name: data.consumer.familyName,
+        email: data.consumer.email,
+        phone: data.consumer.phone || "",
+        street_address: data.billing?.streetAddress || "",
+        postal_code: data.billing?.postalCode || "",
+        city: data.billing?.city || "",
+        country: country,
+      },
+      options: {
+        color_button: "#0072F5",
+        color_button_text: "#FFFFFF",
+      },
     };
 
-    console.log("Sending to Klarna Payments API:", JSON.stringify(sessionPayload, null, 2));
+    console.log("Sending to Klarna Checkout API:", JSON.stringify(checkoutPayload, null, 2));
 
     let lastStatus = 0;
     let lastBaseUrl = baseUrls[0];
@@ -129,14 +130,14 @@ serve(async (req: Request) => {
     for (const baseUrl of baseUrls) {
       lastBaseUrl = baseUrl;
 
-      // Create a Klarna Payments session
-      const response = await fetch(`${baseUrl}/payments/v1/sessions`, {
+      // Create a Klarna Checkout order (returns hosted checkout URL)
+      const response = await fetch(`${baseUrl}/checkout/v3/orders`, {
         method: "POST",
         headers: {
           Authorization: `Basic ${authHeader}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(sessionPayload),
+        body: JSON.stringify(checkoutPayload),
       });
 
       lastStatus = response.status;
@@ -146,20 +147,37 @@ serve(async (req: Request) => {
       console.log("Klarna response:", JSON.stringify(lastResult, null, 2));
 
       if (response.ok) {
-        // Return session data for frontend to load Klarna SDK
+        // Klarna Checkout returns html_snippet containing the checkout iframe/redirect
+        // For redirect flow, we need the order_id and can construct the URL
+        const orderId = lastResult.order_id;
+        const htmlSnippet = lastResult.html_snippet;
+
+        // Extract the checkout URL from the HTML snippet if present
+        let checkoutUrl = null;
+        if (htmlSnippet) {
+          // The HTML snippet contains a script that loads Klarna checkout
+          // We can extract the checkout URL or just return the snippet for iframe embedding
+          const urlMatch = htmlSnippet.match(/src="([^"]+)"/);
+          if (urlMatch) {
+            checkoutUrl = urlMatch[1];
+          }
+        }
+
+        // If we have a direct checkout URL in the response
+        if (lastResult.checkout_url) {
+          checkoutUrl = lastResult.checkout_url;
+        }
+
+        console.log("Klarna order created:", orderId);
+        console.log("Checkout URL:", checkoutUrl);
+
         return new Response(
           JSON.stringify({
-            sessionId: lastResult.session_id,
-            clientToken: lastResult.client_token,
-            paymentMethodCategories: lastResult.payment_method_categories,
-            // Include order details for the frontend
-            orderDetails: {
-              amount: orderAmount,
-              currency: currency,
-              merchantReference: data.merchantReference,
-              confirmUrl: data.redirectUrls.confirmUrl,
-              cancelUrl: data.redirectUrls.cancelUrl,
-            },
+            success: true,
+            orderId: orderId,
+            redirectUrl: checkoutUrl,
+            htmlSnippet: htmlSnippet,
+            merchantReference: data.merchantReference,
           }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -171,11 +189,11 @@ serve(async (req: Request) => {
 
     console.error("Klarna API error:", lastResult);
 
-    let errorMessage = lastResult?.error_message || lastResult?.error_messages?.[0] || "Klarna payment session failed";
+    let errorMessage = lastResult?.error_message || lastResult?.error_messages?.[0] || "Klarna checkout failed";
     if (lastStatus === 401) {
-      errorMessage = "Klarna authorization failed. Please verify: 1) Credentials are for PRODUCTION (not Playground), 2) Payments API is enabled, 3) Credentials are active and not expired.";
+      errorMessage = "Klarna authorization failed. Please verify credentials are valid and for the correct environment.";
     } else if (lastStatus === 404) {
-      errorMessage = "Klarna endpoint not found. The credentials may be for a different region or the Payments API may not be enabled.";
+      errorMessage = "Klarna endpoint not found. The credentials may be for a different region.";
     }
 
     return new Response(

@@ -451,27 +451,17 @@ export default function BookingSummary() {
         return;
       }
 
-      // Handle Klarna Payments API response with client token - use inline widget
-      if (data?.clientToken && data?.sessionId) {
-        setKlarnaSession({
-          clientToken: data.clientToken,
-          sessionId: data.sessionId,
-          paymentMethodCategories: data.paymentMethodCategories || [],
-          orderDetails: {
-            amount: data.orderDetails?.amount || Math.round(totalPrice * 100),
-            currency: data.orderDetails?.currency || "GBP",
-            merchantReference: data.orderDetails?.merchantReference || merchantReference,
-            confirmUrl: data.orderDetails?.confirmUrl || confirmUrl,
-            cancelUrl: data.orderDetails?.cancelUrl || cancelUrl,
-          },
-        });
-        setShowKlarnaWidget(true);
-      } else if (data?.redirectUrl) {
-        // Direct redirect flow
+      // Klarna Checkout API returns a redirect URL for the hosted payment page
+      if (data?.redirectUrl) {
+        toast.success("Redirecting to Klarna...");
         window.location.href = data.redirectUrl;
+      } else if (data?.htmlSnippet) {
+        // If we get HTML snippet instead, we can still try to redirect
+        console.log("Klarna returned HTML snippet, attempting to find checkout URL");
+        toast.error("Klarna checkout not available. Please try another payment method.");
       } else {
-        console.error("Klarna response missing expected fields:", data);
-        toast.error("Could not start Klarna checkout. Please try another payment method.");
+        console.error("Klarna response missing redirect URL:", data);
+        toast.error(data?.error || "Could not start Klarna checkout. Please try another payment method.");
       }
     } catch (err) {
       console.error("Klarna error:", err);
