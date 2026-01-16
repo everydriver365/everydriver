@@ -1231,6 +1231,7 @@ export type Database = {
           cpd_certified: boolean | null
           created_at: string
           custom_branding_enabled: boolean | null
+          dark_mode_enabled: boolean | null
           email: string | null
           extra_info: string | null
           facebook_url: string | null
@@ -1253,6 +1254,7 @@ export type Database = {
           payment_qr_url: string | null
           personal_website_url: string | null
           phone: string | null
+          preferred_language: string | null
           preferred_lesson_length: number
           profile_image_url: string | null
           pupil_app_dark_mode: boolean | null
@@ -1288,6 +1290,7 @@ export type Database = {
           cpd_certified?: boolean | null
           created_at?: string
           custom_branding_enabled?: boolean | null
+          dark_mode_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
@@ -1310,6 +1313,7 @@ export type Database = {
           payment_qr_url?: string | null
           personal_website_url?: string | null
           phone?: string | null
+          preferred_language?: string | null
           preferred_lesson_length?: number
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
@@ -1345,6 +1349,7 @@ export type Database = {
           cpd_certified?: boolean | null
           created_at?: string
           custom_branding_enabled?: boolean | null
+          dark_mode_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
@@ -1367,6 +1372,7 @@ export type Database = {
           payment_qr_url?: string | null
           personal_website_url?: string | null
           phone?: string | null
+          preferred_language?: string | null
           preferred_lesson_length?: number
           profile_image_url?: string | null
           pupil_app_dark_mode?: boolean | null
@@ -1759,6 +1765,116 @@ export type Database = {
           },
         ]
       }
+      pupil_referrals: {
+        Row: {
+          bonus_points_awarded: number | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          referral_code: string
+          referred_pupil_id: string
+          referrer_pupil_id: string
+          status: string | null
+        }
+        Insert: {
+          bonus_points_awarded?: number | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          referral_code: string
+          referred_pupil_id: string
+          referrer_pupil_id: string
+          status?: string | null
+        }
+        Update: {
+          bonus_points_awarded?: number | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          referral_code?: string
+          referred_pupil_id?: string
+          referrer_pupil_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_referrals_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_referrals_referred_pupil_id_fkey"
+            columns: ["referred_pupil_id"]
+            isOneToOne: true
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_referrals_referrer_pupil_id_fkey"
+            columns: ["referrer_pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pupil_rewards_history: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          lesson_id: string | null
+          points_change: number
+          pupil_id: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          lesson_id?: string | null
+          points_change: number
+          pupil_id: string
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          lesson_id?: string | null
+          points_change?: number
+          pupil_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_rewards_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_rewards_history_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_rewards_history_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupils: {
         Row: {
           account_balance: number | null
@@ -1770,6 +1886,8 @@ export type Database = {
           drive_coins: number | null
           email: string | null
           enquiry_id: string | null
+          free_lessons_earned: number | null
+          free_lessons_used: number | null
           id: string
           instructor_id: string
           lessons_completed: number | null
@@ -1782,11 +1900,16 @@ export type Database = {
           parent_phone: string | null
           phone: string | null
           postcode: string
+          preferred_language: string | null
           prepaid_hours: number | null
           progress: number | null
+          referral_code: string | null
+          referred_by_pupil_id: string | null
+          reward_points: number | null
           test_centre_id: string | null
           test_date: string | null
           test_time: string | null
+          total_lessons_for_rewards: number | null
           total_trips: number | null
           updated_at: string
           what3words: string | null
@@ -1801,6 +1924,8 @@ export type Database = {
           drive_coins?: number | null
           email?: string | null
           enquiry_id?: string | null
+          free_lessons_earned?: number | null
+          free_lessons_used?: number | null
           id?: string
           instructor_id: string
           lessons_completed?: number | null
@@ -1813,11 +1938,16 @@ export type Database = {
           parent_phone?: string | null
           phone?: string | null
           postcode: string
+          preferred_language?: string | null
           prepaid_hours?: number | null
           progress?: number | null
+          referral_code?: string | null
+          referred_by_pupil_id?: string | null
+          reward_points?: number | null
           test_centre_id?: string | null
           test_date?: string | null
           test_time?: string | null
+          total_lessons_for_rewards?: number | null
           total_trips?: number | null
           updated_at?: string
           what3words?: string | null
@@ -1832,6 +1962,8 @@ export type Database = {
           drive_coins?: number | null
           email?: string | null
           enquiry_id?: string | null
+          free_lessons_earned?: number | null
+          free_lessons_used?: number | null
           id?: string
           instructor_id?: string
           lessons_completed?: number | null
@@ -1844,11 +1976,16 @@ export type Database = {
           parent_phone?: string | null
           phone?: string | null
           postcode?: string
+          preferred_language?: string | null
           prepaid_hours?: number | null
           progress?: number | null
+          referral_code?: string | null
+          referred_by_pupil_id?: string | null
+          reward_points?: number | null
           test_centre_id?: string | null
           test_date?: string | null
           test_time?: string | null
+          total_lessons_for_rewards?: number | null
           total_trips?: number | null
           updated_at?: string
           what3words?: string | null
@@ -1866,6 +2003,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupils_referred_by_pupil_id_fkey"
+            columns: ["referred_by_pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
           {
@@ -2300,6 +2444,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
