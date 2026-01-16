@@ -383,32 +383,47 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
           </div>
         )}
 
-        {/* Live Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
-            <Gauge className="h-5 w-5 mx-auto mb-1 text-primary" />
-            <p className="text-2xl font-bold">{currentSpeed.toFixed(0)}</p>
+        {/* Live Stats - Enhanced with animation when tracking */}
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${isTracking ? 'ring-2 ring-green-500/20 rounded-lg p-2' : ''}`}>
+          <div className={`p-3 rounded-lg text-center transition-all ${isTracking ? 'bg-green-500/10 border border-green-500/20' : 'bg-muted/50'}`}>
+            <Gauge className={`h-5 w-5 mx-auto mb-1 ${isTracking ? 'text-green-500' : 'text-primary'}`} />
+            <p className={`text-2xl font-bold tabular-nums ${isTracking && currentSpeed > 0 ? 'text-green-600' : ''}`}>
+              {currentSpeed.toFixed(0)}
+            </p>
             <p className="text-xs text-muted-foreground">km/h</p>
           </div>
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
-            <MapPin className="h-5 w-5 mx-auto mb-1 text-primary" />
-            <p className="text-2xl font-bold">{totalDistance.toFixed(1)}</p>
+          <div className={`p-3 rounded-lg text-center transition-all ${isTracking ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-muted/50'}`}>
+            <MapPin className={`h-5 w-5 mx-auto mb-1 ${isTracking ? 'text-blue-500' : 'text-primary'}`} />
+            <p className="text-2xl font-bold tabular-nums">{totalDistance.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground">km traveled</p>
           </div>
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
-            <TrendingUp className="h-5 w-5 mx-auto mb-1 text-primary" />
-            <p className="text-2xl font-bold">{drivingScore}</p>
+          <div className={`p-3 rounded-lg text-center transition-all ${isTracking ? 'bg-purple-500/10 border border-purple-500/20' : 'bg-muted/50'}`}>
+            <TrendingUp className={`h-5 w-5 mx-auto mb-1 ${isTracking ? 'text-purple-500' : 'text-primary'}`} />
+            <p className="text-2xl font-bold tabular-nums">{drivingScore}</p>
             <p className="text-xs text-muted-foreground">score</p>
           </div>
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
+          <div className={`p-3 rounded-lg text-center transition-all ${isTracking ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-muted/50'}`}>
             <div className="flex justify-center gap-1 mb-1">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <AlertTriangle className="h-5 w-5 text-amber-500" />
             </div>
-            <p className="text-2xl font-bold">{goodEvents}/{badEvents}</p>
+            <p className="text-2xl font-bold tabular-nums">{goodEvents}/{badEvents}</p>
             <p className="text-xs text-muted-foreground">events</p>
           </div>
         </div>
+
+        {/* GPS Points Count - Live indicator */}
+        {isTracking && (
+          <div className="flex items-center justify-between p-2 bg-muted/30 rounded-lg text-sm">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-muted-foreground">Recording GPS points</span>
+            </div>
+            <Badge variant="outline" className="tabular-nums">
+              {gpsPoints.length} points
+            </Badge>
+          </div>
+        )}
 
         {/* Driving Score Progress */}
         <div className="space-y-2">

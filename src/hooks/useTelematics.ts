@@ -128,21 +128,21 @@ export const useTelematics = (instructorId: string) => {
     return avgSpeed;
   }, []);
 
-  // Evaluate GPS quality
+  // Evaluate GPS quality - more lenient thresholds for real-world use
   const evaluateGPSQuality = useCallback((accuracy: number | null): GPSQuality => {
     if (accuracy === null) {
       return { status: 'unavailable', accuracy_m: null, message: 'GPS accuracy unknown' };
     }
-    if (accuracy <= 20) {
+    if (accuracy <= 30) {
       return { status: 'good', accuracy_m: accuracy, message: 'Excellent GPS signal' };
     }
-    if (accuracy <= 50) {
+    if (accuracy <= 100) {
       return { status: 'fair', accuracy_m: accuracy, message: 'Good GPS signal' };
     }
-    if (accuracy <= 100) {
-      return { status: 'poor', accuracy_m: accuracy, message: 'Weak GPS signal - accuracy may be reduced' };
+    if (accuracy <= 200) {
+      return { status: 'poor', accuracy_m: accuracy, message: 'Weak GPS signal - accuracy reduced' };
     }
-    return { status: 'unavailable', accuracy_m: accuracy, message: 'GPS too inaccurate - recording paused' };
+    return { status: 'unavailable', accuracy_m: accuracy, message: 'GPS too inaccurate - try moving outdoors' };
   }, []);
 
   // Request wake lock to keep screen on during tracking
@@ -478,8 +478,9 @@ export const useTelematics = (instructorId: string) => {
           const quality = evaluateGPSQuality(accuracy);
           setGpsQuality(quality);
 
-          // Skip recording if accuracy is too poor
-          if (quality.status === 'unavailable' && accuracy && accuracy > 200) {
+          // Skip recording only if accuracy is extremely poor (> 500m)
+          if (accuracy && accuracy > 500) {
+            console.log(`GPS accuracy too poor (${accuracy}m), skipping point`);
             return;
           }
 
