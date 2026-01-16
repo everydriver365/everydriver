@@ -12,12 +12,14 @@ interface GPSPoint {
 }
 
 interface DrivingEvent {
-  event_type: 'harsh_brake' | 'harsh_acceleration' | 'sharp_turn' | 'speeding' | 'smooth_stop' | 'good_acceleration';
+  event_type: 'harsh_brake' | 'harsh_acceleration' | 'sharp_turn' | 'speeding' | 'smooth_stop' | 'good_acceleration' | 'hard_impact' | 'phone_unstable' | 'smooth_cornering';
   severity: 'low' | 'medium' | 'high';
   latitude: number | null;
   longitude: number | null;
   speed_at_event: number | null;
   notes?: string;
+  g_force?: number;
+  sensor_source?: 'gps' | 'motion' | 'both';
 }
 
 interface TelematicsSession {
@@ -29,6 +31,18 @@ interface TelematicsSession {
   max_speed_kmh: number | null;
 }
 
+interface GPSQuality {
+  status: 'good' | 'fair' | 'poor' | 'unavailable';
+  accuracy_m: number | null;
+  message: string;
+}
+
+interface MotionData {
+  acceleration: { x: number; y: number; z: number } | null;
+  rotationRate: { alpha: number; beta: number; gamma: number } | null;
+  gForce: number;
+}
+
 export const useTelematics = (instructorId: string) => {
   const [isTracking, setIsTracking] = useState(false);
   const [currentSession, setCurrentSession] = useState<TelematicsSession | null>(null);
@@ -37,10 +51,17 @@ export const useTelematics = (instructorId: string) => {
   const [currentSpeed, setCurrentSpeed] = useState<number>(0);
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  const [gpsQuality, setGpsQuality] = useState<GPSQuality>({ status: 'unavailable', accuracy_m: null, message: 'GPS not active' });
+  const [motionData, setMotionData] = useState<MotionData>({ acceleration: null, rotationRate: null, gForce: 0 });
+  const [hasMotionPermission, setHasMotionPermission] = useState<boolean | null>(null);
 
   const watchIdRef = useRef<number | null>(null);
   const lastPositionRef = useRef<GeolocationPosition | null>(null);
+  const lastPositionTimeRef = useRef<number | null>(null);
   const speedHistoryRef = useRef<number[]>([]);
+  const gForceHistoryRef = useRef<number[]>([]);
+  const calculatedSpeedHistoryRef = useRef<number[]>([]);
+  const sessionIdRef = useRef<string | null>(null);
 
   // Calculate distance between two GPS points using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -54,8 +75,154 @@ export const useTelematics = (instructorId: string) => {
     return R * c;
   };
 
-  // Detect driving behavior events
-  const detectDrivingEvents = useCallback((currentSpeedKmh: number, previousSpeedKmh: number, position: GeolocationPosition) => {
+  // Calculate speed from position changes when GPS speed is unavailable
+  const calculateSpeedFromPositions = useCallback((
+    currentPos: GeolocationPosition
+  ): number | null => {
+    if (!lastPositionRef.current || !lastPositionTimeRef.current) {
+      return null;
+    }
+
+    const distance = calculateDistance(
+      lastPositionRef.current.coords.latitude,
+      lastPositionRef.current.coords.longitude,
+      currentPos.coords.latitude,
+      currentPos.coords.longitude
+    );
+
+    const timeDeltaSeconds = (currentPos.timestamp - lastPositionTimeRef.current) / 1000;
+    
+    if (timeDeltaSeconds <= 0 || timeDeltaSeconds > 30) {
+      return null; // Invalid time delta
+    }
+
+    const speedKmh = (distance / timeDeltaSeconds) * 3600;
+    
+    // Filter out impossible speeds (GPS glitch)
+    if (speedKmh > 200) {
+      return null;
+    }
+
+    // Apply smoothing with moving average (last 3 readings)
+    calculatedSpeedHistoryRef.current.push(speedKmh);
+    if (calculatedSpeedHistoryRef.current.length > 3) {
+      calculatedSpeedHistoryRef.current.shift();
+    }
+    
+    const avgSpeed = calculatedSpeedHistoryRef.current.reduce((a, b) => a + b, 0) / calculatedSpeedHistoryRef.current.length;
+    return avgSpeed;
+  }, []);
+
+  // Evaluate GPS quality
+  const evaluateGPSQuality = useCallback((accuracy: number | null): GPSQuality => {
+    if (accuracy === null) {
+      return { status: 'unavailable', accuracy_m: null, message: 'GPS accuracy unknown' };
+    }
+    if (accuracy <= 20) {
+      return { status: 'good', accuracy_m: accuracy, message: 'Excellent GPS signal' };
+    }
+    if (accuracy <= 50) {
+      return { status: 'fair', accuracy_m: accuracy, message: 'Good GPS signal' };
+    }
+    if (accuracy <= 100) {
+      return { status: 'poor', accuracy_m: accuracy, message: 'Weak GPS signal - accuracy may be reduced' };
+    }
+    return { status: 'unavailable', accuracy_m: accuracy, message: 'GPS too inaccurate - recording paused' };
+  }, []);
+
+  // Request motion permission (required on iOS)
+  const requestMotionPermission = useCallback(async (): Promise<boolean> => {
+    // Check if DeviceMotionEvent requires permission (iOS 13+)
+    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+      try {
+        const permission = await (DeviceMotionEvent as any).requestPermission();
+        return permission === 'granted';
+      } catch (err) {
+        console.error('Motion permission request failed:', err);
+        return false;
+      }
+    }
+    // No permission required on Android/other platforms
+    return true;
+  }, []);
+
+  // Calculate G-force from accelerometer data
+  const calculateGForce = useCallback((x: number, y: number, z: number): number => {
+    // Remove gravity (approximately 9.81 m/s²) and convert to G
+    const totalAcceleration = Math.sqrt(x * x + y * y + z * z);
+    const gForce = Math.abs(totalAcceleration - 9.81) / 9.81;
+    return gForce;
+  }, []);
+
+  // Detect motion-based events
+  const detectMotionEvents = useCallback((gForce: number, position: GeolocationPosition | null, currentSpeedKmh: number): DrivingEvent[] => {
+    const events: DrivingEvent[] = [];
+    const lat = position?.coords.latitude ?? null;
+    const lon = position?.coords.longitude ?? null;
+
+    // Sharp turn detection (lateral G-force > 0.3g)
+    if (gForce > 0.3 && gForce <= 0.5) {
+      events.push({
+        event_type: 'sharp_turn',
+        severity: 'low',
+        latitude: lat,
+        longitude: lon,
+        speed_at_event: currentSpeedKmh,
+        g_force: gForce,
+        sensor_source: 'motion',
+        notes: `Lateral force: ${gForce.toFixed(2)}g`
+      });
+    } else if (gForce > 0.5 && gForce <= 0.7) {
+      events.push({
+        event_type: 'sharp_turn',
+        severity: 'medium',
+        latitude: lat,
+        longitude: lon,
+        speed_at_event: currentSpeedKmh,
+        g_force: gForce,
+        sensor_source: 'motion',
+        notes: `Lateral force: ${gForce.toFixed(2)}g`
+      });
+    } else if (gForce > 0.7) {
+      events.push({
+        event_type: 'hard_impact',
+        severity: 'high',
+        latitude: lat,
+        longitude: lon,
+        speed_at_event: currentSpeedKmh,
+        g_force: gForce,
+        sensor_source: 'motion',
+        notes: `Impact force: ${gForce.toFixed(2)}g`
+      });
+    }
+
+    // Smooth cornering detection (consistently low G-force during turns)
+    if (gForce < 0.15 && currentSpeedKmh > 20) {
+      gForceHistoryRef.current.push(gForce);
+      if (gForceHistoryRef.current.length > 5) {
+        gForceHistoryRef.current.shift();
+      }
+      const avgGForce = gForceHistoryRef.current.reduce((a, b) => a + b, 0) / gForceHistoryRef.current.length;
+      if (avgGForce < 0.1 && gForceHistoryRef.current.length >= 5) {
+        events.push({
+          event_type: 'smooth_cornering',
+          severity: 'low',
+          latitude: lat,
+          longitude: lon,
+          speed_at_event: currentSpeedKmh,
+          g_force: avgGForce,
+          sensor_source: 'motion',
+          notes: 'Smooth vehicle control'
+        });
+        gForceHistoryRef.current = []; // Reset after detecting
+      }
+    }
+
+    return events;
+  }, []);
+
+  // Detect driving behavior events from GPS
+  const detectDrivingEvents = useCallback((currentSpeedKmh: number, previousSpeedKmh: number, position: GeolocationPosition): DrivingEvent[] => {
     const speedDiff = currentSpeedKmh - previousSpeedKmh;
     const events: DrivingEvent[] = [];
 
@@ -67,6 +234,7 @@ export const useTelematics = (instructorId: string) => {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         speed_at_event: currentSpeedKmh,
+        sensor_source: 'gps',
         notes: `Deceleration: ${Math.abs(speedDiff).toFixed(1)} km/h`
       });
     }
@@ -79,6 +247,7 @@ export const useTelematics = (instructorId: string) => {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         speed_at_event: currentSpeedKmh,
+        sensor_source: 'gps',
         notes: `Acceleration: ${speedDiff.toFixed(1)} km/h`
       });
     }
@@ -91,6 +260,7 @@ export const useTelematics = (instructorId: string) => {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         speed_at_event: currentSpeedKmh,
+        sensor_source: 'gps',
         notes: `Speed: ${currentSpeedKmh.toFixed(1)} km/h`
       });
     }
@@ -103,12 +273,66 @@ export const useTelematics = (instructorId: string) => {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         speed_at_event: currentSpeedKmh,
+        sensor_source: 'gps',
         notes: 'Smooth gradual stop'
+      });
+    }
+
+    // Good acceleration (smooth start from stop)
+    if (previousSpeedKmh < 2 && currentSpeedKmh > 10 && speedDiff < 10) {
+      events.push({
+        event_type: 'good_acceleration',
+        severity: 'low',
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        speed_at_event: currentSpeedKmh,
+        sensor_source: 'gps',
+        notes: 'Smooth acceleration from stop'
       });
     }
 
     return events;
   }, []);
+
+  // Handle device motion events
+  const handleDeviceMotion = useCallback((event: DeviceMotionEvent) => {
+    if (!event.accelerationIncludingGravity) return;
+
+    const { x, y, z } = event.accelerationIncludingGravity;
+    if (x === null || y === null || z === null) return;
+
+    const gForce = calculateGForce(x, y, z);
+    
+    setMotionData({
+      acceleration: { x, y, z },
+      rotationRate: event.rotationRate ? {
+        alpha: event.rotationRate.alpha || 0,
+        beta: event.rotationRate.beta || 0,
+        gamma: event.rotationRate.gamma || 0
+      } : null,
+      gForce
+    });
+
+    // Detect motion-based events if tracking
+    if (sessionIdRef.current && gForce > 0.25) {
+      const motionEvents = detectMotionEvents(gForce, lastPositionRef.current, speedHistoryRef.current[speedHistoryRef.current.length - 1] || 0);
+      
+      for (const event of motionEvents) {
+        supabase.from('driving_behavior_events').insert({
+          telematics_id: sessionIdRef.current,
+          event_type: event.event_type,
+          severity: event.severity,
+          latitude: event.latitude,
+          longitude: event.longitude,
+          speed_at_event: event.speed_at_event,
+          g_force: event.g_force,
+          sensor_source: event.sensor_source,
+          notes: event.notes
+        });
+        setDrivingEvents(prev => [...prev, event]);
+      }
+    }
+  }, [calculateGForce, detectMotionEvents]);
 
   // Start tracking session
   const startTracking = useCallback(async (lessonId?: string, pupilId?: string) => {
@@ -118,6 +342,14 @@ export const useTelematics = (instructorId: string) => {
     }
 
     try {
+      // Request motion permission on iOS
+      const motionGranted = await requestMotionPermission();
+      setHasMotionPermission(motionGranted);
+      
+      if (motionGranted) {
+        window.addEventListener('devicemotion', handleDeviceMotion);
+      }
+
       // Create telematics session in database
       const { data: session, error: sessionError } = await supabase
         .from('lesson_telematics')
@@ -132,6 +364,7 @@ export const useTelematics = (instructorId: string) => {
 
       if (sessionError) throw sessionError;
 
+      sessionIdRef.current = session.id;
       setCurrentSession({
         id: session.id,
         lesson_id: session.lesson_id,
@@ -146,13 +379,34 @@ export const useTelematics = (instructorId: string) => {
       setDrivingEvents([]);
       setTotalDistance(0);
       speedHistoryRef.current = [];
+      calculatedSpeedHistoryRef.current = [];
+      gForceHistoryRef.current = [];
 
       // Start watching position
       watchIdRef.current = navigator.geolocation.watchPosition(
         async (position) => {
-          const speedKmh = position.coords.speed 
+          const accuracy = position.coords.accuracy;
+          const quality = evaluateGPSQuality(accuracy);
+          setGpsQuality(quality);
+
+          // Skip recording if accuracy is too poor
+          if (quality.status === 'unavailable' && accuracy && accuracy > 200) {
+            return;
+          }
+
+          // Calculate speed - prefer GPS speed, fallback to calculated
+          let speedKmh = position.coords.speed 
             ? position.coords.speed * 3.6 // Convert m/s to km/h
-            : 0;
+            : null;
+
+          if (speedKmh === null || speedKmh === 0) {
+            const calculatedSpeed = calculateSpeedFromPositions(position);
+            if (calculatedSpeed !== null) {
+              speedKmh = calculatedSpeed;
+            } else {
+              speedKmh = 0;
+            }
+          }
 
           setCurrentSpeed(speedKmh);
 
@@ -166,10 +420,26 @@ export const useTelematics = (instructorId: string) => {
             recorded_at: new Date().toISOString()
           };
 
-          // Save GPS point to database
+          // Skip duplicate readings
+          if (lastPositionRef.current) {
+            const isSamePosition = 
+              Math.abs(lastPositionRef.current.coords.latitude - position.coords.latitude) < 0.000001 &&
+              Math.abs(lastPositionRef.current.coords.longitude - position.coords.longitude) < 0.000001;
+            if (isSamePosition) {
+              return;
+            }
+          }
+
+          // Save GPS point to database with accuracy
           await supabase.from('telematics_gps_points').insert({
             telematics_id: session.id,
-            ...point
+            latitude: point.latitude,
+            longitude: point.longitude,
+            speed_kmh: point.speed_kmh,
+            heading: point.heading,
+            altitude_m: point.altitude_m,
+            accuracy_m: point.accuracy_m,
+            gps_accuracy_m: point.accuracy_m
           });
 
           setGpsPoints(prev => [...prev, point]);
@@ -182,7 +452,11 @@ export const useTelematics = (instructorId: string) => {
               position.coords.latitude,
               position.coords.longitude
             );
-            setTotalDistance(prev => prev + distance);
+            
+            // Only add distance if reasonable (< 1km in one reading = not a GPS jump)
+            if (distance < 1) {
+              setTotalDistance(prev => prev + distance);
+            }
           }
 
           // Detect driving behavior events
@@ -193,7 +467,13 @@ export const useTelematics = (instructorId: string) => {
             for (const event of events) {
               await supabase.from('driving_behavior_events').insert({
                 telematics_id: session.id,
-                ...event
+                event_type: event.event_type,
+                severity: event.severity,
+                latitude: event.latitude,
+                longitude: event.longitude,
+                speed_at_event: event.speed_at_event,
+                sensor_source: event.sensor_source,
+                notes: event.notes
               });
               setDrivingEvents(prev => [...prev, event]);
             }
@@ -201,9 +481,11 @@ export const useTelematics = (instructorId: string) => {
 
           speedHistoryRef.current.push(speedKmh);
           lastPositionRef.current = position;
+          lastPositionTimeRef.current = position.timestamp;
         },
         (error) => {
           setError(`GPS Error: ${error.message}`);
+          setGpsQuality({ status: 'unavailable', accuracy_m: null, message: error.message });
         },
         {
           enableHighAccuracy: true,
@@ -215,7 +497,7 @@ export const useTelematics = (instructorId: string) => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start tracking');
     }
-  }, [instructorId, detectDrivingEvents]);
+  }, [instructorId, detectDrivingEvents, evaluateGPSQuality, calculateSpeedFromPositions, requestMotionPermission, handleDeviceMotion]);
 
   // Stop tracking session
   const stopTracking = useCallback(async () => {
@@ -223,6 +505,9 @@ export const useTelematics = (instructorId: string) => {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
+
+    // Remove motion listener
+    window.removeEventListener('devicemotion', handleDeviceMotion);
 
     if (currentSession) {
       const avgSpeed = speedHistoryRef.current.length > 0
@@ -245,9 +530,15 @@ export const useTelematics = (instructorId: string) => {
 
     setIsTracking(false);
     setCurrentSession(null);
+    sessionIdRef.current = null;
     lastPositionRef.current = null;
+    lastPositionTimeRef.current = null;
     speedHistoryRef.current = [];
-  }, [currentSession, totalDistance]);
+    calculatedSpeedHistoryRef.current = [];
+    gForceHistoryRef.current = [];
+    setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'GPS not active' });
+    setMotionData({ acceleration: null, rotationRate: null, gForce: 0 });
+  }, [currentSession, totalDistance, handleDeviceMotion]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -255,8 +546,9 @@ export const useTelematics = (instructorId: string) => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
+      window.removeEventListener('devicemotion', handleDeviceMotion);
     };
-  }, []);
+  }, [handleDeviceMotion]);
 
   return {
     isTracking,
@@ -266,6 +558,9 @@ export const useTelematics = (instructorId: string) => {
     currentSpeed,
     totalDistance,
     error,
+    gpsQuality,
+    motionData,
+    hasMotionPermission,
     startTracking,
     stopTracking
   };

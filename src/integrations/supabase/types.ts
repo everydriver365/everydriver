@@ -284,33 +284,39 @@ export type Database = {
       driving_behavior_events: {
         Row: {
           event_type: string
+          g_force: number | null
           id: string
           latitude: number | null
           longitude: number | null
           notes: string | null
           recorded_at: string
+          sensor_source: string | null
           severity: string
           speed_at_event: number | null
           telematics_id: string
         }
         Insert: {
           event_type: string
+          g_force?: number | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           notes?: string | null
           recorded_at?: string
+          sensor_source?: string | null
           severity?: string
           speed_at_event?: number | null
           telematics_id: string
         }
         Update: {
           event_type?: string
+          g_force?: number | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           notes?: string | null
           recorded_at?: string
+          sensor_source?: string | null
           severity?: string
           speed_at_event?: number | null
           telematics_id?: string
@@ -2057,6 +2063,7 @@ export type Database = {
         Row: {
           accuracy_m: number | null
           altitude_m: number | null
+          gps_accuracy_m: number | null
           heading: number | null
           id: string
           latitude: number
@@ -2068,6 +2075,7 @@ export type Database = {
         Insert: {
           accuracy_m?: number | null
           altitude_m?: number | null
+          gps_accuracy_m?: number | null
           heading?: number | null
           id?: string
           latitude: number
@@ -2079,6 +2087,7 @@ export type Database = {
         Update: {
           accuracy_m?: number | null
           altitude_m?: number | null
+          gps_accuracy_m?: number | null
           heading?: number | null
           id?: string
           latitude?: number
