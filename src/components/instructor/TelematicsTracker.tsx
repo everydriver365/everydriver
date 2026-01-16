@@ -13,8 +13,11 @@ import {
   MapPin,
   TrendingUp,
   Maximize2,
-  Minimize2,
-  X
+  X,
+  Wifi,
+  WifiOff,
+  Smartphone,
+  Activity
 } from 'lucide-react';
 import { useTelematics } from '@/hooks/useTelematics';
 import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-leaflet';
@@ -55,20 +58,28 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     drivingEvents,
     gpsPoints,
     error,
+    gpsQuality,
+    motionData,
+    hasMotionPermission,
     startTracking,
     stopTracking
   } = useTelematics(instructorId);
 
   const goodEvents = drivingEvents.filter(e => 
-    e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration'
+    e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration' || e.event_type === 'smooth_cornering'
   ).length;
   
   const badEvents = drivingEvents.filter(e => 
     e.event_type === 'harsh_brake' || e.event_type === 'harsh_acceleration' || 
-    e.event_type === 'speeding' || e.event_type === 'sharp_turn'
+    e.event_type === 'speeding' || e.event_type === 'sharp_turn' || e.event_type === 'hard_impact'
   ).length;
 
-  const drivingScore = Math.max(0, Math.min(100, 100 - (badEvents * 10) + (goodEvents * 5)));
+  // Enhanced scoring: weight events and consider distance
+  const distanceKm = totalDistance > 0 ? totalDistance : 1;
+  const eventsPerKm = (badEvents / distanceKm);
+  const baseScore = 100 - (badEvents * 8) + (goodEvents * 3);
+  const consistencyBonus = eventsPerKm < 0.5 ? 5 : eventsPerKm < 1 ? 2 : 0;
+  const drivingScore = Math.max(0, Math.min(100, baseScore + consistencyBonus));
 
   // Convert GPS points to route coordinates
   const routeCoordinates: [number, number][] = gpsPoints.map(p => [p.latitude, p.longitude]);
@@ -78,6 +89,21 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
 
   // Default center (UK)
   const defaultCenter: [number, number] = [51.5074, -0.1278];
+
+  // GPS Quality indicator
+  const getGPSStatusColor = () => {
+    switch (gpsQuality.status) {
+      case 'good': return 'text-green-500';
+      case 'fair': return 'text-amber-500';
+      case 'poor': return 'text-orange-500';
+      default: return 'text-red-500';
+    }
+  };
+
+  const getGPSIcon = () => {
+    if (gpsQuality.status === 'unavailable') return <WifiOff className="h-4 w-4" />;
+    return <Wifi className="h-4 w-4" />;
+  };
 
   if (compact) {
     return (
@@ -93,9 +119,12 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                   {isTracking ? 'Tracking Active' : 'GPS Tracking'}
                 </p>
                 {isTracking && (
-                  <p className="text-xs text-muted-foreground">
-                    {currentSpeed.toFixed(0)} km/h · {totalDistance.toFixed(1)} km
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground">
+                      {currentSpeed.toFixed(0)} km/h · {totalDistance.toFixed(1)} km
+                    </p>
+                    <span className={`text-xs ${getGPSStatusColor()}`}>{gpsQuality.status}</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -143,6 +172,50 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
         {error && (
           <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
             {error}
+          </div>
+        )}
+
+        {/* GPS & Motion Quality Indicators */}
+        {isTracking && (
+          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-3">
+              {/* GPS Status */}
+              <div className={`flex items-center gap-1 ${getGPSStatusColor()}`}>
+                {getGPSIcon()}
+                <span className="text-xs font-medium">
+                  GPS: {gpsQuality.status}
+                  {gpsQuality.accuracy_m && ` (±${gpsQuality.accuracy_m.toFixed(0)}m)`}
+                </span>
+              </div>
+              
+              {/* Motion Sensor Status */}
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Smartphone className="h-4 w-4" />
+                <span className="text-xs">
+                  {hasMotionPermission === false 
+                    ? 'Motion: Denied' 
+                    : hasMotionPermission 
+                      ? `G: ${motionData.gForce.toFixed(2)}` 
+                      : 'Motion: N/A'}
+                </span>
+              </div>
+            </div>
+            
+            {/* Real-time G-force indicator */}
+            {hasMotionPermission && motionData.gForce > 0.1 && (
+              <Badge variant={motionData.gForce > 0.5 ? 'destructive' : motionData.gForce > 0.3 ? 'secondary' : 'outline'}>
+                <Activity className="h-3 w-3 mr-1" />
+                {motionData.gForce.toFixed(2)}g
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* GPS Quality Warning */}
+        {isTracking && gpsQuality.status === 'poor' && (
+          <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 text-xs flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            {gpsQuality.message}
           </div>
         )}
 
@@ -199,6 +272,14 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                     <span className="text-sm">{currentSpeed.toFixed(0)} km/h</span>
                     <span className="text-muted-foreground text-sm">|</span>
                     <span className="text-sm">{totalDistance.toFixed(2)} km</span>
+                    <span className="text-muted-foreground text-sm">|</span>
+                    <span className={`text-sm ${getGPSStatusColor()}`}>{gpsQuality.status}</span>
+                    {hasMotionPermission && motionData.gForce > 0.15 && (
+                      <>
+                        <span className="text-muted-foreground text-sm">|</span>
+                        <span className="text-sm">{motionData.gForce.toFixed(2)}g</span>
+                      </>
+                    )}
                   </div>
                   <Button
                     size="icon"
@@ -277,6 +358,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
             <div className="text-center text-muted-foreground">
               <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">Start tracking to see live map</p>
+              <p className="text-xs mt-1">Uses GPS + Motion sensors for best results</p>
             </div>
           </div>
         )}
@@ -326,12 +408,18 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
             <div className="max-h-32 overflow-y-auto space-y-1">
               {drivingEvents.slice(-5).reverse().map((event, index) => (
                 <div key={index} className="flex items-center gap-2 p-2 bg-muted/30 rounded text-sm">
-                  {event.event_type === 'smooth_stop' || event.event_type === 'good_acceleration' ? (
+                  {event.event_type === 'smooth_stop' || event.event_type === 'good_acceleration' || event.event_type === 'smooth_cornering' ? (
                     <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
                   ) : (
                     <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />
                   )}
                   <span className="flex-1">{event.event_type.replace(/_/g, ' ')}</span>
+                  {event.g_force && (
+                    <span className="text-xs text-muted-foreground">{event.g_force.toFixed(2)}g</span>
+                  )}
+                  {event.sensor_source === 'motion' && (
+                    <Smartphone className="h-3 w-3 text-muted-foreground" />
+                  )}
                   <Badge variant={event.severity === 'high' ? 'destructive' : event.severity === 'medium' ? 'secondary' : 'outline'} className="text-xs">
                     {event.severity}
                   </Badge>
@@ -346,6 +434,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
           <div className="flex items-center gap-2 text-sm text-green-600">
             <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
             GPS tracking active
+            {hasMotionPermission && <span className="text-muted-foreground">+ Motion sensors</span>}
           </div>
         )}
       </CardContent>
