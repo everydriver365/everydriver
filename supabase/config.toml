@@ -42,6 +42,9 @@ verify_jwt = false
 [functions.klarna-checkout]
 verify_jwt = false
 
+[functions.klarna-session]
+verify_jwt = false
+
 [functions.npi-checkout]
 verify_jwt = false
 
