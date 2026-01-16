@@ -9,6 +9,11 @@ interface Instructor {
   logo_url?: string | null;
   brand_colour?: string | null;
   secondary_colour?: string | null;
+  website_theme?: string | null;
+  website_font?: string | null;
+  website_header_style?: string | null;
+  website_button_color?: string | null;
+  website_footer_bg?: string | null;
   phone?: string | null;
   email?: string | null;
   home_postcode?: string;
@@ -28,7 +33,11 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
   const location = useLocation();
   const slug = instructor.app_slug;
   const primaryColor = instructor.brand_colour || "#1e3a5f";
-  const secondaryColor = instructor.secondary_colour || "#d4a574";
+  const secondaryColor = instructor.secondary_colour || "#3b82f6";
+  const buttonColor = instructor.website_button_color || secondaryColor;
+  const footerBg = instructor.website_footer_bg || "#111827";
+  const fontFamily = instructor.website_font || "Inter";
+  const headerStyle = instructor.website_header_style || "solid";
 
   const navLinks = [
     { path: `/i/${slug}`, label: "Home" },
@@ -45,12 +54,37 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
     return location.pathname.startsWith(path);
   };
 
+  // Calculate header styles based on headerStyle setting
+  const getHeaderStyles = () => {
+    switch (headerStyle) {
+      case "transparent":
+        return {
+          backgroundColor: "transparent",
+          backdropFilter: "blur(8px)",
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+        };
+      case "gradient":
+        return {
+          background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
+        };
+      default:
+        return {
+          backgroundColor: primaryColor,
+        };
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50" style={{ fontFamily }}>
+      {/* Google Fonts */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
+      `}</style>
+      
       {/* Header */}
       <header
         className="sticky top-0 z-50 border-b shadow-sm"
-        style={{ backgroundColor: primaryColor }}
+        style={getHeaderStyles()}
       >
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -97,7 +131,7 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
       <main className="flex-1">{children}</main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="text-white py-12" style={{ backgroundColor: footerBg }}>
         <div className="max-w-5xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* About */}

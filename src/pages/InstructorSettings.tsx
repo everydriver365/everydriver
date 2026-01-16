@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles } from "lucide-react";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
@@ -8,6 +8,7 @@ import { GoogleCalendarConnect } from "@/components/instructor/GoogleCalendarCon
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
+import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -357,6 +358,28 @@ export default function InstructorSettings() {
               Your website URL is being set up. Please refresh in a moment.
             </p>
           )}
+        </SettingsTile>
+
+        {/* Website Theme Section */}
+        <SettingsTile 
+          id="website-theme" 
+          icon={Sparkles} 
+          title="Website Theme" 
+          description="Colors, fonts & style presets"
+        >
+          <MiniWebsiteThemeEditor
+            instructorId={instructorId}
+            currentSettings={{
+              website_theme: authInstructor?.website_theme,
+              website_font: authInstructor?.website_font,
+              website_header_style: authInstructor?.website_header_style,
+              brand_colour: authInstructor?.brand_colour,
+              secondary_colour: authInstructor?.secondary_colour,
+              website_button_color: authInstructor?.website_button_color,
+              website_footer_bg: authInstructor?.website_footer_bg,
+            }}
+            onUpdate={refreshInstructor}
+          />
         </SettingsTile>
 
         {/* Visibility Section */}
