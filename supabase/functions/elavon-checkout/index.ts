@@ -56,11 +56,11 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Cardstream credentials
-    const merchantAlias = Deno.env.get("ELAVON_MERCHANT_ALIAS")?.trim() ?? "";
-    const secretKey = Deno.env.get("ELAVON_SECRET_KEY")?.trim() ?? "";
+    // Use NPI Cardstream credentials (same gateway, different branding)
+    const merchantId = Deno.env.get("NPI_MERCHANT_ID")?.trim() ?? "";
+    const secretKey = Deno.env.get("NPI_MERCHANT_SECRET")?.trim() ?? "";
 
-    if (!merchantAlias || !secretKey) {
+    if (!merchantId || !secretKey) {
       console.error("Missing Cardstream credentials");
       return new Response(
         JSON.stringify({ error: "Payment gateway not configured" }),
@@ -90,7 +90,7 @@ serve(async (req: Request) => {
 
     // Cardstream HPP form fields
     const formFields: Record<string, string> = {
-      merchantID: merchantAlias,
+      merchantID: merchantId,
       action: "SALE",
       type: "1",
       countryCode: "826",
@@ -99,7 +99,6 @@ serve(async (req: Request) => {
       orderRef: orderReference,
       transactionUnique,
       redirectURL: returnUrl,
-      formResponsive: "Y",
     };
 
     // Add optional customer details
