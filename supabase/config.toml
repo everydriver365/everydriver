@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.generate-route-report]
 verify_jwt = false
+
+[functions.npi-hosted-fields]
+verify_jwt = false

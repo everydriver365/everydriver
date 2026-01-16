@@ -16,6 +16,11 @@ interface NPICheckoutRequest {
   cancelUrl: string;
   instructorId?: string;
   pupilId?: string;
+  // HPP customization options
+  useHostedFields?: boolean;
+  formResponsive?: boolean;
+  merchantLogo?: string;
+  merchantName?: string;
 }
 
 // Create signature following NPI/Cardstream documentation exactly as PHP example:
@@ -120,6 +125,8 @@ serve(async (req: Request) => {
       orderRef: orderReference,
       transactionUnique: transactionUnique,
       redirectURL: callbackUrl,
+      // Enable responsive mobile-friendly form (V2)
+      formResponsive: body.formResponsive !== false ? "Y" : "N",
     };
 
     // Add optional fields only if they have values
@@ -128,6 +135,11 @@ serve(async (req: Request) => {
     }
     if (customerName) {
       requestData.customerName = customerName;
+    }
+    
+    // Add merchant branding if provided
+    if (body.merchantName) {
+      requestData.merchantName = body.merchantName;
     }
 
     // Calculate signature from all fields
