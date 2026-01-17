@@ -1280,6 +1280,7 @@ export type Database = {
           google_calendar_id: string | null
           google_refresh_token: string | null
           google_token_expires_at: string | null
+          hero_image_url: string | null
           home_address: string | null
           home_postcode: string
           hourly_rate: number | null
@@ -1344,6 +1345,7 @@ export type Database = {
           google_calendar_id?: string | null
           google_refresh_token?: string | null
           google_token_expires_at?: string | null
+          hero_image_url?: string | null
           home_address?: string | null
           home_postcode: string
           hourly_rate?: number | null
@@ -1408,6 +1410,7 @@ export type Database = {
           google_calendar_id?: string | null
           google_refresh_token?: string | null
           google_token_expires_at?: string | null
+          hero_image_url?: string | null
           home_address?: string | null
           home_postcode?: string
           hourly_rate?: number | null

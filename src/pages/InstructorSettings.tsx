@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus } from "lucide-react";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
@@ -33,6 +33,7 @@ interface InstructorProfile {
   car_image_url: string | null;
   payment_qr_url: string | null;
   welcome_video_url: string | null;
+  hero_image_url: string | null;
   is_active: boolean;
 }
 
@@ -57,7 +58,7 @@ export default function InstructorSettings() {
     try {
 const { data, error } = await supabase
         .from("instructors")
-        .select("name, email, phone, bio, profile_image_url, car_image_url, payment_qr_url, welcome_video_url, is_active")
+        .select("name, email, phone, bio, profile_image_url, car_image_url, payment_qr_url, welcome_video_url, hero_image_url, is_active")
         .eq("id", instructorId)
         .single();
 
@@ -494,6 +495,38 @@ const { data, error } = await supabase
           description="Car photo, QR code & video"
         >
           <div className="space-y-6">
+            {/* Hero/Banner Image */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <ImagePlus className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm font-medium">Banner Image</Label>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Hero image for your mini-website header
+              </p>
+              <CMSImageUpload
+                value={profile?.hero_image_url || null}
+                onChange={async (url) => {
+                  if (!instructorId) return;
+                  try {
+                    const { error } = await supabase
+                      .from("instructors")
+                      .update({ hero_image_url: url })
+                      .eq("id", instructorId);
+                    if (error) throw error;
+                    setProfile(prev => prev ? { ...prev, hero_image_url: url } : null);
+                    toast({ title: "Banner image updated" });
+                  } catch (error) {
+                    console.error("Error updating banner image:", error);
+                    toast({ title: "Error", description: "Failed to update banner image", variant: "destructive" });
+                  }
+                }}
+                bucket="instructor-images"
+                folder={instructorId}
+                label=""
+              />
+            </div>
+
             {/* Car Image */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-2">
