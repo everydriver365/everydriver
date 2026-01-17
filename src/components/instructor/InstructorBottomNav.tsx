@@ -16,6 +16,7 @@ import {
   Receipt,
   Play,
   MapPin,
+  QrCode,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -101,6 +102,7 @@ const navItems: NavItem[] = [
     path: "/instructor/pay",
     menuItems: [
       { label: "Take Payment", icon: CreditCard, path: "/instructor/pay" },
+      { label: "QR Code", icon: QrCode, path: "/instructor/pay" },
       { label: "Send Payment Link", icon: Send, path: "/instructor/pay" },
       { label: "Payment History", icon: History, path: "/instructor/pay" },
       { label: "Earnings", icon: Wallet, path: "/instructor/pay" },
