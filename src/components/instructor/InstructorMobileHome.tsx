@@ -24,7 +24,7 @@ import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useTheme } from "@/context/ThemeContext";
-import logoDark from "@/assets/logo-instructor-dark.png";
+import logoMobile from "@/assets/logo-drive365-mobile.png";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -96,8 +96,8 @@ export function InstructorMobileHome({
       <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
         {/* Logo on the left */}
         <img 
-          src={logoDark} 
-          alt="Logo" 
+          src={logoMobile} 
+          alt="Drive365" 
           className="h-7 object-contain"
         />
         
