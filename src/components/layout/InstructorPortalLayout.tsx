@@ -13,7 +13,9 @@ import {
   MapPin,
   ArrowLeft,
   Eye,
-  EyeOff
+  EyeOff,
+  Moon,
+  Sun
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import logoDark from "@/assets/logo-instructor-dark.png";
 
@@ -45,6 +48,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { resolvedTheme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -88,11 +96,28 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               />
             </div>
             
-            {/* Right: Name, Visibility, Avatar */}
-            <div className="flex items-center gap-2">
-              <span className="text-nav-foreground text-sm font-medium hidden xs:inline">
-                {instructor?.name || "Instructor"}
-              </span>
+            {/* Right: Theme, Settings, Visibility, Avatar */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+              >
+                {resolvedTheme === 'dark' ? (
+                  <Moon className="h-5 w-5" />
+                ) : (
+                  <Sun className="h-5 w-5" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/instructor/settings")}
+                className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
               {instructor?.is_active !== undefined && (
                 <Badge 
                   variant="secondary" 
