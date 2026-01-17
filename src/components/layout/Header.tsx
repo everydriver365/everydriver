@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, MapPin, Search, Moon, Sun, Settings } from "lucide-react";
+import { Menu, X, MapPin, Search, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -102,14 +102,6 @@ export function Header() {
             ) : (
               <Sun className="h-5 w-5" />
             )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/help")}
-            className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
-          >
-            <Settings className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"
