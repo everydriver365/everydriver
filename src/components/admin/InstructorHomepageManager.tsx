@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 import { toast } from "@/hooks/use-toast";
 
@@ -329,12 +330,13 @@ export function InstructorHomepageManager() {
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-xs">Image URL (optional)</Label>
-                  <Input
-                    value={banner.image_url || ""}
-                    onChange={(e) => updatePromoBanner(index, { image_url: e.target.value || null })}
-                    className="h-8"
-                    placeholder="https://example.com/banner.jpg"
+                  <CMSImageUpload
+                    value={banner.image_url || null}
+                    onChange={(url) => updatePromoBanner(index, { image_url: url })}
+                    bucket="instructor-images"
+                    folder="promo-banners"
+                    label="Banner Image"
+                    aspectRatio={16 / 9}
                   />
                 </div>
               </div>
@@ -395,12 +397,13 @@ export function InstructorHomepageManager() {
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-xs">Image URL (optional)</Label>
-                  <Input
-                    value={banner.image_url || ""}
-                    onChange={(e) => updateSecondaryPromoBanner(index, { image_url: e.target.value || null })}
-                    className="h-8"
-                    placeholder="https://example.com/banner.jpg"
+                  <CMSImageUpload
+                    value={banner.image_url || null}
+                    onChange={(url) => updateSecondaryPromoBanner(index, { image_url: url })}
+                    bucket="instructor-images"
+                    folder="promo-banners"
+                    label="Banner Image"
+                    aspectRatio={16 / 9}
                   />
                 </div>
               </div>
