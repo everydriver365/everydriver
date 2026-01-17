@@ -196,15 +196,15 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Connect your Google Calendar for two-way sync:
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            We'll sync with your Google Calendar every 15 minutes to keep everything aligned. This includes two-way syncing, while only reading when you're busy (start and end times only).
           </p>
-          <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
-            <li>New lessons automatically show as "Busy"</li>
-            <li>External events block booking availability</li>
-            <li>Real-time push notifications for instant sync</li>
-            <li>Prevent double-booking conflicts</li>
-          </ul>
+          <p className="text-sm text-muted-foreground font-medium">
+            We never read event titles, descriptions, or personal details.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Simple scheduling. Full privacy. 💙
+          </p>
           <Button
             onClick={handleConnect}
             disabled={isConnecting}
@@ -215,7 +215,7 @@ export function GoogleCalendarConnect({ instructorId }: GoogleCalendarConnectPro
             ) : (
               <ExternalLink className="h-4 w-4" />
             )}
-            Connect Google Calendar
+            Enable Google Calendar Sync
           </Button>
         </div>
       )}
