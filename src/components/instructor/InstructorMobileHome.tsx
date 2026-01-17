@@ -37,7 +37,7 @@ import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useTheme } from "@/context/ThemeContext";
-import logoMobile from "@/assets/logo-drive365-mobile.png";
+import logoDark from "@/assets/logo-drive365-dark.png";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -105,13 +105,13 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header Bar - white background */}
-      <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
+      {/* Header Bar - blue background */}
+      <div className="sticky top-0 z-40 bg-primary px-4 py-3 flex items-center justify-between">
         {/* Logo on the left */}
         <img 
-          src={logoMobile} 
+          src={logoDark} 
           alt="Drive365" 
-          className="h-10 object-contain"
+          className="h-8 object-contain"
         />
         
         {/* Controls and Avatar on the right */}
@@ -122,7 +122,7 @@ export function InstructorMobileHome({
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
+                className="text-white hover:bg-white/10 h-8 w-8"
               >
                 {resolvedTheme === 'dark' ? (
                   <Moon className="h-5 w-5" />
@@ -155,7 +155,7 @@ export function InstructorMobileHome({
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
+                className="text-white hover:bg-white/10 h-8 w-8"
               >
                 <Settings className="h-5 w-5" />
               </Button>
@@ -200,9 +200,9 @@ export function InstructorMobileHome({
           {/* Avatar Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Avatar className="h-9 w-9 border-2 border-gray-300 dark:border-gray-600 cursor-pointer">
+              <Avatar className="h-9 w-9 border-2 border-white/30 cursor-pointer">
                 <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-                <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm">
+                <AvatarFallback className="bg-white/20 text-white font-semibold text-sm">
                   {instructor?.name ? getInitials(instructor.name) : "?"}
                 </AvatarFallback>
               </Avatar>
