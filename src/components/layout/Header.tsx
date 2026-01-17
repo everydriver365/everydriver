@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, MapPin, Search } from "lucide-react";
+import { Menu, X, MapPin, Search, Moon, Sun, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import { PromoBanner } from "./PromoBanner";
 import { SecondaryNav } from "./SecondaryNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { useTheme } from "@/context/ThemeContext";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -25,6 +26,11 @@ export function Header() {
   const [postcode, setPostcode] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
+  const { resolvedTheme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,15 +89,37 @@ export function Header() {
           </form>
         </div>
 
-        {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden text-nav-foreground hover:bg-nav-foreground/10"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+        {/* Mobile Controls */}
+        <div className="flex items-center gap-1 md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
+          >
+            {resolvedTheme === 'dark' ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/help")}
+            className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </nav>
 
       {/* Mobile Menu */}
