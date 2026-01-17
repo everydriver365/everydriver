@@ -4,7 +4,7 @@ import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
-import { GoogleCalendarConnect } from "@/components/instructor/GoogleCalendarConnect";
+import { CalendarConnect } from "@/components/instructor/CalendarConnect";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
@@ -432,14 +432,14 @@ export default function InstructorSettings() {
           />
         </SettingsTile>
 
-        {/* Google Calendar Sync Section */}
+        {/* Calendar Sync Section */}
         <SettingsTile 
           id="calendar" 
           icon={Calendar} 
-          title="Google Calendar Sync" 
+          title="Calendar Sync" 
           description="Sync lessons to your calendar"
         >
-          <GoogleCalendarConnect instructorId={instructorId} />
+          <CalendarConnect instructorId={instructorId} />
         </SettingsTile>
 
         {/* Push Notifications Section */}
