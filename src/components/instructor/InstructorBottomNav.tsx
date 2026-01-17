@@ -17,6 +17,7 @@ import {
   Play,
   MapPin,
   QrCode,
+  CalendarClock,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -63,6 +64,7 @@ const navItems: NavItem[] = [
       { label: "Weekly View", icon: CalendarDays, path: "/instructor/schedule" },
       { label: "Today", icon: Clock, path: "/instructor/schedule" },
       { label: "Calendar", icon: Calendar, path: "/instructor/diary" },
+      { label: "Availability", icon: CalendarClock, path: "/instructor/settings" },
     ]
   },
   { 
