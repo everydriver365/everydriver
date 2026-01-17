@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video } from "lucide-react";
+import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
@@ -29,6 +30,9 @@ interface InstructorProfile {
   phone: string | null;
   bio: string | null;
   profile_image_url: string | null;
+  car_image_url: string | null;
+  payment_qr_url: string | null;
+  welcome_video_url: string | null;
   is_active: boolean;
 }
 
@@ -51,9 +55,9 @@ export default function InstructorSettings() {
   const fetchProfile = async () => {
     if (!instructorId) return;
     try {
-      const { data, error } = await supabase
+const { data, error } = await supabase
         .from("instructors")
-        .select("name, email, phone, bio, profile_image_url, is_active")
+        .select("name, email, phone, bio, profile_image_url, car_image_url, payment_qr_url, welcome_video_url, is_active")
         .eq("id", instructorId)
         .single();
 
@@ -480,6 +484,116 @@ export default function InstructorSettings() {
           description="Customise your pupil portal"
         >
           <PupilAppBrandingEditor instructorId={instructorId} />
+        </SettingsTile>
+
+        {/* Images Section */}
+        <SettingsTile 
+          id="images" 
+          icon={ImageIcon} 
+          title="Images & Media" 
+          description="Car photo, QR code & video"
+        >
+          <div className="space-y-6">
+            {/* Car Image */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <Car className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm font-medium">Car Photo</Label>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Show pupils what car they'll be learning in
+              </p>
+              <CMSImageUpload
+                value={profile?.car_image_url || null}
+                onChange={async (url) => {
+                  if (!instructorId) return;
+                  try {
+                    const { error } = await supabase
+                      .from("instructors")
+                      .update({ car_image_url: url })
+                      .eq("id", instructorId);
+                    if (error) throw error;
+                    setProfile(prev => prev ? { ...prev, car_image_url: url } : null);
+                    toast({ title: "Car photo updated" });
+                  } catch (error) {
+                    console.error("Error updating car image:", error);
+                    toast({ title: "Error", description: "Failed to update car photo", variant: "destructive" });
+                  }
+                }}
+                bucket="instructor-images"
+                folder={instructorId}
+                label=""
+              />
+            </div>
+
+            {/* Payment QR Code */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <QrCode className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm font-medium">Payment QR Code</Label>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Pupils can scan to make quick payments
+              </p>
+              <CMSImageUpload
+                value={profile?.payment_qr_url || null}
+                onChange={async (url) => {
+                  if (!instructorId) return;
+                  try {
+                    const { error } = await supabase
+                      .from("instructors")
+                      .update({ payment_qr_url: url })
+                      .eq("id", instructorId);
+                    if (error) throw error;
+                    setProfile(prev => prev ? { ...prev, payment_qr_url: url } : null);
+                    toast({ title: "Payment QR updated" });
+                  } catch (error) {
+                    console.error("Error updating QR code:", error);
+                    toast({ title: "Error", description: "Failed to update QR code", variant: "destructive" });
+                  }
+                }}
+                bucket="instructor-images"
+                folder={instructorId}
+                label=""
+              />
+            </div>
+
+            {/* Welcome Video URL */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mb-2">
+                <Video className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm font-medium">Welcome Video URL</Label>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                Link to a YouTube or Vimeo introduction video
+              </p>
+              <Input
+                placeholder="https://youtube.com/watch?v=..."
+                value={profile?.welcome_video_url || ""}
+                onChange={(e) => setProfile(prev => prev ? { ...prev, welcome_video_url: e.target.value } : null)}
+              />
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={async () => {
+                  if (!instructorId || !profile) return;
+                  try {
+                    const { error } = await supabase
+                      .from("instructors")
+                      .update({ welcome_video_url: profile.welcome_video_url })
+                      .eq("id", instructorId);
+                    if (error) throw error;
+                    toast({ title: "Video URL saved" });
+                  } catch (error) {
+                    console.error("Error updating video URL:", error);
+                    toast({ title: "Error", description: "Failed to save video URL", variant: "destructive" });
+                  }
+                }}
+              >
+                Save Video URL
+              </Button>
+            </div>
+          </div>
         </SettingsTile>
       </div>
     </InstructorPortalLayout>
