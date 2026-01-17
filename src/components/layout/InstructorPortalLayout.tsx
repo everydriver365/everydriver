@@ -25,6 +25,7 @@ import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
+import { CommandPalette } from "@/components/CommandPalette";
 import logoDark from "@/assets/logo-instructor-dark.png";
 
 const sidebarLinks = [
@@ -157,7 +158,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
   // Desktop Layout
   return (
-    <div className="min-h-screen bg-background flex">
+    <>
+      <CommandPalette variant="instructor" />
+      <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-card fixed h-full">
         <div className="flex flex-col h-full">
@@ -219,6 +222,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           {children}
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
