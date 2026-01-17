@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
   Users, 
@@ -13,7 +13,9 @@ import {
   ChevronRight,
   Receipt,
   Eye,
-  EyeOff
+  EyeOff,
+  Moon,
+  Sun
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { useTheme } from "@/context/ThemeContext";
 import logoDark from "@/assets/logo-instructor-dark.png";
 
 // Icon mapping
@@ -52,6 +55,12 @@ export function InstructorMobileHome({
 }: InstructorMobileHomeProps) {
   const { content, loading } = useInstructorHomepageContent();
   const pendingJobsCount = usePendingJobsCount();
+  const navigate = useNavigate();
+  const { resolvedTheme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   // Default quick actions fallback
   const defaultQuickActions: QuickAction[] = [
@@ -92,8 +101,28 @@ export function InstructorMobileHome({
           className="h-7 object-contain"
         />
         
-        {/* Visibility badge and Avatar on the right */}
-        <div className="flex items-center gap-2">
+        {/* Controls and Avatar on the right */}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+          >
+            {resolvedTheme === 'dark' ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/instructor/settings")}
+            className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
           {instructor && instructor.is_active !== undefined && (
             <Badge 
               variant="secondary" 
