@@ -1451,6 +1451,73 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_cancellation_requests: {
+        Row: {
+          charge_amount: number | null
+          charge_applied: boolean | null
+          created_at: string | null
+          id: string
+          instructor_id: string
+          instructor_notes: string | null
+          lesson_id: string
+          pupil_id: string
+          reason: string | null
+          requested_at: string | null
+          responded_at: string | null
+          status: string
+        }
+        Insert: {
+          charge_amount?: number | null
+          charge_applied?: boolean | null
+          created_at?: string | null
+          id?: string
+          instructor_id: string
+          instructor_notes?: string | null
+          lesson_id: string
+          pupil_id: string
+          reason?: string | null
+          requested_at?: string | null
+          responded_at?: string | null
+          status?: string
+        }
+        Update: {
+          charge_amount?: number | null
+          charge_applied?: boolean | null
+          created_at?: string | null
+          id?: string
+          instructor_id?: string
+          instructor_notes?: string | null
+          lesson_id?: string
+          pupil_id?: string
+          reason?: string | null
+          requested_at?: string | null
+          responded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_cancellation_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_cancellation_requests_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_cancellation_requests_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_history: {
         Row: {
           created_at: string
@@ -1969,8 +2036,11 @@ export type Database = {
           referral_code: string | null
           referred_by_pupil_id: string | null
           reward_points: number | null
+          test_attempts: number | null
           test_centre_id: string | null
           test_date: string | null
+          test_passed: boolean | null
+          test_result_date: string | null
           test_time: string | null
           total_lessons_for_rewards: number | null
           total_trips: number | null
@@ -2008,8 +2078,11 @@ export type Database = {
           referral_code?: string | null
           referred_by_pupil_id?: string | null
           reward_points?: number | null
+          test_attempts?: number | null
           test_centre_id?: string | null
           test_date?: string | null
+          test_passed?: boolean | null
+          test_result_date?: string | null
           test_time?: string | null
           total_lessons_for_rewards?: number | null
           total_trips?: number | null
@@ -2047,8 +2120,11 @@ export type Database = {
           referral_code?: string | null
           referred_by_pupil_id?: string | null
           reward_points?: number | null
+          test_attempts?: number | null
           test_centre_id?: string | null
           test_date?: string | null
+          test_passed?: boolean | null
+          test_result_date?: string | null
           test_time?: string | null
           total_lessons_for_rewards?: number | null
           total_trips?: number | null
@@ -2420,27 +2496,57 @@ export type Database = {
       test_centres: {
         Row: {
           address: string | null
+          average_wait_weeks: number | null
           created_at: string
+          facilities: Json | null
+          google_maps_url: string | null
           id: string
           is_active: boolean
+          lat: number | null
+          lng: number | null
           name: string
+          opening_hours: string | null
+          parking_info: string | null
+          pass_rate: number | null
+          phone: string | null
           postcode: string | null
+          tips: string | null
         }
         Insert: {
           address?: string | null
+          average_wait_weeks?: number | null
           created_at?: string
+          facilities?: Json | null
+          google_maps_url?: string | null
           id?: string
           is_active?: boolean
+          lat?: number | null
+          lng?: number | null
           name: string
+          opening_hours?: string | null
+          parking_info?: string | null
+          pass_rate?: number | null
+          phone?: string | null
           postcode?: string | null
+          tips?: string | null
         }
         Update: {
           address?: string | null
+          average_wait_weeks?: number | null
           created_at?: string
+          facilities?: Json | null
+          google_maps_url?: string | null
           id?: string
           is_active?: boolean
+          lat?: number | null
+          lng?: number | null
           name?: string
+          opening_hours?: string | null
+          parking_info?: string | null
+          pass_rate?: number | null
+          phone?: string | null
           postcode?: string | null
+          tips?: string | null
         }
         Relationships: []
       }

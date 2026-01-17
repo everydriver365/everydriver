@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
   BookOpen, Car, History, ChevronRight, X, AlertCircle,
-  Loader2
+  Loader2, Moon, Sun, MapPin
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ interface Pupil {
   prepaid_hours: number | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -58,10 +58,31 @@ export default function BrandedPupilPortal() {
   const [phoneInput, setPhoneInput] = useState("");
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
   const [notFound, setNotFound] = useState(false);
+  const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
 
   useEffect(() => {
     fetchInstructor();
   }, [slug]);
+
+  // Load dark mode preference from localStorage
+  useEffect(() => {
+    if (instructor) {
+      const stored = localStorage.getItem(`darkMode_${instructor.id}`);
+      if (stored !== null) {
+        setDarkModeOverride(stored === 'true');
+      }
+    }
+  }, [instructor]);
+
+  const effectiveDarkMode = darkModeOverride !== null ? darkModeOverride : instructor?.pupil_app_dark_mode ?? false;
+
+  const toggleDarkMode = () => {
+    const newValue = !effectiveDarkMode;
+    setDarkModeOverride(newValue);
+    if (instructor) {
+      localStorage.setItem(`darkMode_${instructor.id}`, String(newValue));
+    }
+  };
 
   const fetchInstructor = async () => {
     if (!slug) return;
@@ -158,11 +179,11 @@ export default function BrandedPupilPortal() {
   const brandStyles = instructor ? {
     '--brand-primary': instructor.brand_colour || '#1e3a5f',
     '--brand-secondary': instructor.secondary_colour || '#d4a574',
-    '--brand-bg': instructor.pupil_app_dark_mode ? '#0f0f0f' : '#ffffff',
-    '--brand-card': instructor.pupil_app_dark_mode ? '#1a1a1a' : '#ffffff',
-    '--brand-text': instructor.pupil_app_dark_mode ? '#ffffff' : '#1a1a1a',
-    '--brand-muted': instructor.pupil_app_dark_mode ? '#a0a0a0' : '#6b7280',
-    '--brand-border': instructor.pupil_app_dark_mode ? '#2a2a2a' : '#e5e7eb',
+    '--brand-bg': effectiveDarkMode ? '#0f0f0f' : '#ffffff',
+    '--brand-card': effectiveDarkMode ? '#1a1a1a' : '#ffffff',
+    '--brand-text': effectiveDarkMode ? '#ffffff' : '#1a1a1a',
+    '--brand-muted': effectiveDarkMode ? '#a0a0a0' : '#6b7280',
+    '--brand-border': effectiveDarkMode ? '#2a2a2a' : '#e5e7eb',
   } as React.CSSProperties : {};
 
   if (loading) {
@@ -219,16 +240,26 @@ export default function BrandedPupilPortal() {
             <p className="text-white/70 text-xs">Pupil Portal</p>
           </div>
         </div>
-        {pupil && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleLogout}
-            className="text-white/80 hover:text-white hover:bg-white/10"
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleDarkMode}
+            className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8"
           >
-            Logout
+            {effectiveDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-        )}
+          {pupil && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleLogout}
+              className="text-white/80 hover:text-white hover:bg-white/10"
+            >
+              Logout
+            </Button>
+          )}
+        </div>
       </header>
 
       {/* Main Content */}
