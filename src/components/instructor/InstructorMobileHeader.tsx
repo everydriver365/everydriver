@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
-import logoDark from "@/assets/logo-instructor-dark.png";
+import logoLight from "@/assets/logo-drive365-light.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;
@@ -37,7 +37,7 @@ export function InstructorMobileHeader({
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-nav px-4 py-3 flex items-center justify-between border-b border-nav-foreground/10">
+    <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
       {/* Left side: Back button + Logo */}
       <div className="flex items-center gap-2">
         {showBackButton && (
@@ -45,14 +45,14 @@ export function InstructorMobileHeader({
             variant="ghost" 
             size="icon" 
             onClick={handleBack}
-            className="text-nav-foreground hover:bg-nav-foreground/10 -ml-2 h-8 w-8"
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 -ml-2 h-8 w-8"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
         )}
         <img 
-          src={logoDark} 
-          alt="Logo" 
+          src={logoLight} 
+          alt="Drive365" 
           className="h-7 object-contain"
         />
       </div>
@@ -63,7 +63,7 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+          className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
         >
           {resolvedTheme === 'dark' ? (
             <Moon className="h-5 w-5" />
@@ -75,7 +75,7 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={() => navigate("/instructor/settings")}
-          className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+          className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
         >
           <Settings className="h-5 w-5" />
         </Button>
@@ -97,9 +97,9 @@ export function InstructorMobileHeader({
             )}
           </Badge>
         )}
-        <Avatar className="h-9 w-9 border-2 border-nav-foreground/30">
+        <Avatar className="h-9 w-9 border-2 border-gray-300 dark:border-gray-600">
           <AvatarImage src={profileImageUrl || undefined} alt={instructorName} />
-          <AvatarFallback className="bg-nav-foreground text-nav font-semibold text-sm">
+          <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
             {getInitials(instructorName)}
           </AvatarFallback>
         </Avatar>
