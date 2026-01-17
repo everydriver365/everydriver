@@ -15,11 +15,24 @@ import {
   Eye,
   EyeOff,
   Moon,
-  Sun
+  Sun,
+  LogOut,
+  User,
+  Bell,
+  HelpCircle,
+  Palette
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
@@ -103,26 +116,68 @@ export function InstructorMobileHome({
         
         {/* Controls and Avatar on the right */}
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
-          >
-            {resolvedTheme === 'dark' ? (
-              <Moon className="h-5 w-5" />
-            ) : (
-              <Sun className="h-5 w-5" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/instructor/settings")}
-            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+          {/* Theme Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
+              >
+                {resolvedTheme === 'dark' ? (
+                  <Moon className="h-5 w-5" />
+                ) : (
+                  <Sun className="h-5 w-5" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setTheme('light')}>
+                <Sun className="mr-2 h-4 w-4" />
+                Light Mode
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('dark')}>
+                <Moon className="mr-2 h-4 w-4" />
+                Dark Mode
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('system')}>
+                <Palette className="mr-2 h-4 w-4" />
+                System Default
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Settings Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Settings</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
+                <User className="mr-2 h-4 w-4" />
+                Profile Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
+                <Bell className="mr-2 h-4 w-4" />
+                Notifications
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Help & Support
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {instructor && instructor.is_active !== undefined && (
             <Badge 
               variant="secondary" 
@@ -141,12 +196,44 @@ export function InstructorMobileHome({
               )}
             </Badge>
           )}
-          <Avatar className="h-9 w-9 border-2 border-gray-300 dark:border-gray-600">
-            <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-            <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm">
-              {instructor?.name ? getInitials(instructor.name) : "?"}
-            </AvatarFallback>
-          </Avatar>
+
+          {/* Avatar Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="h-9 w-9 border-2 border-gray-300 dark:border-gray-600 cursor-pointer">
+                <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
+                <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm">
+                  {instructor?.name ? getInitials(instructor.name) : "?"}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div className="flex flex-col">
+                  <span className="font-medium">{instructor?.name || "Instructor"}</span>
+                  <span className="text-xs text-muted-foreground">Driving Instructor</span>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
+                <User className="mr-2 h-4 w-4" />
+                View Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/instructor/pay")}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                Payments
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
