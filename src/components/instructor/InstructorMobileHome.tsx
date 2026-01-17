@@ -98,7 +98,7 @@ export function InstructorMobileHome({
         <img 
           src={logoMobile} 
           alt="Drive365" 
-          className="h-7 object-contain"
+          className="h-10 object-contain"
         />
         
         {/* Controls and Avatar on the right */}
