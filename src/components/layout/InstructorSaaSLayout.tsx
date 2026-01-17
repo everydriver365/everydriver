@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import logo from "@/assets/logo-drive365-dark.png";
+import logo from "@/assets/logo-drive365-light.png";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -29,7 +29,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-nav/20 bg-nav">
+      <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <nav className="container max-w-7xl flex h-16 items-center justify-between">
           <Link to="/instructor-app" className="flex items-center">
             <img src={logo} alt="Drive365" className="h-10" />
@@ -41,8 +41,8 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-sm font-medium transition-colors hover:text-accent ${
-                  location.pathname === link.href ? "text-accent" : "text-nav-foreground/80"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  location.pathname === link.href ? "text-primary" : "text-gray-600 dark:text-gray-300"
                 }`}
               >
                 {link.label}
@@ -53,10 +53,10 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
           <div className="hidden items-center gap-2 md:flex">
             <LanguageToggle />
             <ThemeToggle />
-            <Button variant="ghost" className="text-nav-foreground/80 hover:text-nav-foreground hover:bg-nav-foreground/10" asChild>
+            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800" asChild>
               <Link to="/instructor-app/login">Log in</Link>
             </Button>
-            <Button variant="accent" asChild>
+            <Button variant="default" asChild>
               <Link to="/instructor-app/signup">Get Started Free</Link>
             </Button>
           </div>
@@ -65,7 +65,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden text-nav-foreground hover:bg-nav-foreground/10"
+            className="md:hidden text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -100,7 +100,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
                         Log in
                       </Link>
                     </Button>
-                    <Button variant="accent" className="w-full" asChild>
+                    <Button variant="default" className="w-full" asChild>
                       <Link to="/instructor-app/signup" onClick={() => setIsMobileMenuOpen(false)}>
                         Get Started Free
                       </Link>
