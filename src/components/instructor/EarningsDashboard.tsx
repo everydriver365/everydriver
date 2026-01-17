@@ -1,15 +1,23 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, PiggyBank, ArrowUpRight, ArrowDownRight, Download } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, PiggyBank, ArrowUpRight, ArrowDownRight, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, parseISO, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval } from "date-fns";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface EarningsPeriod {
   label: string;
@@ -69,6 +77,82 @@ export function EarningsDashboard() {
     URL.revokeObjectURL(url);
     
     toast.success("Earnings exported to CSV");
+  };
+
+  const exportToPDF = () => {
+    if (allPayments.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(30, 58, 95);
+    doc.text("Earnings Report", pageWidth / 2, 20, { align: "center" });
+    
+    // Subtitle with date range
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on ${format(new Date(), "d MMMM yyyy")}`, pageWidth / 2, 28, { align: "center" });
+    
+    // Summary section
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    doc.text("Summary", 14, 42);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(60);
+    const summaryY = 50;
+    doc.text(`This Month: £${earnings.thisMonth.amount.toFixed(2)}`, 14, summaryY);
+    doc.text(`This Week: £${earnings.thisWeek.amount.toFixed(2)}`, 14, summaryY + 6);
+    doc.text(`Outstanding: £${earnings.outstanding.toFixed(2)}`, 14, summaryY + 12);
+    doc.text(`Total Payments: ${allPayments.length}`, 14, summaryY + 18);
+    
+    // Payments table
+    const tableData = allPayments.map(p => [
+      format(parseISO(p.recorded_at), "d MMM yyyy"),
+      (p.pupils as any)?.name || "Unknown",
+      `£${p.amount.toFixed(2)}`
+    ]);
+    
+    autoTable(doc, {
+      startY: summaryY + 28,
+      head: [["Date", "Pupil", "Amount"]],
+      body: tableData,
+      theme: "striped",
+      headStyles: { 
+        fillColor: [30, 58, 95],
+        textColor: 255,
+        fontStyle: "bold"
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 3
+      },
+      alternateRowStyles: {
+        fillColor: [245, 247, 250]
+      }
+    });
+    
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: "center" }
+      );
+    }
+    
+    doc.save(`earnings-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    toast.success("Earnings exported to PDF");
   };
 
   useEffect(() => {
@@ -319,10 +403,24 @@ export function EarningsDashboard() {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-lg">{t('instructor.earnings')} Trend</CardTitle>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-1 h-8">
-                <Download className="h-3 w-3" />
-                <span className="hidden sm:inline">Export</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1 h-8">
+                    <Download className="h-3 w-3" />
+                    <span className="hidden sm:inline">Export</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={exportToCSV} className="gap-2">
+                    <FileSpreadsheet className="h-4 w-4" />
+                    Export as CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportToPDF} className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Tabs value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
                 <TabsList className="h-8">
                   <TabsTrigger value="week" className="text-xs px-3">Week</TabsTrigger>
