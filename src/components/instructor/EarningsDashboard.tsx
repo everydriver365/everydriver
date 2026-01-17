@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, PiggyBank, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Users, PiggyBank, ArrowUpRight, ArrowDownRight, Download } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, parseISO, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval } from "date-fns";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface EarningsPeriod {
   label: string;
@@ -36,6 +38,38 @@ export function EarningsDashboard() {
   });
   const [chartData, setChartData] = useState<DailyEarning[]>([]);
   const [topPupils, setTopPupils] = useState<{ name: string; total: number }[]>([]);
+  const [allPayments, setAllPayments] = useState<any[]>([]);
+
+  const exportToCSV = () => {
+    if (allPayments.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+
+    const headers = ["Date", "Pupil", "Amount"];
+    const rows = allPayments.map(p => [
+      format(parseISO(p.recorded_at), "yyyy-MM-dd"),
+      (p.pupils as any)?.name || "Unknown",
+      p.amount.toFixed(2)
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `earnings-${format(new Date(), "yyyy-MM-dd")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Earnings exported to CSV");
+  };
 
   useEffect(() => {
     if (instructor?.id) {
@@ -76,6 +110,9 @@ export function EarningsDashboard() {
         setLoading(false);
         return;
       }
+
+      // Store all payments for export
+      setAllPayments(payments);
 
       // Calculate today's earnings
       const todayPayments = payments.filter(p => p.recorded_at.startsWith(todayStr));
@@ -279,15 +316,21 @@ export function EarningsDashboard() {
       {/* Chart */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-lg">{t('instructor.earnings')} Trend</CardTitle>
-            <Tabs value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
-              <TabsList className="h-8">
-                <TabsTrigger value="week" className="text-xs px-3">Week</TabsTrigger>
-                <TabsTrigger value="month" className="text-xs px-3">Month</TabsTrigger>
-                <TabsTrigger value="year" className="text-xs px-3">Year</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-1 h-8">
+                <Download className="h-3 w-3" />
+                <span className="hidden sm:inline">Export</span>
+              </Button>
+              <Tabs value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+                <TabsList className="h-8">
+                  <TabsTrigger value="week" className="text-xs px-3">Week</TabsTrigger>
+                  <TabsTrigger value="month" className="text-xs px-3">Month</TabsTrigger>
+                  <TabsTrigger value="year" className="text-xs px-3">Year</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

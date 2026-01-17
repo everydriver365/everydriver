@@ -1252,6 +1252,7 @@ export type Database = {
       }
       instructors: {
         Row: {
+          adi_certificate_url: string | null
           adi_code_of_practice: boolean | null
           allowed_lesson_lengths: number[] | null
           app_slug: string | null
@@ -1317,6 +1318,7 @@ export type Database = {
           welcome_video_url: string | null
         }
         Insert: {
+          adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
@@ -1382,6 +1384,7 @@ export type Database = {
           welcome_video_url?: string | null
         }
         Update: {
+          adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
           app_slug?: string | null
@@ -1961,6 +1964,7 @@ export type Database = {
           postcode: string
           preferred_language: string | null
           prepaid_hours: number | null
+          profile_image_url: string | null
           progress: number | null
           referral_code: string | null
           referred_by_pupil_id: string | null
@@ -1999,6 +2003,7 @@ export type Database = {
           postcode: string
           preferred_language?: string | null
           prepaid_hours?: number | null
+          profile_image_url?: string | null
           progress?: number | null
           referral_code?: string | null
           referred_by_pupil_id?: string | null
@@ -2037,6 +2042,7 @@ export type Database = {
           postcode?: string
           preferred_language?: string | null
           prepaid_hours?: number | null
+          profile_image_url?: string | null
           progress?: number | null
           referral_code?: string | null
           referred_by_pupil_id?: string | null
