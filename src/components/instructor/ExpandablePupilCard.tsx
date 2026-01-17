@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -407,6 +408,11 @@ export function ExpandablePupilCard({
                 {/* Add Feedback Form */}
                 {isAddingFeedback && (
                   <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <LessonNotesTemplates
+                        onSelect={(template) => setNewFeedback(prev => prev ? `${prev} ${template}` : template)}
+                      />
+                    </div>
                     <Textarea
                       placeholder="How did the lesson go? What should they focus on next?"
                       value={newFeedback}

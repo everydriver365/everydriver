@@ -153,21 +153,14 @@ export function InstructorHomepageManager() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label>Hero Image URL</Label>
-            <Input
-              value={heroImageUrl}
-              onChange={(e) => setHeroImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-          {heroImageUrl && (
-            <img 
-              src={heroImageUrl} 
-              alt="Hero preview" 
-              className="w-full h-32 object-cover rounded-lg"
-            />
-          )}
+          <CMSImageUpload
+            value={heroImageUrl || null}
+            onChange={(url) => setHeroImageUrl(url || "")}
+            bucket="instructor-images"
+            folder="homepage"
+            label="Hero Background Image"
+            aspectRatio={16 / 9}
+          />
         </CardContent>
       </Card>
 
