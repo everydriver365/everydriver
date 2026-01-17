@@ -32,6 +32,14 @@ interface DailyEarning {
   lessons: number;
 }
 
+interface Expense {
+  id: string;
+  expense_date: string;
+  category: string;
+  description: string | null;
+  amount: number;
+}
+
 export function EarningsDashboard() {
   const { t } = useTranslation();
   const { instructor } = useInstructorAuth();
@@ -47,6 +55,7 @@ export function EarningsDashboard() {
   const [chartData, setChartData] = useState<DailyEarning[]>([]);
   const [topPupils, setTopPupils] = useState<{ name: string; total: number }[]>([]);
   const [allPayments, setAllPayments] = useState<any[]>([]);
+  const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
 
   const exportToCSV = () => {
     if (allPayments.length === 0) {
@@ -80,7 +89,7 @@ export function EarningsDashboard() {
   };
 
   const exportToPDF = () => {
-    if (allPayments.length === 0) {
+    if (allPayments.length === 0 && allExpenses.length === 0) {
       toast.error("No data to export");
       return;
     }
@@ -91,51 +100,112 @@ export function EarningsDashboard() {
     // Title
     doc.setFontSize(20);
     doc.setTextColor(30, 58, 95);
-    doc.text("Earnings Report", pageWidth / 2, 20, { align: "center" });
+    doc.text("Financial Report", pageWidth / 2, 20, { align: "center" });
     
     // Subtitle with date range
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`Generated on ${format(new Date(), "d MMMM yyyy")}`, pageWidth / 2, 28, { align: "center" });
     
+    // Calculate totals
+    const totalEarnings = allPayments.reduce((sum, p) => sum + p.amount, 0);
+    const totalExpenses = allExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const netProfit = totalEarnings - totalExpenses;
+    
     // Summary section
     doc.setFontSize(12);
     doc.setTextColor(0);
-    doc.text("Summary", 14, 42);
+    doc.text("Financial Summary", 14, 42);
     
     doc.setFontSize(10);
     doc.setTextColor(60);
     const summaryY = 50;
-    doc.text(`This Month: £${earnings.thisMonth.amount.toFixed(2)}`, 14, summaryY);
-    doc.text(`This Week: £${earnings.thisWeek.amount.toFixed(2)}`, 14, summaryY + 6);
+    doc.text(`This Month Earnings: £${earnings.thisMonth.amount.toFixed(2)}`, 14, summaryY);
+    doc.text(`This Week Earnings: £${earnings.thisWeek.amount.toFixed(2)}`, 14, summaryY + 6);
     doc.text(`Outstanding: £${earnings.outstanding.toFixed(2)}`, 14, summaryY + 12);
-    doc.text(`Total Payments: ${allPayments.length}`, 14, summaryY + 18);
     
-    // Payments table
-    const tableData = allPayments.map(p => [
-      format(parseISO(p.recorded_at), "d MMM yyyy"),
-      (p.pupils as any)?.name || "Unknown",
-      `£${p.amount.toFixed(2)}`
-    ]);
+    // Summary box on the right
+    doc.setFillColor(245, 247, 250);
+    doc.roundedRect(pageWidth - 80, 42, 66, 30, 2, 2, 'F');
+    doc.setFontSize(9);
+    doc.setTextColor(60);
+    doc.text("Total Earnings:", pageWidth - 76, 50);
+    doc.text("Total Expenses:", pageWidth - 76, 58);
+    doc.text("Net Profit:", pageWidth - 76, 66);
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "bold");
+    doc.text(`£${totalEarnings.toFixed(2)}`, pageWidth - 18, 50, { align: "right" });
+    doc.text(`£${totalExpenses.toFixed(2)}`, pageWidth - 18, 58, { align: "right" });
+    doc.setTextColor(netProfit >= 0 ? 34 : 180, netProfit >= 0 ? 139 : 0, netProfit >= 0 ? 34 : 0);
+    doc.text(`£${netProfit.toFixed(2)}`, pageWidth - 18, 66, { align: "right" });
+    doc.setFont("helvetica", "normal");
     
-    autoTable(doc, {
-      startY: summaryY + 28,
-      head: [["Date", "Pupil", "Amount"]],
-      body: tableData,
-      theme: "striped",
-      headStyles: { 
-        fillColor: [30, 58, 95],
-        textColor: 255,
-        fontStyle: "bold"
-      },
-      styles: {
-        fontSize: 9,
-        cellPadding: 3
-      },
-      alternateRowStyles: {
-        fillColor: [245, 247, 250]
-      }
-    });
+    // Earnings table
+    if (allPayments.length > 0) {
+      doc.setFontSize(11);
+      doc.setTextColor(30, 58, 95);
+      doc.text("Earnings", 14, summaryY + 26);
+      
+      const earningsData = allPayments.map(p => [
+        format(parseISO(p.recorded_at), "d MMM yyyy"),
+        (p.pupils as any)?.name || "Unknown",
+        `£${p.amount.toFixed(2)}`
+      ]);
+      
+      autoTable(doc, {
+        startY: summaryY + 30,
+        head: [["Date", "Pupil", "Amount"]],
+        body: earningsData,
+        theme: "striped",
+        headStyles: { 
+          fillColor: [30, 58, 95],
+          textColor: 255,
+          fontStyle: "bold"
+        },
+        styles: {
+          fontSize: 9,
+          cellPadding: 3
+        },
+        alternateRowStyles: {
+          fillColor: [245, 247, 250]
+        }
+      });
+    }
+    
+    // Expenses table
+    if (allExpenses.length > 0) {
+      const lastTableY = (doc as any).lastAutoTable?.finalY || summaryY + 30;
+      
+      doc.setFontSize(11);
+      doc.setTextColor(180, 95, 30);
+      doc.text("Expenses", 14, lastTableY + 12);
+      
+      const expensesData = allExpenses.map(e => [
+        format(parseISO(e.expense_date), "d MMM yyyy"),
+        e.category,
+        e.description || "-",
+        `£${e.amount.toFixed(2)}`
+      ]);
+      
+      autoTable(doc, {
+        startY: lastTableY + 16,
+        head: [["Date", "Category", "Description", "Amount"]],
+        body: expensesData,
+        theme: "striped",
+        headStyles: { 
+          fillColor: [180, 95, 30],
+          textColor: 255,
+          fontStyle: "bold"
+        },
+        styles: {
+          fontSize: 9,
+          cellPadding: 3
+        },
+        alternateRowStyles: {
+          fillColor: [255, 248, 240]
+        }
+      });
+    }
     
     // Footer
     const pageCount = doc.getNumberOfPages();
@@ -151,8 +221,8 @@ export function EarningsDashboard() {
       );
     }
     
-    doc.save(`earnings-${format(new Date(), "yyyy-MM-dd")}.pdf`);
-    toast.success("Earnings exported to PDF");
+    doc.save(`financial-report-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    toast.success("Financial report exported to PDF");
   };
 
   useEffect(() => {
@@ -190,13 +260,22 @@ export function EarningsDashboard() {
         .select("account_balance, name")
         .eq("instructor_id", instructor.id);
 
+      // Fetch expenses
+      const { data: expenses } = await supabase
+        .from("instructor_expenses")
+        .select("id, expense_date, category, description, amount")
+        .eq("instructor_id", instructor.id)
+        .gte("expense_date", format(subMonths(today, 12), 'yyyy-MM-dd'))
+        .order("expense_date", { ascending: false });
+
       if (!payments) {
         setLoading(false);
         return;
       }
 
-      // Store all payments for export
+      // Store all payments and expenses for export
       setAllPayments(payments);
+      setAllExpenses(expenses || []);
 
       // Calculate today's earnings
       const todayPayments = payments.filter(p => p.recorded_at.startsWith(todayStr));
