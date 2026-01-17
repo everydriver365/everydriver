@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clock, Plus, Trash2, Calendar, Zap, CalendarOff, CalendarCheck, Loader2, Check, Unlink, ExternalLink } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
+import { useCalendarSync } from "@/hooks/useCalendarSync";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -80,7 +80,7 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
   });
   const [isDisconnecting, setIsDisconnecting] = useState(false);
 
-  // Google Calendar integration
+  // Calendar integration (Nylas)
   const {
     isConnecting,
     isChecking,
@@ -89,7 +89,7 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     getAuthUrl,
     handleAuthCallback,
     disconnect,
-  } = useGoogleCalendar(instructorId);
+  } = useCalendarSync(instructorId);
 
   useEffect(() => {
     fetchData();
@@ -106,6 +106,7 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
         searchParams.delete("code");
         searchParams.delete("calendar_callback");
         searchParams.delete("scope");
+        searchParams.delete("state");
         setSearchParams(searchParams, { replace: true });
       });
     }
@@ -503,7 +504,7 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
                 Connected
               </Badge>
               <span className="text-xs text-muted-foreground truncate">
-                {calendarStatus.calendarName || "Primary"}
+                {calendarStatus.email || "Calendar"}
               </span>
             </div>
             <Button

@@ -56,41 +56,6 @@ export type Database = {
           },
         ]
       }
-      calendar_webhook_channels: {
-        Row: {
-          channel_id: string
-          created_at: string
-          expiration: string
-          id: string
-          instructor_id: string
-          resource_id: string
-        }
-        Insert: {
-          channel_id: string
-          created_at?: string
-          expiration: string
-          id?: string
-          instructor_id: string
-          resource_id: string
-        }
-        Update: {
-          channel_id?: string
-          created_at?: string
-          expiration?: string
-          id?: string
-          instructor_id?: string
-          resource_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "calendar_webhook_channels_instructor_id_fkey"
-            columns: ["instructor_id"]
-            isOneToOne: true
-            referencedRelation: "instructors"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       course_enquiries: {
         Row: {
           additional_notes: string | null
@@ -789,7 +754,7 @@ export type Database = {
       instructor_calendar_events: {
         Row: {
           end_time: string
-          google_event_id: string
+          external_event_id: string
           id: string
           instructor_id: string
           is_busy: boolean
@@ -799,7 +764,7 @@ export type Database = {
         }
         Insert: {
           end_time: string
-          google_event_id: string
+          external_event_id: string
           id?: string
           instructor_id: string
           is_busy?: boolean
@@ -809,7 +774,7 @@ export type Database = {
         }
         Update: {
           end_time?: string
-          google_event_id?: string
+          external_event_id?: string
           id?: string
           instructor_id?: string
           is_busy?: boolean
@@ -1053,6 +1018,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      instructor_nylas_grants: {
+        Row: {
+          created_at: string
+          email: string | null
+          grant_id: string
+          id: string
+          instructor_id: string
+          last_sync: string | null
+          provider: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          grant_id: string
+          id?: string
+          instructor_id: string
+          last_sync?: string | null
+          provider?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          grant_id?: string
+          id?: string
+          instructor_id?: string
+          last_sync?: string | null
+          provider?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_nylas_grants_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       instructor_subscriptions: {
         Row: {

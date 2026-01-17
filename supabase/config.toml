@@ -27,18 +27,6 @@ verify_jwt = false
 [functions.twentyi-api]
 verify_jwt = false
 
-[functions.google-calendar-auth]
-verify_jwt = false
-
-[functions.google-calendar-sync]
-verify_jwt = false
-
-[functions.sync-all-calendars]
-verify_jwt = false
-
-[functions.google-calendar-webhook]
-verify_jwt = false
-
 [functions.clearpay-checkout]
 verify_jwt = false
 
@@ -90,5 +78,14 @@ verify_jwt = false
 [functions.damoov-leaderboard]
 verify_jwt = false
 
-[functions.renew-calendar-webhooks]
+[functions.nylas-auth]
+verify_jwt = false
+
+[functions.nylas-calendar-sync]
+verify_jwt = false
+
+[functions.nylas-webhook]
+verify_jwt = false
+
+[functions.sync-all-calendars]
 verify_jwt = false
