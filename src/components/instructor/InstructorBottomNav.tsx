@@ -18,6 +18,18 @@ import {
   MapPin,
   QrCode,
   CalendarClock,
+  Bell,
+  Globe,
+  CalendarOff,
+  Search,
+  GraduationCap,
+  FileText,
+  Gauge,
+  AlertCircle,
+  Car,
+  RefreshCw,
+  HelpCircle,
+  MoreHorizontal,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -53,6 +65,8 @@ const navItems: NavItem[] = [
     menuItems: [
       { label: "Dashboard", icon: Home, path: "/instructor" },
       { label: "Today's Schedule", icon: Clock, path: "/instructor/schedule" },
+      { label: "Notifications", icon: Bell, path: "/instructor/settings" },
+      { label: "My Website", icon: Globe, path: "/instructor/settings" },
       { label: "Job Offers", icon: BriefcaseBusiness, path: "/instructor/jobs" },
     ]
   },
@@ -65,6 +79,8 @@ const navItems: NavItem[] = [
       { label: "Today", icon: Clock, path: "/instructor/schedule" },
       { label: "Calendar", icon: Calendar, path: "/instructor/diary" },
       { label: "Availability", icon: CalendarClock, path: "/instructor/settings" },
+      { label: "Gaps Finder", icon: Search, path: "/instructor/gaps" },
+      { label: "Day Off", icon: CalendarOff, path: "/instructor/settings" },
     ]
   },
   { 
@@ -75,6 +91,8 @@ const navItems: NavItem[] = [
       { label: "Start Tracking", icon: Play, path: "/instructor/track-lesson" },
       { label: "Route Map", icon: MapPin, path: "/instructor/track-lesson" },
       { label: "Session History", icon: History, path: "/instructor/track-lesson" },
+      { label: "Driving Report", icon: FileText, path: "/instructor/track-lesson" },
+      { label: "Telematics Scores", icon: Gauge, path: "/instructor/track-lesson" },
     ]
   },
   { 
@@ -85,17 +103,8 @@ const navItems: NavItem[] = [
       { label: "All Pupils", icon: Users, path: "/instructor/pupils" },
       { label: "Add New Pupil", icon: UserPlus, path: "/instructor/pupils" },
       { label: "Active Pupils", icon: UserCheck, path: "/instructor/pupils" },
-    ]
-  },
-  { 
-    label: "Jobs", 
-    icon: BriefcaseBusiness, 
-    path: "/instructor/jobs", 
-    showBadge: true,
-    menuItems: [
-      { label: "Pending Jobs", icon: BriefcaseBusiness, path: "/instructor/jobs" },
-      { label: "Accepted Jobs", icon: UserCheck, path: "/instructor/jobs" },
-      { label: "Job History", icon: History, path: "/instructor/jobs" },
+      { label: "Test Dates", icon: GraduationCap, path: "/instructor/pupils" },
+      { label: "Progress Reports", icon: FileText, path: "/instructor/pupils" },
     ]
   },
   { 
@@ -106,9 +115,21 @@ const navItems: NavItem[] = [
       { label: "Take Payment", icon: CreditCard, path: "/instructor/pay" },
       { label: "QR Code", icon: QrCode, path: "/instructor/pay" },
       { label: "Send Payment Link", icon: Send, path: "/instructor/pay" },
+      { label: "Outstanding Balances", icon: AlertCircle, path: "/instructor/pay" },
       { label: "Payment History", icon: History, path: "/instructor/pay" },
       { label: "Earnings", icon: Wallet, path: "/instructor/pay" },
       { label: "Expenses", icon: Receipt, path: "/instructor/expenses" },
+    ]
+  },
+  { 
+    label: "More", 
+    icon: MoreHorizontal, 
+    path: "/instructor/settings",
+    menuItems: [
+      { label: "Vehicle Health", icon: Car, path: "/instructor/settings" },
+      { label: "Calendar Sync", icon: RefreshCw, path: "/instructor/settings" },
+      { label: "Job Offers", icon: BriefcaseBusiness, path: "/instructor/jobs" },
+      { label: "Help & Support", icon: HelpCircle, path: "/instructor/settings" },
     ]
   },
 ];
@@ -123,15 +144,19 @@ export function InstructorBottomNav() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Check if Jobs path is active for the badge
+  const jobsItem = navItems.find(item => item.menuItems?.some(m => m.path === "/instructor/jobs"));
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.15)] md:hidden">
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          const showNotification = item.showBadge && pendingJobsCount > 0;
+          const isActive = location.pathname === item.path || 
+            item.menuItems?.some(m => location.pathname === m.path);
+          const showNotification = item.label === "More" && pendingJobsCount > 0;
           
           return (
-            <DropdownMenu key={item.path}>
+            <DropdownMenu key={item.path + item.label}>
               <DropdownMenuTrigger asChild>
                 <button
                   className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
