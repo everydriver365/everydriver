@@ -92,8 +92,8 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header Bar - matches nav bar color */}
-      <div className="sticky top-0 z-40 bg-nav px-4 py-3 flex items-center justify-between border-b border-nav-foreground/10">
+      {/* Header Bar - white background */}
+      <div className="sticky top-0 z-40 bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
         {/* Logo on the left */}
         <img 
           src={logoDark} 
@@ -107,7 +107,7 @@ export function InstructorMobileHome({
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
           >
             {resolvedTheme === 'dark' ? (
               <Moon className="h-5 w-5" />
@@ -119,7 +119,7 @@ export function InstructorMobileHome({
             variant="ghost"
             size="icon"
             onClick={() => navigate("/instructor/settings")}
-            className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 w-8"
           >
             <Settings className="h-5 w-5" />
           </Button>
@@ -141,9 +141,9 @@ export function InstructorMobileHome({
               )}
             </Badge>
           )}
-          <Avatar className="h-9 w-9 border-2 border-nav-foreground/30">
+          <Avatar className="h-9 w-9 border-2 border-gray-300 dark:border-gray-600">
             <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-            <AvatarFallback className="bg-nav-foreground text-nav font-semibold text-sm">
+            <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm">
               {instructor?.name ? getInitials(instructor.name) : "?"}
             </AvatarFallback>
           </Avatar>
