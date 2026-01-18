@@ -331,6 +331,59 @@ export type Database = {
           },
         ]
       }
+      favourite_locations: {
+        Row: {
+          address: string | null
+          category: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_favorite: boolean | null
+          latitude: number
+          longitude: number
+          name: string
+          notes: string | null
+          postcode: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_favorite?: boolean | null
+          latitude: number
+          longitude: number
+          name: string
+          notes?: string | null
+          postcode?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_favorite?: boolean | null
+          latitude?: number
+          longitude?: number
+          name?: string
+          notes?: string | null
+          postcode?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favourite_locations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homepage_features: {
         Row: {
           created_at: string
@@ -2338,8 +2391,11 @@ export type Database = {
           end_location: string | null
           id: string
           instructor_id: string
+          is_shared: boolean | null
           name: string
           route_type: string
+          share_code: string | null
+          shared_at: string | null
           start_location: string | null
           telematics_id: string | null
         }
@@ -2350,8 +2406,11 @@ export type Database = {
           end_location?: string | null
           id?: string
           instructor_id: string
+          is_shared?: boolean | null
           name: string
           route_type?: string
+          share_code?: string | null
+          shared_at?: string | null
           start_location?: string | null
           telematics_id?: string | null
         }
@@ -2362,8 +2421,11 @@ export type Database = {
           end_location?: string | null
           id?: string
           instructor_id?: string
+          is_shared?: boolean | null
           name?: string
           route_type?: string
+          share_code?: string | null
+          shared_at?: string | null
           start_location?: string | null
           telematics_id?: string | null
         }
