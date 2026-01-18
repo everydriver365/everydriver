@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Route, MapPin, Trash2, ChevronDown, ChevronUp, Calendar, Share2, Upload, FileUp } from "lucide-react";
+import { Route, MapPin, Trash2, ChevronDown, ChevronUp, Calendar, Share2, Upload, FileUp, GraduationCap, FolderOpen } from "lucide-react";
 import { format } from "date-fns";
 import { SavedRoutePreview } from "./SavedRoutePreview";
 import { UploadedRoutePreview } from "./UploadedRoutePreview";
@@ -24,12 +24,15 @@ interface SavedRoute {
   is_shared: boolean | null;
   share_code: string | null;
   created_at: string;
+  category?: string | null;
 }
 
 interface SavedRoutesListProps {
   instructorId: string;
   onNavigate?: (lat: number, lng: number, name: string) => void;
 }
+
+type RouteCategory = 'test_routes' | 'all';
 
 export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListProps) {
   const [routes, setRoutes] = useState<SavedRoute[]>([]);
@@ -38,6 +41,8 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
   const [deleteRouteId, setDeleteRouteId] = useState<string | null>(null);
   const [shareRoute, setShareRoute] = useState<SavedRoute | null>(null);
   const [showUploader, setShowUploader] = useState(false);
+  const [uploadCategory, setUploadCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<RouteCategory | null>(null);
 
   useEffect(() => {
     fetchRoutes();
@@ -85,6 +90,19 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
     setExpandedRouteId(expandedRouteId === routeId ? null : routeId);
   };
 
+  // Filter routes based on category - test routes contain "test" in name or description
+  const testRoutes = routes.filter(r => 
+    r.name.toLowerCase().includes('test') || 
+    r.description?.toLowerCase().includes('test')
+  );
+  const otherRoutes = routes.filter(r => 
+    !r.name.toLowerCase().includes('test') && 
+    !r.description?.toLowerCase().includes('test')
+  );
+
+  const displayedRoutes = activeCategory === 'test_routes' ? testRoutes : 
+                          activeCategory === 'all' ? otherRoutes : [];
+
   if (loading) {
     return (
       <Card>
@@ -95,20 +113,131 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
     );
   }
 
+  // Category tiles view
+  if (activeCategory === null) {
+    return (
+      <>
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Route className="h-4 w-4 text-primary" />
+                Saved Routes
+              </CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-1.5"
+                onClick={() => {
+                  setUploadCategory(null);
+                  setShowUploader(true);
+                }}
+              >
+                <Upload className="h-4 w-4" />
+                <span className="hidden sm:inline">Upload</span>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Test Routes Tile */}
+            <button
+              onClick={() => setActiveCategory('test_routes')}
+              className="w-full p-4 border rounded-lg hover:bg-muted/50 transition-colors text-left flex items-center gap-4"
+            >
+              <div className="p-3 rounded-full bg-primary/10">
+                <GraduationCap className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">Test Routes</div>
+                <div className="text-sm text-muted-foreground">
+                  Routes for driving test practice
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{testRoutes.length}</Badge>
+                <ChevronDown className="h-4 w-4 text-muted-foreground rotate-[-90deg]" />
+              </div>
+            </button>
+
+            {/* All Routes Tile */}
+            <button
+              onClick={() => setActiveCategory('all')}
+              className="w-full p-4 border rounded-lg hover:bg-muted/50 transition-colors text-left flex items-center gap-4"
+            >
+              <div className="p-3 rounded-full bg-muted">
+                <FolderOpen className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium">Other Routes</div>
+                <div className="text-sm text-muted-foreground">
+                  Training and practice routes
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary">{otherRoutes.length}</Badge>
+                <ChevronDown className="h-4 w-4 text-muted-foreground rotate-[-90deg]" />
+              </div>
+            </button>
+
+            {routes.length === 0 && (
+              <div className="text-center py-4 border-t mt-2">
+                <p className="text-muted-foreground text-sm">No saved routes yet</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Record a lesson or upload a GPX/KML file
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <RouteUploader
+          open={showUploader}
+          onOpenChange={setShowUploader}
+          instructorId={instructorId}
+          onUploaded={fetchRoutes}
+        />
+      </>
+    );
+  }
+
+  // Routes list view (when a category is selected)
   return (
     <>
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Route className="h-4 w-4 text-primary" />
-              Saved Routes {routes.length > 0 && `(${routes.length})`}
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setActiveCategory(null)}
+              >
+                <ChevronDown className="h-4 w-4 rotate-90" />
+              </Button>
+              <CardTitle className="text-base flex items-center gap-2">
+                {activeCategory === 'test_routes' ? (
+                  <>
+                    <GraduationCap className="h-4 w-4 text-primary" />
+                    Test Routes
+                  </>
+                ) : (
+                  <>
+                    <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                    Other Routes
+                  </>
+                )}
+                <Badge variant="secondary" className="ml-1">{displayedRoutes.length}</Badge>
+              </CardTitle>
+            </div>
             <Button 
               variant="outline" 
               size="sm" 
               className="gap-1.5"
-              onClick={() => setShowUploader(true)}
+              onClick={() => {
+                setUploadCategory(activeCategory === 'test_routes' ? 'test' : null);
+                setShowUploader(true);
+              }}
             >
               <Upload className="h-4 w-4" />
               <span className="hidden sm:inline">Upload</span>
@@ -116,12 +245,15 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
           </div>
         </CardHeader>
         <CardContent className="space-y-2">
-          {routes.length === 0 ? (
+          {displayedRoutes.length === 0 ? (
             <div className="text-center py-4">
               <Route className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-              <p className="text-muted-foreground text-sm">No saved routes yet</p>
+              <p className="text-muted-foreground text-sm">No routes in this category</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Record a lesson or upload a GPX/KML file
+                {activeCategory === 'test_routes' 
+                  ? 'Upload or save routes with "test" in the name'
+                  : 'Record a lesson or upload a GPX/KML file'
+                }
               </p>
               <Button 
                 variant="outline" 
@@ -134,7 +266,7 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
               </Button>
             </div>
           ) : (
-            routes.map((route) => (
+            displayedRoutes.map((route) => (
               <div key={route.id} className="border rounded-lg overflow-hidden">
                 <button
                   onClick={() => toggleExpand(route.id)}

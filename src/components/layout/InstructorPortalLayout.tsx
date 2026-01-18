@@ -26,7 +26,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
-import logoDark from "@/assets/logo-instructor-dark.png";
+import logoDrive365 from "@/assets/logo-drive365-dark.png";
 
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
@@ -91,8 +91,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 </Button>
               )}
               <img 
-                src={logoDark} 
-                alt="Logo" 
+                src={logoDrive365} 
+                alt="Drive365" 
                 className="h-7 object-contain"
               />
             </div>
