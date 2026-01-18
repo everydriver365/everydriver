@@ -157,23 +157,23 @@ export default function InstructorSatNav() {
   };
 
   const openNavigation = (lat: number, lng: number, displayName: string) => {
-    // Prefer TomTom GO app deep link scheme (falls back to web if it can't be opened)
-    const destination = encodeURIComponent(`${lat},${lng}`);
-    const tomtomAppUrl = `tomtomgo://x-callback-url/navigate?destination=${destination}`;
+    // TomTom GO app deep link scheme
+    // IMPORTANT: Do NOT URL-encode the comma in "lat,lng" or TomTom may treat it as an invalid destination.
+    const tomtomAppUrl = `tomtomgo://x-callback-url/navigate?destination=${lat},${lng}`;
 
-    // iOS Safari is more reliable with location.href for app schemes
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
     if (isIOS) {
+      // iOS Safari is more reliable with location.href for app schemes
       window.location.href = tomtomAppUrl;
       return;
     }
 
+    // Android/desktop browsers
     const opened = window.open(tomtomAppUrl, '_blank');
 
     // If the app link fails (returns null in some browsers), try web fallback
     if (!opened) {
-      // TomTom MyDrive web search fallback (coordinates as query)
       const tomtomWebUrl = `https://mydrive.tomtom.com/en_gb/#mode=search+viewport=${lat},${lng},16+q=${lat},${lng}+ver=3`;
       window.open(tomtomWebUrl, '_blank');
     }
