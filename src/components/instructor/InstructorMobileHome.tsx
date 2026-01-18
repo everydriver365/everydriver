@@ -116,6 +116,21 @@ export function InstructorMobileHome({
         
         {/* Controls and Avatar on the right */}
         <div className="flex items-center gap-1">
+          {/* Notifications/Alerts Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/10 h-8 w-8 relative"
+            onClick={() => navigate("/instructor/jobs")}
+          >
+            <Bell className="h-5 w-5" />
+            {pendingJobsCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-primary">
+                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+              </span>
+            )}
+          </Button>
+
           {/* Theme Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
