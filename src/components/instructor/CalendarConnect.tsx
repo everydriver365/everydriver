@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Check, ExternalLink, Loader2, RefreshCw, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Check, ExternalLink, Loader2, RefreshCw, X, Share2 } from "lucide-react";
 import { useCalendarSync } from "@/hooks/useCalendarSync";
+import { GoogleServiceAccountSetup } from "./GoogleServiceAccountSetup";
 
 interface CalendarConnectProps {
   instructorId: string;
@@ -12,6 +14,7 @@ interface CalendarConnectProps {
 export function CalendarConnect({ instructorId }: CalendarConnectProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("oauth");
 
   const {
     isConnecting,
@@ -80,6 +83,8 @@ export function CalendarConnect({ instructorId }: CalendarConnectProps) {
     switch (provider) {
       case "google":
         return "Google Calendar";
+      case "google-service":
+        return "Google Calendar";
       case "microsoft":
         return "Microsoft Outlook";
       case "icloud":
@@ -94,6 +99,7 @@ export function CalendarConnect({ instructorId }: CalendarConnectProps) {
   const getProviderColor = (provider?: string) => {
     switch (provider) {
       case "google":
+      case "google-service":
         return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
       case "microsoft":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
@@ -113,90 +119,105 @@ export function CalendarConnect({ instructorId }: CalendarConnectProps) {
     );
   }
 
-  return (
-    <div className="space-y-4">
-      {calendarStatus?.connected ? (
-        <div className="space-y-4">
-          {/* Connection Status */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-green-500" />
-              <span className="text-sm font-medium">Connected</span>
-              <Badge variant="outline" className={getProviderColor(calendarStatus.provider)}>
-                {getProviderName(calendarStatus.provider)}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Account Info */}
-          {calendarStatus.email && (
-            <div className="text-sm text-muted-foreground">
-              <span className="font-medium">Account:</span> {calendarStatus.email}
-            </div>
-          )}
-
-          {/* Sync Status */}
-          <div className="flex items-center justify-between text-sm">
-            <div className="text-muted-foreground">
-              <span className="font-medium">Last synced:</span> {formatLastSync(calendarStatus.lastSync)}
-            </div>
-            {calendarStatus.externalEventCount !== undefined && (
-              <Badge variant="secondary">
-                {calendarStatus.externalEventCount} busy blocks
-              </Badge>
-            )}
-          </div>
-
-          {/* Privacy Notice */}
-          <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-            <p className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-green-500" />
-              <span>Two-way sync active. We only read when you're busy—never event details.</span>
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSyncNow}
-              disabled={isSyncing}
-            >
-              {isSyncing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              Sync Now
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDisconnect}
-              disabled={isDisconnecting}
-              className="text-destructive hover:text-destructive"
-            >
-              {isDisconnecting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <X className="mr-2 h-4 w-4" />
-              )}
-              Disconnect
-            </Button>
+  // If connected via Nylas OAuth
+  if (calendarStatus?.connected) {
+    return (
+      <div className="space-y-4">
+        {/* Connection Status */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-green-500" />
+            <span className="text-sm font-medium">Connected</span>
+            <Badge variant="outline" className={getProviderColor(calendarStatus.provider)}>
+              {getProviderName(calendarStatus.provider)}
+            </Badge>
           </div>
         </div>
-      ) : (
-        <div className="space-y-4">
+
+        {/* Account Info */}
+        {calendarStatus.email && (
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium">Account:</span> {calendarStatus.email}
+          </div>
+        )}
+
+        {/* Sync Status */}
+        <div className="flex items-center justify-between text-sm">
+          <div className="text-muted-foreground">
+            <span className="font-medium">Last synced:</span> {formatLastSync(calendarStatus.lastSync)}
+          </div>
+          {calendarStatus.externalEventCount !== undefined && (
+            <Badge variant="secondary">
+              {calendarStatus.externalEventCount} busy blocks
+            </Badge>
+          )}
+        </div>
+
+        {/* Privacy Notice */}
+        <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+          <p className="flex items-center gap-2">
+            <Check className="h-4 w-4 text-green-500" />
+            <span>Two-way sync active. We only read when you're busy—never event details.</span>
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSyncNow}
+            disabled={isSyncing}
+          >
+            {isSyncing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            Sync Now
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDisconnect}
+            disabled={isDisconnecting}
+            className="text-destructive hover:text-destructive"
+          >
+            {isDisconnecting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <X className="mr-2 h-4 w-4" />
+            )}
+            Disconnect
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Not connected - show both options
+  return (
+    <div className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="oauth" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">One-Click Login</span>
+            <span className="sm:hidden">Login</span>
+          </TabsTrigger>
+          <TabsTrigger value="service-account" className="flex items-center gap-2">
+            <Share2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Share Calendar</span>
+            <span className="sm:hidden">Share</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="oauth" className="mt-4 space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Connect your calendar to sync lessons and block out busy times automatically. 
-            We support Google, Outlook, iCloud, and Exchange calendars.
+            Connect your calendar with one click. Works with Google, Outlook, iCloud, and Exchange.
           </p>
           <p className="text-sm text-muted-foreground font-medium">
             We never read event titles, descriptions, or personal details—only busy times.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Simple scheduling. Full privacy. 💙
           </p>
           <Button
             onClick={handleConnect}
@@ -210,8 +231,12 @@ export function CalendarConnect({ instructorId }: CalendarConnectProps) {
             )}
             Connect Calendar
           </Button>
-        </div>
-      )}
+        </TabsContent>
+
+        <TabsContent value="service-account" className="mt-4">
+          <GoogleServiceAccountSetup instructorId={instructorId} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
