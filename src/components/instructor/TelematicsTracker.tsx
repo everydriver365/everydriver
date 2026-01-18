@@ -77,8 +77,10 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     isScreenAwake,
     damoovScores,
     damoovProcessing,
+    damoovStatus,
     coinsEarned,
     currentSession,
+    trackingError,
     startTracking,
     stopTracking
   } = useTelematics(instructorId);
@@ -234,8 +236,17 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-            {error}
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm space-y-1">
+            <p>{error}</p>
+            {trackingError?.details && (
+              <p className="text-xs opacity-80">{trackingError.details}</p>
+            )}
+            {trackingError?.type === 'permission' && (
+              <p className="text-xs mt-2">💡 Tip: Check your browser settings or try a different browser</p>
+            )}
+            {trackingError?.type === 'database' && (
+              <p className="text-xs mt-2">💡 Tip: Check your internet connection and try again</p>
+            )}
           </div>
         )}
 
