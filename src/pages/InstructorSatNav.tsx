@@ -278,15 +278,6 @@ export default function InstructorSatNav() {
               {/* Navigation Buttons */}
               <div className="flex flex-col gap-2">
                 <Button 
-                  onClick={() => openNavigation(destination.latitude, destination.longitude, destination.displayName)}
-                  className="w-full gap-2"
-                  size="lg"
-                >
-                  <Navigation className="h-5 w-5" />
-                  Open in TomTom
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
-                <Button 
                   variant="outline"
                   onClick={() => {
                     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -302,6 +293,31 @@ export default function InstructorSatNav() {
                   <Map className="h-5 w-5" />
                   Open in {/iPad|iPhone|iPod/.test(navigator.userAgent) ? 'Apple' : 'Google'} Maps
                   <ExternalLink className="h-4 w-4" />
+                </Button>
+                <Button 
+                  onClick={() => openNavigation(destination.latitude, destination.longitude, destination.displayName)}
+                  className="w-full gap-2"
+                  size="lg"
+                >
+                  <Navigation className="h-5 w-5" />
+                  Open in TomTom GO
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="secondary"
+                  onClick={() => {
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                    if (isIOS) {
+                      window.open('https://apps.apple.com/app/tomtom-go-navigation/id884963367', '_blank');
+                    } else {
+                      window.open('https://play.google.com/store/apps/details?id=com.tomtom.gplay.navapp', '_blank');
+                    }
+                  }}
+                  className="w-full gap-2"
+                  size="sm"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Get TomTom GO App
                 </Button>
               </div>
             </CardContent>
