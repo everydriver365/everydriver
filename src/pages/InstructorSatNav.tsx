@@ -264,7 +264,7 @@ export default function InstructorSatNav() {
                   size="lg"
                 >
                   <Navigation className="h-5 w-5" />
-                  Navigate
+                  Open in TomTom
                   <ExternalLink className="h-4 w-4" />
                 </Button>
                 <Button 
@@ -278,9 +278,11 @@ export default function InstructorSatNav() {
                     }
                   }}
                   className="w-full gap-2"
+                  size="lg"
                 >
-                  <Map className="h-4 w-4" />
+                  <Map className="h-5 w-5" />
                   Open in {/iPad|iPhone|iPod/.test(navigator.userAgent) ? 'Apple' : 'Google'} Maps
+                  <ExternalLink className="h-4 w-4" />
                 </Button>
               </div>
             </CardContent>
