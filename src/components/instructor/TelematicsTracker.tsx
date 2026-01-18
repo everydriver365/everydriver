@@ -92,6 +92,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     coinsEarned,
     currentSession,
     trackingError,
+    speedLimitData,
     startTracking,
     stopTracking
   } = useTelematics(instructorId);
@@ -157,6 +158,21 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
       lastAnnouncedEventRef.current = drivingEvents.length;
     }
   }, [drivingEvents, hapticEnabled, voiceEnabled, haptic, voice]);
+
+  // Speed limit warning feedback
+  const wasExceedingRef = useRef(false);
+  useEffect(() => {
+    if (speedLimitData.isExceeding && !wasExceedingRef.current) {
+      // Just started exceeding - trigger feedback
+      if (hapticEnabled) {
+        haptic.triggerEvent('speeding', 'medium');
+      }
+      if (voiceEnabled) {
+        voice.announceEvent('speeding', 'medium');
+      }
+    }
+    wasExceedingRef.current = speedLimitData.isExceeding;
+  }, [speedLimitData.isExceeding, hapticEnabled, voiceEnabled, haptic, voice]);
 
   const goodEventsCount = drivingEvents.filter(e => 
     e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration' || e.event_type === 'smooth_cornering'
@@ -439,6 +455,23 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                     </Button>
                   </motion.div>
 
+                  {/* Speed Limit Warning Banner */}
+                  <AnimatePresence>
+                    {speedLimitData.isExceeding && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="bg-red-500 text-white px-4 py-2 flex items-center justify-center gap-2 z-20"
+                      >
+                        <AlertTriangle className="h-5 w-5" />
+                        <span className="font-semibold">
+                          SPEED LIMIT {speedLimitData.speedLimit} km/h — Current: {currentSpeed.toFixed(0)} km/h
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   {/* Main Map Area */}
                   <div className="flex-1 relative">
                     <MapContainer
@@ -503,11 +536,37 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                   >
                     {/* Stats Grid */}
                     <div className="grid grid-cols-4 gap-3 mb-4">
-                      {/* Speed */}
-                      <div className="bg-muted/50 rounded-xl p-3 text-center">
-                        <Gauge className="h-5 w-5 mx-auto mb-1 text-primary" />
-                        <p className="text-2xl font-bold tabular-nums">{currentSpeed.toFixed(0)}</p>
+                      {/* Speed with Limit */}
+                      <div className={`rounded-xl p-3 text-center relative ${
+                        speedLimitData.isExceeding 
+                          ? 'bg-red-500/20 ring-2 ring-red-500' 
+                          : 'bg-muted/50'
+                      }`}>
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Gauge className={`h-5 w-5 ${speedLimitData.isExceeding ? 'text-red-500' : 'text-primary'}`} />
+                          {speedLimitData.speedLimit && (
+                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                              speedLimitData.isExceeding 
+                                ? 'bg-red-500 text-white' 
+                                : 'bg-muted text-muted-foreground'
+                            }`}>
+                              {speedLimitData.speedLimit}
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-2xl font-bold tabular-nums ${
+                          speedLimitData.isExceeding ? 'text-red-500' : ''
+                        }`}>{currentSpeed.toFixed(0)}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wide">km/h</p>
+                        {speedLimitData.isExceeding && (
+                          <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="absolute -top-1 -right-1"
+                          >
+                            <AlertTriangle className="h-4 w-4 text-red-500 fill-red-500/20" />
+                          </motion.div>
+                        )}
                       </div>
                       
                       {/* Distance */}

@@ -52,6 +52,13 @@ interface DamoovScores {
   phoneScore: number | null;
 }
 
+interface SpeedLimitData {
+  speedLimit: number | null;
+  roadType?: string;
+  lastFetched: number;
+  isExceeding: boolean;
+}
+
 // Enhanced error type for better debugging
 export interface TrackingError {
   type: 'permission' | 'database' | 'gps' | 'motion' | 'damoov' | 'unknown';
@@ -84,6 +91,12 @@ export const useTelematics = (instructorId: string) => {
   const [coinsEarned, setCoinsEarned] = useState<number>(0);
   const [trackingError, setTrackingError] = useState<TrackingError | null>(null);
   const [damoovStatus, setDamoovStatus] = useState<'idle' | 'processing' | 'complete' | 'error'>('idle');
+  const [speedLimitData, setSpeedLimitData] = useState<SpeedLimitData>({
+    speedLimit: null,
+    roadType: undefined,
+    lastFetched: 0,
+    isExceeding: false
+  });
 
   const watchIdRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -94,6 +107,7 @@ export const useTelematics = (instructorId: string) => {
   const calculatedSpeedHistoryRef = useRef<number[]>([]);
   const sessionIdRef = useRef<string | null>(null);
   const pupilIdRef = useRef<string | null>(null);
+  const lastSpeedLimitFetchRef = useRef<{ lat: number; lon: number; time: number } | null>(null);
 
   // Calculate distance between two GPS points using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -145,7 +159,50 @@ export const useTelematics = (instructorId: string) => {
     return avgSpeed;
   }, []);
 
-  // Evaluate GPS quality - more lenient thresholds for real-world use
+  // Fetch speed limit for current position
+  const fetchSpeedLimit = useCallback(async (lat: number, lon: number, currentSpeedKmh: number) => {
+    const now = Date.now();
+    const lastFetch = lastSpeedLimitFetchRef.current;
+    
+    // Only fetch if moved significantly (100m) or 10 seconds passed
+    if (lastFetch) {
+      const distance = calculateDistance(lastFetch.lat, lastFetch.lon, lat, lon);
+      const timeSinceLastFetch = now - lastFetch.time;
+      
+      if (distance < 0.1 && timeSinceLastFetch < 10000) {
+        // Just update isExceeding without fetching
+        setSpeedLimitData(prev => ({
+          ...prev,
+          isExceeding: prev.speedLimit !== null && currentSpeedKmh > prev.speedLimit
+        }));
+        return;
+      }
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('tomtom-speed-limits', {
+        body: { lat, lon }
+      });
+      
+      if (error) {
+        console.log('Speed limit fetch error:', error);
+        return;
+      }
+      
+      lastSpeedLimitFetchRef.current = { lat, lon, time: now };
+      
+      setSpeedLimitData({
+        speedLimit: data.speedLimit,
+        roadType: data.roadType,
+        lastFetched: now,
+        isExceeding: data.speedLimit !== null && currentSpeedKmh > data.speedLimit
+      });
+      
+      debugLog('SPEED_LIMIT', `Fetched: ${data.speedLimit} km/h on ${data.roadType || 'unknown road'}`);
+    } catch (err) {
+      console.log('Speed limit fetch failed:', err);
+    }
+  }, []);
   const evaluateGPSQuality = useCallback((accuracy: number | null): GPSQuality => {
     if (accuracy === null) {
       return { status: 'unavailable', accuracy_m: null, message: 'GPS accuracy unknown' };
@@ -556,6 +613,9 @@ export const useTelematics = (instructorId: string) => {
           }
 
           setCurrentSpeed(speedKmh);
+          
+          // Fetch speed limit for current location
+          fetchSpeedLimit(position.coords.latitude, position.coords.longitude, speedKmh);
 
           const point: GPSPoint = {
             latitude: position.coords.latitude,
@@ -832,6 +892,7 @@ export const useTelematics = (instructorId: string) => {
     damoovStatus,
     coinsEarned,
     trackingError,
+    speedLimitData,
     startTracking,
     stopTracking
   };
