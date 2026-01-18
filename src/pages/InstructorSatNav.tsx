@@ -181,6 +181,8 @@ export default function InstructorSatNav() {
 
   const handleNavigateToRouteStart = (lat: number, lng: number, name: string) => {
     setDestination({ latitude: lat, longitude: lng, displayName: name });
+    // Scroll to top to show the destination preview
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const openNativeNavigation = (address: string, postcode: string) => {
