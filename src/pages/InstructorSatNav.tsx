@@ -163,19 +163,26 @@ export default function InstructorSatNav() {
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
+    // If the TomTom GO app isn't installed, iOS Safari shows an "invalid address" error page.
+    // Avoid a bad UX by prompting the user to install the app instead.
     if (isIOS) {
-      // iOS Safari is more reliable with location.href for app schemes
-      window.location.href = tomtomAppUrl;
+      toast("TomTom GO app required", {
+        description: "Install TomTom GO to open this destination, or use Apple Maps instead.",
+        action: {
+          label: "Get TomTom GO",
+          onClick: () => window.open("https://apps.apple.com/app/tomtom-go-navigation/id884963367", "_blank"),
+        },
+      });
       return;
     }
 
     // Android/desktop browsers
-    const opened = window.open(tomtomAppUrl, '_blank');
+    const opened = window.open(tomtomAppUrl, "_blank");
 
     // If the app link fails (returns null in some browsers), try web fallback
     if (!opened) {
       const tomtomWebUrl = `https://mydrive.tomtom.com/en_gb/#mode=search+viewport=${lat},${lng},16+q=${lat},${lng}+ver=3`;
-      window.open(tomtomWebUrl, '_blank');
+      window.open(tomtomWebUrl, "_blank");
     }
   };
 
