@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database } from "lucide-react";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -8,6 +8,7 @@ import { PushNotificationSettings } from "@/components/instructor/PushNotificati
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { CalendarConnect } from "@/components/instructor/CalendarConnect";
 import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidget";
+import { DataExportManager } from "@/components/instructor/DataExportManager";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
 import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
@@ -676,6 +677,19 @@ const { data, error } = await supabase
             </p>
             <BulkSMSDialog instructorId={instructorId} />
           </div>
+        </SettingsTile>
+
+        {/* Data Export & Backup Section */}
+        <SettingsTile 
+          id="data-backup" 
+          icon={Database} 
+          title="Data Export & Backup" 
+          description="Download your data for backup"
+        >
+          <DataExportManager 
+            instructorId={instructorId} 
+            instructorName={profile?.name}
+          />
         </SettingsTile>
       </div>
     </InstructorPortalLayout>
