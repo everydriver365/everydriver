@@ -157,9 +157,18 @@ export default function InstructorSatNav() {
   };
 
   const openNavigation = (lat: number, lng: number, displayName: string) => {
-    // Always open TomTom navigation
-    const tomtomUrl = `https://www.tomtom.com/goto?lat=${lat}&long=${lng}`;
-    window.open(tomtomUrl, '_blank');
+    // Use TomTom GO app deep link scheme
+    const tomtomAppUrl = `tomtomgo://x-callback-url/navigate?destination=${lat},${lng}`;
+    
+    // Try to open TomTom GO app first, fallback to web
+    const opened = window.open(tomtomAppUrl, '_blank');
+    
+    // If the app link fails (returns null in some browsers), try web fallback
+    if (!opened) {
+      // Fallback to TomTom MyDrive web
+      const tomtomWebUrl = `https://mydrive.tomtom.com/en_gb/#mode=viewport+viewport=${lat},${lng},16,0,-0,N+ver=3`;
+      window.open(tomtomWebUrl, '_blank');
+    }
   };
 
   const handleNavigateToRouteStart = (lat: number, lng: number, name: string) => {
