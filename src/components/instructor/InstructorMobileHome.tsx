@@ -194,22 +194,16 @@ export function InstructorMobileHome({
           </DropdownMenu>
 
           {instructor && instructor.is_active !== undefined && (
-            <Badge 
-              variant="secondary" 
-              className={`gap-1 text-xs ${instructor.is_active ? "bg-emerald-500/90 text-white" : "bg-amber-500/90 text-white"}`}
+            <div 
+              className={`flex items-center justify-center h-6 w-6 rounded-full ${instructor.is_active ? "bg-emerald-500" : "bg-amber-500"}`}
+              title={instructor.is_active ? "Visible to learners" : "Hidden from learners"}
             >
               {instructor.is_active ? (
-                <>
-                  <Eye className="h-3 w-3" />
-                  Visible
-                </>
+                <Eye className="h-3.5 w-3.5 text-white" />
               ) : (
-                <>
-                  <EyeOff className="h-3 w-3" />
-                  Hidden
-                </>
+                <EyeOff className="h-3.5 w-3.5 text-white" />
               )}
-            </Badge>
+            </div>
           )}
 
           {/* Avatar Dropdown */}
