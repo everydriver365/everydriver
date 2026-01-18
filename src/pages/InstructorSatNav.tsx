@@ -157,32 +157,32 @@ export default function InstructorSatNav() {
   };
 
   const openNavigation = (lat: number, lng: number, displayName: string) => {
-    // TomTom GO app deep link scheme
-    // IMPORTANT: Do NOT URL-encode the comma in "lat,lng" or TomTom may treat it as an invalid destination.
     const tomtomAppUrl = `tomtomgo://x-callback-url/navigate?destination=${lat},${lng}`;
-
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    const appStoreUrl = isIOS 
+      ? "https://apps.apple.com/app/tomtom-go-navigation/id884963367"
+      : "https://play.google.com/store/apps/details?id=com.tomtom.gplay.navapp";
 
-    // If the TomTom GO app isn't installed, iOS Safari shows an "invalid address" error page.
-    // Avoid a bad UX by prompting the user to install the app instead.
     if (isIOS) {
-      toast("TomTom GO app required", {
-        description: "Install TomTom GO to open this destination, or use Apple Maps instead.",
-        action: {
-          label: "Get TomTom GO",
-          onClick: () => window.open("https://apps.apple.com/app/tomtom-go-navigation/id884963367", "_blank"),
-        },
-      });
+      // On iOS, try the deep link and fall back to App Store after a short delay
+      // If the app opens, the page will be backgrounded and the timeout won't fire
+      const start = Date.now();
+      window.location.href = tomtomAppUrl;
+      
+      setTimeout(() => {
+        // If we're still here after 1.5s, the app didn't open - go to App Store
+        if (document.visibilityState !== "hidden" && Date.now() - start < 2000) {
+          window.location.href = appStoreUrl;
+        }
+      }, 1500);
       return;
     }
 
-    // Android/desktop browsers
+    // Android: try to open app, fall back to Play Store
     const opened = window.open(tomtomAppUrl, "_blank");
-
-    // If the app link fails (returns null in some browsers), try web fallback
     if (!opened) {
-      const tomtomWebUrl = `https://mydrive.tomtom.com/en_gb/#mode=search+viewport=${lat},${lng},16+q=${lat},${lng}+ver=3`;
-      window.open(tomtomWebUrl, "_blank");
+      window.open(appStoreUrl, "_blank");
     }
   };
 
