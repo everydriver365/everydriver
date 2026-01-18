@@ -251,7 +251,7 @@ const PreFlightChecks: React.FC<PreFlightChecksProps> = ({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               <Button
                 size="sm"
                 variant="outline"
@@ -267,9 +267,9 @@ const PreFlightChecks: React.FC<PreFlightChecksProps> = ({
                 <Button 
                   size="sm" 
                   onClick={onAllPassed}
-                  className="flex-1"
                 >
-                  All Checks Passed - Continue
+                  <Check className="h-3.5 w-3.5 mr-1.5" />
+                  Continue
                 </Button>
               )}
               
@@ -278,7 +278,6 @@ const PreFlightChecks: React.FC<PreFlightChecksProps> = ({
                   size="sm" 
                   variant="secondary"
                   onClick={onSkip}
-                  className="flex-1"
                 >
                   Skip & Try Anyway
                 </Button>
