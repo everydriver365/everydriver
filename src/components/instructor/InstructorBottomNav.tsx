@@ -61,14 +61,7 @@ const navItems: NavItem[] = [
   { 
     label: "Home", 
     icon: Home, 
-    path: "/instructor",
-    menuItems: [
-      { label: "Dashboard", icon: Home, path: "/instructor" },
-      { label: "Today's Schedule", icon: Clock, path: "/instructor/schedule" },
-      { label: "Notifications", icon: Bell, path: "/instructor/settings" },
-      { label: "My Website", icon: Globe, path: "/instructor/settings" },
-      { label: "Job Offers", icon: BriefcaseBusiness, path: "/instructor/jobs" },
-    ]
+    path: "/instructor"
   },
   { 
     label: "Schedule", 
@@ -154,6 +147,54 @@ export function InstructorBottomNav() {
           const isActive = location.pathname === item.path || 
             item.menuItems?.some(m => location.pathname === m.path);
           const showNotification = item.label === "More" && pendingJobsCount > 0;
+          const hasMenu = item.menuItems && item.menuItems.length > 0;
+          
+          // If no menu items, render a simple button that navigates directly
+          if (!hasMenu) {
+            return (
+              <button
+                key={item.path + item.label}
+                onClick={() => handleNavClick(item.path)}
+                className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
+                  isActive
+                    ? "text-white"
+                    : "text-white/70 hover:text-white"
+                }`}
+              >
+                {/* Active indicator pill */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-white rounded-full"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+                
+                <div className="relative">
+                  <motion.div
+                    animate={{ 
+                      scale: isActive ? 1.1 : 1,
+                      y: isActive ? -2 : 0
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
+                    <item.icon
+                      className={`h-5 w-5 transition-all duration-200 ${
+                        isActive ? 'drop-shadow-sm' : ''
+                      }`}
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                  </motion.div>
+                </div>
+                <span className={`text-[11px] tracking-tight transition-all duration-200 ${
+                  isActive ? "font-semibold" : "font-medium opacity-80"
+                }`}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          }
           
           return (
             <DropdownMenu key={item.path + item.label}>
