@@ -167,7 +167,7 @@ export function InstructorBottomNav() {
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-yellow-400 rounded-full"
+                    className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-500 rounded-full"
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
@@ -212,7 +212,7 @@ export function InstructorBottomNav() {
                   {isActive && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-yellow-400 rounded-full"
+                      className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-green-500 rounded-full"
                       initial={false}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
