@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { 
   Play, 
   Square, 
@@ -20,9 +22,14 @@ import {
   Smartphone,
   Activity,
   Timer,
-  Shield
+  Shield,
+  Volume2,
+  VolumeX,
+  Vibrate
 } from 'lucide-react';
 import { useTelematics } from '@/hooks/useTelematics';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useVoiceAnnouncements } from '@/hooks/useVoiceAnnouncements';
 import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import DamoovScoresDisplay from './DamoovScoresDisplay';
@@ -89,6 +96,17 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     stopTracking
   } = useTelematics(instructorId);
   
+  // Feedback settings
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [hapticEnabled, setHapticEnabled] = useState(true);
+  
+  // Feedback hooks
+  const haptic = useHapticFeedback();
+  const voice = useVoiceAnnouncements({ enabled: voiceEnabled });
+  
+  // Track last announced event to avoid duplicates
+  const lastAnnouncedEventRef = useRef<number>(0);
+  
   // Track session start time locally
   const [trackingStartTime, setTrackingStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -118,6 +136,28 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     }
   }, [damoovScores, damoovProcessing]);
 
+  // Announce new driving events with voice and haptic feedback
+  useEffect(() => {
+    if (drivingEvents.length > lastAnnouncedEventRef.current) {
+      // Get new events
+      const newEvents = drivingEvents.slice(lastAnnouncedEventRef.current);
+      
+      newEvents.forEach(event => {
+        // Haptic feedback
+        if (hapticEnabled) {
+          haptic.triggerEvent(event.event_type, event.severity);
+        }
+        
+        // Voice announcement
+        if (voiceEnabled) {
+          voice.announceEvent(event.event_type, event.severity);
+        }
+      });
+      
+      lastAnnouncedEventRef.current = drivingEvents.length;
+    }
+  }, [drivingEvents, hapticEnabled, voiceEnabled, haptic, voice]);
+
   const goodEventsCount = drivingEvents.filter(e => 
     e.event_type === 'smooth_stop' || e.event_type === 'good_acceleration' || e.event_type === 'smooth_cornering'
   ).length;
@@ -140,7 +180,13 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     setSessionEnded(false);
     setSessionSummary(null);
     setElapsedTime(0);
+    lastAnnouncedEventRef.current = 0;
     setTrackingStartTime(new Date());
+    
+    // Feedback on start
+    if (hapticEnabled) haptic.triggerStart();
+    if (voiceEnabled) voice.announceStart();
+    
     startTracking(lessonId, pupilId);
   };
 
@@ -160,6 +206,10 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     
     // Exit fullscreen before stopping
     setIsFullscreen(false);
+    
+    // Feedback on stop
+    if (hapticEnabled) haptic.triggerStop();
+    if (voiceEnabled) voice.announceStop(finalScore);
     
     await stopTracking();
     
@@ -487,16 +537,39 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                       </div>
                     </div>
                     
-                    {/* Stop Button */}
-                    <Button
-                      size="lg"
-                      variant="destructive"
-                      className="w-full h-14 text-lg font-semibold"
-                      onClick={handleStopTracking}
-                    >
-                      <Square className="h-5 w-5 mr-2" />
-                      Stop Tracking
-                    </Button>
+                    {/* Feedback Toggles & Stop Button */}
+                    <div className="flex items-center gap-3">
+                      {/* Voice Toggle */}
+                      <button
+                        onClick={() => setVoiceEnabled(!voiceEnabled)}
+                        className={`p-2.5 rounded-lg transition-colors ${voiceEnabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}
+                        aria-label={voiceEnabled ? 'Disable voice' : 'Enable voice'}
+                      >
+                        {voiceEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+                      </button>
+                      
+                      {/* Haptic Toggle */}
+                      {haptic.isSupported && (
+                        <button
+                          onClick={() => setHapticEnabled(!hapticEnabled)}
+                          className={`p-2.5 rounded-lg transition-colors ${hapticEnabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}
+                          aria-label={hapticEnabled ? 'Disable haptic' : 'Enable haptic'}
+                        >
+                          <Vibrate className="h-5 w-5" />
+                        </button>
+                      )}
+                      
+                      {/* Stop Button */}
+                      <Button
+                        size="lg"
+                        variant="destructive"
+                        className="flex-1 h-12 text-lg font-semibold"
+                        onClick={handleStopTracking}
+                      >
+                        <Square className="h-5 w-5 mr-2" />
+                        Stop
+                      </Button>
+                    </div>
                   </motion.div>
                 </motion.div>
               )}
