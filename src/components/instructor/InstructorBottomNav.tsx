@@ -30,6 +30,7 @@ import {
   RefreshCw,
   HelpCircle,
   MoreHorizontal,
+  MessageSquare,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -122,6 +123,7 @@ const navItems: NavItem[] = [
       { label: "Vehicle Health", icon: Car, path: "/instructor/settings" },
       { label: "Calendar Sync", icon: RefreshCw, path: "/instructor/settings" },
       { label: "Job Offers", icon: BriefcaseBusiness, path: "/instructor/jobs" },
+      { label: "Contact Us", icon: MessageSquare, path: "/instructor/contact" },
       { label: "Help & Support", icon: HelpCircle, path: "/instructor/settings" },
     ]
   },
