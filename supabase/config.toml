@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.google-calendar-service]
 verify_jwt = false
+
+[functions.klarna-order]
+verify_jwt = false
