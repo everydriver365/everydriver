@@ -74,24 +74,28 @@ export function InstructorMobileHome({
   const pendingJobsCount = usePendingJobsCount();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
-  const { refreshInstructor } = useInstructorAuth();
+  const { refreshInstructor, instructor: authInstructor } = useInstructorAuth();
   const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
+
+  // Use auth context for visibility status (gets refreshed properly)
+  const instructorId = authInstructor?.id || instructor?.id;
+  const isVisible = authInstructor?.is_active ?? instructor?.is_active;
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   const toggleVisibility = async () => {
-    if (!instructor?.id || isTogglingVisibility) return;
+    if (!instructorId || isTogglingVisibility) return;
     
     setIsTogglingVisibility(true);
-    const newStatus = !instructor.is_active;
+    const newStatus = !isVisible;
     
     try {
       const { error } = await supabase
         .from("instructors")
         .update({ is_active: newStatus })
-        .eq("id", instructor.id);
+        .eq("id", instructorId);
 
       if (error) throw error;
       
@@ -223,20 +227,20 @@ export function InstructorMobileHome({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {instructor && instructor.is_active !== undefined && (
+          {instructorId && isVisible !== undefined && (
             <button
               onClick={toggleVisibility}
               disabled={isTogglingVisibility}
               className={`flex items-center justify-center h-6 w-6 rounded-full transition-all duration-200 ${
-                instructor.is_active 
+                isVisible 
                   ? "bg-emerald-500 hover:bg-emerald-600" 
                   : "bg-amber-500 hover:bg-amber-600"
               } ${isTogglingVisibility ? "opacity-50" : ""}`}
-              title={instructor.is_active ? "Tap to hide from learners" : "Tap to show to learners"}
+              title={isVisible ? "Tap to hide from learners" : "Tap to show to learners"}
             >
               {isTogglingVisibility ? (
                 <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : instructor.is_active ? (
+              ) : isVisible ? (
                 <Eye className="h-3.5 w-3.5 text-white" />
               ) : (
                 <EyeOff className="h-3.5 w-3.5 text-white" />
