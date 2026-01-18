@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, isToday, isTomorrow, parseISO } from "date-fns";
 import { toast } from "sonner";
 import { SatNavMap } from "@/components/instructor/SatNavMap";
+import { SavedRoutesList } from "@/components/instructor/SavedRoutesList";
 
 interface UpcomingLesson {
   id: string;
@@ -168,6 +169,10 @@ export default function InstructorSatNav() {
     }
   };
 
+  const handleNavigateToRouteStart = (lat: number, lng: number, name: string) => {
+    setDestination({ latitude: lat, longitude: lng, displayName: name });
+  };
+
   const openNativeNavigation = (address: string, postcode: string) => {
     const destination = encodeURIComponent(address || postcode);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -288,6 +293,12 @@ export default function InstructorSatNav() {
             </CardContent>
           </Card>
         )}
+
+        {/* Saved Routes Section */}
+        <SavedRoutesList 
+          instructorId={instructor.id} 
+          onNavigate={handleNavigateToRouteStart}
+        />
 
         {/* Upcoming Lessons Section */}
         <div className="pt-2">

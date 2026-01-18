@@ -2292,6 +2292,98 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_route_waypoints: {
+        Row: {
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          name: string | null
+          route_id: string
+          sequence: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          name?: string | null
+          route_id: string
+          sequence: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string | null
+          route_id?: string
+          sequence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_route_waypoints_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "saved_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_routes: {
+        Row: {
+          created_at: string
+          description: string | null
+          distance_km: number | null
+          end_location: string | null
+          id: string
+          instructor_id: string
+          name: string
+          route_type: string
+          start_location: string | null
+          telematics_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          distance_km?: number | null
+          end_location?: string | null
+          id?: string
+          instructor_id: string
+          name: string
+          route_type?: string
+          start_location?: string | null
+          telematics_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          distance_km?: number | null
+          end_location?: string | null
+          id?: string
+          instructor_id?: string
+          name?: string
+          route_type?: string
+          start_location?: string | null
+          telematics_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_routes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_routes_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_lessons: {
         Row: {
           amount_due: number | null
