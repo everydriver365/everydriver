@@ -89,3 +89,6 @@ verify_jwt = false
 
 [functions.sync-all-calendars]
 verify_jwt = false
+
+[functions.google-calendar-service]
+verify_jwt = false
