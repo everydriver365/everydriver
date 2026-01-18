@@ -74,7 +74,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Mobile Layout
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-20 overflow-x-hidden">
         {/* Mobile Header - matches nav bar color with logo */}
         <header className="sticky top-0 z-40 bg-nav border-b border-nav-foreground/10">
           <div className="flex items-center justify-between px-4 h-14">
@@ -147,7 +147,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </div>
         </header>
 
-        <main className="px-4 py-4">
+        <main className="px-4 py-4 overflow-x-hidden">
           {children}
         </main>
 
@@ -160,7 +160,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   return (
     <>
       <CommandPalette variant="instructor" />
-      <div className="min-h-screen bg-background flex">
+      <div className="min-h-screen bg-background flex overflow-x-hidden">
       {/* Sidebar */}
       <aside className="w-64 border-r bg-card fixed h-full">
         <div className="flex flex-col h-full">

@@ -140,9 +140,9 @@ export function InstructorMobileHome({
   const heroImage = content?.hero_image_url || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80";
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
       {/* Header Bar - blue background */}
-      <div className="sticky top-0 z-40 bg-primary px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-40 bg-primary px-4 py-3 flex items-center justify-between overflow-hidden">
         {/* Logo on the left */}
         <img 
           src={logoDark} 
