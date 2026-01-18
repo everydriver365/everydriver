@@ -40,9 +40,9 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full">
-      <div className="border-b border-nav/20 bg-nav">
-      <nav className="container max-w-7xl flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full overflow-x-hidden">
+      <div className="border-b border-nav/20 bg-nav overflow-x-hidden">
+      <nav className="container max-w-7xl flex h-16 items-center justify-between relative">
         <Link to="/" className="flex items-center">
           <img src={logo} alt="EveryDriver" className="h-10" />
         </Link>

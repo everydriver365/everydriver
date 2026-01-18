@@ -389,7 +389,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-50 bg-background flex flex-col"
+                  className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden"
                 >
                   {/* Top Status Bar */}
                   <motion.div
