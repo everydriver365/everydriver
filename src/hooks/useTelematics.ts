@@ -52,6 +52,21 @@ interface DamoovScores {
   phoneScore: number | null;
 }
 
+// Enhanced error type for better debugging
+export interface TrackingError {
+  type: 'permission' | 'database' | 'gps' | 'motion' | 'damoov' | 'unknown';
+  message: string;
+  details?: string;
+  recoverable: boolean;
+  timestamp: string;
+}
+
+// Debug log helper
+const debugLog = (step: string, message: string, data?: any) => {
+  const timestamp = new Date().toISOString().split('T')[1].slice(0, 12);
+  console.log(`[Telematics ${timestamp}] ${step}: ${message}`, data || '');
+};
+
 export const useTelematics = (instructorId: string) => {
   const [isTracking, setIsTracking] = useState(false);
   const [currentSession, setCurrentSession] = useState<TelematicsSession | null>(null);
@@ -67,6 +82,8 @@ export const useTelematics = (instructorId: string) => {
   const [damoovScores, setDamoovScores] = useState<DamoovScores | null>(null);
   const [damoovProcessing, setDamoovProcessing] = useState(false);
   const [coinsEarned, setCoinsEarned] = useState<number>(0);
+  const [trackingError, setTrackingError] = useState<TrackingError | null>(null);
+  const [damoovStatus, setDamoovStatus] = useState<'idle' | 'processing' | 'complete' | 'error'>('idle');
 
   const watchIdRef = useRef<number | null>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -402,38 +419,65 @@ export const useTelematics = (instructorId: string) => {
 
   // Start tracking session
   const startTracking = useCallback(async (lessonId?: string, pupilId?: string) => {
+    debugLog('START', 'Beginning tracking session', { lessonId, pupilId, instructorId });
+    setTrackingError(null);
+    setDamoovStatus('idle');
+    
     if (!('geolocation' in navigator)) {
-      setError('Geolocation is not supported by your browser');
+      const err: TrackingError = {
+        type: 'gps',
+        message: 'Geolocation is not supported by your browser',
+        recoverable: false,
+        timestamp: new Date().toISOString()
+      };
+      setTrackingError(err);
+      setError(err.message);
+      debugLog('START', 'FAILED - No geolocation support');
       return;
     }
 
     // First check if we have location permission
     try {
       const permissionStatus = await navigator.permissions?.query({ name: 'geolocation' });
+      debugLog('PERMISSION', 'GPS permission status', permissionStatus?.state);
       if (permissionStatus?.state === 'denied') {
-        setError('Location permission denied. Please enable location access in your browser settings.');
+        const err: TrackingError = {
+          type: 'permission',
+          message: 'Location permission denied',
+          details: 'Please enable location access in your browser settings',
+          recoverable: true,
+          timestamp: new Date().toISOString()
+        };
+        setTrackingError(err);
+        setError(err.message + '. ' + err.details);
+        debugLog('START', 'FAILED - GPS permission denied');
         return;
       }
     } catch (permErr) {
       // permissions API not supported, continue anyway
-      console.log('Permissions API not supported, continuing...');
+      debugLog('PERMISSION', 'Permissions API not supported, continuing...');
     }
 
     try {
       // Request wake lock to keep screen on
+      debugLog('WAKELOCK', 'Requesting screen wake lock');
       await requestWakeLock();
 
       // Request motion permission on iOS
+      debugLog('MOTION', 'Requesting motion sensor permission');
       const motionGranted = await requestMotionPermission();
       setHasMotionPermission(motionGranted);
+      debugLog('MOTION', `Motion permission ${motionGranted ? 'granted' : 'denied/not available'}`);
       
       if (motionGranted) {
         window.addEventListener('devicemotion', handleDeviceMotion);
+        debugLog('MOTION', 'DeviceMotion listener attached');
       } else {
-        console.log('Motion permission not granted - tracking without motion sensors');
+        debugLog('MOTION', 'Tracking without motion sensors (GPS only)');
       }
 
       // Create telematics session in database
+      debugLog('DATABASE', 'Creating telematics session');
       const { data: session, error: sessionError } = await supabase
         .from('lesson_telematics')
         .insert({
@@ -445,7 +489,20 @@ export const useTelematics = (instructorId: string) => {
         .select()
         .single();
 
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        debugLog('DATABASE', 'Session creation FAILED', sessionError);
+        const err: TrackingError = {
+          type: 'database',
+          message: 'Failed to create tracking session',
+          details: sessionError.message,
+          recoverable: true,
+          timestamp: new Date().toISOString()
+        };
+        setTrackingError(err);
+        throw sessionError;
+      }
+      
+      debugLog('DATABASE', 'Session created successfully', { sessionId: session.id });
 
       sessionIdRef.current = session.id;
       pupilIdRef.current = pupilId || null;
@@ -657,50 +714,90 @@ export const useTelematics = (instructorId: string) => {
     // Process with Damoov if pupil is assigned
     if (sessionId && pupilId) {
       setDamoovProcessing(true);
+      setDamoovStatus('processing');
+      debugLog('DAMOOV', 'Starting Damoov processing', { sessionId, pupilId });
+      
       try {
         // Step 1: Ensure pupil is registered with Damoov
-        const { data: pupil } = await supabase
+        debugLog('DAMOOV', 'Step 1: Checking pupil registration');
+        const { data: pupil, error: pupilError } = await supabase
           .from('pupils')
           .select('damoov_device_token')
           .eq('id', pupilId)
           .single();
 
+        if (pupilError) {
+          debugLog('DAMOOV', 'Failed to fetch pupil', pupilError);
+        }
+
         let deviceToken = pupil?.damoov_device_token;
+        debugLog('DAMOOV', `Existing device token: ${deviceToken ? 'Yes' : 'No'}`);
 
         if (!deviceToken) {
-          console.log('Registering pupil with Damoov...');
-          const { data: registerResult } = await supabase.functions.invoke('damoov-register', {
+          debugLog('DAMOOV', 'Step 1b: Registering pupil with Damoov');
+          const { data: registerResult, error: registerError } = await supabase.functions.invoke('damoov-register', {
             body: { pupilId }
           });
+          
+          if (registerError) {
+            debugLog('DAMOOV', 'Registration failed', registerError);
+            throw new Error(`Damoov registration failed: ${registerError.message}`);
+          }
+          
           deviceToken = registerResult?.deviceToken;
+          debugLog('DAMOOV', `Registration result: ${deviceToken ? 'Success' : 'No token returned'}`);
         }
 
         if (deviceToken) {
           // Step 2: Submit trip data to Damoov
-          console.log('Submitting trip to Damoov...');
-          await supabase.functions.invoke('damoov-submit-trip', {
+          debugLog('DAMOOV', 'Step 2: Submitting trip data');
+          const { data: submitResult, error: submitError } = await supabase.functions.invoke('damoov-submit-trip', {
             body: { telematicsId: sessionId, deviceToken }
           });
+          
+          if (submitError) {
+            debugLog('DAMOOV', 'Trip submission failed', submitError);
+            throw new Error(`Trip submission failed: ${submitError.message}`);
+          }
+          debugLog('DAMOOV', 'Trip submitted successfully', submitResult);
 
           // Step 3: Wait for Damoov processing and fetch scores
-          console.log('Waiting for Damoov analysis...');
+          debugLog('DAMOOV', 'Step 3: Waiting 4s for Damoov ML analysis...');
           await new Promise(resolve => setTimeout(resolve, 4000));
 
-          const { data: scoresResult } = await supabase.functions.invoke('damoov-get-scores', {
+          debugLog('DAMOOV', 'Step 4: Fetching scores');
+          const { data: scoresResult, error: scoresError } = await supabase.functions.invoke('damoov-get-scores', {
             body: { telematicsId: sessionId, deviceToken, pupilId }
           });
 
+          if (scoresError) {
+            debugLog('DAMOOV', 'Scores fetch failed', scoresError);
+            throw new Error(`Scores fetch failed: ${scoresError.message}`);
+          }
+
           if (scoresResult?.scores) {
+            debugLog('DAMOOV', 'Scores received successfully', scoresResult.scores);
             setDamoovScores(scoresResult.scores);
             setCoinsEarned(scoresResult.coinsEarned || 0);
+            setDamoovStatus('complete');
+          } else {
+            debugLog('DAMOOV', 'No scores in response', scoresResult);
+            setDamoovStatus('error');
           }
+        } else {
+          debugLog('DAMOOV', 'No device token available, skipping Damoov');
+          setDamoovStatus('error');
         }
       } catch (damoovError) {
-        console.error('Damoov processing error:', damoovError);
+        debugLog('DAMOOV', 'Processing error', damoovError);
+        setDamoovStatus('error');
         // Don't throw - Damoov processing is supplementary
       } finally {
         setDamoovProcessing(false);
+        debugLog('DAMOOV', 'Processing complete');
       }
+    } else {
+      debugLog('DAMOOV', 'Skipping Damoov (no pupil assigned)', { sessionId, pupilId });
     }
   }, [currentSession, totalDistance, handleDeviceMotion, releaseWakeLock]);
 
@@ -732,7 +829,9 @@ export const useTelematics = (instructorId: string) => {
     isScreenAwake,
     damoovScores,
     damoovProcessing,
+    damoovStatus,
     coinsEarned,
+    trackingError,
     startTracking,
     stopTracking
   };

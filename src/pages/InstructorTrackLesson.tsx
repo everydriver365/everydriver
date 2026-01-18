@@ -11,12 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Car, User, Clock, MapPin, FileText, History, Route, Bookmark } from "lucide-react";
+import { Car, User, Clock, MapPin, FileText, History, Route, Bookmark, Beaker } from "lucide-react";
 import { format } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SaveRouteDialog } from "@/components/instructor/SaveRouteDialog";
-
+import PreFlightChecks from "@/components/instructor/PreFlightChecks";
+import TrackingDebugPanel from "@/components/instructor/TrackingDebugPanel";
 interface ScheduledLesson {
   id: string;
   lesson_date: string;
@@ -48,6 +51,16 @@ export default function InstructorTrackLesson() {
     endLocation?: string;
     distanceKm?: number;
   }>({});
+  
+  // Demo mode and pre-flight state
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [preFlightPassed, setPreFlightPassed] = useState(false);
+  const [trackingSessionId, setTrackingSessionId] = useState<string | null>(null);
+  const [gpsPointsCount, setGpsPointsCount] = useState(0);
+  const [eventsCount, setEventsCount] = useState(0);
+  const [currentGpsStatus, setCurrentGpsStatus] = useState('unavailable');
+  const [currentMotionStatus, setCurrentMotionStatus] = useState<boolean | null>(null);
+  const [currentDamoovStatus, setCurrentDamoovStatus] = useState<'idle' | 'processing' | 'complete' | 'error'>('idle');
 
   useEffect(() => {
     if (instructorId) {
@@ -177,15 +190,23 @@ export default function InstructorTrackLesson() {
               <p className="text-sm text-muted-foreground">Monitor driving behavior in real-time</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-1.5"
-            onClick={() => setShowHistory(!showHistory)}
-          >
-            <History className="h-4 w-4" />
-            <span className="hidden sm:inline">History</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            {isDemoMode && (
+              <Badge variant="secondary" className="gap-1">
+                <Beaker className="h-3 w-3" />
+                Demo
+              </Badge>
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-1.5"
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <History className="h-4 w-4" />
+              <span className="hidden sm:inline">History</span>
+            </Button>
+          </div>
         </div>
 
         {/* Show History or Main Content */}
@@ -197,67 +218,118 @@ export default function InstructorTrackLesson() {
           />
         ) : (
           <>
-            {/* Lesson Selector */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Select Lesson</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {loading ? (
-                  <div className="text-center text-muted-foreground py-4">Loading lessons...</div>
-                ) : todaysLessons.length === 0 ? (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">No lessons scheduled for today</p>
-                    <p className="text-sm text-muted-foreground mt-1">You can still track without a lesson</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Today's Lessons</Label>
-                      <Select value={selectedLessonId} onValueChange={handleLessonChange}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a lesson" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {todaysLessons.map((lesson) => (
-                            <SelectItem key={lesson.id} value={lesson.id}>
-                              {formatTime(lesson.start_time)} - {lesson.pupil?.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+            {/* Pre-Flight Checks */}
+            {!preFlightPassed && (
+              <PreFlightChecks 
+                instructorId={instructorId}
+                onAllPassed={() => setPreFlightPassed(true)}
+                onSkip={() => setPreFlightPassed(true)}
+              />
+            )}
 
-                    {selectedLesson && (
-                      <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">
-                            {selectedLesson.pupil?.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          <span>{formatTime(selectedLesson.start_time)} ({Math.round(selectedLesson.duration_minutes / 60)}h)</span>
-                        </div>
-                        {selectedLesson.pickup_location && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4" />
-                            <span className="truncate">{selectedLesson.pickup_location}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
+            {/* Demo Mode Toggle */}
+            <Card className="border-dashed">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Beaker className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <Label htmlFor="demo-mode" className="text-sm font-medium cursor-pointer">
+                        Demo Mode
+                      </Label>
+                      <p className="text-xs text-muted-foreground">Track without selecting a lesson</p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="demo-mode"
+                    checked={isDemoMode}
+                    onCheckedChange={(checked) => {
+                      setIsDemoMode(checked);
+                      if (checked) {
+                        setSelectedLessonId(undefined);
+                        setSelectedPupilId(undefined);
+                      }
+                    }}
+                  />
+                </div>
               </CardContent>
             </Card>
+
+            {/* Lesson Selector - hidden in demo mode */}
+            {!isDemoMode && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Select Lesson</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {loading ? (
+                    <div className="text-center text-muted-foreground py-4">Loading lessons...</div>
+                  ) : todaysLessons.length === 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground">No lessons scheduled for today</p>
+                      <p className="text-sm text-muted-foreground mt-1">Enable Demo Mode to track without a lesson</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label>Today's Lessons</Label>
+                        <Select value={selectedLessonId} onValueChange={handleLessonChange}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a lesson" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {todaysLessons.map((lesson) => (
+                              <SelectItem key={lesson.id} value={lesson.id}>
+                                {formatTime(lesson.start_time)} - {lesson.pupil?.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {selectedLesson && (
+                        <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">
+                              {selectedLesson.pupil?.name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="h-4 w-4" />
+                            <span>{formatTime(selectedLesson.start_time)} ({Math.round(selectedLesson.duration_minutes / 60)}h)</span>
+                          </div>
+                          {selectedLesson.pickup_location && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <MapPin className="h-4 w-4" />
+                              <span className="truncate">{selectedLesson.pickup_location}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Demo Mode Notice */}
+            {isDemoMode && (
+              <Card className="bg-amber-500/10 border-amber-500/20">
+                <CardContent className="p-3">
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    <strong>Demo Mode:</strong> Tracking data will be recorded without linking to a lesson or pupil. 
+                    Damoov analysis will be skipped.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Telematics Tracker */}
             <TelematicsTracker
               instructorId={instructorId}
-              lessonId={selectedLessonId}
-              pupilId={selectedPupilId}
+              lessonId={isDemoMode ? undefined : selectedLessonId}
+              pupilId={isDemoMode ? undefined : selectedPupilId}
               onSessionEnd={async (sessionId) => {
                 setLastTelematicsId(sessionId);
                 // Fetch session stats for save dialog
@@ -325,12 +397,30 @@ export default function InstructorTrackLesson() {
                 <h3 className="font-medium text-sm mb-2">How it works</h3>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li>• Select a lesson to link tracking data to a pupil</li>
+                  <li>• Or enable Demo Mode to test tracking</li>
                   <li>• Tap "Start Tracking" to begin GPS monitoring</li>
                   <li>• Driving behavior (braking, acceleration) is analyzed</li>
                   <li>• After tracking, generate AI-powered feedback reports</li>
                 </ul>
               </CardContent>
             </Card>
+
+            {/* Debug Panel */}
+            <TrackingDebugPanel 
+              debugInfo={{
+                instructorId,
+                lessonId: isDemoMode ? undefined : selectedLessonId,
+                pupilId: isDemoMode ? undefined : selectedPupilId,
+                isTracking: false, // This would need to be lifted from TelematicsTracker
+                gpsStatus: currentGpsStatus,
+                motionStatus: currentMotionStatus,
+                lastError: null,
+                sessionId: trackingSessionId,
+                gpsPointsCount,
+                eventsCount,
+                damoovStatus: currentDamoovStatus
+              }}
+            />
           </>
         )}
       </div>
