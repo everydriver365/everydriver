@@ -104,3 +104,6 @@ verify_jwt = false
 
 [functions.convert-from-what3words]
 verify_jwt = false
+
+[functions.weekly-backup-email]
+verify_jwt = false
