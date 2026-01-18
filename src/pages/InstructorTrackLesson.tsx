@@ -12,9 +12,10 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Car, User, Clock, MapPin, FileText, History, Route } from "lucide-react";
+import { Car, User, Clock, MapPin, FileText, History, Route, Bookmark } from "lucide-react";
 import { format } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SaveRouteDialog } from "@/components/instructor/SaveRouteDialog";
 
 interface ScheduledLesson {
   id: string;
@@ -41,6 +42,12 @@ export default function InstructorTrackLesson() {
   const [showHistory, setShowHistory] = useState(false);
   const [lastTelematicsId, setLastTelematicsId] = useState<string | null>(null);
   const [historyPupilName, setHistoryPupilName] = useState<string>("Pupil");
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [lastSessionStats, setLastSessionStats] = useState<{
+    startLocation?: string;
+    endLocation?: string;
+    distanceKm?: number;
+  }>({});
 
   useEffect(() => {
     if (instructorId) {
@@ -251,29 +258,63 @@ export default function InstructorTrackLesson() {
               instructorId={instructorId}
               lessonId={selectedLessonId}
               pupilId={selectedPupilId}
-              onSessionEnd={(sessionId) => {
+              onSessionEnd={async (sessionId) => {
                 setLastTelematicsId(sessionId);
+                // Fetch session stats for save dialog
+                try {
+                  const { data: session } = await supabase
+                    .from("lesson_telematics")
+                    .select("total_distance_km")
+                    .eq("id", sessionId)
+                    .single();
+                  
+                  const { data: gpsPoints } = await supabase
+                    .from("telematics_gps_points")
+                    .select("latitude, longitude")
+                    .eq("telematics_id", sessionId)
+                    .order("recorded_at", { ascending: true });
+
+                  if (gpsPoints && gpsPoints.length > 0) {
+                    setLastSessionStats({
+                      startLocation: `${gpsPoints[0].latitude.toFixed(4)}, ${gpsPoints[0].longitude.toFixed(4)}`,
+                      endLocation: `${gpsPoints[gpsPoints.length - 1].latitude.toFixed(4)}, ${gpsPoints[gpsPoints.length - 1].longitude.toFixed(4)}`,
+                      distanceKm: session?.total_distance_km || undefined
+                    });
+                  }
+                } catch (error) {
+                  console.error("Error fetching session stats:", error);
+                }
               }}
             />
 
-            {/* Generate Report Buttons - shown when there's tracking data */}
-            {lastTelematicsId && selectedPupilId && (
-              <div className="flex gap-2">
+            {/* Action Buttons - shown when there's tracking data */}
+            {lastTelematicsId && (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => setShowReportSheet(true)} 
+                    variant="outline" 
+                    className="flex-1 gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    AI Feedback
+                  </Button>
+                  <Button 
+                    onClick={() => setShowReportSheet(true)} 
+                    variant="default" 
+                    className="flex-1 gap-2"
+                  >
+                    <Route className="h-4 w-4" />
+                    Route Report
+                  </Button>
+                </div>
                 <Button 
-                  onClick={() => setShowReportSheet(true)} 
-                  variant="outline" 
-                  className="flex-1 gap-2"
+                  onClick={() => setShowSaveDialog(true)} 
+                  variant="secondary" 
+                  className="w-full gap-2"
                 >
-                  <FileText className="h-4 w-4" />
-                  AI Feedback
-                </Button>
-                <Button 
-                  onClick={() => setShowReportSheet(true)} 
-                  variant="default" 
-                  className="flex-1 gap-2"
-                >
-                  <Route className="h-4 w-4" />
-                  Route Report
+                  <Bookmark className="h-4 w-4" />
+                  Save as Training Route
                 </Button>
               </div>
             )}
@@ -325,6 +366,20 @@ export default function InstructorTrackLesson() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Save Route Dialog */}
+      {lastTelematicsId && (
+        <SaveRouteDialog
+          open={showSaveDialog}
+          onOpenChange={setShowSaveDialog}
+          instructorId={instructorId}
+          telematicsId={lastTelematicsId}
+          startLocation={lastSessionStats.startLocation}
+          endLocation={lastSessionStats.endLocation}
+          distanceKm={lastSessionStats.distanceKm}
+          onSaved={() => setLastTelematicsId(null)}
+        />
+      )}
     </InstructorPortalLayout>
   );
 }
