@@ -13,11 +13,14 @@ import {
   MapPin,
   TrendingUp,
   Maximize2,
+  Minimize2,
   X,
   Wifi,
   WifiOff,
   Smartphone,
-  Activity
+  Activity,
+  Timer,
+  Shield
 } from 'lucide-react';
 import { useTelematics } from '@/hooks/useTelematics';
 import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-leaflet';
@@ -25,6 +28,7 @@ import 'leaflet/dist/leaflet.css';
 import DamoovScoresDisplay from './DamoovScoresDisplay';
 import PupilGamificationStats from './PupilGamificationStats';
 import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TelematicsTrackerProps {
   instructorId: string;
@@ -87,6 +91,25 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   
   // Track session start time locally
   const [trackingStartTime, setTrackingStartTime] = useState<Date | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Auto-enter fullscreen when tracking starts
+  useEffect(() => {
+    if (isTracking && !isFullscreen) {
+      setIsFullscreen(true);
+    }
+  }, [isTracking]);
+
+  // Elapsed time counter
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTracking && trackingStartTime) {
+      interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - trackingStartTime.getTime()) / 1000));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTracking, trackingStartTime]);
 
   // Show results when processing completes
   useEffect(() => {
@@ -116,8 +139,16 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     setShowResults(false);
     setSessionEnded(false);
     setSessionSummary(null);
+    setElapsedTime(0);
     setTrackingStartTime(new Date());
     startTracking(lessonId, pupilId);
+  };
+
+  // Format elapsed time as mm:ss
+  const formatElapsedTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Handle stop tracking and show session summary
@@ -126,6 +157,9 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     const finalDistance = totalDistance;
     const finalEvents = drivingEvents.length;
     const finalScore = drivingScore;
+    
+    // Exit fullscreen before stopping
+    setIsFullscreen(false);
     
     await stopTracking();
     
@@ -140,6 +174,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
       score: finalScore
     });
     setSessionEnded(true);
+    setElapsedTime(0);
     
     // Notify parent component with session ID
     if (currentSession?.id && onSessionEnd) {
@@ -297,76 +332,175 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
         {/* Live Map */}
         {isTracking && (
           <>
-            {/* Fullscreen Map Overlay */}
-            {isFullscreen && (
-              <div className="fixed inset-0 z-50 bg-background">
-                <MapContainer
-                  center={currentPosition || defaultCenter}
-                  zoom={16}
-                  className="h-full w-full"
-                  style={{ zIndex: 0 }}
-                  zoomControl={true}
+            {/* Fullscreen Tracking Dashboard */}
+            <AnimatePresence>
+              {isFullscreen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-50 bg-background flex flex-col"
                 >
-                  <TileLayer
-                    attribution={getTomTomAttribution()}
-                    url={getTomTomTileUrl()}
-                  />
-                  
-                  {routeCoordinates.length >= 2 && (
-                    <Polyline
-                      positions={routeCoordinates}
-                      pathOptions={{ color: '#3b82f6', weight: 5, opacity: 0.9 }}
-                    />
-                  )}
-                  
-                  {currentPosition && (
-                    <CircleMarker
-                      center={currentPosition}
-                      radius={10}
-                      pathOptions={{ fillColor: '#22c55e', fillOpacity: 1, color: '#ffffff', weight: 3 }}
-                    />
-                  )}
-                  
-                  {routeCoordinates.length > 0 && (
-                    <CircleMarker
-                      center={routeCoordinates[0]}
-                      radius={8}
-                      pathOptions={{ fillColor: '#f59e0b', fillOpacity: 1, color: '#ffffff', weight: 2 }}
-                    />
-                  )}
-                  
-                  <MapUpdater position={currentPosition} />
-                </MapContainer>
-                
-                {/* Fullscreen controls overlay */}
-                <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
-                  <div className="bg-background/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg flex items-center gap-3">
-                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                    <span className="font-medium text-sm">Live Route</span>
-                    <span className="text-muted-foreground text-sm">|</span>
-                    <span className="text-sm">{currentSpeed.toFixed(0)} km/h</span>
-                    <span className="text-muted-foreground text-sm">|</span>
-                    <span className="text-sm">{totalDistance.toFixed(2)} km</span>
-                    <span className="text-muted-foreground text-sm">|</span>
-                    <span className={`text-sm ${getGPSStatusColor()}`}>{gpsQuality.status}</span>
-                    {hasMotionPermission && motionData.gForce > 0.15 && (
-                      <>
-                        <span className="text-muted-foreground text-sm">|</span>
-                        <span className="text-sm">{motionData.gForce.toFixed(2)}g</span>
-                      </>
-                    )}
-                  </div>
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-10 w-10 shadow-lg"
-                    onClick={() => setIsFullscreen(false)}
+                  {/* Top Status Bar */}
+                  <motion.div
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="flex items-center justify-between px-4 py-3 bg-background/95 backdrop-blur-sm border-b z-20"
                   >
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            )}
+                    <div className="flex items-center gap-4">
+                      {/* Live indicator */}
+                      <div className="flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 bg-red-500 rounded-full animate-pulse" />
+                        <span className="text-sm font-semibold text-red-500">LIVE</span>
+                      </div>
+                      
+                      {/* Timer */}
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Timer className="h-4 w-4" />
+                        <span className="text-sm font-mono tabular-nums">{formatElapsedTime(elapsedTime)}</span>
+                      </div>
+                      
+                      {/* GPS Status */}
+                      <div className={`flex items-center gap-1.5 ${getGPSStatusColor()}`}>
+                        {getGPSIcon()}
+                        <span className="text-xs font-medium">
+                          {gpsQuality.status}
+                          {gpsQuality.accuracy_m && ` ±${gpsQuality.accuracy_m.toFixed(0)}m`}
+                        </span>
+                      </div>
+                      
+                      {/* Motion Sensor */}
+                      {hasMotionPermission && (
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Activity className="h-4 w-4" />
+                          <span className="text-xs font-mono">{motionData.gForce.toFixed(2)}g</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Exit Fullscreen Button */}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-9 w-9"
+                      onClick={() => setIsFullscreen(false)}
+                    >
+                      <Minimize2 className="h-5 w-5" />
+                    </Button>
+                  </motion.div>
+
+                  {/* Main Map Area */}
+                  <div className="flex-1 relative">
+                    <MapContainer
+                      center={currentPosition || defaultCenter}
+                      zoom={16}
+                      className="h-full w-full"
+                      style={{ zIndex: 0 }}
+                      zoomControl={true}
+                    >
+                      <TileLayer
+                        attribution={getTomTomAttribution()}
+                        url={getTomTomTileUrl()}
+                      />
+                      
+                      {routeCoordinates.length >= 2 && (
+                        <Polyline
+                          positions={routeCoordinates}
+                          pathOptions={{ color: '#3b82f6', weight: 5, opacity: 0.9 }}
+                        />
+                      )}
+                      
+                      {currentPosition && (
+                        <CircleMarker
+                          center={currentPosition}
+                          radius={12}
+                          pathOptions={{ fillColor: '#22c55e', fillOpacity: 1, color: '#ffffff', weight: 3 }}
+                        />
+                      )}
+                      
+                      {routeCoordinates.length > 0 && (
+                        <CircleMarker
+                          center={routeCoordinates[0]}
+                          radius={8}
+                          pathOptions={{ fillColor: '#f59e0b', fillOpacity: 1, color: '#ffffff', weight: 2 }}
+                        />
+                      )}
+                      
+                      <MapUpdater position={currentPosition} />
+                    </MapContainer>
+                    
+                    {/* Screen Wake Lock indicator */}
+                    {isScreenAwake && (
+                      <div className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm px-2.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 shadow-sm">
+                        <Shield className="h-3.5 w-3.5 text-green-500" />
+                        <span className="text-muted-foreground">Screen awake</span>
+                      </div>
+                    )}
+                    
+                    {/* GPS Points Counter */}
+                    <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm px-2.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 shadow-sm">
+                      <MapPin className="h-3.5 w-3.5 text-primary" />
+                      <span className="tabular-nums">{gpsPoints.length} pts</span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Stats Panel */}
+                  <motion.div
+                    initial={{ y: 50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-background/95 backdrop-blur-sm border-t px-4 py-4 z-20"
+                  >
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-4 gap-3 mb-4">
+                      {/* Speed */}
+                      <div className="bg-muted/50 rounded-xl p-3 text-center">
+                        <Gauge className="h-5 w-5 mx-auto mb-1 text-primary" />
+                        <p className="text-2xl font-bold tabular-nums">{currentSpeed.toFixed(0)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">km/h</p>
+                      </div>
+                      
+                      {/* Distance */}
+                      <div className="bg-muted/50 rounded-xl p-3 text-center">
+                        <MapPin className="h-5 w-5 mx-auto mb-1 text-blue-500" />
+                        <p className="text-2xl font-bold tabular-nums">{totalDistance.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">km</p>
+                      </div>
+                      
+                      {/* Score */}
+                      <div className="bg-muted/50 rounded-xl p-3 text-center">
+                        <TrendingUp className="h-5 w-5 mx-auto mb-1 text-purple-500" />
+                        <p className={`text-2xl font-bold tabular-nums ${
+                          drivingScore >= 80 ? 'text-green-500' : drivingScore >= 50 ? 'text-amber-500' : 'text-red-500'
+                        }`}>{drivingScore}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">score</p>
+                      </div>
+                      
+                      {/* Events */}
+                      <div className="bg-muted/50 rounded-xl p-3 text-center">
+                        <div className="flex justify-center gap-0.5 mb-1">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        </div>
+                        <p className="text-2xl font-bold tabular-nums">{drivingEvents.length}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">events</p>
+                      </div>
+                    </div>
+                    
+                    {/* Stop Button */}
+                    <Button
+                      size="lg"
+                      variant="destructive"
+                      className="w-full h-14 text-lg font-semibold"
+                      onClick={handleStopTracking}
+                    >
+                      <Square className="h-5 w-5 mr-2" />
+                      Stop Tracking
+                    </Button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Inline Map */}
             <div className="relative h-48 rounded-lg overflow-hidden border">
