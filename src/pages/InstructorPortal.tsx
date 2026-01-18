@@ -31,6 +31,7 @@ interface Pupil {
 }
 
 interface InstructorData {
+  id: string;
   name: string;
   profile_image_url: string | null;
   payment_qr_url: string | null;
@@ -69,7 +70,7 @@ export default function InstructorPortal() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("name, profile_image_url, payment_qr_url, is_active")
+        .select("id, name, profile_image_url, payment_qr_url, is_active")
         .eq("id", instructorId)
         .single();
 
