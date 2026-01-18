@@ -58,6 +58,19 @@ export function AddFavouriteLocationDialog({
 
       setCoords({ lat: data.result.latitude, lng: data.result.longitude });
       setPostcode(data.result.postcode);
+      
+      // Auto-populate full address from postcode data
+      const addressParts = [
+        data.result.parish,
+        data.result.admin_ward,
+        data.result.admin_district,
+        data.result.region
+      ].filter(Boolean);
+      
+      if (addressParts.length > 0 && !address.trim()) {
+        setAddress(addressParts.join(', '));
+      }
+      
       toast.success("Location found!");
     } catch (error) {
       console.error("Postcode lookup error:", error);

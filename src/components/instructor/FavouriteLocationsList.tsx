@@ -154,6 +154,9 @@ export function FavouriteLocationsList({ instructorId, onNavigate }: FavouriteLo
                       <span className="font-medium truncate">{location.name}</span>
                       {location.is_favorite && <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />}
                     </div>
+                    {location.address && (
+                      <p className="text-xs text-muted-foreground truncate">{location.address}</p>
+                    )}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                         {categoryLabels[location.category]}
