@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
 
 interface RoadSegment {
   name: string;
@@ -299,8 +300,8 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
               zoomControl={false}
             >
               <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution={getTomTomAttribution()}
+                url={getTomTomTileUrl()}
               />
               
               {routeCoordinates.length >= 2 && (

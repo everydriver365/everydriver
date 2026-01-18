@@ -24,8 +24,34 @@ interface RoadSegment {
   points: GPSPoint[];
 }
 
-// Reverse geocode a point to get road name using Nominatim
+// Get TomTom API key
+const TOMTOM_API_KEY = Deno.env.get("TOMTOM_API_KEY");
+
+// Reverse geocode using TomTom (with OSM fallback)
 async function getRoadName(lat: number, lon: number): Promise<string> {
+  // Try TomTom first if API key is available
+  if (TOMTOM_API_KEY) {
+    try {
+      const response = await fetch(
+        `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${TOMTOM_API_KEY}`,
+        {
+          headers: { 'Accept': 'application/json' }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const address = data.addresses?.[0]?.address;
+        if (address) {
+          return address.streetName || address.street || address.freeformAddress?.split(',')[0] || 'Unknown Road';
+        }
+      }
+    } catch (error) {
+      console.error('TomTom reverse geocode error:', error);
+    }
+  }
+
+  // Fallback to Nominatim (OSM)
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18`,
@@ -46,8 +72,38 @@ async function getRoadName(lat: number, lon: number): Promise<string> {
   }
 }
 
-// Get speed limit for a location using Overpass API
+// Get speed limit using TomTom API (with Overpass fallback)
 async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
+  // Try TomTom first if API key is available
+  if (TOMTOM_API_KEY) {
+    try {
+      // TomTom Reverse Geocode with speed limit
+      const response = await fetch(
+        `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${TOMTOM_API_KEY}&returnSpeedLimit=true`,
+        {
+          headers: { 'Accept': 'application/json' }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const address = data.addresses?.[0]?.address;
+        const speedLimit = address?.speedLimit;
+        
+        if (speedLimit) {
+          // TomTom returns speed in local units (mph for UK)
+          // Convert mph to km/h
+          const speedKmh = Math.round(speedLimit * 1.60934);
+          console.log(`TomTom speed limit: ${speedLimit} mph = ${speedKmh} km/h`);
+          return speedKmh;
+        }
+      }
+    } catch (error) {
+      console.error('TomTom speed limit error:', error);
+    }
+  }
+
+  // Fallback to Overpass API
   try {
     const query = `
       [out:json][timeout:10];
@@ -206,6 +262,9 @@ serve(async (req) => {
       );
     }
 
+    // Log which API is being used
+    console.log(`Using ${TOMTOM_API_KEY ? 'TomTom' : 'Overpass/Nominatim'} for road data`);
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -268,8 +327,8 @@ serve(async (req) => {
     const roadData: { name: string; speedLimit: number | null }[] = [];
     
     for (const point of sampledPoints) {
-      // Add small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Add small delay to avoid rate limiting (TomTom has higher limits than OSM)
+      await new Promise(resolve => setTimeout(resolve, TOMTOM_API_KEY ? 100 : 200));
       
       const [name, speedLimit] = await Promise.all([
         getRoadName(point.latitude, point.longitude),
