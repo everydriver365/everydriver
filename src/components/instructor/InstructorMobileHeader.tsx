@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
-import logoLight from "@/assets/logo-drive365-light.png";
+import logoDrive365 from "@/assets/logo-drive365-dark.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;
@@ -51,7 +51,7 @@ export function InstructorMobileHeader({
           </Button>
         )}
         <img 
-          src={logoLight} 
+          src={logoDrive365} 
           alt="Drive365" 
           className="h-7 object-contain"
         />
