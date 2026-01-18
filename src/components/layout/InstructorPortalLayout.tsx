@@ -27,6 +27,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import logoDrive365 from "@/assets/logo-drive365-dark.png";
+import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
@@ -75,6 +76,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background pb-20 overflow-x-hidden">
+        {/* iOS Install Banner */}
+        <IOSInstallBanner />
+        
         {/* Mobile Header - matches nav bar color with logo */}
         <header className="sticky top-0 z-40 bg-nav border-b border-nav-foreground/10">
           <div className="flex items-center justify-between px-4 h-14">
