@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
-import { Navigation, MapPin, Clock, User, ExternalLink, ChevronRight, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Navigation, MapPin, Clock, User, ExternalLink, Loader2, Search, Map } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isToday, isTomorrow, parseISO } from "date-fns";
+import { toast } from "sonner";
+import { SatNavMap } from "@/components/instructor/SatNavMap";
 
 interface UpcomingLesson {
   id: string;
@@ -19,10 +22,19 @@ interface UpcomingLesson {
   } | null;
 }
 
+interface DestinationCoords {
+  latitude: number;
+  longitude: number;
+  displayName: string;
+}
+
 export default function InstructorSatNav() {
   const { instructor } = useInstructorAuth();
   const [lessons, setLessons] = useState<UpcomingLesson[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [destination, setDestination] = useState<DestinationCoords | null>(null);
 
   useEffect(() => {
     const fetchUpcomingLessons = async () => {
@@ -60,17 +72,109 @@ export default function InstructorSatNav() {
     fetchUpcomingLessons();
   }, [instructor?.id]);
 
-  const openNavigation = (address: string, postcode: string) => {
-    const destination = encodeURIComponent(address || postcode);
-    
-    // Check if on iOS
+  const isPostcode = (query: string): boolean => {
+    const postcodeRegex = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+    return postcodeRegex.test(query.trim());
+  };
+
+  const isWhat3Words = (query: string): boolean => {
+    const w3wRegex = /^(\/\/\/)?[a-z]+\.[a-z]+\.[a-z]+$/i;
+    return w3wRegex.test(query.trim());
+  };
+
+  const lookupDestination = async () => {
+    const query = searchQuery.trim();
+    if (!query) {
+      toast.error("Please enter a postcode or What3Words address");
+      return;
+    }
+
+    setSearching(true);
+    setDestination(null);
+
+    try {
+      if (isPostcode(query)) {
+        // Use postcodes.io for postcode lookup
+        const response = await fetch(
+          `https://api.postcodes.io/postcodes/${encodeURIComponent(query.replace(/\s/g, ''))}`
+        );
+        
+        if (!response.ok) {
+          toast.error("Invalid postcode");
+          return;
+        }
+
+        const data = await response.json();
+        if (!data.result) {
+          toast.error("Postcode not found");
+          return;
+        }
+
+        setDestination({
+          latitude: data.result.latitude,
+          longitude: data.result.longitude,
+          displayName: data.result.postcode
+        });
+        toast.success("Location found!");
+
+      } else if (isWhat3Words(query)) {
+        // Use edge function for What3Words lookup
+        const cleanWords = query.replace(/^\/+/, '').trim();
+        
+        const { data, error } = await supabase.functions.invoke('convert-from-what3words', {
+          body: { words: cleanWords }
+        });
+
+        if (error) {
+          console.error("W3W lookup error:", error);
+          toast.error("Failed to look up What3Words address");
+          return;
+        }
+
+        if (data.error) {
+          toast.error(data.error);
+          return;
+        }
+
+        setDestination({
+          latitude: data.latitude,
+          longitude: data.longitude,
+          displayName: `///${data.words}`
+        });
+        toast.success("Location found!");
+
+      } else {
+        toast.error("Please enter a valid UK postcode or What3Words address (e.g. ///word.word.word)");
+      }
+    } catch (error) {
+      console.error("Lookup error:", error);
+      toast.error("Failed to look up location");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const openNavigation = (lat: number, lng: number, displayName: string) => {
+    // Try TomTom first, fall back to native maps
+    const tomtomUrl = `https://www.tomtom.com/goto?lat=${lat}&long=${lng}`;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     
     if (isIOS) {
       // Open Apple Maps on iOS
+      window.open(`maps://maps.apple.com/?daddr=${lat},${lng}`, '_blank');
+    } else {
+      // Open TomTom web navigation
+      window.open(tomtomUrl, '_blank');
+    }
+  };
+
+  const openNativeNavigation = (address: string, postcode: string) => {
+    const destination = encodeURIComponent(address || postcode);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (isIOS) {
       window.open(`maps://maps.apple.com/?daddr=${destination}`, '_blank');
     } else {
-      // Open Google Maps on Android/other
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank');
     }
   };
@@ -108,92 +212,162 @@ export default function InstructorSatNav() {
             <Navigation className="h-5 w-5 text-primary" />
             <h1 className="text-xl font-bold">Sat Nav</h1>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">Navigate to your upcoming lessons</p>
+          <p className="text-sm text-muted-foreground mt-1">Navigate anywhere</p>
         </div>
 
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-4">
-                  <div className="h-20 bg-muted rounded" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : lessons.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Navigation className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="font-medium text-lg mb-2">No Upcoming Lessons</h3>
-              <p className="text-sm text-muted-foreground">
-                You don't have any scheduled lessons to navigate to.
-              </p>
+        {/* Search Card */}
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Enter postcode or ///what3words"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && lookupDestination()}
+                  className="pl-9"
+                />
+              </div>
+              <Button onClick={lookupDestination} disabled={searching}>
+                {searching ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Look Up"
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Examples: SW1A 1AA or ///filled.count.soap
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Destination Preview */}
+        {destination && (
+          <Card className="border-primary/50 bg-primary/5">
+            <CardContent className="p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                <span className="font-medium">{destination.displayName}</span>
+              </div>
+              
+              {/* TomTom Map */}
+              <SatNavMap 
+                latitude={destination.latitude} 
+                longitude={destination.longitude}
+              />
+
+              {/* Navigation Buttons */}
+              <div className="flex flex-col gap-2">
+                <Button 
+                  onClick={() => openNavigation(destination.latitude, destination.longitude, destination.displayName)}
+                  className="w-full gap-2"
+                  size="lg"
+                >
+                  <Navigation className="h-5 w-5" />
+                  Navigate
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                    if (isIOS) {
+                      window.open(`maps://maps.apple.com/?daddr=${destination.latitude},${destination.longitude}`, '_blank');
+                    } else {
+                      window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}`, '_blank');
+                    }
+                  }}
+                  className="w-full gap-2"
+                >
+                  <Map className="h-4 w-4" />
+                  Open in {/iPad|iPhone|iPod/.test(navigator.userAgent) ? 'Apple' : 'Google'} Maps
+                </Button>
+              </div>
             </CardContent>
           </Card>
-        ) : (
-          <div className="space-y-3">
-            {lessons.map((lesson, index) => (
-              <Card 
-                key={lesson.id} 
-                className={index === 0 ? "border-primary/50 bg-primary/5" : ""}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      {/* Date & Time Badge */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant={index === 0 ? "default" : "secondary"} className="text-xs">
-                          {formatLessonDate(lesson.lesson_date)}
-                        </Badge>
-                        <span className="text-sm font-medium flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                          {formatTime(lesson.start_time)}
-                        </span>
-                      </div>
-
-                      {/* Pupil Name */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          {lesson.pupils?.name || "Unknown Pupil"}
-                        </span>
-                      </div>
-
-                      {/* Address */}
-                      <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                        <span className="text-sm text-muted-foreground">
-                          {lesson.pickup_location || lesson.pickup_postcode}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Navigate Button */}
-                    <Button
-                      onClick={() => openNavigation(
-                        lesson.pickup_location || '',
-                        lesson.pickup_postcode
-                      )}
-                      className="shrink-0 gap-2"
-                      size={index === 0 ? "default" : "sm"}
-                    >
-                      <Navigation className="h-4 w-4" />
-                      {index === 0 ? "Navigate" : "Go"}
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         )}
+
+        {/* Upcoming Lessons Section */}
+        <div className="pt-2">
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Upcoming Lessons</h2>
+          
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-4">
+                    <div className="h-20 bg-muted rounded" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : lessons.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <Navigation className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
+                <p className="text-sm text-muted-foreground">
+                  No upcoming lessons scheduled
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {lessons.map((lesson, index) => (
+                <Card key={lesson.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant={index === 0 ? "default" : "secondary"} className="text-xs">
+                            {formatLessonDate(lesson.lesson_date)}
+                          </Badge>
+                          <span className="text-sm font-medium flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                            {formatTime(lesson.start_time)}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 mb-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">
+                            {lesson.pupils?.name || "Unknown Pupil"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                          <span className="text-sm text-muted-foreground">
+                            {lesson.pickup_location || lesson.pickup_postcode}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={() => openNativeNavigation(
+                          lesson.pickup_location || '',
+                          lesson.pickup_postcode
+                        )}
+                        className="shrink-0 gap-2"
+                        size="sm"
+                      >
+                        <Navigation className="h-4 w-4" />
+                        Go
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Quick tip */}
         <Card className="bg-muted/50 border-dashed">
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">
-              <strong>Tip:</strong> Tap "Navigate" to open directions in your phone's map app (Google Maps on Android, Apple Maps on iOS).
+              <strong>Tip:</strong> Enter a UK postcode or What3Words address above to view on the map and navigate.
             </p>
           </CardContent>
         </Card>

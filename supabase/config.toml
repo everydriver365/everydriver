@@ -98,3 +98,9 @@ verify_jwt = false
 
 [functions.klarna-order]
 verify_jwt = false
+
+[functions.convert-to-what3words]
+verify_jwt = false
+
+[functions.convert-from-what3words]
+verify_jwt = false
