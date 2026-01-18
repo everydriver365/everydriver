@@ -11,8 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
-import { KlarnaPaymentWidget } from "@/components/booking/KlarnaPaymentWidget";
-import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
+import { KlarnaPayment } from "@/components/booking/KlarnaPayment";
 import { NPIHostedFields } from "@/components/booking/NPIHostedFields";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -138,21 +137,6 @@ export default function BookingSummary() {
     orderRef: string;
   } | null>(null);
   const [showWooPaymentOptions, setShowWooPaymentOptions] = useState(false);
-  
-  // Klarna inline widget state
-  const [klarnaSession, setKlarnaSession] = useState<{
-    clientToken: string;
-    sessionId: string;
-    paymentMethodCategories: Array<{ identifier: string; name: string }>;
-    orderDetails: {
-      amount: number;
-      currency: string;
-      merchantReference: string;
-      confirmUrl: string;
-      cancelUrl: string;
-    };
-  } | null>(null);
-  const [showKlarnaWidget, setShowKlarnaWidget] = useState(false);
   
   // NPI Hosted Fields state (embedded card form)
   const [showHostedFields, setShowHostedFields] = useState(false);
@@ -479,24 +463,6 @@ export default function BookingSummary() {
     } finally {
       setIsKlarnaLoading(false);
     }
-  };
-
-  const handleKlarnaAuthorized = (authorizationToken: string) => {
-    if (klarnaSession) {
-      const confirmUrl = klarnaSession.orderDetails.confirmUrl;
-      window.location.href = `${confirmUrl}&authorization_token=${authorizationToken}`;
-    }
-  };
-
-  const handleKlarnaError = (error: string) => {
-    toast.error(error);
-    setShowKlarnaWidget(false);
-    setKlarnaSession(null);
-  };
-
-  const handleKlarnaCancel = () => {
-    setShowKlarnaWidget(false);
-    setKlarnaSession(null);
   };
 
   const handleNPICheckout = async () => {
@@ -944,22 +910,9 @@ export default function BookingSummary() {
         return;
       }
 
-      if (data?.clientToken && data?.sessionId) {
-        setKlarnaSession({
-          clientToken: data.clientToken,
-          sessionId: data.sessionId,
-          paymentMethodCategories: data.paymentMethodCategories || [],
-          orderDetails: {
-            amount: data.orderDetails?.amount || Math.round(totalPrice * 100),
-            currency: data.orderDetails?.currency || "GBP",
-            merchantReference: data.orderDetails?.merchantReference || merchantReference,
-            confirmUrl: data.orderDetails?.confirmUrl || confirmUrl,
-            cancelUrl: data.orderDetails?.cancelUrl || cancelUrl,
-          },
-        });
-        setShowKlarnaWidget(true);
-        setShowWooPaymentOptions(false);
-      } else if (data?.redirectUrl) {
+      if (data?.redirectUrl) {
+        await markWooOrderPaid("Klarna", merchantReference);
+        window.location.href = data.redirectUrl;
         await markWooOrderPaid("Klarna", merchantReference);
         window.location.href = data.redirectUrl;
       } else {
@@ -1603,7 +1556,7 @@ export default function BookingSummary() {
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
             </button>
 
-            {/* Klarna Express Checkout */}
+            {/* Klarna - Server-side Session + Order Capture */}
             <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-[#ffb3c7]/10">
               <div className="flex items-center justify-between mb-3">
                 <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
@@ -1614,60 +1567,43 @@ export default function BookingSummary() {
                 </span>
               </div>
               <div className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</div>
-              <KlarnaExpressButton
+              <KlarnaPayment
                 amount={totalPrice}
                 merchantReference={`KL-${instructor.id.slice(0, 8)}-${Date.now()}`}
-                orderDescription={courseDetails?.courseName || "Driving Course"}
+                orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course`}
+                consumer={{
+                  givenName: pupilName.trim().split(" ")[0] || pupilName.trim(),
+                  familyName: pupilName.trim().split(" ").slice(1).join(" ") || pupilName.trim(),
+                  email: pupilEmail.trim(),
+                  phone: pupilPhone.trim(),
+                }}
+                billing={{
+                  streetAddress: pupilAddress.trim(),
+                  postalCode: pupilPostcode.trim().toUpperCase(),
+                  city: locationName || "UK",
+                  country: "GB",
+                }}
                 disabled={!canSubmit}
-                onSuccess={async (authorizationToken, orderId) => {
-                  console.log("Klarna Express success:", { authorizationToken, orderId });
-                  toast.success("Payment authorized with Klarna!");
+                onSuccess={async (orderId) => {
+                  console.log("Klarna payment success:", orderId);
+                  toast.success("Payment completed with Klarna!");
                   const pupilId = await ensureBookingCreated();
                   if (pupilId) {
                     navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
                   }
                 }}
                 onError={(error) => {
-                  console.error("Klarna Express error:", error);
+                  console.error("Klarna payment error:", error);
                   toast.error(error || "Klarna payment failed");
                 }}
                 onCancel={() => {
-                  console.log("Klarna Express cancelled");
+                  console.log("Klarna payment cancelled");
                   toast.info("Klarna payment cancelled");
                 }}
               />
             </div>
           </div>
 
-          {/* Klarna Inline Widget */}
-          {showKlarnaWidget && klarnaSession && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 p-4 rounded-lg border-2 border-[#FFB3C7] bg-[#FFB3C7]/5"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <span className="rounded bg-[#FFB3C7] px-2 py-0.5 text-xs font-bold text-black">
-                    Klarna.
-                  </span>
-                  Complete Your Payment
-                </h3>
-                <span className="text-lg font-bold">
-                  £{(klarnaSession.orderDetails.amount / 100).toFixed(2)}
-                </span>
-              </div>
-              <KlarnaPaymentWidget
-                clientToken={klarnaSession.clientToken}
-                sessionId={klarnaSession.sessionId}
-                paymentMethodCategories={klarnaSession.paymentMethodCategories}
-                orderDetails={klarnaSession.orderDetails}
-                onAuthorized={handleKlarnaAuthorized}
-                onError={handleKlarnaError}
-                onCancel={handleKlarnaCancel}
-              />
-            </motion.div>
-          )}
 
           {/* NPI Hosted Fields - Embedded Card Form */}
           {showHostedFields && bookingPupilId && courseDetails && (
