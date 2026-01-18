@@ -37,6 +37,9 @@ import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useTheme } from "@/context/ThemeContext";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import logoDark from "@/assets/logo-drive365-dark.png";
 
 // Icon mapping
@@ -53,6 +56,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 interface InstructorMobileHomeProps {
   instructor: {
+    id?: string;
     name: string;
     profile_image_url: string | null;
     is_active?: boolean;
@@ -70,9 +74,35 @@ export function InstructorMobileHome({
   const pendingJobsCount = usePendingJobsCount();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
+  const { refreshInstructor } = useInstructorAuth();
+  const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
+
+  const toggleVisibility = async () => {
+    if (!instructor?.id || isTogglingVisibility) return;
+    
+    setIsTogglingVisibility(true);
+    const newStatus = !instructor.is_active;
+    
+    try {
+      const { error } = await supabase
+        .from("instructors")
+        .update({ is_active: newStatus })
+        .eq("id", instructor.id);
+
+      if (error) throw error;
+      
+      await refreshInstructor();
+      toast.success(newStatus ? "You're now visible to learners" : "You're now hidden from learners");
+    } catch (error) {
+      console.error("Error toggling visibility:", error);
+      toast.error("Failed to update visibility");
+    } finally {
+      setIsTogglingVisibility(false);
+    }
   };
 
   // Default quick actions fallback
@@ -194,16 +224,24 @@ export function InstructorMobileHome({
           </DropdownMenu>
 
           {instructor && instructor.is_active !== undefined && (
-            <div 
-              className={`flex items-center justify-center h-6 w-6 rounded-full ${instructor.is_active ? "bg-emerald-500" : "bg-amber-500"}`}
-              title={instructor.is_active ? "Visible to learners" : "Hidden from learners"}
+            <button
+              onClick={toggleVisibility}
+              disabled={isTogglingVisibility}
+              className={`flex items-center justify-center h-6 w-6 rounded-full transition-all duration-200 ${
+                instructor.is_active 
+                  ? "bg-emerald-500 hover:bg-emerald-600" 
+                  : "bg-amber-500 hover:bg-amber-600"
+              } ${isTogglingVisibility ? "opacity-50" : ""}`}
+              title={instructor.is_active ? "Tap to hide from learners" : "Tap to show to learners"}
             >
-              {instructor.is_active ? (
+              {isTogglingVisibility ? (
+                <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : instructor.is_active ? (
                 <Eye className="h-3.5 w-3.5 text-white" />
               ) : (
                 <EyeOff className="h-3.5 w-3.5 text-white" />
               )}
-            </div>
+            </button>
           )}
 
           {/* Avatar Dropdown */}
