@@ -157,17 +157,9 @@ export default function InstructorSatNav() {
   };
 
   const openNavigation = (lat: number, lng: number, displayName: string) => {
-    // Try TomTom first, fall back to native maps
+    // Always open TomTom navigation
     const tomtomUrl = `https://www.tomtom.com/goto?lat=${lat}&long=${lng}`;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    
-    if (isIOS) {
-      // Open Apple Maps on iOS
-      window.open(`maps://maps.apple.com/?daddr=${lat},${lng}`, '_blank');
-    } else {
-      // Open TomTom web navigation
-      window.open(tomtomUrl, '_blank');
-    }
+    window.open(tomtomUrl, '_blank');
   };
 
   const handleNavigateToRouteStart = (lat: number, lng: number, name: string) => {
