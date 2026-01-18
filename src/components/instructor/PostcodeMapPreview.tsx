@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Circle } from "react-leaflet";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Navigation } from "lucide-react";
 import L from "leaflet";
+import { getTomTomTileUrl, getTomTomAttribution } from "@/lib/tomtomConfig";
 
 // Fix default marker icon issue with Leaflet + React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -93,8 +94,8 @@ export function PostcodeMapPreview({ postcode, className = "", onClick }: Postco
           style={{ height: "120px", width: "100%", zIndex: 0 }}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution={getTomTomAttribution()}
+            url={getTomTomTileUrl()}
           />
           <Circle
             center={[coords.lat, coords.lng]}

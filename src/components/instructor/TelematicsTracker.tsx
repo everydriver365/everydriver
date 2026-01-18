@@ -24,6 +24,7 @@ import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-l
 import 'leaflet/dist/leaflet.css';
 import DamoovScoresDisplay from './DamoovScoresDisplay';
 import PupilGamificationStats from './PupilGamificationStats';
+import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
 
 interface TelematicsTrackerProps {
   instructorId: string;
@@ -296,8 +297,8 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                   zoomControl={true}
                 >
                   <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution={getTomTomAttribution()}
+                    url={getTomTomTileUrl()}
                   />
                   
                   {routeCoordinates.length >= 2 && (
@@ -366,8 +367,8 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                 zoomControl={false}
               >
                 <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution={getTomTomAttribution()}
+                  url={getTomTomTileUrl()}
                 />
                 
                 {routeCoordinates.length >= 2 && (

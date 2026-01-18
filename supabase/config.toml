@@ -1,5 +1,8 @@
 project_id = "qyqeibovdhyohkfagujv"
 
+[functions.tomtom-speed-limits]
+verify_jwt = false
+
 [functions.fetch-dvsa-news]
 verify_jwt = false
 
