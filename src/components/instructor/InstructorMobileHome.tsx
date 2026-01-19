@@ -408,19 +408,27 @@ export function InstructorMobileHome({
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       <Link to={action.route}>
-                        <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-4 hover:bg-muted/50 transition-colors">
-                          <div className="relative w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                            <Icon className="h-6 w-6 text-primary" />
+                        <div className="relative overflow-hidden bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-4 flex items-center gap-4 shadow-lg shadow-primary/20 active:shadow-md transition-all">
+                          {/* Decorative elements */}
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                          <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+                          
+                          <div className="relative w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/30">
+                            <Icon className="h-6 w-6 text-white" />
                             {showBadge && (
-                              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
+                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-primary">
                                 {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                               </span>
                             )}
                           </div>
-                          <span className="font-medium text-foreground">{action.title}</span>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                          <div className="relative flex-1">
+                            <span className="font-semibold text-white text-base">{action.title}</span>
+                            <p className="text-white/70 text-xs mt-0.5">Tap to view</p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-white/80 relative" />
                         </div>
                       </Link>
                     </motion.div>
@@ -437,30 +445,39 @@ export function InstructorMobileHome({
                 .map((action, index) => {
                   const Icon = getIcon(action.icon);
                   const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
+                  
+                  // Different accent colors for visual variety
+                  const tileStyles = [
+                    { bg: 'bg-gradient-to-br from-card to-muted/50', iconBg: 'bg-blue-500/15', iconColor: 'text-blue-600 dark:text-blue-400', shadow: 'shadow-blue-500/10' },
+                    { bg: 'bg-gradient-to-br from-card to-muted/50', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600 dark:text-emerald-400', shadow: 'shadow-emerald-500/10' },
+                    { bg: 'bg-gradient-to-br from-card to-muted/50', iconBg: 'bg-amber-500/15', iconColor: 'text-amber-600 dark:text-amber-400', shadow: 'shadow-amber-500/10' },
+                    { bg: 'bg-gradient-to-br from-card to-muted/50', iconBg: 'bg-purple-500/15', iconColor: 'text-purple-600 dark:text-purple-400', shadow: 'shadow-purple-500/10' },
+                  ];
+                  const style = tileStyles[index % tileStyles.length];
+                  
                   return (
                     <motion.div
                       key={action.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.15 + index * 0.05 }}
+                      whileTap={{ scale: 0.97 }}
                     >
                       <Link to={action.route}>
-                        <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors min-h-[80px]">
-                          <div className="relative w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                            <Icon className="h-5 w-5 text-primary" />
+                        <div className={`relative overflow-hidden ${style.bg} rounded-2xl border border-border/50 p-4 flex flex-col gap-3 shadow-lg ${style.shadow} hover:shadow-xl active:shadow-md transition-all min-h-[100px]`}>
+                          {/* Subtle decorative corner */}
+                          <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-primary/5 to-transparent rounded-full" />
+                          
+                          <div className={`relative w-11 h-11 rounded-xl ${style.iconBg} flex items-center justify-center ring-1 ring-border/30`}>
+                            <Icon className={`h-5 w-5 ${style.iconColor}`} />
                             {showBadge && (
-                              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-sm">
+                              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-md ring-2 ring-card">
                                 {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                               </span>
                             )}
                           </div>
-                          <span className="font-medium text-foreground text-sm leading-tight">
-                            {action.title.split(' ').map((word, i) => (
-                              <span key={i}>
-                                {word}
-                                {i < action.title.split(' ').length - 1 && <br />}
-                              </span>
-                            ))}
+                          <span className="font-semibold text-foreground text-sm leading-tight relative">
+                            {action.title}
                           </span>
                         </div>
                       </Link>
