@@ -63,6 +63,22 @@ export default function RemoteSigning() {
     }
   }, [token]);
 
+  // If the terms content doesn't overflow (no scrolling possible), auto-enable the agree checkbox.
+  useEffect(() => {
+    if (!tokenData?.terms?.id) return;
+
+    requestAnimationFrame(() => {
+      const viewport = document.querySelector(
+        '[data-terms-scroll="remote"] [data-radix-scroll-area-viewport]'
+      ) as HTMLDivElement | null;
+
+      if (!viewport) return;
+
+      const isScrollable = viewport.scrollHeight - viewport.clientHeight > 20;
+      if (!isScrollable) setScrolledToBottom(true);
+    });
+  }, [tokenData?.terms?.id]);
+
   const fetchTokenData = async () => {
     setLoading(true);
     try {
@@ -367,6 +383,7 @@ export default function RemoteSigning() {
           </CardHeader>
           <CardContent>
             <ScrollArea
+              data-terms-scroll="remote"
               className="h-64 border rounded-lg p-4"
               onScrollCapture={handleScroll}
             >
@@ -387,8 +404,14 @@ export default function RemoteSigning() {
               <Checkbox
                 id="agree"
                 checked={agreed}
-                onCheckedChange={(checked) => setAgreed(checked === true)}
-                disabled={!scrolledToBottom}
+                onCheckedChange={(checked) => {
+                  const next = checked === true;
+                  if (next && !scrolledToBottom) {
+                    toast.error("Please scroll through the terms before agreeing");
+                    return;
+                  }
+                  setAgreed(next);
+                }}
               />
               <Label
                 htmlFor="agree"
@@ -430,8 +453,18 @@ export default function RemoteSigning() {
                 <Checkbox
                   id="parentAgree"
                   checked={parentAgreed}
-                  onCheckedChange={(checked) => setParentAgreed(checked === true)}
-                  disabled={!scrolledToBottom || !parentName.trim()}
+                  onCheckedChange={(checked) => {
+                    const next = checked === true;
+                    if (next && !scrolledToBottom) {
+                      toast.error("Please scroll through the terms before agreeing");
+                      return;
+                    }
+                    if (next && !parentName.trim()) {
+                      toast.error("Please enter the parent/guardian name first");
+                      return;
+                    }
+                    setParentAgreed(next);
+                  }}
                 />
                 <Label
                   htmlFor="parentAgree"
