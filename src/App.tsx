@@ -60,6 +60,8 @@ import InstructorSignup from "./pages/instructor-app/InstructorSignup";
 import InstructorAbout from "./pages/instructor-app/InstructorAbout";
 import InstructorContactPage from "./pages/instructor-app/InstructorContact";
 import InstructorDomains from "./pages/instructor-app/InstructorDomains";
+import InstructorPortalLogin from "./pages/InstructorPortalLogin";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -104,6 +106,7 @@ const App = () => (
               <Route path="/instructor-app/signup" element={<InstructorSignup />} />
 
               {/* Instructor Portal (Authenticated) */}
+              <Route path="/instructor/login" element={<InstructorPortalLogin />} />
               <Route path="/instructor" element={<InstructorPortal />} />
               <Route path="/instructor/pupils" element={<InstructorPupils />} />
               <Route path="/instructor/schedule" element={<InstructorSchedule />} />
