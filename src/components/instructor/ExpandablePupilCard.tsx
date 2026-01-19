@@ -19,7 +19,9 @@ import {
   Star,
   Send,
   Check,
-  X
+  X,
+  FileSignature,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +64,8 @@ interface ExpandablePupilCardProps {
   onDelete: (pupil: Pupil) => void;
   onViewHistory: (pupil: Pupil) => void;
   onViewReport: (pupil: Pupil) => void;
+  onViewTerms?: (pupil: Pupil) => void;
+  hasSignedTerms?: boolean;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -80,6 +84,8 @@ export function ExpandablePupilCard({
   onDelete,
   onViewHistory,
   onViewReport,
+  onViewTerms,
+  hasSignedTerms,
 }: ExpandablePupilCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
@@ -534,11 +540,34 @@ export function ExpandablePupilCard({
               </div>
 
               {/* Secondary Actions */}
-              <div className="flex gap-2 pt-2 border-t border-border">
+              <div className="flex gap-2 pt-2 border-t border-border flex-wrap">
+                {onViewTerms && (
+                  <Button
+                    variant={hasSignedTerms ? "outline" : "default"}
+                    size="sm"
+                    className={`flex-1 min-w-[100px] ${hasSignedTerms ? "border-green-500 text-green-600" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewTerms(pupil);
+                    }}
+                  >
+                    {hasSignedTerms ? (
+                      <>
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        T&Cs Signed
+                      </>
+                    ) : (
+                      <>
+                        <FileSignature className="h-4 w-4 mr-1" />
+                        Sign T&Cs
+                      </>
+                    )}
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 min-w-[100px]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onViewReport(pupil);
@@ -550,7 +579,7 @@ export function ExpandablePupilCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 min-w-[80px]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit(pupil);

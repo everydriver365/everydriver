@@ -50,6 +50,7 @@ import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
 import { ExpandablePupilCard } from "@/components/instructor/ExpandablePupilCard";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
+import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal";
 
 interface Pupil {
   id: string;
@@ -95,6 +96,8 @@ export default function InstructorPupils() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isDrivingReportOpen, setIsDrivingReportOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [pupilSignatures, setPupilSignatures] = useState<Record<string, boolean>>({});
   const [editForm, setEditForm] = useState<Partial<Pupil>>({});
   const [addForm, setAddForm] = useState({
     name: "",
@@ -115,6 +118,7 @@ export default function InstructorPupils() {
   useEffect(() => {
     if (instructorId) {
       fetchPupils();
+      fetchSignatureStatus();
     }
   }, [instructorId]);
 
@@ -134,6 +138,37 @@ export default function InstructorPupils() {
       toast.error("Failed to load pupils");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSignatureStatus = async () => {
+    if (!instructorId) return;
+    try {
+      // Get active terms
+      const { data: activeTerms } = await supabase
+        .from("instructor_terms_conditions")
+        .select("id")
+        .eq("instructor_id", instructorId)
+        .eq("is_active", true)
+        .single();
+
+      if (!activeTerms) return;
+
+      // Get all signatures for this terms version
+      const { data: signatures } = await supabase
+        .from("pupil_signatures")
+        .select("pupil_id")
+        .eq("terms_id", activeTerms.id);
+
+      if (signatures) {
+        const signatureMap: Record<string, boolean> = {};
+        signatures.forEach((sig) => {
+          signatureMap[sig.pupil_id] = true;
+        });
+        setPupilSignatures(signatureMap);
+      }
+    } catch (error) {
+      console.error("Error fetching signature status:", error);
     }
   };
 
@@ -396,6 +431,11 @@ export default function InstructorPupils() {
                   setSelectedPupil(p);
                   setIsDrivingReportOpen(true);
                 }}
+                onViewTerms={(p) => {
+                  setSelectedPupil(p);
+                  setIsTermsModalOpen(true);
+                }}
+                hasSignedTerms={pupilSignatures[pupil.id] || false}
               />
             ))}
           </div>
@@ -692,6 +732,20 @@ export default function InstructorPupils() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Terms & Conditions Signature Modal */}
+      {selectedPupil && instructorId && (
+        <TermsSignatureModal
+          open={isTermsModalOpen}
+          onOpenChange={setIsTermsModalOpen}
+          pupilId={selectedPupil.id}
+          pupilName={selectedPupil.name}
+          instructorId={instructorId}
+          onSignatureComplete={() => {
+            fetchSignatureStatus();
+          }}
+        />
+      )}
     </InstructorPortalLayout>
   );
 }

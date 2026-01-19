@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature } from "lucide-react";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -12,6 +12,7 @@ import { DataExportManager } from "@/components/instructor/DataExportManager";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
 import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
+import { TermsConditionsEditor } from "@/components/instructor/TermsConditionsEditor";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -468,6 +469,16 @@ const { data, error } = await supabase
           description="Set notice period & charges"
         >
           <CancellationPolicyEditor instructorId={instructorId} />
+        </SettingsTile>
+
+        {/* Terms & Conditions Section */}
+        <SettingsTile 
+          id="terms" 
+          icon={FileSignature} 
+          title="Terms & Conditions" 
+          description="Create terms for pupils to sign"
+        >
+          <TermsConditionsEditor instructorId={instructorId} />
         </SettingsTile>
 
         {/* Working Hours Section */}
