@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +34,7 @@ import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSMana
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import LoyaltyRewardsManager from "@/components/admin/LoyaltyRewardsManager";
 import RewardTiersManager from "@/components/admin/RewardTiersManager";
+import { InstructorFAQsManager } from "@/components/admin/InstructorFAQsManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -86,6 +87,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   bonuses: { title: "Bonuses", group: "Marketing", icon: Gift },
   "rewards-config": { title: "Rewards Settings", group: "Loyalty & Rewards", icon: Coins },
   "reward-tiers": { title: "Badge Tiers", group: "Loyalty & Rewards", icon: Award },
+  "instructor-faqs": { title: "Instructor FAQs", group: "Instructor Platform", icon: HelpCircle },
   "site-settings": { title: "Site Settings & SEO", group: "Settings", icon: Globe },
 };
 
@@ -566,6 +568,23 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <RewardTiersManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "instructor-faqs":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HelpCircle className="h-5 w-5 text-accent" />
+                  Instructor FAQs & Help Articles
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <InstructorFAQsManager />
               </CardContent>
             </Card>
           </motion.div>

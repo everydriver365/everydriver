@@ -23,6 +23,7 @@ import {
   LogOut,
   Trophy,
   Award,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -105,6 +106,7 @@ const navGroups: NavGroup[] = [
     items: [
       { id: "instructor-home", label: "App Homepage", icon: Smartphone },
       { id: "instructor-marketing", label: "Marketing Page", icon: Globe },
+      { id: "instructor-faqs", label: "Instructor FAQs", icon: HelpCircle },
     ],
   },
   {

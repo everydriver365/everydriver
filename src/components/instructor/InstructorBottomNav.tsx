@@ -122,11 +122,11 @@ const navItems: NavItem[] = [
     icon: LayoutGrid, 
     path: "/instructor/settings",
     menuItems: [
+      { label: "FAQs", icon: HelpCircle, path: "/instructor/faqs" },
       { label: "Vehicle Health", icon: Car, path: "/instructor/settings" },
       { label: "Calendar Sync", icon: RefreshCw, path: "/instructor/settings" },
       { label: "Job Offers", icon: BriefcaseBusiness, path: "/instructor/jobs" },
       { label: "Contact Us", icon: MessageSquare, path: "/instructor/contact" },
-      { label: "Help & Support", icon: HelpCircle, path: "/instructor/settings" },
     ]
   },
 ];
