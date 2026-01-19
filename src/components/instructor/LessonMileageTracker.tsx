@@ -31,11 +31,30 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
   const [mileageValue, setMileageValue] = useState("");
   const [dropoffPostcode, setDropoffPostcode] = useState("");
   const [saving, setSaving] = useState(false);
+  const [calculating, setCalculating] = useState(false);
   const [totalMiles, setTotalMiles] = useState(0);
+  const [instructorHomePostcode, setInstructorHomePostcode] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRecentLessons();
+    fetchInstructorHomePostcode();
   }, [instructorId]);
+
+  const fetchInstructorHomePostcode = async () => {
+    try {
+      const { data } = await supabase
+        .from("instructors")
+        .select("home_postcode")
+        .eq("id", instructorId)
+        .single();
+      
+      if (data?.home_postcode) {
+        setInstructorHomePostcode(data.home_postcode);
+      }
+    } catch (error) {
+      console.error("Error fetching instructor postcode:", error);
+    }
+  };
 
   const fetchRecentLessons = async () => {
     setLoading(true);
@@ -119,11 +138,42 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
       return;
     }
 
-    // Simple estimation based on lesson duration
-    // Average driving lesson covers about 10-15 miles per hour
-    const estimatedMiles = (lesson.duration_minutes / 60) * 12;
-    setMileageValue(estimatedMiles.toFixed(1));
-    toast.info(`Estimated ${estimatedMiles.toFixed(1)} miles based on ${lesson.duration_minutes} min lesson`);
+    setCalculating(true);
+    try {
+      // Call the edge function to calculate distance via TomTom API
+      const { data, error } = await supabase.functions.invoke("calculate-route-distance", {
+        body: {
+          from_postcode: lesson.pickup_postcode,
+          instructor_home_postcode: instructorHomePostcode,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        const miles = data.estimated_lesson_miles || data.distance_miles || 15;
+        setMileageValue(miles.toFixed(1));
+        
+        if (data.estimated) {
+          toast.info(`Estimated ${miles.toFixed(1)} miles (no destination set)`);
+        } else {
+          toast.success(`Calculated ${miles.toFixed(1)} miles via maps`);
+        }
+      } else {
+        // Fallback to duration-based estimate
+        const estimatedMiles = (lesson.duration_minutes / 60) * 12;
+        setMileageValue(estimatedMiles.toFixed(1));
+        toast.info(`Estimated ${estimatedMiles.toFixed(1)} miles based on duration`);
+      }
+    } catch (error) {
+      console.error("Error calculating distance:", error);
+      // Fallback to simple estimation
+      const estimatedMiles = (lesson.duration_minutes / 60) * 12;
+      setMileageValue(estimatedMiles.toFixed(1));
+      toast.info(`Estimated ${estimatedMiles.toFixed(1)} miles based on ${lesson.duration_minutes} min lesson`);
+    } finally {
+      setCalculating(false);
+    }
   };
 
   if (loading) {
@@ -203,9 +253,14 @@ export function LessonMileageTracker({ instructorId }: LessonMileageTrackerProps
                         size="sm"
                         variant="ghost"
                         onClick={() => estimateMileage(lesson)}
-                        title="Estimate miles"
+                        disabled={calculating}
+                        title="Auto-calculate miles via maps"
                       >
-                        <Navigation className="h-4 w-4" />
+                        {calculating ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Navigation className="h-4 w-4" />
+                        )}
                       </Button>
                       <Button
                         size="sm"

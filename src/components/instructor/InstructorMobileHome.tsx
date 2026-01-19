@@ -141,19 +141,19 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
-      {/* Hero Image - extends behind header */}
-      <div className="absolute top-0 left-0 right-0 h-56 z-0 overflow-hidden">
+      {/* Hero Image - extends to very top of screen (behind iOS status bar) */}
+      <div className="fixed top-0 left-0 right-0 h-64 z-0 overflow-hidden">
         <img 
           src={heroImage}
           alt="Driving"
           className="w-full h-full object-cover"
         />
         {/* Gradient overlay for readability and fade to content */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-background" />
       </div>
 
-      {/* Header Bar - transparent with white text */}
-      <div className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between overflow-hidden">
+      {/* Header Bar - transparent with white text, with safe area padding for iOS notch */}
+      <div className="sticky top-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))]">
         {/* Logo on the left */}
         <img 
           src={logoDark} 
