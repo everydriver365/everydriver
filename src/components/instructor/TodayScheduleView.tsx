@@ -276,7 +276,14 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                 .update({ lesson_miles: routeData.estimated_lesson_miles })
                 .eq("id", lesson.id);
 
-              console.log(`Auto-calculated mileage: ${routeData.estimated_lesson_miles} miles`);
+              toast({ 
+                title: "Lesson completed!", 
+                description: `${lesson.pupil.name}'s session logged. Mileage tracked: ${routeData.estimated_lesson_miles.toFixed(1)} miles 🚗` 
+              });
+              
+              // Remove from today's list and exit early
+              setLessons(prev => prev.filter(l => l.id !== lesson.id));
+              return;
             }
           }
         } catch (mileageError) {
