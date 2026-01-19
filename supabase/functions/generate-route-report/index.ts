@@ -391,6 +391,40 @@ serve(async (req) => {
     const segments = groupIntoSegments(sampledPoints, roadData);
     console.log(`Created ${segments.length} road segments`);
 
+    // Fetch driving behavior events
+    const { data: drivingEvents, error: eventsError } = await supabase
+      .from("driving_behavior_events")
+      .select("*")
+      .eq("telematics_id", telematicsId)
+      .order("recorded_at", { ascending: true });
+
+    if (eventsError) {
+      console.error("Error fetching driving events:", eventsError);
+    }
+
+    // Enrich events with road names
+    const enrichedEvents = [];
+    if (drivingEvents && drivingEvents.length > 0) {
+      for (const event of drivingEvents) {
+        let roadName = 'Unknown location';
+        if (event.latitude && event.longitude) {
+          roadName = await getRoadName(event.latitude, event.longitude);
+        }
+        enrichedEvents.push({
+          id: event.id,
+          type: event.event_type,
+          severity: event.severity,
+          location: roadName,
+          latitude: event.latitude,
+          longitude: event.longitude,
+          speedAtEvent: event.speed_at_event,
+          gForce: event.g_force,
+          notes: event.notes,
+          recordedAt: event.recorded_at
+        });
+      }
+    }
+
     // Calculate overall statistics
     const allSpeeds = gpsPoints.map(p => p.speed_kmh || 0).filter(s => s > 0);
     const overallStats = {
@@ -402,7 +436,11 @@ serve(async (req) => {
         ? Math.round((new Date(session.ended_at).getTime() - new Date(session.started_at).getTime()) / 60000)
         : null,
       speedingIncidents: segments.filter(s => s.compliance === 'over').length,
-      roadsVisited: [...new Set(segments.map(s => s.name))].length
+      roadsVisited: [...new Set(segments.map(s => s.name))].length,
+      eventCount: enrichedEvents.length,
+      harshBrakingCount: enrichedEvents.filter(e => e.type === 'harsh_brake').length,
+      harshAccelerationCount: enrichedEvents.filter(e => e.type === 'harsh_acceleration').length,
+      sharpTurnCount: enrichedEvents.filter(e => e.type === 'sharp_turn').length
     };
 
     // Get start and end locations
@@ -426,6 +464,7 @@ serve(async (req) => {
         },
         stats: overallStats,
         segments,
+        events: enrichedEvents,
         route: gpsPoints.map(p => ({ lat: p.latitude, lon: p.longitude, speed: p.speed_kmh }))
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

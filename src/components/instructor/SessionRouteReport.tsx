@@ -40,6 +40,19 @@ interface RoutePoint {
   speed: number | null;
 }
 
+interface DrivingEvent {
+  id: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high';
+  location: string;
+  latitude: number | null;
+  longitude: number | null;
+  speedAtEvent: number | null;
+  gForce: number | null;
+  notes: string | null;
+  recordedAt: string;
+}
+
 interface RouteReport {
   session: {
     id: string;
@@ -57,8 +70,13 @@ interface RouteReport {
     duration: number | null;
     speedingIncidents: number;
     roadsVisited: number;
+    eventCount: number;
+    harshBrakingCount: number;
+    harshAccelerationCount: number;
+    sharpTurnCount: number;
   };
   segments: RoadSegment[];
+  events: DrivingEvent[];
   route: RoutePoint[];
 }
 
@@ -114,6 +132,41 @@ const SessionRouteReport: React.FC<SessionRouteReportProps> = ({ telematicsId, o
       case 'over': return 'text-red-500 bg-red-500/10';
       case 'at': return 'text-amber-500 bg-amber-500/10';
       default: return 'text-green-500 bg-green-500/10';
+    }
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'high': return 'text-red-500 bg-red-500/10';
+      case 'medium': return 'text-amber-500 bg-amber-500/10';
+      default: return 'text-blue-500 bg-blue-500/10';
+    }
+  };
+
+  const formatEventType = (type: string) => {
+    const eventNames: Record<string, string> = {
+      'harsh_brake': 'Harsh Braking',
+      'harsh_acceleration': 'Harsh Acceleration',
+      'sharp_turn': 'Sharp Turn',
+      'speeding': 'Speeding',
+      'smooth_stop': 'Smooth Stop',
+      'good_acceleration': 'Good Acceleration',
+      'hard_impact': 'Hard Impact',
+      'phone_unstable': 'Phone Unstable',
+      'smooth_cornering': 'Smooth Cornering'
+    };
+    return eventNames[type] || type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
+
+  const getEventIcon = (type: string, severity: string) => {
+    const isPositive = ['smooth_stop', 'good_acceleration', 'smooth_cornering'].includes(type);
+    if (isPositive) {
+      return <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />;
+    }
+    switch (severity) {
+      case 'high': return <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />;
+      case 'medium': return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
+      default: return <Gauge className="h-4 w-4 text-blue-500 flex-shrink-0" />;
     }
   };
 
@@ -366,7 +419,7 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
             <Navigation className="h-3 w-3" />
             Distance
           </div>
-          <p className="text-xl font-bold">{Number(report.stats.distance).toFixed(1)} km</p>
+          <p className="text-xl font-bold">{(Number(report.stats.distance) * 0.621371).toFixed(1)} mi</p>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
@@ -380,7 +433,7 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
             <Gauge className="h-3 w-3" />
             Avg Speed
           </div>
-          <p className="text-xl font-bold">{report.stats.avgSpeed?.toFixed(0) || 'N/A'} km/h</p>
+          <p className="text-xl font-bold">{report.stats.avgSpeed ? Math.round(report.stats.avgSpeed * 0.621371) : 'N/A'} mph</p>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
@@ -410,7 +463,7 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
                 : `⚠️ ${report.stats.speedingIncidents} speeding ${report.stats.speedingIncidents === 1 ? 'incident' : 'incidents'}`}
             </span>
             <span className="text-muted-foreground">
-              Max: {report.stats.maxSpeed?.toFixed(0) || 'N/A'} km/h
+              Max: {report.stats.maxSpeed ? Math.round(report.stats.maxSpeed * 0.621371) : 'N/A'} mph
             </span>
           </div>
         </CardContent>
@@ -430,11 +483,11 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{segment.name}</p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>Limit: {segment.speedLimit ? `${segment.speedLimit} km/h` : 'Unknown'}</span>
+                      <span>Limit: {segment.speedLimit ? `${Math.round(segment.speedLimit * 0.621371)} mph` : 'Unknown'}</span>
                       <span>•</span>
-                      <span>Avg: {segment.avgSpeed.toFixed(0)} km/h</span>
+                      <span>Avg: {Math.round(segment.avgSpeed * 0.621371)} mph</span>
                       <span>•</span>
-                      <span>Max: {segment.maxSpeed.toFixed(0)} km/h</span>
+                      <span>Max: {Math.round(segment.maxSpeed * 0.621371)} mph</span>
                     </div>
                   </div>
                   <Badge 
@@ -449,6 +502,61 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Driving Events */}
+      {report.events && report.events.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center justify-between">
+              Driving Events
+              <Badge variant="outline">
+                {report.events.length} {report.events.length === 1 ? 'event' : 'events'}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <ScrollArea className="max-h-64">
+              <div className="divide-y">
+                {report.events.map((event) => (
+                  <div key={event.id} className="p-3 flex items-center gap-3">
+                    {getEventIcon(event.type, event.severity)}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">{formatEventType(event.type)}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{event.location}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                        {event.speedAtEvent && (
+                          <span>{Math.round(event.speedAtEvent * 0.621371)} mph</span>
+                        )}
+                        {event.gForce && (
+                          <>
+                            <span>•</span>
+                            <span>{event.gForce.toFixed(2)}g</span>
+                          </>
+                        )}
+                        {event.notes && (
+                          <>
+                            <span>•</span>
+                            <span className="truncate">{event.notes}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${getSeverityColor(event.severity)}`}
+                    >
+                      {event.severity}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Regenerate button */}
       <Button variant="outline" className="w-full" onClick={generateReport} disabled={loading}>
