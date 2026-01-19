@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Calculator, Fuel, PoundSterling, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RecurringExpensesManager } from "./RecurringExpensesManager";
 
 interface AccountSettingsProps {
   instructorId: string;
@@ -216,6 +217,11 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
           "Save Settings"
         )}
       </Button>
+
+      {/* Recurring Business Expenses */}
+      <div className="pt-6 border-t">
+        <RecurringExpensesManager instructorId={instructorId} />
+      </div>
     </div>
   );
 }
