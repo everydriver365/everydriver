@@ -21,6 +21,7 @@ export default function InstructorPortalLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -200,6 +201,21 @@ export default function InstructorPortalLogin() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {!isForgotPassword && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-emerald-500 focus:ring-emerald-500"
+                />
+                <Label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer">
+                  Remember me
+                </Label>
+              </div>
+            )}
 
             <Button 
               type="submit" 
