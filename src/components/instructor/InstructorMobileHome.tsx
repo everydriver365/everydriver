@@ -152,8 +152,8 @@ export function InstructorMobileHome({
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-background" />
       </div>
 
-      {/* Header Bar - fixed at top with white text, with safe area padding for iOS notch */}
-      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-gradient-to-b from-black/40 to-transparent">
+      {/* Header Bar - fixed at top with blue theme */}
+      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-primary">
         {/* Logo on the left */}
         <img 
           src={logoDark} 
