@@ -79,6 +79,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
       // Get scheduled lessons for next 14 days
       const today = format(new Date(), "yyyy-MM-dd");
       const twoWeeksLater = format(addDays(new Date(), 14), "yyyy-MM-dd");
+      const todayISO = new Date().toISOString();
+      const twoWeeksISO = addDays(new Date(), 14).toISOString();
       
       const { data: scheduledLessons } = await supabase
         .from("scheduled_lessons")
@@ -94,6 +96,23 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         .select("*")
         .eq("instructor_id", instructorId)
         .gte("override_date", today);
+
+      // Get manual blocks
+      const { data: manualBlocks } = await supabase
+        .from("instructor_manual_blocks")
+        .select("start_datetime, end_datetime")
+        .eq("instructor_id", instructorId)
+        .gte("end_datetime", todayISO)
+        .lte("start_datetime", twoWeeksISO);
+
+      // Get synced calendar events (from Google Calendar, Nylas, etc.)
+      const { data: calendarEvents } = await supabase
+        .from("instructor_calendar_events")
+        .select("start_time, end_time, is_busy")
+        .eq("instructor_id", instructorId)
+        .eq("is_busy", true)
+        .gte("end_time", todayISO)
+        .lte("start_time", twoWeeksISO);
 
       // Calculate gaps
       const calculatedGaps: GapSlot[] = [];
@@ -123,6 +142,20 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         // Get lessons for this day
         const dayLessons = scheduledLessons?.filter(l => l.lesson_date === dateStr) || [];
 
+        // Get manual blocks for this day
+        const dayBlocks = manualBlocks?.filter(b => {
+          const blockStart = new Date(b.start_datetime);
+          const blockEnd = new Date(b.end_datetime);
+          return format(blockStart, "yyyy-MM-dd") === dateStr || format(blockEnd, "yyyy-MM-dd") === dateStr;
+        }) || [];
+
+        // Get external calendar events for this day
+        const dayCalendarEvents = calendarEvents?.filter(e => {
+          const eventStart = new Date(e.start_time);
+          const eventEnd = new Date(e.end_time);
+          return format(eventStart, "yyyy-MM-dd") === dateStr || format(eventEnd, "yyyy-MM-dd") === dateStr;
+        }) || [];
+
         // Find gaps in the schedule (simplified: show 2-hour slots that are free)
         const workStart = parseInt(startHour.split(":")[0]);
         const workEnd = parseInt(endHour.split(":")[0]);
@@ -130,15 +163,45 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         for (let hour = workStart; hour < workEnd - 1; hour += 2) {
           const slotStart = `${hour.toString().padStart(2, "0")}:00`;
           const slotEnd = `${(hour + 2).toString().padStart(2, "0")}:00`;
+          const slotStartHour = hour;
+          const slotEndHour = hour + 2;
 
           // Check if this slot overlaps with any scheduled lesson
-          const hasConflict = dayLessons.some(lesson => {
+          const hasLessonConflict = dayLessons.some(lesson => {
             const lessonStart = parseInt(lesson.start_time.split(":")[0]);
             const lessonEnd = lessonStart + Math.ceil(lesson.duration_minutes / 60);
-            return (hour < lessonEnd && hour + 2 > lessonStart);
+            return (slotStartHour < lessonEnd && slotEndHour > lessonStart);
           });
 
-          if (!hasConflict) {
+          // Check if this slot overlaps with any manual block
+          const hasBlockConflict = dayBlocks.some(block => {
+            const blockStart = new Date(block.start_datetime);
+            const blockEnd = new Date(block.end_datetime);
+            const blockStartHour = blockStart.getHours() + blockStart.getMinutes() / 60;
+            const blockEndHour = blockEnd.getHours() + blockEnd.getMinutes() / 60;
+            
+            // Check if block is on this specific date
+            if (format(blockStart, "yyyy-MM-dd") === dateStr) {
+              return (slotStartHour < blockEndHour && slotEndHour > blockStartHour);
+            }
+            return false;
+          });
+
+          // Check if this slot overlaps with any external calendar event
+          const hasCalendarConflict = dayCalendarEvents.some(event => {
+            const eventStart = new Date(event.start_time);
+            const eventEnd = new Date(event.end_time);
+            const eventStartHour = eventStart.getHours() + eventStart.getMinutes() / 60;
+            const eventEndHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
+            
+            // Check if event is on this specific date
+            if (format(eventStart, "yyyy-MM-dd") === dateStr) {
+              return (slotStartHour < eventEndHour && slotEndHour > eventStartHour);
+            }
+            return false;
+          });
+
+          if (!hasLessonConflict && !hasBlockConflict && !hasCalendarConflict) {
             calculatedGaps.push({
               id: `${dateStr}-${slotStart}`,
               date: dateStr,
