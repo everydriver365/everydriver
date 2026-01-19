@@ -269,18 +269,66 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch session details
-    const { data: session, error: sessionError } = await supabase
-      .from("lesson_telematics")
-      .select("*, pupils(name)")
-      .eq("id", telematicsId)
-      .single();
+    // Fetch session details with retry for transient schema cache errors
+    let session = null;
+    let sessionError = null;
+    const maxRetries = 5;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const result = await supabase
+        .from("lesson_telematics")
+        .select("*")
+        .eq("id", telematicsId)
+        .maybeSingle();
+      
+      if (!result.error) {
+        session = result.data;
+        break;
+      }
+      
+      // If it's a schema cache error, retry after a brief delay
+      if (result.error.message.includes("schema cache")) {
+        console.log(`Schema cache error, retrying (attempt ${attempt + 1}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        continue;
+      }
+      
+      sessionError = result.error;
+      break;
+    }
 
-    if (sessionError || !session) {
+    if (sessionError) {
+      console.error("Session query error:", sessionError);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: "database_error", 
+          message: "The database is temporarily unavailable. Please try again in a moment.",
+          details: sessionError.message 
+        }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!session) {
       return new Response(
         JSON.stringify({ error: "Session not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Fetch pupil name separately if pupil_id exists
+    let pupilName = 'Unknown';
+    if (session.pupil_id) {
+      const { data: pupil } = await supabase
+        .from("pupils")
+        .select("name")
+        .eq("id", session.pupil_id)
+        .maybeSingle();
+      
+      if (pupil) {
+        pupilName = pupil.name;
+      }
     }
 
     // Fetch all GPS points
@@ -370,7 +418,7 @@ serve(async (req) => {
         success: true,
         session: {
           id: session.id,
-          pupilName: session.pupils?.name || 'Unknown',
+          pupilName,
           startedAt: session.started_at,
           endedAt: session.ended_at,
           startLocation,

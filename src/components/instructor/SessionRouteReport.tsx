@@ -91,6 +91,12 @@ const SessionRouteReport: React.FC<SessionRouteReportProps> = ({ telematicsId, o
         return;
       }
       
+      // Check for database errors (503)
+      if (data.error === 'database_error') {
+        toast.error(data.message || 'Database temporarily unavailable. Please try again.');
+        return;
+      }
+      
       if (!data.success) throw new Error(data.error || 'Failed to generate report');
 
       setReport(data);
