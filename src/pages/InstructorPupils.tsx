@@ -41,7 +41,7 @@ import {
   ArrowLeft,
   History,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -51,6 +51,7 @@ import { ExpandablePupilCard } from "@/components/instructor/ExpandablePupilCard
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal";
+import { PupilPickerDialog } from "@/components/instructor/PupilPickerDialog";
 
 interface Pupil {
   id: string;
@@ -87,6 +88,7 @@ const courseTypeLabels: Record<string, string> = {
 export default function InstructorPupils() {
   const { instructor } = useInstructorAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const instructorId = instructor?.id;
   
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -117,6 +119,8 @@ export default function InstructorPupils() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [isLookingUpW3W, setIsLookingUpW3W] = useState(false);
+  const [isPupilPickerOpen, setIsPupilPickerOpen] = useState(false);
+  const [pendingPupilAction, setPendingPupilAction] = useState<"terms" | null>(null);
 
   useEffect(() => {
     if (instructorId) {
@@ -125,19 +129,41 @@ export default function InstructorPupils() {
     }
   }, [instructorId]);
 
+  const requestOpenTerms = () => {
+    if (selectedPupil) {
+      setIsTermsModalOpen(true);
+      return;
+    }
+
+    setPendingPupilAction("terms");
+    setIsPupilPickerOpen(true);
+  };
+
+  const handlePupilPicked = (pupil: Pupil) => {
+    setSelectedPupil(pupil);
+    setIsPupilPickerOpen(false);
+
+    if (pendingPupilAction === "terms") {
+      setIsTermsModalOpen(true);
+    }
+
+    setPendingPupilAction(null);
+  };
+
   // Handle navigation state for opening modals
   useEffect(() => {
     const state = location.state as { openTermsModal?: boolean; openAddPupil?: boolean } | null;
+
     if (state?.openTermsModal) {
-      setIsTermsModalOpen(true);
-      // Clear the state so it doesn't reopen on refresh
-      window.history.replaceState({}, document.title);
+      requestOpenTerms();
+      navigate(location.pathname, { replace: true, state: null });
     }
+
     if (state?.openAddPupil) {
       setIsAddOpen(true);
-      window.history.replaceState({}, document.title);
+      navigate(location.pathname, { replace: true, state: null });
     }
-  }, [location.state]);
+  }, [location.state, location.pathname, navigate, selectedPupil]);
 
   const fetchPupils = async () => {
     if (!instructorId) return;
@@ -778,6 +804,18 @@ export default function InstructorPupils() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <PupilPickerDialog
+        open={isPupilPickerOpen}
+        onOpenChange={(open) => {
+          setIsPupilPickerOpen(open);
+          if (!open) setPendingPupilAction(null);
+        }}
+        pupils={pupils}
+        onSelect={(p) => handlePupilPicked(p as Pupil)}
+        title="Select a pupil"
+        description="Choose which pupil should sign the terms & conditions."
+      />
 
       {/* Terms & Conditions Signature Modal */}
       {selectedPupil && instructorId && (
