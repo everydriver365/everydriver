@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { QrCode, CreditCard, Copy, Check, User, PoundSterling, Send, MessageSquare, ExternalLink, Clock, Eye, X, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -577,16 +578,25 @@ export function PaymentQRModal({
         </DialogContent>
       </Dialog>
 
-      {/* Fullscreen QR Overlay - Rendered outside Dialog for proper z-index on mobile */}
-      {showFullscreenQR && paymentQrUrl && (
+      {/* Fullscreen QR Overlay - Rendered via Portal to document.body for guaranteed fullscreen on mobile */}
+      {showFullscreenQR && paymentQrUrl && createPortal(
         <div 
-          className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+          className="fixed inset-0 bg-black flex items-center justify-center"
           onClick={() => setShowFullscreenQR(false)}
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            zIndex: 99999,
+            width: '100vw',
+            height: '100vh'
+          }}
         >
           <button
             onClick={() => setShowFullscreenQR(false)}
-            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors z-10"
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors"
             style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
           >
             <X className="h-8 w-8" />
@@ -603,7 +613,8 @@ export function PaymentQRModal({
             <p className="text-white/90 text-lg font-medium text-center">Scan to pay {instructorName}</p>
             <p className="text-white/60 text-sm">Tap anywhere to close</p>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
