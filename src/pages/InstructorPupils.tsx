@@ -71,6 +71,7 @@ interface Pupil {
   test_date?: string | null;
   parent_phone?: string | null;
   parent_name?: string | null;
+  date_of_birth?: string | null;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -110,6 +111,7 @@ export default function InstructorPupils() {
     what3words: "",
     parent_phone: "",
     parent_name: "",
+    date_of_birth: "",
   });
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -196,6 +198,7 @@ export default function InstructorPupils() {
           what3words: editForm.what3words,
           parent_phone: editForm.parent_phone,
           parent_name: editForm.parent_name,
+          date_of_birth: editForm.date_of_birth,
         })
         .eq("id", selectedPupil.id);
 
@@ -237,6 +240,7 @@ export default function InstructorPupils() {
         what3words: addForm.what3words || null,
         parent_phone: addForm.parent_phone || null,
         parent_name: addForm.parent_name || null,
+        date_of_birth: addForm.date_of_birth || null,
         lessons_completed: 0,
         progress: 0,
       }).select();
@@ -260,6 +264,7 @@ export default function InstructorPupils() {
         what3words: "",
         parent_phone: "",
         parent_name: "",
+        date_of_birth: "",
       });
       fetchPupils();
     } catch (error: any) {
@@ -547,22 +552,35 @@ export default function InstructorPupils() {
                 <Users className="h-4 w-4" />
                 Parent/Guardian (for Parent Portal access)
               </p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Parent Name</Label>
+                  <Label>Date of Birth</Label>
                   <Input
-                    value={addForm.parent_name}
-                    onChange={(e) => setAddForm({ ...addForm, parent_name: e.target.value })}
-                    placeholder="Parent's name"
+                    type="date"
+                    value={addForm.date_of_birth}
+                    onChange={(e) => setAddForm({ ...addForm, date_of_birth: e.target.value })}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Parent signature required on T&Cs for pupils under 18
+                  </p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Parent Phone</Label>
-                  <Input
-                    value={addForm.parent_phone}
-                    onChange={(e) => setAddForm({ ...addForm, parent_phone: e.target.value })}
-                    placeholder="07XXX XXXXXX"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Parent Name</Label>
+                    <Input
+                      value={addForm.parent_name}
+                      onChange={(e) => setAddForm({ ...addForm, parent_name: e.target.value })}
+                      placeholder="Parent's name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Parent Phone</Label>
+                    <Input
+                      value={addForm.parent_phone}
+                      onChange={(e) => setAddForm({ ...addForm, parent_phone: e.target.value })}
+                      placeholder="07XXX XXXXXX"
+                    />
+                  </div>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
@@ -687,6 +705,17 @@ export default function InstructorPupils() {
                   />
                 </div>
               </div>
+              <div className="space-y-2 mt-4">
+                <Label>Date of Birth</Label>
+                <Input
+                  type="date"
+                  value={editForm.date_of_birth || ""}
+                  onChange={(e) => setEditForm({ ...editForm, date_of_birth: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Parent signature required on T&Cs for pupils under 18
+                </p>
+              </div>
               <p className="text-xs text-muted-foreground mt-2">
                 Parent can use this phone to access the Parent Portal
               </p>
@@ -741,6 +770,8 @@ export default function InstructorPupils() {
           pupilId={selectedPupil.id}
           pupilName={selectedPupil.name}
           instructorId={instructorId}
+          pupilDateOfBirth={selectedPupil.date_of_birth}
+          parentName={selectedPupil.parent_name}
           onSignatureComplete={() => {
             fetchSignatureStatus();
           }}

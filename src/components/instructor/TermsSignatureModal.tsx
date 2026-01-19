@@ -9,12 +9,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SignaturePad } from "./SignaturePad";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, FileText, CheckCircle2, Download } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, Download, AlertTriangle, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { differenceInYears } from "date-fns";
 import jsPDF from "jspdf";
 
 interface TermsSignatureModalProps {
@@ -23,6 +26,8 @@ interface TermsSignatureModalProps {
   pupilId: string;
   pupilName: string;
   instructorId: string;
+  pupilDateOfBirth?: string | null;
+  parentName?: string | null;
   onSignatureComplete?: () => void;
 }
 
@@ -38,6 +43,10 @@ interface ExistingSignature {
   signed_at: string;
   signature_url: string;
   terms: TermsConditions;
+  requires_parent_signature: boolean;
+  parent_name: string | null;
+  parent_signature_url: string | null;
+  parent_signed_at: string | null;
 }
 
 export function TermsSignatureModal({
@@ -46,6 +55,8 @@ export function TermsSignatureModal({
   pupilId,
   pupilName,
   instructorId,
+  pupilDateOfBirth,
+  parentName: initialParentName,
   onSignatureComplete,
 }: TermsSignatureModalProps) {
   const [loading, setLoading] = useState(true);
@@ -54,17 +65,28 @@ export function TermsSignatureModal({
   const [terms, setTerms] = useState<TermsConditions | null>(null);
   const [existingSignature, setExistingSignature] = useState<ExistingSignature | null>(null);
   const [agreed, setAgreed] = useState(false);
+  const [parentAgreed, setParentAgreed] = useState(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null);
+  const [parentSignatureDataUrl, setParentSignatureDataUrl] = useState<string | null>(null);
+  const [parentName, setParentName] = useState(initialParentName || "");
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
+
+  // Calculate if pupil is under 18
+  const isUnder18 = pupilDateOfBirth
+    ? differenceInYears(new Date(), new Date(pupilDateOfBirth)) < 18
+    : false;
 
   useEffect(() => {
     if (open) {
       fetchTermsAndSignature();
       setAgreed(false);
+      setParentAgreed(false);
       setSignatureDataUrl(null);
+      setParentSignatureDataUrl(null);
       setScrolledToBottom(false);
+      setParentName(initialParentName || "");
     }
-  }, [open, instructorId, pupilId]);
+  }, [open, instructorId, pupilId, initialParentName]);
 
   const fetchTermsAndSignature = async () => {
     setLoading(true);
@@ -87,7 +109,7 @@ export function TermsSignatureModal({
       if (termsData) {
         const { data: sigData, error: sigError } = await supabase
           .from("pupil_signatures")
-          .select("id, signed_at, signature_url")
+          .select("id, signed_at, signature_url, requires_parent_signature, parent_name, parent_signature_url, parent_signed_at")
           .eq("pupil_id", pupilId)
           .eq("terms_id", termsData.id)
           .single();
@@ -121,32 +143,44 @@ export function TermsSignatureModal({
     }
   };
 
+  const uploadSignature = async (dataUrl: string, prefix: string): Promise<string> => {
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const filename = `${instructorId}/${pupilId}/${terms!.id}_${prefix}_${Date.now()}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("signatures")
+      .upload(filename, blob, {
+        contentType: "image/png",
+        upsert: false,
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabase.storage
+      .from("signatures")
+      .getPublicUrl(filename);
+
+    return urlData.publicUrl;
+  };
+
   const handleSubmit = async () => {
     if (!terms || !signatureDataUrl || !agreed) return;
+    if (isUnder18 && (!parentSignatureDataUrl || !parentAgreed || !parentName.trim())) {
+      toast.error("Parent/guardian signature is required for under-18 pupils");
+      return;
+    }
 
     setSubmitting(true);
     try {
-      // Convert base64 to blob
-      const response = await fetch(signatureDataUrl);
-      const blob = await response.blob();
-      
-      // Generate unique filename
-      const filename = `${instructorId}/${pupilId}/${terms.id}_${Date.now()}.png`;
+      // Upload pupil signature
+      const pupilSigUrl = await uploadSignature(signatureDataUrl, "pupil");
 
-      // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("signatures")
-        .upload(filename, blob, {
-          contentType: "image/png",
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from("signatures")
-        .getPublicUrl(filename);
+      // Upload parent signature if required
+      let parentSigUrl: string | null = null;
+      if (isUnder18 && parentSignatureDataUrl) {
+        parentSigUrl = await uploadSignature(parentSignatureDataUrl, "parent");
+      }
 
       // Create signature record
       const { error: insertError } = await supabase
@@ -155,13 +189,21 @@ export function TermsSignatureModal({
           pupil_id: pupilId,
           terms_id: terms.id,
           instructor_id: instructorId,
-          signature_url: urlData.publicUrl,
+          signature_url: pupilSigUrl,
           user_agent: navigator.userAgent,
+          requires_parent_signature: isUnder18,
+          parent_name: isUnder18 ? parentName.trim() : null,
+          parent_signature_url: parentSigUrl,
+          parent_signed_at: isUnder18 && parentSigUrl ? new Date().toISOString() : null,
         });
 
       if (insertError) throw insertError;
 
-      toast.success(`${pupilName} has signed the terms`);
+      toast.success(
+        isUnder18
+          ? `${pupilName} and ${parentName} have signed the terms`
+          : `${pupilName} has signed the terms`
+      );
       onSignatureComplete?.();
       onOpenChange(false);
     } catch (error) {
@@ -208,15 +250,16 @@ export function TermsSignatureModal({
       yPosition += 10;
 
       // Signatory info box
+      const boxHeight = existingSignature.requires_parent_signature ? 40 : 25;
       pdf.setFillColor(245, 245, 245);
-      pdf.roundedRect(margin, yPosition, contentWidth, 25, 3, 3, "F");
+      pdf.roundedRect(margin, yPosition, contentWidth, boxHeight, 3, 3, "F");
       
       pdf.setFontSize(11);
       pdf.setTextColor(0, 0, 0);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Signed by:", margin + 5, yPosition + 8);
+      pdf.text("Pupil:", margin + 5, yPosition + 8);
       pdf.setFont("helvetica", "normal");
-      pdf.text(pupilName, margin + 35, yPosition + 8);
+      pdf.text(pupilName, margin + 25, yPosition + 8);
 
       pdf.setFont("helvetica", "bold");
       pdf.text("Date:", margin + 5, yPosition + 18);
@@ -230,7 +273,26 @@ export function TermsSignatureModal({
         margin + 22,
         yPosition + 18
       );
-      yPosition += 35;
+
+      if (existingSignature.requires_parent_signature && existingSignature.parent_name) {
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Parent/Guardian:", margin + 5, yPosition + 28);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(existingSignature.parent_name, margin + 50, yPosition + 28);
+
+        if (existingSignature.parent_signed_at) {
+          pdf.setFont("helvetica", "bold");
+          pdf.text("Parent Signed:", margin + 5, yPosition + 38);
+          pdf.setFont("helvetica", "normal");
+          pdf.text(
+            new Date(existingSignature.parent_signed_at).toLocaleString("en-GB"),
+            margin + 42,
+            yPosition + 38
+          );
+        }
+      }
+
+      yPosition += boxHeight + 10;
 
       // Terms content
       pdf.setFontSize(12);
@@ -242,11 +304,10 @@ export function TermsSignatureModal({
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(50, 50, 50);
 
-      // Split content into lines that fit the page width
       const lines = pdf.splitTextToSize(terms.content, contentWidth);
       
       for (const line of lines) {
-        if (yPosition > pageHeight - 60) {
+        if (yPosition > pageHeight - 80) {
           pdf.addPage();
           yPosition = margin;
         }
@@ -254,24 +315,24 @@ export function TermsSignatureModal({
         yPosition += 5;
       }
 
-      // Add signature section at the bottom
-      if (yPosition > pageHeight - 80) {
+      // Signature section
+      if (yPosition > pageHeight - 100) {
         pdf.addPage();
         yPosition = margin;
       }
 
-      yPosition = Math.max(yPosition + 15, pageHeight - 70);
+      yPosition = Math.max(yPosition + 15, pageHeight - (existingSignature.requires_parent_signature ? 90 : 70));
 
-      // Signature box
+      // Pupil Signature box
       pdf.setDrawColor(200, 200, 200);
       pdf.setFillColor(255, 255, 255);
-      pdf.roundedRect(margin, yPosition, contentWidth, 50, 3, 3, "FD");
+      const sigBoxWidth = existingSignature.requires_parent_signature ? (contentWidth - 5) / 2 : contentWidth;
+      pdf.roundedRect(margin, yPosition, sigBoxWidth, 50, 3, 3, "FD");
 
       pdf.setFontSize(10);
       pdf.setTextColor(100, 100, 100);
-      pdf.text("Digital Signature:", margin + 5, yPosition + 8);
+      pdf.text("Pupil Signature:", margin + 5, yPosition + 8);
 
-      // Fetch and embed signature image
       try {
         const imgResponse = await fetch(existingSignature.signature_url);
         const imgBlob = await imgResponse.blob();
@@ -280,43 +341,49 @@ export function TermsSignatureModal({
           reader.onloadend = () => resolve(reader.result as string);
           reader.readAsDataURL(imgBlob);
         });
-
-        pdf.addImage(imgDataUrl, "PNG", margin + 5, yPosition + 12, 60, 30);
+        pdf.addImage(imgDataUrl, "PNG", margin + 5, yPosition + 12, 55, 30);
       } catch (imgError) {
-        console.error("Error loading signature image:", imgError);
         pdf.setTextColor(150, 150, 150);
         pdf.text("[Signature on file]", margin + 5, yPosition + 25);
+      }
+
+      // Parent Signature box (if applicable)
+      if (existingSignature.requires_parent_signature && existingSignature.parent_signature_url) {
+        const parentBoxX = margin + sigBoxWidth + 5;
+        pdf.roundedRect(parentBoxX, yPosition, sigBoxWidth, 50, 3, 3, "FD");
+        pdf.setTextColor(100, 100, 100);
+        pdf.text("Parent/Guardian Signature:", parentBoxX + 5, yPosition + 8);
+
+        try {
+          const parentImgResponse = await fetch(existingSignature.parent_signature_url);
+          const parentImgBlob = await parentImgResponse.blob();
+          const parentImgDataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(parentImgBlob);
+          });
+          pdf.addImage(parentImgDataUrl, "PNG", parentBoxX + 5, yPosition + 12, 55, 30);
+        } catch (imgError) {
+          pdf.setTextColor(150, 150, 150);
+          pdf.text("[Signature on file]", parentBoxX + 5, yPosition + 25);
+        }
       }
 
       // Verification text
       pdf.setFontSize(8);
       pdf.setTextColor(120, 120, 120);
-      pdf.text(
-        `Document ID: ${existingSignature.id}`,
-        margin + 5,
-        yPosition + 45
-      );
-      pdf.text(
-        `Generated: ${new Date().toLocaleString("en-GB")}`,
-        pageWidth - margin - 50,
-        yPosition + 45
-      );
+      pdf.text(`Document ID: ${existingSignature.id}`, margin + 5, yPosition + 55);
+      pdf.text(`Generated: ${new Date().toLocaleString("en-GB")}`, pageWidth - margin - 50, yPosition + 55);
 
-      // Footer on all pages
+      // Footer
       const totalPages = pdf.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
         pdf.setFontSize(8);
         pdf.setTextColor(150, 150, 150);
-        pdf.text(
-          `Page ${i} of ${totalPages}`,
-          pageWidth / 2,
-          pageHeight - 10,
-          { align: "center" }
-        );
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: "center" });
       }
 
-      // Save the PDF
       const fileName = `${pupilName.replace(/\s+/g, "_")}_Terms_v${terms.version}_${signedDate.toISOString().split("T")[0]}.pdf`;
       pdf.save(fileName);
 
@@ -329,7 +396,10 @@ export function TermsSignatureModal({
     }
   };
 
-  const canSubmit = agreed && signatureDataUrl && scrolledToBottom;
+  const canSubmit = agreed && signatureDataUrl && scrolledToBottom &&
+    (!isUnder18 || (parentAgreed && parentSignatureDataUrl && parentName.trim()));
+
+  const needsParentSignature = existingSignature?.requires_parent_signature && !existingSignature?.parent_signature_url;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -341,7 +411,9 @@ export function TermsSignatureModal({
           </DialogTitle>
           <DialogDescription>
             {existingSignature
-              ? `Signed by ${pupilName} on ${new Date(existingSignature.signed_at).toLocaleDateString()}`
+              ? needsParentSignature
+                ? "Parent/guardian signature still required"
+                : `Signed by ${pupilName} on ${new Date(existingSignature.signed_at).toLocaleDateString()}`
               : `${pupilName} - Please read and sign below`}
           </DialogDescription>
         </DialogHeader>
@@ -355,49 +427,44 @@ export function TermsSignatureModal({
         ) : !terms ? (
           <div className="py-8 text-center">
             <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              No terms and conditions have been set up yet.
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Go to Settings to create your terms.
-            </p>
+            <p className="text-muted-foreground">No terms and conditions have been set up yet.</p>
+            <p className="text-sm text-muted-foreground mt-2">Go to Settings to create your terms.</p>
           </div>
-        ) : existingSignature ? (
+        ) : existingSignature && !needsParentSignature ? (
           <div className="py-6 space-y-4">
             <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
               <CheckCircle2 className="h-8 w-8 text-green-600" />
               <div>
                 <p className="font-medium text-green-800 dark:text-green-200">
-                  Already Signed
+                  {existingSignature.requires_parent_signature ? "Both Signatures Complete" : "Already Signed"}
                 </p>
                 <p className="text-sm text-green-600 dark:text-green-400">
-                  Version {existingSignature.terms.version} signed on{" "}
-                  {new Date(existingSignature.signed_at).toLocaleString()}
+                  Version {existingSignature.terms.version} signed on {new Date(existingSignature.signed_at).toLocaleString()}
                 </p>
               </div>
             </div>
 
-            <div className="border rounded-lg p-4">
-              <p className="text-sm text-muted-foreground mb-2">Signature:</p>
-              <img
-                src={existingSignature.signature_url}
-                alt="Signature"
-                className="max-h-24 border rounded"
-              />
+            <div className="grid grid-cols-1 gap-3">
+              <div className="border rounded-lg p-4">
+                <p className="text-sm text-muted-foreground mb-2">Pupil Signature:</p>
+                <img src={existingSignature.signature_url} alt="Pupil Signature" className="max-h-20 border rounded" />
+              </div>
+
+              {existingSignature.parent_signature_url && (
+                <div className="border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Parent/Guardian ({existingSignature.parent_name}):
+                  </p>
+                  <img src={existingSignature.parent_signature_url} alt="Parent Signature" className="max-h-20 border rounded" />
+                </div>
+              )}
             </div>
 
-            <ScrollArea className="h-48 border rounded-lg p-4">
-              <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">
-                {terms.content}
-              </div>
+            <ScrollArea className="h-32 border rounded-lg p-4">
+              <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">{terms.content}</div>
             </ScrollArea>
 
-            <Button
-              onClick={handleExportPDF}
-              disabled={exporting}
-              variant="outline"
-              className="w-full"
-            >
+            <Button onClick={handleExportPDF} disabled={exporting} variant="outline" className="w-full">
               {exporting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -413,50 +480,100 @@ export function TermsSignatureModal({
           </div>
         ) : (
           <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+            {isUnder18 && (
+              <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                <div className="text-sm">
+                  <p className="font-medium text-amber-800 dark:text-amber-200">Under 18 - Parent Signature Required</p>
+                  <p className="text-amber-600 dark:text-amber-400">Both pupil and parent/guardian must sign</p>
+                </div>
+              </div>
+            )}
+
             <div className="text-xs text-muted-foreground">
               {!scrolledToBottom && "Please scroll to read all terms before signing"}
             </div>
 
-            <ScrollArea
-              className="flex-1 border rounded-lg p-4 min-h-[200px]"
-              onScrollCapture={handleScroll}
-            >
-              <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">
-                {terms.content}
-              </div>
+            <ScrollArea className="flex-1 border rounded-lg p-4 min-h-[120px]" onScrollCapture={handleScroll}>
+              <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">{terms.content}</div>
             </ScrollArea>
 
             <div className="space-y-4">
-              <div className="flex items-start gap-2">
-                <Checkbox
-                  id="agree"
-                  checked={agreed}
-                  onCheckedChange={(checked) => setAgreed(checked === true)}
-                  disabled={!scrolledToBottom}
-                />
-                <Label
-                  htmlFor="agree"
-                  className={`text-sm ${!scrolledToBottom ? "text-muted-foreground" : ""}`}
-                >
-                  I, {pupilName}, have read and agree to the above terms and conditions
-                </Label>
+              {/* Pupil Agreement & Signature */}
+              <div className="space-y-3 p-3 border rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Pupil</Badge>
+                  <span className="text-sm font-medium">{pupilName}</span>
+                </div>
+                
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="agree"
+                    checked={agreed}
+                    onCheckedChange={(checked) => setAgreed(checked === true)}
+                    disabled={!scrolledToBottom}
+                  />
+                  <Label htmlFor="agree" className={`text-sm ${!scrolledToBottom ? "text-muted-foreground" : ""}`}>
+                    I have read and agree to the above terms and conditions
+                  </Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Pupil Signature</Label>
+                  <SignaturePad onSignatureChange={setSignatureDataUrl} />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Signature</Label>
-                <SignaturePad onSignatureChange={setSignatureDataUrl} />
-              </div>
+              {/* Parent Agreement & Signature (if under 18) */}
+              {isUnder18 && (
+                <div className="space-y-3 p-3 border rounded-lg border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="border-amber-500 text-amber-700">
+                      <Users className="h-3 w-3 mr-1" />
+                      Parent/Guardian
+                    </Badge>
+                  </div>
 
-              <Button
-                onClick={handleSubmit}
-                disabled={!canSubmit || submitting}
-                className="w-full"
-              >
+                  <div className="space-y-2">
+                    <Label htmlFor="parentName" className="text-sm">Parent/Guardian Name</Label>
+                    <Input
+                      id="parentName"
+                      value={parentName}
+                      onChange={(e) => setParentName(e.target.value)}
+                      placeholder="Enter parent/guardian name"
+                    />
+                  </div>
+                  
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="parentAgree"
+                      checked={parentAgreed}
+                      onCheckedChange={(checked) => setParentAgreed(checked === true)}
+                      disabled={!scrolledToBottom || !parentName.trim()}
+                    />
+                    <Label
+                      htmlFor="parentAgree"
+                      className={`text-sm ${!scrolledToBottom || !parentName.trim() ? "text-muted-foreground" : ""}`}
+                    >
+                      I, as parent/guardian of {pupilName}, have read and agree to the above terms
+                    </Label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Parent/Guardian Signature</Label>
+                    <SignaturePad onSignatureChange={setParentSignatureDataUrl} />
+                  </div>
+                </div>
+              )}
+
+              <Button onClick={handleSubmit} disabled={!canSubmit || submitting} className="w-full">
                 {submitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Submitting...
                   </>
+                ) : isUnder18 ? (
+                  "Submit Both Signatures"
                 ) : (
                   "Submit Signature"
                 )}
