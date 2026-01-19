@@ -250,6 +250,41 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
 
       if (pupilError) console.error("Error updating pupil count:", pupilError);
 
+      // 4. Auto-calculate mileage if pickup postcode is available
+      if (lesson.pickup_postcode) {
+        try {
+          // Get instructor's home postcode
+          const { data: instructor } = await supabase
+            .from("instructors")
+            .select("home_postcode")
+            .eq("id", instructorId)
+            .single();
+
+          if (instructor?.home_postcode) {
+            // Calculate distance via maps API
+            const { data: routeData } = await supabase.functions.invoke("calculate-route-distance", {
+              body: {
+                from_postcode: lesson.pickup_postcode,
+                instructor_home_postcode: instructor.home_postcode,
+              },
+            });
+
+            if (routeData?.success && routeData?.estimated_lesson_miles) {
+              // Update the lesson with calculated mileage
+              await supabase
+                .from("scheduled_lessons")
+                .update({ lesson_miles: routeData.estimated_lesson_miles })
+                .eq("id", lesson.id);
+
+              console.log(`Auto-calculated mileage: ${routeData.estimated_lesson_miles} miles`);
+            }
+          }
+        } catch (mileageError) {
+          // Non-blocking - don't fail the lesson completion if mileage calc fails
+          console.error("Error auto-calculating mileage:", mileageError);
+        }
+      }
+
       toast({ 
         title: "Lesson completed!", 
         description: `Session with ${lesson.pupil.name} has been logged.` 
