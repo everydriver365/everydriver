@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay, format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths } from 'date-fns';
+import { CalendarColors, DEFAULT_CALENDAR_COLORS } from '@/components/instructor/CalendarColorSettings';
 
 export type CalendarView = 'day' | 'week' | 'month';
 
@@ -53,6 +54,24 @@ export function useInstructorCalendar(instructorId: string) {
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>('week');
+  const [calendarColors, setCalendarColors] = useState<CalendarColors>(DEFAULT_CALENDAR_COLORS);
+
+  // Fetch instructor's calendar color preferences
+  useEffect(() => {
+    const fetchColors = async () => {
+      if (!instructorId) return;
+      const { data } = await supabase
+        .from('instructors')
+        .select('calendar_colors')
+        .eq('id', instructorId)
+        .single();
+      
+      if (data?.calendar_colors) {
+        setCalendarColors(data.calendar_colors as unknown as CalendarColors);
+      }
+    };
+    fetchColors();
+  }, [instructorId]);
 
   const getDateRange = useCallback((date: Date, viewType: CalendarView) => {
     switch (viewType) {
@@ -240,6 +259,34 @@ export function useInstructorCalendar(instructorId: string) {
     await fetchEvents();
   }, [fetchEvents]);
 
+  // Reschedule a lesson (drag and drop)
+  const rescheduleLesson = useCallback(async (lessonId: string, newDate: Date, newStartTime: string) => {
+    const { error } = await supabase
+      .from('scheduled_lessons')
+      .update({
+        lesson_date: format(newDate, 'yyyy-MM-dd'),
+        start_time: newStartTime,
+      })
+      .eq('id', lessonId);
+
+    if (error) throw error;
+    await fetchEvents();
+  }, [fetchEvents]);
+
+  // Reschedule a block (drag and drop)
+  const rescheduleBlock = useCallback(async (blockId: string, newStart: Date, newEnd: Date) => {
+    const { error } = await supabase
+      .from('instructor_manual_blocks')
+      .update({
+        start_datetime: newStart.toISOString(),
+        end_datetime: newEnd.toISOString(),
+      })
+      .eq('id', blockId);
+
+    if (error) throw error;
+    await fetchEvents();
+  }, [fetchEvents]);
+
   return {
     events,
     loading,
@@ -251,6 +298,10 @@ export function useInstructorCalendar(instructorId: string) {
     addBlock,
     updateBlock,
     deleteBlock,
+    rescheduleLesson,
+    rescheduleBlock,
+    calendarColors,
+    setCalendarColors,
     getDateRange,
   };
 }

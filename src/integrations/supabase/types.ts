@@ -1401,6 +1401,7 @@ export type Database = {
           booking_advance_days: number | null
           brand_colour: string | null
           buffer_minutes: number
+          calendar_colors: Json | null
           cancellation_charge_percent: number | null
           cancellation_policy_hours: number | null
           cancellation_policy_text: string | null
@@ -1472,6 +1473,7 @@ export type Database = {
           booking_advance_days?: number | null
           brand_colour?: string | null
           buffer_minutes?: number
+          calendar_colors?: Json | null
           cancellation_charge_percent?: number | null
           cancellation_policy_hours?: number | null
           cancellation_policy_text?: string | null
@@ -1543,6 +1545,7 @@ export type Database = {
           booking_advance_days?: number | null
           brand_colour?: string | null
           buffer_minutes?: number
+          calendar_colors?: Json | null
           cancellation_charge_percent?: number | null
           cancellation_policy_hours?: number | null
           cancellation_policy_text?: string | null

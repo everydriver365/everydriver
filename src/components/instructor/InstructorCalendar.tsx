@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { format, isSameDay, isToday, startOfWeek, startOfMonth, addDays, addHours, startOfDay, differenceInMinutes, isSameWeek } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Palette, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useInstructorCalendar, CalendarEvent, CalendarView } from '@/hooks/useInstructorCalendar';
 import { CalendarEventSheet } from './CalendarEventSheet';
 import { AddCalendarEventDialog } from './AddCalendarEventDialog';
+import { CalendarColorSettings, CalendarColors, DEFAULT_CALENDAR_COLORS } from './CalendarColorSettings';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface InstructorCalendarProps {
   instructorId: string;
@@ -27,13 +29,19 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
     setView, 
     navigate,
     refetch,
-    addBlock,
-    deleteBlock 
+    deleteBlock,
+    rescheduleLesson,
+    rescheduleBlock,
+    calendarColors,
+    setCalendarColors,
   } = useInstructorCalendar(instructorId);
   
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [addDialogDate, setAddDialogDate] = useState<Date | null>(null);
+  const [showColorSettings, setShowColorSettings] = useState(false);
+  const [draggedEvent, setDraggedEvent] = useState<CalendarEvent | null>(null);
+  const [dragOverSlot, setDragOverSlot] = useState<{ day: Date; hour: number } | null>(null);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -51,20 +59,25 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
     return { top, height };
   };
 
-  const getEventColor = (event: CalendarEvent) => {
+  const getEventColor = (event: CalendarEvent, colors: CalendarColors) => {
     switch (event.type) {
       case 'lesson':
-        const lesson = event.data;
-        if (lesson?.payment_status === 'paid') {
-          return 'bg-emerald-500/90 hover:bg-emerald-500 border-emerald-600';
-        }
-        return 'bg-primary/90 hover:bg-primary border-primary';
+        const isPaid = event.data?.payment_status === 'paid';
+        return isPaid ? colors.lesson : colors.lesson_unpaid;
       case 'external':
-        return 'bg-muted hover:bg-muted/80 border-muted-foreground/30 text-muted-foreground';
+        return colors.external;
       case 'block':
-        return 'bg-blue-500/90 hover:bg-blue-500 border-blue-600';
+        const blockType = event.data?.block_type || 'personal';
+        switch (blockType) {
+          case 'break':
+            return colors.block_break;
+          case 'meeting':
+            return colors.block_meeting;
+          default:
+            return colors.block_personal;
+        }
       default:
-        return 'bg-primary/90 hover:bg-primary';
+        return colors.lesson;
     }
   };
 
@@ -93,6 +106,56 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
     }
   };
 
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, event: CalendarEvent) => {
+    if (event.type === 'external') return; // Can't drag external events
+    setDraggedEvent(event);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', event.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, day: Date, hour: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverSlot({ day, hour });
+  };
+
+  const handleDragLeave = () => {
+    setDragOverSlot(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, day: Date, hour: number) => {
+    e.preventDefault();
+    setDragOverSlot(null);
+    
+    if (!draggedEvent) return;
+    
+    try {
+      const newStartTime = `${hour.toString().padStart(2, '0')}:00`;
+      
+      if (draggedEvent.type === 'lesson') {
+        await rescheduleLesson(draggedEvent.id, day, newStartTime);
+        toast.success('Lesson rescheduled');
+      } else if (draggedEvent.type === 'block') {
+        const duration = differenceInMinutes(draggedEvent.end, draggedEvent.start);
+        const newStart = addHours(startOfDay(day), hour);
+        const newEnd = new Date(newStart.getTime() + duration * 60 * 1000);
+        await rescheduleBlock(draggedEvent.id, newStart, newEnd);
+        toast.success('Block rescheduled');
+      }
+    } catch (error) {
+      console.error('Error rescheduling:', error);
+      toast.error('Failed to reschedule');
+    }
+    
+    setDraggedEvent(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedEvent(null);
+    setDragOverSlot(null);
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -108,7 +171,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
   return (
     <div className="flex flex-col h-full bg-background rounded-lg border overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-card">
+      <div className="flex items-center justify-between p-4 border-b bg-card flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Button 
             variant="outline" 
@@ -145,6 +208,14 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
               </Button>
             ))}
           </div>
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={() => setShowColorSettings(true)}
+            title="Customize colors"
+          >
+            <Palette className="h-4 w-4" />
+          </Button>
           <Button onClick={() => setShowAddDialog(true)} size="sm">
             <Plus className="h-4 w-4 mr-1" />
             Add
@@ -158,7 +229,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
           <div className="min-w-[800px]">
             {/* Day Headers */}
             <div className="flex border-b sticky top-0 bg-card z-10">
-              <div className="w-16 flex-shrink-0" /> {/* Time column spacer */}
+              <div className="w-16 flex-shrink-0" />
               {weekDays.map((day) => (
                 <div
                   key={day.toISOString()}
@@ -208,8 +279,15 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
                     {HOURS.map((hour) => (
                       <div
                         key={hour}
-                        className="h-[60px] border-b border-dashed border-muted cursor-pointer hover:bg-muted/30 transition-colors"
+                        className={cn(
+                          "h-[60px] border-b border-dashed border-muted cursor-pointer hover:bg-muted/30 transition-colors",
+                          dragOverSlot?.day.toISOString() === day.toISOString() && 
+                          dragOverSlot?.hour === hour && "bg-primary/20"
+                        )}
                         onClick={() => handleTimeSlotClick(day, hour)}
+                        onDragOver={(e) => handleDragOver(e, day, hour)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, day, hour)}
                       />
                     ))}
 
@@ -217,26 +295,37 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
                     <AnimatePresence>
                       {dayEvents.map((event) => {
                         const style = getEventStyle(event, day);
+                        const color = getEventColor(event, calendarColors);
+                        const isDraggable = event.type !== 'external';
+                        
                         return (
                           <motion.div
                             key={event.id}
                             initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                            animate={{ opacity: draggedEvent?.id === event.id ? 0.5 : 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
+                            draggable={isDraggable}
+                            onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, event)}
+                            onDragEnd={handleDragEnd}
                             className={cn(
-                              "absolute left-1 right-1 rounded-md px-2 py-1 text-xs cursor-pointer border-l-4 overflow-hidden",
-                              getEventColor(event),
-                              event.type !== 'external' && "text-white"
+                              "absolute left-1 right-1 rounded-md px-2 py-1 text-xs cursor-pointer border-l-4 overflow-hidden text-white group",
+                              isDraggable && "cursor-grab active:cursor-grabbing",
+                              event.type === 'external' && "text-muted-foreground"
                             )}
                             style={{
                               top: style.top,
                               height: style.height,
+                              backgroundColor: color,
+                              borderLeftColor: color,
                             }}
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedEvent(event);
                             }}
                           >
+                            {isDraggable && (
+                              <GripVertical className="h-3 w-3 absolute right-1 top-1 opacity-0 group-hover:opacity-50" />
+                            )}
                             <div className="font-medium truncate">{event.title}</div>
                             {style.height > 40 && (
                               <div className="text-[10px] opacity-80">
@@ -249,9 +338,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
                     </AnimatePresence>
 
                     {/* Current time indicator */}
-                    {isToday(day) && (
-                      <CurrentTimeIndicator />
-                    )}
+                    {isToday(day) && <CurrentTimeIndicator />}
                   </div>
                 );
               })}
@@ -266,7 +353,15 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
             onEventClick={setSelectedEvent}
             onTimeSlotClick={handleTimeSlotClick}
             getEventStyle={getEventStyle}
+            calendarColors={calendarColors}
             getEventColor={getEventColor}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onDragEnd={handleDragEnd}
+            draggedEvent={draggedEvent}
+            dragOverSlot={dragOverSlot}
           />
         )}
 
@@ -279,6 +374,8 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
               setAddDialogDate(addHours(startOfDay(day), 9));
               setShowAddDialog(true);
             }}
+            calendarColors={calendarColors}
+            getEventColor={getEventColor}
           />
         )}
       </div>
@@ -306,6 +403,15 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
           setShowAddDialog(false);
           refetch();
         }}
+      />
+
+      {/* Color Settings Dialog */}
+      <CalendarColorSettings
+        open={showColorSettings}
+        onOpenChange={setShowColorSettings}
+        instructorId={instructorId}
+        colors={calendarColors}
+        onColorsChange={setCalendarColors}
       />
     </div>
   );
@@ -338,10 +444,33 @@ interface DayViewProps {
   onEventClick: (event: CalendarEvent) => void;
   onTimeSlotClick: (day: Date, hour: number) => void;
   getEventStyle: (event: CalendarEvent, dayStart: Date) => { top: number; height: number };
-  getEventColor: (event: CalendarEvent) => string;
+  calendarColors: CalendarColors;
+  getEventColor: (event: CalendarEvent, colors: CalendarColors) => string;
+  onDragStart: (e: React.DragEvent, event: CalendarEvent) => void;
+  onDragOver: (e: React.DragEvent, day: Date, hour: number) => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent, day: Date, hour: number) => Promise<void>;
+  onDragEnd: () => void;
+  draggedEvent: CalendarEvent | null;
+  dragOverSlot: { day: Date; hour: number } | null;
 }
 
-function DayView({ date, events, onEventClick, onTimeSlotClick, getEventStyle, getEventColor }: DayViewProps) {
+function DayView({ 
+  date, 
+  events, 
+  onEventClick, 
+  onTimeSlotClick, 
+  getEventStyle, 
+  calendarColors,
+  getEventColor,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+  draggedEvent,
+  dragOverSlot,
+}: DayViewProps) {
   return (
     <div className="flex">
       {/* Time Column */}
@@ -361,8 +490,15 @@ function DayView({ date, events, onEventClick, onTimeSlotClick, getEventStyle, g
         {HOURS.map((hour) => (
           <div
             key={hour}
-            className="h-[60px] border-b border-dashed border-muted cursor-pointer hover:bg-muted/30 transition-colors"
+            className={cn(
+              "h-[60px] border-b border-dashed border-muted cursor-pointer hover:bg-muted/30 transition-colors",
+              dragOverSlot?.day.toISOString() === date.toISOString() && 
+              dragOverSlot?.hour === hour && "bg-primary/20"
+            )}
             onClick={() => onTimeSlotClick(date, hour)}
+            onDragOver={(e) => onDragOver(e, date, hour)}
+            onDragLeave={onDragLeave}
+            onDrop={(e) => onDrop(e, date, hour)}
           />
         ))}
 
@@ -370,26 +506,37 @@ function DayView({ date, events, onEventClick, onTimeSlotClick, getEventStyle, g
         <AnimatePresence>
           {events.map((event) => {
             const style = getEventStyle(event, date);
+            const color = getEventColor(event, calendarColors);
+            const isDraggable = event.type !== 'external';
+            
             return (
               <motion.div
                 key={event.id}
                 initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={{ opacity: draggedEvent?.id === event.id ? 0.5 : 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
+                draggable={isDraggable}
+                onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, event)}
+                onDragEnd={onDragEnd}
                 className={cn(
-                  "absolute left-1 right-1 rounded-md px-3 py-2 cursor-pointer border-l-4 overflow-hidden",
-                  getEventColor(event),
-                  event.type !== 'external' && "text-white"
+                  "absolute left-1 right-1 rounded-md px-3 py-2 cursor-pointer border-l-4 overflow-hidden text-white group",
+                  isDraggable && "cursor-grab active:cursor-grabbing",
+                  event.type === 'external' && "text-muted-foreground"
                 )}
                 style={{
                   top: style.top,
                   height: style.height,
+                  backgroundColor: color,
+                  borderLeftColor: color,
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onEventClick(event);
                 }}
               >
+                {isDraggable && (
+                  <GripVertical className="h-3 w-3 absolute right-1 top-1 opacity-0 group-hover:opacity-50" />
+                )}
                 <div className="font-medium">{event.title}</div>
                 <div className="text-sm opacity-80">
                   {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
@@ -411,9 +558,11 @@ interface MonthViewProps {
   events: CalendarEvent[];
   onEventClick: (event: CalendarEvent) => void;
   onDayClick: (day: Date) => void;
+  calendarColors: CalendarColors;
+  getEventColor: (event: CalendarEvent, colors: CalendarColors) => string;
 }
 
-function MonthView({ currentDate, events, onEventClick, onDayClick }: MonthViewProps) {
+function MonthView({ currentDate, events, onEventClick, onDayClick, calendarColors, getEventColor }: MonthViewProps) {
   const monthStart = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
   const weeks = Array.from({ length: 6 }, (_, weekIndex) => 
     Array.from({ length: 7 }, (_, dayIndex) => addDays(monthStart, weekIndex * 7 + dayIndex))
@@ -457,23 +606,22 @@ function MonthView({ currentDate, events, onEventClick, onDayClick }: MonthViewP
                     {format(day, 'd')}
                   </div>
                   <div className="space-y-0.5">
-                    {dayEvents.slice(0, 3).map((event) => (
-                      <div
-                        key={event.id}
-                        className={cn(
-                          "text-xs px-1 py-0.5 rounded truncate cursor-pointer",
-                          event.type === 'lesson' && "bg-primary/20 text-primary",
-                          event.type === 'external' && "bg-muted text-muted-foreground",
-                          event.type === 'block' && "bg-blue-500/20 text-blue-600"
-                        )}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEventClick(event);
-                        }}
-                      >
-                        {event.title}
-                      </div>
-                    ))}
+                    {dayEvents.slice(0, 3).map((event) => {
+                      const color = getEventColor(event, calendarColors);
+                      return (
+                        <div
+                          key={event.id}
+                          className="text-xs px-1 py-0.5 rounded truncate cursor-pointer text-white"
+                          style={{ backgroundColor: color }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEventClick(event);
+                          }}
+                        >
+                          {event.title}
+                        </div>
+                      );
+                    })}
                     {dayEvents.length > 3 && (
                       <div className="text-xs text-muted-foreground px-1">
                         +{dayEvents.length - 3} more
