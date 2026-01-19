@@ -1335,6 +1335,47 @@ export type Database = {
           },
         ]
       }
+      instructor_terms_conditions: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_terms_conditions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_test_centres: {
         Row: {
           created_at: string
@@ -2275,6 +2316,64 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pupil_signatures: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          ip_address: string | null
+          pupil_id: string
+          signature_url: string
+          signed_at: string
+          terms_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          ip_address?: string | null
+          pupil_id: string
+          signature_url: string
+          signed_at?: string
+          terms_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          ip_address?: string | null
+          pupil_id?: string
+          signature_url?: string
+          signed_at?: string
+          terms_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_signatures_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_signatures_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_signatures_terms_id_fkey"
+            columns: ["terms_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_terms_conditions"
             referencedColumns: ["id"]
           },
         ]
