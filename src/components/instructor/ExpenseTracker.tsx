@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Camera, Plus, Receipt, Trash2, Upload, X, CheckCircle } from "lucide-react";
+import { Camera, Plus, Receipt, Trash2, Upload, X, CheckCircle, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,8 +41,9 @@ const EXPENSE_CATEGORIES = [
 export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   
   // Form state
   const [expenseDate, setExpenseDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -51,6 +52,7 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
   const [amount, setAmount] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [existingReceiptUrl, setExistingReceiptUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,11 +94,12 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
       }
       setReceiptFile(file);
       setReceiptPreview(URL.createObjectURL(file));
+      setExistingReceiptUrl(null); // Clear existing receipt when new one is selected
     }
   };
 
   const uploadReceipt = async (): Promise<string | null> => {
-    if (!receiptFile) return null;
+    if (!receiptFile) return existingReceiptUrl;
     
     setUploading(true);
     try {
@@ -117,7 +120,7 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
     } catch (error) {
       console.error("Error uploading receipt:", error);
       toast.error("Failed to upload receipt");
-      return null;
+      return existingReceiptUrl;
     } finally {
       setUploading(false);
     }
@@ -131,27 +134,45 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
 
     setSaving(true);
     try {
-      let receiptUrl = null;
+      let receiptUrl = existingReceiptUrl;
       if (receiptFile) {
         receiptUrl = await uploadReceipt();
       }
 
-      const { error } = await supabase
-        .from("instructor_expenses")
-        .insert({
-          instructor_id: instructorId,
-          expense_date: expenseDate,
-          category,
-          description: description || null,
-          amount: parseFloat(amount),
-          receipt_url: receiptUrl,
-        });
+      if (editingExpense) {
+        // Update existing expense
+        const { error } = await supabase
+          .from("instructor_expenses")
+          .update({
+            expense_date: expenseDate,
+            category,
+            description: description || null,
+            amount: parseFloat(amount),
+            receipt_url: receiptUrl,
+          })
+          .eq("id", editingExpense.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Expense updated successfully");
+      } else {
+        // Insert new expense
+        const { error } = await supabase
+          .from("instructor_expenses")
+          .insert({
+            instructor_id: instructorId,
+            expense_date: expenseDate,
+            category,
+            description: description || null,
+            amount: parseFloat(amount),
+            receipt_url: receiptUrl,
+          });
 
-      toast.success("Expense recorded successfully");
+        if (error) throw error;
+        toast.success("Expense recorded successfully");
+      }
+
       resetForm();
-      setIsAddingExpense(false);
+      setIsSheetOpen(false);
       fetchExpenses();
     } catch (error) {
       console.error("Error saving expense:", error);
@@ -159,6 +180,18 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleEdit = (expense: Expense) => {
+    setEditingExpense(expense);
+    setExpenseDate(expense.expense_date);
+    setCategory(expense.category);
+    setDescription(expense.description || "");
+    setAmount(expense.amount.toString());
+    setExistingReceiptUrl(expense.receipt_url);
+    setReceiptPreview(null);
+    setReceiptFile(null);
+    setIsSheetOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -179,12 +212,21 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
   };
 
   const resetForm = () => {
+    setEditingExpense(null);
     setExpenseDate(format(new Date(), "yyyy-MM-dd"));
     setCategory("");
     setDescription("");
     setAmount("");
     setReceiptFile(null);
     setReceiptPreview(null);
+    setExistingReceiptUrl(null);
+  };
+
+  const handleSheetOpenChange = (open: boolean) => {
+    setIsSheetOpen(open);
+    if (!open) {
+      resetForm();
+    }
   };
 
   const totalUnsynced = expenses.filter(e => !e.xero_synced).reduce((sum, e) => sum + e.amount, 0);
@@ -211,7 +253,7 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
       </div>
 
       {/* Add Expense Button */}
-      <Sheet open={isAddingExpense} onOpenChange={setIsAddingExpense}>
+      <Sheet open={isSheetOpen} onOpenChange={handleSheetOpenChange}>
         <SheetTrigger asChild>
           <Button className="w-full gap-2" size="lg">
             <Plus className="h-5 w-5" />
@@ -220,7 +262,7 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
         </SheetTrigger>
         <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>Record Expense</SheetTitle>
+            <SheetTitle>{editingExpense ? "Edit Expense" : "Record Expense"}</SheetTitle>
           </SheetHeader>
           
           <div className="space-y-4 mt-4">
@@ -285,10 +327,10 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                 className="hidden"
               />
               
-              {receiptPreview ? (
+              {receiptPreview || existingReceiptUrl ? (
                 <div className="relative">
                   <img 
-                    src={receiptPreview} 
+                    src={receiptPreview || existingReceiptUrl || ""} 
                     alt="Receipt preview" 
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -299,9 +341,19 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                     onClick={() => {
                       setReceiptFile(null);
                       setReceiptPreview(null);
+                      setExistingReceiptUrl(null);
                     }}
                   >
                     <X className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute bottom-2 right-2"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Camera className="h-4 w-4 mr-1" />
+                    Replace
                   </Button>
                 </div>
               ) : (
@@ -339,9 +391,22 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                   {uploading ? "Uploading..." : "Saving..."}
                 </>
               ) : (
-                "Save Expense"
+                editingExpense ? "Update Expense" : "Save Expense"
               )}
             </Button>
+
+            {editingExpense && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  resetForm();
+                  setIsSheetOpen(false);
+                }}
+                className="w-full"
+              >
+                Cancel
+              </Button>
+            )}
           </div>
         </SheetContent>
       </Sheet>
@@ -410,14 +475,24 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
                     </div>
                   </div>
                   
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                    onClick={() => handleDelete(expense.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
+                      onClick={() => handleEdit(expense)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDelete(expense.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
