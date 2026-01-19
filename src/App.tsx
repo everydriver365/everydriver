@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
+import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
 import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import BookingSummary from "./pages/BookingSummary";
@@ -73,6 +74,7 @@ const App = () => (
       <BrowserRouter>
         <AdminAuthProvider>
           <InstructorAuthProvider>
+            <DynamicPWAMeta />
             <Routes>
               {/* Learner-facing routes (EveryDriver branding) */}
               <Route path="/" element={<Index />} />
