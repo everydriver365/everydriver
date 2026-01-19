@@ -88,6 +88,22 @@ export function TermsSignatureModal({
     }
   }, [open, instructorId, pupilId, initialParentName]);
 
+  // If the terms content doesn't overflow (no scrolling possible), auto-enable the agree checkbox.
+  useEffect(() => {
+    if (!open || loading || !terms) return;
+
+    requestAnimationFrame(() => {
+      const viewport = document.querySelector(
+        '[data-terms-scroll="modal"] [data-radix-scroll-area-viewport]'
+      ) as HTMLDivElement | null;
+
+      if (!viewport) return;
+
+      const isScrollable = viewport.scrollHeight - viewport.clientHeight > 20;
+      if (!isScrollable) setScrolledToBottom(true);
+    });
+  }, [open, loading, terms?.id]);
+
   const fetchTermsAndSignature = async () => {
     setLoading(true);
     try {
@@ -494,7 +510,7 @@ export function TermsSignatureModal({
               {!scrolledToBottom && "Please scroll to read all terms before signing"}
             </div>
 
-            <ScrollArea className="flex-1 border rounded-lg p-4 min-h-[120px]" onScrollCapture={handleScroll}>
+            <ScrollArea data-terms-scroll="modal" className="flex-1 border rounded-lg p-4 min-h-[120px]" onScrollCapture={handleScroll}>
               <div className="prose prose-sm dark:prose-invert whitespace-pre-wrap">{terms.content}</div>
             </ScrollArea>
 
@@ -510,8 +526,14 @@ export function TermsSignatureModal({
                   <Checkbox
                     id="agree"
                     checked={agreed}
-                    onCheckedChange={(checked) => setAgreed(checked === true)}
-                    disabled={!scrolledToBottom}
+                    onCheckedChange={(checked) => {
+                      const next = checked === true;
+                      if (next && !scrolledToBottom) {
+                        toast.error("Please scroll through the terms before agreeing");
+                        return;
+                      }
+                      setAgreed(next);
+                    }}
                   />
                   <Label htmlFor="agree" className={`text-sm ${!scrolledToBottom ? "text-muted-foreground" : ""}`}>
                     I have read and agree to the above terms and conditions
