@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
-import { Loader2, AlertCircle, ArrowLeft, Eye, EyeOff, Share, Plus, Download, X } from "lucide-react";
+import { Loader2, AlertCircle, ArrowLeft, Eye, EyeOff, Share, Plus, Download, X, Fingerprint } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import logoDark from "@/assets/logo-drive365-dark.png";
@@ -22,6 +22,15 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+// Extend Window interface for PasswordCredential
+declare global {
+  interface Window {
+    PasswordCredential: {
+      new(data: { id: string; password: string; name?: string }): Credential;
+    };
+  }
+}
+
 export default function InstructorPortalLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,6 +43,8 @@ export default function InstructorPortalLogin() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
 
@@ -41,7 +52,7 @@ export default function InstructorPortalLogin() {
   const isDark = document.documentElement.classList.contains('dark') || 
                  window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  // Check install state and platform
+  // Check install state, platform, and biometric availability
   useEffect(() => {
     const checkInstallState = () => {
       const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -57,7 +68,23 @@ export default function InstructorPortalLogin() {
       }
     };
 
+    // Check if WebAuthn / Credential Management is available
+    const checkBiometricAvailability = async () => {
+      try {
+        // Check if credentials API is available and if there are stored credentials
+        if ('credentials' in navigator && 'PublicKeyCredential' in window) {
+          const hasSavedCredentials = localStorage.getItem('instructor-biometric-enabled');
+          if (hasSavedCredentials) {
+            setBiometricAvailable(true);
+          }
+        }
+      } catch (err) {
+        console.log('Biometric not available:', err);
+      }
+    };
+
     checkInstallState();
+    checkBiometricAvailability();
 
     // Listen for install prompt (Android/Desktop)
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -81,6 +108,63 @@ export default function InstructorPortalLogin() {
         toast.success("App installed successfully!");
       }
       setDeferredPrompt(null);
+    }
+  };
+
+  // Handle biometric login (Face ID / Touch ID)
+  const handleBiometricLogin = async () => {
+    setBiometricLoading(true);
+    setError("");
+    
+    try {
+      // Try to get saved credentials using the Credential Management API
+      const credential = await navigator.credentials.get({
+        password: true,
+        mediation: 'optional'
+      } as CredentialRequestOptions);
+      
+      if (credential && 'password' in credential) {
+        const passwordCredential = credential as any;
+        const savedEmail = passwordCredential.id;
+        const savedPassword = passwordCredential.password;
+        
+        if (savedEmail && savedPassword) {
+          const { error: signInError } = await signIn(savedEmail, savedPassword);
+          
+          if (signInError) {
+            setError("Biometric login failed. Please use email and password.");
+          } else {
+            toast.success("Welcome back!");
+            navigate("/instructor");
+          }
+        }
+      } else {
+        setError("No saved credentials found. Please log in manually first.");
+      }
+    } catch (err) {
+      console.error("Biometric login error:", err);
+      setError("Biometric login not available. Please use email and password.");
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
+
+  // Save credentials for future biometric login
+  const saveCredentialsForBiometric = async (emailToSave: string, passwordToSave: string) => {
+    try {
+      if ('credentials' in navigator && 'PasswordCredential' in window) {
+        const PasswordCredentialClass = (window as any).PasswordCredential;
+        const credential = new PasswordCredentialClass({
+          id: emailToSave,
+          password: passwordToSave,
+          name: 'Drive365 Instructor'
+        });
+        await navigator.credentials.store(credential);
+        localStorage.setItem('instructor-biometric-enabled', 'true');
+        setBiometricAvailable(true);
+      }
+    } catch (err) {
+      console.log('Could not save credentials:', err);
     }
   };
 
@@ -135,6 +219,10 @@ export default function InstructorPortalLogin() {
           setError(signInError.message);
         }
       } else {
+        // Save credentials for biometric login on success
+        if (rememberMe) {
+          await saveCredentialsForBiometric(email.trim(), password);
+        }
         toast.success("Welcome back!");
         navigate("/instructor");
       }
@@ -350,7 +438,7 @@ export default function InstructorPortalLogin() {
             <Button 
               type="submit" 
               className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-base shadow-lg shadow-emerald-500/20"
-              disabled={loading}
+              disabled={loading || biometricLoading}
             >
               {loading ? (
                 <>
@@ -361,6 +449,37 @@ export default function InstructorPortalLogin() {
                 isForgotPassword ? "Send Reset Link" : "Sign In"
               )}
             </Button>
+
+            {/* Biometric Login Option */}
+            {!isForgotPassword && biometricAvailable && (
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border/50" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-card px-2 text-muted-foreground">or</span>
+                </div>
+              </div>
+            )}
+
+            {!isForgotPassword && biometricAvailable && (
+              <Button 
+                type="button"
+                variant="outline"
+                className="w-full h-12 border-border/50 font-medium text-base gap-2"
+                disabled={loading || biometricLoading}
+                onClick={handleBiometricLogin}
+              >
+                {biometricLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <>
+                    <Fingerprint className="h-5 w-5" />
+                    Use Face ID / Touch ID
+                  </>
+                )}
+              </Button>
+            )}
 
             <div className="text-center text-sm text-muted-foreground space-y-3 pt-2">
               {isForgotPassword ? (
