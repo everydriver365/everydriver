@@ -327,22 +327,37 @@ export function InstructorMobileHome({
       {/* Motivational Card */}
       <div className="px-4 -mt-8 relative z-10">
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-card rounded-2xl shadow-lg border border-border p-5 flex items-center justify-between"
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90 rounded-2xl shadow-xl shadow-primary/30 p-5 flex items-center justify-between"
         >
-          <div className="flex-1">
-            <h2 className="text-lg font-bold text-foreground">
-              {content?.motivation_title || "READY TO DRIVE?"}
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4 blur-2xl" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+          <div className="absolute top-1/2 right-1/4 w-20 h-20 bg-white/5 rounded-full" />
+          
+          {/* Subtle pattern overlay */}
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Ccircle cx='1' cy='1' r='1'/%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+          
+          <div className="flex-1 relative z-10">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Live Status</span>
+            </div>
+            <h2 className="text-xl font-bold text-white">
+              {content?.motivation_title || "READY TO TEACH?"}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-white/80 mt-1">
               {content?.motivation_subtitle || "Every lesson brings your pupils closer to success."}
             </p>
           </div>
           
           {content?.show_progress_indicator !== false && (
-            <div className="flex flex-col items-center ml-4">
-              <div className="relative">
+            <div className="flex flex-col items-center ml-4 relative z-10">
+              <div className="relative bg-white/15 backdrop-blur-sm rounded-full p-1 ring-2 ring-white/20">
                 <svg className="w-16 h-16 transform -rotate-90">
                   <circle
                     cx="32"
@@ -351,7 +366,7 @@ export function InstructorMobileHome({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="4"
-                    className="text-muted/20"
+                    className="text-white/20"
                   />
                   <circle
                     cx="32"
@@ -362,15 +377,16 @@ export function InstructorMobileHome({
                     strokeWidth="4"
                     strokeDasharray={`${(todaysLessonCount / 6) * 175.9} 175.9`}
                     strokeLinecap="round"
-                    className="text-primary"
+                    className="text-emerald-400 drop-shadow-lg"
+                    style={{ filter: 'drop-shadow(0 0 6px rgba(52, 211, 153, 0.5))' }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-bold">{todaysLessonCount}</span>
-                  <span className="text-[10px] text-muted-foreground">/6</span>
+                  <span className="text-2xl font-bold text-white">{todaysLessonCount}</span>
+                  <span className="text-[10px] text-white/60">/6</span>
                 </div>
               </div>
-              <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">
+              <span className="text-[10px] text-white/70 mt-1.5 uppercase tracking-wider font-medium">
                 {content?.progress_label || "TODAY"}
               </span>
             </div>
