@@ -1952,6 +1952,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pupil_badges: {
+        Row: {
+          id: string
+          pupil_id: string
+          tier_id: string
+          unlocked_at: string
+        }
+        Insert: {
+          id?: string
+          pupil_id: string
+          tier_id: string
+          unlocked_at?: string
+        }
+        Update: {
+          id?: string
+          pupil_id?: string
+          tier_id?: string
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_badges_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_badges_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "reward_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_leaderboard: {
         Row: {
           created_at: string
@@ -2356,6 +2392,45 @@ export type Database = {
           short_name?: string
           start_url?: string
           theme_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reward_tiers: {
+        Row: {
+          badge_image_url: string | null
+          color: string
+          created_at: string
+          display_order: number
+          icon: string
+          id: string
+          min_points: number
+          name: string
+          perks: Json | null
+          updated_at: string
+        }
+        Insert: {
+          badge_image_url?: string | null
+          color?: string
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          min_points?: number
+          name: string
+          perks?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          badge_image_url?: string | null
+          color?: string
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          min_points?: number
+          name?: string
+          perks?: Json | null
           updated_at?: string
         }
         Relationships: []

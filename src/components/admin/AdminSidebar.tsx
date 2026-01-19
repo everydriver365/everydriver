@@ -21,6 +21,8 @@ import {
   Rocket,
   Globe,
   LogOut,
+  Trophy,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -118,6 +120,14 @@ const navGroups: NavGroup[] = [
     items: [
       { id: "promotions", label: "Promotions", icon: Megaphone },
       { id: "bonuses", label: "Bonuses", icon: Gift },
+    ],
+  },
+  {
+    label: "Loyalty & Rewards",
+    icon: Trophy,
+    items: [
+      { id: "rewards-config", label: "Rewards Settings", icon: Gift },
+      { id: "reward-tiers", label: "Badge Tiers", icon: Award },
     ],
   },
   {
