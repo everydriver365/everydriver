@@ -159,15 +159,15 @@ export function InstructorBottomNav() {
                 onClick={() => handleNavClick(item.path)}
                 className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                   isActive
-                    ? "text-yellow-400"
-                    : "text-white hover:text-yellow-300"
+                    ? "text-emerald-500"
+                    : "text-white hover:text-emerald-300"
                 }`}
               >
                 {/* Active indicator pill */}
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-yellow-400 rounded-full"
+                    className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-emerald-500 rounded-full"
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
@@ -204,15 +204,15 @@ export function InstructorBottomNav() {
                 <button
                   className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                     isActive
-                      ? "text-yellow-400"
-                      : "text-white hover:text-yellow-300"
+                      ? "text-emerald-500"
+                      : "text-white hover:text-emerald-300"
                   }`}
                 >
                   {/* Active indicator pill */}
                   {isActive && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-yellow-400 rounded-full"
+                      className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-emerald-500 rounded-full"
                       initial={false}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
