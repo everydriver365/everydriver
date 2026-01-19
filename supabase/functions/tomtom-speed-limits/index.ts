@@ -29,7 +29,8 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: "TomTom API key not configured",
-          speedLimit: null 
+          speedLimit: null,
+          roadType: "Unknown"
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -44,12 +45,12 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Fetching speed limit for ${lat}, ${lon}`);
+    console.log(`Fetching road info for ${lat}, ${lon}`);
 
-    // TomTom Speed Limit API
-    // https://developer.tomtom.com/traffic-api/documentation/speed-limit
-    const response = await fetch(
-      `https://api.tomtom.com/traffic/services/4/speedLimit/${lat},${lon}/4/json?key=${apiKey}`,
+    // Use TomTom Reverse Geocode API with returnSpeedLimit parameter
+    // This is the correct endpoint for getting road name and speed limit
+    const reverseResponse = await fetch(
+      `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${apiKey}&returnSpeedLimit=true`,
       {
         headers: {
           'Accept': 'application/json'
@@ -57,87 +58,90 @@ serve(async (req) => {
       }
     );
 
-    if (!response.ok) {
-      console.error(`TomTom API error: ${response.status}`);
+    if (reverseResponse.ok) {
+      const reverseData = await reverseResponse.json();
+      console.log("TomTom reverse geocode response:", JSON.stringify(reverseData));
       
-      // Try alternative approach using Reverse Geocode + Road data
-      const reverseResponse = await fetch(
-        `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${apiKey}&returnSpeedLimit=true`,
+      const address = reverseData.addresses?.[0]?.address;
+      
+      if (address) {
+        const roadName = address.streetName || address.street || address.freeformAddress?.split(',')[0] || 'Unknown Road';
+        const speedLimit = address.speedLimit;
+        
+        let speedKmh: number | null = null;
+        
+        if (speedLimit) {
+          // TomTom returns speed in local units (mph for UK)
+          // Convert mph to km/h
+          speedKmh = Math.round(speedLimit * 1.60934);
+          console.log(`Speed limit: ${speedLimit} mph = ${speedKmh} km/h on ${roadName}`);
+        } else {
+          console.log(`No speed limit data for ${roadName}`);
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            speedLimit: speedKmh,
+            roadType: roadName,
+            confidence: speedLimit ? 'high' : 'low'
+          } as SpeedLimitResponse),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      console.error(`TomTom reverse geocode error: ${reverseResponse.status}`);
+    }
+
+    // Fallback: Try Nominatim (OpenStreetMap) for road name only
+    try {
+      console.log("Falling back to Nominatim for road name");
+      const nominatimResponse = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18`,
         {
           headers: {
-            'Accept': 'application/json'
+            'User-Agent': 'DrivingLessonTracker/1.0'
           }
         }
       );
 
-      if (reverseResponse.ok) {
-        const reverseData = await reverseResponse.json();
-        const address = reverseData.addresses?.[0]?.address;
-        const speedLimit = address?.speedLimit;
+      if (nominatimResponse.ok) {
+        const nominatimData = await nominatimResponse.json();
+        const roadName = nominatimData.address?.road || 
+                        nominatimData.address?.highway || 
+                        nominatimData.display_name?.split(',')[0] || 
+                        'Unknown Road';
         
-        if (speedLimit) {
-          // TomTom returns speed in the local unit (mph for UK)
-          // Convert mph to km/h
-          const speedKmh = Math.round(speedLimit * 1.60934);
-          console.log(`Speed limit from reverse geocode: ${speedLimit} mph = ${speedKmh} km/h`);
-          
-          return new Response(
-            JSON.stringify({ 
-              speedLimit: speedKmh,
-              roadType: address?.streetName || 'Unknown',
-              confidence: 'medium'
-            }),
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
+        console.log(`Nominatim road name: ${roadName}`);
+        
+        return new Response(
+          JSON.stringify({ 
+            speedLimit: null,
+            roadType: roadName,
+            confidence: 'low'
+          } as SpeedLimitResponse),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
-
-      return new Response(
-        JSON.stringify({ speedLimit: null, error: "Could not determine speed limit" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    } catch (nominatimError) {
+      console.error("Nominatim fallback error:", nominatimError);
     }
-
-    const data = await response.json();
-    console.log("TomTom response:", JSON.stringify(data));
-
-    // Extract speed limit from response
-    // The speed limit API returns speedLimit in the local units
-    let speedLimit: number | null = null;
-    let roadType: string | undefined;
-
-    if (data.currentSpeed || data.freeFlowSpeed) {
-      // If we get speed data, use it to infer the limit
-      speedLimit = data.currentSpeed?.speedLimit || data.freeFlowSpeed;
-    }
-
-    // Check if we have direct speed limit data
-    if (data.speedLimit) {
-      speedLimit = data.speedLimit;
-    }
-
-    // Convert mph to km/h for UK (TomTom typically returns local units)
-    if (speedLimit && speedLimit <= 70) {
-      speedLimit = Math.round(speedLimit * 1.60934);
-    }
-
-    console.log(`Resolved speed limit: ${speedLimit} km/h`);
 
     return new Response(
       JSON.stringify({ 
-        speedLimit,
-        roadType,
-        confidence: speedLimit ? 'high' : 'low'
-      } as SpeedLimitResponse),
+        speedLimit: null, 
+        roadType: 'Unknown Road',
+        error: "Could not determine road info" 
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error("Error fetching speed limit:", error);
+    console.error("Error fetching road info:", error);
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : "Unknown error",
-        speedLimit: null 
+        speedLimit: null,
+        roadType: 'Unknown Road'
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
