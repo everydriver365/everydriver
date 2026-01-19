@@ -21,6 +21,7 @@ import { PupilPortalTheory } from "@/components/pupil-portal/PupilPortalTheory";
 import { PupilPortalProgress } from "@/components/pupil-portal/PupilPortalProgress";
 import { PupilPortalHistory } from "@/components/pupil-portal/PupilPortalHistory";
 import { PupilPortalGaps } from "@/components/pupil-portal/PupilPortalGaps";
+import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 
 interface InstructorBranding {
   id: string;
@@ -218,6 +219,13 @@ export default function BrandedPupilPortal() {
         color: 'var(--brand-text)',
       }}
     >
+      {/* iOS Install Banner */}
+      <PortalIOSInstallBanner 
+        appName={instructor.name}
+        storageKey={`ios-install-pupil-${instructor.id}`}
+        primaryColor={instructor.brand_colour || '#1e3a5f'}
+      />
+
       {/* Header */}
       <header 
         className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between shadow-sm"

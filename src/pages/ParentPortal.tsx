@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
+import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 
 interface Child {
   id: string;
@@ -383,6 +384,11 @@ export default function ParentPortal() {
 
   return (
     <MainLayout>
+      <PortalIOSInstallBanner 
+        appName="DL Parent"
+        storageKey="ios-install-parent-dismissed"
+        primaryColor="#1e3a5f"
+      />
       <div className="container py-8">
         <div className="flex items-center justify-between mb-8">
           <motion.div
