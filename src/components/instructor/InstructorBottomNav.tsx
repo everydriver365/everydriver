@@ -29,7 +29,7 @@ import {
   Car,
   RefreshCw,
   HelpCircle,
-  MoreHorizontal,
+  LayoutGrid,
   MessageSquare,
   LucideIcon
 } from "lucide-react";
@@ -116,8 +116,8 @@ const navItems: NavItem[] = [
     ]
   },
   { 
-    label: "More", 
-    icon: MoreHorizontal, 
+    label: "Menu", 
+    icon: LayoutGrid, 
     path: "/instructor/settings",
     menuItems: [
       { label: "Vehicle Health", icon: Car, path: "/instructor/settings" },
@@ -148,7 +148,7 @@ export function InstructorBottomNav() {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
             item.menuItems?.some(m => location.pathname === m.path);
-          const showNotification = item.label === "More" && pendingJobsCount > 0;
+          const showNotification = item.label === "Menu" && pendingJobsCount > 0;
           const hasMenu = item.menuItems && item.menuItems.length > 0;
           
           // If no menu items, render a simple button that navigates directly
