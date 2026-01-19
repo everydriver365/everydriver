@@ -534,22 +534,23 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                     transition={{ delay: 0.1 }}
                     className="bg-background/95 backdrop-blur-sm border-t px-4 py-4 z-20"
                   >
-                    {/* Road Name & Speed Limit Display */}
-                    {(speedLimitData.roadType || speedLimitData.speedLimit) && (
-                      <div className="mb-3 p-2.5 bg-muted/50 rounded-lg flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Navigation className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-medium truncate max-w-[180px]">
-                            {speedLimitData.roadType || 'Unknown Road'}
-                          </span>
-                        </div>
-                        {speedLimitData.speedLimit && (
-                          <Badge variant={speedLimitData.isExceeding ? "destructive" : "secondary"} className="text-xs font-bold">
-                            {Math.round(speedLimitData.speedLimit * 0.621371)} mph limit
-                          </Badge>
-                        )}
+                    {/* Road Name & Speed Limit Display - Always visible */}
+                    <div className="mb-3 p-2.5 bg-muted/50 rounded-lg flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Navigation className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium truncate max-w-[180px]">
+                          {speedLimitData.roadType || 'Fetching road...'}
+                        </span>
                       </div>
-                    )}
+                      <Badge 
+                        variant={speedLimitData.isExceeding ? "destructive" : "secondary"} 
+                        className={`text-xs font-bold ${!speedLimitData.speedLimit ? 'animate-pulse' : ''}`}
+                      >
+                        {speedLimitData.speedLimit 
+                          ? `${Math.round(speedLimitData.speedLimit * 0.621371)} mph limit` 
+                          : 'Loading...'}
+                      </Badge>
+                    </div>
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-4 gap-3 mb-4">
