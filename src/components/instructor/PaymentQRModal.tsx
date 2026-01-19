@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { QrCode, CreditCard, Copy, Check, User, PoundSterling, Send, MessageSquare, ExternalLink, Clock, Eye } from "lucide-react";
+import { QrCode, CreditCard, Copy, Check, User, PoundSterling, Send, MessageSquare, ExternalLink, Clock, Eye, X, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,6 +76,7 @@ export function PaymentQRModal({
   const [sendingLink, setSendingLink] = useState(false);
   const [linkHistory, setLinkHistory] = useState<PaymentLinkTracking[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [showFullscreenQR, setShowFullscreenQR] = useState(false);
   
   const baseUrl = `${window.location.origin}/pay`;
   const selectedPupil = pupils.find(p => p.id === selectedPupilId);
@@ -480,13 +481,21 @@ export function PaymentQRModal({
           {/* QR Code Tab */}
           <TabsContent value="qr" className="mt-3">
             <div className="flex flex-col items-center gap-3">
-              <div className="bg-white p-2 rounded-lg shadow-sm">
+              <div 
+                className="bg-white p-2 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow relative group"
+                onClick={() => paymentQrUrl && setShowFullscreenQR(true)}
+              >
                 {paymentQrUrl ? (
-                  <img 
-                    src={paymentQrUrl} 
-                    alt="Payment QR Code" 
-                    className="w-28 h-28 object-contain"
-                  />
+                  <>
+                    <img 
+                      src={paymentQrUrl} 
+                      alt="Payment QR Code" 
+                      className="w-28 h-28 object-contain"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg flex items-center justify-center">
+                      <Maximize2 className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                    </div>
+                  </>
                 ) : (
                   <div className="w-28 h-28 bg-muted flex items-center justify-center rounded border-2 border-dashed border-muted-foreground/30">
                     <div className="text-center">
@@ -496,6 +505,10 @@ export function PaymentQRModal({
                   </div>
                 )}
               </div>
+              
+              {paymentQrUrl && (
+                <p className="text-[10px] text-muted-foreground">Tap QR to fullscreen</p>
+              )}
               
               <p className="text-xs text-muted-foreground text-center">
                 Scan to pay via card, Apple Pay, or Google Pay
@@ -561,6 +574,33 @@ export function PaymentQRModal({
           </TabsContent>
         </Tabs>
       </DialogContent>
+
+      {/* Fullscreen QR Overlay */}
+      {showFullscreenQR && paymentQrUrl && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+          onClick={() => setShowFullscreenQR(false)}
+        >
+          <button
+            onClick={() => setShowFullscreenQR(false)}
+            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors"
+          >
+            <X className="h-8 w-8" />
+          </button>
+          
+          <div className="flex flex-col items-center gap-6 p-8">
+            <div className="bg-white p-6 rounded-2xl shadow-2xl">
+              <img 
+                src={paymentQrUrl} 
+                alt="Payment QR Code" 
+                className="w-72 h-72 sm:w-80 sm:h-80 object-contain"
+              />
+            </div>
+            <p className="text-white/90 text-lg font-medium">Scan to pay {instructorName}</p>
+            <p className="text-white/60 text-sm">Tap anywhere to close</p>
+          </div>
+        </div>
+      )}
     </Dialog>
   );
 }
