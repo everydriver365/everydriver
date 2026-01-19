@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +32,8 @@ import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
 import { HomepageSectionsManager } from "@/components/admin/HomepageSectionsManager";
 import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSManager";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import LoyaltyRewardsManager from "@/components/admin/LoyaltyRewardsManager";
+import RewardTiersManager from "@/components/admin/RewardTiersManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -82,6 +84,8 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "pwa-apps": { title: "PWA Config", group: "Mobile Apps", icon: Download },
   promotions: { title: "Promotions", group: "Marketing", icon: Megaphone },
   bonuses: { title: "Bonuses", group: "Marketing", icon: Gift },
+  "rewards-config": { title: "Rewards Settings", group: "Loyalty & Rewards", icon: Coins },
+  "reward-tiers": { title: "Badge Tiers", group: "Loyalty & Rewards", icon: Award },
   "site-settings": { title: "Site Settings & SEO", group: "Settings", icon: Globe },
 };
 
@@ -528,6 +532,40 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <InstructorBonusManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "rewards-config":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Coins className="h-5 w-5 text-amber-500" />
+                  Loyalty & Rewards Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LoyaltyRewardsManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "reward-tiers":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-primary" />
+                  Badge Tiers & Perks
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RewardTiersManager />
               </CardContent>
             </Card>
           </motion.div>
