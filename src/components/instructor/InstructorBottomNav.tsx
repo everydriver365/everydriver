@@ -50,6 +50,7 @@ interface NavItemMenu {
   label: string;
   icon: LucideIcon;
   path: string;
+  state?: Record<string, unknown>;
 }
 
 interface NavItem {
@@ -97,8 +98,8 @@ const navItems: NavItem[] = [
     path: "/instructor/pupils",
     menuItems: [
       { label: "All Pupils", icon: Users, path: "/instructor/pupils" },
-      { label: "Add New Pupil", icon: UserPlus, path: "/instructor/pupils" },
-      { label: "Sign Terms & Conditions", icon: FileSignature, path: "/instructor/pupils" },
+      { label: "Add New Pupil", icon: UserPlus, path: "/instructor/pupils", state: { openAddPupil: true } },
+      { label: "Sign Terms & Conditions", icon: FileSignature, path: "/instructor/pupils", state: { openTermsModal: true } },
       { label: "Add Lesson", icon: CalendarPlus, path: "/instructor/schedule" },
       { label: "Gaps Finder", icon: Search, path: "/instructor/gaps" },
       { label: "Test Dates", icon: GraduationCap, path: "/instructor/pupils" },
@@ -138,8 +139,8 @@ export function InstructorBottomNav() {
   const navigate = useNavigate();
   const pendingJobsCount = usePendingJobsCount();
 
-  const handleNavClick = (path: string) => {
-    navigate(path);
+  const handleNavClick = (path: string, state?: Record<string, unknown>) => {
+    navigate(path, { state });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -261,7 +262,7 @@ export function InstructorBottomNav() {
                 {item.menuItems?.map((menuItem, index) => (
                   <DropdownMenuItem 
                     key={index}
-                    onClick={() => handleNavClick(menuItem.path)}
+                    onClick={() => handleNavClick(menuItem.path, menuItem.state)}
                     className="cursor-pointer"
                   >
                     <menuItem.icon className="mr-2 h-4 w-4" />

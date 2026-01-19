@@ -41,7 +41,7 @@ import {
   ArrowLeft,
   History,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -86,6 +86,7 @@ const courseTypeLabels: Record<string, string> = {
 
 export default function InstructorPupils() {
   const { instructor } = useInstructorAuth();
+  const location = useLocation();
   const instructorId = instructor?.id;
   
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -123,6 +124,20 @@ export default function InstructorPupils() {
       fetchSignatureStatus();
     }
   }, [instructorId]);
+
+  // Handle navigation state for opening modals
+  useEffect(() => {
+    const state = location.state as { openTermsModal?: boolean; openAddPupil?: boolean } | null;
+    if (state?.openTermsModal) {
+      setIsTermsModalOpen(true);
+      // Clear the state so it doesn't reopen on refresh
+      window.history.replaceState({}, document.title);
+    }
+    if (state?.openAddPupil) {
+      setIsAddOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const fetchPupils = async () => {
     if (!instructorId) return;
