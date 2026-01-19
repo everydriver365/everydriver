@@ -845,6 +845,56 @@ export type Database = {
           },
         ]
       }
+      instructor_calendar_shares: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          instructor_id: string
+          is_enabled: boolean
+          share_token: string
+          show_blocks: boolean
+          show_external_events: boolean
+          show_lesson_details: boolean
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructor_id: string
+          is_enabled?: boolean
+          share_token: string
+          show_blocks?: boolean
+          show_external_events?: boolean
+          show_lesson_details?: boolean
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructor_id?: string
+          is_enabled?: boolean
+          share_token?: string
+          show_blocks?: boolean
+          show_external_events?: boolean
+          show_lesson_details?: boolean
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_calendar_shares_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_calendar_tokens: {
         Row: {
           access_token: string
@@ -3000,6 +3050,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_calendar_share_token: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
