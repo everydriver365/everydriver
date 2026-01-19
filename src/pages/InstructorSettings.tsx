@@ -212,7 +212,7 @@ const { data, error } = await supabase
           </CardContent>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-4 pb-4 border-t pt-4">
+          <div className="px-4 pb-4 border-t pt-4 relative z-10">
             {children}
           </div>
         </CollapsibleContent>
