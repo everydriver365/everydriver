@@ -50,6 +50,7 @@ import MiniWebsiteContact from "./pages/mini-website/MiniWebsiteContact";
 import InstallInstructor from "./pages/InstallInstructor";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
+import PublicAvailability from "./pages/PublicAvailability";
 
 // Instructor SaaS pages
 import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
@@ -94,6 +95,9 @@ const App = () => (
               <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />
               <Route path="/i/:slug/reviews" element={<MiniWebsiteReviews />} />
               <Route path="/i/:slug/contact" element={<MiniWebsiteContact />} />
+              
+              {/* Public Availability Calendar */}
+              <Route path="/availability/:shareToken" element={<PublicAvailability />} />
 
               {/* Instructor SaaS Marketing (Drive365 branding) */}
               <Route path="/instructor-app" element={<InstructorAppHome />} />
