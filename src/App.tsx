@@ -23,6 +23,7 @@ import InstructorSettings from "./pages/InstructorSettings";
 import InstructorGaps from "./pages/InstructorGaps";
 import InstructorExpenses from "./pages/InstructorExpenses";
 import InstructorSatNav from "./pages/InstructorSatNav";
+import InstructorAccounts from "./pages/InstructorAccounts";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
 import AdminLogin from "./pages/AdminLogin";
@@ -115,6 +116,7 @@ const App = () => (
               <Route path="/instructor/expenses" element={<InstructorExpenses />} />
               <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
               <Route path="/instructor/satnav" element={<InstructorSatNav />} />
+              <Route path="/instructor/accounts" element={<InstructorAccounts />} />
               <Route path="/instructor/install" element={<InstallInstructor />} />
 
               {/* Other portals */}
