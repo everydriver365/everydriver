@@ -13,8 +13,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SignaturePad } from "./SignaturePad";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import jsPDF from "jspdf";
 
 interface TermsSignatureModalProps {
   open: boolean;
@@ -49,6 +50,7 @@ export function TermsSignatureModal({
 }: TermsSignatureModalProps) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [terms, setTerms] = useState<TermsConditions | null>(null);
   const [existingSignature, setExistingSignature] = useState<ExistingSignature | null>(null);
   const [agreed, setAgreed] = useState(false);
@@ -170,6 +172,163 @@ export function TermsSignatureModal({
     }
   };
 
+  const handleExportPDF = async () => {
+    if (!existingSignature || !terms) return;
+
+    setExporting(true);
+    try {
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
+      let yPosition = margin;
+
+      // Header
+      pdf.setFontSize(20);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(terms.title, pageWidth / 2, yPosition, { align: "center" });
+      yPosition += 12;
+
+      // Version and date
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`Version ${terms.version}`, pageWidth / 2, yPosition, { align: "center" });
+      yPosition += 15;
+
+      // Divider line
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+
+      // Signatory info box
+      pdf.setFillColor(245, 245, 245);
+      pdf.roundedRect(margin, yPosition, contentWidth, 25, 3, 3, "F");
+      
+      pdf.setFontSize(11);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Signed by:", margin + 5, yPosition + 8);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(pupilName, margin + 35, yPosition + 8);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Date:", margin + 5, yPosition + 18);
+      pdf.setFont("helvetica", "normal");
+      const signedDate = new Date(existingSignature.signed_at);
+      pdf.text(
+        signedDate.toLocaleString("en-GB", {
+          dateStyle: "full",
+          timeStyle: "short",
+        }),
+        margin + 22,
+        yPosition + 18
+      );
+      yPosition += 35;
+
+      // Terms content
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Terms & Conditions", margin, yPosition);
+      yPosition += 8;
+
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(50, 50, 50);
+
+      // Split content into lines that fit the page width
+      const lines = pdf.splitTextToSize(terms.content, contentWidth);
+      
+      for (const line of lines) {
+        if (yPosition > pageHeight - 60) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+        pdf.text(line, margin, yPosition);
+        yPosition += 5;
+      }
+
+      // Add signature section at the bottom
+      if (yPosition > pageHeight - 80) {
+        pdf.addPage();
+        yPosition = margin;
+      }
+
+      yPosition = Math.max(yPosition + 15, pageHeight - 70);
+
+      // Signature box
+      pdf.setDrawColor(200, 200, 200);
+      pdf.setFillColor(255, 255, 255);
+      pdf.roundedRect(margin, yPosition, contentWidth, 50, 3, 3, "FD");
+
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text("Digital Signature:", margin + 5, yPosition + 8);
+
+      // Fetch and embed signature image
+      try {
+        const imgResponse = await fetch(existingSignature.signature_url);
+        const imgBlob = await imgResponse.blob();
+        const imgDataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(imgBlob);
+        });
+
+        pdf.addImage(imgDataUrl, "PNG", margin + 5, yPosition + 12, 60, 30);
+      } catch (imgError) {
+        console.error("Error loading signature image:", imgError);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text("[Signature on file]", margin + 5, yPosition + 25);
+      }
+
+      // Verification text
+      pdf.setFontSize(8);
+      pdf.setTextColor(120, 120, 120);
+      pdf.text(
+        `Document ID: ${existingSignature.id}`,
+        margin + 5,
+        yPosition + 45
+      );
+      pdf.text(
+        `Generated: ${new Date().toLocaleString("en-GB")}`,
+        pageWidth - margin - 50,
+        yPosition + 45
+      );
+
+      // Footer on all pages
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text(
+          `Page ${i} of ${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: "center" }
+        );
+      }
+
+      // Save the PDF
+      const fileName = `${pupilName.replace(/\s+/g, "_")}_Terms_v${terms.version}_${signedDate.toISOString().split("T")[0]}.pdf`;
+      pdf.save(fileName);
+
+      toast.success("PDF exported successfully");
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast.error("Failed to export PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const canSubmit = agreed && signatureDataUrl && scrolledToBottom;
 
   return (
@@ -232,6 +391,25 @@ export function TermsSignatureModal({
                 {terms.content}
               </div>
             </ScrollArea>
+
+            <Button
+              onClick={handleExportPDF}
+              disabled={exporting}
+              variant="outline"
+              className="w-full"
+            >
+              {exporting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating PDF...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Signed T&Cs as PDF
+                </>
+              )}
+            </Button>
           </div>
         ) : (
           <div className="flex-1 flex flex-col gap-4 overflow-hidden">
