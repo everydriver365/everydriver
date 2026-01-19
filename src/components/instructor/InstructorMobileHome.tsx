@@ -139,19 +139,11 @@ export function InstructorMobileHome({
   // Default hero image
   const heroImage = content?.hero_image_url || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80";
 
+  // Calculate header height for spacing (approximately 56px + safe area)
+  const headerHeight = "pt-[calc(56px+env(safe-area-inset-top,0px))]";
+
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
-      {/* Hero Image - scrolls with content */}
-      <div className="absolute top-0 left-0 right-0 h-80 z-0 overflow-hidden">
-        <img 
-          src={heroImage}
-          alt="Driving"
-          className="w-full h-full object-cover"
-        />
-        {/* Gradient overlay for readability and fade to content */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-background" />
-      </div>
-
       {/* Header Bar - fixed at top with blue theme */}
       <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-primary">
         {/* Logo on the left */}
@@ -301,11 +293,22 @@ export function InstructorMobileHome({
         </div>
       </div>
 
-      {/* Spacer for hero area */}
-      <div className="h-56 relative z-10" />
+      {/* Spacer for fixed header */}
+      <div className="h-14 pt-[env(safe-area-inset-top,0px)]" />
+
+      {/* Hero Image - below the nav bar, scrolls with content */}
+      <div className="relative w-full h-56 overflow-hidden">
+        <img 
+          src={heroImage}
+          alt="Driving"
+          className="w-full h-full object-cover"
+        />
+        {/* Gradient overlay for fade to content */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+      </div>
 
       {/* Motivational Card */}
-      <div className="px-4 -mt-2 relative z-10">
+      <div className="px-4 -mt-8 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
