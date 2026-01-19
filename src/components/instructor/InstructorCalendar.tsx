@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { format, isSameDay, isToday, startOfWeek, startOfMonth, addDays, addHours, startOfDay, differenceInMinutes, isSameWeek, isSameMonth, addMonths, subMonths } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, Palette, GripVertical, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Palette, GripVertical, PanelLeftClose, PanelLeft, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useInstructorCalendar, CalendarEvent, CalendarView } from '@/hooks/useInstructorCalendar';
 import { CalendarEventSheet } from './CalendarEventSheet';
 import { AddCalendarEventDialog } from './AddCalendarEventDialog';
 import { CalendarColorSettings, CalendarColors, DEFAULT_CALENDAR_COLORS } from './CalendarColorSettings';
+import { CalendarExportDialog } from './CalendarExportDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useInstructorAuth } from '@/context/InstructorAuthContext';
 
 interface InstructorCalendarProps {
   instructorId: string;
@@ -23,6 +25,7 @@ const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR
 
 export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
   const isMobile = useIsMobile();
+  const { instructor } = useInstructorAuth();
   const { 
     events, 
     loading, 
@@ -43,6 +46,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [addDialogDate, setAddDialogDate] = useState<Date | null>(null);
   const [showColorSettings, setShowColorSettings] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   const [draggedEvent, setDraggedEvent] = useState<CalendarEvent | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<{ day: Date; hour: number } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -258,6 +262,14 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
             <Button 
               variant="outline" 
               size="icon"
+              onClick={() => setShowExportDialog(true)}
+              title="Export calendar"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="icon"
               onClick={() => setShowColorSettings(true)}
               title="Customize colors"
             >
@@ -360,6 +372,16 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
         instructorId={instructorId}
         colors={calendarColors}
         onColorsChange={setCalendarColors}
+      />
+
+      {/* Export Dialog */}
+      <CalendarExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        events={events}
+        currentDate={currentDate}
+        view={view}
+        instructorName={instructor?.name}
       />
     </div>
   );
