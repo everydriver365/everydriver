@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
-import { Loader2, AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Loader2, AlertCircle, ArrowLeft, Eye, EyeOff, Share, Plus, Download, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 import logoDark from "@/assets/logo-drive365-dark.png";
@@ -17,6 +17,11 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required").max(128),
 });
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 export default function InstructorPortalLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,12 +30,64 @@ export default function InstructorPortalLogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
 
   // Detect dark mode
   const isDark = document.documentElement.classList.contains('dark') || 
                  window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  // Check install state and platform
+  useEffect(() => {
+    const checkInstallState = () => {
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+        || (window.navigator as any).standalone === true;
+      const isDismissed = localStorage.getItem('instructor-install-dismissed');
+      
+      setIsIOS(isIOSDevice);
+      setIsInstalled(isStandalone);
+      
+      if (!isStandalone && !isDismissed) {
+        setShowInstallPrompt(true);
+      }
+    };
+
+    checkInstallState();
+
+    // Listen for install prompt (Android/Desktop)
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallPrompt(false);
+        toast.success("App installed successfully!");
+      }
+      setDeferredPrompt(null);
+    }
+  };
+
+  const dismissInstallPrompt = () => {
+    localStorage.setItem('instructor-install-dismissed', 'true');
+    setShowInstallPrompt(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +147,79 @@ export default function InstructorPortalLogin() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4 py-8">
+      {/* Install to Home Screen Banner */}
+      <AnimatePresence>
+        {showInstallPrompt && !isInstalled && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-0 left-0 right-0 z-50 bg-emerald-500 text-white px-4 py-3 shadow-lg"
+          >
+            <div className="max-w-sm mx-auto">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  {isIOS ? (
+                    <div className="space-y-2">
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <Download className="h-4 w-4" />
+                        Add to Home Screen
+                      </p>
+                      <ol className="text-xs space-y-1 text-white/90">
+                        <li className="flex items-center gap-2">
+                          <span className="bg-white/20 rounded-full w-4 h-4 flex items-center justify-center text-[10px] shrink-0">1</span>
+                          <span className="flex items-center gap-1">
+                            Tap <Share className="h-3 w-3" /> Share
+                          </span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="bg-white/20 rounded-full w-4 h-4 flex items-center justify-center text-[10px] shrink-0">2</span>
+                          <span className="flex items-center gap-1">
+                            Tap <Plus className="h-3 w-3" /> Add to Home Screen
+                          </span>
+                        </li>
+                      </ol>
+                    </div>
+                  ) : deferredPrompt ? (
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <Download className="h-4 w-4" />
+                        Install app for best experience
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="ml-3 shrink-0 bg-white text-emerald-600 hover:bg-white/90"
+                        onClick={handleInstall}
+                      >
+                        Install
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <Download className="h-4 w-4" />
+                        Add to Home Screen
+                      </p>
+                      <p className="text-xs text-white/90">
+                        Use your browser menu → "Add to Home Screen" for fullscreen experience
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={dismissInstallPrompt}
+                  className="p-1 hover:bg-white/10 rounded-full shrink-0"
+                  aria-label="Dismiss"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl" />
