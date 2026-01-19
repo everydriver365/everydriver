@@ -142,7 +142,7 @@ export function InstructorMobileHome({
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
       {/* Hero Image - scrolls with content */}
-      <div className="absolute top-0 left-0 right-0 h-64 z-0 overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-80 z-0 overflow-hidden">
         <img 
           src={heroImage}
           alt="Driving"
@@ -302,7 +302,7 @@ export function InstructorMobileHome({
       </div>
 
       {/* Spacer for hero area */}
-      <div className="h-44 relative z-10" />
+      <div className="h-56 relative z-10" />
 
       {/* Motivational Card */}
       <div className="px-4 -mt-2 relative z-10">
