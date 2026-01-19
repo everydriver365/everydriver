@@ -2687,6 +2687,67 @@ export type Database = {
           },
         ]
       }
+      remote_signing_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          instructor_id: string
+          pupil_id: string
+          sms_sent_at: string | null
+          status: string
+          terms_id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          instructor_id: string
+          pupil_id: string
+          sms_sent_at?: string | null
+          status?: string
+          terms_id: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+          sms_sent_at?: string | null
+          status?: string
+          terms_id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remote_signing_tokens_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remote_signing_tokens_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remote_signing_tokens_terms_id_fkey"
+            columns: ["terms_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_terms_conditions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_tiers: {
         Row: {
           badge_image_url: string | null
