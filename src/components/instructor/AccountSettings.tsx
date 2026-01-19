@@ -3,11 +3,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Calculator, Fuel, PoundSterling, FileText } from "lucide-react";
+import { 
+  Loader2, 
+  Calculator, 
+  Fuel, 
+  PoundSterling, 
+  FileText, 
+  ChevronDown, 
+  ChevronUp,
+  Car,
+  Home,
+  Phone,
+  Wifi,
+  Shirt,
+  GraduationCap,
+  Shield,
+  Wrench,
+  Receipt,
+  Info
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AccountSettingsProps {
   instructorId: string;
@@ -20,6 +41,94 @@ interface AccountData {
   fuel_cost_per_litre: number;
 }
 
+// HMRC Allowable Deductions for Driving Instructors
+const ALLOWABLE_DEDUCTIONS = [
+  { 
+    id: 'vehicle_costs',
+    label: 'Vehicle Running Costs', 
+    description: 'Fuel, servicing, repairs, MOT, road tax',
+    icon: Car,
+    defaultSelected: true 
+  },
+  { 
+    id: 'vehicle_lease',
+    label: 'Vehicle Lease/Finance', 
+    description: 'Car lease payments or finance interest',
+    icon: Car,
+    defaultSelected: true 
+  },
+  { 
+    id: 'insurance',
+    label: 'Business Insurance', 
+    description: 'Car insurance, public liability, professional indemnity',
+    icon: Shield,
+    defaultSelected: true 
+  },
+  { 
+    id: 'phone',
+    label: 'Phone & Communications', 
+    description: 'Mobile phone, business calls (proportion)',
+    icon: Phone,
+    defaultSelected: true 
+  },
+  { 
+    id: 'home_office',
+    label: 'Use of Home as Office', 
+    description: 'Proportion of utilities, council tax for business use',
+    icon: Home,
+    defaultSelected: false 
+  },
+  { 
+    id: 'broadband',
+    label: 'Internet/Broadband', 
+    description: 'Business proportion of internet costs',
+    icon: Wifi,
+    defaultSelected: false 
+  },
+  { 
+    id: 'training',
+    label: 'Training & CPD', 
+    description: 'Standards check training, CPD courses',
+    icon: GraduationCap,
+    defaultSelected: true 
+  },
+  { 
+    id: 'adi_license',
+    label: 'ADI License & Badges', 
+    description: 'License renewal, badge fees',
+    icon: Receipt,
+    defaultSelected: true 
+  },
+  { 
+    id: 'uniform',
+    label: 'Uniform/Clothing', 
+    description: 'Branded clothing with business logo',
+    icon: Shirt,
+    defaultSelected: false 
+  },
+  { 
+    id: 'equipment',
+    label: 'Teaching Equipment', 
+    description: 'Dual controls, mirrors, teaching aids',
+    icon: Wrench,
+    defaultSelected: true 
+  },
+  { 
+    id: 'franchise',
+    label: 'Franchise Fees', 
+    description: 'Monthly franchise or school fees',
+    icon: Receipt,
+    defaultSelected: false 
+  },
+  { 
+    id: 'accountant',
+    label: 'Accountancy Fees', 
+    description: 'Fees for completing tax returns',
+    icon: Calculator,
+    defaultSelected: false 
+  },
+];
+
 export function AccountSettings({ instructorId }: AccountSettingsProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -29,6 +138,10 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
     vehicle_mpg: 40,
     fuel_cost_per_litre: 1.45,
   });
+  const [selectedDeductions, setSelectedDeductions] = useState<string[]>(
+    ALLOWABLE_DEDUCTIONS.filter(d => d.defaultSelected).map(d => d.id)
+  );
+  const [deductionsOpen, setDeductionsOpen] = useState(false);
 
   useEffect(() => {
     fetchAccountData();
@@ -81,11 +194,19 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
     }
   };
 
+  const toggleDeduction = (id: string) => {
+    setSelectedDeductions(prev => 
+      prev.includes(id) 
+        ? prev.filter(d => d !== id)
+        : [...prev, id]
+    );
+  };
+
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 px-1">
         <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <Skeleton className="h-32" />
           <Skeleton className="h-32" />
         </div>
@@ -94,35 +215,37 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-1">
       <div>
-        <h2 className="text-2xl font-bold">Account Settings</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl sm:text-2xl font-bold">Account Settings</h2>
+        <p className="text-sm text-muted-foreground">
           Configure your tax and vehicle details for accurate earnings calculations
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Mobile-optimized grid - single column on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Tax Settings */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
+          <CardHeader className="pb-3 px-4">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Tax Information
             </CardTitle>
-            <CardDescription>Your HMRC tax details</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Your HMRC tax details</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-4 space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="tax_code">Tax Code</Label>
+              <Label htmlFor="tax_code" className="text-sm">Tax Code</Label>
               <Input
                 id="tax_code"
                 value={data.tax_code}
                 onChange={(e) => setData({ ...data, tax_code: e.target.value.toUpperCase() })}
                 placeholder="e.g. 1257L"
+                className="h-10"
               />
               <p className="text-xs text-muted-foreground">
-                Your personal tax code from HMRC (e.g., 1257L)
+                Your personal tax code from HMRC
               </p>
             </div>
           </CardContent>
@@ -130,23 +253,25 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
 
         {/* Earnings Rate */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <PoundSterling className="h-5 w-5 text-success" />
+          <CardHeader className="pb-3 px-4">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <PoundSterling className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               Earnings Rate
             </CardTitle>
-            <CardDescription>Your hourly teaching rate</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Your hourly teaching rate</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-4 space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="hourly_rate">Hourly Rate (£)</Label>
+              <Label htmlFor="hourly_rate" className="text-sm">Hourly Rate (£)</Label>
               <Input
                 id="hourly_rate"
                 type="number"
+                inputMode="decimal"
                 min="0"
                 step="0.50"
                 value={data.hourly_rate}
                 onChange={(e) => setData({ ...data, hourly_rate: parseFloat(e.target.value) || 0 })}
+                className="h-10"
               />
             </div>
           </CardContent>
@@ -154,26 +279,28 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
 
         {/* Vehicle MPG */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calculator className="h-5 w-5 text-blue-500" />
+          <CardHeader className="pb-3 px-4">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
               Vehicle Efficiency
             </CardTitle>
-            <CardDescription>Miles per gallon for your vehicle</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Miles per gallon</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-4 space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="vehicle_mpg">Miles Per Gallon (MPG)</Label>
+              <Label htmlFor="vehicle_mpg" className="text-sm">Miles Per Gallon</Label>
               <Input
                 id="vehicle_mpg"
                 type="number"
+                inputMode="decimal"
                 min="0"
                 step="0.1"
                 value={data.vehicle_mpg}
                 onChange={(e) => setData({ ...data, vehicle_mpg: parseFloat(e.target.value) || 0 })}
+                className="h-10"
               />
               <p className="text-xs text-muted-foreground">
-                Average MPG for your teaching vehicle
+                Average MPG for your vehicle
               </p>
             </div>
           </CardContent>
@@ -181,33 +308,35 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
 
         {/* Fuel Cost */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Fuel className="h-5 w-5 text-amber-500" />
+          <CardHeader className="pb-3 px-4">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Fuel className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
               Fuel Cost
             </CardTitle>
-            <CardDescription>Current fuel price</CardDescription>
+            <CardDescription className="text-xs sm:text-sm">Current fuel price</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="px-4 space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="fuel_cost">Cost Per Litre (£)</Label>
+              <Label htmlFor="fuel_cost" className="text-sm">Cost Per Litre (£)</Label>
               <Input
                 id="fuel_cost"
                 type="number"
+                inputMode="decimal"
                 min="0"
                 step="0.01"
                 value={data.fuel_cost_per_litre}
                 onChange={(e) => setData({ ...data, fuel_cost_per_litre: parseFloat(e.target.value) || 0 })}
+                className="h-10"
               />
               <p className="text-xs text-muted-foreground">
-                Current price of fuel per litre
+                Current price per litre
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Button onClick={handleSave} disabled={saving} className="w-full md:w-auto">
+      <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
         {saving ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -218,8 +347,114 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
         )}
       </Button>
 
+      {/* Allowable Deductions Section */}
+      <Card className="border-dashed">
+        <Collapsible open={deductionsOpen} onOpenChange={setDeductionsOpen}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="pb-3 px-4 cursor-pointer hover:bg-muted/30 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                    <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    Allowable Deductions
+                    <Badge variant="secondary" className="ml-2 text-xs">
+                      {selectedDeductions.length} selected
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm mt-1">
+                    HMRC-approved expenses you can claim
+                  </CardDescription>
+                </div>
+                {deductionsOpen ? (
+                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <CardContent className="px-4 pt-0 pb-4">
+              {/* Info Banner */}
+              <div className="flex items-start gap-2 p-3 mb-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                <Info className="h-4 w-4 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <p className="text-xs text-blue-800 dark:text-blue-300">
+                  Select the expenses you claim against your income. These are tracked in your expense records and recurring costs below.
+                </p>
+              </div>
+
+              {/* Deductions Grid - Mobile optimized */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {ALLOWABLE_DEDUCTIONS.map((deduction) => {
+                  const Icon = deduction.icon;
+                  const isSelected = selectedDeductions.includes(deduction.id);
+                  
+                  return (
+                    <div
+                      key={deduction.id}
+                      onClick={() => toggleDeduction(deduction.id)}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        isSelected 
+                          ? 'bg-primary/5 border-primary/30' 
+                          : 'bg-card border-border hover:bg-muted/30'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleDeduction(deduction.id)}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Icon className={`h-4 w-4 flex-shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <p className={`text-sm font-medium truncate ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                            {deduction.label}
+                          </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                          {deduction.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => setSelectedDeductions(ALLOWABLE_DEDUCTIONS.map(d => d.id))}
+                >
+                  Select All
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => setSelectedDeductions([])}
+                >
+                  Clear All
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs"
+                  onClick={() => setSelectedDeductions(ALLOWABLE_DEDUCTIONS.filter(d => d.defaultSelected).map(d => d.id))}
+                >
+                  Reset to Defaults
+                </Button>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
       {/* Recurring Business Expenses */}
-      <div className="pt-6 border-t">
+      <div className="pt-4 border-t">
         <RecurringExpensesManager instructorId={instructorId} />
       </div>
     </div>

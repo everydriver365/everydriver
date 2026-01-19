@@ -249,15 +249,15 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
 
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+      <CardHeader className="pb-3 px-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calculator className="h-5 w-5 text-primary" />
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               Recurring Business Expenses
             </CardTitle>
-            <CardDescription>
-              Fixed costs that are deducted from your earnings
+            <CardDescription className="text-xs sm:text-sm">
+              Fixed costs deducted from earnings
             </CardDescription>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -268,12 +268,12 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
             }
           }}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-1">
+              <Button size="sm" className="gap-1 w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
                 Add Expense
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>
                   {editingExpense ? 'Edit Expense' : 'Add Recurring Expense'}
@@ -289,11 +289,12 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label>Amount (£)</Label>
                     <Input
                       type="number"
+                      inputMode="decimal"
                       min="0"
                       step="0.01"
                       value={formData.amount}
@@ -360,18 +361,18 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
           </Dialog>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 px-4">
         {/* Summary */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
-            <p className="text-xs text-muted-foreground">Monthly Total</p>
-            <p className="text-xl font-bold text-destructive">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="p-2.5 sm:p-3 bg-muted/50 rounded-lg text-center">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Monthly Total</p>
+            <p className="text-lg sm:text-xl font-bold text-destructive">
               -£{monthlyTotal.toFixed(2)}
             </p>
           </div>
-          <div className="p-3 bg-muted/50 rounded-lg text-center">
-            <p className="text-xs text-muted-foreground">Yearly Total</p>
-            <p className="text-xl font-bold text-destructive">
+          <div className="p-2.5 sm:p-3 bg-muted/50 rounded-lg text-center">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Yearly Total</p>
+            <p className="text-lg sm:text-xl font-bold text-destructive">
               -£{yearlyTotal.toFixed(2)}
             </p>
           </div>
@@ -381,10 +382,10 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
         <div className="space-y-2">
           <AnimatePresence>
             {expenses.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Calculator className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                <p>No recurring expenses added yet</p>
-                <p className="text-sm">Add your fixed business costs to include them in earnings calculations</p>
+              <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                <Calculator className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No recurring expenses added yet</p>
+                <p className="text-xs">Add your fixed business costs</p>
               </div>
             ) : (
               expenses.map((expense) => {
@@ -395,57 +396,61 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className={`flex items-center gap-3 p-3 border rounded-lg ${
+                    className={`p-3 border rounded-lg ${
                       expense.is_active ? 'bg-card' : 'bg-muted/30 opacity-60'
                     }`}
                   >
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Icon className="h-4 w-4 text-primary" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium truncate">{expense.name}</p>
-                        <Badge variant="secondary" className="text-xs">
-                          {expense.frequency}
-                        </Badge>
+                    {/* Mobile layout - stacked */}
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                        <Icon className="h-4 w-4 text-primary" />
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {getCategoryLabel(expense.category)}
-                        {expense.notes && ` • ${expense.notes}`}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="font-semibold text-destructive">
-                        -£{expense.amount.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        /{expense.frequency.replace('ly', '')}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <Switch
-                        checked={expense.is_active}
-                        onCheckedChange={() => handleToggleActive(expense)}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => openEditDialog(expense)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(expense.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-medium text-sm truncate">{expense.name}</p>
+                          <Badge variant="secondary" className="text-[10px]">
+                            {expense.frequency}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {getCategoryLabel(expense.category)}
+                          {expense.notes && ` • ${expense.notes}`}
+                        </p>
+                        
+                        {/* Amount and actions row */}
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-dashed">
+                          <p className="font-semibold text-destructive">
+                            -£{expense.amount.toFixed(2)}
+                            <span className="text-xs text-muted-foreground font-normal ml-1">
+                              /{expense.frequency.replace('ly', '')}
+                            </span>
+                          </p>
+                          
+                          <div className="flex items-center gap-1">
+                            <Switch
+                              checked={expense.is_active}
+                              onCheckedChange={() => handleToggleActive(expense)}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => openEditDialog(expense)}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => handleDelete(expense.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </motion.div>
                 );
@@ -456,15 +461,15 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
 
         {/* Common Expenses Suggestions */}
         {expenses.length < 3 && (
-          <div className="pt-4 border-t">
-            <p className="text-sm text-muted-foreground mb-2">Common expenses:</p>
-            <div className="flex flex-wrap gap-2">
+          <div className="pt-3 border-t">
+            <p className="text-xs text-muted-foreground mb-2">Common expenses:</p>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {['Phone Contract', 'Car Lease', 'Franchise Fee', 'Insurance', 'ADI License'].map(suggestion => (
                 <Button
                   key={suggestion}
                   variant="outline"
                   size="sm"
-                  className="text-xs"
+                  className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3"
                   onClick={() => {
                     setFormData({
                       name: suggestion,
@@ -479,7 +484,7 @@ export function RecurringExpensesManager({ instructorId, onTotalChange }: Recurr
                     setIsDialogOpen(true);
                   }}
                 >
-                  <Plus className="h-3 w-3 mr-1" />
+                  <Plus className="h-3 w-3 mr-0.5 sm:mr-1" />
                   {suggestion}
                 </Button>
               ))}
