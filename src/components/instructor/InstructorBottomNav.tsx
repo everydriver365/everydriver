@@ -32,6 +32,7 @@ import {
   LayoutGrid,
   MessageSquare,
   CalendarPlus,
+  FileSignature,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -97,6 +98,7 @@ const navItems: NavItem[] = [
     menuItems: [
       { label: "All Pupils", icon: Users, path: "/instructor/pupils" },
       { label: "Add New Pupil", icon: UserPlus, path: "/instructor/pupils" },
+      { label: "Sign Terms & Conditions", icon: FileSignature, path: "/instructor/pupils" },
       { label: "Add Lesson", icon: CalendarPlus, path: "/instructor/schedule" },
       { label: "Gaps Finder", icon: Search, path: "/instructor/gaps" },
       { label: "Test Dates", icon: GraduationCap, path: "/instructor/pupils" },
