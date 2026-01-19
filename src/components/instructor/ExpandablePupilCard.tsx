@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
+import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -66,6 +67,8 @@ interface ExpandablePupilCardProps {
   onViewReport: (pupil: Pupil) => void;
   onViewTerms?: (pupil: Pupil) => void;
   hasSignedTerms?: boolean;
+  instructorId?: string;
+  instructorName?: string;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -86,6 +89,8 @@ export function ExpandablePupilCard({
   onViewReport,
   onViewTerms,
   hasSignedTerms,
+  instructorId,
+  instructorName,
 }: ExpandablePupilCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
@@ -545,7 +550,7 @@ export function ExpandablePupilCard({
                   <Button
                     variant={hasSignedTerms ? "outline" : "default"}
                     size="sm"
-                    className={`flex-1 min-w-[100px] ${hasSignedTerms ? "border-green-500 text-green-600" : ""}`}
+                    className={`flex-1 min-w-[80px] ${hasSignedTerms ? "border-green-500 text-green-600" : ""}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onViewTerms(pupil);
@@ -563,6 +568,17 @@ export function ExpandablePupilCard({
                       </>
                     )}
                   </Button>
+                )}
+                {instructorId && instructorName && !hasSignedTerms && (
+                  <SendSigningLinkButton
+                    pupilId={pupil.id}
+                    pupilName={pupil.name}
+                    pupilPhone={pupil.phone}
+                    instructorId={instructorId}
+                    instructorName={instructorName}
+                    disabled={hasSignedTerms}
+                    className="flex-1 min-w-[80px]"
+                  />
                 )}
                 <Button
                   variant="ghost"

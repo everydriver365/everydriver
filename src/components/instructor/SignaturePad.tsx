@@ -6,9 +6,10 @@ interface SignaturePadProps {
   onSignatureChange: (signatureDataUrl: string | null) => void;
   width?: number;
   height?: number;
+  disabled?: boolean;
 }
 
-export function SignaturePad({ onSignatureChange, width = 300, height = 150 }: SignaturePadProps) {
+export function SignaturePad({ onSignatureChange, width = 300, height = 150, disabled = false }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
@@ -52,6 +53,7 @@ export function SignaturePad({ onSignatureChange, width = 300, height = 150 }: S
   };
 
   const startDrawing = (e: React.TouchEvent | React.MouseEvent) => {
+    if (disabled) return;
     e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -101,12 +103,12 @@ export function SignaturePad({ onSignatureChange, width = 300, height = 150 }: S
 
   return (
     <div className="space-y-2">
-      <div className="relative border-2 border-dashed border-muted-foreground/30 rounded-lg overflow-hidden bg-white">
+      <div className={`relative border-2 border-dashed rounded-lg overflow-hidden bg-white ${disabled ? 'border-muted-foreground/20 opacity-60' : 'border-muted-foreground/30'}`}>
         <canvas
           ref={canvasRef}
           width={width}
           height={height}
-          className="w-full touch-none cursor-crosshair"
+          className={`w-full touch-none ${disabled ? 'cursor-not-allowed' : 'cursor-crosshair'}`}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}

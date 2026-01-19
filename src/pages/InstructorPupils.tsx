@@ -441,6 +441,8 @@ export default function InstructorPupils() {
                   setIsTermsModalOpen(true);
                 }}
                 hasSignedTerms={pupilSignatures[pupil.id] || false}
+                instructorId={instructorId}
+                instructorName={instructor?.name}
               />
             ))}
           </div>

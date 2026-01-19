@@ -53,6 +53,7 @@ import InstallInstructor from "./pages/InstallInstructor";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
 import PublicAvailability from "./pages/PublicAvailability";
+import RemoteSigning from "./pages/RemoteSigning";
 
 // Instructor SaaS pages
 import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
@@ -101,6 +102,9 @@ const App = () => (
               
               {/* Public Availability Calendar */}
               <Route path="/availability/:shareToken" element={<PublicAvailability />} />
+              
+              {/* Remote Signing */}
+              <Route path="/sign/:token" element={<RemoteSigning />} />
 
               {/* Instructor SaaS Marketing (Drive365 branding) */}
               <Route path="/instructor-app" element={<InstructorAppHome />} />
