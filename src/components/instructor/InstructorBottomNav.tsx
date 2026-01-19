@@ -143,7 +143,7 @@ export function InstructorBottomNav() {
   const jobsItem = navItems.find(item => item.menuItems?.some(m => m.path === "/instructor/jobs"));
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-border shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.15)] md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.15)] md:hidden">
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
@@ -159,8 +159,8 @@ export function InstructorBottomNav() {
                 onClick={() => handleNavClick(item.path)}
                 className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                   isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-primary"
+                    ? "text-white"
+                    : "text-white/70 hover:text-white"
                 }`}
               >
                 {/* Active indicator pill */}
@@ -204,8 +204,8 @@ export function InstructorBottomNav() {
                 <button
                   className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                     isActive
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-primary"
+                      ? "text-white"
+                      : "text-white/70 hover:text-white"
                   }`}
                 >
                   {/* Active indicator pill */}
@@ -234,7 +234,7 @@ export function InstructorBottomNav() {
                       />
                     </motion.div>
                     {showNotification && (
-                      <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-white dark:ring-gray-900">
+                      <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-primary">
                         {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                       </span>
                     )}
@@ -270,7 +270,7 @@ export function InstructorBottomNav() {
         })}
       </div>
       {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom bg-white dark:bg-gray-900" />
+      <div className="h-safe-area-inset-bottom bg-primary" />
     </nav>
   );
 }
