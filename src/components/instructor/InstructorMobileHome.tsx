@@ -140,9 +140,9 @@ export function InstructorMobileHome({
   const heroImage = content?.hero_image_url || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80";
 
   return (
-    <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
+    <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
       {/* Hero Image - scrolls with content */}
-      <div className="absolute top-0 left-0 right-0 h-64 -z-10 overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-64 z-0 overflow-hidden">
         <img 
           src={heroImage}
           alt="Driving"
@@ -305,7 +305,7 @@ export function InstructorMobileHome({
       <div className="h-44 relative z-10" />
 
       {/* Motivational Card */}
-      <div className="px-4 -mt-2">
+      <div className="px-4 -mt-2 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -359,7 +359,7 @@ export function InstructorMobileHome({
       </div>
 
       {/* Quick Actions */}
-      <div className="px-4 mt-6 space-y-3">
+      <div className="px-4 mt-6 space-y-3 relative z-10">
         {/* Loading skeleton */}
         {loading && (
           <div className="space-y-3">
