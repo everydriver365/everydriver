@@ -1413,6 +1413,8 @@ export type Database = {
           website_header_style: string | null
           website_theme: string | null
           welcome_video_url: string | null
+          xero_connected: boolean | null
+          xero_tenant_id: string | null
         }
         Insert: {
           adi_certificate_url?: string | null
@@ -1482,6 +1484,8 @@ export type Database = {
           website_header_style?: string | null
           website_theme?: string | null
           welcome_video_url?: string | null
+          xero_connected?: boolean | null
+          xero_tenant_id?: string | null
         }
         Update: {
           adi_certificate_url?: string | null
@@ -1551,6 +1555,8 @@ export type Database = {
           website_header_style?: string | null
           website_theme?: string | null
           welcome_video_url?: string | null
+          xero_connected?: boolean | null
+          xero_tenant_id?: string | null
         }
         Relationships: []
       }
@@ -2459,10 +2465,12 @@ export type Database = {
         Row: {
           amount_due: number | null
           created_at: string
+          dropoff_postcode: string | null
           duration_minutes: number
           id: string
           instructor_id: string
           lesson_date: string
+          lesson_miles: number | null
           lesson_type: string
           notes: string | null
           payment_status: string
@@ -2478,10 +2486,12 @@ export type Database = {
         Insert: {
           amount_due?: number | null
           created_at?: string
+          dropoff_postcode?: string | null
           duration_minutes?: number
           id?: string
           instructor_id: string
           lesson_date: string
+          lesson_miles?: number | null
           lesson_type?: string
           notes?: string | null
           payment_status?: string
@@ -2497,10 +2507,12 @@ export type Database = {
         Update: {
           amount_due?: number | null
           created_at?: string
+          dropoff_postcode?: string | null
           duration_minutes?: number
           id?: string
           instructor_id?: string
           lesson_date?: string
+          lesson_miles?: number | null
           lesson_type?: string
           notes?: string | null
           payment_status?: string
