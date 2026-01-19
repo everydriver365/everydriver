@@ -111,8 +111,8 @@ const navItems: NavItem[] = [
       { label: "Send Payment Link", icon: Send, path: "/instructor/pay" },
       { label: "Outstanding Balances", icon: AlertCircle, path: "/instructor/pay" },
       { label: "Payment History", icon: History, path: "/instructor/pay" },
-      { label: "Earnings", icon: Wallet, path: "/instructor/pay" },
       { label: "Expenses", icon: Receipt, path: "/instructor/expenses" },
+      { label: "Accounts", icon: Wallet, path: "/instructor/accounts" },
     ]
   },
   { 

@@ -15,7 +15,8 @@ import {
   Eye,
   EyeOff,
   Moon,
-  Sun
+  Sun,
+  Wallet
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ const sidebarLinks = [
   { href: "/instructor/pupils", label: "Pupils", icon: Users },
   { href: "/instructor/jobs", label: "Jobs", icon: Briefcase },
   { href: "/instructor/pay", label: "Payments", icon: CreditCard },
+  { href: "/instructor/accounts", label: "Accounts", icon: Wallet },
   { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
   { href: "/instructor/gaps", label: "Fill Gaps", icon: MapPin },
   { href: "/instructor/track-lesson", label: "Track Lesson", icon: Navigation },

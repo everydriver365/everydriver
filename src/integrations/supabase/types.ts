@@ -1371,6 +1371,7 @@ export type Database = {
           email: string | null
           extra_info: string | null
           facebook_url: string | null
+          fuel_cost_per_litre: number | null
           google_access_token: string | null
           google_calendar_id: string | null
           google_refresh_token: string | null
@@ -1402,8 +1403,10 @@ export type Database = {
           secondary_colour: string | null
           special_skills: string | null
           stripe_account_id: string | null
+          tax_code: string | null
           twitter_url: string | null
           updated_at: string
+          vehicle_mpg: number | null
           website_button_color: string | null
           website_font: string | null
           website_footer_bg: string | null
@@ -1437,6 +1440,7 @@ export type Database = {
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
+          fuel_cost_per_litre?: number | null
           google_access_token?: string | null
           google_calendar_id?: string | null
           google_refresh_token?: string | null
@@ -1468,8 +1472,10 @@ export type Database = {
           secondary_colour?: string | null
           special_skills?: string | null
           stripe_account_id?: string | null
+          tax_code?: string | null
           twitter_url?: string | null
           updated_at?: string
+          vehicle_mpg?: number | null
           website_button_color?: string | null
           website_font?: string | null
           website_footer_bg?: string | null
@@ -1503,6 +1509,7 @@ export type Database = {
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
+          fuel_cost_per_litre?: number | null
           google_access_token?: string | null
           google_calendar_id?: string | null
           google_refresh_token?: string | null
@@ -1534,8 +1541,10 @@ export type Database = {
           secondary_colour?: string | null
           special_skills?: string | null
           stripe_account_id?: string | null
+          tax_code?: string | null
           twitter_url?: string | null
           updated_at?: string
+          vehicle_mpg?: number | null
           website_button_color?: string | null
           website_font?: string | null
           website_footer_bg?: string | null
