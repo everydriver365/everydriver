@@ -1113,6 +1113,50 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_manual_blocks: {
+        Row: {
+          block_type: string
+          created_at: string
+          end_datetime: string
+          id: string
+          instructor_id: string
+          notes: string | null
+          start_datetime: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          block_type?: string
+          created_at?: string
+          end_datetime: string
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          start_datetime: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          block_type?: string
+          created_at?: string
+          end_datetime?: string
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          start_datetime?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_manual_blocks_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_nylas_grants: {
         Row: {
           created_at: string
