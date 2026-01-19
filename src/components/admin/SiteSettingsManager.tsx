@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Globe, Save, Loader2, Info, CreditCard } from "lucide-react";
+import { Globe, Save, Loader2, Info, CreditCard, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -171,6 +171,9 @@ export function SiteSettingsManager() {
   const paymentSettings = settings.filter(s => 
     ["npi_merchant_name", "npi_brand_color", "npi_merchant_logo"].includes(s.setting_key)
   );
+  const rewardsSettings = settings.filter(s => 
+    ["points_per_lesson", "points_for_free_lesson", "lessons_for_free_lesson"].includes(s.setting_key)
+  );
 
   return (
     <div className="space-y-6">
@@ -278,6 +281,50 @@ export function SiteSettingsManager() {
                 {renderInput(setting)}
               </div>
             ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Rewards Settings */}
+      {rewardsSettings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5" />
+              Pupil Rewards Configuration
+            </CardTitle>
+            <CardDescription>
+              Configure how points are earned and redeemed for free lessons
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {rewardsSettings.map((setting) => (
+              <div key={setting.id} className="space-y-2">
+                <Label htmlFor={setting.setting_key} className="flex items-center gap-2">
+                  {setting.label}
+                  {setting.description && (
+                    <span className="text-xs text-muted-foreground font-normal">
+                      — {setting.description}
+                    </span>
+                  )}
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={setting.setting_value || ""}
+                  onChange={(e) => handleChange(setting.setting_key, e.target.value)}
+                  className="max-w-[200px]"
+                />
+              </div>
+            ))}
+            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-muted-foreground">
+              <p><strong>How it works:</strong></p>
+              <ul className="list-disc list-inside mt-1 space-y-1">
+                <li>Pupils earn points when lessons are marked as completed</li>
+                <li>Points can be redeemed for free lessons during booking</li>
+                <li>Alternatively, completing a set number of lessons also earns a free lesson</li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
       )}

@@ -238,17 +238,90 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
 
       if (historyError) throw historyError;
 
-      // 3. Update pupil's lessons_completed count
-      const { error: pupilError } = await supabase
-        .from("pupils")
-        .update({ 
-          lessons_completed: (lesson.pupil as any).lessons_completed 
-            ? (lesson.pupil as any).lessons_completed + 1 
-            : 1 
-        })
-        .eq("id", lesson.pupil.id);
+      // 3. Fetch points_per_lesson from site_settings and award points
+      let pointsAwarded = 10; // Default fallback
+      try {
+        const { data: pointsSetting } = await supabase
+          .from("site_settings")
+          .select("setting_value")
+          .eq("setting_key", "points_per_lesson")
+          .single();
+        
+        if (pointsSetting?.setting_value) {
+          pointsAwarded = parseInt(pointsSetting.setting_value, 10) || 10;
+        }
 
-      if (pupilError) console.error("Error updating pupil count:", pupilError);
+        // Get current pupil data for updates
+        const { data: currentPupil } = await supabase
+          .from("pupils")
+          .select("reward_points, total_lessons_for_rewards, lessons_completed")
+          .eq("id", lesson.pupil.id)
+          .single();
+
+        if (currentPupil) {
+          const newRewardPoints = (currentPupil.reward_points || 0) + pointsAwarded;
+          const newTotalLessons = (currentPupil.total_lessons_for_rewards || 0) + 1;
+          const newLessonsCompleted = (currentPupil.lessons_completed || 0) + 1;
+
+          // Check if pupil earns a free lesson (from points or lesson count)
+          const { data: pointsForFree } = await supabase
+            .from("site_settings")
+            .select("setting_value")
+            .eq("setting_key", "points_for_free_lesson")
+            .single();
+          
+          const { data: lessonsForFree } = await supabase
+            .from("site_settings")
+            .select("setting_value")
+            .eq("setting_key", "lessons_for_free_lesson")
+            .single();
+
+          const pointsThreshold = parseInt(pointsForFree?.setting_value || "100", 10);
+          const lessonsThreshold = parseInt(lessonsForFree?.setting_value || "15", 10);
+
+          // Calculate free lessons earned from points
+          const previousFreeFromPoints = Math.floor((currentPupil.reward_points || 0) / pointsThreshold);
+          const newFreeFromPoints = Math.floor(newRewardPoints / pointsThreshold);
+          const freeFromPointsEarned = newFreeFromPoints - previousFreeFromPoints;
+
+          // Calculate free lessons earned from lesson count
+          const previousFreeFromLessons = Math.floor((currentPupil.total_lessons_for_rewards || 0) / lessonsThreshold);
+          const newFreeFromLessons = Math.floor(newTotalLessons / lessonsThreshold);
+          const freeFromLessonsEarned = newFreeFromLessons - previousFreeFromLessons;
+
+          const totalNewFreeLessons = freeFromPointsEarned + freeFromLessonsEarned;
+
+          // Update pupil with new points and lesson counts
+          const { data: pupilData } = await supabase
+            .from("pupils")
+            .select("free_lessons_earned")
+            .eq("id", lesson.pupil.id)
+            .single();
+
+          await supabase
+            .from("pupils")
+            .update({ 
+              lessons_completed: newLessonsCompleted,
+              reward_points: newRewardPoints,
+              total_lessons_for_rewards: newTotalLessons,
+              free_lessons_earned: (pupilData?.free_lessons_earned || 0) + totalNewFreeLessons
+            })
+            .eq("id", lesson.pupil.id);
+
+          // Log points to rewards history
+          await supabase
+            .from("pupil_rewards_history")
+            .insert({
+              pupil_id: lesson.pupil.id,
+              instructor_id: instructorId,
+              points_change: pointsAwarded,
+              reason: "Lesson completed"
+            });
+        }
+      } catch (rewardsError) {
+        console.error("Error awarding rewards:", rewardsError);
+        // Non-blocking - still complete the lesson
+      }
 
       // 4. Auto-calculate mileage if pickup postcode is available
       if (lesson.pickup_postcode) {
@@ -278,7 +351,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
 
               toast({ 
                 title: "Lesson completed!", 
-                description: `${lesson.pupil.name}'s session logged. Mileage tracked: ${routeData.estimated_lesson_miles.toFixed(1)} miles 🚗` 
+                description: `${lesson.pupil.name} earned +${pointsAwarded} points! Mileage: ${routeData.estimated_lesson_miles.toFixed(1)} mi 🚗` 
               });
               
               // Remove from today's list and exit early
@@ -294,7 +367,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
 
       toast({ 
         title: "Lesson completed!", 
-        description: `Session with ${lesson.pupil.name} has been logged.` 
+        description: `${lesson.pupil.name} earned +${pointsAwarded} points! 🎉` 
       });
 
       // Remove from today's list

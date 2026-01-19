@@ -32,6 +32,11 @@ export function PupilRewards({ pupilId, brandColour }: PupilRewardsProps) {
     referral_code: "",
   });
   const [history, setHistory] = useState<RewardHistory[]>([]);
+  const [settings, setSettings] = useState({
+    pointsPerLesson: 10,
+    pointsForFree: 100,
+    lessonsForFree: 15,
+  });
 
   useEffect(() => {
     fetchRewardsData();
@@ -39,7 +44,7 @@ export function PupilRewards({ pupilId, brandColour }: PupilRewardsProps) {
 
   const fetchRewardsData = async () => {
     try {
-      const [{ data: pupilData }, { data: historyData }] = await Promise.all([
+      const [{ data: pupilData }, { data: historyData }, { data: settingsData }] = await Promise.all([
         supabase
           .from("pupils")
           .select("reward_points, total_lessons_for_rewards, free_lessons_earned, free_lessons_used, referral_code")
@@ -50,7 +55,11 @@ export function PupilRewards({ pupilId, brandColour }: PupilRewardsProps) {
           .select("id, points_change, reason, created_at")
           .eq("pupil_id", pupilId)
           .order("created_at", { ascending: false })
-          .limit(10)
+          .limit(10),
+        supabase
+          .from("site_settings")
+          .select("setting_key, setting_value")
+          .in("setting_key", ["points_per_lesson", "points_for_free_lesson", "lessons_for_free_lesson"])
       ]);
 
       if (pupilData) {
@@ -66,6 +75,22 @@ export function PupilRewards({ pupilId, brandColour }: PupilRewardsProps) {
       if (historyData) {
         setHistory(historyData);
       }
+
+      if (settingsData) {
+        const newSettings = { ...settings };
+        settingsData.forEach((s: { setting_key: string; setting_value: string | null }) => {
+          if (s.setting_key === "points_per_lesson" && s.setting_value) {
+            newSettings.pointsPerLesson = parseInt(s.setting_value, 10);
+          }
+          if (s.setting_key === "points_for_free_lesson" && s.setting_value) {
+            newSettings.pointsForFree = parseInt(s.setting_value, 10);
+          }
+          if (s.setting_key === "lessons_for_free_lesson" && s.setting_value) {
+            newSettings.lessonsForFree = parseInt(s.setting_value, 10);
+          }
+        });
+        setSettings(newSettings);
+      }
     } catch (error) {
       console.error("Error fetching rewards:", error);
     } finally {
@@ -80,9 +105,9 @@ export function PupilRewards({ pupilId, brandColour }: PupilRewardsProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const pointsToNextReward = 100 - (rewardsData.reward_points % 100);
-  const progressToNextReward = (rewardsData.reward_points % 100);
-  const lessonsToNextFree = 15 - (rewardsData.total_lessons_for_rewards % 15);
+  const pointsToNextReward = settings.pointsForFree - (rewardsData.reward_points % settings.pointsForFree);
+  const progressToNextReward = (rewardsData.reward_points % settings.pointsForFree);
+  const lessonsToNextFree = settings.lessonsForFree - (rewardsData.total_lessons_for_rewards % settings.lessonsForFree);
   const freeLessonsAvailable = rewardsData.free_lessons_earned - rewardsData.free_lessons_used;
 
   const accentColor = brandColour || '#1e3a5f';
@@ -196,19 +221,19 @@ export function PupilRewards({ pupilId, brandColour }: PupilRewardsProps) {
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: accentColor }}>
                 1
               </div>
-              <span>{t('rewards.earnPerLesson')} (+10 points)</span>
+              <span>{t('rewards.earnPerLesson')} (+{settings.pointsPerLesson} points)</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: accentColor }}>
                 2
               </div>
-              <span>{t('rewards.freeAt100')}</span>
+              <span>Earn a free lesson at {settings.pointsForFree} points</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: accentColor }}>
                 3
               </div>
-              <span>{t('rewards.freeEvery15')}</span>
+              <span>Free lesson every {settings.lessonsForFree} lessons completed</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: accentColor }}>
