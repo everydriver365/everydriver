@@ -288,7 +288,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                 {isTracking && (
                   <div className="flex items-center gap-2">
                     <p className="text-xs text-muted-foreground">
-                      {currentSpeed.toFixed(0)} km/h · {totalDistance.toFixed(1)} km
+                      {Math.round(currentSpeed * 0.621371)} mph · {(totalDistance * 0.621371).toFixed(1)} mi
                     </p>
                     <span className={`text-xs ${getGPSStatusColor()}`}>{gpsQuality.status}</span>
                   </div>
@@ -466,7 +466,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                       >
                         <AlertTriangle className="h-5 w-5" />
                         <span className="font-semibold">
-                          SPEED LIMIT {speedLimitData.speedLimit} km/h — Current: {currentSpeed.toFixed(0)} km/h
+                          SPEED LIMIT {speedLimitData.speedLimit ? Math.round(speedLimitData.speedLimit * 0.621371) : '--'} mph — Current: {Math.round(currentSpeed * 0.621371)} mph
                         </span>
                       </motion.div>
                     )}
@@ -534,9 +534,26 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                     transition={{ delay: 0.1 }}
                     className="bg-background/95 backdrop-blur-sm border-t px-4 py-4 z-20"
                   >
+                    {/* Road Name & Speed Limit Display */}
+                    {(speedLimitData.roadType || speedLimitData.speedLimit) && (
+                      <div className="mb-3 p-2.5 bg-muted/50 rounded-lg flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Navigation className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium truncate max-w-[180px]">
+                            {speedLimitData.roadType || 'Unknown Road'}
+                          </span>
+                        </div>
+                        {speedLimitData.speedLimit && (
+                          <Badge variant={speedLimitData.isExceeding ? "destructive" : "secondary"} className="text-xs font-bold">
+                            {Math.round(speedLimitData.speedLimit * 0.621371)} mph limit
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
                     {/* Stats Grid */}
                     <div className="grid grid-cols-4 gap-3 mb-4">
-                      {/* Speed with Limit */}
+                      {/* Speed with Limit - Now in MPH */}
                       <div className={`rounded-xl p-3 text-center relative ${
                         speedLimitData.isExceeding 
                           ? 'bg-red-500/20 ring-2 ring-red-500' 
@@ -550,14 +567,14 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                                 ? 'bg-red-500 text-white' 
                                 : 'bg-muted text-muted-foreground'
                             }`}>
-                              {speedLimitData.speedLimit}
+                              {Math.round(speedLimitData.speedLimit * 0.621371)}
                             </span>
                           )}
                         </div>
                         <p className={`text-2xl font-bold tabular-nums ${
                           speedLimitData.isExceeding ? 'text-red-500' : ''
-                        }`}>{currentSpeed.toFixed(0)}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">km/h</p>
+                        }`}>{Math.round(currentSpeed * 0.621371)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">mph</p>
                         {speedLimitData.isExceeding && (
                           <motion.div
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -569,11 +586,11 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                         )}
                       </div>
                       
-                      {/* Distance */}
+                      {/* Distance - in miles */}
                       <div className="bg-muted/50 rounded-xl p-3 text-center">
                         <MapPin className="h-5 w-5 mx-auto mb-1 text-blue-500" />
-                        <p className="text-2xl font-bold tabular-nums">{totalDistance.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">km</p>
+                        <p className="text-2xl font-bold tabular-nums">{(totalDistance * 0.621371).toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">miles</p>
                       </div>
                       
                       {/* Score */}
