@@ -2326,7 +2326,11 @@ export type Database = {
           id: string
           instructor_id: string
           ip_address: string | null
+          parent_name: string | null
+          parent_signature_url: string | null
+          parent_signed_at: string | null
           pupil_id: string
+          requires_parent_signature: boolean | null
           signature_url: string
           signed_at: string
           terms_id: string
@@ -2337,7 +2341,11 @@ export type Database = {
           id?: string
           instructor_id: string
           ip_address?: string | null
+          parent_name?: string | null
+          parent_signature_url?: string | null
+          parent_signed_at?: string | null
           pupil_id: string
+          requires_parent_signature?: boolean | null
           signature_url: string
           signed_at?: string
           terms_id: string
@@ -2348,7 +2356,11 @@ export type Database = {
           id?: string
           instructor_id?: string
           ip_address?: string | null
+          parent_name?: string | null
+          parent_signature_url?: string | null
+          parent_signed_at?: string | null
           pupil_id?: string
+          requires_parent_signature?: boolean | null
           signature_url?: string
           signed_at?: string
           terms_id?: string
@@ -2386,6 +2398,7 @@ export type Database = {
           created_at: string
           current_streak: number | null
           damoov_device_token: string | null
+          date_of_birth: string | null
           drive_coins: number | null
           email: string | null
           enquiry_id: string | null
@@ -2428,6 +2441,7 @@ export type Database = {
           created_at?: string
           current_streak?: number | null
           damoov_device_token?: string | null
+          date_of_birth?: string | null
           drive_coins?: number | null
           email?: string | null
           enquiry_id?: string | null
@@ -2470,6 +2484,7 @@ export type Database = {
           created_at?: string
           current_streak?: number | null
           damoov_device_token?: string | null
+          date_of_birth?: string | null
           drive_coins?: number | null
           email?: string | null
           enquiry_id?: string | null
