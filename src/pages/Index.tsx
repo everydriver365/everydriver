@@ -54,7 +54,7 @@ import logoAdiCode from "@/assets/logo-adi-code.jpg";
 import logoMsa from "@/assets/logo-msa.jpg";
 import logoCpd from "@/assets/logo-cpd.jpg";
 import logoCardPayments from "@/assets/logo-card-payments.png";
-
+import heroMobile from "@/assets/hero-mobile.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
@@ -178,6 +178,20 @@ export default function Index() {
                   <span className="text-sm text-muted-foreground">0% Finance</span>
                 </div>
               </div>
+            </motion.div>
+
+            {/* Mobile Hero Image - Only visible on mobile */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="md:hidden mt-8"
+            >
+              <img 
+                src={heroMobile} 
+                alt="Happy learner driver" 
+                className="w-full max-w-sm mx-auto rounded-2xl shadow-lg"
+              />
             </motion.div>
             
             {/* Right Content - Scattered Polaroid Collage */}
