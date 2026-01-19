@@ -141,8 +141,19 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
-      {/* Header Bar - blue background */}
-      <div className="sticky top-0 z-40 bg-primary px-4 py-3 flex items-center justify-between overflow-hidden">
+      {/* Hero Image - extends behind header */}
+      <div className="absolute top-0 left-0 right-0 h-56 z-0 overflow-hidden">
+        <img 
+          src={heroImage}
+          alt="Driving"
+          className="w-full h-full object-cover"
+        />
+        {/* Gradient overlay for readability and fade to content */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background" />
+      </div>
+
+      {/* Header Bar - transparent with white text */}
+      <div className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between overflow-hidden">
         {/* Logo on the left */}
         <img 
           src={logoDark} 
@@ -290,16 +301,8 @@ export function InstructorMobileHome({
         </div>
       </div>
 
-      {/* Hero Image - directly under header */}
-      <div className="relative h-40 overflow-hidden">
-        <img 
-          src={heroImage}
-          alt="Driving"
-          className="w-full h-full object-cover"
-        />
-        {/* Gradient Overlay for bottom fade */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-      </div>
+      {/* Spacer for hero area */}
+      <div className="h-44 relative z-10" />
 
       {/* Motivational Card */}
       <div className="px-4 -mt-2">
