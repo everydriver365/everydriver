@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import { format, isSameDay, isToday, startOfWeek, startOfMonth, addDays, addHours, startOfDay, differenceInMinutes, isSameWeek } from 'date-fns';
+import { useState, useEffect } from 'react';
+import { format, isSameDay, isToday, startOfWeek, startOfMonth, addDays, addHours, startOfDay, differenceInMinutes, isSameWeek, isSameMonth, addMonths, subMonths } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Plus, Palette, GripVertical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Palette, GripVertical, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useInstructorCalendar, CalendarEvent, CalendarView } from '@/hooks/useInstructorCalendar';
@@ -10,17 +10,19 @@ import { AddCalendarEventDialog } from './AddCalendarEventDialog';
 import { CalendarColorSettings, CalendarColors, DEFAULT_CALENDAR_COLORS } from './CalendarColorSettings';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface InstructorCalendarProps {
   instructorId: string;
 }
 
-const HOUR_HEIGHT = 60; // pixels per hour
+const HOUR_HEIGHT = 60;
 const START_HOUR = 7;
 const END_HOUR = 21;
 const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 
 export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
+  const isMobile = useIsMobile();
   const { 
     events, 
     loading, 
@@ -28,6 +30,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
     view, 
     setView, 
     navigate,
+    goToDate,
     refetch,
     deleteBlock,
     rescheduleLesson,
@@ -42,6 +45,14 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
   const [showColorSettings, setShowColorSettings] = useState(false);
   const [draggedEvent, setDraggedEvent] = useState<CalendarEvent | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<{ day: Date; hour: number } | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('calendar-sidebar-open');
+    return saved !== null ? saved === 'true' : !isMobile;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('calendar-sidebar-open', String(sidebarOpen));
+  }, [sidebarOpen]);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -108,7 +119,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, event: CalendarEvent) => {
-    if (event.type === 'external') return; // Can't drag external events
+    if (event.type === 'external') return;
     setDraggedEvent(event);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', event.id);
@@ -169,215 +180,152 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-background rounded-lg border overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-card flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate('today')}
-            className={cn(
-              isSameWeek(currentDate, new Date(), { weekStartsOn: 1 }) && view === 'week' && 'bg-primary/10'
-            )}
+    <div className="flex h-full gap-0">
+      {/* Mini Calendar Sidebar */}
+      <AnimatePresence initial={false}>
+        {sidebarOpen && (view === 'week' || view === 'day') && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: isMobile ? 220 : 260, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="border-r bg-card overflow-hidden flex-shrink-0"
           >
-            Today
-          </Button>
-          <div className="flex items-center">
-            <Button variant="ghost" size="icon" onClick={() => navigate('prev')}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate('next')}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <h2 className="text-lg font-semibold ml-2">{getViewTitle()}</h2>
-        </div>
+            <MiniCalendarSidebar
+              currentDate={currentDate}
+              events={events}
+              calendarColors={calendarColors}
+              getEventColor={getEventColor}
+              onDateSelect={(date) => goToDate(date)}
+              onClose={() => setSidebarOpen(false)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-lg border bg-muted p-1">
-            {(['day', 'week', 'month'] as CalendarView[]).map((v) => (
+      {/* Main Calendar */}
+      <div className="flex-1 flex flex-col bg-background rounded-lg border overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b bg-card flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            {(view === 'week' || view === 'day') && (
               <Button
-                key={v}
-                variant={view === v ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setView(v)}
-                className="capitalize px-3"
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                title={sidebarOpen ? 'Hide mini calendar' : 'Show mini calendar'}
               >
-                {v}
+                {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
               </Button>
-            ))}
+            )}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate('today')}
+              className={cn(
+                isSameWeek(currentDate, new Date(), { weekStartsOn: 1 }) && view === 'week' && 'bg-primary/10'
+              )}
+            >
+              Today
+            </Button>
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon" onClick={() => navigate('prev')}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => navigate('next')}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <h2 className="text-lg font-semibold ml-2 hidden sm:block">{getViewTitle()}</h2>
+            <h2 className="text-sm font-semibold ml-2 sm:hidden">{format(currentDate, 'MMM d')}</h2>
           </div>
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={() => setShowColorSettings(true)}
-            title="Customize colors"
-          >
-            <Palette className="h-4 w-4" />
-          </Button>
-          <Button onClick={() => setShowAddDialog(true)} size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            Add
-          </Button>
-        </div>
-      </div>
 
-      {/* Calendar Grid */}
-      <div className="flex-1 overflow-auto">
-        {view === 'week' && (
-          <div className="min-w-[800px]">
-            {/* Day Headers */}
-            <div className="flex border-b sticky top-0 bg-card z-10">
-              <div className="w-16 flex-shrink-0" />
-              {weekDays.map((day) => (
-                <div
-                  key={day.toISOString()}
-                  className={cn(
-                    "flex-1 text-center py-3 border-l",
-                    isToday(day) && "bg-primary/5"
-                  )}
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border bg-muted p-1">
+              {(['day', 'week', 'month'] as CalendarView[]).map((v) => (
+                <Button
+                  key={v}
+                  variant={view === v ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setView(v)}
+                  className="capitalize px-2 sm:px-3"
                 >
-                  <div className="text-sm text-muted-foreground">{format(day, 'EEE')}</div>
-                  <div className={cn(
-                    "text-2xl font-semibold",
-                    isToday(day) && "text-primary"
-                  )}>
-                    {format(day, 'd')}
-                  </div>
-                </div>
+                  <span className="hidden sm:inline">{v}</span>
+                  <span className="sm:hidden">{v.charAt(0).toUpperCase()}</span>
+                </Button>
               ))}
             </div>
-
-            {/* Time Grid */}
-            <div className="flex relative">
-              {/* Time Column */}
-              <div className="w-16 flex-shrink-0">
-                {HOURS.map((hour) => (
-                  <div
-                    key={hour}
-                    className="h-[60px] text-xs text-muted-foreground text-right pr-2 -mt-2"
-                  >
-                    {format(addHours(startOfDay(new Date()), hour), 'ha')}
-                  </div>
-                ))}
-              </div>
-
-              {/* Day Columns */}
-              {weekDays.map((day) => {
-                const dayEvents = getEventsForDay(day);
-                
-                return (
-                  <div
-                    key={day.toISOString()}
-                    className={cn(
-                      "flex-1 border-l relative",
-                      isToday(day) && "bg-primary/5"
-                    )}
-                  >
-                    {/* Hour slots */}
-                    {HOURS.map((hour) => (
-                      <div
-                        key={hour}
-                        className={cn(
-                          "h-[60px] border-b border-dashed border-muted cursor-pointer hover:bg-muted/30 transition-colors",
-                          dragOverSlot?.day.toISOString() === day.toISOString() && 
-                          dragOverSlot?.hour === hour && "bg-primary/20"
-                        )}
-                        onClick={() => handleTimeSlotClick(day, hour)}
-                        onDragOver={(e) => handleDragOver(e, day, hour)}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, day, hour)}
-                      />
-                    ))}
-
-                    {/* Events */}
-                    <AnimatePresence>
-                      {dayEvents.map((event) => {
-                        const style = getEventStyle(event, day);
-                        const color = getEventColor(event, calendarColors);
-                        const isDraggable = event.type !== 'external';
-                        
-                        return (
-                          <motion.div
-                            key={event.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: draggedEvent?.id === event.id ? 0.5 : 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            draggable={isDraggable}
-                            onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, event)}
-                            onDragEnd={handleDragEnd}
-                            className={cn(
-                              "absolute left-1 right-1 rounded-md px-2 py-1 text-xs cursor-pointer border-l-4 overflow-hidden text-white group",
-                              isDraggable && "cursor-grab active:cursor-grabbing",
-                              event.type === 'external' && "text-muted-foreground"
-                            )}
-                            style={{
-                              top: style.top,
-                              height: style.height,
-                              backgroundColor: color,
-                              borderLeftColor: color,
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedEvent(event);
-                            }}
-                          >
-                            {isDraggable && (
-                              <GripVertical className="h-3 w-3 absolute right-1 top-1 opacity-0 group-hover:opacity-50" />
-                            )}
-                            <div className="font-medium truncate">{event.title}</div>
-                            {style.height > 40 && (
-                              <div className="text-[10px] opacity-80">
-                                {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
-                              </div>
-                            )}
-                          </motion.div>
-                        );
-                      })}
-                    </AnimatePresence>
-
-                    {/* Current time indicator */}
-                    {isToday(day) && <CurrentTimeIndicator />}
-                  </div>
-                );
-              })}
-            </div>
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={() => setShowColorSettings(true)}
+              title="Customize colors"
+            >
+              <Palette className="h-4 w-4" />
+            </Button>
+            <Button onClick={() => setShowAddDialog(true)} size="sm">
+              <Plus className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Add</span>
+            </Button>
           </div>
-        )}
+        </div>
 
-        {view === 'day' && (
-          <DayView 
-            date={currentDate}
-            events={events.filter(e => isSameDay(e.start, currentDate))}
-            onEventClick={setSelectedEvent}
-            onTimeSlotClick={handleTimeSlotClick}
-            getEventStyle={getEventStyle}
-            calendarColors={calendarColors}
-            getEventColor={getEventColor}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onDragEnd={handleDragEnd}
-            draggedEvent={draggedEvent}
-            dragOverSlot={dragOverSlot}
-          />
-        )}
+        {/* Calendar Grid */}
+        <div className="flex-1 overflow-auto">
+          {view === 'week' && (
+            <WeekView
+              weekDays={weekDays}
+              events={events}
+              currentDate={currentDate}
+              calendarColors={calendarColors}
+              getEventStyle={getEventStyle}
+              getEventColor={getEventColor}
+              getEventsForDay={getEventsForDay}
+              onTimeSlotClick={handleTimeSlotClick}
+              onEventClick={setSelectedEvent}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onDragEnd={handleDragEnd}
+              draggedEvent={draggedEvent}
+              dragOverSlot={dragOverSlot}
+            />
+          )}
 
-        {view === 'month' && (
-          <MonthView
-            currentDate={currentDate}
-            events={events}
-            onEventClick={setSelectedEvent}
-            onDayClick={(day) => {
-              setAddDialogDate(addHours(startOfDay(day), 9));
-              setShowAddDialog(true);
-            }}
-            calendarColors={calendarColors}
-            getEventColor={getEventColor}
-          />
-        )}
+          {view === 'day' && (
+            <DayView 
+              date={currentDate}
+              events={events.filter(e => isSameDay(e.start, currentDate))}
+              onEventClick={setSelectedEvent}
+              onTimeSlotClick={handleTimeSlotClick}
+              getEventStyle={getEventStyle}
+              calendarColors={calendarColors}
+              getEventColor={getEventColor}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onDragEnd={handleDragEnd}
+              draggedEvent={draggedEvent}
+              dragOverSlot={dragOverSlot}
+            />
+          )}
+
+          {view === 'month' && (
+            <MonthView
+              currentDate={currentDate}
+              events={events}
+              onEventClick={setSelectedEvent}
+              onDayClick={(day) => {
+                setAddDialogDate(addHours(startOfDay(day), 9));
+                setShowAddDialog(true);
+              }}
+              calendarColors={calendarColors}
+              getEventColor={getEventColor}
+            />
+          )}
+        </div>
       </div>
 
       {/* Event Detail Sheet */}
@@ -413,6 +361,309 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
         colors={calendarColors}
         onColorsChange={setCalendarColors}
       />
+    </div>
+  );
+}
+
+// Mini Calendar Sidebar Component
+interface MiniCalendarSidebarProps {
+  currentDate: Date;
+  events: CalendarEvent[];
+  calendarColors: CalendarColors;
+  getEventColor: (event: CalendarEvent, colors: CalendarColors) => string;
+  onDateSelect: (date: Date) => void;
+  onClose: () => void;
+}
+
+function MiniCalendarSidebar({ 
+  currentDate, 
+  events, 
+  calendarColors,
+  getEventColor,
+  onDateSelect,
+  onClose 
+}: MiniCalendarSidebarProps) {
+  const [miniMonth, setMiniMonth] = useState(startOfMonth(currentDate));
+
+  useEffect(() => {
+    setMiniMonth(startOfMonth(currentDate));
+  }, [currentDate]);
+
+  const monthStart = startOfWeek(miniMonth, { weekStartsOn: 1 });
+  const weeks = Array.from({ length: 6 }, (_, weekIndex) => 
+    Array.from({ length: 7 }, (_, dayIndex) => addDays(monthStart, weekIndex * 7 + dayIndex))
+  );
+
+  const getEventsForDay = (day: Date) => events.filter(e => isSameDay(e.start, day));
+
+  return (
+    <div className="p-3 h-full flex flex-col">
+      {/* Mini Month Header */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-semibold text-sm">{format(miniMonth, 'MMMM yyyy')}</h3>
+        <div className="flex items-center gap-1">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7"
+            onClick={() => setMiniMonth(subMonths(miniMonth, 1))}
+          >
+            <ChevronLeft className="h-3 w-3" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7"
+            onClick={() => setMiniMonth(addMonths(miniMonth, 1))}
+          >
+            <ChevronRight className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Day Headers */}
+      <div className="grid grid-cols-7 gap-0 mb-1">
+        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+          <div key={i} className="text-center text-xs text-muted-foreground font-medium py-1">
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Mini Calendar Grid */}
+      <div className="flex-1">
+        {weeks.map((week, weekIndex) => (
+          <div key={weekIndex} className="grid grid-cols-7 gap-0">
+            {week.map((day) => {
+              const dayEvents = getEventsForDay(day);
+              const isCurrentMonth = isSameMonth(day, miniMonth);
+              const isSelected = isSameDay(day, currentDate);
+              const hasEvents = dayEvents.length > 0;
+
+              return (
+                <button
+                  key={day.toISOString()}
+                  onClick={() => onDateSelect(day)}
+                  className={cn(
+                    "relative h-8 w-full text-xs rounded-md transition-colors",
+                    "hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/20",
+                    !isCurrentMonth && "text-muted-foreground/50",
+                    isToday(day) && "font-bold text-primary",
+                    isSelected && "bg-primary text-primary-foreground hover:bg-primary/90"
+                  )}
+                >
+                  {format(day, 'd')}
+                  {/* Event indicators */}
+                  {hasEvents && !isSelected && (
+                    <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
+                      {dayEvents.slice(0, 3).map((event, i) => (
+                        <div
+                          key={i}
+                          className="w-1 h-1 rounded-full"
+                          style={{ backgroundColor: getEventColor(event, calendarColors) }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="pt-3 border-t mt-3 space-y-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full justify-start text-xs"
+          onClick={() => onDateSelect(new Date())}
+        >
+          Jump to Today
+        </Button>
+      </div>
+
+      {/* Legend */}
+      <div className="pt-3 border-t mt-3 space-y-1.5">
+        <div className="text-xs font-medium text-muted-foreground mb-2">Legend</div>
+        <div className="grid grid-cols-2 gap-1.5 text-xs">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.lesson }} />
+            <span className="text-muted-foreground">Paid</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.lesson_unpaid }} />
+            <span className="text-muted-foreground">Unpaid</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.block_personal }} />
+            <span className="text-muted-foreground">Block</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.external }} />
+            <span className="text-muted-foreground">External</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Week View Component
+interface WeekViewProps {
+  weekDays: Date[];
+  events: CalendarEvent[];
+  currentDate: Date;
+  calendarColors: CalendarColors;
+  getEventStyle: (event: CalendarEvent, dayStart: Date) => { top: number; height: number };
+  getEventColor: (event: CalendarEvent, colors: CalendarColors) => string;
+  getEventsForDay: (day: Date) => CalendarEvent[];
+  onTimeSlotClick: (day: Date, hour: number) => void;
+  onEventClick: (event: CalendarEvent) => void;
+  onDragStart: (e: React.DragEvent, event: CalendarEvent) => void;
+  onDragOver: (e: React.DragEvent, day: Date, hour: number) => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent, day: Date, hour: number) => Promise<void>;
+  onDragEnd: () => void;
+  draggedEvent: CalendarEvent | null;
+  dragOverSlot: { day: Date; hour: number } | null;
+}
+
+function WeekView({
+  weekDays,
+  calendarColors,
+  getEventStyle,
+  getEventColor,
+  getEventsForDay,
+  onTimeSlotClick,
+  onEventClick,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
+  draggedEvent,
+  dragOverSlot,
+}: WeekViewProps) {
+  return (
+    <div className="min-w-[800px]">
+      {/* Day Headers */}
+      <div className="flex border-b sticky top-0 bg-card z-10">
+        <div className="w-16 flex-shrink-0" />
+        {weekDays.map((day) => (
+          <div
+            key={day.toISOString()}
+            className={cn(
+              "flex-1 text-center py-3 border-l",
+              isToday(day) && "bg-primary/5"
+            )}
+          >
+            <div className="text-sm text-muted-foreground">{format(day, 'EEE')}</div>
+            <div className={cn(
+              "text-2xl font-semibold",
+              isToday(day) && "text-primary"
+            )}>
+              {format(day, 'd')}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Time Grid */}
+      <div className="flex relative">
+        {/* Time Column */}
+        <div className="w-16 flex-shrink-0">
+          {HOURS.map((hour) => (
+            <div
+              key={hour}
+              className="h-[60px] text-xs text-muted-foreground text-right pr-2 -mt-2"
+            >
+              {format(addHours(startOfDay(new Date()), hour), 'ha')}
+            </div>
+          ))}
+        </div>
+
+        {/* Day Columns */}
+        {weekDays.map((day) => {
+          const dayEvents = getEventsForDay(day);
+          
+          return (
+            <div
+              key={day.toISOString()}
+              className={cn(
+                "flex-1 border-l relative",
+                isToday(day) && "bg-primary/5"
+              )}
+            >
+              {/* Hour slots */}
+              {HOURS.map((hour) => (
+                <div
+                  key={hour}
+                  className={cn(
+                    "h-[60px] border-b border-dashed border-muted cursor-pointer hover:bg-muted/30 transition-colors",
+                    dragOverSlot?.day.toISOString() === day.toISOString() && 
+                    dragOverSlot?.hour === hour && "bg-primary/20"
+                  )}
+                  onClick={() => onTimeSlotClick(day, hour)}
+                  onDragOver={(e) => onDragOver(e, day, hour)}
+                  onDragLeave={onDragLeave}
+                  onDrop={(e) => onDrop(e, day, hour)}
+                />
+              ))}
+
+              {/* Events */}
+              <AnimatePresence>
+                {dayEvents.map((event) => {
+                  const style = getEventStyle(event, day);
+                  const color = getEventColor(event, calendarColors);
+                  const isDraggable = event.type !== 'external';
+                  
+                  return (
+                    <motion.div
+                      key={event.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: draggedEvent?.id === event.id ? 0.5 : 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      draggable={isDraggable}
+                      onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, event)}
+                      onDragEnd={onDragEnd}
+                      className={cn(
+                        "absolute left-1 right-1 rounded-md px-2 py-1 text-xs cursor-pointer border-l-4 overflow-hidden text-white group",
+                        isDraggable && "cursor-grab active:cursor-grabbing",
+                        event.type === 'external' && "text-muted-foreground"
+                      )}
+                      style={{
+                        top: style.top,
+                        height: style.height,
+                        backgroundColor: color,
+                        borderLeftColor: color,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEventClick(event);
+                      }}
+                    >
+                      {isDraggable && (
+                        <GripVertical className="h-3 w-3 absolute right-1 top-1 opacity-0 group-hover:opacity-50" />
+                      )}
+                      <div className="font-medium truncate">{event.title}</div>
+                      {style.height > 40 && (
+                        <div className="text-[10px] opacity-80">
+                          {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+
+              {/* Current time indicator */}
+              {isToday(day) && <CurrentTimeIndicator />}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -287,6 +287,11 @@ export function useInstructorCalendar(instructorId: string) {
     await fetchEvents();
   }, [fetchEvents]);
 
+  // Set current date directly (for mini calendar navigation)
+  const goToDate = useCallback((date: Date) => {
+    setCurrentDate(date);
+  }, []);
+
   return {
     events,
     loading,
@@ -294,6 +299,7 @@ export function useInstructorCalendar(instructorId: string) {
     view,
     setView,
     navigate,
+    goToDate,
     refetch: fetchEvents,
     addBlock,
     updateBlock,
