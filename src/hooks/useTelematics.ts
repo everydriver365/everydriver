@@ -108,6 +108,7 @@ export const useTelematics = (instructorId: string) => {
   const sessionIdRef = useRef<string | null>(null);
   const pupilIdRef = useRef<string | null>(null);
   const lastSpeedLimitFetchRef = useRef<{ lat: number; lon: number; time: number } | null>(null);
+  const currentRoadDataRef = useRef<{ roadName: string | null; speedLimit: number | null }>({ roadName: null, speedLimit: null });
 
   // Calculate distance between two GPS points using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -159,7 +160,7 @@ export const useTelematics = (instructorId: string) => {
     return avgSpeed;
   }, []);
 
-  // Fetch speed limit for current position
+  // Fetch speed limit for current position and store in ref for DB insertion
   const fetchSpeedLimit = useCallback(async (lat: number, lon: number, currentSpeedKmh: number) => {
     const now = Date.now();
     const lastFetch = lastSpeedLimitFetchRef.current;
@@ -190,6 +191,12 @@ export const useTelematics = (instructorId: string) => {
       }
       
       lastSpeedLimitFetchRef.current = { lat, lon, time: now };
+      
+      // Store in ref for use when saving GPS points
+      currentRoadDataRef.current = {
+        roadName: data.roadType || null,
+        speedLimit: data.speedLimit || null
+      };
       
       setSpeedLimitData({
         speedLimit: data.speedLimit,
@@ -637,7 +644,7 @@ export const useTelematics = (instructorId: string) => {
             }
           }
 
-          // Save GPS point to database with accuracy
+          // Save GPS point to database with accuracy, road name and speed limit
           await supabase.from('telematics_gps_points').insert({
             telematics_id: session.id,
             latitude: point.latitude,
@@ -646,7 +653,9 @@ export const useTelematics = (instructorId: string) => {
             heading: point.heading,
             altitude_m: point.altitude_m,
             accuracy_m: point.accuracy_m,
-            gps_accuracy_m: point.accuracy_m
+            gps_accuracy_m: point.accuracy_m,
+            road_name: currentRoadDataRef.current.roadName,
+            speed_limit_kmh: currentRoadDataRef.current.speedLimit
           });
 
           setGpsPoints(prev => [...prev, point]);

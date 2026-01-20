@@ -3187,7 +3187,9 @@ export type Database = {
           latitude: number
           longitude: number
           recorded_at: string
+          road_name: string | null
           speed_kmh: number | null
+          speed_limit_kmh: number | null
           telematics_id: string
         }
         Insert: {
@@ -3199,7 +3201,9 @@ export type Database = {
           latitude: number
           longitude: number
           recorded_at?: string
+          road_name?: string | null
           speed_kmh?: number | null
+          speed_limit_kmh?: number | null
           telematics_id: string
         }
         Update: {
@@ -3211,7 +3215,9 @@ export type Database = {
           latitude?: number
           longitude?: number
           recorded_at?: string
+          road_name?: string | null
           speed_kmh?: number | null
+          speed_limit_kmh?: number | null
           telematics_id?: string
         }
         Relationships: [
