@@ -15,10 +15,10 @@ interface PaymentHealthResponse {
   elavon: GatewayStatus;
 }
 
-// CONFIRMED WORKING gateways - Square has credential issues
+// CONFIRMED WORKING gateways - Square and Klarna have credential issues
 const defaultHealth: PaymentHealthResponse = {
   clearpay: { available: true, configured: true },
-  klarna: { available: true, configured: true },
+  klarna: { available: false, configured: true, error: "Klarna credentials need verification - contact Klarna support" },
   npi: { available: true, configured: true },
   square: { available: false, configured: true, error: "Credentials not configured for production" },
   elavon: { available: true, configured: true },
