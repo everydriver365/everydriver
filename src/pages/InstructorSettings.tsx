@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield } from "lucide-react";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -14,6 +14,7 @@ import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
 import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
 import { TermsConditionsEditor } from "@/components/instructor/TermsConditionsEditor";
 import { DepositSettingsEditor } from "@/components/instructor/DepositSettingsEditor";
+import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -712,6 +713,16 @@ const { data, error } = await supabase
             instructorId={instructorId} 
             instructorName={profile?.name}
           />
+        </SettingsTile>
+
+        {/* Compliance Tracking Section */}
+        <SettingsTile 
+          id="compliance" 
+          icon={Shield} 
+          title="Compliance & CPD" 
+          description="Track ADI badge, insurance, MOT & CPD hours"
+        >
+          <ComplianceTracker instructorId={instructorId} />
         </SettingsTile>
       </div>
     </InstructorPortalLayout>
