@@ -266,7 +266,6 @@ export function KlarnaExpressButton({
       <div 
         ref={containerRef}
         className="w-full min-h-[56px]"
-        style={{ display: status === 'visible' ? 'block' : 'none' }}
       />
       
       {/* Loading state while SDK loads or initializes */}
