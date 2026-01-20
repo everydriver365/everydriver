@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote } from "lucide-react";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -13,6 +13,7 @@ import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
 import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
 import { TermsConditionsEditor } from "@/components/instructor/TermsConditionsEditor";
+import { DepositSettingsEditor } from "@/components/instructor/DepositSettingsEditor";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -425,6 +426,16 @@ const { data, error } = await supabase
               </div>
             )}
           </div>
+        </SettingsTile>
+
+        {/* Deposit Settings Section */}
+        <SettingsTile 
+          id="deposits" 
+          icon={Banknote} 
+          title="Deposit Payments" 
+          description="Accept deposits on bookings"
+        >
+          <DepositSettingsEditor instructorId={instructorId} />
         </SettingsTile>
 
         {/* Payment Summary Section */}

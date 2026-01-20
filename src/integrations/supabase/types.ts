@@ -1616,6 +1616,9 @@ export type Database = {
           custom_domain: string | null
           custom_domain_verified: boolean | null
           dark_mode_enabled: boolean | null
+          deposit_amount: number | null
+          deposit_deadline_days: number | null
+          deposit_enabled: boolean | null
           email: string | null
           extra_info: string | null
           facebook_url: string | null
@@ -1691,6 +1694,9 @@ export type Database = {
           custom_domain?: string | null
           custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
+          deposit_amount?: number | null
+          deposit_deadline_days?: number | null
+          deposit_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
@@ -1766,6 +1772,9 @@ export type Database = {
           custom_domain?: string | null
           custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
+          deposit_amount?: number | null
+          deposit_deadline_days?: number | null
+          deposit_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
           facebook_url?: string | null
@@ -2488,11 +2497,14 @@ export type Database = {
         Row: {
           account_balance: number | null
           address: string
+          balance_due_date: string | null
           course_type: string | null
           created_at: string
           current_streak: number | null
           damoov_device_token: string | null
           date_of_birth: string | null
+          deposit_forfeited: boolean | null
+          deposit_paid: number | null
           drive_coins: number | null
           email: string | null
           enquiry_id: string | null
@@ -2508,6 +2520,7 @@ export type Database = {
           parent_email: string | null
           parent_name: string | null
           parent_phone: string | null
+          payment_type: string | null
           phone: string | null
           postcode: string
           preferred_language: string | null
@@ -2531,11 +2544,14 @@ export type Database = {
         Insert: {
           account_balance?: number | null
           address: string
+          balance_due_date?: string | null
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
           damoov_device_token?: string | null
           date_of_birth?: string | null
+          deposit_forfeited?: boolean | null
+          deposit_paid?: number | null
           drive_coins?: number | null
           email?: string | null
           enquiry_id?: string | null
@@ -2551,6 +2567,7 @@ export type Database = {
           parent_email?: string | null
           parent_name?: string | null
           parent_phone?: string | null
+          payment_type?: string | null
           phone?: string | null
           postcode: string
           preferred_language?: string | null
@@ -2574,11 +2591,14 @@ export type Database = {
         Update: {
           account_balance?: number | null
           address?: string
+          balance_due_date?: string | null
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
           damoov_device_token?: string | null
           date_of_birth?: string | null
+          deposit_forfeited?: boolean | null
+          deposit_paid?: number | null
           drive_coins?: number | null
           email?: string | null
           enquiry_id?: string | null
@@ -2594,6 +2614,7 @@ export type Database = {
           parent_email?: string | null
           parent_name?: string | null
           parent_phone?: string | null
+          payment_type?: string | null
           phone?: string | null
           postcode?: string
           preferred_language?: string | null
