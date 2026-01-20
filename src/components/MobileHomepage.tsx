@@ -115,7 +115,7 @@ export function MobileHomepage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-4 bg-card border border-border/50 rounded-2xl flex items-center gap-4 shadow-lg"
+            className="p-4 bg-card border border-border/50 rounded-lg flex items-center gap-4 shadow-lg"
           >
             <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-md">
               <Zap className="h-6 w-6 text-primary-foreground" />
@@ -135,7 +135,7 @@ export function MobileHomepage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
+              className="p-4 bg-card border border-border/50 rounded-lg shadow-lg h-full"
             >
               <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center mb-3 shadow-md">
                 <Calendar className="h-5 w-5 text-white" />
@@ -150,7 +150,7 @@ export function MobileHomepage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45 }}
-              className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
+              className="p-4 bg-card border border-border/50 rounded-lg shadow-lg h-full"
             >
               <div className="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center mb-3 shadow-md">
                 <Car className="h-5 w-5 text-white" />
@@ -174,7 +174,7 @@ export function MobileHomepage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.05 }}
-                  className="relative overflow-hidden rounded-2xl bg-card border border-border/50 shadow-lg"
+                  className="relative overflow-hidden rounded-lg bg-card border border-border/50 shadow-lg"
                 >
                   {feature.image_url ? (
                     <>
@@ -210,7 +210,7 @@ export function MobileHomepage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.85 }}
-          className="bg-card border border-border/50 rounded-2xl p-4 shadow-lg"
+          className="bg-card border border-border/50 rounded-lg p-4 shadow-lg"
         >
           <p className="text-xs text-muted-foreground text-center mb-3">Pay your way with</p>
           <div className="flex items-center justify-center gap-4">
@@ -227,7 +227,7 @@ export function MobileHomepage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="relative h-28 rounded-2xl overflow-hidden"
+          className="relative h-28 rounded-lg overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/80" />
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full" />
