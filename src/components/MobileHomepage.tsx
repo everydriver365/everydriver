@@ -88,36 +88,30 @@ export function MobileHomepage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="absolute -bottom-24 left-4 right-4 bg-card rounded-2xl p-5 shadow-2xl border-2 border-primary/20"
+          className="absolute -bottom-16 left-4 right-4 bg-card rounded-xl p-4 shadow-xl border"
         >
-          <h3 className="font-bold text-xl text-center">Start Your Journey</h3>
-          <p className="text-muted-foreground text-sm text-center mt-1 mb-4">
-            Find driving instructors near you
-          </p>
+          <h3 className="font-semibold text-base text-center">Start Your Journey</h3>
           
-          <form onSubmit={handleSearch} className="space-y-3">
-            <PostcodeAutocomplete
-              value={postcode}
-              onChange={setPostcode}
-              onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
-              placeholder="Enter your postcode..."
-              inputClassName="h-12 text-base bg-muted/50 rounded-xl"
-              showGeolocation={true}
-            />
-            <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl shadow-lg">
-              <Search className="h-5 w-5 mr-2" />
-              Find Courses
+          <form onSubmit={handleSearch} className="mt-2 flex gap-2">
+            <div className="flex-1">
+              <PostcodeAutocomplete
+                value={postcode}
+                onChange={setPostcode}
+                onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
+                placeholder="Enter postcode..."
+                inputClassName="h-10 text-sm bg-muted/50 rounded-lg"
+                showGeolocation={true}
+              />
+            </div>
+            <Button type="submit" className="h-10 px-4 rounded-lg">
+              <Search className="h-4 w-4" />
             </Button>
           </form>
-          
-          <p className="text-xs text-muted-foreground text-center mt-3">
-            💰 Money back if you pass first time
-          </p>
         </motion.div>
       </div>
       
       {/* Spacer for overlay */}
-      <div className="h-28" />
+      <div className="h-20" />
       
       {/* Course Category Tiles */}
       <div className="px-4 pt-2 space-y-3">
