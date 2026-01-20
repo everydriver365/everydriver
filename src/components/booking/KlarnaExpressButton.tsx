@@ -169,8 +169,11 @@ export function KlarnaExpressButton({
               2
             )
           );
-          if (loadResult?.show_button) {
+          const canRender = Boolean(loadResult?.show_button || loadResult?.show_form);
+
+          if (canRender) {
             console.log("Klarna: Button ready to display");
+            setErrorMessage(null);
             setStatus('visible');
           } else {
             // Check if amount is within Klarna's limits (£35 - £1000 for Pay in 3)
@@ -302,8 +305,8 @@ export function KlarnaExpressButton({
 
   if (status === 'error') {
     const hostname = typeof window !== "undefined" ? window.location.hostname : "";
-    const previewHint = hostname.includes("lovable")
-      ? "Klarna Express buttons may only render on domains approved in your Klarna settings (your preview domain may not be approved). Try your published domain."
+    const previewHint = hostname.includes("lovable") && (errorMessage?.toLowerCase().includes("sdk") || errorMessage?.toLowerCase().includes("failed"))
+      ? "Klarna can be sensitive to preview domains. If this persists, test on your published domain."
       : null;
 
     return (
@@ -347,7 +350,7 @@ export function KlarnaExpressButton({
       <div 
         id={containerId}
         ref={containerRef}
-        className="w-full min-h-[56px]"
+        className="w-full min-h-[120px]"
       />
       
       {/* Loading state while SDK loads or initializes */}
