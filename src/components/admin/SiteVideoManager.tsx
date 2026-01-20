@@ -28,6 +28,8 @@ export function SiteVideoManager() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
+  const [uploadingHeroPoster, setUploadingHeroPoster] = useState(false);
 
   // For now, we'll use a single "welcome_video" that can be managed
   const [welcomeVideo, setWelcomeVideo] = useState<{
@@ -38,6 +40,15 @@ export function SiteVideoManager() {
     video_url: "",
     thumbnail_url: "",
     title: "Our Story - Welcome Video",
+  });
+
+  // Mobile hero video state
+  const [heroVideo, setHeroVideo] = useState<{
+    video_url: string;
+    poster_url: string;
+  }>({
+    video_url: "",
+    poster_url: "",
   });
 
   useEffect(() => {
@@ -61,10 +72,29 @@ export function SiteVideoManager() {
       .eq("image_key", "welcome_video")
       .maybeSingle();
 
+    // Fetch hero video for mobile homepage
+    const { data: heroVideoData } = await supabase
+      .from("site_images")
+      .select("*")
+      .eq("image_key", "hero_video_mobile")
+      .maybeSingle();
+
+    // Fetch hero video poster
+    const { data: heroPosterData } = await supabase
+      .from("site_images")
+      .select("*")
+      .eq("image_key", "hero_video_poster")
+      .maybeSingle();
+
     setWelcomeVideo({
       video_url: videoData?.image_url || "",
       thumbnail_url: thumbnailData?.image_url || "",
       title: videoData?.alt_text || "Our Story - Welcome Video",
+    });
+
+    setHeroVideo({
+      video_url: heroVideoData?.image_url || "",
+      poster_url: heroPosterData?.image_url || "",
     });
 
     setLoading(false);
@@ -208,6 +238,128 @@ export function SiteVideoManager() {
     }
   };
 
+  const handleHeroVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      toast.error("Please select a video file");
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("Video must be less than 100MB");
+      return;
+    }
+
+    setUploadingHeroVideo(true);
+    const fileExt = file.name.split(".").pop();
+    const fileName = `hero-video-mobile-${Date.now()}.${fileExt}`;
+    const filePath = `site-videos/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("course-videos")
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      toast.error("Failed to upload video");
+      setUploadingHeroVideo(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("course-videos")
+      .getPublicUrl(filePath);
+
+    // Save or update in site_images
+    const { data: existing } = await supabase
+      .from("site_images")
+      .select("id")
+      .eq("image_key", "hero_video_mobile")
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from("site_images")
+        .update({ image_url: urlData.publicUrl })
+        .eq("id", existing.id);
+    } else {
+      await supabase.from("site_images").insert({
+        image_key: "hero_video_mobile",
+        image_url: urlData.publicUrl,
+        alt_text: "Mobile Hero Video",
+        description: "Auto-playing hero video for mobile homepage",
+        category: "video",
+      });
+    }
+
+    setHeroVideo((prev) => ({ ...prev, video_url: urlData.publicUrl }));
+    toast.success("Hero video uploaded successfully");
+    setUploadingHeroVideo(false);
+  };
+
+  const handleHeroPosterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    setUploadingHeroPoster(true);
+    const fileExt = file.name.split(".").pop();
+    const fileName = `hero-video-poster-${Date.now()}.${fileExt}`;
+    const filePath = `site-images/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("instructor-images")
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      toast.error("Failed to upload poster");
+      setUploadingHeroPoster(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("instructor-images")
+      .getPublicUrl(filePath);
+
+    // Update in site_images
+    const { data: existing } = await supabase
+      .from("site_images")
+      .select("id")
+      .eq("image_key", "hero_video_poster")
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from("site_images")
+        .update({ image_url: urlData.publicUrl })
+        .eq("id", existing.id);
+    } else {
+      await supabase.from("site_images").insert({
+        image_key: "hero_video_poster",
+        image_url: urlData.publicUrl,
+        alt_text: "Hero Video Poster",
+        description: "Poster image for mobile hero video",
+        category: "video",
+      });
+    }
+
+    setHeroVideo((prev) => ({ ...prev, poster_url: urlData.publicUrl }));
+    toast.success("Poster uploaded successfully");
+    setUploadingHeroPoster(false);
+  };
+
   if (loading) {
     return (
       <div className="grid gap-6 md:grid-cols-2">
@@ -222,8 +374,144 @@ export function SiteVideoManager() {
       <div>
         <h2 className="text-lg font-semibold">Site Videos</h2>
         <p className="text-sm text-muted-foreground">
-          Manage the welcome video and thumbnail displayed on the homepage
+          Manage videos displayed across the site
         </p>
+      </div>
+
+      {/* Mobile Hero Video Section */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Video className="h-5 w-5 text-primary" />
+            Mobile Hero Video
+          </CardTitle>
+          <CardDescription>
+            The auto-playing background video on the mobile homepage hero section (plays once, no loop)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Hero Video */}
+            <div className="space-y-3">
+              <Label>Hero Video (MP4, WebM - max 100MB)</Label>
+              <div className="relative aspect-video rounded-lg border-2 border-dashed bg-muted overflow-hidden">
+                {heroVideo.video_url ? (
+                  <>
+                    <video
+                      src={heroVideo.video_url}
+                      className="h-full w-full object-cover"
+                      controls
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute right-2 top-2 h-8 w-8"
+                      onClick={() =>
+                        setHeroVideo((prev) => ({ ...prev, video_url: "" }))
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <label className="flex h-full cursor-pointer flex-col items-center justify-center gap-2 p-4">
+                    <Video className="h-8 w-8 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground text-center">
+                      {uploadingHeroVideo ? "Uploading..." : "Click to upload hero video"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={handleHeroVideoUpload}
+                      disabled={uploadingHeroVideo}
+                    />
+                  </label>
+                )}
+              </div>
+              {heroVideo.video_url && (
+                <label className="block">
+                  <Button variant="outline" className="w-full" asChild>
+                    <span className="cursor-pointer">
+                      <Upload className="mr-2 h-4 w-4" />
+                      {uploadingHeroVideo ? "Uploading..." : "Replace Video"}
+                      <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={handleHeroVideoUpload}
+                        disabled={uploadingHeroVideo}
+                      />
+                    </span>
+                  </Button>
+                </label>
+              )}
+            </div>
+
+            {/* Hero Poster */}
+            <div className="space-y-3">
+              <Label>Poster Image (shown while loading)</Label>
+              <div className="relative aspect-video rounded-lg border-2 border-dashed bg-muted overflow-hidden">
+                {heroVideo.poster_url ? (
+                  <>
+                    <img
+                      src={heroVideo.poster_url}
+                      alt="Hero video poster"
+                      className="h-full w-full object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute right-2 top-2 h-8 w-8"
+                      onClick={() =>
+                        setHeroVideo((prev) => ({ ...prev, poster_url: "" }))
+                      }
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <label className="flex h-full cursor-pointer flex-col items-center justify-center gap-2 p-4">
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground text-center">
+                      {uploadingHeroPoster ? "Uploading..." : "Click to upload poster"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleHeroPosterUpload}
+                      disabled={uploadingHeroPoster}
+                    />
+                  </label>
+                )}
+              </div>
+              {heroVideo.poster_url && (
+                <label className="block">
+                  <Button variant="outline" className="w-full" asChild>
+                    <span className="cursor-pointer">
+                      <Upload className="mr-2 h-4 w-4" />
+                      {uploadingHeroPoster ? "Uploading..." : "Replace Poster"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleHeroPosterUpload}
+                        disabled={uploadingHeroPoster}
+                      />
+                    </span>
+                  </Button>
+                </label>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="border-t pt-6">
+        <h3 className="text-base font-medium mb-4">Homepage Welcome Video</h3>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

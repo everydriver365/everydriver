@@ -4,6 +4,7 @@ import { Search, MapPin, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpC
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
+import { useHeroVideo } from "@/hooks/useHeroVideo";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import heroLearnerMobile from "@/assets/hero-learner-mobile.jpg";
 import logo from "@/assets/logo-everydriver-transparent.png";
@@ -21,6 +22,7 @@ export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
   const { features: includedFeatures } = useIncludedFeatures();
+  const { videoUrl: heroVideoUrl, posterUrl: heroPosterUrl } = useHeroVideo();
   const navigate = useNavigate();
   const location = useLocation();
   const { resolvedTheme, setTheme } = useTheme();
@@ -89,11 +91,11 @@ export function MobileHomepage() {
       <div className="relative mx-4">
         <div className="relative h-[240px] rounded-3xl overflow-hidden">
           <video 
-            src="/videos/hero-video.mp4"
+            src={heroVideoUrl || "/videos/hero-video.mp4"}
             autoPlay
             muted
             playsInline
-            poster={heroLearnerMobile}
+            poster={heroPosterUrl || heroLearnerMobile}
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
