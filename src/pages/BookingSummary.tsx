@@ -1591,7 +1591,7 @@ export default function BookingSummary() {
               />
               {!canSubmit && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Complete “Your Details” and fully schedule your lessons to enable Klarna.
+                  To enable Klarna: {isPupilDetailsComplete ? "details ✅" : "complete your details"} and {isFullyScheduled ? "schedule ✅" : `schedule ${(hours - scheduledHours).toFixed(1)} more hour(s)`}.
                 </p>
               )}
             </div>
