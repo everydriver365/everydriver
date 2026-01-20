@@ -110,7 +110,7 @@ export function MobileHomepage() {
       {/* Course Category Tiles */}
       <div className="px-4 pt-2 space-y-3">
         {/* Full Width - Intensive Courses */}
-        <Link to="/courses?type=intensive">
+        <Link to="/intensives">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -130,14 +130,14 @@ export function MobileHomepage() {
         
         {/* 2x Grid - Semi Intensive & Lessons */}
         <div className="grid grid-cols-2 gap-3">
-          <Link to="/courses?type=semi-intensive">
+          <Link to="/semi-intensive">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+              <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center mb-3 shadow-md">
                 <Calendar className="h-5 w-5 text-white" />
               </div>
               <h4 className="font-semibold text-sm">Semi Intensive</h4>
@@ -145,14 +145,14 @@ export function MobileHomepage() {
             </motion.div>
           </Link>
           
-          <Link to="/courses?type=weekly">
+          <Link to="/courses">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+              <div className="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center mb-3 shadow-md">
                 <Car className="h-5 w-5 text-white" />
               </div>
               <h4 className="font-semibold text-sm">Weekly Lessons</h4>
