@@ -56,6 +56,44 @@ export type Database = {
           },
         ]
       }
+      compliance_reminders: {
+        Row: {
+          days_before: number
+          expiry_date: string
+          id: string
+          instructor_id: string
+          reminder_type: string
+          sent_at: string
+          sent_via: string
+        }
+        Insert: {
+          days_before: number
+          expiry_date: string
+          id?: string
+          instructor_id: string
+          reminder_type: string
+          sent_at?: string
+          sent_via: string
+        }
+        Update: {
+          days_before?: number
+          expiry_date?: string
+          id?: string
+          instructor_id?: string
+          reminder_type?: string
+          sent_at?: string
+          sent_via?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_reminders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_enquiries: {
         Row: {
           additional_notes: string | null
@@ -224,6 +262,53 @@ export type Database = {
           what_to_bring?: string[] | null
         }
         Relationships: []
+      }
+      cpd_log_entries: {
+        Row: {
+          activity_type: string
+          certificate_url: string | null
+          created_at: string
+          date: string
+          description: string | null
+          hours: number
+          id: string
+          instructor_id: string
+          provider: string | null
+          title: string
+        }
+        Insert: {
+          activity_type: string
+          certificate_url?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          hours: number
+          id?: string
+          instructor_id: string
+          provider?: string | null
+          title: string
+        }
+        Update: {
+          activity_type?: string
+          certificate_url?: string | null
+          created_at?: string
+          date?: string
+          description?: string | null
+          hours?: number
+          id?: string
+          instructor_id?: string
+          provider?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cpd_log_entries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       domain_orders: {
         Row: {
@@ -1591,6 +1676,8 @@ export type Database = {
       }
       instructors: {
         Row: {
+          adi_badge_expiry: string | null
+          adi_badge_number: string | null
           adi_certificate_url: string | null
           adi_code_of_practice: boolean | null
           allowed_lesson_lengths: number[] | null
@@ -1607,15 +1694,21 @@ export type Database = {
           cancellation_policy_hours: number | null
           cancellation_policy_text: string | null
           car_image_url: string | null
+          car_insurance_expiry: string | null
           car_make: string | null
           car_model: string | null
+          car_mot_expiry: string | null
+          car_tax_expiry: string | null
           car_type: string
           cpd_certified: boolean | null
+          cpd_hours_logged: number | null
+          cpd_year_target: number | null
           created_at: string
           custom_branding_enabled: boolean | null
           custom_domain: string | null
           custom_domain_verified: boolean | null
           dark_mode_enabled: boolean | null
+          dbs_certificate_expiry: string | null
           deposit_amount: number | null
           deposit_deadline_days: number | null
           deposit_enabled: boolean | null
@@ -1636,6 +1729,7 @@ export type Database = {
           instructor_grade: string | null
           is_active: boolean
           last_calendar_sync: string | null
+          last_compliance_reminder_sent: string | null
           linkedin_url: string | null
           logo_url: string | null
           mini_website_domain_id: string | null
@@ -1669,6 +1763,8 @@ export type Database = {
           xero_tenant_id: string | null
         }
         Insert: {
+          adi_badge_expiry?: string | null
+          adi_badge_number?: string | null
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
@@ -1685,15 +1781,21 @@ export type Database = {
           cancellation_policy_hours?: number | null
           cancellation_policy_text?: string | null
           car_image_url?: string | null
+          car_insurance_expiry?: string | null
           car_make?: string | null
           car_model?: string | null
+          car_mot_expiry?: string | null
+          car_tax_expiry?: string | null
           car_type: string
           cpd_certified?: boolean | null
+          cpd_hours_logged?: number | null
+          cpd_year_target?: number | null
           created_at?: string
           custom_branding_enabled?: boolean | null
           custom_domain?: string | null
           custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
+          dbs_certificate_expiry?: string | null
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
@@ -1714,6 +1816,7 @@ export type Database = {
           instructor_grade?: string | null
           is_active?: boolean
           last_calendar_sync?: string | null
+          last_compliance_reminder_sent?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
@@ -1747,6 +1850,8 @@ export type Database = {
           xero_tenant_id?: string | null
         }
         Update: {
+          adi_badge_expiry?: string | null
+          adi_badge_number?: string | null
           adi_certificate_url?: string | null
           adi_code_of_practice?: boolean | null
           allowed_lesson_lengths?: number[] | null
@@ -1763,15 +1868,21 @@ export type Database = {
           cancellation_policy_hours?: number | null
           cancellation_policy_text?: string | null
           car_image_url?: string | null
+          car_insurance_expiry?: string | null
           car_make?: string | null
           car_model?: string | null
+          car_mot_expiry?: string | null
+          car_tax_expiry?: string | null
           car_type?: string
           cpd_certified?: boolean | null
+          cpd_hours_logged?: number | null
+          cpd_year_target?: number | null
           created_at?: string
           custom_branding_enabled?: boolean | null
           custom_domain?: string | null
           custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
+          dbs_certificate_expiry?: string | null
           deposit_amount?: number | null
           deposit_deadline_days?: number | null
           deposit_enabled?: boolean | null
@@ -1792,6 +1903,7 @@ export type Database = {
           instructor_grade?: string | null
           is_active?: boolean
           last_calendar_sync?: string | null
+          last_compliance_reminder_sent?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
