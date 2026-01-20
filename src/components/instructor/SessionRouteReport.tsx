@@ -324,8 +324,10 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
               <Button 
                 size="sm" 
                 variant="default" 
-                onClick={() => {
-                  generateDrivingReportPDF(report);
+                onClick={async () => {
+                  toast.loading('Generating PDF with map...');
+                  await generateDrivingReportPDF(report);
+                  toast.dismiss();
                   toast.success('PDF downloaded');
                 }}
               >
