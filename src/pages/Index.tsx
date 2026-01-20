@@ -28,6 +28,8 @@ import { useHomepageHero } from "@/hooks/useHomepageHero";
 import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
 import { useIncludedFeatures, IncludedFeatureData } from "@/hooks/useIncludedFeatures";
 import { useHomepageStats } from "@/hooks/useHomepageStats";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileHomepage } from "@/components/MobileHomepage";
 import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
 import testimonialJamesFallback from "@/assets/testimonial-james.jpg";
 import testimonialEmmaFallback from "@/assets/testimonial-emma.jpg";
@@ -58,6 +60,7 @@ import heroMobile from "@/assets/hero-mobile.png";
 // Features, stats, testimonials, and hero content are now loaded dynamically via hooks
 
 export default function Index() {
+  const isMobile = useIsMobile();
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(null);
   const [featureModalOpen, setFeatureModalOpen] = useState(false);
@@ -70,6 +73,16 @@ export default function Index() {
   const { featuredTestimonials, testimonials } = useHomepageTestimonials();
   const { features: includedFeatures } = useIncludedFeatures();
   const { stats } = useHomepageStats();
+
+  // Show mobile-optimized layout on mobile devices
+  if (isMobile) {
+    return (
+      <>
+        <SEOHead />
+        <MobileHomepage />
+      </>
+    );
+  }
 
   // Helper to open feature modal - accepts both FeatureData and IncludedFeatureData
   const openFeatureModal = (feature: FeatureData | IncludedFeatureData) => {
