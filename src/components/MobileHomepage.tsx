@@ -82,7 +82,7 @@ export function MobileHomepage() {
       
       {/* Hero Video - Full Width */}
       <div className="relative">
-        <div className="relative h-[240px] overflow-hidden">
+        <div className="relative h-[280px] overflow-hidden">
           <video 
             src={heroVideoUrl || "/videos/hero-video.mp4"}
             autoPlay
@@ -91,38 +91,36 @@ export function MobileHomepage() {
             poster={heroPosterUrl || heroLearnerMobile}
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-        </div>
-        
-        {/* Motivational Card with Search */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="absolute -bottom-16 left-4 right-4 bg-card rounded-xl p-4 shadow-xl border"
-        >
-          <h3 className="font-semibold text-base text-center">Start Your Journey</h3>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           
-          <form onSubmit={handleSearch} className="mt-2 flex gap-2">
-            <div className="flex-1">
-              <PostcodeAutocomplete
-                value={postcode}
-                onChange={setPostcode}
-                onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
-                placeholder="Enter postcode..."
-                inputClassName="h-10 text-sm bg-muted/50 rounded-lg"
-                showGeolocation={true}
-              />
-            </div>
-            <Button type="submit" className="h-10 px-4 rounded-lg">
-              <Search className="h-4 w-4" />
-            </Button>
-          </form>
-        </motion.div>
+          {/* Hero Text Overlay */}
+          <div className="absolute bottom-4 left-4 right-4 text-white">
+            <h2 className="text-2xl font-bold">Start Your Journey</h2>
+            <p className="text-sm text-white/80 mt-1">Find local driving instructors near you</p>
+          </div>
+        </div>
       </div>
       
-      {/* Spacer for overlay */}
-      <div className="h-20" />
+      {/* Search Section - Below Video */}
+      <div className="px-4 py-5 bg-muted/30">
+        <form onSubmit={handleSearch} className="space-y-3">
+          <PostcodeAutocomplete
+            value={postcode}
+            onChange={setPostcode}
+            onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
+            placeholder="Enter your postcode..."
+            inputClassName="h-12 text-base bg-background rounded-xl border-2 border-border shadow-sm"
+            showGeolocation={true}
+          />
+          <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl shadow-lg">
+            <Search className="h-5 w-5 mr-2" />
+            Find Courses Near Me
+          </Button>
+        </form>
+        <p className="text-xs text-muted-foreground text-center mt-3">
+          💰 Money back if you pass first time, FREE retest if you don't
+        </p>
+      </div>
       
       {/* Course Category Tiles */}
       <div className="px-4 pt-2 space-y-3">
