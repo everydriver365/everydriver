@@ -34,6 +34,7 @@ import { MapContainer, TileLayer, Polyline, CircleMarker, useMap } from 'react-l
 import 'leaflet/dist/leaflet.css';
 import DamoovScoresDisplay from './DamoovScoresDisplay';
 import PupilGamificationStats from './PupilGamificationStats';
+import SpeedLimitRoundel from './SpeedLimitRoundel';
 import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -534,71 +535,48 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                     transition={{ delay: 0.1 }}
                     className="bg-background/95 backdrop-blur-sm border-t px-4 py-4 z-20"
                   >
-                    {/* Road Name & Speed Limit Display - Always visible */}
+                    {/* Road Name & Speed Limit Roundel Display */}
                     <div className="mb-3 p-2.5 bg-muted/50 rounded-lg flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Navigation className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium truncate max-w-[180px]">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <Navigation className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="text-sm font-medium truncate">
                           {speedLimitData.roadType || 'Fetching road...'}
                         </span>
                       </div>
-                      <Badge 
-                        variant={speedLimitData.isExceeding ? "destructive" : "secondary"} 
-                        className={`text-xs font-bold ${!speedLimitData.speedLimit ? 'animate-pulse' : ''}`}
-                      >
-                        {speedLimitData.speedLimit 
-                          ? `${Math.round(speedLimitData.speedLimit * 0.621371)} mph limit` 
-                          : 'Loading...'}
-                      </Badge>
+                      <SpeedLimitRoundel 
+                        speedLimit={speedLimitData.speedLimit}
+                        isExceeding={speedLimitData.isExceeding}
+                        size="md"
+                      />
                     </div>
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-4 gap-3 mb-4">
-                      {/* Speed with Limit - Now in MPH */}
-                      <div className={`rounded-xl p-3 text-center relative ${
+                      {/* Speed */}
+                      <div className={`rounded-xl p-3 text-center ${
                         speedLimitData.isExceeding 
-                          ? 'bg-red-500/20 ring-2 ring-red-500' 
+                          ? 'bg-destructive/20 ring-2 ring-destructive' 
                           : 'bg-muted/50'
                       }`}>
-                        <div className="flex items-center justify-center gap-1 mb-1">
-                          <Gauge className={`h-5 w-5 ${speedLimitData.isExceeding ? 'text-red-500' : 'text-primary'}`} />
-                          {speedLimitData.speedLimit && (
-                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                              speedLimitData.isExceeding 
-                                ? 'bg-red-500 text-white' 
-                                : 'bg-muted text-muted-foreground'
-                            }`}>
-                              {Math.round(speedLimitData.speedLimit * 0.621371)}
-                            </span>
-                          )}
-                        </div>
+                        <Gauge className={`h-5 w-5 mx-auto mb-1 ${speedLimitData.isExceeding ? 'text-destructive' : 'text-primary'}`} />
                         <p className={`text-2xl font-bold tabular-nums ${
-                          speedLimitData.isExceeding ? 'text-red-500' : ''
+                          speedLimitData.isExceeding ? 'text-destructive' : ''
                         }`}>{Math.round(currentSpeed * 0.621371)}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wide">mph</p>
-                        {speedLimitData.isExceeding && (
-                          <motion.div
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="absolute -top-1 -right-1"
-                          >
-                            <AlertTriangle className="h-4 w-4 text-red-500 fill-red-500/20" />
-                          </motion.div>
-                        )}
                       </div>
                       
                       {/* Distance - in miles */}
                       <div className="bg-muted/50 rounded-xl p-3 text-center">
-                        <MapPin className="h-5 w-5 mx-auto mb-1 text-blue-500" />
+                        <MapPin className="h-5 w-5 mx-auto mb-1 text-primary" />
                         <p className="text-2xl font-bold tabular-nums">{(totalDistance * 0.621371).toFixed(2)}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wide">miles</p>
                       </div>
                       
                       {/* Score */}
                       <div className="bg-muted/50 rounded-xl p-3 text-center">
-                        <TrendingUp className="h-5 w-5 mx-auto mb-1 text-purple-500" />
+                        <TrendingUp className="h-5 w-5 mx-auto mb-1 text-primary" />
                         <p className={`text-2xl font-bold tabular-nums ${
-                          drivingScore >= 80 ? 'text-green-500' : drivingScore >= 50 ? 'text-amber-500' : 'text-red-500'
+                          drivingScore >= 80 ? 'text-green-600' : drivingScore >= 50 ? 'text-amber-600' : 'text-destructive'
                         }`}>{drivingScore}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wide">score</p>
                       </div>
@@ -606,8 +584,8 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                       {/* Events */}
                       <div className="bg-muted/50 rounded-xl p-3 text-center">
                         <div className="flex justify-center gap-0.5 mb-1">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <AlertTriangle className="h-4 w-4 text-amber-600" />
                         </div>
                         <p className="text-2xl font-bold tabular-nums">{drivingEvents.length}</p>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wide">events</p>
