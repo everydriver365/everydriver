@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Search, Star, MapPin, Clock, Shield, Award, ChevronRight, Car, Users, CheckCircle, Zap, Calendar, CreditCard } from "lucide-react";
+import { ArrowLeft, Search, Star, MapPin, Clock, Shield, Award, ChevronRight, Car, Users, CheckCircle, Zap, Calendar, CreditCard, BookOpen, RotateCcw, Banknote, GraduationCap, Menu, Home, Play, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -936,6 +936,224 @@ const MobileHomeDemo = () => {
                           </div>
                         </div>
                       </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option I: David Lloyd Style - Postcode Top, Course Tiles, Benefits */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-pink-500/10 text-pink-600 rounded-full text-sm font-medium mb-2">
+              Option I (Your Request)
+            </span>
+            <h2 className="text-2xl font-bold">Course Discovery Layout</h2>
+            <p className="text-muted-foreground mt-2">Postcode search top, course categories, and benefit tiles</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar */}
+                <div className="h-11 bg-background flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Header with Menu, Logo, and Postcode Search */}
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                  <span className="text-lg font-bold text-primary flex-1">EveryDriver</span>
+                  <Button variant="outline" size="sm" className="rounded-full h-9 px-4 gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Enter postcode...</span>
+                  </Button>
+                </div>
+                
+                {/* Hero Image with Overlay Card */}
+                <div className="relative mx-4">
+                  <div className="relative h-[280px] rounded-3xl overflow-hidden">
+                    <img 
+                      src={heroImage} 
+                      alt="Driving" 
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                  </div>
+                  
+                  {/* Motivational Card Overlay */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="absolute -bottom-12 left-4 right-4 bg-card rounded-2xl p-5 shadow-xl border"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-bold text-lg uppercase tracking-wide">Start Your Journey</h3>
+                        <p className="text-muted-foreground text-sm mt-1">
+                          Find the perfect course and pass with confidence
+                        </p>
+                      </div>
+                      <div className="relative w-16 h-16">
+                        <svg className="w-16 h-16 -rotate-90">
+                          <circle cx="32" cy="32" r="28" fill="none" stroke="hsl(var(--muted))" strokeWidth="4" />
+                          <circle cx="32" cy="32" r="28" fill="none" stroke="hsl(var(--primary))" strokeWidth="4" strokeDasharray="176" strokeDashoffset="44" strokeLinecap="round" />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-xl font-bold">90%</span>
+                          <span className="text-[10px] text-muted-foreground uppercase">Pass</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+                
+                {/* Spacer for overlay */}
+                <div className="h-16" />
+                
+                {/* Course Category Tiles */}
+                <div className="px-4 pt-4 space-y-3">
+                  {/* Full Width - Intensive Courses */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="p-4 bg-card border rounded-2xl flex items-center gap-4 shadow-sm"
+                  >
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                      <Zap className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold">Intensive Courses</h4>
+                      <p className="text-sm text-muted-foreground">Pass in 1-2 weeks</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </motion.div>
+                  
+                  {/* 2x Grid - Semi Intensive & Lessons */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className="p-4 bg-card border rounded-2xl shadow-sm"
+                    >
+                      <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mb-3">
+                        <Calendar className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <h4 className="font-semibold text-sm">Semi Intensive</h4>
+                      <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
+                    </motion.div>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.45 }}
+                      className="p-4 bg-card border rounded-2xl shadow-sm"
+                    >
+                      <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center mb-3">
+                        <Car className="h-5 w-5 text-amber-600" />
+                      </div>
+                      <h4 className="font-semibold text-sm">Weekly Lessons</h4>
+                      <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
+                    </motion.div>
+                  </div>
+                  
+                  {/* 2x Grid - More Course Options */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="p-4 bg-card border rounded-2xl shadow-sm"
+                    >
+                      <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-3">
+                        <RotateCcw className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <h4 className="font-semibold text-sm">Refresher</h4>
+                      <p className="text-xs text-muted-foreground mt-1">Build confidence</p>
+                    </motion.div>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.55 }}
+                      className="p-4 bg-card border rounded-2xl shadow-sm"
+                    >
+                      <div className="w-10 h-10 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center mb-3">
+                        <BookOpen className="h-5 w-5 text-rose-600" />
+                      </div>
+                      <h4 className="font-semibold text-sm">Theory Prep</h4>
+                      <p className="text-xs text-muted-foreground mt-1">Free practice tests</p>
+                    </motion.div>
+                  </div>
+                </div>
+                
+                {/* Benefits Section */}
+                <div className="px-4 pt-6 pb-4">
+                  <h3 className="font-semibold text-muted-foreground text-xs uppercase tracking-wider mb-3">What's Included</h3>
+                  
+                  {/* Horizontal Scroll Benefits */}
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+                    {[
+                      { icon: RotateCcw, title: "Free Retest", desc: "If you don't pass", color: "bg-emerald-500" },
+                      { icon: Banknote, title: "0% Finance", desc: "Split payments", color: "bg-blue-500" },
+                      { icon: GraduationCap, title: "Theory Pro", desc: "Included free", color: "bg-amber-500" },
+                      { icon: Shield, title: "DVSA Approved", desc: "Certified ADIs", color: "bg-purple-500" },
+                    ].map((item, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6 + i * 0.1 }}
+                        className="flex-shrink-0 w-32 p-4 bg-muted/50 rounded-2xl text-center"
+                      >
+                        <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mx-auto mb-2`}>
+                          <item.icon className="h-5 w-5 text-white" />
+                        </div>
+                        <h4 className="font-medium text-sm">{item.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Promo Banner */}
+                <div className="px-4 pb-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9 }}
+                    className="relative h-28 rounded-2xl overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-primary/80" />
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full" />
+                    <div className="relative z-10 p-4 text-primary-foreground h-full flex flex-col justify-center">
+                      <h4 className="font-bold">Refer a Friend</h4>
+                      <p className="text-sm text-white/80">Get £50 off your next course</p>
+                    </div>
+                  </motion.div>
+                </div>
+                
+                {/* Bottom Navigation */}
+                <div className="sticky bottom-0 bg-background border-t px-2 py-2">
+                  <div className="flex justify-around">
+                    {[
+                      { icon: Home, label: "Home", active: true },
+                      { icon: Calendar, label: "Book", active: false },
+                      { icon: Play, label: "Theory", active: false },
+                      { icon: CreditCard, label: "Pay", active: false },
+                      { icon: Gift, label: "Rewards", active: false },
+                    ].map((item, i) => (
+                      <div key={i} className={`flex flex-col items-center gap-1 px-3 py-1 ${item.active ? 'text-primary' : 'text-muted-foreground'}`}>
+                        <item.icon className="h-5 w-5" />
+                        <span className="text-[10px]">{item.label}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
