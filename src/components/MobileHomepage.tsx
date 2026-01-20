@@ -46,7 +46,7 @@ export function MobileHomepage() {
         <Button variant="ghost" size="icon" className="h-10 w-10 text-nav-foreground hover:bg-nav-foreground/10">
           <Menu className="h-5 w-5" />
         </Button>
-        <img src={logo} alt="EveryDriver" className="h-8" />
+        <img src={logo} alt="EveryDriver" className="h-10" />
         <Button
           variant="ghost"
           size="icon"
