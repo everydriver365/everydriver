@@ -597,6 +597,62 @@ export type Database = {
         }
         Relationships: []
       }
+      hosting_orders: {
+        Row: {
+          billing_period: string
+          created_at: string
+          currency: string
+          domain_name: string
+          expires_at: string | null
+          id: string
+          instructor_id: string
+          package_id: string
+          package_name: string
+          price_amount: number
+          provider_package_ref: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          billing_period?: string
+          created_at?: string
+          currency?: string
+          domain_name: string
+          expires_at?: string | null
+          id?: string
+          instructor_id: string
+          package_id: string
+          package_name: string
+          price_amount: number
+          provider_package_ref?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          billing_period?: string
+          created_at?: string
+          currency?: string
+          domain_name?: string
+          expires_at?: string | null
+          id?: string
+          instructor_id?: string
+          package_id?: string
+          package_name?: string
+          price_amount?: number
+          provider_package_ref?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hosting_orders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       included_features: {
         Row: {
           created_at: string
