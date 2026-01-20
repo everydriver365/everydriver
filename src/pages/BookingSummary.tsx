@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
-import { KlarnaPayment } from "@/components/booking/KlarnaPayment";
+import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { NPIHostedFields } from "@/components/booking/NPIHostedFields";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -1556,66 +1556,40 @@ export default function BookingSummary() {
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
             </button>
 
-            {/* Klarna - Server-side Session + Order Capture */}
-            {gatewayHealth.klarna.available ? (
-              <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-[#ffb3c7]/10">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
-                    Klarna.
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Pay in 3 instalments
-                  </span>
-                </div>
-                <div className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</div>
-                <KlarnaPayment
-                  amount={totalPrice}
-                  merchantReference={`KL-${instructor.id.slice(0, 8)}-${Date.now()}`}
-                  orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course`}
-                  consumer={{
-                    givenName: pupilName.trim().split(" ")[0] || pupilName.trim(),
-                    familyName: pupilName.trim().split(" ").slice(1).join(" ") || pupilName.trim(),
-                    email: pupilEmail.trim(),
-                    phone: pupilPhone.trim(),
-                  }}
-                  billing={{
-                    streetAddress: pupilAddress.trim(),
-                    postalCode: pupilPostcode.trim().toUpperCase(),
-                    city: locationName || "UK",
-                    country: "GB",
-                  }}
-                  disabled={!canSubmit}
-                  onSuccess={async (orderId) => {
-                    console.log("Klarna payment success:", orderId);
-                    toast.success("Payment completed with Klarna!");
-                    const pupilId = await ensureBookingCreated();
-                    if (pupilId) {
-                      navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
-                    }
-                  }}
-                  onError={(error) => {
-                    console.error("Klarna payment error:", error);
-                    toast.error(error || "Klarna payment failed");
-                  }}
-                  onCancel={() => {
-                    console.log("Klarna payment cancelled");
-                    toast.info("Klarna payment cancelled");
-                  }}
-                />
+            {/* Klarna - Express Button (Client-side) */}
+            <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-[#ffb3c7]/10">
+              <div className="flex items-center justify-between mb-3">
+                <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
+                  Klarna.
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Pay in 3 instalments
+                </span>
               </div>
-            ) : (
-              <div className="w-full rounded-lg border-2 border-muted p-4 bg-muted/30 opacity-60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                    Klarna.
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Temporarily unavailable
-                  </span>
-                </div>
-                <div className="font-medium text-sm text-muted-foreground">Pay in 3 coming soon</div>
-              </div>
-            )}
+              <div className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</div>
+              <KlarnaExpressButton
+                amount={totalPrice}
+                merchantReference={`KL-${instructor.id.slice(0, 8)}-${Date.now()}`}
+                orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course`}
+                disabled={!canSubmit}
+                onSuccess={async (authToken, orderId) => {
+                  console.log("Klarna Express authorization success:", authToken, orderId);
+                  toast.success("Payment authorized with Klarna!");
+                  const pupilId = await ensureBookingCreated();
+                  if (pupilId) {
+                    navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
+                  }
+                }}
+                onError={(error) => {
+                  console.error("Klarna Express error:", error);
+                  toast.error(error || "Klarna payment failed");
+                }}
+                onCancel={() => {
+                  console.log("Klarna Express cancelled");
+                  toast.info("Klarna payment cancelled");
+                }}
+              />
+            </div>
           </div>
 
 
