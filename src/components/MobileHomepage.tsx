@@ -70,7 +70,7 @@ export function MobileHomepage() {
               value={postcode}
               onChange={(e) => setPostcode(e.target.value)}
               placeholder="Enter your postcode..."
-              className="pl-12 h-12 rounded-xl bg-muted/50 border-0"
+              className="pl-12 h-12 rounded-xl bg-muted/50 border border-border/50 shadow-sm"
             />
           </div>
           <Button type="submit" className="h-12 px-6 rounded-xl">
