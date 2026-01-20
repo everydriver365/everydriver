@@ -483,10 +483,10 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Default to next 30 days if not specified
+      // Default to next 365 days if not specified
       const now = new Date();
       const defaultTimeMin = timeMin || now.toISOString();
-      const defaultTimeMax = timeMax || new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const defaultTimeMax = timeMax || new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
       const events = await fetchGoogleEvents(
         tokenInfo.accessToken,
