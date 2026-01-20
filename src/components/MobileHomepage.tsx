@@ -112,6 +112,11 @@ export function MobileHomepage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           
+          {/* Promo Badge */}
+          <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+            Free Retest if you fail
+          </div>
+          
           {/* Hero Text Overlay */}
           <div className="absolute bottom-4 left-4 right-4 text-white">
             <h2 className="text-2xl font-bold">Start Your Journey</h2>
@@ -120,12 +125,6 @@ export function MobileHomepage() {
         </div>
       </div>
       
-      {/* USP Banner */}
-      <div className="bg-muted/30 px-4 py-2">
-        <p className="text-xs text-muted-foreground text-center">
-          💰 Money back if you pass first time, FREE retest if you don't
-        </p>
-      </div>
       
       {/* Course Category Tiles */}
       <div className="px-4 pt-2 space-y-3">
