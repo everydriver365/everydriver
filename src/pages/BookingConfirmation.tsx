@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle, Calendar, Clock, MapPin, Phone, Mail, ArrowRight, Download, Share2, Car } from "lucide-react";
+import { CheckCircle, Calendar, Clock, MapPin, Phone, Mail, ArrowRight, Download, Share2, Car, AlertTriangle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,10 @@ interface PupilDetails {
   postcode: string;
   course_type: string | null;
   prepaid_hours: number | null;
+  payment_type: string | null;
+  deposit_paid: number | null;
+  balance_due_date: string | null;
+  account_balance: number | null;
   instructor: {
     name: string;
     phone: string | null;
@@ -84,6 +88,7 @@ export default function BookingConfirmation() {
           .from("pupils")
           .select(`
             id, name, email, phone, address, postcode, course_type, prepaid_hours,
+            payment_type, deposit_paid, balance_due_date, account_balance,
             instructor:instructors(name, phone, email, car_make, car_model, car_type, profile_image_url)
           `)
           .eq("id", pupilId)
@@ -182,7 +187,7 @@ export default function BookingConfirmation() {
             transition={{ delay: 0.2 }}
             className="text-3xl md:text-4xl font-bold"
           >
-            Booking Confirmed! 🎉
+            {pupil.payment_type === "deposit" ? "Deposit Received! 🎉" : "Booking Confirmed! 🎉"}
           </motion.h1>
           
           <motion.p
@@ -194,12 +199,39 @@ export default function BookingConfirmation() {
             Your {pupil.prepaid_hours || totalHours} hour {pupil.course_type || "driving course"} has been booked with {pupil.instructor.name}.
           </motion.p>
 
+          {/* Deposit Payment Notice */}
+          {pupil.payment_type === "deposit" && pupil.balance_due_date && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="mt-4 mx-auto max-w-lg bg-white/10 backdrop-blur rounded-lg p-4 text-left"
+            >
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-300 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-white">
+                    Deposit of £{pupil.deposit_paid} received
+                  </p>
+                  <p className="text-sm text-emerald-100 mt-1">
+                    Your remaining balance of <strong>£{Math.abs(pupil.account_balance || 0)}</strong> is due by{" "}
+                    <strong>{new Date(pupil.balance_due_date).toLocaleDateString('en-GB', { 
+                      weekday: 'long', 
+                      day: 'numeric', 
+                      month: 'long' 
+                    })}</strong> (30 days before your first lesson).
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* Payment confirmation details */}
           {(transactionId || paymentRef) && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
+              transition={{ delay: 0.4 }}
               className="mt-4 text-sm text-emerald-100"
             >
               {amountReceived && <span>Payment of £{(parseInt(amountReceived) / 100).toFixed(2)} confirmed</span>}
@@ -297,6 +329,29 @@ export default function BookingConfirmation() {
                   <CardTitle>What's Next?</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {/* Deposit Warning Card */}
+                  {pupil.payment_type === "deposit" && pupil.balance_due_date && (
+                    <div className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="font-semibold text-amber-800 dark:text-amber-300">Important: Balance Payment Required</h4>
+                          <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                            Your remaining balance of <strong>£{Math.abs(pupil.account_balance || 0)}</strong> must be paid by{" "}
+                            <strong>{new Date(pupil.balance_due_date).toLocaleDateString('en-GB', { 
+                              weekday: 'long', 
+                              day: 'numeric', 
+                              month: 'long' 
+                            })}</strong>.
+                          </p>
+                          <p className="text-sm text-amber-600 dark:text-amber-500 mt-2">
+                            ⚠️ If payment is not received by this date, your booking will be cancelled and your £{pupil.deposit_paid} deposit will be forfeited.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-4">
                     {[
                       {
@@ -317,12 +372,17 @@ export default function BookingConfirmation() {
                         description: `${pupil.instructor.name} will pick you up at your address on your lesson day.`,
                         done: false,
                       },
-                      {
+                      ...(pupil.payment_type === "deposit" ? [{
                         step: 4,
-                        title: "Payment",
-                        description: "Pay your instructor directly at the start of each lesson or prepay the full amount.",
+                        title: "Pay Outstanding Balance",
+                        description: `Contact ${pupil.instructor.name} to arrange payment of the remaining £${Math.abs(pupil.account_balance || 0)} before your deadline.`,
                         done: false,
-                      },
+                      }] : [{
+                        step: 4,
+                        title: "Payment Complete",
+                        description: "Your course is fully paid - you're all set!",
+                        done: true,
+                      }]),
                     ].map((item) => (
                       <div key={item.step} className="flex gap-4">
                         <div
