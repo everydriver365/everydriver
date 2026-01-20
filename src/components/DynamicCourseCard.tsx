@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format, isFuture, parseISO, differenceInDays } from "date-fns";
+import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
 
 interface DynamicCourseCardProps {
   instructor: {
@@ -199,18 +200,8 @@ export function DynamicCourseCard({
                 )}
               </div>
 
-              {/* Payment Options */}
-              <div className="flex items-center gap-2 pt-1">
-                <span className="rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
-                  Klarna.
-                </span>
-                <span className="rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
-                  clearpay
-                </span>
-                <span className="rounded-md bg-[#ffd700] px-2 py-0.5 text-xs font-bold text-black">
-                  iDeal
-                </span>
-              </div>
+              {/* Payment Options - Dynamic instalment amounts */}
+              <CompactPaymentBadges amount={finalPrice} className="pt-1" />
             </div>
           </div>
         </div>
