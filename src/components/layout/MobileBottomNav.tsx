@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, BookOpen, HelpCircle, MessageCircle, Phone } from "lucide-react";
+import { Home, Search, BookOpen, HelpCircle, MessageCircle, Gift } from "lucide-react";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/" },
@@ -7,7 +7,7 @@ const navItems = [
   { label: "Theory", icon: BookOpen, path: "/theory" },
   { label: "FAQs", icon: HelpCircle, path: "/faqs" },
   { label: "Help", icon: MessageCircle, path: "/help" },
-  { label: "Contact", icon: Phone, path: "/contact" },
+  { label: "Benefits", icon: Gift, path: "/benefits" },
 ];
 
 export function MobileBottomNav() {
