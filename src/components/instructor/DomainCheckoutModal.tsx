@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { DomainLinkModal } from "./DomainLinkModal";
 
 interface DomainCheckoutModalProps {
   open: boolean;
@@ -44,6 +45,8 @@ export function DomainCheckoutModal({
 }: DomainCheckoutModalProps) {
   const { instructor } = useInstructorAuth();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [purchasedOrderId, setPurchasedOrderId] = useState<string | null>(null);
   const [contact, setContact] = useState<ContactDetails>(() => {
     // Pre-fill with instructor data if available
     const nameParts = instructor?.name?.split(" ") || [];
@@ -106,27 +109,43 @@ export function DomainCheckoutModal({
 
       if (data?.success) {
         // Save order to database
+        let orderId: string | null = null;
         if (instructor?.id) {
-          await supabase.from("domain_orders").insert({
-            instructor_id: instructor.id,
-            domain_name: domain.split(".")[0],
-            tld: domain.substring(domain.indexOf(".")),
-            order_type: "registration",
-            status: "active",
-            provider_order_id: data.orderId,
-            price_amount: price,
-            currency: currency,
-            period_years: 1,
-            auto_renew: true,
-            expires_at: new Date(
-              Date.now() + 365 * 24 * 60 * 60 * 1000
-            ).toISOString(),
-          });
+          const { data: insertData, error: insertError } = await supabase
+            .from("domain_orders")
+            .insert({
+              instructor_id: instructor.id,
+              domain_name: domain.split(".")[0],
+              tld: domain.substring(domain.indexOf(".")),
+              order_type: "registration",
+              status: "active",
+              provider_order_id: data.orderId,
+              price_amount: price,
+              currency: currency,
+              period_years: 1,
+              auto_renew: true,
+              expires_at: new Date(
+                Date.now() + 365 * 24 * 60 * 60 * 1000
+              ).toISOString(),
+            })
+            .select("id")
+            .single();
+
+          if (!insertError && insertData) {
+            orderId = insertData.id;
+          }
         }
 
         toast.success(`Domain ${domain} registered successfully!`);
         onOpenChange(false);
-        onSuccess?.();
+        
+        // Show link modal if we have an order ID and instructor has a mini-website
+        if (orderId && instructor?.app_slug) {
+          setPurchasedOrderId(orderId);
+          setShowLinkModal(true);
+        } else {
+          onSuccess?.();
+        }
       } else {
         throw new Error(data?.error || "Failed to register domain");
       }
@@ -141,7 +160,24 @@ export function DomainCheckoutModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      {/* Link to Mini-Website Modal */}
+      {showLinkModal && purchasedOrderId && instructor?.id && (
+        <DomainLinkModal
+          open={showLinkModal}
+          onOpenChange={(open) => {
+            setShowLinkModal(open);
+            if (!open) onSuccess?.();
+          }}
+          domain={domain}
+          domainOrderId={purchasedOrderId}
+          instructorId={instructor.id}
+          miniWebsiteSlug={instructor.app_slug}
+          onSuccess={onSuccess}
+        />
+      )}
+
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -288,5 +324,6 @@ export function DomainCheckoutModal({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }

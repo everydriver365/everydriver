@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Globe, Server, Plus, Loader2, ExternalLink, ShoppingBag } from "lucide-react";
+import { Globe, Server, Plus, Loader2, ExternalLink, ShoppingBag, Link, Settings } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { DomainManagementCard } from "@/components/instructor/DomainManagementCard";
 import { HostingManagementCard } from "@/components/instructor/HostingManagementCard";
+import { DNSManagementPanel } from "@/components/instructor/DNSManagementPanel";
+import { DomainLinkModal } from "@/components/instructor/DomainLinkModal";
 import { toast } from "sonner";
 
 interface DomainOrder {
@@ -23,6 +25,7 @@ interface DomainOrder {
   auto_renew: boolean;
   expires_at?: string | null;
   created_at: string;
+  mini_website_linked?: boolean;
 }
 
 interface HostingOrder {
@@ -44,6 +47,8 @@ export default function InstructorDomainsManagement() {
   const [domains, setDomains] = useState<DomainOrder[]>([]);
   const [hostings, setHostings] = useState<HostingOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDomainForDNS, setSelectedDomainForDNS] = useState<DomainOrder | null>(null);
+  const [selectedDomainForLink, setSelectedDomainForLink] = useState<DomainOrder | null>(null);
 
   useEffect(() => {
     if (!authLoading && instructor?.id) {
@@ -83,11 +88,15 @@ export default function InstructorDomainsManagement() {
   };
 
   const handleManageDomain = (domain: DomainOrder) => {
-    toast.info(`Domain management for ${domain.domain_name}${domain.tld} coming soon`);
+    setSelectedDomainForDNS(domain);
   };
 
   const handleRenewDomain = (domain: DomainOrder) => {
     toast.info(`Renewal for ${domain.domain_name}${domain.tld} coming soon`);
+  };
+
+  const handleLinkDomain = (domain: DomainOrder) => {
+    setSelectedDomainForLink(domain);
   };
 
   const handleManageHosting = (hosting: HostingOrder) => {
@@ -232,6 +241,7 @@ export default function InstructorDomainsManagement() {
                     domain={domain}
                     onManage={handleManageDomain}
                     onRenew={handleRenewDomain}
+                    onLink={handleLinkDomain}
                   />
                 ))}
               </div>
@@ -308,6 +318,31 @@ export default function InstructorDomainsManagement() {
             </div>
           </CardContent>
         </Card>
+
+        {/* DNS Management Panel */}
+        {selectedDomainForDNS && (
+          <DNSManagementPanel
+            domainOrderId={selectedDomainForDNS.id}
+            domain={`${selectedDomainForDNS.domain_name}${selectedDomainForDNS.tld}`}
+            onUpdate={fetchOrders}
+          />
+        )}
+
+        {/* Link Domain Modal */}
+        {selectedDomainForLink && instructor?.id && (
+          <DomainLinkModal
+            open={!!selectedDomainForLink}
+            onOpenChange={(open) => !open && setSelectedDomainForLink(null)}
+            domain={`${selectedDomainForLink.domain_name}${selectedDomainForLink.tld}`}
+            domainOrderId={selectedDomainForLink.id}
+            instructorId={instructor.id}
+            miniWebsiteSlug={instructor.app_slug}
+            onSuccess={() => {
+              setSelectedDomainForLink(null);
+              fetchOrders();
+            }}
+          />
+        )}
       </div>
     </InstructorPortalLayout>
   );

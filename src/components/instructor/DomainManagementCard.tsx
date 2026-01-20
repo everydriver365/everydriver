@@ -1,4 +1,4 @@
-import { Globe, Calendar, RefreshCw, Settings, ExternalLink } from "lucide-react";
+import { Globe, Calendar, RefreshCw, Settings, Link } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,18 +15,21 @@ interface DomainOrder {
   auto_renew: boolean;
   expires_at?: string | null;
   created_at: string;
+  mini_website_linked?: boolean;
 }
 
 interface DomainManagementCardProps {
   domain: DomainOrder;
   onManage?: (domain: DomainOrder) => void;
   onRenew?: (domain: DomainOrder) => void;
+  onLink?: (domain: DomainOrder) => void;
 }
 
 export function DomainManagementCard({
   domain,
   onManage,
   onRenew,
+  onLink,
 }: DomainManagementCardProps) {
   const fullDomain = `${domain.domain_name}${domain.tld}`;
   
@@ -75,9 +78,15 @@ export function DomainManagementCard({
           </div>
 
           <div className="flex items-center gap-2">
+            {!domain.mini_website_linked && (
+              <Button variant="outline" size="sm" onClick={() => onLink?.(domain)}>
+                <Link className="h-4 w-4 mr-1" />
+                Link Website
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={() => onManage?.(domain)}>
               <Settings className="h-4 w-4 mr-1" />
-              Manage
+              DNS
             </Button>
             {(isExpiringSoon || domain.status === "expired") && (
               <Button size="sm" onClick={() => onRenew?.(domain)}>

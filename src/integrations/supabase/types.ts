@@ -230,10 +230,12 @@ export type Database = {
           auto_renew: boolean | null
           created_at: string
           currency: string
+          dns_records: Json | null
           domain_name: string
           godaddy_order_id: string | null
           id: string
           instructor_id: string
+          mini_website_linked: boolean | null
           order_type: string
           period_years: number
           price_amount: number
@@ -245,10 +247,12 @@ export type Database = {
           auto_renew?: boolean | null
           created_at?: string
           currency?: string
+          dns_records?: Json | null
           domain_name: string
           godaddy_order_id?: string | null
           id?: string
           instructor_id: string
+          mini_website_linked?: boolean | null
           order_type: string
           period_years?: number
           price_amount: number
@@ -260,10 +264,12 @@ export type Database = {
           auto_renew?: boolean | null
           created_at?: string
           currency?: string
+          dns_records?: Json | null
           domain_name?: string
           godaddy_order_id?: string | null
           id?: string
           instructor_id?: string
+          mini_website_linked?: boolean | null
           order_type?: string
           period_years?: number
           price_amount?: number
@@ -1592,6 +1598,8 @@ export type Database = {
           cpd_certified: boolean | null
           created_at: string
           custom_branding_enabled: boolean | null
+          custom_domain: string | null
+          custom_domain_verified: boolean | null
           dark_mode_enabled: boolean | null
           email: string | null
           extra_info: string | null
@@ -1612,6 +1620,7 @@ export type Database = {
           last_calendar_sync: string | null
           linkedin_url: string | null
           logo_url: string | null
+          mini_website_domain_id: string | null
           name: string
           payment_link_base_url: string | null
           payment_qr_url: string | null
@@ -1664,6 +1673,8 @@ export type Database = {
           cpd_certified?: boolean | null
           created_at?: string
           custom_branding_enabled?: boolean | null
+          custom_domain?: string | null
+          custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
@@ -1684,6 +1695,7 @@ export type Database = {
           last_calendar_sync?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
+          mini_website_domain_id?: string | null
           name: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
@@ -1736,6 +1748,8 @@ export type Database = {
           cpd_certified?: boolean | null
           created_at?: string
           custom_branding_enabled?: boolean | null
+          custom_domain?: string | null
+          custom_domain_verified?: boolean | null
           dark_mode_enabled?: boolean | null
           email?: string | null
           extra_info?: string | null
@@ -1756,6 +1770,7 @@ export type Database = {
           last_calendar_sync?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
+          mini_website_domain_id?: string | null
           name?: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
@@ -1785,7 +1800,15 @@ export type Database = {
           xero_connected?: boolean | null
           xero_tenant_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "instructors_mini_website_domain_id_fkey"
+            columns: ["mini_website_domain_id"]
+            isOneToOne: false
+            referencedRelation: "domain_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lesson_cancellation_requests: {
         Row: {
