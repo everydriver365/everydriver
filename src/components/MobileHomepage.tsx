@@ -275,32 +275,32 @@ export function MobileHomepage() {
 
       {/* Feature Detail Modal */}
       <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
-        <DialogContent className="max-w-md mx-4 rounded-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
+        <DialogContent className="w-[calc(100vw-32px)] max-w-sm max-h-[70vh] overflow-y-auto rounded-lg p-4">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="flex items-center gap-2 text-base">
               {selectedFeature && (
                 <>
-                  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
-                    {selectedFeature.icon && <selectedFeature.icon className="h-5 w-5 text-primary-foreground" />}
+                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    {selectedFeature.icon && <selectedFeature.icon className="h-4 w-4 text-primary-foreground" />}
                   </div>
-                  <span>{selectedFeature.title}</span>
+                  <span className="line-clamp-1">{selectedFeature.title}</span>
                 </>
               )}
             </DialogTitle>
           </DialogHeader>
           {selectedFeature && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {selectedFeature.image_url && (
                 <img 
                   src={selectedFeature.image_url} 
                   alt={selectedFeature.title}
-                  className="w-full h-40 object-cover rounded-lg"
+                  className="w-full h-32 object-cover rounded-lg"
                 />
               )}
-              <p className="text-muted-foreground">{selectedFeature.description}</p>
+              <p className="text-sm text-muted-foreground">{selectedFeature.description}</p>
               {selectedFeature.detailed_content && (
                 <div 
-                  className="prose prose-sm dark:prose-invert max-w-none"
+                  className="prose prose-sm dark:prose-invert max-w-none text-sm"
                   dangerouslySetInnerHTML={{ __html: selectedFeature.detailed_content }}
                 />
               )}
