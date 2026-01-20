@@ -145,7 +145,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
           </p>
         </div>
 
-        {/* Actions */}
+      {/* Actions */}
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
@@ -179,74 +179,69 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
     );
   }
 
-  // Not configured state
+  // Not configured state - admin hasn't set up secrets
   if (!config?.configured) {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-4">
         <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
           <AlertCircle className="h-5 w-5" />
-          <span className="font-medium">Google Calendar sync not configured</span>
+          <span className="font-medium">Calendar sync not available</span>
         </div>
         <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">
-          Contact your administrator to set up the Google Service Account integration.
+          The Google Calendar integration is being set up. Please try again later.
         </p>
       </div>
     );
   }
 
-  // Setup flow
+  // Setup flow - instructor needs to share calendar
   return (
-    <div className="space-y-6">
-      <div className="text-sm text-muted-foreground">
-        Connect your Google Calendar by sharing it with our sync service. This allows us to:
-      </div>
-      
-      <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
-        <li>Block out times when you're busy</li>
-        <li>Add booked lessons to your calendar</li>
-        <li>Keep everything in sync automatically</li>
-      </ul>
-
-      {/* Step 1: Copy Email */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">
-          Step 1: Copy this email address
-        </Label>
+    <div className="space-y-5 rounded-lg border bg-card p-4">
+      {/* Step 1: Copy Email - Most prominent */}
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <div className="flex-1 rounded-lg border bg-muted/50 px-3 py-2 text-sm font-mono break-all">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+            1
+          </div>
+          <Label className="font-medium">Share your calendar with this email</Label>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <div className="flex-1 rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 px-3 py-2.5 text-sm font-mono">
             {config.serviceAccountEmail}
           </div>
           <Button
-            variant="outline"
+            variant={copied ? "default" : "outline"}
             size="sm"
             onClick={handleCopyEmail}
-            className="shrink-0"
+            className="shrink-0 min-w-[80px]"
           >
             {copied ? (
-              <Check className="h-4 w-4 text-green-500" />
+              <>
+                <Check className="mr-1 h-4 w-4" />
+                Copied
+              </>
             ) : (
-              <Copy className="h-4 w-4" />
+              <>
+                <Copy className="mr-1 h-4 w-4" />
+                Copy
+              </>
             )}
           </Button>
         </div>
-      </div>
-
-      {/* Step 2: Share Calendar */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">
-          Step 2: Share your Google Calendar
-        </Label>
-        <div className="rounded-lg border bg-muted/30 p-3 space-y-2 text-sm text-muted-foreground">
-          <p>1. Open Google Calendar settings</p>
-          <p>2. Click your calendar → "Settings and sharing"</p>
-          <p>3. Under "Share with specific people", click "Add people"</p>
-          <p>4. Paste the email above and select <strong>"Make changes to events"</strong></p>
-          <p>5. Click "Send"</p>
+        
+        <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground space-y-1.5">
+          <p>In Google Calendar:</p>
+          <ol className="list-decimal ml-4 space-y-0.5">
+            <li>Go to Settings → your calendar → "Share with specific people"</li>
+            <li>Add the email above with <strong>"Make changes to events"</strong> permission</li>
+          </ol>
         </div>
+        
         <Button
           variant="link"
           size="sm"
-          className="px-0 text-primary"
+          className="px-0 h-auto text-primary"
           onClick={() => window.open("https://calendar.google.com/calendar/r/settings", "_blank")}
         >
           <ExternalLink className="mr-1 h-3 w-3" />
@@ -254,14 +249,15 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
         </Button>
       </div>
 
-      {/* Step 3: Enter Calendar ID */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">
-          Step 3: Enter your Calendar ID
-        </Label>
-        <p className="text-xs text-muted-foreground">
-          Usually your Gmail address, or find it in Calendar settings → "Integrate calendar"
-        </p>
+      {/* Step 2: Enter Calendar ID */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+            2
+          </div>
+          <Label className="font-medium">Enter your Calendar ID</Label>
+        </div>
+        
         <Input
           placeholder="your-email@gmail.com"
           value={calendarId}
@@ -269,7 +265,11 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
             setCalendarId(e.target.value);
             setTestResult(null);
           }}
+          className="text-base"
         />
+        <p className="text-xs text-muted-foreground">
+          Usually your Gmail address. Find it in Calendar settings → "Integrate calendar" if unsure.
+        </p>
       </div>
 
       {/* Test Result */}
@@ -277,22 +277,32 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
         <div className={`rounded-lg p-3 ${
           testResult.success 
             ? "bg-green-50 border border-green-200 dark:bg-green-950/30 dark:border-green-800" 
-            : "bg-red-50 border border-red-200 dark:bg-red-950/30 dark:border-red-800"
+            : "bg-destructive/10 border border-destructive/30"
         }`}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2">
             {testResult.success ? (
               <>
-                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                <span className="text-sm font-medium text-green-800 dark:text-green-200">
-                  Connection successful! Click "Connect Calendar" to finish.
-                </span>
+                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                    Connection successful!
+                  </span>
+                  <p className="text-xs text-green-700 dark:text-green-300 mt-0.5">
+                    Click "Connect Calendar" below to finish setup.
+                  </p>
+                </div>
               </>
             ) : (
               <>
-                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                <span className="text-sm text-red-800 dark:text-red-200">
-                  {testResult.error}
-                </span>
+                <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-sm font-medium text-destructive">
+                    Connection failed
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {testResult.error || "Make sure you've shared your calendar with the email above."}
+                  </p>
+                </div>
               </>
             )}
           </div>
@@ -300,7 +310,7 @@ export function GoogleServiceAccountSetup({ instructorId }: GoogleServiceAccount
       )}
 
       {/* Actions */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 pt-2">
         <Button
           variant="outline"
           onClick={handleTestConnection}
