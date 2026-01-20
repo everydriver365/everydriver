@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { NPIHostedFields } from "@/components/booking/NPIHostedFields";
+import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
@@ -1020,9 +1021,12 @@ export default function BookingSummary() {
               </div>
             </div>
 
-            {/* Price Badge */}
-            <div className="hidden sm:block bg-white text-primary rounded-xl px-4 py-2 shadow-lg">
+            {/* Price Badge with Payment Messaging */}
+            <div className="hidden sm:block bg-white text-primary rounded-xl px-4 py-3 shadow-lg">
               <span className="text-2xl font-bold">£{totalPrice}</span>
+              <div className="mt-1 border-t border-primary/10 pt-1">
+                <PaymentMessaging amount={totalPrice} layout="stacked" showIdeal={false} className="text-primary" />
+              </div>
             </div>
           </div>
         </div>
