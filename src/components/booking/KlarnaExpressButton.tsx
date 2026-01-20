@@ -70,18 +70,20 @@ export function KlarnaExpressButton({
 
     const klarnaButtons = getKlarnaButtons();
     if (!klarnaButtons) {
-      console.error("Klarna Payments Buttons not available on window");
-      setErrorMessage("Klarna not available");
+      console.error("Klarna Payments Buttons not available on window. Klarna object:", (window as any).Klarna);
+      setErrorMessage("Klarna SDK not loaded");
       setStatus('error');
       return false;
     }
 
-    console.log("Klarna: Initializing button with client_id...");
+    console.log("Klarna: Initializing with client_id, amount:", amount, "minor units:", amountInMinorUnits);
 
     try {
       const instance = klarnaButtons.init({
         client_id: KLARNA_CLIENT_ID,
       });
+
+      console.log("Klarna: Instance created, calling load...");
 
       instance.load(
         {
@@ -89,8 +91,8 @@ export function KlarnaExpressButton({
           theme: "default",
           shape: "default",
           locale: "en-GB",
-          on_click: (authorize) => {
-            console.log("Klarna: Button clicked, starting authorization...");
+          on_click: (authorize: any) => {
+            console.log("Klarna: Button clicked, authorizing with payload:", orderPayload);
             setStatus('processing');
             
             authorize(
@@ -99,11 +101,11 @@ export function KlarnaExpressButton({
                 collect_shipping_address: false 
               },
               orderPayload,
-              (result) => {
-                console.log("Klarna authorization result:", result);
+              (result: any) => {
+                console.log("Klarna authorization result:", JSON.stringify(result, null, 2));
                 
                 if (result.approved && result.authorization_token) {
-                  console.log("Klarna: Payment approved!");
+                  console.log("Klarna: Payment approved with token:", result.authorization_token.substring(0, 20) + "...");
                   onSuccess(result.authorization_token, merchantReference);
                 } else if (result.error) {
                   console.error("Klarna authorization error:", result.error);
@@ -113,7 +115,7 @@ export function KlarnaExpressButton({
                     : String(result.error);
                   onError(errorMsg);
                 } else {
-                  console.log("Klarna: Payment cancelled or declined");
+                  console.log("Klarna: Payment cancelled or declined, result:", result);
                   setStatus('visible');
                   onCancel();
                 }
@@ -121,14 +123,22 @@ export function KlarnaExpressButton({
             );
           },
         },
-        (loadResult) => {
-          console.log("Klarna button load result:", loadResult);
+        (loadResult: any) => {
+          console.log("Klarna button load result:", JSON.stringify(loadResult, null, 2));
           if (loadResult?.show_button) {
             console.log("Klarna: Button ready to display");
             setStatus('visible');
           } else {
-            console.warn("Klarna: Button not available for this purchase");
-            setErrorMessage("Klarna not available for this order");
+            // Check if amount is within Klarna's limits (£35 - £1000 for Pay in 3)
+            const amountGBP = amount;
+            let reason = "Order not eligible for Klarna";
+            if (amountGBP < 35) {
+              reason = `Minimum £35 required (current: £${amountGBP.toFixed(2)})`;
+            } else if (amountGBP > 1000) {
+              reason = `Maximum £1,000 allowed (current: £${amountGBP.toFixed(2)})`;
+            }
+            console.warn("Klarna: Button not shown.", reason, "Load result:", loadResult);
+            setErrorMessage(reason);
             setStatus('error');
           }
         }
@@ -140,7 +150,7 @@ export function KlarnaExpressButton({
       setStatus('error');
       return false;
     }
-  }, [amount, currency, merchantReference, orderDescription, onSuccess, onError, onCancel, amountInMinorUnits, orderPayload]);
+  }, [amount, amountInMinorUnits, merchantReference, onSuccess, onError, onCancel, orderPayload]);
 
   // Load SDK
   useEffect(() => {
