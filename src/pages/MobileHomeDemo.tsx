@@ -472,6 +472,478 @@ const MobileHomeDemo = () => {
           </div>
         </section>
 
+        {/* Option E: Split Screen Hero */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-rose-500/10 text-rose-600 rounded-full text-sm font-medium mb-2">
+              Option E
+            </span>
+            <h2 className="text-2xl font-bold">Split Screen Hero</h2>
+            <p className="text-muted-foreground mt-2">Diagonal split with image and content sides</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar */}
+                <div className="h-11 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Split Hero */}
+                <div className="relative h-[400px] overflow-hidden">
+                  {/* Diagonal clip */}
+                  <div className="absolute inset-0 bg-primary" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 60%, 0 100%)' }}>
+                    <img src={heroImage} alt="" className="w-full h-full object-cover opacity-30" />
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="relative z-10 p-6 pt-4">
+                    <div className="flex items-center justify-between mb-8">
+                      <span className="text-xl font-bold text-primary-foreground">EveryDriver</span>
+                      <Button variant="ghost" size="sm" className="text-white">
+                        <Users className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-primary-foreground"
+                    >
+                      <h1 className="text-3xl font-bold leading-tight mb-3">
+                        Your Road<br />
+                        to Freedom<br />
+                        <span className="text-amber-300">Starts Here</span>
+                      </h1>
+                      <p className="text-white/80 text-sm mb-6">
+                        Expert instructors. Flexible lessons.<br />
+                        Results guaranteed.
+                      </p>
+                    </motion.div>
+                  </div>
+                  
+                  {/* Floating testimonial */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="absolute bottom-4 right-4 left-4 bg-white rounded-2xl p-4 shadow-xl"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img src={testimonialEmma} alt="" className="w-12 h-12 rounded-full" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1 mb-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">"Best decision I ever made!"</p>
+                        <p className="text-xs font-medium">— Emma, Manchester</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+                
+                {/* Search Section */}
+                <div className="p-6 -mt-2">
+                  <div className="bg-muted/50 rounded-2xl p-4">
+                    <h3 className="font-semibold mb-3 text-center">Find Your Instructor</h3>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Postcode" className="pl-10 h-12 rounded-xl" />
+                      </div>
+                      <Button className="h-12 px-6 rounded-xl">
+                        <Search className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Benefits */}
+                <div className="px-6 pb-6 space-y-3">
+                  {[
+                    { icon: Shield, title: "Fully Certified", desc: "DVSA approved instructors" },
+                    { icon: Calendar, title: "Book Instantly", desc: "No waiting, start this week" },
+                    { icon: Award, title: "Pass Guarantee", desc: "90%+ first-time success" },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + i * 0.1 }}
+                      className="flex items-center gap-4 p-3 border rounded-xl"
+                    >
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <item.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm">{item.title}</h4>
+                        <p className="text-xs text-muted-foreground">{item.desc}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option F: Card Carousel Hero */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-cyan-500/10 text-cyan-600 rounded-full text-sm font-medium mb-2">
+              Option F
+            </span>
+            <h2 className="text-2xl font-bold">Card Carousel Hero</h2>
+            <p className="text-muted-foreground mt-2">Swipeable testimonial cards with floating search</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-gradient-to-br from-primary via-primary to-primary/80 rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar */}
+                <div className="h-11 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-white/20 rounded-full" />
+                </div>
+                
+                {/* Header */}
+                <div className="px-6 py-4 flex items-center justify-between text-primary-foreground">
+                  <span className="text-lg font-bold">EveryDriver</span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-1">
+                      {[testimonialSarah, testimonialJames].map((img, i) => (
+                        <img key={i} src={img} alt="" className="w-6 h-6 rounded-full border-2 border-primary" />
+                      ))}
+                    </div>
+                    <span className="text-xs">50K+</span>
+                  </div>
+                </div>
+                
+                {/* Main Content */}
+                <div className="px-6 text-primary-foreground">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <h1 className="text-3xl font-bold leading-tight mb-2">
+                      Drive Into<br />
+                      Your Future
+                    </h1>
+                    <p className="text-white/80 text-sm mb-6">
+                      Join thousands who passed with confidence
+                    </p>
+                  </motion.div>
+                  
+                  {/* Search Card */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-white rounded-2xl p-4 shadow-xl mb-6"
+                  >
+                    <p className="text-foreground text-sm font-medium mb-3">Find instructors near you</p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Enter postcode" className="pl-10 h-11 rounded-xl" />
+                      </div>
+                      <Button className="h-11 rounded-xl">Search</Button>
+                    </div>
+                  </motion.div>
+                </div>
+                
+                {/* Testimonial Cards Carousel */}
+                <div className="px-6 pb-4">
+                  <p className="text-white/60 text-xs mb-3">Recent passes ✨</p>
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6">
+                    {[
+                      { img: testimonialSarah, name: "Sarah", location: "Leeds", quote: "Passed first time!" },
+                      { img: testimonialJames, name: "James", location: "London", quote: "Amazing instructor!" },
+                      { img: testimonialPriya, name: "Priya", location: "Bristol", quote: "So patient and kind!" },
+                    ].map((item, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 + i * 0.1 }}
+                        className="flex-shrink-0 w-48 bg-white/10 backdrop-blur rounded-xl p-4"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <img src={item.img} alt="" className="w-10 h-10 rounded-full" />
+                          <div>
+                            <p className="text-white font-medium text-sm">{item.name}</p>
+                            <p className="text-white/60 text-xs">{item.location}</p>
+                          </div>
+                        </div>
+                        <p className="text-white/80 text-sm italic">"{item.quote}"</p>
+                        <div className="flex mt-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Quick Stats */}
+                <div className="mx-6 bg-white/10 backdrop-blur rounded-2xl p-4 mb-6">
+                  <div className="grid grid-cols-3 gap-4 text-center text-primary-foreground">
+                    {[
+                      { value: "4.9", label: "Rating" },
+                      { value: "90%", label: "Pass Rate" },
+                      { value: "24/7", label: "Booking" },
+                    ].map((stat, i) => (
+                      <div key={i}>
+                        <div className="text-xl font-bold">{stat.value}</div>
+                        <div className="text-xs text-white/60">{stat.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option G: Minimal Clean */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-slate-500/10 text-slate-600 rounded-full text-sm font-medium mb-2">
+              Option G
+            </span>
+            <h2 className="text-2xl font-bold">Minimal Clean</h2>
+            <p className="text-muted-foreground mt-2">Whitespace-focused with bold typography</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar */}
+                <div className="h-11 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Minimal Header */}
+                <div className="px-6 py-6 flex items-center justify-between">
+                  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                    <Car className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                  <Button variant="outline" size="sm" className="rounded-full">
+                    Login
+                  </Button>
+                </div>
+                
+                {/* Giant Typography */}
+                <div className="px-6 py-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <h1 className="text-5xl font-bold leading-[1.1] tracking-tight mb-4">
+                      Learn to<br />
+                      <span className="text-primary">drive.</span>
+                    </h1>
+                    <p className="text-lg text-muted-foreground mb-8">
+                      Find certified instructors in your area and book your first lesson today.
+                    </p>
+                  </motion.div>
+                  
+                  {/* Search */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-3"
+                  >
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input 
+                        placeholder="Enter your postcode"
+                        className="pl-12 h-14 rounded-2xl border-2 text-lg"
+                      />
+                    </div>
+                    <Button className="w-full h-14 rounded-2xl text-lg" size="lg">
+                      Find Instructors
+                    </Button>
+                  </motion.div>
+                </div>
+                
+                {/* Minimal Stats */}
+                <div className="px-6 py-8 border-t">
+                  <div className="grid grid-cols-3 gap-6 text-center">
+                    {[
+                      { value: "50K+", label: "Learners" },
+                      { value: "4.9", label: "Rating" },
+                      { value: "90%", label: "Pass Rate" },
+                    ].map((stat, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 + i * 0.1 }}
+                      >
+                        <div className="text-2xl font-bold">{stat.value}</div>
+                        <div className="text-sm text-muted-foreground">{stat.label}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Simple Features */}
+                <div className="px-6 pb-8">
+                  {[
+                    "DVSA approved instructors",
+                    "Flexible scheduling",
+                    "Pay as you learn",
+                  ].map((feature, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + i * 0.1 }}
+                      className="flex items-center gap-3 py-3 border-b last:border-0"
+                    >
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <span>{feature}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option H: App Store Style */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-indigo-500/10 text-indigo-600 rounded-full text-sm font-medium mb-2">
+              Option H
+            </span>
+            <h2 className="text-2xl font-bold">App Store Style</h2>
+            <p className="text-muted-foreground mt-2">Bold gradients with app-like featured sections</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar */}
+                <div className="h-11 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Header */}
+                <div className="px-6 py-4">
+                  <h2 className="text-2xl font-bold">Good morning! 👋</h2>
+                  <p className="text-muted-foreground">Ready to start your driving journey?</p>
+                </div>
+                
+                {/* Featured Card */}
+                <div className="px-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-6 text-white overflow-hidden"
+                  >
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
+                    <div className="absolute -bottom-5 -left-5 w-24 h-24 bg-white/10 rounded-full" />
+                    
+                    <div className="relative z-10">
+                      <span className="inline-block px-2 py-1 bg-white/20 rounded-full text-xs mb-4">
+                        🔥 Most Popular
+                      </span>
+                      <h3 className="text-2xl font-bold mb-2">Find Your Instructor</h3>
+                      <p className="text-white/80 text-sm mb-4">
+                        50,000+ learners trust us for their driving lessons
+                      </p>
+                      
+                      {/* Search */}
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Input 
+                            placeholder="Postcode"
+                            className="h-12 rounded-xl bg-white/20 border-white/30 text-white placeholder:text-white/60"
+                          />
+                        </div>
+                        <Button variant="secondary" className="h-12 px-5 rounded-xl">
+                          <Search className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+                
+                {/* Quick Actions */}
+                <div className="px-4 py-6">
+                  <h3 className="font-semibold mb-4 px-2">Quick Actions</h3>
+                  <div className="grid grid-cols-4 gap-3">
+                    {[
+                      { icon: Search, label: "Search", color: "bg-blue-500" },
+                      { icon: Calendar, label: "Book", color: "bg-emerald-500" },
+                      { icon: CreditCard, label: "Finance", color: "bg-amber-500" },
+                      { icon: Award, label: "Courses", color: "bg-purple-500" },
+                    ].map((action, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 + i * 0.05 }}
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center shadow-lg`}>
+                          <action.icon className="h-6 w-6 text-white" />
+                        </div>
+                        <span className="text-xs text-muted-foreground">{action.label}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Featured Testimonials */}
+                <div className="px-4 pb-6">
+                  <div className="flex items-center justify-between mb-4 px-2">
+                    <h3 className="font-semibold">Recent Passes</h3>
+                    <Button variant="ghost" size="sm" className="text-primary">
+                      See all
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {[
+                      { img: testimonialSarah, name: "Sarah", when: "2h ago", text: "First time pass! 🎉" },
+                      { img: testimonialJames, name: "James", when: "5h ago", text: "Best instructor ever!" },
+                    ].map((item, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 + i * 0.1 }}
+                        className="flex items-center gap-3 p-3 bg-muted/50 rounded-2xl"
+                      >
+                        <img src={item.img} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-sm">{item.name}</span>
+                            <span className="text-xs text-muted-foreground">{item.when}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{item.text}</p>
+                          <div className="flex mt-1">
+                            {[...Array(5)].map((_, j) => (
+                              <Star key={j} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Footer */}
         <div className="text-center py-8 border-t">
           <p className="text-muted-foreground mb-4">Which layout do you prefer?</p>
