@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Phone, Menu, Moon, Sun } from "lucide-react";
+import { Search, MapPin, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Phone, Menu, Moon, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
@@ -11,9 +11,15 @@ import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
 import { useTheme } from "@/context/ThemeContext";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
+  const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
   const { features: includedFeatures } = useIncludedFeatures();
   const navigate = useNavigate();
   const location = useLocation();
@@ -174,7 +180,8 @@ export function MobileHomepage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + i * 0.05 }}
-                  className="relative overflow-hidden rounded-lg bg-card border border-border/50 shadow-lg"
+                  onClick={() => setSelectedFeature(feature)}
+                  className="relative overflow-hidden rounded-lg bg-card border border-border/50 shadow-lg cursor-pointer active:scale-[0.98] transition-transform"
                 >
                   {feature.image_url ? (
                     <>
@@ -265,6 +272,42 @@ export function MobileHomepage() {
         {/* Safe area for iOS */}
         <div className="h-safe-area-inset-bottom bg-primary" />
       </nav>
+
+      {/* Feature Detail Modal */}
+      <Dialog open={!!selectedFeature} onOpenChange={() => setSelectedFeature(null)}>
+        <DialogContent className="max-w-md mx-4 rounded-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              {selectedFeature && (
+                <>
+                  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
+                    {selectedFeature.icon && <selectedFeature.icon className="h-5 w-5 text-primary-foreground" />}
+                  </div>
+                  <span>{selectedFeature.title}</span>
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedFeature && (
+            <div className="space-y-4">
+              {selectedFeature.image_url && (
+                <img 
+                  src={selectedFeature.image_url} 
+                  alt={selectedFeature.title}
+                  className="w-full h-40 object-cover rounded-lg"
+                />
+              )}
+              <p className="text-muted-foreground">{selectedFeature.description}</p>
+              {selectedFeature.detailed_content && (
+                <div 
+                  className="prose prose-sm dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: selectedFeature.detailed_content }}
+                />
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
