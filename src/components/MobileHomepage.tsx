@@ -80,6 +80,25 @@ export function MobileHomepage() {
         </div>
       </div>
       
+      {/* Search Bar - Full Width Below Header */}
+      <div className="bg-nav px-3 py-2">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="flex-1">
+            <PostcodeAutocomplete
+              value={postcode}
+              onChange={setPostcode}
+              onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
+              placeholder="Enter postcode..."
+              inputClassName="h-10 text-sm bg-nav-foreground/10 border-nav-foreground/20 rounded-lg text-nav-foreground placeholder:text-nav-foreground/60"
+              showGeolocation={true}
+            />
+          </div>
+          <Button type="submit" size="sm" className="h-10 px-4 bg-nav-foreground/20 hover:bg-nav-foreground/30 text-nav-foreground rounded-lg">
+            <Search className="h-4 w-4" />
+          </Button>
+        </form>
+      </div>
+      
       {/* Hero Video - Full Width */}
       <div className="relative">
         <div className="relative h-[280px] overflow-hidden">
@@ -101,23 +120,9 @@ export function MobileHomepage() {
         </div>
       </div>
       
-      {/* Search Section - Below Video */}
-      <div className="px-4 py-5 bg-muted/30">
-        <form onSubmit={handleSearch} className="space-y-3">
-          <PostcodeAutocomplete
-            value={postcode}
-            onChange={setPostcode}
-            onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
-            placeholder="Enter your postcode..."
-            inputClassName="h-12 text-base bg-background rounded-xl border-2 border-border shadow-sm"
-            showGeolocation={true}
-          />
-          <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl shadow-lg">
-            <Search className="h-5 w-5 mr-2" />
-            Find Courses Near Me
-          </Button>
-        </form>
-        <p className="text-xs text-muted-foreground text-center mt-3">
+      {/* USP Banner */}
+      <div className="bg-muted/30 px-4 py-2">
+        <p className="text-xs text-muted-foreground text-center">
           💰 Money back if you pass first time, FREE retest if you don't
         </p>
       </div>
