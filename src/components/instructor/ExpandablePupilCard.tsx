@@ -50,6 +50,10 @@ interface Pupil {
   account_balance?: number | null;
   prepaid_hours?: number | null;
   test_date?: string | null;
+  payment_type?: string | null;
+  deposit_paid?: number | null;
+  balance_due_date?: string | null;
+  deposit_forfeited?: boolean | null;
 }
 
 interface LatestFeedback {
@@ -246,7 +250,41 @@ export function ExpandablePupilCard({
             <h3 className="font-semibold text-foreground truncate">
               {pupil.name}
             </h3>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+              {/* Payment Status Badges */}
+              {pupil.deposit_forfeited && (
+                <Badge variant="destructive" className="text-xs">
+                  Deposit Lost
+                </Badge>
+              )}
+              {!pupil.deposit_forfeited && pupil.payment_type === "deposit" && (pupil.account_balance || 0) < 0 && (
+                (() => {
+                  const daysUntilDue = pupil.balance_due_date 
+                    ? Math.ceil((new Date(pupil.balance_due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                    : null;
+                  const isOverdue = daysUntilDue !== null && daysUntilDue < 0;
+                  const isUrgent = daysUntilDue !== null && daysUntilDue <= 7 && daysUntilDue >= 0;
+                  
+                  return (
+                    <Badge 
+                      variant={isOverdue ? "destructive" : isUrgent ? "default" : "secondary"}
+                      className={`text-xs ${isOverdue ? "" : isUrgent ? "bg-amber-500 hover:bg-amber-600" : "bg-amber-100 text-amber-700 border-0"}`}
+                    >
+                      {isOverdue ? "OVERDUE" : `£${Math.abs(pupil.account_balance || 0)} due`}
+                    </Badge>
+                  );
+                })()
+              )}
+              {pupil.payment_type === "full" && (
+                <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
+                  Paid
+                </Badge>
+              )}
+              {pupil.payment_type === "deposit" && (pupil.account_balance || 0) >= 0 && !pupil.deposit_forfeited && (
+                <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
+                  Paid
+                </Badge>
+              )}
               {pupil.course_type && (
                 <Badge variant="secondary" className="text-xs">
                   {courseTypeLabels[pupil.course_type] || pupil.course_type}
@@ -336,13 +374,56 @@ export function ExpandablePupilCard({
                   <div className="text-lg font-bold">{pupil.prepaid_hours || 0}h</div>
                   <div className="text-xs text-muted-foreground">Credit</div>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2">
-                  <div className="text-lg font-bold">
-                    {pupil.account_balance ? `£${pupil.account_balance}` : "£0"}
+                <div className={`rounded-lg p-2 ${(pupil.account_balance || 0) < 0 ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-muted/50'}`}>
+                  <div className={`text-lg font-bold ${(pupil.account_balance || 0) < 0 ? 'text-amber-600' : ''}`}>
+                    {pupil.account_balance ? (pupil.account_balance < 0 ? `-£${Math.abs(pupil.account_balance)}` : `£${pupil.account_balance}`) : "£0"}
                   </div>
                   <div className="text-xs text-muted-foreground">Balance</div>
                 </div>
               </div>
+
+              {/* Deposit Due Date Warning */}
+              {pupil.payment_type === "deposit" && (pupil.account_balance || 0) < 0 && pupil.balance_due_date && !pupil.deposit_forfeited && (
+                (() => {
+                  const dueDate = new Date(pupil.balance_due_date);
+                  const daysUntilDue = Math.ceil((dueDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                  const isOverdue = daysUntilDue < 0;
+                  const isUrgent = daysUntilDue <= 7 && daysUntilDue >= 0;
+                  
+                  return (
+                    <div className={`flex items-center gap-2 text-sm rounded-lg p-3 ${
+                      isOverdue ? 'bg-destructive/10 text-destructive' : 
+                      isUrgent ? 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400' : 
+                      'bg-muted/50 text-muted-foreground'
+                    }`}>
+                      <Clock className="h-4 w-4 shrink-0" />
+                      <div>
+                        <span className="font-medium">
+                          {isOverdue ? 'OVERDUE: ' : isUrgent ? '⚠️ ' : ''}
+                          £{Math.abs(pupil.account_balance || 0)} outstanding
+                        </span>
+                        <span className="ml-1">
+                          {isOverdue 
+                            ? `(was due ${dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })})`
+                            : `due by ${dueDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}`
+                          }
+                        </span>
+                        {isUrgent && !isOverdue && (
+                          <span className="ml-1 font-medium">({daysUntilDue} day{daysUntilDue !== 1 ? 's' : ''} left)</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
+
+              {/* Deposit Forfeited Warning */}
+              {pupil.deposit_forfeited && (
+                <div className="flex items-center gap-2 text-sm bg-destructive/10 text-destructive rounded-lg p-3">
+                  <X className="h-4 w-4 shrink-0" />
+                  <span>Booking cancelled - £{pupil.deposit_paid || 0} deposit forfeited due to non-payment</span>
+                </div>
+              )}
 
               {/* Test Date if set */}
               {pupil.test_date && (
