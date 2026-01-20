@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
 
     const now = new Date();
     const timeMin = now.toISOString();
-    const timeMax = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const timeMax = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
     let successCount = 0;
     let errorCount = 0;
