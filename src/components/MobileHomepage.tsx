@@ -88,9 +88,12 @@ export function MobileHomepage() {
       {/* Hero Image with Overlay Card */}
       <div className="relative mx-4">
         <div className="relative h-[240px] rounded-3xl overflow-hidden">
-          <img 
-            src={heroLearnerMobile} 
-            alt="Learning to drive" 
+          <video 
+            src="/videos/hero-video.mp4"
+            autoPlay
+            muted
+            playsInline
+            poster={heroLearnerMobile}
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
