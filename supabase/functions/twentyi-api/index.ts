@@ -284,13 +284,15 @@ async function registerDomain(
   };
 }
 
-// Provision hosting package
+// Provision hosting package using 20i reseller API
 async function provisionHosting(
   packageId: string,
   domainName: string,
   label?: string
 ): Promise<{ success: boolean; packageRef?: string; error?: string }> {
-  const { data, error } = await make20iRequest('/package', 'POST', {
+  // 20i uses /reseller/*/addWeb endpoint for provisioning hosting
+  // The * is automatically replaced with the authenticated reseller's ID
+  const { data, error } = await make20iRequest('/reseller/*/addWeb', 'POST', {
     type: packageId,
     domain_name: domainName,
     label: label || domainName,
@@ -300,10 +302,11 @@ async function provisionHosting(
     return { success: false, error };
   }
   
-  const result = data as { id?: string; reference?: string };
+  // Response contains the new package ID
+  const result = data as { result?: string | number; id?: string; reference?: string };
   return { 
     success: true, 
-    packageRef: result?.id || result?.reference 
+    packageRef: String(result?.result || result?.id || result?.reference || '')
   };
 }
 
