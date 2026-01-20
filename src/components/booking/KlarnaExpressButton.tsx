@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -38,6 +38,13 @@ export function KlarnaExpressButton({
   const [debugInfo, setDebugInfo] = useState<string | null>(null);
   const initAttemptedRef = useRef(false);
   const sdkLoadedRef = useRef(false);
+
+  // Klarna docs commonly use a selector string (e.g. "#container"). Using an ID helps avoid
+  // issues where the SDK renders but the element isn't interactive.
+  const containerId = useMemo(() => {
+    const safe = merchantReference.replace(/[^a-zA-Z0-9_-]/g, "");
+    return `klarna-container-${safe}`;
+  }, [merchantReference]);
 
   const amountInMinorUnits = Math.round(amount * 100);
 
@@ -89,6 +96,7 @@ export function KlarnaExpressButton({
             hostname: typeof window !== "undefined" ? window.location.hostname : "",
             hasKlarnaObject: Boolean((window as any).Klarna),
             hasButtons: false,
+            containerId,
           },
           null,
           2
@@ -109,7 +117,7 @@ export function KlarnaExpressButton({
 
       instance.load(
         {
-          container: containerRef.current,
+          container: `#${containerId}`,
           theme: "default",
           shape: "default",
           locale: "en-GB",
@@ -154,6 +162,7 @@ export function KlarnaExpressButton({
                 hostname: typeof window !== "undefined" ? window.location.hostname : "",
                 amount,
                 currency,
+                containerId,
                 loadResult,
               },
               null,
@@ -195,7 +204,7 @@ export function KlarnaExpressButton({
       setStatus('error');
       return false;
     }
-  }, [amount, amountInMinorUnits, currency, merchantReference, onSuccess, onError, onCancel, orderPayload]);
+  }, [amount, amountInMinorUnits, currency, containerId, merchantReference, onSuccess, onError, onCancel, orderPayload]);
 
   // Load SDK
   useEffect(() => {
@@ -336,6 +345,7 @@ export function KlarnaExpressButton({
       
       {/* Klarna button container - SDK renders button here */}
       <div 
+        id={containerId}
         ref={containerRef}
         className="w-full min-h-[56px]"
       />
