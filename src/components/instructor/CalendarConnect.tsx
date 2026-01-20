@@ -1,7 +1,9 @@
-import { Calendar, CheckCircle, Loader2, LogOut, RefreshCw } from "lucide-react";
+import { Calendar, CheckCircle, Loader2, LogOut, RefreshCw, Upload, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGoogleOAuth } from "@/hooks/useGoogleOAuth";
+import { useGoogleCalendarSync } from "@/hooks/useGoogleCalendarSync";
 import { formatDistanceToNow } from "date-fns";
+import { Separator } from "@/components/ui/separator";
 
 interface CalendarConnectProps {
   instructorId: string;
@@ -17,6 +19,13 @@ export function CalendarConnect({ instructorId }: CalendarConnectProps) {
     disconnect,
     checkConnection,
   } = useGoogleOAuth(instructorId);
+
+  const {
+    isSyncing,
+    fullSync,
+    syncAllLessons,
+    importBusyTimes,
+  } = useGoogleCalendarSync(instructorId);
 
   if (isChecking) {
     return (
@@ -44,6 +53,56 @@ export function CalendarConnect({ instructorId }: CalendarConnectProps) {
             <p className="text-destructive">Token expired - will refresh automatically</p>
           )}
         </div>
+
+        <Separator />
+
+        <div className="space-y-3">
+          <p className="text-sm font-medium">Sync Options</p>
+          
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fullSync}
+              disabled={isSyncing}
+            >
+              {isSyncing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              Full Sync
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => syncAllLessons()}
+              disabled={isSyncing}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Push Lessons
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => importBusyTimes()}
+              disabled={isSyncing}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Import Busy Times
+            </Button>
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
+            <strong>Full Sync:</strong> Pushes lessons to Google and imports your busy times.<br />
+            <strong>Push Lessons:</strong> Only sends lessons to Google Calendar.<br />
+            <strong>Import Busy Times:</strong> Only pulls events from Google to block your availability.
+          </p>
+        </div>
+
+        <Separator />
 
         <div className="flex gap-2">
           <Button

@@ -113,3 +113,6 @@ verify_jwt = false
 
 [functions.google-oauth]
 verify_jwt = false
+
+[functions.calendar-sync]
+verify_jwt = false
