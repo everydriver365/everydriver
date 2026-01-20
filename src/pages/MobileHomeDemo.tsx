@@ -13,6 +13,9 @@ import testimonialPriya from "@/assets/testimonial-priya.jpg";
 import heroImage from "@/assets/hero-driving.jpg";
 import heroLearnerMobile from "@/assets/hero-learner-mobile.jpg";
 import everyDriverLogo from "@/assets/logo-everydriver-light.png";
+import logoKlarna from "@/assets/logo-klarna.png";
+import logoClearpay from "@/assets/logo-clearpay.webp";
+import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
 
 const MobileHomeDemo = () => {
   const { features: includedFeatures, loading: featuresLoading } = useIncludedFeatures();
@@ -1108,6 +1111,23 @@ const MobileHomeDemo = () => {
                       })}
                     </div>
                   </div>
+                </div>
+                
+                {/* Payment Providers Section */}
+                <div className="px-4 pt-4 pb-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.85 }}
+                    className="bg-card border border-border/50 rounded-2xl p-4 shadow-lg"
+                  >
+                    <p className="text-xs text-muted-foreground text-center mb-3">Pay your way with</p>
+                    <div className="flex items-center justify-center gap-4">
+                      <img src={logoKlarna} alt="Klarna" className="h-6 object-contain" />
+                      <img src={logoClearpay} alt="Clearpay" className="h-5 object-contain" />
+                      <img src={logoIdeal4Finance} alt="Ideal4Finance" className="h-6 object-contain" />
+                    </div>
+                  </motion.div>
                 </div>
                 
                 {/* Promo Banner */}
