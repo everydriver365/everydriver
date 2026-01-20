@@ -9,13 +9,164 @@ const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar";
 
+// Simple HMAC-like signature using Web Crypto
+async function signState(data: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
+  return btoa(String.fromCharCode(...new Uint8Array(signature)));
+}
+
+async function verifyState(data: string, signature: string, secret: string): Promise<boolean> {
+  const expectedSig = await signState(data, secret);
+  return expectedSig === signature;
+}
+
 Deno.serve(async (req) => {
+  const url = new URL(req.url);
+  
+  // Handle GET requests (OAuth callback from Google)
+  if (req.method === "GET") {
+    return handleOAuthCallback(url);
+  }
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Handle POST requests (API calls from frontend)
+  return handleAPIRequest(req);
+});
+
+async function handleOAuthCallback(url: URL): Promise<Response> {
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+  const error = url.searchParams.get("error");
+
+  const clientId = Deno.env.get("GOOGLE_CLIENT_ID");
+  const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const stateSecret = Deno.env.get("GOOGLE_CLIENT_SECRET"); // Reuse client secret for state signing
+
+  // Default fallback URL
+  let returnUrl = "https://everydriver.lovable.app/instructor/settings";
+
   try {
-    const { action, instructorId, code, redirectUri } = await req.json();
+    // Parse and verify state
+    if (state) {
+      const [stateData, signature] = state.split(".");
+      if (stateData && signature) {
+        const isValid = await verifyState(stateData, signature, stateSecret!);
+        if (isValid) {
+          const decoded = JSON.parse(atob(stateData));
+          if (decoded.returnTo) {
+            returnUrl = decoded.returnTo;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error("State parsing error:", e);
+  }
+
+  // Handle error from Google
+  if (error) {
+    console.error("OAuth error from Google:", error);
+    return Response.redirect(`${returnUrl}?calendar=error&reason=${encodeURIComponent(error)}`, 302);
+  }
+
+  if (!code || !state) {
+    return Response.redirect(`${returnUrl}?calendar=error&reason=missing_params`, 302);
+  }
+
+  try {
+    // Parse state to get instructorId
+    const [stateData, signature] = state.split(".");
+    if (!stateData || !signature) {
+      return Response.redirect(`${returnUrl}?calendar=error&reason=invalid_state`, 302);
+    }
+
+    const isValid = await verifyState(stateData, signature, stateSecret!);
+    if (!isValid) {
+      return Response.redirect(`${returnUrl}?calendar=error&reason=state_tampered`, 302);
+    }
+
+    const decoded = JSON.parse(atob(stateData));
+    const instructorId = decoded.instructorId;
+
+    if (!instructorId) {
+      return Response.redirect(`${returnUrl}?calendar=error&reason=no_instructor_id`, 302);
+    }
+
+    // The redirect URI must match what was used in getAuthUrl
+    const redirectUri = `${supabaseUrl}/functions/v1/google-oauth`;
+
+    // Exchange code for tokens
+    const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: clientId!,
+        client_secret: clientSecret!,
+        code: code,
+        grant_type: "authorization_code",
+        redirect_uri: redirectUri,
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+
+    if (tokenData.error) {
+      console.error("Token exchange error:", tokenData);
+      return Response.redirect(`${returnUrl}?calendar=error&reason=${encodeURIComponent(tokenData.error)}`, 302);
+    }
+
+    // Get user's email
+    const userInfoResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+    const userInfo = await userInfoResponse.json();
+
+    // Store tokens
+    const supabase = createClient(supabaseUrl!, supabaseKey!);
+    const tokenExpiry = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
+
+    const { error: upsertError } = await supabase
+      .from("instructor_calendar_tokens")
+      .upsert({
+        instructor_id: instructorId,
+        provider: "google",
+        access_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
+        token_expiry: tokenExpiry,
+        email: userInfo.email,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "instructor_id,provider" });
+
+    if (upsertError) {
+      console.error("Error storing tokens:", upsertError);
+      return Response.redirect(`${returnUrl}?calendar=error&reason=storage_failed`, 302);
+    }
+
+    console.log(`Successfully connected Google Calendar for instructor ${instructorId}, email: ${userInfo.email}`);
+    return Response.redirect(`${returnUrl}?calendar=success`, 302);
+
+  } catch (err) {
+    console.error("Callback error:", err);
+    return Response.redirect(`${returnUrl}?calendar=error&reason=exception`, 302);
+  }
+}
+
+async function handleAPIRequest(req: Request): Promise<Response> {
+  try {
+    const { action, instructorId, returnTo } = await req.json();
 
     const clientId = Deno.env.get("GOOGLE_CLIENT_ID");
     const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
@@ -33,14 +184,23 @@ Deno.serve(async (req) => {
 
     // Generate OAuth authorization URL
     if (action === "getAuthUrl") {
-      if (!instructorId || !redirectUri) {
+      if (!instructorId) {
         return new Response(
-          JSON.stringify({ error: "instructorId and redirectUri are required" }),
+          JSON.stringify({ error: "instructorId is required" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      const state = btoa(JSON.stringify({ instructorId }));
+      // Use the edge function URL as redirect (stable, doesn't change)
+      const redirectUri = `${supabaseUrl}/functions/v1/google-oauth`;
+
+      // Create signed state with instructorId and return URL
+      const stateData = btoa(JSON.stringify({ 
+        instructorId,
+        returnTo: returnTo || "https://everydriver.lovable.app/instructor/settings"
+      }));
+      const signature = await signState(stateData, clientSecret);
+      const state = `${stateData}.${signature}`;
       
       const params = new URLSearchParams({
         client_id: clientId,
@@ -55,74 +215,7 @@ Deno.serve(async (req) => {
       const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
 
       return new Response(
-        JSON.stringify({ authUrl }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Exchange authorization code for tokens
-    if (action === "exchangeCode") {
-      if (!code || !instructorId || !redirectUri) {
-        return new Response(
-          JSON.stringify({ error: "code, instructorId, and redirectUri are required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          client_id: clientId,
-          client_secret: clientSecret,
-          code: code,
-          grant_type: "authorization_code",
-          redirect_uri: redirectUri,
-        }),
-      });
-
-      const tokenData = await tokenResponse.json();
-
-      if (tokenData.error) {
-        console.error("Token exchange error:", tokenData);
-        return new Response(
-          JSON.stringify({ error: tokenData.error_description || tokenData.error }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Calculate token expiry
-      const tokenExpiry = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
-
-      // Get user's email from the access token
-      const userInfoResponse = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
-        headers: { Authorization: `Bearer ${tokenData.access_token}` },
-      });
-      const userInfo = await userInfoResponse.json();
-
-      // Store tokens in instructor_calendar_tokens
-      const { error: upsertError } = await supabase
-        .from("instructor_calendar_tokens")
-        .upsert({
-          instructor_id: instructorId,
-          provider: "google",
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token,
-          token_expiry: tokenExpiry,
-          email: userInfo.email,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: "instructor_id,provider" });
-
-      if (upsertError) {
-        console.error("Error storing tokens:", upsertError);
-        return new Response(
-          JSON.stringify({ error: "Failed to store tokens" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ success: true, email: userInfo.email }),
+        JSON.stringify({ authUrl, redirectUri }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -150,7 +243,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Check if token is expired
       const isExpired = new Date(tokenData.token_expiry) < new Date();
 
       return new Response(
@@ -234,7 +326,6 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Get the token to revoke
       const { data: tokenData } = await supabase
         .from("instructor_calendar_tokens")
         .select("access_token")
@@ -242,14 +333,12 @@ Deno.serve(async (req) => {
         .eq("provider", "google")
         .single();
 
-      // Revoke the token at Google
       if (tokenData?.access_token) {
         await fetch(`https://oauth2.googleapis.com/revoke?token=${tokenData.access_token}`, {
           method: "POST",
         });
       }
 
-      // Delete from database
       const { error } = await supabase
         .from("instructor_calendar_tokens")
         .delete()
@@ -282,4 +371,4 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}

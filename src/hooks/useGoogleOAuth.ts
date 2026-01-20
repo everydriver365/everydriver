@@ -42,17 +42,18 @@ export function useGoogleOAuth(instructorId: string) {
 
     setIsConnecting(true);
     try {
-      const redirectUri = `${window.location.origin}/calendar-callback`;
+      // Pass current origin so backend can redirect back after OAuth
+      const returnTo = `${window.location.origin}/instructor/settings`;
       
       const { data, error } = await supabase.functions.invoke("google-oauth", {
-        body: { action: "getAuthUrl", instructorId, redirectUri },
+        body: { action: "getAuthUrl", instructorId, returnTo },
       });
 
       if (error || data?.error) {
         throw new Error(data?.error || error?.message || "Failed to get auth URL");
       }
 
-      // Redirect to Google OAuth
+      // Redirect to Google OAuth (callback goes to stable backend URL)
       window.location.href = data.authUrl;
     } catch (err: any) {
       console.error("Error starting OAuth:", err);
