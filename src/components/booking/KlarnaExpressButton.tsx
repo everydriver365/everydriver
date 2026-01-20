@@ -86,6 +86,37 @@ export function KlarnaExpressButton({
       return false;
     }
 
+    // Ensure the element referenced by the selector actually exists at init time.
+    // If the ID changes across renders (e.g. merchantReference changes), Klarna can throw:
+    // "container selector is invalid".
+    const domContainer = typeof document !== "undefined" ? document.getElementById(containerId) : null;
+    if (!domContainer) {
+      console.error("Klarna: Container element not found for id:", containerId);
+      setErrorMessage("Klarna container not found");
+      setDebugInfo(
+        JSON.stringify(
+          {
+            hostname: typeof window !== "undefined" ? window.location.hostname : "",
+            containerId,
+            refId: containerRef.current?.id,
+            domHasElement: false,
+          },
+          null,
+          2
+        )
+      );
+      setStatus('error');
+      return false;
+    }
+
+    if (domContainer !== containerRef.current) {
+      // Not fatal, but useful to diagnose mismatched selectors.
+      console.warn("Klarna: Container ref does not match DOM element for id", {
+        containerId,
+        refId: containerRef.current?.id,
+      });
+    }
+
     const klarnaButtons = getKlarnaButtons();
     if (!klarnaButtons) {
       console.error("Klarna Payments Buttons not available on window. Klarna object:", (window as any).Klarna);

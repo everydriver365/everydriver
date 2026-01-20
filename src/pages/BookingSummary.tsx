@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote } from "lucide-react";
@@ -144,6 +144,15 @@ export default function BookingSummary() {
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
   const selectedDate = selectedDateParam ? parseISO(selectedDateParam) : null;
+
+  // IMPORTANT: Keep merchant reference stable across re-renders.
+  // If this changes, Klarna may fail with "container selector is invalid" because
+  // the SDK tries to bind to an element by selector and the ID can change mid-flow.
+  const klarnaMerchantReference = useMemo(() => {
+    const id = courseDetails?.instructor?.id;
+    if (!id) return "KL-pending";
+    return `KL-${id.slice(0, 8)}-${Date.now()}`;
+  }, [courseDetails?.instructor?.id]);
 
   // Fetch location name from postcode
   const fetchLocationName = async (postcode: string) => {
@@ -1569,7 +1578,7 @@ export default function BookingSummary() {
               <div className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</div>
               <KlarnaExpressButton
                 amount={totalPrice}
-                merchantReference={`KL-${instructor.id.slice(0, 8)}-${Date.now()}`}
+                merchantReference={klarnaMerchantReference}
                 orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course`}
                 disabled={!canSubmit}
                 onSuccess={async (authToken, orderId) => {
