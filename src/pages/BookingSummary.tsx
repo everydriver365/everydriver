@@ -1557,51 +1557,65 @@ export default function BookingSummary() {
             </button>
 
             {/* Klarna - Server-side Session + Order Capture */}
-            <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-[#ffb3c7]/10">
-              <div className="flex items-center justify-between mb-3">
-                <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
-                  Klarna.
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Pay in 3 instalments
-                </span>
+            {gatewayHealth.klarna.available ? (
+              <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-[#ffb3c7]/10">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
+                    Klarna.
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Pay in 3 instalments
+                  </span>
+                </div>
+                <div className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</div>
+                <KlarnaPayment
+                  amount={totalPrice}
+                  merchantReference={`KL-${instructor.id.slice(0, 8)}-${Date.now()}`}
+                  orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course`}
+                  consumer={{
+                    givenName: pupilName.trim().split(" ")[0] || pupilName.trim(),
+                    familyName: pupilName.trim().split(" ").slice(1).join(" ") || pupilName.trim(),
+                    email: pupilEmail.trim(),
+                    phone: pupilPhone.trim(),
+                  }}
+                  billing={{
+                    streetAddress: pupilAddress.trim(),
+                    postalCode: pupilPostcode.trim().toUpperCase(),
+                    city: locationName || "UK",
+                    country: "GB",
+                  }}
+                  disabled={!canSubmit}
+                  onSuccess={async (orderId) => {
+                    console.log("Klarna payment success:", orderId);
+                    toast.success("Payment completed with Klarna!");
+                    const pupilId = await ensureBookingCreated();
+                    if (pupilId) {
+                      navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
+                    }
+                  }}
+                  onError={(error) => {
+                    console.error("Klarna payment error:", error);
+                    toast.error(error || "Klarna payment failed");
+                  }}
+                  onCancel={() => {
+                    console.log("Klarna payment cancelled");
+                    toast.info("Klarna payment cancelled");
+                  }}
+                />
               </div>
-              <div className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</div>
-              <KlarnaPayment
-                amount={totalPrice}
-                merchantReference={`KL-${instructor.id.slice(0, 8)}-${Date.now()}`}
-                orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course`}
-                consumer={{
-                  givenName: pupilName.trim().split(" ")[0] || pupilName.trim(),
-                  familyName: pupilName.trim().split(" ").slice(1).join(" ") || pupilName.trim(),
-                  email: pupilEmail.trim(),
-                  phone: pupilPhone.trim(),
-                }}
-                billing={{
-                  streetAddress: pupilAddress.trim(),
-                  postalCode: pupilPostcode.trim().toUpperCase(),
-                  city: locationName || "UK",
-                  country: "GB",
-                }}
-                disabled={!canSubmit}
-                onSuccess={async (orderId) => {
-                  console.log("Klarna payment success:", orderId);
-                  toast.success("Payment completed with Klarna!");
-                  const pupilId = await ensureBookingCreated();
-                  if (pupilId) {
-                    navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
-                  }
-                }}
-                onError={(error) => {
-                  console.error("Klarna payment error:", error);
-                  toast.error(error || "Klarna payment failed");
-                }}
-                onCancel={() => {
-                  console.log("Klarna payment cancelled");
-                  toast.info("Klarna payment cancelled");
-                }}
-              />
-            </div>
+            ) : (
+              <div className="w-full rounded-lg border-2 border-muted p-4 bg-muted/30 opacity-60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="rounded bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    Klarna.
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Temporarily unavailable
+                  </span>
+                </div>
+                <div className="font-medium text-sm text-muted-foreground">Pay in 3 coming soon</div>
+              </div>
+            )}
           </div>
 
 
