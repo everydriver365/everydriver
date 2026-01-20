@@ -239,6 +239,9 @@ export type Database = {
           order_type: string
           period_years: number
           price_amount: number
+          ssl_expires_at: string | null
+          ssl_provisioned_at: string | null
+          ssl_status: string | null
           status: string
           tld: string
           updated_at: string
@@ -256,6 +259,9 @@ export type Database = {
           order_type: string
           period_years?: number
           price_amount: number
+          ssl_expires_at?: string | null
+          ssl_provisioned_at?: string | null
+          ssl_status?: string | null
           status?: string
           tld: string
           updated_at?: string
@@ -273,6 +279,9 @@ export type Database = {
           order_type?: string
           period_years?: number
           price_amount?: number
+          ssl_expires_at?: string | null
+          ssl_provisioned_at?: string | null
+          ssl_status?: string | null
           status?: string
           tld?: string
           updated_at?: string

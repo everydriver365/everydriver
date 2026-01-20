@@ -26,6 +26,9 @@ interface DomainOrder {
   expires_at?: string | null;
   created_at: string;
   mini_website_linked?: boolean;
+  ssl_status?: string;
+  ssl_provisioned_at?: string | null;
+  ssl_expires_at?: string | null;
 }
 
 interface HostingOrder {
@@ -242,6 +245,7 @@ export default function InstructorDomainsManagement() {
                     onManage={handleManageDomain}
                     onRenew={handleRenewDomain}
                     onLink={handleLinkDomain}
+                    onRefresh={fetchOrders}
                   />
                 ))}
               </div>

@@ -1,8 +1,9 @@
-import { Globe, Calendar, RefreshCw, Settings, Link } from "lucide-react";
+import { Globe, RefreshCw, Settings, Link } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { SSLStatusBadge } from "./SSLStatusBadge";
 
 interface DomainOrder {
   id: string;
@@ -16,6 +17,9 @@ interface DomainOrder {
   expires_at?: string | null;
   created_at: string;
   mini_website_linked?: boolean;
+  ssl_status?: string;
+  ssl_provisioned_at?: string | null;
+  ssl_expires_at?: string | null;
 }
 
 interface DomainManagementCardProps {
@@ -23,6 +27,7 @@ interface DomainManagementCardProps {
   onManage?: (domain: DomainOrder) => void;
   onRenew?: (domain: DomainOrder) => void;
   onLink?: (domain: DomainOrder) => void;
+  onRefresh?: () => void;
 }
 
 export function DomainManagementCard({
@@ -30,6 +35,7 @@ export function DomainManagementCard({
   onManage,
   onRenew,
   onLink,
+  onRefresh,
 }: DomainManagementCardProps) {
   const fullDomain = `${domain.domain_name}${domain.tld}`;
   
@@ -60,14 +66,29 @@ export function DomainManagementCard({
             </div>
             <div>
               <p className="font-semibold text-lg">{fullDomain}</p>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <Badge variant="outline" className={getStatusColor(domain.status)}>
                   {domain.status}
                 </Badge>
+                {domain.mini_website_linked && domain.ssl_status && (
+                  <SSLStatusBadge
+                    status={domain.ssl_status as "pending" | "provisioning" | "active" | "failed" | "expired"}
+                    provisionedAt={domain.ssl_provisioned_at}
+                    expiresAt={domain.ssl_expires_at}
+                    domainOrderId={domain.id}
+                    onRefresh={onRefresh}
+                  />
+                )}
                 {domain.auto_renew && (
                   <Badge variant="secondary" className="gap-1">
                     <RefreshCw className="h-3 w-3" />
                     Auto-renew
+                  </Badge>
+                )}
+                {domain.mini_website_linked && (
+                  <Badge variant="secondary" className="gap-1 bg-accent/10 text-accent border-accent/20">
+                    <Link className="h-3 w-3" />
+                    Linked
                   </Badge>
                 )}
                 {isExpiringSoon && (
