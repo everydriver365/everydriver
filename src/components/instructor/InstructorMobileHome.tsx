@@ -329,7 +329,7 @@ export function InstructorMobileHome({
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden bg-card rounded-2xl shadow-lg border border-border p-5 flex items-center justify-between"
+          className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl shadow-lg border border-border/50 dark:border-white/10 p-5 flex items-center justify-between"
         >
           {/* Subtle accent gradient in corner */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
@@ -342,8 +342,8 @@ export function InstructorMobileHome({
             <h2 className="text-lg font-bold text-foreground">
               {content?.motivation_title || "READY TO TEACH?"}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {content?.motivation_subtitle || "Every lesson brings your pupils closer to success."}
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+              {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help! You are not alone."}
             </p>
           </div>
           
@@ -358,7 +358,7 @@ export function InstructorMobileHome({
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="4"
-                    className="text-muted/20"
+                    className="text-muted/30 dark:text-white/10"
                   />
                   <circle
                     cx="32"
@@ -369,11 +369,11 @@ export function InstructorMobileHome({
                     strokeWidth="4"
                     strokeDasharray={`${(todaysLessonCount / 6) * 175.9} 175.9`}
                     strokeLinecap="round"
-                    className="text-primary"
+                    className="text-primary dark:text-white/80"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-bold">{todaysLessonCount}</span>
+                  <span className="text-xl font-bold text-foreground">{todaysLessonCount}</span>
                   <span className="text-[10px] text-muted-foreground">/6</span>
                 </div>
               </div>
@@ -418,24 +418,20 @@ export function InstructorMobileHome({
                       whileTap={{ scale: 0.98 }}
                     >
                       <Link to={action.route}>
-                        <div className="relative overflow-hidden bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-4 flex items-center gap-4 shadow-lg shadow-primary/20 active:shadow-md transition-all">
-                          {/* Decorative elements */}
-                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                          <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-                          
-                          <div className="relative w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center ring-2 ring-white/30">
-                            <Icon className="h-6 w-6 text-white" />
+                        <div className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex items-center gap-4 shadow-lg active:shadow-md transition-all">
+                          <div className="relative w-12 h-12 rounded-xl bg-muted dark:bg-white/10 flex items-center justify-center">
+                            <Icon className="h-6 w-6 text-muted-foreground dark:text-white/70" />
                             {showBadge && (
-                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-primary">
+                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
                                 {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                               </span>
                             )}
                           </div>
                           <div className="relative flex-1">
-                            <span className="font-semibold text-white text-base">{action.title}</span>
-                            <p className="text-white/70 text-xs mt-0.5">Tap to view</p>
+                            <span className="font-semibold text-foreground text-base">{action.title}</span>
+                            <p className="text-muted-foreground text-xs mt-0.5">Tap to view</p>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-white/80 relative" />
+                          <ChevronRight className="h-5 w-5 text-muted-foreground relative" />
                         </div>
                       </Link>
                     </motion.div>
@@ -453,12 +449,12 @@ export function InstructorMobileHome({
                   const Icon = getIcon(action.icon);
                   const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
                   
-                  // Different accent colors for visual variety
+                  // Different accent colors for visual variety - dark mode uses subtle tinted backgrounds
                   const tileStyles = [
-                    { bg: 'bg-gradient-to-br from-card to-muted/50', iconBg: 'bg-blue-500/15', iconColor: 'text-blue-600 dark:text-blue-400', shadow: 'shadow-blue-500/10' },
-                    { bg: 'bg-gradient-to-br from-card to-muted/50', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600 dark:text-emerald-400', shadow: 'shadow-emerald-500/10' },
-                    { bg: 'bg-gradient-to-br from-card to-muted/50', iconBg: 'bg-amber-500/15', iconColor: 'text-amber-600 dark:text-amber-400', shadow: 'shadow-amber-500/10' },
-                    { bg: 'bg-gradient-to-br from-card to-muted/50', iconBg: 'bg-purple-500/15', iconColor: 'text-purple-600 dark:text-purple-400', shadow: 'shadow-purple-500/10' },
+                    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-blue-500/15 dark:bg-blue-500/20', iconColor: 'text-blue-600 dark:text-blue-400' },
+                    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-emerald-500/15 dark:bg-emerald-500/20', iconColor: 'text-emerald-600 dark:text-emerald-400' },
+                    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-blue-500/15 dark:bg-blue-500/20', iconColor: 'text-blue-600 dark:text-blue-400' },
+                    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-rose-500/15 dark:bg-rose-500/20', iconColor: 'text-rose-600 dark:text-rose-400' },
                   ];
                   const style = tileStyles[index % tileStyles.length];
                   
@@ -471,11 +467,8 @@ export function InstructorMobileHome({
                       whileTap={{ scale: 0.97 }}
                     >
                       <Link to={action.route}>
-                        <div className={`relative overflow-hidden ${style.bg} rounded-2xl border border-border/50 p-4 flex flex-col gap-3 shadow-lg ${style.shadow} hover:shadow-xl active:shadow-md transition-all min-h-[100px]`}>
-                          {/* Subtle decorative corner */}
-                          <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-primary/5 to-transparent rounded-full" />
-                          
-                          <div className={`relative w-11 h-11 rounded-xl ${style.iconBg} flex items-center justify-center ring-1 ring-border/30`}>
+                        <div className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex flex-col gap-3 shadow-lg hover:shadow-xl active:shadow-md transition-all min-h-[120px]`}>
+                          <div className={`relative w-12 h-12 rounded-xl ${style.iconBg} flex items-center justify-center`}>
                             <Icon className={`h-5 w-5 ${style.iconColor}`} />
                             {showBadge && (
                               <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-md ring-2 ring-card">
@@ -483,7 +476,7 @@ export function InstructorMobileHome({
                               </span>
                             )}
                           </div>
-                          <span className="font-semibold text-foreground text-sm leading-tight relative">
+                          <span className="font-semibold text-foreground text-sm leading-tight relative mt-auto">
                             {action.title}
                           </span>
                         </div>
