@@ -146,30 +146,6 @@ export default function InstructorDomains() {
     setSelectedHosting(plan);
   };
 
-  const handleHostingPurchase = async (packageId: string, packageName: string) => {
-    toast.info(`Initiating ${packageName} hosting setup...`);
-    try {
-      const { data, error } = await supabase.functions.invoke('twentyi-api', {
-        body: {
-          action: 'provision-hosting',
-          packageId,
-          domain: 'example.com', // Would be replaced with actual domain selection
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        toast.success(`${packageName} hosting provisioned successfully!`);
-      } else {
-        toast.error(data?.error || "Failed to provision hosting");
-      }
-    } catch (error) {
-      console.error('Error provisioning hosting:', error);
-      toast.error("Please log in as an instructor to purchase hosting.");
-    }
-  };
-
   return (
     <InstructorSaaSLayout>
       {/* Checkout Modals */}
