@@ -31,8 +31,11 @@ async function verifyState(data: string, signature: string, secret: string): Pro
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   
+  console.log(`[google-oauth] ${req.method} request to ${url.pathname}`);
+  
   // Handle GET requests (OAuth callback from Google)
   if (req.method === "GET") {
+    console.log("[google-oauth] Handling OAuth callback GET request");
     return handleOAuthCallback(url);
   }
   
@@ -41,6 +44,7 @@ Deno.serve(async (req) => {
   }
 
   // Handle POST requests (API calls from frontend)
+  console.log("[google-oauth] Handling API POST request");
   return handleAPIRequest(req);
 });
 
