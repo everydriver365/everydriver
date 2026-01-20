@@ -34,6 +34,7 @@ import BrandedPupilPortal from "./pages/BrandedPupilPortal";
 import HeroLayoutDemo from "./pages/HeroLayoutDemo";
 import CollageDemo from "./pages/CollageDemo";
 import HeroRedesignDemo from "./pages/HeroRedesignDemo";
+import MobileHomeDemo from "./pages/MobileHomeDemo";
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
 import Help from "./pages/Help";
@@ -154,6 +155,7 @@ const App = () => (
               <Route path="/hero-demo" element={<HeroLayoutDemo />} />
               <Route path="/collage-demo" element={<CollageDemo />} />
               <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
+              <Route path="/mobile-home-demo" element={<MobileHomeDemo />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
