@@ -214,6 +214,31 @@ export function MobileHomepage() {
             })}
           </div>
         </div>
+
+        {/* Video Explainer Section */}
+        <div className="pt-6">
+          <h3 className="font-bold text-foreground text-sm uppercase tracking-wider mb-3">About EveryDriver</h3>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="relative rounded-2xl overflow-hidden bg-card border border-border/50 shadow-lg"
+          >
+            <video 
+              src="/videos/explainer-video.mp4"
+              controls
+              playsInline
+              poster={heroLearnerMobile}
+              className="w-full aspect-video object-cover"
+            />
+            <div className="p-4">
+              <h4 className="font-semibold text-base">Why Choose EveryDriver?</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Learn how we help thousands of learners pass their driving test with confidence
+              </p>
+            </div>
+          </motion.div>
+        </div>
       </div>
       
       {/* Payment Providers Section */}
