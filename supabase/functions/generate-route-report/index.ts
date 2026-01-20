@@ -11,6 +11,8 @@ interface GPSPoint {
   longitude: number;
   speed_kmh: number | null;
   recorded_at: string;
+  road_name: string | null;
+  speed_limit_kmh: number | null;
 }
 
 interface RoadSegment {
@@ -27,7 +29,7 @@ interface RoadSegment {
 // Get TomTom API key
 const TOMTOM_API_KEY = Deno.env.get("TOMTOM_API_KEY");
 
-// Reverse geocode using TomTom (with OSM fallback)
+// Reverse geocode using TomTom (with OSM fallback) - only used for events and start/end locations
 async function getRoadName(lat: number, lon: number): Promise<string> {
   // Try TomTom first if API key is available
   if (TOMTOM_API_KEY) {
@@ -72,84 +74,6 @@ async function getRoadName(lat: number, lon: number): Promise<string> {
   }
 }
 
-// Get speed limit using TomTom API (with Overpass fallback)
-async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
-  // Try TomTom first if API key is available
-  if (TOMTOM_API_KEY) {
-    try {
-      // TomTom Reverse Geocode with speed limit
-      const response = await fetch(
-        `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${TOMTOM_API_KEY}&returnSpeedLimit=true`,
-        {
-          headers: { 'Accept': 'application/json' }
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const address = data.addresses?.[0]?.address;
-        const speedLimit = address?.speedLimit;
-        
-        if (speedLimit) {
-          // TomTom returns speed in local units (mph for UK)
-          // Convert mph to km/h
-          const speedKmh = Math.round(speedLimit * 1.60934);
-          console.log(`TomTom speed limit: ${speedLimit} mph = ${speedKmh} km/h`);
-          return speedKmh;
-        }
-      }
-    } catch (error) {
-      console.error('TomTom speed limit error:', error);
-    }
-  }
-
-  // Fallback to Overpass API
-  try {
-    const query = `
-      [out:json][timeout:10];
-      way(around:30,${lat},${lon})["highway"]["maxspeed"];
-      out body;
-    `;
-    
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: `data=${encodeURIComponent(query)}`,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-    
-    if (!response.ok) return null;
-    
-    const data = await response.json();
-    
-    if (data.elements && data.elements.length > 0) {
-      const maxspeed = data.elements[0].tags?.maxspeed;
-      if (maxspeed) {
-        // Parse speed limit (can be "30", "30 mph", "national", etc.)
-        const match = maxspeed.match(/(\d+)/);
-        if (match) {
-          let speed = parseInt(match[1]);
-          // Convert mph to km/h if needed (UK uses mph)
-          if (maxspeed.includes('mph') || (!maxspeed.includes('km') && speed <= 70)) {
-            speed = Math.round(speed * 1.60934);
-          }
-          return speed;
-        }
-        // Handle "national" speed limit (UK national limit)
-        if (maxspeed === 'national') {
-          return 97; // 60 mph in km/h (single carriageway default)
-        }
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Overpass error:', error);
-    return null;
-  }
-}
-
 // Sample points evenly along the route
 function samplePoints(points: GPSPoint[], maxSamples: number): GPSPoint[] {
   if (points.length <= maxSamples) return points;
@@ -169,16 +93,17 @@ function samplePoints(points: GPSPoint[], maxSamples: number): GPSPoint[] {
   return sampled;
 }
 
-// Group points into road segments
-function groupIntoSegments(points: GPSPoint[], roadData: { name: string; speedLimit: number | null }[]): RoadSegment[] {
+// Group points into road segments using stored road data
+function groupIntoSegments(points: GPSPoint[]): RoadSegment[] {
   const segments: RoadSegment[] = [];
   let currentSegment: RoadSegment | null = null;
   
   for (let i = 0; i < points.length; i++) {
     const point = points[i];
-    const roadInfo = roadData[i] || { name: 'Unknown Road', speedLimit: null };
+    const roadName = point.road_name || 'Unknown Road';
+    const speedLimit = point.speed_limit_kmh;
     
-    if (!currentSegment || currentSegment.name !== roadInfo.name) {
+    if (!currentSegment || currentSegment.name !== roadName) {
       // Start new segment
       if (currentSegment && currentSegment.points.length > 0) {
         // Calculate stats for completed segment
@@ -207,8 +132,8 @@ function groupIntoSegments(points: GPSPoint[], roadData: { name: string; speedLi
       }
       
       currentSegment = {
-        name: roadInfo.name,
-        speedLimit: roadInfo.speedLimit,
+        name: roadName,
+        speedLimit: speedLimit,
         avgSpeed: 0,
         maxSpeed: 0,
         compliance: 'under',
@@ -216,6 +141,11 @@ function groupIntoSegments(points: GPSPoint[], roadData: { name: string; speedLi
         endPoint: { lat: point.latitude, lon: point.longitude },
         points: []
       };
+    }
+    
+    // Update speed limit if this point has one and current segment doesn't
+    if (speedLimit && !currentSegment.speedLimit) {
+      currentSegment.speedLimit = speedLimit;
     }
     
     currentSegment.points.push(point);
@@ -262,8 +192,7 @@ serve(async (req) => {
       );
     }
 
-    // Log which API is being used
-    console.log(`Using ${TOMTOM_API_KEY ? 'TomTom' : 'Overpass/Nominatim'} for road data`);
+    console.log(`Generating route report for session ${telematicsId}`);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -331,10 +260,10 @@ serve(async (req) => {
       }
     }
 
-    // Fetch all GPS points
+    // Fetch all GPS points including road_name and speed_limit_kmh
     const { data: gpsPoints, error: gpsError } = await supabase
       .from("telematics_gps_points")
-      .select("latitude, longitude, speed_kmh, recorded_at")
+      .select("latitude, longitude, speed_kmh, recorded_at, road_name, speed_limit_kmh")
       .eq("telematics_id", telematicsId)
       .order("recorded_at", { ascending: true });
 
@@ -367,29 +296,32 @@ serve(async (req) => {
 
     console.log(`Processing ${gpsPoints.length} GPS points for session ${telematicsId}`);
 
-    // Sample points for API calls (max 20 to avoid rate limiting)
-    const sampledPoints = samplePoints(gpsPoints, 20);
-    console.log(`Sampled ${sampledPoints.length} points for road data lookup`);
+    // Check if we have stored road data
+    const hasStoredRoadData = gpsPoints.some(p => p.road_name || p.speed_limit_kmh);
+    console.log(`Has stored road data: ${hasStoredRoadData}`);
 
-    // Fetch road names and speed limits for sampled points
-    const roadData: { name: string; speedLimit: number | null }[] = [];
-    
-    for (const point of sampledPoints) {
-      // Add small delay to avoid rate limiting (TomTom has higher limits than OSM)
-      await new Promise(resolve => setTimeout(resolve, TOMTOM_API_KEY ? 100 : 200));
-      
-      const [name, speedLimit] = await Promise.all([
-        getRoadName(point.latitude, point.longitude),
-        getSpeedLimit(point.latitude, point.longitude)
-      ]);
-      
-      roadData.push({ name, speedLimit });
-      console.log(`Road: ${name}, Speed limit: ${speedLimit} km/h`);
-    }
-
-    // Group sampled points into segments
-    const segments = groupIntoSegments(sampledPoints, roadData);
+    // Group points into segments using stored road data
+    const segments = groupIntoSegments(gpsPoints as GPSPoint[]);
     console.log(`Created ${segments.length} road segments`);
+
+    // If no stored road data, we need to fetch it for sampled points (legacy support)
+    if (!hasStoredRoadData && segments.length > 0) {
+      console.log("No stored road data found, fetching for sampled points...");
+      const sampledPoints = samplePoints(gpsPoints as GPSPoint[], 10);
+      
+      for (const point of sampledPoints) {
+        if (!point.road_name) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          const roadName = await getRoadName(point.latitude, point.longitude);
+          point.road_name = roadName;
+        }
+      }
+      
+      // Re-group with fetched road data
+      const updatedSegments = groupIntoSegments(sampledPoints);
+      segments.length = 0;
+      segments.push(...updatedSegments);
+    }
 
     // Fetch driving behavior events
     const { data: drivingEvents, error: eventsError } = await supabase
@@ -402,13 +334,25 @@ serve(async (req) => {
       console.error("Error fetching driving events:", eventsError);
     }
 
-    // Enrich events with road names
+    // Enrich events with road names (fetch only for events, not all points)
     const enrichedEvents = [];
     if (drivingEvents && drivingEvents.length > 0) {
       for (const event of drivingEvents) {
         let roadName = 'Unknown location';
         if (event.latitude && event.longitude) {
-          roadName = await getRoadName(event.latitude, event.longitude);
+          // Find nearest GPS point with road name
+          const nearestPoint = gpsPoints.find(p => 
+            Math.abs(p.latitude - event.latitude) < 0.0005 && 
+            Math.abs(p.longitude - event.longitude) < 0.0005 &&
+            p.road_name
+          );
+          
+          if (nearestPoint?.road_name) {
+            roadName = nearestPoint.road_name;
+          } else {
+            // Fallback to API call only if no stored data
+            roadName = await getRoadName(event.latitude, event.longitude);
+          }
         }
         enrichedEvents.push({
           id: event.id,
@@ -443,13 +387,12 @@ serve(async (req) => {
       sharpTurnCount: enrichedEvents.filter(e => e.type === 'sharp_turn').length
     };
 
-    // Get start and end locations
+    // Get start and end locations from stored data or API
     const startPoint = gpsPoints[0];
     const endPoint = gpsPoints[gpsPoints.length - 1];
-    const [startLocation, endLocation] = await Promise.all([
-      getRoadName(startPoint.latitude, startPoint.longitude),
-      getRoadName(endPoint.latitude, endPoint.longitude)
-    ]);
+    
+    let startLocation = startPoint.road_name || await getRoadName(startPoint.latitude, startPoint.longitude);
+    let endLocation = endPoint.road_name || await getRoadName(endPoint.latitude, endPoint.longitude);
 
     return new Response(
       JSON.stringify({
@@ -463,7 +406,15 @@ serve(async (req) => {
           endLocation
         },
         stats: overallStats,
-        segments,
+        segments: segments.map(s => ({
+          name: s.name,
+          speedLimit: s.speedLimit,
+          avgSpeed: s.avgSpeed,
+          maxSpeed: s.maxSpeed,
+          compliance: s.compliance,
+          startPoint: s.startPoint,
+          endPoint: s.endPoint
+        })),
         events: enrichedEvents,
         route: gpsPoints.map(p => ({ lat: p.latitude, lon: p.longitude, speed: p.speed_kmh }))
       }),

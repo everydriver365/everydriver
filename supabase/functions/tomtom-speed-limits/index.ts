@@ -16,6 +16,36 @@ interface SpeedLimitResponse {
   confidence?: string;
 }
 
+// Parse speed limit from TomTom response - handles both string and number formats
+function parseSpeedLimit(speedLimitRaw: any): number | null {
+  if (!speedLimitRaw) return null;
+  
+  // TomTom can return speed as a number OR as a string like "30.00MPH" or "50.00KPH"
+  if (typeof speedLimitRaw === 'string') {
+    const match = speedLimitRaw.match(/^([\d.]+)\s*(MPH|KPH)?$/i);
+    if (match) {
+      const value = parseFloat(match[1]);
+      const unit = match[2]?.toUpperCase() || 'MPH'; // Default to MPH for UK
+      if (unit === 'MPH') {
+        return Math.round(value * 1.60934);
+      } else {
+        return Math.round(value);
+      }
+    }
+    // Try parsing as plain number string
+    const numValue = parseFloat(speedLimitRaw);
+    if (!isNaN(numValue)) {
+      // Assume mph for UK and convert
+      return Math.round(numValue * 1.60934);
+    }
+  } else if (typeof speedLimitRaw === 'number') {
+    // Assume mph for UK and convert to km/h
+    return Math.round(speedLimitRaw * 1.60934);
+  }
+  
+  return null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -48,7 +78,6 @@ serve(async (req) => {
     console.log(`Fetching road info for ${lat}, ${lon}`);
 
     // Use TomTom Reverse Geocode API with returnSpeedLimit parameter
-    // This is the correct endpoint for getting road name and speed limit
     const reverseResponse = await fetch(
       `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${apiKey}&returnSpeedLimit=true`,
       {
@@ -66,15 +95,12 @@ serve(async (req) => {
       
       if (address) {
         const roadName = address.streetName || address.street || address.freeformAddress?.split(',')[0] || 'Unknown Road';
-        const speedLimit = address.speedLimit;
+        const speedLimitRaw = address.speedLimit;
         
-        let speedKmh: number | null = null;
+        const speedKmh = parseSpeedLimit(speedLimitRaw);
         
-        if (speedLimit) {
-          // TomTom returns speed in local units (mph for UK)
-          // Convert mph to km/h
-          speedKmh = Math.round(speedLimit * 1.60934);
-          console.log(`Speed limit: ${speedLimit} mph = ${speedKmh} km/h on ${roadName}`);
+        if (speedKmh) {
+          console.log(`Speed limit: ${speedLimitRaw} = ${speedKmh} km/h on ${roadName}`);
         } else {
           console.log(`No speed limit data for ${roadName}`);
         }
@@ -83,7 +109,7 @@ serve(async (req) => {
           JSON.stringify({ 
             speedLimit: speedKmh,
             roadType: roadName,
-            confidence: speedLimit ? 'high' : 'low'
+            confidence: speedKmh ? 'high' : 'low'
           } as SpeedLimitResponse),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
@@ -112,6 +138,51 @@ serve(async (req) => {
                         'Unknown Road';
         
         console.log(`Nominatim road name: ${roadName}`);
+        
+        // Try to get speed limit from Overpass API (OSM)
+        try {
+          const overpassQuery = `
+            [out:json][timeout:5];
+            way(around:30,${lat},${lon})["highway"]["maxspeed"];
+            out body 1;
+          `;
+          
+          const overpassResponse = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
+            body: `data=${encodeURIComponent(overpassQuery)}`,
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          });
+          
+          if (overpassResponse.ok) {
+            const overpassData = await overpassResponse.json();
+            const maxspeed = overpassData.elements?.[0]?.tags?.maxspeed;
+            
+            if (maxspeed) {
+              const match = maxspeed.match(/(\d+)/);
+              if (match) {
+                let speed = parseInt(match[1]);
+                // Convert mph to km/h if needed (UK uses mph)
+                if (maxspeed.includes('mph') || (!maxspeed.includes('km') && speed <= 70)) {
+                  speed = Math.round(speed * 1.60934);
+                }
+                console.log(`OSM speed limit: ${maxspeed} = ${speed} km/h`);
+                
+                return new Response(
+                  JSON.stringify({ 
+                    speedLimit: speed,
+                    roadType: roadName,
+                    confidence: 'medium'
+                  } as SpeedLimitResponse),
+                  { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                );
+              }
+            }
+          }
+        } catch (overpassError) {
+          console.log("Overpass query failed:", overpassError);
+        }
         
         return new Response(
           JSON.stringify({ 
