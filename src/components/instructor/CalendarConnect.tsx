@@ -1,15 +1,26 @@
-import { Calendar, CheckCircle, Loader2, LogOut, RefreshCw, Upload, Download } from "lucide-react";
+import { Calendar, CheckCircle, Loader2, LogOut, RefreshCw, Upload, Download, Info, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGoogleOAuth } from "@/hooks/useGoogleOAuth";
 import { useGoogleCalendarSync } from "@/hooks/useGoogleCalendarSync";
 import { formatDistanceToNow } from "date-fns";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from "react";
 
 interface CalendarConnectProps {
   instructorId: string;
 }
 
 export function CalendarConnect({ instructorId }: CalendarConnectProps) {
+  const [showHelp, setShowHelp] = useState(false);
+  
   const {
     status,
     isConnecting,
@@ -139,6 +150,51 @@ export function CalendarConnect({ instructorId }: CalendarConnectProps) {
         <Calendar className="h-4 w-4" />
         <span>Sync your Google Calendar to block busy times and add lessons automatically</span>
       </div>
+
+      {/* Unverified App Warning Help */}
+      <Alert className="border-warning/50 bg-warning/10">
+        <AlertTriangle className="h-4 w-4 text-warning" />
+        <AlertDescription className="text-foreground/80">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <strong>First time connecting?</strong> You may see a "Google hasn't verified this app" warning.
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0">
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="max-w-xs">
+                  <p>This is normal for apps that haven't completed Google's verification process. Your data is still secure.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </AlertDescription>
+      </Alert>
+
+      <Collapsible open={showHelp} onOpenChange={setShowHelp}>
+        <CollapsibleTrigger asChild>
+          <Button variant="link" size="sm" className="px-0 h-auto text-primary">
+            {showHelp ? "Hide" : "Show"} how to click through the warning →
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">
+          <div className="rounded-lg border bg-muted/50 p-4 space-y-3 text-sm">
+            <p className="font-medium">When you see the warning screen:</p>
+            <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+              <li>Click <strong className="text-foreground">"Advanced"</strong> (small link at bottom left)</li>
+              <li>Click <strong className="text-foreground">"Go to EveryDriver (unsafe)"</strong></li>
+              <li>Review the permissions and click <strong className="text-foreground">"Continue"</strong></li>
+            </ol>
+            <p className="text-xs text-muted-foreground mt-2">
+              This is a one-time process. Once connected, your calendar will sync automatically.
+            </p>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
       
       <Button
         onClick={connect}
