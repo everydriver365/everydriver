@@ -40,6 +40,10 @@ export function KlarnaExpressButton({
 
   const amountInMinorUnits = Math.round(amount * 100);
 
+  // Klarna Payments often requires merchant URLs in the order payload for eligibility checks.
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+
   // Order payload for Klarna - fully client-side
   const orderPayload = {
     purchase_country: "GB",
@@ -47,6 +51,12 @@ export function KlarnaExpressButton({
     locale: "en-GB",
     order_amount: amountInMinorUnits,
     order_tax_amount: 0,
+    merchant_urls: {
+      terms: `${origin}/terms-of-service`,
+      checkout: currentUrl,
+      confirmation: `${origin}/booking-confirmation?klarna=pending&ref=${encodeURIComponent(merchantReference)}`,
+      push: `${origin}/booking-confirmation?klarna_push=true&ref=${encodeURIComponent(merchantReference)}`,
+    },
     order_lines: [
       {
         type: "digital",
