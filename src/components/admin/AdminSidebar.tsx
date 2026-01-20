@@ -90,6 +90,7 @@ const navGroups: NavGroup[] = [
       { id: "testimonials", label: "Testimonials", icon: MessageSquareQuote },
       { id: "features", label: "Features", icon: Rocket },
       { id: "included", label: "What's Included", icon: Sparkles },
+      { id: "public-faqs", label: "FAQs", icon: HelpCircle },
     ],
   },
   {

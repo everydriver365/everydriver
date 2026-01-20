@@ -35,6 +35,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import LoyaltyRewardsManager from "@/components/admin/LoyaltyRewardsManager";
 import RewardTiersManager from "@/components/admin/RewardTiersManager";
 import { InstructorFAQsManager } from "@/components/admin/InstructorFAQsManager";
+import { PublicFAQsManager } from "@/components/admin/PublicFAQsManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -78,6 +79,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   testimonials: { title: "Testimonials", group: "Homepage CMS", icon: MessageSquareQuote },
   features: { title: "Features", group: "Homepage CMS", icon: Rocket },
   included: { title: "What's Included", group: "Homepage CMS", icon: Sparkles },
+  "public-faqs": { title: "FAQs", group: "Homepage CMS", icon: HelpCircle },
   images: { title: "Site Images", group: "Media", icon: ImageIcon },
   videos: { title: "Videos", group: "Media", icon: Video },
   "instructor-home": { title: "App Homepage", group: "Instructor Platform", icon: Smartphone },
@@ -568,6 +570,23 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <RewardTiersManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "public-faqs":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <HelpCircle className="h-5 w-5 text-accent" />
+                  Public FAQs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PublicFAQsManager />
               </CardContent>
             </Card>
           </motion.div>
