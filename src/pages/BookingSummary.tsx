@@ -141,6 +141,11 @@ export default function BookingSummary() {
   
   // NPI Hosted Fields state (embedded card form)
   const [showHostedFields, setShowHostedFields] = useState(false);
+  
+  // Deposit payment state
+  const [depositEnabled, setDepositEnabled] = useState(false);
+  const [depositAmount, setDepositAmount] = useState(350);
+  const [paymentOption, setPaymentOption] = useState<'full' | 'deposit'>('full');
 
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
@@ -216,13 +221,19 @@ export default function BookingSummary() {
       if (!instructorId) return;
 
       const [instructorRes, templateRes, instructorCourseRes, reviewsRes, workingHoursRes, dateOverridesRes] = await Promise.all([
-        supabase.from("instructors").select("*").eq("id", instructorId).maybeSingle(),
+        supabase.from("instructors").select("*, deposit_enabled, deposit_amount").eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
         supabase.from("instructor_working_hours").select("day_of_week, is_active").eq("instructor_id", instructorId),
         supabase.from("instructor_date_overrides").select("override_date, override_end_date, is_available").eq("instructor_id", instructorId),
       ]);
+
+      // Set deposit settings from instructor
+      if (instructorRes.data) {
+        setDepositEnabled(instructorRes.data.deposit_enabled ?? false);
+        setDepositAmount(instructorRes.data.deposit_amount ?? 350);
+      }
 
       if (instructorRes.error || !instructorRes.data) {
         console.error("Error fetching instructor:", instructorRes.error);
@@ -278,7 +289,10 @@ export default function BookingSummary() {
   const isPupilDetailsComplete = pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim();
   const canSubmit = isFullyScheduled && isPupilDetailsComplete && !isSubmitting;
 
-  const ensureBookingCreated = async (): Promise<string | null> => {
+  const ensureBookingCreated = async (
+    paymentType: 'full' | 'deposit' = 'full',
+    amountPaid?: number
+  ): Promise<string | null> => {
     if (!courseDetails) return null;
     if (bookingPupilId) return bookingPupilId;
 
@@ -299,6 +313,10 @@ export default function BookingSummary() {
           endTime: slot.endTime,
           duration: slot.duration,
         })),
+        // Deposit payment fields
+        paymentType,
+        amountPaid: amountPaid ?? (paymentType === 'full' ? totalPrice : depositAmount),
+        depositAmount: paymentType === 'deposit' ? depositAmount : 0,
       },
     });
 
@@ -483,21 +501,31 @@ export default function BookingSummary() {
 
     setIsNPILoading(true);
     try {
-      const pupilId = await ensureBookingCreated();
+      // Determine payment type based on selection
+      const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+      const pupilId = await ensureBookingCreated(
+        isDepositPayment ? 'deposit' : 'full',
+        isDepositPayment ? depositAmount : totalPrice
+      );
       if (!pupilId) return;
 
       const orderReference = `NPI-${instructor.id.slice(0, 8)}-${Date.now()}`;
       const currentUrl = window.location.origin;
 
+      // Determine payment amount based on selection
+      const paymentAmount = isDepositPayment ? depositAmount : totalPrice;
+
       const { data, error } = await supabase.functions.invoke("npi-checkout", {
         body: {
-          amount: totalPrice,
+          amount: paymentAmount,
           currency: "GBP",
           orderReference,
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
-          description: `${courseName} - ${hours} Hour Driving Course`,
-          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&npi=success&ref=${orderReference}`,
+          description: isDepositPayment 
+            ? `Deposit for ${courseName} - ${hours} Hour Driving Course`
+            : `${courseName} - ${hours} Hour Driving Course`,
+          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&npi=success&ref=${orderReference}&paymentType=${isDepositPayment ? 'deposit' : 'full'}&amountPaid=${paymentAmount}`,
           cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
           instructorId: instructor.id,
           pupilId: pupilId,
@@ -1528,27 +1556,69 @@ export default function BookingSummary() {
               </div>
             </button>
 
-            {/* NPI Card Payment - Redirect to HPP */}
-            <button
-              onClick={handleNPICheckout}
-              disabled={!canSubmit || isNPILoading || !gatewayHealth.npi.available}
-              className="w-full rounded-lg border-2 border-emerald-500 p-4 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 hover:from-emerald-100 hover:to-green-100 dark:hover:from-emerald-950/50 dark:hover:to-green-950/50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed relative"
-            >
-              <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+            {/* NPI Card Payment - With Deposit Option */}
+            <div className="w-full rounded-lg border-2 border-primary p-4 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 relative">
+              <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">
                 Recommended
               </div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white flex items-center gap-1">
+              <div className="flex items-center justify-between mb-3">
+                <span className="rounded bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground flex items-center gap-1">
                   <Banknote className="h-3 w-3" />
                   Card
                 </span>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs text-primary">
                   {isNPILoading ? "Loading..." : "Secure Payment"}
                 </span>
               </div>
-              <div className="font-semibold text-sm text-emerald-900 dark:text-emerald-100">Pay by Debit/Credit Card</div>
-              <div className="text-xs text-emerald-700/80 dark:text-emerald-300/80">Visa, Mastercard, Amex</div>
-            </button>
+
+              {/* Deposit Toggle (only if enabled) */}
+              {depositEnabled && (
+                <div className="mb-4 p-3 rounded-lg bg-background/60 border space-y-2">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setPaymentOption('full')}
+                      className={`flex-1 p-2 rounded-lg border-2 text-center text-sm transition-all ${
+                        paymentOption === 'full' 
+                          ? 'border-primary bg-primary/10 font-semibold' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="font-medium">Pay in Full</div>
+                      <div className="text-lg font-bold">£{totalPrice}</div>
+                    </button>
+                    <button
+                      onClick={() => setPaymentOption('deposit')}
+                      className={`flex-1 p-2 rounded-lg border-2 text-center text-sm transition-all ${
+                        paymentOption === 'deposit' 
+                          ? 'border-primary bg-primary/10 font-semibold' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="font-medium">Pay Deposit</div>
+                      <div className="text-lg font-bold">£{depositAmount}</div>
+                    </button>
+                  </div>
+                  {paymentOption === 'deposit' && (
+                    <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded p-2">
+                      <strong>⚠️ Important:</strong> Remaining £{totalPrice - depositAmount} must be paid 30 days before your first lesson, or booking will be cancelled and deposit forfeited.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <Button
+                onClick={handleNPICheckout}
+                disabled={!canSubmit || isNPILoading || !gatewayHealth.npi.available}
+                className="w-full"
+              >
+                {isNPILoading ? (
+                  <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
+                ) : (
+                  <>Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice} with Card</>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2 text-center">Visa, Mastercard, Amex accepted</p>
+            </div>
 
 
             {/* Clearpay - Confirmed Working */}

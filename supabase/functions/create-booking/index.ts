@@ -24,6 +24,10 @@ interface BookingRequest {
   courseHours: number;
   totalPrice: number;
   slots: BookingSlot[];
+  // Deposit payment fields
+  paymentType?: 'full' | 'deposit';
+  amountPaid?: number;
+  depositAmount?: number;
 }
 
 serve(async (req) => {
@@ -38,6 +42,23 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Determine payment type and amounts
+    const paymentType = booking.paymentType || 'full';
+    const amountPaid = booking.amountPaid || (paymentType === 'full' ? booking.totalPrice : booking.depositAmount || 0);
+    const remainingBalance = booking.totalPrice - amountPaid;
+
+    // Calculate balance due date (30 days before first lesson)
+    let balanceDueDate: string | null = null;
+    if (paymentType === 'deposit' && booking.slots.length > 0) {
+      const sortedSlots = [...booking.slots].sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      const firstLessonDate = new Date(sortedSlots[0].date);
+      const dueDate = new Date(firstLessonDate);
+      dueDate.setDate(dueDate.getDate() - 30);
+      balanceDueDate = dueDate.toISOString().split('T')[0];
+    }
+
     // 1. Create the pupil record
     const { data: pupil, error: pupilError } = await supabase
       .from("pupils")
@@ -50,9 +71,14 @@ serve(async (req) => {
         postcode: booking.pupilPostcode,
         course_type: booking.courseType,
         prepaid_hours: booking.courseHours,
-        account_balance: -booking.totalPrice, // Negative = amount owed
+        account_balance: -remainingBalance, // Negative = amount owed (0 if paid in full)
         progress: 0,
         lessons_completed: 0,
+        // Deposit tracking fields
+        payment_type: paymentType,
+        deposit_paid: paymentType === 'deposit' ? amountPaid : 0,
+        balance_due_date: balanceDueDate,
+        deposit_forfeited: false,
       })
       .select()
       .single();
