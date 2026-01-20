@@ -1,20 +1,23 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Zap, Calendar, Car, ChevronRight, Home, Play, CreditCard, Gift, Menu } from "lucide-react";
+import { Search, MapPin, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Phone, Menu, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import heroLearnerMobile from "@/assets/hero-learner-mobile.jpg";
-import everyDriverLogo from "@/assets/logo-everydriver-light.png";
+import logo from "@/assets/logo-everydriver-transparent.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
+import { useTheme } from "@/context/ThemeContext";
 
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
   const { features: includedFeatures } = useIncludedFeatures();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { resolvedTheme, setTheme } = useTheme();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,14 +26,39 @@ export function MobileHomepage() {
     }
   };
 
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
+
+  const navItems = [
+    { label: "Home", icon: Home, path: "/" },
+    { label: "Search", icon: Search, path: "/courses" },
+    { label: "Theory", icon: BookOpen, path: "/theory" },
+    { label: "FAQs", icon: HelpCircle, path: "/faqs" },
+    { label: "Help", icon: MessageCircle, path: "/help" },
+    { label: "Contact", icon: Phone, path: "/contact" },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with Menu and Logo */}
-      <div className="px-4 py-3 flex items-center gap-3 sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
-        <Button variant="ghost" size="icon" className="h-10 w-10">
+      {/* Header - matching main site nav styling */}
+      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-nav border-b border-nav-foreground/20">
+        <Button variant="ghost" size="icon" className="h-10 w-10 text-nav-foreground hover:bg-nav-foreground/10">
           <Menu className="h-5 w-5" />
         </Button>
-        <img src={everyDriverLogo} alt="EveryDriver" className="h-7 flex-1 object-contain object-left" />
+        <img src={logo} alt="EveryDriver" className="h-8" />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleTheme}
+          className="h-10 w-10 text-nav-foreground hover:bg-nav-foreground/10"
+        >
+          {resolvedTheme === 'dark' ? (
+            <Moon className="h-5 w-5" />
+          ) : (
+            <Sun className="h-5 w-5" />
+          )}
+        </Button>
       </div>
       
       {/* Full Width Postcode Search */}
@@ -210,27 +238,33 @@ export function MobileHomepage() {
         </motion.div>
       </div>
       
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t px-2 py-2 z-50">
-        <div className="flex justify-around">
-          {[
-            { icon: Home, label: "Home", active: true, to: "/" },
-            { icon: Calendar, label: "Book", active: false, to: "/courses" },
-            { icon: Play, label: "Theory", active: false, to: "/theory" },
-            { icon: CreditCard, label: "Pay", active: false, to: "/courses" },
-            { icon: Gift, label: "Rewards", active: false, to: "/" },
-          ].map((item, i) => (
-            <Link 
-              key={i} 
-              to={item.to}
-              className={`flex flex-col items-center gap-1 px-3 py-1 ${item.active ? 'text-primary' : 'text-muted-foreground'}`}
-            >
-              <item.icon className="h-5 w-5" />
-              <span className="text-[10px]">{item.label}</span>
-            </Link>
-          ))}
+      {/* Bottom Navigation - matching main site */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10">
+        <div className="flex items-center justify-around h-16 px-1">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors relative ${
+                  isActive 
+                    ? "text-white" 
+                    : "text-primary-foreground/60 hover:text-primary-foreground/80"
+                }`}
+              >
+                <item.icon className={`h-5 w-5 ${isActive ? "scale-110" : ""} transition-transform`} />
+                <span className="text-[10px] font-medium">{item.label}</span>
+                {isActive && (
+                  <div className="absolute bottom-1 w-1 h-1 rounded-full bg-white" />
+                )}
+              </Link>
+            );
+          })}
         </div>
-      </div>
+        {/* Safe area for iOS */}
+        <div className="h-safe-area-inset-bottom bg-primary" />
+      </nav>
     </div>
   );
 }
