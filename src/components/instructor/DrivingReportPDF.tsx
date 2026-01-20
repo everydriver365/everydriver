@@ -20,6 +20,12 @@ interface DrivingEvent {
   recordedAt: string;
 }
 
+interface RoutePoint {
+  lat: number;
+  lon: number;
+  speed: number | null;
+}
+
 interface RouteReport {
   session: {
     id: string;
@@ -44,6 +50,7 @@ interface RouteReport {
   };
   segments: RoadSegment[];
   events: DrivingEvent[];
+  route?: RoutePoint[];
 }
 
 // Convert km/h to mph
@@ -74,10 +81,77 @@ const formatDuration = (minutes: number | null) => {
   return `${hours}h ${mins}m`;
 };
 
-export function generateDrivingReportPDF(
+// Generate static map URL using OpenStreetMap static map service
+const generateStaticMapUrl = (route: RoutePoint[], width: number, height: number): string => {
+  if (!route || route.length < 2) return '';
+  
+  // Sample route to reduce URL length (max ~50 points)
+  const maxPoints = 50;
+  const step = Math.max(1, Math.floor(route.length / maxPoints));
+  const sampledRoute = route.filter((_, i) => i % step === 0 || i === route.length - 1);
+  
+  // Create polyline path for staticmaps.openrouteservice.org alternative
+  // Using geoapify static maps API (free tier available)
+  const pathCoords = sampledRoute.map(p => `${p.lon},${p.lat}`).join('|');
+  
+  // Calculate bounds for centering
+  const lats = sampledRoute.map(p => p.lat);
+  const lons = sampledRoute.map(p => p.lon);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLon = Math.min(...lons);
+  const maxLon = Math.max(...lons);
+  const centerLat = (minLat + maxLat) / 2;
+  const centerLon = (minLon + maxLon) / 2;
+  
+  // Calculate zoom level based on bounds
+  const latDiff = maxLat - minLat;
+  const lonDiff = maxLon - minLon;
+  const maxDiff = Math.max(latDiff, lonDiff);
+  let zoom = 14;
+  if (maxDiff > 0.1) zoom = 12;
+  if (maxDiff > 0.2) zoom = 11;
+  if (maxDiff > 0.5) zoom = 10;
+  if (maxDiff > 1) zoom = 9;
+  
+  // Use OpenStreetMap static map with markers for start/end
+  const startPoint = sampledRoute[0];
+  const endPoint = sampledRoute[sampledRoute.length - 1];
+  
+  // Build URL for staticmap.openstreetmap.de
+  const baseUrl = 'https://staticmap.openstreetmap.de/staticmap.php';
+  const params = new URLSearchParams({
+    center: `${centerLat},${centerLon}`,
+    zoom: zoom.toString(),
+    size: `${width}x${height}`,
+    maptype: 'osmarenderer',
+    markers: `${startPoint.lat},${startPoint.lon},lightgreen|${endPoint.lat},${endPoint.lon},lightred`
+  });
+  
+  return `${baseUrl}?${params.toString()}`;
+};
+
+// Fetch image as base64
+const fetchImageAsBase64 = async (url: string): Promise<string | null> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
+export async function generateDrivingReportPDF(
   report: RouteReport,
   instructorName?: string
-): void {
+): Promise<void> {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPos = 20;
@@ -140,6 +214,29 @@ export function generateDrivingReportPDF(
   }
   
   yPos += 55;
+  
+  // Static Map Image
+  if (report.route && report.route.length >= 2) {
+    const mapUrl = generateStaticMapUrl(report.route, 600, 300);
+    if (mapUrl) {
+      const mapImage = await fetchImageAsBase64(mapUrl);
+      if (mapImage) {
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(15, yPos, pageWidth - 30, 70, 3, 3, 'F');
+        
+        try {
+          doc.addImage(mapImage, 'PNG', 17, yPos + 2, pageWidth - 34, 66);
+        } catch {
+          // If image fails, show placeholder text
+          doc.setTextColor(...mutedColor);
+          doc.setFontSize(10);
+          doc.text('Route map unavailable', pageWidth / 2, yPos + 35, { align: 'center' });
+        }
+        
+        yPos += 78;
+      }
+    }
+  }
   
   // Stats Grid
   const statsBoxWidth = (pageWidth - 40) / 4;
