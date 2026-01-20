@@ -1122,10 +1122,10 @@ const MobileHomeDemo = () => {
                     className="bg-card border border-border/50 rounded-2xl p-4 shadow-lg"
                   >
                     <p className="text-xs text-muted-foreground text-center mb-3">Pay your way with</p>
-                    <div className="flex items-center justify-center gap-4">
-                      <img src={logoKlarna} alt="Klarna" className="h-6 object-contain" />
-                      <img src={logoClearpay} alt="Clearpay" className="h-5 object-contain" />
-                      <img src={logoIdeal4Finance} alt="Ideal4Finance" className="h-6 object-contain" />
+                    <div className="flex items-center justify-center gap-6">
+                      <img src={logoKlarna} alt="Klarna" className="h-10 object-contain" />
+                      <img src={logoClearpay} alt="Clearpay" className="h-8 object-contain" />
+                      <img src={logoIdeal4Finance} alt="Ideal4Finance" className="h-10 object-contain" />
                     </div>
                   </motion.div>
                 </div>
