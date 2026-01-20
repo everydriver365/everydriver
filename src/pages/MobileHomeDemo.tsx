@@ -1026,10 +1026,10 @@ const MobileHomeDemo = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="p-4 bg-card border rounded-2xl flex items-center gap-4 shadow-sm"
+                    className="p-4 bg-card border border-border/50 rounded-2xl flex items-center gap-4 shadow-lg"
                   >
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                      <Zap className="h-6 w-6 text-primary" />
+                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-md">
+                      <Zap className="h-6 w-6 text-primary-foreground" />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold">Intensive Courses</h4>
@@ -1044,10 +1044,10 @@ const MobileHomeDemo = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
-                      className="p-4 bg-card border rounded-2xl shadow-sm"
+                      className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg"
                     >
-                      <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mb-3">
-                        <Calendar className="h-5 w-5 text-emerald-600" />
+                      <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                        <Calendar className="h-5 w-5 text-white" />
                       </div>
                       <h4 className="font-semibold text-sm">Semi Intensive</h4>
                       <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
@@ -1057,10 +1057,10 @@ const MobileHomeDemo = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.45 }}
-                      className="p-4 bg-card border rounded-2xl shadow-sm"
+                      className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg"
                     >
-                      <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center mb-3">
-                        <Car className="h-5 w-5 text-amber-600" />
+                      <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center mb-3 shadow-md">
+                        <Car className="h-5 w-5 text-white" />
                       </div>
                       <h4 className="font-semibold text-sm">Weekly Lessons</h4>
                       <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
@@ -1080,7 +1080,7 @@ const MobileHomeDemo = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5 + i * 0.05 }}
-                            className="relative overflow-hidden rounded-2xl bg-muted/50"
+                            className="relative overflow-hidden rounded-2xl bg-card border border-border/50 shadow-lg"
                           >
                             {feature.image_url ? (
                               <>
@@ -1096,7 +1096,7 @@ const MobileHomeDemo = () => {
                               </>
                             ) : (
                               <div className="p-4">
-                                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center mb-2">
+                                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center mb-2 shadow-md">
                                   <IconComponent className="h-5 w-5 text-primary-foreground" />
                                 </div>
                                 <h4 className="font-medium text-sm">{feature.title}</h4>
