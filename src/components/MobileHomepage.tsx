@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Phone, Menu, Moon, Sun } from "lucide-react";
+import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Phone, Menu, Moon, Sun, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
@@ -44,7 +44,7 @@ export function MobileHomepage() {
     { label: "Theory", icon: BookOpen, path: "/theory" },
     { label: "FAQs", icon: HelpCircle, path: "/faqs" },
     { label: "Help", icon: MessageCircle, path: "/help" },
-    { label: "Contact", icon: Phone, path: "/contact" },
+    { label: "Benefits", icon: Gift, path: "/benefits" },
   ];
 
   return (
@@ -55,18 +55,29 @@ export function MobileHomepage() {
           <Menu className="h-5 w-5" />
         </Button>
         <img src={logo} alt="EveryDriver" className="h-10" />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="h-10 w-10 text-nav-foreground hover:bg-nav-foreground/10"
-        >
-          {resolvedTheme === 'dark' ? (
-            <Moon className="h-5 w-5" />
-          ) : (
-            <Sun className="h-5 w-5" />
-          )}
-        </Button>
+        <div className="flex items-center gap-1">
+          <Link to="/contact">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 text-nav-foreground hover:bg-nav-foreground/10"
+            >
+              <Phone className="h-5 w-5" />
+            </Button>
+          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-10 w-10 text-nav-foreground hover:bg-nav-foreground/10"
+          >
+            {resolvedTheme === 'dark' ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
       </div>
       
       {/* Hero Video - Full Width */}
