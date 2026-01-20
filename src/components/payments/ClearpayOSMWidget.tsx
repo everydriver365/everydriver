@@ -93,7 +93,7 @@ export function ClearpayOSMWidget({
             clearpay
           </span>
           <span className="text-muted-foreground">
-            4 payments of £{instalmentAmount}
+            £{amount} over 4 months – £{instalmentAmount}/mo
           </span>
         </div>
       )}
@@ -119,7 +119,7 @@ export function ClearpayInstalmentBadge({
         clearpay
       </span>
       <span className="text-xs text-muted-foreground">
-        4 × £{instalmentAmount}
+        £{amount} over 4 months (£{instalmentAmount}/mo)
       </span>
     </div>
   );
