@@ -34,7 +34,7 @@ export function PaymentMessaging({
               Klarna.
             </span>
             <span className="text-xs text-muted-foreground">
-              Pay in 3: 3 × £{klarnaInstalment}
+              £{amount} in 3 monthly payments of £{klarnaInstalment}
             </span>
           </div>
         )}
@@ -44,7 +44,7 @@ export function PaymentMessaging({
               clearpay
             </span>
             <span className="text-xs text-muted-foreground">
-              Pay in 4: 4 × £{clearpayInstalment}
+              £{amount} in 4 monthly payments of £{clearpayInstalment}
             </span>
           </div>
         )}
@@ -98,15 +98,15 @@ export function CompactPaymentBadges({
     <div className={`flex flex-wrap items-center gap-1.5 ${className}`}>
       <span 
         className="rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black"
-        title={`Pay in 3 instalments of £${klarnaInstalment}`}
+        title={`£${amount} in 3 monthly payments of £${klarnaInstalment}`}
       >
-        Klarna. £{klarnaInstalment}
+        Klarna. £{klarnaInstalment}/mo × 3
       </span>
       <span 
         className="rounded-md bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black"
-        title={`Pay in 4 instalments of £${clearpayInstalment}`}
+        title={`£${amount} in 4 monthly payments of £${clearpayInstalment}`}
       >
-        clearpay £{clearpayInstalment}
+        clearpay £{clearpayInstalment}/mo × 4
       </span>
       <span className="rounded-md bg-[#ffd700] px-2 py-0.5 text-xs font-bold text-black">
         iDeal

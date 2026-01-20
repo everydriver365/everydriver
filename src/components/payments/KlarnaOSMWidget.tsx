@@ -85,7 +85,7 @@ export function KlarnaOSMWidget({
             Klarna.
           </span>
           <span className="text-muted-foreground">
-            3 payments of £{instalmentAmount}
+            £{amount} over 3 months – £{instalmentAmount}/mo
           </span>
         </div>
       )}
@@ -111,7 +111,7 @@ export function KlarnaInstalmentBadge({
         Klarna.
       </span>
       <span className="text-xs text-muted-foreground">
-        3 × £{instalmentAmount}
+        £{amount} over 3 months (£{instalmentAmount}/mo)
       </span>
     </div>
   );
