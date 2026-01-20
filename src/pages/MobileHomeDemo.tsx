@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Search, Star, MapPin, Clock, Shield, Award, ChevronRight, Car, Users, CheckCircle, Zap, Calendar, CreditCard, BookOpen, RotateCcw, Banknote, GraduationCap, Menu, Home, Play, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 
 // Testimonial images for social proof
 import testimonialSarah from "@/assets/testimonial-sarah.jpg";
@@ -14,6 +15,8 @@ import heroLearnerMobile from "@/assets/hero-learner-mobile.jpg";
 import everyDriverLogo from "@/assets/logo-everydriver-light.png";
 
 const MobileHomeDemo = () => {
+  const { features: includedFeatures, loading: featuresLoading } = useIncludedFeatures();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -964,21 +967,33 @@ const MobileHomeDemo = () => {
                   <div className="w-32 h-6 bg-black rounded-full" />
                 </div>
                 
-                {/* Header with Menu, Logo, and Postcode Search */}
+                {/* Header with Menu and Logo */}
                 <div className="px-4 py-3 flex items-center gap-3">
                   <Button variant="ghost" size="icon" className="h-10 w-10">
                     <Menu className="h-5 w-5" />
                   </Button>
                   <img src={everyDriverLogo} alt="EveryDriver" className="h-6 flex-1 object-contain object-left" />
-                  <Button variant="outline" size="sm" className="rounded-full h-9 px-4 gap-2">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Enter postcode...</span>
-                  </Button>
+                </div>
+                
+                {/* Full Width Postcode Search */}
+                <div className="px-4 pb-4">
+                  <div className="relative flex gap-2">
+                    <div className="relative flex-1">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input 
+                        placeholder="Enter your postcode..."
+                        className="pl-12 h-12 rounded-xl bg-muted/50 border-0"
+                      />
+                    </div>
+                    <Button className="h-12 px-6 rounded-xl">
+                      <Search className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
                 
                 {/* Hero Image with Overlay Card */}
                 <div className="relative mx-4">
-                  <div className="relative h-[280px] rounded-3xl overflow-hidden">
+                  <div className="relative h-[240px] rounded-3xl overflow-hidden">
                     <img 
                       src={heroLearnerMobile} 
                       alt="Learning to drive" 
@@ -992,22 +1007,20 @@ const MobileHomeDemo = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="absolute -bottom-12 left-4 right-4 bg-card rounded-2xl p-5 shadow-xl border"
+                    className="absolute -bottom-10 left-4 right-4 bg-card rounded-2xl p-4 shadow-xl border"
                   >
-                    <div>
-                      <h3 className="font-bold text-lg uppercase tracking-wide">Start Your Journey</h3>
-                      <p className="text-muted-foreground text-sm mt-1">
-                        Money back if you pass first time, a FREE retest if you don't
-                      </p>
-                    </div>
+                    <h3 className="font-bold text-base uppercase tracking-wide">Start Your Journey</h3>
+                    <p className="text-muted-foreground text-sm mt-1">
+                      Money back if you pass first time, a FREE retest if you don't
+                    </p>
                   </motion.div>
                 </div>
                 
                 {/* Spacer for overlay */}
-                <div className="h-16" />
+                <div className="h-14" />
                 
                 {/* Course Category Tiles */}
-                <div className="px-4 pt-4 space-y-3">
+                <div className="px-4 pt-2 space-y-3">
                   {/* Full Width - Intensive Courses */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -1054,31 +1067,45 @@ const MobileHomeDemo = () => {
                     </motion.div>
                   </div>
                   
-                  {/* What's Included Section - Grid */}
+                  {/* What's Included Section - CMS Powered 2x3 Grid */}
                   <div className="pt-3">
                     <h3 className="font-semibold text-muted-foreground text-xs uppercase tracking-wider mb-3">What's Included</h3>
                     
                     <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { icon: RotateCcw, title: "Free Retest", desc: "If you don't pass", color: "bg-emerald-500" },
-                        { icon: Banknote, title: "0% Finance", desc: "Split payments", color: "bg-blue-500" },
-                        { icon: GraduationCap, title: "Theory Pro", desc: "Included free", color: "bg-amber-500" },
-                        { icon: Shield, title: "DVSA Approved", desc: "Certified ADIs", color: "bg-purple-500" },
-                      ].map((item, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 + i * 0.05 }}
-                          className="p-4 bg-muted/50 rounded-2xl"
-                        >
-                          <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center mb-2`}>
-                            <item.icon className="h-5 w-5 text-white" />
-                          </div>
-                          <h4 className="font-medium text-sm">{item.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                        </motion.div>
-                      ))}
+                      {includedFeatures.slice(0, 6).map((feature, i) => {
+                        const IconComponent = feature.icon;
+                        return (
+                          <motion.div
+                            key={feature.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 + i * 0.05 }}
+                            className="relative overflow-hidden rounded-2xl bg-muted/50"
+                          >
+                            {feature.image_url ? (
+                              <>
+                                <img 
+                                  src={feature.image_url} 
+                                  alt={feature.title}
+                                  className="w-full h-24 object-cover"
+                                />
+                                <div className="p-3">
+                                  <h4 className="font-medium text-sm">{feature.title}</h4>
+                                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="p-4">
+                                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center mb-2">
+                                  <IconComponent className="h-5 w-5 text-primary-foreground" />
+                                </div>
+                                <h4 className="font-medium text-sm">{feature.title}</h4>
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{feature.description}</p>
+                              </div>
+                            )}
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
