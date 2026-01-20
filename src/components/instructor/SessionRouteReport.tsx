@@ -16,13 +16,15 @@ import {
   Share2,
   FileText,
   Route,
-  ArrowRight
+  ArrowRight,
+  Download
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
+import { generateDrivingReportPDF } from './DrivingReportPDF';
 
 interface RoadSegment {
   name: string;
@@ -319,6 +321,17 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
               Route Report
             </CardTitle>
             <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="default" 
+                onClick={() => {
+                  generateDrivingReportPDF(report);
+                  toast.success('PDF downloaded');
+                }}
+              >
+                <Download className="h-4 w-4 mr-1" />
+                PDF
+              </Button>
               <Button size="sm" variant="outline" onClick={handleShare}>
                 <Share2 className="h-4 w-4 mr-1" />
                 Share
