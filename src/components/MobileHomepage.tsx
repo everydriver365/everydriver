@@ -87,9 +87,9 @@ export function MobileHomepage() {
         </form>
       </div>
       
-      {/* Hero Image with Overlay Card */}
-      <div className="relative mx-4">
-        <div className="relative h-[240px] rounded-3xl overflow-hidden">
+      {/* Hero Video - Full Width */}
+      <div className="relative">
+        <div className="relative h-[240px] overflow-hidden">
           <video 
             src={heroVideoUrl || "/videos/hero-video.mp4"}
             autoPlay
@@ -106,7 +106,7 @@ export function MobileHomepage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="absolute -bottom-10 left-4 right-4 bg-card rounded-2xl p-4 shadow-xl border"
+          className="absolute -bottom-10 left-4 right-4 mx-0 bg-card rounded-2xl p-4 shadow-xl border"
         >
           <h3 className="font-bold text-base uppercase tracking-wide">Start Your Journey</h3>
           <p className="text-muted-foreground text-sm mt-1">
