@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DomainCheckoutModal } from "@/components/instructor/DomainCheckoutModal";
+import { HostingCheckoutModal } from "@/components/instructor/HostingCheckoutModal";
 
 interface DomainResult {
   domain: string;
@@ -64,6 +66,8 @@ export default function InstructorDomains() {
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [hostingPackages, setHostingPackages] = useState<HostingPackage[]>(defaultHostingPackages);
   const [isLoadingHosting, setIsLoadingHosting] = useState(false);
+  const [selectedDomain, setSelectedDomain] = useState<DomainResult | null>(null);
+  const [selectedHosting, setSelectedHosting] = useState<HostingPackage | null>(null);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -134,33 +138,12 @@ export default function InstructorDomains() {
     }
   };
 
-  const handlePurchase = async (domain: string) => {
-    toast.info(`Initiating purchase for ${domain}...`);
-    try {
-      const { data, error } = await supabase.functions.invoke('twentyi-api', {
-        body: {
-          action: 'register-domain',
-          domain,
-          period: 1,
-          contact: {
-            firstName: 'Contact',
-            lastName: 'Required',
-            email: 'contact@example.com',
-          },
-        },
-      });
+  const handlePurchase = (result: DomainResult) => {
+    setSelectedDomain(result);
+  };
 
-      if (error) throw error;
-
-      if (data?.success) {
-        toast.success(`Domain ${domain} registered successfully!`);
-      } else {
-        toast.error(data?.error || "Failed to register domain");
-      }
-    } catch (error) {
-      console.error('Error purchasing domain:', error);
-      toast.error("Please log in as an instructor to purchase domains.");
-    }
+  const handleHostingPurchase = (plan: HostingPackage) => {
+    setSelectedHosting(plan);
   };
 
   const handleHostingPurchase = async (packageId: string, packageName: string) => {
@@ -189,6 +172,29 @@ export default function InstructorDomains() {
 
   return (
     <InstructorSaaSLayout>
+      {/* Checkout Modals */}
+      {selectedDomain && (
+        <DomainCheckoutModal
+          open={!!selectedDomain}
+          onOpenChange={(open) => !open && setSelectedDomain(null)}
+          domain={selectedDomain.domain}
+          price={selectedDomain.price || 0}
+          currency={selectedDomain.currency || "GBP"}
+          onSuccess={() => {
+            setSelectedDomain(null);
+            // Refresh results
+            handleSearch();
+          }}
+        />
+      )}
+      {selectedHosting && (
+        <HostingCheckoutModal
+          open={!!selectedHosting}
+          onOpenChange={(open) => !open && setSelectedHosting(null)}
+          package_={selectedHosting}
+          onSuccess={() => setSelectedHosting(null)}
+        />
+      )}
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 md:py-20">
         <div className="container max-w-6xl">
@@ -336,7 +342,7 @@ export default function InstructorDomains() {
                                 <Button
                                   variant="accent"
                                   size="sm"
-                                  onClick={() => handlePurchase(result.domain)}
+                                  onClick={() => handlePurchase(result)}
                                 >
                                   <ShoppingCart className="w-4 h-4 mr-2" />
                                   Add to Cart
@@ -466,7 +472,7 @@ export default function InstructorDomains() {
                           <Button 
                             className="w-full" 
                             variant={index === 1 ? 'accent' : 'outline'}
-                            onClick={() => handleHostingPurchase(plan.id, plan.name)}
+                            onClick={() => handleHostingPurchase(plan)}
                           >
                             Get Started
                           </Button>
