@@ -971,9 +971,11 @@ export type Database = {
           access_token: string
           calendar_id: string | null
           created_at: string
+          email: string | null
           id: string
           instructor_id: string
           last_external_sync: string | null
+          provider: string | null
           refresh_token: string
           token_expiry: string
           updated_at: string
@@ -982,9 +984,11 @@ export type Database = {
           access_token: string
           calendar_id?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           instructor_id: string
           last_external_sync?: string | null
+          provider?: string | null
           refresh_token: string
           token_expiry: string
           updated_at?: string
@@ -993,9 +997,11 @@ export type Database = {
           access_token?: string
           calendar_id?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           instructor_id?: string
           last_external_sync?: string | null
+          provider?: string | null
           refresh_token?: string
           token_expiry?: string
           updated_at?: string
@@ -2982,6 +2988,7 @@ export type Database = {
           created_at: string
           dropoff_postcode: string | null
           duration_minutes: number
+          google_event_id: string | null
           id: string
           instructor_id: string
           lesson_date: string
@@ -3003,6 +3010,7 @@ export type Database = {
           created_at?: string
           dropoff_postcode?: string | null
           duration_minutes?: number
+          google_event_id?: string | null
           id?: string
           instructor_id: string
           lesson_date: string
@@ -3024,6 +3032,7 @@ export type Database = {
           created_at?: string
           dropoff_postcode?: string | null
           duration_minutes?: number
+          google_event_id?: string | null
           id?: string
           instructor_id?: string
           lesson_date?: string
