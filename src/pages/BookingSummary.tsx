@@ -1589,6 +1589,11 @@ export default function BookingSummary() {
                   toast.info("Klarna payment cancelled");
                 }}
               />
+              {!canSubmit && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Complete “Your Details” and fully schedule your lessons to enable Klarna.
+                </p>
+              )}
             </div>
           </div>
 
