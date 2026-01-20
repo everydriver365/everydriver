@@ -68,6 +68,7 @@ import InstructorAbout from "./pages/instructor-app/InstructorAbout";
 import InstructorContactPage from "./pages/instructor-app/InstructorContact";
 import InstructorDomains from "./pages/instructor-app/InstructorDomains";
 import InstructorPortalLogin from "./pages/InstructorPortalLogin";
+import CalendarCallback from "./pages/CalendarCallback";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,9 @@ const App = () => (
               
               {/* Remote Signing */}
               <Route path="/sign/:token" element={<RemoteSigning />} />
+              
+              {/* Calendar OAuth Callback */}
+              <Route path="/calendar-callback" element={<CalendarCallback />} />
 
               {/* Instructor SaaS Marketing (Drive365 branding) */}
               <Route path="/instructor-app" element={<InstructorAppHome />} />

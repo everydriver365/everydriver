@@ -110,3 +110,6 @@ verify_jwt = false
 
 [functions.send-signing-link]
 verify_jwt = false
+
+[functions.google-oauth]
+verify_jwt = false
