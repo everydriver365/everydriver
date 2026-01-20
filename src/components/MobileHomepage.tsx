@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Phone, Menu, Moon, Sun, X } from "lucide-react";
+import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Phone, Menu, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
+import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { useHeroVideo } from "@/hooks/useHeroVideo";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import heroLearnerMobile from "@/assets/hero-learner-mobile.jpg";
@@ -69,24 +69,6 @@ export function MobileHomepage() {
         </Button>
       </div>
       
-      {/* Full Width Postcode Search */}
-      <div className="px-4 py-4">
-        <form onSubmit={handleSearch} className="relative flex gap-2">
-          <div className="relative flex-1">
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input 
-              value={postcode}
-              onChange={(e) => setPostcode(e.target.value)}
-              placeholder="Enter your postcode..."
-              className="pl-12 h-12 rounded-xl bg-muted/50 border border-border/50 shadow-sm"
-            />
-          </div>
-          <Button type="submit" className="h-12 px-6 rounded-xl">
-            <Search className="h-5 w-5" />
-          </Button>
-        </form>
-      </div>
-      
       {/* Hero Video - Full Width */}
       <div className="relative">
         <div className="relative h-[240px] overflow-hidden">
@@ -101,22 +83,41 @@ export function MobileHomepage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
         </div>
         
-        {/* Motivational Card Overlay */}
+        {/* Motivational Card with Search */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="absolute -bottom-10 left-4 right-4 mx-0 bg-card rounded-2xl p-4 shadow-xl border"
+          className="absolute -bottom-24 left-4 right-4 bg-card rounded-2xl p-5 shadow-2xl border-2 border-primary/20"
         >
-          <h3 className="font-bold text-base uppercase tracking-wide">Start Your Journey</h3>
-          <p className="text-muted-foreground text-sm mt-1">
-            Money back if you pass first time, a FREE retest if you don't
+          <h3 className="font-bold text-xl text-center">Start Your Journey</h3>
+          <p className="text-muted-foreground text-sm text-center mt-1 mb-4">
+            Find driving instructors near you
+          </p>
+          
+          <form onSubmit={handleSearch} className="space-y-3">
+            <PostcodeAutocomplete
+              value={postcode}
+              onChange={setPostcode}
+              onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
+              placeholder="Enter your postcode..."
+              inputClassName="h-12 text-base bg-muted/50 rounded-xl"
+              showGeolocation={true}
+            />
+            <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl shadow-lg">
+              <Search className="h-5 w-5 mr-2" />
+              Find Courses
+            </Button>
+          </form>
+          
+          <p className="text-xs text-muted-foreground text-center mt-3">
+            💰 Money back if you pass first time
           </p>
         </motion.div>
       </div>
       
       {/* Spacer for overlay */}
-      <div className="h-14" />
+      <div className="h-28" />
       
       {/* Course Category Tiles */}
       <div className="px-4 pt-2 space-y-3">
