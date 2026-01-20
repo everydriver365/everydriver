@@ -297,10 +297,10 @@ export function MobileHomepage() {
                   className="w-full h-32 object-cover rounded-lg"
                 />
               )}
-              <p className="text-sm text-muted-foreground">{selectedFeature.description}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{selectedFeature.description}</p>
               {selectedFeature.detailed_content && (
                 <div 
-                  className="prose prose-sm dark:prose-invert max-w-none text-sm"
+                  className="prose prose-sm dark:prose-invert max-w-none text-sm [&>p]:mb-3 [&>p]:leading-relaxed [&>ul]:my-2 [&>ul]:space-y-1"
                   dangerouslySetInnerHTML={{ __html: selectedFeature.detailed_content }}
                 />
               )}
