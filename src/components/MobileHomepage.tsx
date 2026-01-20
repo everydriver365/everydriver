@@ -162,8 +162,8 @@ export function MobileHomepage() {
         </div>
         
         {/* What's Included Section - CMS Powered 2x3 Grid */}
-        <div className="pt-3">
-          <h3 className="font-semibold text-muted-foreground text-xs uppercase tracking-wider mb-3">What's Included</h3>
+        <div className="pt-4">
+          <h3 className="font-bold text-foreground text-sm uppercase tracking-wider mb-3">What's Included</h3>
           
           <div className="grid grid-cols-2 gap-3">
             {includedFeatures.slice(0, 6).map((feature, i) => {
