@@ -149,8 +149,8 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
-      {/* Header Bar - fixed at top with blue theme */}
-      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-primary">
+      {/* Header Bar - fixed at top with dark theme in dark mode */}
+      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-primary dark:bg-card/95 dark:backdrop-blur-md dark:border-b dark:border-white/10">
         {/* Logo on the left */}
         <img 
           src={logoDark} 

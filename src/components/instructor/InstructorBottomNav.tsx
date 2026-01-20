@@ -148,7 +148,7 @@ export function InstructorBottomNav() {
   const jobsItem = navItems.find(item => item.menuItems?.some(m => m.path === "/instructor/jobs"));
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.15)] md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary dark:bg-card/95 dark:backdrop-blur-md border-t border-primary-foreground/10 dark:border-white/10 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.15)] md:hidden">
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
@@ -165,7 +165,7 @@ export function InstructorBottomNav() {
                 className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                   isActive
                     ? "text-emerald-500"
-                    : "text-white hover:text-emerald-300"
+                    : "text-white dark:text-white/70 hover:text-emerald-300 dark:hover:text-white"
                 }`}
               >
                 {/* Active indicator pill */}
@@ -210,7 +210,7 @@ export function InstructorBottomNav() {
                   className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                     isActive
                       ? "text-emerald-500"
-                      : "text-white hover:text-emerald-300"
+                      : "text-white dark:text-white/70 hover:text-emerald-300 dark:hover:text-white"
                   }`}
                 >
                   {/* Active indicator pill */}
@@ -275,7 +275,7 @@ export function InstructorBottomNav() {
         })}
       </div>
       {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom bg-primary" />
+      <div className="h-safe-area-inset-bottom bg-primary dark:bg-card/95" />
     </nav>
   );
 }
