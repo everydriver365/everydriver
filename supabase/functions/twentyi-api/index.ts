@@ -131,22 +131,54 @@ async function checkMultipleDomains(baseName: string, tlds?: string[]): Promise<
     return [];
   }
   
-  // Map the 20i response to our format
-  const results = data as Array<{ name?: string; available?: boolean; premium?: boolean; price?: number }>;
+  // The 20i API returns an array where:
+  // - First element is a header with available TLDs
+  // - Subsequent elements have: { name: ".co.uk", can: "register" } or { name: ".com", can: "none" }
+  const results = data as Array<{ 
+    header?: { names?: string[] }; 
+    name?: string; 
+    can?: string; 
+    available?: boolean; 
+    premium?: boolean; 
+    price?: number;
+    register?: number;
+  }>;
   
   if (!Array.isArray(results)) {
     console.log('Unexpected response format:', data);
     return [];
   }
   
-  return results.map(r => ({
-    domain: r.name || '',
-    available: r.available ?? false,
-    premium: r.premium ?? false,
-    price: r.price,
-    currency: 'GBP',
-    period: 1,
-  })).filter(r => r.domain);
+  console.log(`Processing ${results.length} results from API`);
+  
+  return results
+    .filter(r => r.name && !r.header) // Skip header elements
+    .map(r => {
+      let domainName = r.name || '';
+      
+      // If the result is just a TLD (starts with .), prepend the base name
+      if (domainName.startsWith('.')) {
+        domainName = cleanBaseName + domainName;
+      }
+      // If it doesn't contain the base name, prepend it
+      else if (domainName && !domainName.toLowerCase().includes(cleanBaseName)) {
+        domainName = cleanBaseName + '.' + domainName;
+      }
+      
+      // 20i uses "can": "register" to indicate availability
+      // or "can": "none" / "can": "transfer" for unavailable
+      const isAvailable = r.can === 'register' || r.available === true;
+      
+      return {
+        domain: domainName,
+        available: isAvailable,
+        premium: r.premium ?? false,
+        price: r.price ?? r.register, // 20i may use "register" for price
+        currency: 'GBP',
+        period: 1,
+      };
+    })
+    .filter(r => r.domain && r.domain !== cleanBaseName);
 }
 
 
