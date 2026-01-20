@@ -35,6 +35,7 @@ export function KlarnaExpressButton({
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'visible' | 'error' | 'processing'>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
   const initAttemptedRef = useRef(false);
   const sdkLoadedRef = useRef(false);
 
@@ -82,6 +83,17 @@ export function KlarnaExpressButton({
     if (!klarnaButtons) {
       console.error("Klarna Payments Buttons not available on window. Klarna object:", (window as any).Klarna);
       setErrorMessage("Klarna SDK not loaded");
+      setDebugInfo(
+        JSON.stringify(
+          {
+            hostname: typeof window !== "undefined" ? window.location.hostname : "",
+            hasKlarnaObject: Boolean((window as any).Klarna),
+            hasButtons: false,
+          },
+          null,
+          2
+        )
+      );
       setStatus('error');
       return false;
     }
@@ -134,7 +146,20 @@ export function KlarnaExpressButton({
           },
         },
         (loadResult: any) => {
-          console.log("Klarna button load result:", JSON.stringify(loadResult, null, 2));
+          const pretty = JSON.stringify(loadResult, null, 2);
+          console.log("Klarna button load result:", pretty);
+          setDebugInfo(
+            JSON.stringify(
+              {
+                hostname: typeof window !== "undefined" ? window.location.hostname : "",
+                amount,
+                currency,
+                loadResult,
+              },
+              null,
+              2
+            )
+          );
           if (loadResult?.show_button) {
             console.log("Klarna: Button ready to display");
             setStatus('visible');
@@ -157,10 +182,20 @@ export function KlarnaExpressButton({
     } catch (error) {
       console.error("Error initializing Klarna:", error);
       setErrorMessage("Failed to initialize Klarna");
+      setDebugInfo(
+        JSON.stringify(
+          {
+            hostname: typeof window !== "undefined" ? window.location.hostname : "",
+            error: String(error),
+          },
+          null,
+          2
+        )
+      );
       setStatus('error');
       return false;
     }
-  }, [amount, amountInMinorUnits, merchantReference, onSuccess, onError, onCancel, orderPayload]);
+  }, [amount, amountInMinorUnits, currency, merchantReference, onSuccess, onError, onCancel, orderPayload]);
 
   // Load SDK
   useEffect(() => {
@@ -209,6 +244,17 @@ export function KlarnaExpressButton({
     script.onerror = () => {
       console.error("Failed to load Klarna SDK script");
       setErrorMessage("Failed to load Klarna");
+      setDebugInfo(
+        JSON.stringify(
+          {
+            hostname: typeof window !== "undefined" ? window.location.hostname : "",
+            script: script.src,
+            error: "script_onerror",
+          },
+          null,
+          2
+        )
+      );
       setStatus('error');
     };
 
@@ -246,6 +292,11 @@ export function KlarnaExpressButton({
   }
 
   if (status === 'error') {
+    const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+    const previewHint = hostname.includes("lovable")
+      ? "Klarna Express buttons may only render on domains approved in your Klarna settings (your preview domain may not be approved). Try your published domain."
+      : null;
+
     return (
       <div className="w-full text-center">
         <Button disabled className="w-full h-14 bg-[#FFB3C7] text-black opacity-50">
@@ -258,6 +309,17 @@ export function KlarnaExpressButton({
         </Button>
         {errorMessage && (
           <p className="text-xs text-muted-foreground mt-1">{errorMessage}</p>
+        )}
+        {previewHint && (
+          <p className="text-xs text-muted-foreground mt-1">{previewHint}</p>
+        )}
+        {debugInfo && (
+          <details className="mt-2 text-left">
+            <summary className="text-xs text-muted-foreground cursor-pointer">Debug details</summary>
+            <pre className="mt-2 text-[11px] leading-4 whitespace-pre-wrap break-words rounded-md bg-muted/30 p-2 text-muted-foreground">
+              {debugInfo}
+            </pre>
+          </details>
         )}
       </div>
     );
