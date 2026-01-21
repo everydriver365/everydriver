@@ -263,23 +263,27 @@ export function MobileHomepage() {
           onClick={() => setShowTestGuaranteeModal(true)}
           className="relative rounded-2xl overflow-hidden shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 cursor-pointer active:scale-[0.98] transition-transform"
         >
-          <div className="p-4 flex items-center gap-3">
+          <div className="p-4 flex items-start gap-3">
             <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center shrink-0">
               <CalendarSearch className="h-6 w-6 text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-bold text-white text-sm">Guaranteed Earlier Test</h4>
-              <p className="text-xs text-white/80 mt-0.5">We'll find you an earlier slot or your money back!</p>
+            <div className="flex-1">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h4 className="font-bold text-white text-sm">Guaranteed Earlier Test</h4>
+                  <p className="text-xs text-white/80 mt-0.5">We'll find you an earlier slot or your money back!</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-white/60 shrink-0 mt-0.5" />
+              </div>
               <div className="flex items-center gap-2 mt-2">
-                <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  Only £{earlierTestUpsell?.price?.toFixed(2) ?? '49.99'}
+                <span className="bg-white/20 text-white text-sm font-bold px-3 py-1 rounded-full">
+                  £{earlierTestUpsell?.price?.toFixed(2) ?? '49.99'}
                 </span>
                 <span className="text-white/70 text-xs flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3" /> Refund guarantee
+                  <ShieldCheck className="h-3 w-3" /> Money-back guarantee
                 </span>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
           </div>
         </motion.div>
       </div>
