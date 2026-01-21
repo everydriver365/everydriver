@@ -116,3 +116,9 @@ verify_jwt = false
 
 [functions.pupil-payment-checkout]
 verify_jwt = false
+
+[functions.square-wallet-config]
+verify_jwt = false
+
+[functions.square-wallet-payment]
+verify_jwt = false
