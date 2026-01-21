@@ -1776,6 +1776,854 @@ const MobileHomeDemo = () => {
           </div>
         </section>
 
+        {/* Option N: Hybrid Social Proof */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 rounded-full text-sm font-medium mb-2">
+              Option N
+            </span>
+            <h2 className="text-2xl font-bold">Hybrid Social Proof</h2>
+            <p className="text-muted-foreground mt-2">Glassmorphic search, avatar stacks, and modular action grid</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar mockup */}
+                <div className="h-11 bg-black/5 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Hero Section with Glassmorphic Overlay */}
+                <div className="relative h-[350px]">
+                  <img 
+                    src={heroImage} 
+                    alt="Driving" 
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-background" />
+                  
+                  {/* Floating Trust Badges */}
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="absolute top-4 left-4 right-4 flex justify-between"
+                  >
+                    <div className="px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-medium flex items-center gap-1.5">
+                      <Shield className="h-3.5 w-3.5" />
+                      DVSA Approved
+                    </div>
+                    <div className="px-3 py-1.5 bg-amber-500/90 backdrop-blur-md rounded-full text-white text-xs font-medium flex items-center gap-1.5">
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      4.9 Rating
+                    </div>
+                  </motion.div>
+                  
+                  {/* Content over hero */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="text-white"
+                    >
+                      <h1 className="text-2xl font-bold leading-tight mb-2">
+                        Learn to Drive<br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">With Confidence</span>
+                      </h1>
+                      
+                      {/* Avatar Stack Social Proof */}
+                      <div className="flex items-center gap-3 mt-4">
+                        <div className="flex -space-x-3">
+                          {[testimonialSarah, testimonialJames, testimonialEmma, testimonialPriya].map((img, i) => (
+                            <motion.img 
+                              key={i} 
+                              src={img} 
+                              alt="" 
+                              className="w-9 h-9 rounded-full border-2 border-white shadow-lg"
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.4 + i * 0.1 }}
+                            />
+                          ))}
+                        </div>
+                        <div className="text-sm">
+                          <span className="font-semibold">50K+</span> learners passed
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+                
+                {/* Glassmorphic Search Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="mx-4 -mt-8 relative z-10"
+                >
+                  <div className="bg-card/80 backdrop-blur-xl border shadow-xl rounded-2xl p-4">
+                    <p className="text-sm font-medium mb-3">Find your instructor</p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          placeholder="Enter postcode..."
+                          className="pl-10 h-12 rounded-xl"
+                        />
+                      </div>
+                      <Button className="h-12 px-5 rounded-xl">
+                        <Search className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+                
+                {/* Modular Action Grid */}
+                <div className="p-4 pt-6">
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { icon: Car, title: "Intensive", desc: "Pass in 1-2 weeks", color: "from-blue-500 to-blue-600" },
+                      { icon: Calendar, title: "Weekly", desc: "Flexible lessons", color: "from-emerald-500 to-emerald-600" },
+                      { icon: BookOpen, title: "Theory Prep", desc: "Free with course", color: "from-purple-500 to-purple-600" },
+                      { icon: CreditCard, title: "Pay Monthly", desc: "0% finance options", color: "from-amber-500 to-amber-600" },
+                    ].map((item, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.6 + i * 0.1 }}
+                        className="group relative overflow-hidden rounded-2xl p-4 bg-card border shadow-sm hover:shadow-lg transition-all cursor-pointer"
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3`}>
+                          <item.icon className="h-5 w-5 text-white" />
+                        </div>
+                        <h4 className="font-semibold text-sm">{item.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Bottom Stats Bar */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.9 }}
+                  className="mx-4 mt-4 p-4 bg-muted/50 rounded-2xl flex justify-around"
+                >
+                  {[
+                    { value: "90%", label: "Pass Rate" },
+                    { value: "24/7", label: "Support" },
+                    { value: "Free", label: "Retest Cover" },
+                  ].map((stat, i) => (
+                    <div key={i} className="text-center">
+                      <div className="text-lg font-bold text-primary">{stat.value}</div>
+                      <div className="text-xs text-muted-foreground">{stat.label}</div>
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option O: Video-First Hero */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-rose-500/10 text-rose-600 rounded-full text-sm font-medium mb-2">
+              Option O
+            </span>
+            <h2 className="text-2xl font-bold">Video-First Hero</h2>
+            <p className="text-muted-foreground mt-2">Full-width video thumbnail with testimonial integration</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar mockup */}
+                <div className="h-11 bg-black/5 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Header */}
+                <div className="px-4 py-3 flex items-center justify-between">
+                  <img src={everyDriverLogo} alt="EveryDriver" className="h-6" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </div>
+                
+                {/* Video Hero Section */}
+                <div className="relative mx-4 rounded-2xl overflow-hidden">
+                  <img 
+                    src={heroLearnerMobile} 
+                    alt="Learner driving" 
+                    className="w-full h-[220px] object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  
+                  {/* Play Button */}
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center shadow-xl cursor-pointer hover:scale-105 transition-transform">
+                      <Play className="h-7 w-7 text-primary fill-primary ml-1" />
+                    </div>
+                  </motion.div>
+                  
+                  {/* Floating Notification */}
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="absolute top-3 right-3 bg-white/95 backdrop-blur rounded-xl p-2 shadow-lg flex items-center gap-2"
+                  >
+                    <img src={testimonialSarah} alt="" className="w-8 h-8 rounded-full" />
+                    <div className="pr-2">
+                      <p className="text-xs font-semibold">Sarah just passed! 🎉</p>
+                      <p className="text-[10px] text-muted-foreground">First time • Leeds</p>
+                    </div>
+                  </motion.div>
+                  
+                  {/* Video Caption */}
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <p className="text-white text-sm font-medium">Watch Sarah's success story</p>
+                    <p className="text-white/70 text-xs">2 min watch</p>
+                  </div>
+                </div>
+                
+                {/* Pill Category Selectors */}
+                <div className="flex gap-2 px-4 py-4 overflow-x-auto">
+                  {[
+                    { label: "Intensive", icon: Zap, active: true },
+                    { label: "Weekly", icon: Calendar, active: false },
+                    { label: "Theory", icon: BookOpen, active: false },
+                  ].map((cat, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + i * 0.1 }}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap cursor-pointer transition-colors ${
+                        cat.active 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted hover:bg-muted/80'
+                      }`}
+                    >
+                      <cat.icon className="h-4 w-4" />
+                      <span className="text-sm font-medium">{cat.label}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                {/* Search Section */}
+                <div className="px-4 pb-4">
+                  <h2 className="text-xl font-bold mb-1">Find your instructor</h2>
+                  <p className="text-sm text-muted-foreground mb-4">Enter your postcode to see availability</p>
+                  
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        placeholder="e.g. LS1 4AP"
+                        className="pl-11 h-12 rounded-xl"
+                      />
+                    </div>
+                    <Button className="h-12 px-6 rounded-xl">
+                      Search
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Testimonial Cards Scroll */}
+                <div className="px-4 pb-4">
+                  <h3 className="font-semibold mb-3">Recent success stories</h3>
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+                    {[
+                      { img: testimonialJames, name: "James", location: "Manchester", text: "Passed first time!" },
+                      { img: testimonialEmma, name: "Emma", location: "London", text: "Amazing instructor" },
+                      { img: testimonialPriya, name: "Priya", location: "Birmingham", text: "So supportive" },
+                    ].map((testimonial, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + i * 0.1 }}
+                        className="flex-shrink-0 w-[200px] p-3 bg-card border rounded-xl"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <img src={testimonial.img} alt="" className="w-8 h-8 rounded-full" />
+                          <div>
+                            <p className="text-sm font-medium">{testimonial.name}</p>
+                            <p className="text-xs text-muted-foreground">{testimonial.location}</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">"{testimonial.text}"</p>
+                        <div className="flex mt-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Payment Providers */}
+                <div className="px-4 pb-6">
+                  <p className="text-xs text-center text-muted-foreground mb-3">Flexible payment options</p>
+                  <div className="flex items-center justify-center gap-6">
+                    <img src={logoKlarna} alt="Klarna" className="h-5 opacity-60" />
+                    <img src={logoClearpay} alt="Clearpay" className="h-5 opacity-60" />
+                    <img src={logoIdeal4Finance} alt="Finance" className="h-5 opacity-60" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option P: Map-Centric Discovery */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-teal-500/10 text-teal-600 rounded-full text-sm font-medium mb-2">
+              Option P
+            </span>
+            <h2 className="text-2xl font-bold">Map-Centric Discovery</h2>
+            <p className="text-muted-foreground mt-2">Interactive map preview with instructor cards</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar mockup */}
+                <div className="h-11 bg-black/5 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Header with Location */}
+                <div className="px-4 py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Your location</p>
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <span className="font-semibold">Leeds, LS1</span>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </div>
+                
+                {/* Map Preview */}
+                <div className="relative mx-4 h-[200px] rounded-2xl overflow-hidden bg-muted">
+                  {/* Fake map background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-emerald-100 dark:from-blue-900/30 dark:to-emerald-900/30">
+                    {/* Map grid lines */}
+                    <div className="absolute inset-0 opacity-20">
+                      {[...Array(6)].map((_, i) => (
+                        <div key={i} className="absolute w-full h-px bg-foreground" style={{ top: `${i * 20}%` }} />
+                      ))}
+                      {[...Array(6)].map((_, i) => (
+                        <div key={i} className="absolute h-full w-px bg-foreground" style={{ left: `${i * 20}%` }} />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Instructor Pins */}
+                  {[
+                    { top: '30%', left: '25%' },
+                    { top: '45%', left: '55%' },
+                    { top: '60%', left: '35%' },
+                    { top: '40%', left: '70%' },
+                    { top: '55%', left: '60%' },
+                  ].map((pos, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.3 + i * 0.1, type: 'spring' }}
+                      className="absolute w-8 h-8 -ml-4 -mt-4"
+                      style={{ top: pos.top, left: pos.left }}
+                    >
+                      <div className="w-full h-full bg-primary rounded-full flex items-center justify-center shadow-lg">
+                        <Car className="h-4 w-4 text-primary-foreground" />
+                      </div>
+                    </motion.div>
+                  ))}
+                  
+                  {/* Availability Pill */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="absolute bottom-3 left-3 px-3 py-1.5 bg-white/95 backdrop-blur rounded-full shadow-lg flex items-center gap-2"
+                  >
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    <span className="text-xs font-medium">5 instructors within 2 miles</span>
+                  </motion.div>
+                </div>
+                
+                {/* Quick Filters */}
+                <div className="flex gap-2 px-4 py-4 overflow-x-auto">
+                  {[
+                    { label: "Availability", active: true },
+                    { label: "Price", active: false },
+                    { label: "Rating", active: false },
+                    { label: "Distance", active: false },
+                  ].map((filter, i) => (
+                    <div
+                      key={i}
+                      className={`px-4 py-2 rounded-full text-sm whitespace-nowrap cursor-pointer transition-colors ${
+                        filter.active 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-muted hover:bg-muted/80'
+                      }`}
+                    >
+                      {filter.label}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Instructor Cards Scroll */}
+                <div className="px-4">
+                  <h3 className="font-semibold mb-3">Instructors near you</h3>
+                  <div className="space-y-3">
+                    {[
+                      { name: "Mike Johnson", rating: 4.9, distance: "0.8 mi", price: "£38/hr", available: "Today", img: testimonialJames },
+                      { name: "Sarah Williams", rating: 5.0, distance: "1.2 mi", price: "£40/hr", available: "Tomorrow", img: testimonialSarah },
+                      { name: "Emma Davies", rating: 4.8, distance: "1.5 mi", price: "£36/hr", available: "Wed", img: testimonialEmma },
+                    ].map((instructor, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        className="flex items-center gap-3 p-3 bg-card border rounded-xl"
+                      >
+                        <img src={instructor.img} alt="" className="w-14 h-14 rounded-xl object-cover" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-sm truncate">{instructor.name}</h4>
+                            <div className="flex items-center gap-0.5">
+                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                              <span className="text-xs font-medium">{instructor.rating}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                            <span>{instructor.distance}</span>
+                            <span>{instructor.price}</span>
+                            <span className="text-emerald-600 font-medium">{instructor.available}</span>
+                          </div>
+                        </div>
+                        <Button size="sm" className="rounded-lg">Book</Button>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Large Search CTA */}
+                <div className="p-4 mt-4">
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+                    <p className="text-sm font-medium mb-3">Search a different area</p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          placeholder="Enter postcode..."
+                          className="pl-10 h-11 rounded-xl"
+                        />
+                      </div>
+                      <Button className="h-11 rounded-xl">Go</Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option Q: Gamified Progress */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-orange-500/10 text-orange-600 rounded-full text-sm font-medium mb-2">
+              Option Q
+            </span>
+            <h2 className="text-2xl font-bold">Gamified Progress</h2>
+            <p className="text-muted-foreground mt-2">Journey timeline, achievements, and leaderboard</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-gradient-to-b from-orange-50 to-background dark:from-orange-950/20 dark:to-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar mockup */}
+                <div className="h-11 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Header with Streak */}
+                <div className="px-4 py-3 flex items-center justify-between">
+                  <img src={everyDriverLogo} alt="EveryDriver" className="h-6" />
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 rounded-full">
+                      <Zap className="h-4 w-4 text-orange-500" />
+                      <span className="text-sm font-bold text-orange-600">7 day streak!</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* XP Progress Bar */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mx-4 p-3 bg-card border rounded-xl mb-4"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center">
+                        <Star className="h-4 w-4 text-white fill-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">Level 3 - Road Ready</p>
+                        <p className="text-xs text-muted-foreground">450 / 600 XP</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: '75%' }}
+                      transition={{ delay: 0.3, duration: 0.8 }}
+                      className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full"
+                    />
+                  </div>
+                </motion.div>
+                
+                {/* Journey Timeline */}
+                <div className="px-4 mb-6">
+                  <h3 className="font-semibold mb-4">Your Journey to Pass</h3>
+                  <div className="relative">
+                    {/* Timeline Line */}
+                    <div className="absolute left-[15px] top-6 bottom-6 w-0.5 bg-muted" />
+                    
+                    {[
+                      { title: "Theory Test", desc: "Master the rules", icon: BookOpen, done: true, xp: "+100 XP" },
+                      { title: "First Lesson", desc: "Get behind the wheel", icon: Car, done: true, xp: "+150 XP" },
+                      { title: "10 Hours Complete", desc: "Building confidence", icon: Clock, done: false, xp: "+200 XP" },
+                      { title: "Mock Test", desc: "Test your skills", icon: Award, done: false, xp: "+250 XP" },
+                      { title: "Pass Your Test!", desc: "You got this!", icon: GraduationCap, done: false, xp: "+500 XP" },
+                    ].map((step, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 + i * 0.1 }}
+                        className="relative flex items-start gap-4 pb-4"
+                      >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${
+                          step.done 
+                            ? 'bg-emerald-500 text-white' 
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {step.done ? <CheckCircle className="h-4 w-4" /> : <step.icon className="h-4 w-4" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className={`font-medium text-sm ${step.done ? '' : 'text-muted-foreground'}`}>{step.title}</h4>
+                            <span className={`text-xs font-medium ${step.done ? 'text-emerald-600' : 'text-muted-foreground'}`}>{step.xp}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{step.desc}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Achievement Badges */}
+                <div className="px-4 mb-6">
+                  <h3 className="font-semibold mb-3">Your Badges</h3>
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+                    {[
+                      { icon: BookOpen, label: "Theory Pro", color: "from-blue-400 to-blue-600", earned: true },
+                      { icon: Clock, label: "Early Bird", color: "from-amber-400 to-orange-500", earned: true },
+                      { icon: Zap, label: "Quick Learner", color: "from-purple-400 to-purple-600", earned: true },
+                      { icon: Award, label: "Perfect Score", color: "from-gray-300 to-gray-400", earned: false },
+                    ].map((badge, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        className={`flex-shrink-0 flex flex-col items-center gap-2 p-3 rounded-xl ${badge.earned ? '' : 'opacity-40'}`}
+                      >
+                        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${badge.color} flex items-center justify-center shadow-lg`}>
+                          <badge.icon className="h-6 w-6 text-white" />
+                        </div>
+                        <span className="text-xs font-medium">{badge.label}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Leaderboard Preview */}
+                <div className="px-4 pb-6">
+                  <h3 className="font-semibold mb-3">Top Learners This Week</h3>
+                  <div className="bg-card border rounded-xl overflow-hidden">
+                    {[
+                      { rank: 1, name: "Alex K.", xp: "2,450 XP", img: testimonialJames },
+                      { rank: 2, name: "Sarah M.", xp: "2,100 XP", img: testimonialSarah },
+                      { rank: 3, name: "You", xp: "1,850 XP", img: testimonialEmma, isUser: true },
+                    ].map((user, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + i * 0.1 }}
+                        className={`flex items-center gap-3 p-3 ${i !== 2 ? 'border-b' : ''} ${user.isUser ? 'bg-primary/5' : ''}`}
+                      >
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          user.rank === 1 ? 'bg-amber-400 text-white' :
+                          user.rank === 2 ? 'bg-gray-300 text-gray-700' :
+                          'bg-orange-400 text-white'
+                        }`}>
+                          {user.rank}
+                        </div>
+                        <img src={user.img} alt="" className="w-8 h-8 rounded-full" />
+                        <span className={`flex-1 text-sm ${user.isUser ? 'font-semibold' : ''}`}>{user.name}</span>
+                        <span className="text-sm font-medium text-primary">{user.xp}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* CTA */}
+                <div className="px-4 pb-6">
+                  <Button className="w-full h-12 rounded-xl">
+                    Continue Your Journey
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option R: Booking-Focused Flow */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-indigo-500/10 text-indigo-600 rounded-full text-sm font-medium mb-2">
+              Option R
+            </span>
+            <h2 className="text-2xl font-bold">Booking-Focused Flow</h2>
+            <p className="text-muted-foreground mt-2">Step-by-step wizard with date picker and price comparison</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar mockup */}
+                <div className="h-11 bg-black/5 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Header */}
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  <h1 className="font-semibold">Book Your Lessons</h1>
+                </div>
+                
+                {/* Progress Steps */}
+                <div className="px-4 mb-6">
+                  <div className="flex items-center gap-2">
+                    {[
+                      { step: 1, label: "Location", done: true },
+                      { step: 2, label: "Package", done: true },
+                      { step: 3, label: "Date", done: false, current: true },
+                      { step: 4, label: "Pay", done: false },
+                    ].map((s, i) => (
+                      <div key={i} className="flex-1 flex items-center gap-2">
+                        <motion.div
+                          initial={{ scale: 0.8 }}
+                          animate={{ scale: 1 }}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                            s.done ? 'bg-primary text-primary-foreground' :
+                            s.current ? 'bg-primary/20 text-primary border-2 border-primary' :
+                            'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          {s.done ? <CheckCircle className="h-4 w-4" /> : s.step}
+                        </motion.div>
+                        {i < 3 && <div className={`flex-1 h-0.5 ${s.done ? 'bg-primary' : 'bg-muted'}`} />}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between mt-2">
+                    {["Location", "Package", "Date", "Pay"].map((label, i) => (
+                      <span key={i} className="text-[10px] text-muted-foreground">{label}</span>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* "Book in 60 seconds" Badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mx-4 mb-4 p-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Zap className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="text-white">
+                    <p className="font-semibold text-sm">Book in 60 seconds</p>
+                    <p className="text-xs text-white/80">Fast, simple, secure</p>
+                  </div>
+                </motion.div>
+                
+                {/* Date Picker Preview */}
+                <div className="px-4 mb-4">
+                  <h3 className="font-semibold mb-3">Choose your start date</h3>
+                  <div className="bg-card border rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <ChevronRight className="h-4 w-4 rotate-180" />
+                      </Button>
+                      <span className="font-semibold">January 2026</span>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs mb-2">
+                      {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+                        <div key={i} className="text-muted-foreground py-1">{d}</div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {[...Array(31)].map((_, i) => {
+                        const day = i + 1;
+                        const isSelected = day === 27;
+                        const isAvailable = [22, 23, 24, 27, 28, 29, 30].includes(day);
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.02 * i }}
+                            className={`aspect-square flex items-center justify-center text-sm rounded-lg cursor-pointer ${
+                              isSelected ? 'bg-primary text-primary-foreground font-bold' :
+                              isAvailable ? 'bg-primary/10 text-primary hover:bg-primary/20' :
+                              day < 21 ? 'text-muted-foreground/50' :
+                              'text-muted-foreground hover:bg-muted'
+                            }`}
+                          >
+                            {day}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-center text-muted-foreground mt-3">
+                      <span className="inline-block w-2 h-2 bg-primary/20 rounded mr-1" /> Available dates
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Instructor Match Card */}
+                <div className="px-4 mb-4">
+                  <h3 className="font-semibold mb-3">Your matched instructor</h3>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="p-4 bg-card border rounded-xl"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <img src={testimonialJames} alt="" className="w-14 h-14 rounded-xl object-cover" />
+                      <div className="flex-1">
+                        <h4 className="font-semibold">Mike Johnson</h4>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-0.5">
+                            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                            <span>4.9</span>
+                          </div>
+                          <span>•</span>
+                          <span>0.8 miles away</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-primary">£38</span>
+                        <span className="text-xs text-muted-foreground">/hr</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="px-2 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full">
+                        Available Jan 27
+                      </div>
+                      <div className="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
+                        Automatic
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+                
+                {/* Price Comparison */}
+                <div className="px-4 mb-6">
+                  <h3 className="font-semibold mb-3">Package options</h3>
+                  <div className="space-y-2">
+                    {[
+                      { hours: 10, price: 380, pricePerHour: 38, popular: false },
+                      { hours: 20, price: 720, pricePerHour: 36, popular: true, save: "£40" },
+                      { hours: 30, price: 1020, pricePerHour: 34, popular: false, save: "£120" },
+                    ].map((pkg, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        className={`relative p-4 border rounded-xl cursor-pointer transition-colors ${
+                          pkg.popular ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                        }`}
+                      >
+                        {pkg.popular && (
+                          <div className="absolute -top-2 right-4 px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full">
+                            POPULAR
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold">{pkg.hours} Hours</h4>
+                            <p className="text-xs text-muted-foreground">£{pkg.pricePerHour}/hour</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold">£{pkg.price}</p>
+                            {pkg.save && <p className="text-xs text-emerald-600 font-medium">Save {pkg.save}</p>}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* CTA */}
+                <div className="px-4 pb-6">
+                  <Button className="w-full h-14 rounded-xl text-base font-semibold">
+                    Continue to Payment
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground mt-3">
+                    Secure checkout with SSL encryption
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Footer */}
         <div className="text-center py-8 border-t">
           <p className="text-muted-foreground mb-4">Which layout do you prefer?</p>
