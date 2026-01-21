@@ -246,7 +246,7 @@ export function useAdminInstructorChats() {
 }
 
 // Hook for viewing a specific admin conversation (for admin side)
-export function useAdminConversationMessages(conversationId: string | null) {
+export function useAdminConversationMessages(conversationId: string | null, instructorId?: string) {
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -286,6 +286,23 @@ export function useAdminConversationMessages(conversationId: string | null) {
       });
 
       if (error) throw error;
+
+      // Send push notification to instructor
+      if (instructorId) {
+        try {
+          await supabase.functions.invoke("notify-instructor", {
+            body: {
+              instructorId,
+              type: "admin_direct_message",
+              messagePreview: content.trim(),
+            },
+          });
+        } catch (notifyError) {
+          console.error("Error sending notification:", notifyError);
+          // Don't fail the whole operation if notification fails
+        }
+      }
+
       return true;
     } catch (error) {
       console.error("Error sending message:", error);

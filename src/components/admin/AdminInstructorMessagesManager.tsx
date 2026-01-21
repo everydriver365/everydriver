@@ -140,7 +140,10 @@ interface AdminChatViewProps {
 }
 
 function AdminChatView({ conversation, adminId, onBack }: AdminChatViewProps) {
-  const { messages, loading, sending, sendMessage, markAsRead } = useAdminConversationMessages(conversation.id);
+  const { messages, loading, sending, sendMessage, markAsRead } = useAdminConversationMessages(
+    conversation.id, 
+    conversation.instructor_id
+  );
   const [newMessage, setNewMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
