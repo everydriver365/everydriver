@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, 
@@ -18,7 +18,8 @@ import {
   Sun,
   Wallet,
   Globe,
-  MessageCircle
+  MessageCircle,
+  Headphones
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ const sidebarLinks = [
   { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
   { href: "/instructor/gaps", label: "Fill Gaps", icon: MapPin },
   { href: "/instructor/messages", label: "Messages", icon: MessageCircle },
+  { href: "/instructor/visitor-chats", label: "Visitor Chats", icon: Headphones, highlight: true },
   { href: "/instructor/domains", label: "Domains", icon: Globe },
   { href: "/instructor/track-lesson", label: "Track Lesson", icon: Navigation },
   { href: "/instructor/settings", label: "Settings", icon: Settings },
@@ -219,19 +221,30 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {sidebarLinks.map((link) => {
               const isActive = location.pathname === link.href;
               const isMessages = link.href === "/instructor/messages";
+              const isHighlighted = 'highlight' in link && link.highlight;
               return (
                 <Link
                   key={link.href}
                   to={link.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                     isActive
                       ? "bg-primary text-primary-foreground"
+                      : isHighlighted
+                      ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:from-emerald-500/30 hover:to-cyan-500/30"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
-                  <link.icon className="h-5 w-5" />
+                  <link.icon className={cn(
+                    "h-5 w-5",
+                    isHighlighted && !isActive && "text-emerald-500"
+                  )} />
                   {link.label}
+                  {isHighlighted && !isActive && (
+                    <span className="ml-auto text-[10px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">
+                      LIVE
+                    </span>
+                  )}
                   {isMessages && !isActive && (
                     <MessageNotificationBadge 
                       instructorId={instructor?.id} 
