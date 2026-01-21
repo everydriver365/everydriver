@@ -3,7 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode, Layout } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode, Layout, Calendar as CalendarLucide } from "lucide-react";
+import { CalendarConnect } from "@/components/instructor/CalendarConnect";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
 import { CourseImageEditor } from "./CourseImageEditor";
@@ -1337,6 +1338,16 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           <div className="rounded-lg border p-4">
             <h3 className="mb-4 text-lg font-semibold">Working Hours & Availability</h3>
             <WorkingHoursEditor instructorId={initialData.id} />
+          </div>
+        )}
+
+        {/* Google Calendar Sync - Only show for existing instructors */}
+        {initialData?.id && (
+          <div className="rounded-lg border p-4">
+            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
+              <CalendarLucide className="h-5 w-5" /> Google Calendar Sync
+            </h3>
+            <CalendarConnect instructorId={initialData.id} />
           </div>
         )}
 
