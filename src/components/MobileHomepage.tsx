@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Zap, Calendar, Car, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift } from "lucide-react";
+import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
@@ -115,24 +115,29 @@ export function MobileHomepage() {
         </form>
       </div>
       
-      {/* Course Category Tiles - 2x2 Grid */}
-      <div className="px-4 pt-4">
+      {/* Course Category Tiles */}
+      <div className="px-4 pt-4 space-y-3">
+        {/* Full Width - Intensive Courses */}
+        <Link to="/intensives">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg flex items-center gap-4"
+          >
+            <div className="w-12 h-12 bg-teal-500/10 rounded-full flex items-center justify-center">
+              <Zap className="h-6 w-6 text-teal-600" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold">Intensive Courses</h4>
+              <p className="text-sm text-muted-foreground">Pass in 1-2 weeks</p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </motion.div>
+        </Link>
+        
+        {/* 2x Grid - Semi Intensive & Weekly Lessons */}
         <div className="grid grid-cols-2 gap-3">
-          <Link to="/intensives">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
-            >
-              <div className="w-11 h-11 bg-teal-500/10 rounded-full flex items-center justify-center mb-3">
-                <Zap className="h-5 w-5 text-teal-600" />
-              </div>
-              <h4 className="font-semibold text-sm">Intensive Courses</h4>
-              <p className="text-xs text-muted-foreground mt-1">Pass in 1-2 weeks</p>
-            </motion.div>
-          </Link>
-          
           <Link to="/semi-intensive">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -160,21 +165,6 @@ export function MobileHomepage() {
               </div>
               <h4 className="font-semibold text-sm">Weekly Lessons</h4>
               <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
-            </motion.div>
-          </Link>
-          
-          <Link to="/theory">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
-              className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
-            >
-              <div className="w-11 h-11 bg-teal-500/10 rounded-full flex items-center justify-center mb-3">
-                <BookOpen className="h-5 w-5 text-teal-600" />
-              </div>
-              <h4 className="font-semibold text-sm">Theory Practice</h4>
-              <p className="text-xs text-muted-foreground mt-1">Free revision</p>
             </motion.div>
           </Link>
         </div>
