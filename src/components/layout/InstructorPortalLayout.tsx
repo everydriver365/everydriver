@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, 
@@ -28,6 +28,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
+import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import logoDrive365 from "@/assets/logo-drive365-dark.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 
@@ -55,6 +56,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { resolvedTheme, setTheme } = useTheme();
+  const [showQRModal, setShowQRModal] = useState(false);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -105,8 +107,18 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               />
             </div>
             
-            {/* Right: Theme, Settings, Visibility, Avatar */}
+            {/* Right: QR, Theme, Settings, Visibility, Avatar */}
             <div className="flex items-center gap-1">
+              {instructor?.payment_qr_url && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowQRModal(true)}
+                  className="text-nav-foreground hover:bg-nav-foreground/10 h-8 px-2"
+                >
+                  <span className="text-xs font-bold border border-current rounded px-1">QR</span>
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -160,6 +172,17 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         </main>
 
         <InstructorBottomNav />
+
+        {/* QR Code Modal */}
+        {instructor?.payment_qr_url && (
+          <PaymentQRModal
+            open={showQRModal}
+            onOpenChange={setShowQRModal}
+            paymentQrUrl={instructor.payment_qr_url}
+            instructorId={instructor.id}
+            instructorName={instructor.name}
+          />
+        )}
       </div>
     );
   }
