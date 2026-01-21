@@ -34,6 +34,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import logoDrive365 from "@/assets/logo-drive365-dark.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
+import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
 
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
@@ -241,9 +242,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   )} />
                   {link.label}
                   {isHighlighted && !isActive && (
-                    <span className="ml-auto text-[10px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">
-                      LIVE
-                    </span>
+                    <VisitorChatBadge 
+                      instructorId={instructor?.id} 
+                      className="ml-auto"
+                    />
                   )}
                   {isMessages && !isActive && (
                     <MessageNotificationBadge 
