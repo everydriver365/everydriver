@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift } from "lucide-react";
+import { Search, Zap, Calendar, Car, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import useEmblaCarousel from "embla-carousel-react";
 
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
@@ -24,7 +23,6 @@ export function MobileHomepage() {
   const { features: includedFeatures } = useIncludedFeatures();
   const navigate = useNavigate();
   const location = useLocation();
-  const [emblaRef] = useEmblaCarousel({ loop: true, align: "start" });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,12 +38,6 @@ export function MobileHomepage() {
     { label: "FAQs", icon: HelpCircle, path: "/faqs" },
     { label: "Help", icon: MessageCircle, path: "/help" },
     { label: "Benefits", icon: Gift, path: "/benefits" },
-  ];
-
-  const promoBanners = [
-    { title: "Refer a Friend", subtitle: "Get £50 off your next course", gradient: "from-amber-500 to-orange-500" },
-    { title: "Free Retest", subtitle: "If you don't pass first time", gradient: "from-emerald-500 to-teal-500" },
-    { title: "Theory Bundle", subtitle: "Save 20% on combined courses", gradient: "from-violet-500 to-purple-500" },
   ];
 
   return (
@@ -64,109 +56,83 @@ export function MobileHomepage() {
       
       {/* Hero Image with Overlapping Card */}
       <div className="relative">
-        <div className="relative h-[260px] overflow-hidden">
+        <div className="relative h-[300px] overflow-hidden">
           <img 
             src={heroLearnerMobile}
             alt="Learn to drive"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          
-          {/* Promo Badge */}
-          <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-            Free Retest if you fail
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
         </div>
         
-        {/* Overlapping Motivational Card */}
+        {/* Overlapping Motivational Card - Club App Style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mx-4 -mt-14 relative z-10"
+          className="mx-4 -mt-20 relative z-10"
         >
-          <div className="bg-card border border-border/50 rounded-2xl p-4 shadow-xl flex items-center gap-4">
-            {/* Progress Ring */}
-            <div className="relative w-14 h-14 flex-shrink-0">
+          <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-card dark:to-card border border-rose-100 dark:border-border/50 rounded-2xl p-5 shadow-xl flex items-center justify-between">
+            <div className="flex-1">
+              <h3 className="font-bold text-lg text-foreground uppercase tracking-wide">There's Still Time</h3>
+              <p className="text-sm text-muted-foreground mt-1">Start learning to drive and get closer to your driving goal.</p>
+            </div>
+            {/* Progress Ring with Days */}
+            <div className="relative w-20 h-20 flex-shrink-0 ml-4">
               <svg className="w-full h-full -rotate-90">
-                <circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" 
-                        strokeWidth="4" className="text-muted/30" />
-                <circle cx="28" cy="28" r="24" fill="none" stroke="currentColor"
-                        strokeWidth="4" className="text-primary" 
-                        strokeDasharray="150" strokeDashoffset="110" 
+                <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" 
+                        strokeWidth="5" className="text-rose-200 dark:text-muted/30" />
+                <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor"
+                        strokeWidth="5" className="text-rose-500 dark:text-primary" 
+                        strokeDasharray="214" strokeDashoffset="200" 
                         strokeLinecap="round" />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Car className="h-5 w-5 text-primary" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-2xl font-bold text-foreground">0</span>
+                <span className="text-[10px] uppercase text-muted-foreground font-medium tracking-wide">Days Left</span>
               </div>
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-base">Start Your Journey</h3>
-              <p className="text-sm text-muted-foreground">Find local instructors near you</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </div>
         </motion.div>
       </div>
       
-      {/* Primary Action Tile - Find Instructors */}
+      {/* Inline Postcode Search */}
       <div className="px-4 pt-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="bg-primary rounded-2xl p-4 shadow-lg"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-primary-foreground/20 rounded-xl flex items-center justify-center">
-              <Search className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-primary-foreground">Find Local Instructors</h4>
-              <p className="text-xs text-primary-foreground/70">Enter your postcode to get started</p>
-            </div>
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="flex-1">
+            <PostcodeAutocomplete
+              value={postcode}
+              onChange={setPostcode}
+              onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
+              placeholder="Enter your postcode..."
+              inputClassName="h-12 text-sm bg-card border border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm"
+              showGeolocation={true}
+            />
           </div>
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="flex-1">
-              <PostcodeAutocomplete
-                value={postcode}
-                onChange={setPostcode}
-                onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
-                placeholder="Enter postcode..."
-                inputClassName="h-11 text-sm bg-primary-foreground border-0 rounded-xl text-foreground placeholder:text-muted-foreground"
-                showGeolocation={true}
-              />
-            </div>
-            <Button type="submit" variant="secondary" size="sm" className="h-11 px-5 rounded-xl font-medium">
-              Search
-            </Button>
-          </form>
-        </motion.div>
+          <Button type="submit" className="h-12 px-5 rounded-xl font-medium bg-rose-500 hover:bg-rose-600 text-white">
+            <Search className="h-4 w-4" />
+          </Button>
+        </form>
       </div>
       
-      {/* Course Category Tiles */}
-      <div className="px-4 pt-4 space-y-3">
-        {/* Full Width - Intensive Courses */}
-        <Link to="/intensives">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="p-4 bg-card border border-border/50 rounded-2xl flex items-center gap-4 shadow-lg"
-          >
-            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-              <Zap className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h4 className="font-semibold">Intensive Courses</h4>
-              <p className="text-sm text-muted-foreground">Pass in 1-2 weeks</p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </motion.div>
-        </Link>
-        
-        {/* 2x Grid - Semi Intensive & Lessons */}
+      {/* Course Category Tiles - 2x2 Grid */}
+      <div className="px-4 pt-4">
         <div className="grid grid-cols-2 gap-3">
+          <Link to="/intensives">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
+            >
+              <div className="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center mb-3">
+                <Zap className="h-5 w-5 text-rose-500" />
+              </div>
+              <h4 className="font-semibold text-sm">Intensive Courses</h4>
+              <p className="text-xs text-muted-foreground mt-1">Pass in 1-2 weeks</p>
+            </motion.div>
+          </Link>
+          
           <Link to="/semi-intensive">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -174,8 +140,8 @@ export function MobileHomepage() {
               transition={{ delay: 0.35 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-11 h-11 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-3">
-                <Calendar className="h-5 w-5 text-emerald-500" />
+              <div className="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center mb-3">
+                <Calendar className="h-5 w-5 text-rose-500" />
               </div>
               <h4 className="font-semibold text-sm">Semi Intensive</h4>
               <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
@@ -189,11 +155,26 @@ export function MobileHomepage() {
               transition={{ delay: 0.4 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-11 h-11 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-3">
-                <Car className="h-5 w-5 text-amber-500" />
+              <div className="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center mb-3">
+                <Car className="h-5 w-5 text-rose-500" />
               </div>
               <h4 className="font-semibold text-sm">Weekly Lessons</h4>
               <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
+            </motion.div>
+          </Link>
+          
+          <Link to="/theory">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45 }}
+              className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
+            >
+              <div className="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center mb-3">
+                <BookOpen className="h-5 w-5 text-rose-500" />
+              </div>
+              <h4 className="font-semibold text-sm">Theory Practice</h4>
+              <p className="text-xs text-muted-foreground mt-1">Free revision</p>
             </motion.div>
           </Link>
         </div>
@@ -235,29 +216,31 @@ export function MobileHomepage() {
         </div>
       </div>
 
-      {/* Promo Banners Carousel */}
-      <div className="pt-6 pb-2">
-        <h3 className="font-bold text-foreground text-sm uppercase tracking-wider mb-3 px-4">Special Offers</h3>
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-3 px-4">
-            {promoBanners.map((banner, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 + i * 0.1 }}
-                className={`flex-shrink-0 w-[280px] h-24 rounded-2xl overflow-hidden bg-gradient-to-r ${banner.gradient} relative`}
-              >
-                <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/10 rounded-full" />
-                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/10 rounded-full" />
-                <div className="relative z-10 p-4 text-white h-full flex flex-col justify-center">
-                  <h4 className="font-bold text-base">{banner.title}</h4>
-                  <p className="text-sm text-white/80">{banner.subtitle}</p>
-                </div>
-              </motion.div>
-            ))}
+      {/* Guest Pass / Promo Banner - Full Width with Image */}
+      <div className="px-4 pt-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="relative rounded-2xl overflow-hidden h-36 shadow-lg"
+        >
+          <img 
+            src={heroLearnerMobile}
+            alt="Refer a friend"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+          <div className="relative z-10 p-5 h-full flex flex-col justify-center">
+            <h4 className="font-bold text-xl text-white italic">Refer a Friend</h4>
+            <p className="text-sm text-white/80 mt-1">Get £50 off when your friend books</p>
+            <Button 
+              size="sm" 
+              className="mt-3 w-fit bg-rose-400 hover:bg-rose-500 text-white rounded-lg px-4 text-xs font-medium"
+            >
+              Get Referral Link
+            </Button>
           </div>
-        </div>
+        </motion.div>
       </div>
       
       {/* Payment Providers Section */}
