@@ -114,10 +114,10 @@ export function MobileHomepage() {
       }} transition={{
         delay: 0.2
       }} className="mx-4 -mt-20 relative z-10">
-          <div className="bg-gradient-to-br from-primary/25 via-primary/15 to-primary/5 dark:from-primary/30 dark:via-primary/15 dark:to-card border border-primary/25 dark:border-primary/40 rounded-2xl p-5 shadow-xl opacity-100">
+          <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 border-2 border-primary-foreground/20 rounded-2xl p-5 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1">
-                <h3 className="font-bold text-lg text-foreground uppercase tracking-wide text-center">​SEARCH, COMPARE & BOOK DIRECT 24/7.</h3>
+                <h3 className="font-bold text-xl text-primary-foreground uppercase tracking-wide text-center drop-shadow-sm">SEARCH, COMPARE & BOOK DIRECT 24/7</h3>
                 
               </div>
               {/* Progress Ring with Days */}
@@ -126,9 +126,9 @@ export function MobileHomepage() {
             {/* Search inside card */}
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="flex-1">
-                <PostcodeAutocomplete value={postcode} onChange={setPostcode} onSelect={pc => navigate(`/courses?postcode=${pc}`)} placeholder="Enter postcode..." inputClassName="h-11 text-sm bg-white dark:bg-background border border-primary/20 dark:border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm" showGeolocation={true} />
+                <PostcodeAutocomplete value={postcode} onChange={setPostcode} onSelect={pc => navigate(`/courses?postcode=${pc}`)} placeholder="Enter postcode..." inputClassName="h-12 text-sm bg-white border-2 border-primary-foreground/30 rounded-xl text-foreground placeholder:text-muted-foreground shadow-lg font-medium" showGeolocation={true} />
               </div>
-              <Button type="submit" className="h-11 px-4 rounded-xl font-medium bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button type="submit" className="h-12 px-5 rounded-xl font-bold bg-white hover:bg-white/90 text-primary shadow-lg">
                 <Search className="h-4 w-4" />
               </Button>
             </form>
