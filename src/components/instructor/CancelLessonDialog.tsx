@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-
 interface CancelLessonDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,6 +25,7 @@ interface CancelLessonDialogProps {
   durationMinutes: number;
   lessonDate: string;
   lessonTime: string;
+  endTime?: string;
   instructorId: string;
   onCancelled: () => void;
 }
@@ -40,11 +41,26 @@ export function CancelLessonDialog({
   durationMinutes,
   lessonDate,
   lessonTime,
+  endTime,
   instructorId,
   onCancelled,
 }: CancelLessonDialogProps) {
   const [chargeOption, setChargeOption] = useState<"no_charge" | "charge">("no_charge");
   const [cancelling, setCancelling] = useState(false);
+  const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
+
+  // Check waitlist count when dialog opens
+  useState(() => {
+    const checkWaitlist = async () => {
+      const { count } = await supabase
+        .from("lesson_waitlist")
+        .select("*", { count: "exact", head: true })
+        .eq("instructor_id", instructorId)
+        .eq("is_active", true);
+      setWaitlistCount(count || 0);
+    };
+    if (open) checkWaitlist();
+  });
 
   const handleCancel = async () => {
     setCancelling(true);
@@ -77,6 +93,29 @@ export function CancelLessonDialog({
           title: "Lesson cancelled",
           description: `No charge applied to ${pupilName}`,
         });
+      }
+
+      // Process waitlist - find matching pupils for this slot
+      try {
+        const { data: waitlistResult } = await supabase.functions.invoke("process-cancellation-waitlist", {
+          body: {
+            instructorId,
+            lessonDate,
+            startTime: lessonTime,
+            endTime: endTime || lessonTime,
+            durationMins: durationMinutes,
+            originalLessonId: lessonId,
+          },
+        });
+
+        if (waitlistResult?.offersCreated > 0) {
+          toast({
+            title: "Waitlist matches found!",
+            description: `${waitlistResult.offersCreated} pupil(s) matched. Review offers in your Gaps section.`,
+          });
+        }
+      } catch (waitlistError) {
+        console.error("Failed to process waitlist:", waitlistError);
       }
 
       // Notify instructor via SMS

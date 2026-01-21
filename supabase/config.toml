@@ -110,3 +110,6 @@ verify_jwt = false
 
 [functions.scheduled-calendar-sync]
 verify_jwt = false
+
+[functions.process-cancellation-waitlist]
+verify_jwt = false

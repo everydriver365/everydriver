@@ -1584,6 +1584,80 @@ export type Database = {
           },
         ]
       }
+      instructor_vehicles: {
+        Row: {
+          created_at: string | null
+          current_odometer_km: number | null
+          id: string
+          image_url: string | null
+          instructor_id: string
+          insurance_expiry: string | null
+          is_active: boolean | null
+          is_primary: boolean | null
+          last_service_date: string | null
+          make: string | null
+          model: string | null
+          mot_expiry: string | null
+          next_service_due_km: number | null
+          notes: string | null
+          registration: string
+          tax_expiry: string | null
+          transmission: string | null
+          updated_at: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_odometer_km?: number | null
+          id?: string
+          image_url?: string | null
+          instructor_id: string
+          insurance_expiry?: string | null
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          last_service_date?: string | null
+          make?: string | null
+          model?: string | null
+          mot_expiry?: string | null
+          next_service_due_km?: number | null
+          notes?: string | null
+          registration: string
+          tax_expiry?: string | null
+          transmission?: string | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_odometer_km?: number | null
+          id?: string
+          image_url?: string | null
+          instructor_id?: string
+          insurance_expiry?: string | null
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          last_service_date?: string | null
+          make?: string | null
+          model?: string | null
+          mot_expiry?: string | null
+          next_service_due_km?: number | null
+          notes?: string | null
+          registration?: string
+          tax_expiry?: string | null
+          transmission?: string | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_vehicles_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_website_pages: {
         Row: {
           content_blocks: Json | null
@@ -2036,6 +2110,7 @@ export type Database = {
           skills_practiced: string[] | null
           start_time: string | null
           updated_at: string
+          vehicle_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2049,6 +2124,7 @@ export type Database = {
           skills_practiced?: string[] | null
           start_time?: string | null
           updated_at?: string
+          vehicle_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2062,6 +2138,7 @@ export type Database = {
           skills_practiced?: string[] | null
           start_time?: string | null
           updated_at?: string
+          vehicle_id?: string | null
         }
         Relationships: [
           {
@@ -2076,6 +2153,13 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_history_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
             referencedColumns: ["id"]
           },
         ]
@@ -2154,6 +2238,63 @@ export type Database = {
           },
         ]
       }
+      lesson_waitlist: {
+        Row: {
+          created_at: string | null
+          id: string
+          instructor_id: string
+          is_active: boolean | null
+          max_duration_mins: number | null
+          min_duration_mins: number | null
+          notes: string | null
+          preferred_days: string[] | null
+          preferred_times: string[] | null
+          pupil_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          instructor_id: string
+          is_active?: boolean | null
+          max_duration_mins?: number | null
+          min_duration_mins?: number | null
+          notes?: string | null
+          preferred_days?: string[] | null
+          preferred_times?: string[] | null
+          pupil_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          instructor_id?: string
+          is_active?: boolean | null
+          max_duration_mins?: number | null
+          min_duration_mins?: number | null
+          notes?: string | null
+          preferred_days?: string[] | null
+          preferred_times?: string[] | null
+          pupil_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_waitlist_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_waitlist_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mileage_log: {
         Row: {
           created_at: string
@@ -2167,6 +2308,7 @@ export type Database = {
           purpose: string | null
           start_odometer_km: number
           vehicle_health_id: string | null
+          vehicle_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2180,6 +2322,7 @@ export type Database = {
           purpose?: string | null
           start_odometer_km: number
           vehicle_health_id?: string | null
+          vehicle_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2193,6 +2336,7 @@ export type Database = {
           purpose?: string | null
           start_odometer_km?: number
           vehicle_health_id?: string | null
+          vehicle_id?: string | null
         }
         Relationships: [
           {
@@ -2200,6 +2344,13 @@ export type Database = {
             columns: ["vehicle_health_id"]
             isOneToOne: false
             referencedRelation: "vehicle_health"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_log_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
             referencedColumns: ["id"]
           },
         ]
@@ -3240,6 +3391,7 @@ export type Database = {
           start_time: string
           status: string
           updated_at: string
+          vehicle_id: string | null
         }
         Insert: {
           amount_due?: number | null
@@ -3262,6 +3414,7 @@ export type Database = {
           start_time: string
           status?: string
           updated_at?: string
+          vehicle_id?: string | null
         }
         Update: {
           amount_due?: number | null
@@ -3284,6 +3437,7 @@ export type Database = {
           start_time?: string
           status?: string
           updated_at?: string
+          vehicle_id?: string | null
         }
         Relationships: [
           {
@@ -3298,6 +3452,13 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lessons_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
             referencedColumns: ["id"]
           },
         ]
@@ -3376,6 +3537,82 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      slot_offers: {
+        Row: {
+          created_at: string | null
+          duration_mins: number
+          end_time: string
+          expires_at: string | null
+          id: string
+          instructor_approved: boolean | null
+          instructor_approved_at: string | null
+          instructor_id: string
+          lesson_date: string
+          original_lesson_id: string | null
+          pupil_id: string
+          pupil_notified_at: string | null
+          pupil_responded_at: string | null
+          pupil_response: string | null
+          start_time: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration_mins: number
+          end_time: string
+          expires_at?: string | null
+          id?: string
+          instructor_approved?: boolean | null
+          instructor_approved_at?: string | null
+          instructor_id: string
+          lesson_date: string
+          original_lesson_id?: string | null
+          pupil_id: string
+          pupil_notified_at?: string | null
+          pupil_responded_at?: string | null
+          pupil_response?: string | null
+          start_time: string
+        }
+        Update: {
+          created_at?: string | null
+          duration_mins?: number
+          end_time?: string
+          expires_at?: string | null
+          id?: string
+          instructor_approved?: boolean | null
+          instructor_approved_at?: string | null
+          instructor_id?: string
+          lesson_date?: string
+          original_lesson_id?: string | null
+          pupil_id?: string
+          pupil_notified_at?: string | null
+          pupil_responded_at?: string | null
+          pupil_response?: string | null
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slot_offers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slot_offers_original_lesson_id_fkey"
+            columns: ["original_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slot_offers_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_plans: {
         Row: {
