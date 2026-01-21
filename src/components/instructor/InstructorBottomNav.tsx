@@ -5,7 +5,7 @@ import {
   Users, 
   Wallet, 
   Navigation,
-  LayoutGrid,
+  Headphones,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -16,6 +16,7 @@ interface NavItem {
   icon: LucideIcon;
   path: string;
   showBadge?: boolean;
+  isLiveChat?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -35,20 +36,15 @@ const navItems: NavItem[] = [
     path: "/instructor/track-lesson"
   },
   { 
-    label: "Pupils", 
-    icon: Users, 
-    path: "/instructor/pupils"
+    label: "Chats", 
+    icon: Headphones, 
+    path: "/instructor/visitor-chats",
+    isLiveChat: true
   },
   { 
     label: "Pay", 
     icon: Wallet, 
     path: "/instructor/pay"
-  },
-  { 
-    label: "Menu", 
-    icon: LayoutGrid, 
-    path: "/instructor/settings",
-    showBadge: true
   },
 ];
 
@@ -68,6 +64,7 @@ export function InstructorBottomNav() {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
+          const isLiveChat = item.isLiveChat;
           
           return (
             <button
@@ -76,6 +73,8 @@ export function InstructorBottomNav() {
               className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                 isActive
                   ? "text-emerald-500"
+                  : isLiveChat
+                  ? "text-cyan-400"
                   : "text-white dark:text-white/70 hover:text-emerald-300 dark:hover:text-white"
               }`}
             >
@@ -96,7 +95,14 @@ export function InstructorBottomNav() {
                     y: isActive ? -2 : 0
                   }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  className={isLiveChat && !isActive ? "relative" : ""}
                 >
+                  {isLiveChat && !isActive && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
+                  )}
+                  {isLiveChat && !isActive && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full" />
+                  )}
                   <item.icon
                     className={`h-5 w-5 transition-all duration-200 ${
                       isActive ? 'drop-shadow-sm' : ''
@@ -111,7 +117,7 @@ export function InstructorBottomNav() {
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                isActive ? "font-semibold" : "font-medium opacity-80"
+                isActive ? "font-semibold" : isLiveChat ? "font-medium text-cyan-400" : "font-medium opacity-80"
               }`}>
                 {item.label}
               </span>
