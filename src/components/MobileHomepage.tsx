@@ -87,11 +87,11 @@ export function MobileHomepage() {
         </Button>
         <img src={logo} alt="EveryDriver" className="h-9" />
         <Button 
-          variant="outline" 
+          variant="secondary" 
           size="sm" 
           onClick={handleGetLocation}
           disabled={isLocating}
-          className="h-8 px-3 rounded-full text-xs gap-1.5 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 disabled:opacity-50"
+          className="h-8 px-3 rounded-full text-xs gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0 disabled:opacity-50"
         >
           <MapPin className={`h-3.5 w-3.5 ${isLocating ? "animate-pulse" : ""}`} />
           <span>{isLocating ? "Finding..." : "Location"}</span>
