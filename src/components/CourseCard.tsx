@@ -68,7 +68,7 @@ export function CourseCard({ course }: CourseCardProps) {
 
           {/* Content Section */}
           <div className="flex h-[calc(100%-11rem)]">
-            <div className="flex flex-col items-center justify-center bg-primary px-3 py-4 text-primary-foreground min-w-[80px]">
+            <div className="flex flex-col items-center justify-center bg-accent px-3 py-4 text-accent-foreground min-w-[80px]">
               <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Next</span>
               <span className="text-[9px] font-medium uppercase tracking-wider opacity-90">Available</span>
               <span className="mt-1 text-2xl font-bold">{course.nextAvailableDay}</span>
