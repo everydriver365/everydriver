@@ -155,17 +155,17 @@ export default function Benefits() {
                 className="bg-card border rounded-xl overflow-hidden"
               >
                 {/* Benefit Image */}
-                <div className="relative h-28 w-full overflow-hidden">
+                <div className="h-28 w-full overflow-hidden">
                   <img 
                     src={benefit.image} 
                     alt={benefit.title} 
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="font-bold text-white text-sm drop-shadow-lg">{benefit.title}</h3>
-                    <p className="text-xs text-white/80 mt-0.5 drop-shadow">{benefit.summary}</p>
-                  </div>
+                </div>
+                {/* Text Content */}
+                <div className="p-3 border-b">
+                  <h3 className="font-bold text-foreground text-sm">{benefit.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{benefit.summary}</p>
                 </div>
                 <AccordionTrigger className="hover:no-underline py-3 px-4">
                   <div className="flex items-center gap-2 text-left w-full">
