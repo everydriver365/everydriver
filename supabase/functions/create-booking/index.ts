@@ -122,7 +122,7 @@ serve(async (req) => {
       );
     }
 
-    // 3. Save purchased upsells
+    // 3. Save purchased upsells and send notifications
     if (booking.upsells && booking.upsells.length > 0) {
       const upsellInserts = booking.upsells.map((u) => ({
         pupil_id: pupil.id,
@@ -138,6 +138,8 @@ serve(async (req) => {
       if (upsellError) {
         console.error("Error saving upsells (non-fatal):", upsellError);
       }
+
+      // Notification emails will be sent after sortedLessons is calculated
     }
 
     // 4. Update pupil with next lesson date
@@ -152,6 +154,45 @@ serve(async (req) => {
         .from("pupils")
         .update({ next_lesson: nextLesson.lesson_date })
         .eq("id", pupil.id);
+    }
+
+    // 5. Send upsell notification emails (after lessons are sorted)
+    if (booking.upsells && booking.upsells.length > 0) {
+      try {
+        const { data: upsellDetails } = await supabase
+          .from("booking_upsells")
+          .select("id, name, price")
+          .in("id", booking.upsells.map(u => u.id));
+
+        const firstLessonDate = sortedLessons?.[0]?.lesson_date;
+
+        // Send notification for each purchased upsell
+        for (const upsell of upsellDetails || []) {
+          await fetch(
+            `${supabaseUrl}/functions/v1/notify-upsell-purchase`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${supabaseServiceKey}`,
+              },
+              body: JSON.stringify({
+                pupilName: booking.pupilName,
+                pupilEmail: booking.pupilEmail,
+                pupilPhone: booking.pupilPhone,
+                upsellName: upsell.name,
+                upsellPrice: upsell.price,
+                instructorId: booking.instructorId,
+                pupilId: pupil.id,
+                firstLessonDate,
+              }),
+            }
+          );
+        }
+        console.log("Upsell notification emails sent");
+      } catch (notifyError) {
+        console.error("Upsell notification error (non-fatal):", notifyError);
+      }
     }
 
     // 4. Notify instructor of new booking via SMS
