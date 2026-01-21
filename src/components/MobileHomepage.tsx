@@ -65,54 +65,53 @@ export function MobileHomepage() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
         </div>
         
-        {/* Overlapping Motivational Card - Club App Style */}
+        {/* Overlapping Motivational Card with Search */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="mx-4 -mt-20 relative z-10"
         >
-          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-card dark:to-card border border-teal-100 dark:border-border/50 rounded-2xl p-5 shadow-xl flex items-center justify-between">
-            <div className="flex-1">
-              <h3 className="font-bold text-lg text-foreground uppercase tracking-wide">There's Still Time</h3>
-              <p className="text-sm text-muted-foreground mt-1">Start learning to drive and get closer to your driving goal.</p>
-            </div>
-            {/* Progress Ring with Days */}
-            <div className="relative w-20 h-20 flex-shrink-0 ml-4">
-              <svg className="w-full h-full -rotate-90">
-                <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" 
-                        strokeWidth="5" className="text-teal-200 dark:text-muted/30" />
-                <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor"
-                        strokeWidth="5" className="text-teal-500 dark:text-primary" 
-                        strokeDasharray="214" strokeDashoffset="200" 
-                        strokeLinecap="round" />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-foreground">0</span>
-                <span className="text-[10px] uppercase text-muted-foreground font-medium tracking-wide">Days Left</span>
+          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-card dark:to-card border border-teal-100 dark:border-border/50 rounded-2xl p-5 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-foreground uppercase tracking-wide">There's Still Time</h3>
+                <p className="text-sm text-muted-foreground mt-1">Find local instructors near you</p>
+              </div>
+              {/* Progress Ring with Days */}
+              <div className="relative w-16 h-16 flex-shrink-0 ml-4">
+                <svg className="w-full h-full -rotate-90">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" 
+                          strokeWidth="4" className="text-teal-200 dark:text-muted/30" />
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor"
+                          strokeWidth="4" className="text-teal-500 dark:text-primary" 
+                          strokeDasharray="176" strokeDashoffset="165" 
+                          strokeLinecap="round" />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-lg font-bold text-foreground">0</span>
+                  <span className="text-[8px] uppercase text-muted-foreground font-medium">Days</span>
+                </div>
               </div>
             </div>
+            {/* Search inside card */}
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <div className="flex-1">
+                <PostcodeAutocomplete
+                  value={postcode}
+                  onChange={setPostcode}
+                  onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
+                  placeholder="Enter your postcode..."
+                  inputClassName="h-11 text-sm bg-white dark:bg-background border border-teal-200 dark:border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm"
+                  showGeolocation={true}
+                />
+              </div>
+              <Button type="submit" className="h-11 px-4 rounded-xl font-medium bg-teal-600 hover:bg-teal-700 text-white">
+                <Search className="h-4 w-4" />
+              </Button>
+            </form>
           </div>
         </motion.div>
-      </div>
-      
-      {/* Inline Postcode Search */}
-      <div className="px-4 pt-4">
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <div className="flex-1">
-            <PostcodeAutocomplete
-              value={postcode}
-              onChange={setPostcode}
-              onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
-              placeholder="Enter your postcode..."
-              inputClassName="h-12 text-sm bg-card border border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm"
-              showGeolocation={true}
-            />
-          </div>
-          <Button type="submit" className="h-12 px-5 rounded-xl font-medium bg-teal-600 hover:bg-teal-700 text-white">
-            <Search className="h-4 w-4" />
-          </Button>
-        </form>
       </div>
       
       {/* Course Category Tiles */}
