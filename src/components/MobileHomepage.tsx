@@ -152,7 +152,7 @@ export function MobileHomepage() {
         }} transition={{
           delay: 0.3
         }} className="bg-card border border-border/50 rounded-2xl shadow-lg flex items-center overflow-hidden">
-            <div className="w-20 h-20 flex-shrink-0 bg-primary/5">
+          <div className="w-24 h-24 flex-shrink-0 bg-primary/5">
               <img src={intensiveCoursesIcon} alt="Intensive Courses" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 p-4">
