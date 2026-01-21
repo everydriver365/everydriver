@@ -155,10 +155,11 @@ export function DynamicCourseCard({
           <div className="flex">
             {/* Date Box - Instructor brand color */}
             <div 
-              className="flex flex-col items-center justify-center px-5 py-4 min-w-[80px] bg-accent text-accent-foreground border-r border-border"
+              className="flex flex-col items-center justify-center px-5 py-4 min-w-[80px]"
+              style={{ backgroundColor: brandColour }}
             >
-              <span className="text-3xl font-bold">{dayNumber}</span>
-              <span className="text-sm font-semibold text-accent-foreground/80 uppercase">{monthName}</span>
+              <span className="text-3xl font-bold text-white">{dayNumber}</span>
+              <span className="text-sm font-semibold text-white/80 uppercase">{monthName}</span>
             </div>
 
             {/* Details - Right column */}
