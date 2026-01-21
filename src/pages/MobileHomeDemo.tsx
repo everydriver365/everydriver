@@ -1169,6 +1169,613 @@ const MobileHomeDemo = () => {
           </div>
         </section>
 
+        {/* Option J: Club App Style */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-rose-500/10 text-rose-600 rounded-full text-sm font-medium mb-2">
+              Option J
+            </span>
+            <h2 className="text-2xl font-bold">Club App Style</h2>
+            <p className="text-muted-foreground mt-2">Progress ring, tile navigation, promotional banners</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar mockup */}
+                <div className="h-11 bg-black/5 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Header */}
+                <div className="px-4 py-3 flex items-center justify-between">
+                  <Button variant="ghost" size="icon" className="h-10 w-10">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                  <img src={everyDriverLogo} alt="EveryDriver" className="h-8" />
+                  <div className="flex items-center gap-1 px-3 py-1.5 bg-muted rounded-full">
+                    <MapPin className="h-3 w-3 text-primary" />
+                    <span className="text-xs font-medium">London</span>
+                  </div>
+                </div>
+                
+                {/* Hero Image with Overlapping Card */}
+                <div className="relative">
+                  <img 
+                    src={heroLearnerMobile} 
+                    alt="Learning to drive" 
+                    className="w-full h-48 object-cover"
+                  />
+                  
+                  {/* Motivational Card - Overlapping */}
+                  <div className="mx-4 -mt-12 relative z-10">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-card border rounded-2xl p-4 shadow-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        {/* Progress Ring */}
+                        <div className="relative w-16 h-16 flex-shrink-0">
+                          <svg className="w-full h-full -rotate-90">
+                            <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" 
+                                    strokeWidth="4" className="text-muted/30" />
+                            <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor"
+                                    strokeWidth="4" className="text-primary" 
+                                    strokeDasharray="176" strokeDashoffset="106" 
+                                    strokeLinecap="round" />
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-lg font-bold">2</span>
+                            <span className="text-[10px] text-muted-foreground leading-none">/5</span>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold">Keep going!</h3>
+                          <p className="text-sm text-muted-foreground">3 more lessons until your test</p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+                
+                {/* Primary Action Tile */}
+                <div className="px-4 pt-4">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-primary text-primary-foreground rounded-2xl p-4 flex items-center gap-4"
+                  >
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                      <Calendar className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold">View Available Courses</h4>
+                      <p className="text-sm text-white/80">Find your perfect package</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5" />
+                  </motion.div>
+                </div>
+                
+                {/* 2x2 Feature Grid */}
+                <div className="px-4 pt-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { icon: BookOpen, title: "Theory Pro", subtitle: "Pass first time", color: "rose" },
+                      { icon: Calendar, title: "Test Booking", subtitle: "We handle it", color: "rose" },
+                      { icon: Clock, title: "Flexible Hours", subtitle: "Your schedule", color: "rose" },
+                      { icon: CreditCard, title: "Easy Payments", subtitle: "Split the cost", color: "rose" },
+                    ].map((item, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 + i * 0.05 }}
+                        className="p-4 bg-card border rounded-2xl"
+                      >
+                        <div className={`w-12 h-12 bg-${item.color}-500/10 rounded-2xl flex items-center justify-center mb-3`}>
+                          <item.icon className={`h-6 w-6 text-${item.color}-500`} />
+                        </div>
+                        <h4 className="font-semibold text-sm">{item.title}</h4>
+                        <p className="text-xs text-muted-foreground">{item.subtitle}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Promo Banners Carousel */}
+                <div className="px-4 pt-6 pb-4">
+                  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+                    {[
+                      { title: "Refer a Friend", subtitle: "Get £50 off", bg: "bg-gradient-to-br from-amber-500 to-orange-600" },
+                      { title: "Free Retest", subtitle: "If you fail", bg: "bg-gradient-to-br from-emerald-500 to-teal-600" },
+                      { title: "Theory Bundle", subtitle: "Save 20%", bg: "bg-gradient-to-br from-violet-500 to-purple-600" },
+                    ].map((promo, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        className={`flex-shrink-0 w-40 h-24 ${promo.bg} rounded-2xl p-4 text-white`}
+                      >
+                        <h4 className="font-bold text-sm">{promo.title}</h4>
+                        <p className="text-xs text-white/80">{promo.subtitle}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Bottom Navigation */}
+                <div className="sticky bottom-0 bg-background border-t px-2 py-2">
+                  <div className="flex justify-around">
+                    {[
+                      { icon: Home, label: "Home", active: true },
+                      { icon: Calendar, label: "Book", active: false },
+                      { icon: BookOpen, label: "Theory", active: false },
+                      { icon: CreditCard, label: "Pay", active: false },
+                      { icon: Gift, label: "Benefits", active: false },
+                    ].map((item, i) => (
+                      <div key={i} className={`flex flex-col items-center gap-1 px-3 py-1 ${item.active ? 'text-primary' : 'text-muted-foreground'}`}>
+                        <item.icon className="h-5 w-5" />
+                        <span className="text-[10px]">{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option K: Lifestyle Focus */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-sky-500/10 text-sky-600 rounded-full text-sm font-medium mb-2">
+              Option K
+            </span>
+            <h2 className="text-2xl font-bold">Lifestyle Focus</h2>
+            <p className="text-muted-foreground mt-2">Hero-heavy design with floating glassmorphic elements</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full rounded-[2.5rem] overflow-hidden overflow-y-auto relative">
+                {/* Hero - 70% height */}
+                <div className="relative h-[520px]">
+                  <img 
+                    src={heroImage} 
+                    alt="Driving" 
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+                  
+                  {/* Status bar mockup */}
+                  <div className="absolute top-0 left-0 right-0 h-11 flex items-center justify-center z-20">
+                    <div className="w-32 h-6 bg-white/20 rounded-full backdrop-blur" />
+                  </div>
+                  
+                  {/* Transparent Header */}
+                  <div className="absolute top-11 left-0 right-0 px-4 py-3 flex items-center justify-between z-20">
+                    <Button variant="ghost" size="icon" className="h-10 w-10 text-white hover:bg-white/20">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                    <img src={everyDriverLogo} alt="EveryDriver" className="h-8 brightness-0 invert" />
+                    <Button variant="ghost" size="icon" className="h-10 w-10 text-white hover:bg-white/20">
+                      <MapPin className="h-5 w-5" />
+                    </Button>
+                  </div>
+                  
+                  {/* Floating Search Bar */}
+                  <div className="absolute bottom-24 left-4 right-4 z-20">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-1"
+                    >
+                      <div className="relative">
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70" />
+                        <Input 
+                          placeholder="Enter your postcode..."
+                          className="pl-12 pr-4 h-12 rounded-xl bg-transparent border-0 text-white placeholder:text-white/50 focus-visible:ring-0"
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
+                  
+                  {/* Hero Text */}
+                  <div className="absolute bottom-36 left-4 right-4 z-10">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <h1 className="text-4xl font-bold text-white leading-tight mb-2">
+                        Your Road<br />
+                        <span className="text-primary">To Freedom</span>
+                      </h1>
+                    </motion.div>
+                  </div>
+                </div>
+                
+                {/* Stats Row */}
+                <div className="px-4 -mt-8 relative z-20">
+                  <div className="flex justify-around bg-card border rounded-2xl p-4 shadow-lg">
+                    {[
+                      { value: "90%", label: "Pass Rate", ring: 90 },
+                      { value: "50K+", label: "Learners", ring: 75 },
+                      { value: "4.9", label: "Rating", ring: 98 },
+                    ].map((stat, i) => (
+                      <div key={i} className="flex flex-col items-center gap-2">
+                        <div className="relative w-12 h-12">
+                          <svg className="w-full h-full -rotate-90">
+                            <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" 
+                                    strokeWidth="3" className="text-muted/30" />
+                            <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor"
+                                    strokeWidth="3" className="text-primary" 
+                                    strokeDasharray={`${stat.ring * 1.26} 126`}
+                                    strokeLinecap="round" />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-xs font-bold">{stat.value}</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">{stat.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Quick Actions */}
+                <div className="px-4 py-6">
+                  <div className="flex justify-around">
+                    {[
+                      { icon: Zap, label: "Intensive", color: "bg-amber-500" },
+                      { icon: Calendar, label: "Weekly", color: "bg-emerald-500" },
+                      { icon: BookOpen, label: "Theory", color: "bg-violet-500" },
+                      { icon: Gift, label: "Deals", color: "bg-rose-500" },
+                    ].map((action, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 + i * 0.05 }}
+                        className="flex flex-col items-center gap-2"
+                      >
+                        <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center shadow-lg`}>
+                          <action.icon className="h-6 w-6 text-white" />
+                        </div>
+                        <span className="text-xs font-medium">{action.label}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Featured Testimonial */}
+                <div className="px-4 pb-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="bg-card border rounded-2xl p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <img src={testimonialSarah} alt="" className="w-12 h-12 rounded-full" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-sm">Sarah M.</span>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          "Passed first time! My instructor was amazing and so patient."
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option L: Dashboard Cards */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-teal-500/10 text-teal-600 rounded-full text-sm font-medium mb-2">
+              Option L
+            </span>
+            <h2 className="text-2xl font-bold">Dashboard Cards</h2>
+            <p className="text-muted-foreground mt-2">App-like dashboard with modular cards and timeline</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-gradient-to-b from-primary/5 to-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar mockup */}
+                <div className="h-11 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Greeting Header */}
+                <div className="px-4 py-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Good morning</p>
+                    <h2 className="text-xl font-bold">Ready to learn?</h2>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-10 w-10 relative">
+                    <div className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
+                    <Users className="h-5 w-5" />
+                  </Button>
+                </div>
+                
+                {/* Featured Search Card */}
+                <div className="px-4">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative bg-gradient-to-br from-primary via-primary to-primary/80 rounded-3xl p-6 text-primary-foreground overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/4" />
+                    
+                    <div className="relative z-10">
+                      <span className="inline-block px-2 py-1 bg-white/20 rounded-full text-xs mb-3">
+                        🚗 Start Your Journey
+                      </span>
+                      <h3 className="text-xl font-bold mb-4">Find Your Perfect Instructor</h3>
+                      
+                      <div className="relative">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          placeholder="Enter postcode..."
+                          className="pl-11 h-12 rounded-xl bg-white text-foreground"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+                
+                {/* Quick Stats Pills */}
+                <div className="px-4 py-4 flex gap-2 overflow-x-auto scrollbar-hide">
+                  {[
+                    { icon: Star, value: "4.9", label: "Rating" },
+                    { icon: Award, value: "90%", label: "Pass Rate" },
+                    { icon: Users, value: "500+", label: "Instructors" },
+                  ].map((stat, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 + i * 0.05 }}
+                      className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-card border rounded-full"
+                    >
+                      <stat.icon className="h-4 w-4 text-primary" />
+                      <span className="font-semibold text-sm">{stat.value}</span>
+                      <span className="text-xs text-muted-foreground">{stat.label}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                {/* Action Grid */}
+                <div className="px-4">
+                  <h3 className="font-semibold mb-3">Quick Actions</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { icon: Calendar, title: "Book Lesson", desc: "Schedule now", color: "bg-blue-500" },
+                      { icon: BookOpen, title: "Theory Prep", desc: "Study online", color: "bg-emerald-500" },
+                      { icon: CreditCard, title: "Payments", desc: "Manage billing", color: "bg-amber-500" },
+                      { icon: GraduationCap, title: "Progress", desc: "Track learning", color: "bg-purple-500" },
+                    ].map((action, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 + i * 0.05 }}
+                        className="p-4 bg-card border rounded-2xl flex items-center gap-3"
+                      >
+                        <div className={`w-10 h-10 ${action.color} rounded-xl flex items-center justify-center`}>
+                          <action.icon className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-sm">{action.title}</h4>
+                          <p className="text-xs text-muted-foreground">{action.desc}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Recent Passes Timeline */}
+                <div className="px-4 py-6">
+                  <h3 className="font-semibold mb-3">Recent Passes 🎉</h3>
+                  <div className="space-y-3">
+                    {[
+                      { name: "Emma", time: "2 hours ago", img: testimonialEmma },
+                      { name: "James", time: "Yesterday", img: testimonialJames },
+                      { name: "Priya", time: "2 days ago", img: testimonialPriya },
+                    ].map((pass, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 + i * 0.1 }}
+                        className="flex items-center gap-3 p-3 bg-card border rounded-xl"
+                      >
+                        <img src={pass.img} alt="" className="w-10 h-10 rounded-full" />
+                        <div className="flex-1">
+                          <span className="font-medium text-sm">{pass.name} passed!</span>
+                          <p className="text-xs text-muted-foreground">{pass.time}</p>
+                        </div>
+                        <CheckCircle className="h-5 w-5 text-emerald-500" />
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Promo Card */}
+                <div className="px-4 pb-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="relative rounded-2xl overflow-hidden"
+                  >
+                    <img src={heroLearnerMobile} alt="" className="w-full h-32 object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent" />
+                    <div className="absolute inset-0 p-4 flex flex-col justify-center text-white">
+                      <h4 className="font-bold">Start Your Journey</h4>
+                      <p className="text-sm text-white/80">Book your first lesson today</p>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Option M: Premium Minimal */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 bg-slate-500/10 text-slate-600 rounded-full text-sm font-medium mb-2">
+              Option M
+            </span>
+            <h2 className="text-2xl font-bold">Premium Minimal</h2>
+            <p className="text-muted-foreground mt-2">High-end, whitespace-focused with bold typography</p>
+          </div>
+          
+          <div className="flex justify-center">
+            <div className="w-[375px] h-[812px] bg-black rounded-[3rem] p-3 shadow-2xl">
+              <div className="w-full h-full bg-background rounded-[2.5rem] overflow-hidden overflow-y-auto">
+                {/* Status bar mockup */}
+                <div className="h-11 flex items-center justify-center">
+                  <div className="w-32 h-6 bg-black rounded-full" />
+                </div>
+                
+                {/* Minimal Header */}
+                <div className="px-6 py-4 flex items-center justify-between">
+                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                    <Car className="h-4 w-4 text-primary-foreground" />
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground">Menu</span>
+                </div>
+                
+                {/* Hero Typography */}
+                <div className="px-6 pt-8 pb-12">
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <h1 className="text-5xl font-bold leading-[1.1] tracking-tight">
+                      Your<br />
+                      Journey<br />
+                      <span className="text-primary">Awaits</span>
+                    </h1>
+                  </motion.div>
+                </div>
+                
+                {/* Full-width Search */}
+                <div className="px-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <div className="relative">
+                      <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Input 
+                        placeholder="Enter your postcode"
+                        className="pl-14 h-14 rounded-full border-2 text-base"
+                      />
+                    </div>
+                  </motion.div>
+                </div>
+                
+                {/* Trust Badges */}
+                <div className="px-6 py-8">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="flex items-center justify-center gap-4"
+                  >
+                    {[
+                      { icon: Shield, label: "DVSA" },
+                      { icon: Star, label: "4.9★" },
+                      { icon: Award, label: "90% Pass" },
+                    ].map((badge, i) => (
+                      <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
+                        <badge.icon className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-xs font-medium">{badge.label}</span>
+                      </div>
+                    ))}
+                  </motion.div>
+                </div>
+                
+                {/* Feature List */}
+                <div className="px-6 space-y-4">
+                  {[
+                    { title: "DVSA Certified Instructors", desc: "All our instructors are fully qualified" },
+                    { title: "Flexible Scheduling", desc: "Book lessons that fit your lifestyle" },
+                    { title: "Money-Back Guarantee", desc: "Free retest if you don't pass" },
+                    { title: "Easy Payment Plans", desc: "Split the cost with Klarna or Clearpay" },
+                  ].map((feature, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + i * 0.1 }}
+                      className="flex items-start gap-3"
+                    >
+                      <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-medium text-sm">{feature.title}</h4>
+                        <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                
+                {/* CTA Button */}
+                <div className="px-6 py-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.7 }}
+                  >
+                    <Button className="w-full h-14 rounded-full text-base font-semibold">
+                      Find Instructors
+                    </Button>
+                  </motion.div>
+                </div>
+                
+                {/* Social Proof */}
+                <div className="px-6 pb-8">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                    className="flex items-center justify-center gap-3"
+                  >
+                    <div className="flex -space-x-3">
+                      {[testimonialSarah, testimonialJames, testimonialEmma, testimonialPriya].map((img, i) => (
+                        <img key={i} src={img} alt="" className="w-10 h-10 rounded-full border-2 border-background" />
+                      ))}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Join <span className="font-semibold text-foreground">50K+</span> learners
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Footer */}
         <div className="text-center py-8 border-t">
           <p className="text-muted-foreground mb-4">Which layout do you prefer?</p>
