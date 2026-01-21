@@ -16,15 +16,22 @@ import {
   CheckCircle2,
   X,
   ArrowLeft,
+  Volume2,
+  VolumeX,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { LiveChatWindow } from "@/components/live-chat/LiveChatWindow";
 import { useLiveChatSessions, LiveChatSession } from "@/hooks/useLiveChat";
+import { useChatNotifications } from "@/hooks/useChatNotifications";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface VisitorChatManagerProps {
   instructorId: string;
@@ -35,8 +42,15 @@ export function VisitorChatManager({ instructorId }: VisitorChatManagerProps) {
   const [selectedSession, setSelectedSession] = useState<LiveChatSession | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("active");
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { sessions, loading, refetch } = useLiveChatSessions("instructor", instructorId);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+
+  const { notify, requestPermission } = useChatNotifications({
+    soundEnabled,
+    browserNotificationsEnabled: notificationsEnabled,
+  });
 
   // Fetch unread counts
   useEffect(() => {
@@ -73,6 +87,7 @@ export function VisitorChatManager({ instructorId }: VisitorChatManagerProps) {
         },
         (payload) => {
           const sessionId = payload.new.session_id as string;
+          const content = payload.new.content as string;
           // Check if this session belongs to this instructor
           const session = sessions.find((s) => s.id === sessionId);
           if (session) {
@@ -80,6 +95,14 @@ export function VisitorChatManager({ instructorId }: VisitorChatManagerProps) {
               ...prev,
               [sessionId]: (prev[sessionId] || 0) + 1,
             }));
+            
+            // Play sound and show browser notification
+            notify(
+              `💬 New message from ${session.visitor_name}`,
+              content.length > 50 ? content.substring(0, 50) + "..." : content,
+              () => setSelectedSession(session)
+            );
+            
             toast.info("New visitor message", {
               description: "A visitor is waiting for your reply",
             });
@@ -94,7 +117,13 @@ export function VisitorChatManager({ instructorId }: VisitorChatManagerProps) {
           table: "live_chat_sessions",
           filter: `instructor_id=eq.${instructorId}`,
         },
-        () => {
+        (payload) => {
+          const newSession = payload.new as LiveChatSession;
+          notify(
+            "🆕 New visitor chat!",
+            `${newSession.visitor_name} wants to chat with you`,
+            () => refetch()
+          );
           toast.info("New visitor chat started!");
           refetch();
         }
@@ -104,7 +133,7 @@ export function VisitorChatManager({ instructorId }: VisitorChatManagerProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessions, instructorId, refetch]);
+  }, [sessions, instructorId, refetch, notify]);
 
   // Filter sessions
   const filteredSessions = sessions.filter((session) => {
@@ -197,6 +226,39 @@ export function VisitorChatManager({ instructorId }: VisitorChatManagerProps) {
 
   return (
     <div className="space-y-4">
+      {/* Notification Controls */}
+      <div className="flex items-center justify-end gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          {soundEnabled ? <Volume2 className="h-4 w-4 text-muted-foreground" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
+          <Label htmlFor="sound-toggle-instructor" className="text-sm text-muted-foreground">Sound</Label>
+          <Switch
+            id="sound-toggle-instructor"
+            checked={soundEnabled}
+            onCheckedChange={setSoundEnabled}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          {notificationsEnabled ? <Bell className="h-4 w-4 text-muted-foreground" /> : <BellOff className="h-4 w-4 text-muted-foreground" />}
+          <Label htmlFor="notifications-toggle-instructor" className="text-sm text-muted-foreground">Notifications</Label>
+          <Switch
+            id="notifications-toggle-instructor"
+            checked={notificationsEnabled}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                requestPermission().then((granted) => {
+                  setNotificationsEnabled(granted);
+                  if (!granted) {
+                    toast.error("Notifications blocked. Enable in browser settings.");
+                  }
+                });
+              } else {
+                setNotificationsEnabled(false);
+              }
+            }}
+          />
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
