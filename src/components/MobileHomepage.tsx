@@ -207,9 +207,6 @@ export function MobileHomepage() {
         <div className="grid grid-cols-2 gap-3">
           {includedFeatures.slice(0, 4).map((feature, i) => {
           const IconComponent = feature.icon;
-          const colors = ["bg-primary/10 text-primary", "bg-primary/10 text-primary", "bg-primary/10 text-primary", "bg-primary/10 text-primary"];
-          const colorClass = colors[i % colors.length];
-          const [bgColor, textColor] = colorClass.split(" ");
           return <motion.div key={feature.id} initial={{
             opacity: 0,
             y: 20
@@ -218,12 +215,25 @@ export function MobileHomepage() {
             y: 0
           }} transition={{
             delay: 0.45 + i * 0.05
-          }} onClick={() => setSelectedFeature(feature)} className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg cursor-pointer active:scale-[0.98] transition-transform">
-                <div className={`w-11 h-11 ${bgColor} rounded-2xl flex items-center justify-center mb-3`}>
-                  <IconComponent className={`h-5 w-5 ${textColor}`} />
+          }} onClick={() => setSelectedFeature(feature)} className="bg-card border border-border/50 rounded-2xl shadow-lg cursor-pointer active:scale-[0.98] transition-transform overflow-hidden">
+                {feature.image_url ? (
+                  <div className="relative h-24 w-full">
+                    <img 
+                      src={feature.image_url} 
+                      alt={feature.title} 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  </div>
+                ) : (
+                  <div className="h-24 w-full bg-primary/10 flex items-center justify-center">
+                    <IconComponent className="h-10 w-10 text-primary" />
+                  </div>
+                )}
+                <div className="p-3">
+                  <h4 className="font-semibold text-sm">{feature.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{feature.description}</p>
                 </div>
-                <h4 className="font-semibold text-sm">{feature.title}</h4>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{feature.description}</p>
               </motion.div>;
         })}
         </div>
