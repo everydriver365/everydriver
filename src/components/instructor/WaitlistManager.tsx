@@ -1,0 +1,374 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
+import { Clock, Calendar, User, Phone, Trash2, Bell, CheckCircle, XCircle } from "lucide-react";
+import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+interface WaitlistEntry {
+  id: string;
+  pupil_id: string;
+  preferred_days: string[];
+  preferred_times: string[];
+  min_duration_mins: number;
+  max_duration_mins: number;
+  is_active: boolean;
+  notes: string | null;
+  created_at: string;
+  pupil: {
+    id: string;
+    name: string;
+    phone: string | null;
+  };
+}
+
+interface PendingSlotOffer {
+  id: string;
+  pupil_id: string;
+  lesson_date: string;
+  start_time: string;
+  end_time: string;
+  duration_mins: number;
+  instructor_approved: boolean;
+  pupil_response: string;
+  expires_at: string | null;
+  created_at: string;
+  pupil: {
+    id: string;
+    name: string;
+    phone: string | null;
+  };
+}
+
+interface WaitlistManagerProps {
+  instructorId: string;
+}
+
+const DAY_LABELS: Record<string, string> = {
+  monday: "Mon",
+  tuesday: "Tue",
+  wednesday: "Wed",
+  thursday: "Thu",
+  friday: "Fri",
+  saturday: "Sat",
+  sunday: "Sun",
+};
+
+const TIME_LABELS: Record<string, string> = {
+  morning: "Morning",
+  afternoon: "Afternoon",
+  evening: "Evening",
+};
+
+export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
+  const [pendingOffers, setPendingOffers] = useState<PendingSlotOffer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (instructorId) {
+      fetchWaitlist();
+      fetchPendingOffers();
+    }
+  }, [instructorId]);
+
+  const fetchWaitlist = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("lesson_waitlist")
+        .select(`
+          *,
+          pupil:pupils(id, name, phone)
+        `)
+        .eq("instructor_id", instructorId)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setWaitlist(data || []);
+    } catch (error) {
+      console.error("Error fetching waitlist:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPendingOffers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("slot_offers")
+        .select(`
+          *,
+          pupil:pupils(id, name, phone)
+        `)
+        .eq("instructor_id", instructorId)
+        .eq("instructor_approved", false)
+        .eq("pupil_response", "pending")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setPendingOffers(data || []);
+    } catch (error) {
+      console.error("Error fetching pending offers:", error);
+    }
+  };
+
+  const handleRemoveFromWaitlist = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("lesson_waitlist")
+        .update({ is_active: false })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setWaitlist((prev) => prev.filter((w) => w.id !== id));
+      toast({ title: "Removed from waitlist" });
+    } catch (error) {
+      console.error("Error removing from waitlist:", error);
+      toast({ title: "Error", description: "Failed to remove from waitlist", variant: "destructive" });
+    } finally {
+      setDeleteId(null);
+    }
+  };
+
+  const handleApproveOffer = async (offer: PendingSlotOffer) => {
+    setApprovingId(offer.id);
+    try {
+      // Update offer as approved
+      const { error: updateError } = await supabase
+        .from("slot_offers")
+        .update({
+          instructor_approved: true,
+          instructor_approved_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hour expiry
+        })
+        .eq("id", offer.id);
+
+      if (updateError) throw updateError;
+
+      // Send notification to pupil via edge function
+      if (offer.pupil?.phone) {
+        await supabase.functions.invoke("send-gap-sms", {
+          body: {
+            instructorId,
+            phones: [offer.pupil.phone],
+            message: `Hi ${offer.pupil.name}! A lesson slot has become available on ${format(new Date(offer.lesson_date), "EEEE, d MMM")} at ${offer.start_time}. Reply YES to book or click the link in your app to confirm. This offer expires in 24 hours.`,
+          },
+        });
+      }
+
+      toast({ title: "Offer approved", description: `${offer.pupil?.name} has been notified` });
+      fetchPendingOffers();
+    } catch (error) {
+      console.error("Error approving offer:", error);
+      toast({ title: "Error", description: "Failed to approve offer", variant: "destructive" });
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleDeclineOffer = async (offerId: string) => {
+    try {
+      const { error } = await supabase
+        .from("slot_offers")
+        .update({ pupil_response: "declined" })
+        .eq("id", offerId);
+
+      if (error) throw error;
+
+      setPendingOffers((prev) => prev.filter((o) => o.id !== offerId));
+      toast({ title: "Offer declined" });
+    } catch (error) {
+      console.error("Error declining offer:", error);
+      toast({ title: "Error", description: "Failed to decline offer", variant: "destructive" });
+    }
+  };
+
+  const formatTime = (time: string) => {
+    const [hours, minutes] = time.split(":");
+    const h = parseInt(hours);
+    const ampm = h >= 12 ? "pm" : "am";
+    const hour12 = h % 12 || 12;
+    return `${hour12}:${minutes}${ampm}`;
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Pending Offers Awaiting Approval */}
+      {pendingOffers.length > 0 && (
+        <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Bell className="h-5 w-5 text-amber-600" />
+              Pending Slot Offers ({pendingOffers.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {pendingOffers.map((offer) => (
+              <div
+                key={offer.id}
+                className="flex items-center justify-between rounded-lg bg-background p-3"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{offer.pupil?.name}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(offer.lesson_date), "EEE, d MMM")}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {formatTime(offer.start_time)} - {formatTime(offer.end_time)}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDeclineOffer(offer.id)}
+                  >
+                    <XCircle className="mr-1 h-4 w-4" />
+                    Decline
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleApproveOffer(offer)}
+                    disabled={approvingId === offer.id}
+                  >
+                    {approvingId === offer.id ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    ) : (
+                      <>
+                        <CheckCircle className="mr-1 h-4 w-4" />
+                        Approve & Notify
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Active Waitlist */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Clock className="h-5 w-5" />
+            Pupil Waitlist ({waitlist.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {waitlist.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-4">
+              No pupils currently on the waitlist
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {waitlist.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-start justify-between rounded-lg border p-3"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{entry.pupil?.name}</span>
+                      {entry.pupil?.phone && (
+                        <a
+                          href={`tel:${entry.pupil.phone}`}
+                          className="flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          <Phone className="h-3 w-3" />
+                          {entry.pupil.phone}
+                        </a>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {entry.preferred_days?.map((day) => (
+                        <Badge key={day} variant="secondary" className="text-xs">
+                          {DAY_LABELS[day] || day}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {entry.preferred_times?.map((time) => (
+                        <Badge key={time} variant="outline" className="text-xs">
+                          {TIME_LABELS[time] || time}
+                        </Badge>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {entry.min_duration_mins}-{entry.max_duration_mins} mins preferred
+                    </p>
+                    {entry.notes && (
+                      <p className="text-xs text-muted-foreground italic">
+                        "{entry.notes}"
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={() => setDeleteId(entry.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove from waitlist?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This pupil will no longer receive notifications about available slots.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteId && handleRemoveFromWaitlist(deleteId)}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
