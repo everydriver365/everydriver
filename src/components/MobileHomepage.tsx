@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift, CalendarSearch, ShieldCheck, Copy, Check, Share2, X, Phone, Info, FileText } from "lucide-react";
+import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift, CalendarSearch, ShieldCheck, Copy, Check, Share2, X, Phone, Info, FileText, LogIn, Users, GraduationCap, UserCog } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
@@ -579,6 +579,45 @@ export function MobileHomepage() {
               );
             })}
           </nav>
+          
+          {/* Login Links Section */}
+          <div className="mt-auto border-t p-4">
+            <p className="text-xs text-muted-foreground mb-2">Portal Login</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                to="/instructor/login"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <UserCog className="h-3.5 w-3.5" />
+                Instructor
+              </Link>
+              <Link
+                to="/admin/login"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                Admin
+              </Link>
+              <Link
+                to="/parent"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <Users className="h-3.5 w-3.5" />
+                Parent
+              </Link>
+              <Link
+                to="/pupil"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <GraduationCap className="h-3.5 w-3.5" />
+                Pupil
+              </Link>
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
     </div>;
