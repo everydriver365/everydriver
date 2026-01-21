@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import heroLearnerMobile from "@/assets/mobile-hero.jpg";
+import heroLearnerMobile from "@/assets/mobile-hero.png";
 import logo from "@/assets/logo-everydriver-transparent.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
