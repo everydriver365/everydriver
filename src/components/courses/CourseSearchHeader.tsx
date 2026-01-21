@@ -43,7 +43,7 @@ export function CourseSearchHeader({
             <PostcodeAutocomplete
               value={postcode}
               onChange={setPostcode}
-              placeholder="Enter your postcode"
+              placeholder="Enter postcode..."
               className="flex-1"
               inputClassName="h-11 border-0 bg-secondary"
             />

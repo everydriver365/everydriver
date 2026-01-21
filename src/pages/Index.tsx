@@ -167,7 +167,7 @@ export default function Index() {
                 <PostcodeAutocomplete
                   value={postcode}
                   onChange={setPostcode}
-                  placeholder="Enter your postcode..."
+                  placeholder="Enter postcode..."
                   className="flex-1"
                   inputClassName="h-14 rounded-xl border-2 border-border bg-white text-base"
                 />
