@@ -878,19 +878,21 @@ export default function Courses() {
               </Button>
             </div>
 
-            {/* More Filters Button */}
-            <div className="mt-4 flex items-center">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className="gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                More Filters
-                <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-              </Button>
-            </div>
+            {/* More Filters Button - Desktop only */}
+            {!isMobile && (
+              <div className="mt-4 flex items-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  More Filters
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
+                </Button>
+              </div>
+            )}
 
             {showFilters && (
               <motion.div
