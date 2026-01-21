@@ -16,6 +16,7 @@ import intensiveCoursesIcon from "@/assets/intensive-courses-icon.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
+import referFriendsImage from "@/assets/refer-friends.png";
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
@@ -292,7 +293,7 @@ export function MobileHomepage() {
           onClick={() => setShowReferralModal(true)}
           className="relative rounded-2xl overflow-hidden h-36 shadow-lg cursor-pointer active:scale-[0.98] transition-transform"
         >
-          <img src={heroLearnerMobile} alt="Refer a friend" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={referFriendsImage} alt="Refer a friend" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
           <div className="relative z-10 p-5 h-full flex flex-col justify-center">
             <h4 className="font-bold text-xl text-white italic">Refer a Friend</h4>
