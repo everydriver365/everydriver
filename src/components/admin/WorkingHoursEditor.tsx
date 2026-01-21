@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Clock, Plus, Trash2, Calendar, Zap, CalendarOff, CalendarCheck, Loader2, Check, Unlink, ExternalLink } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
-import { useCalendarSync } from "@/hooks/useCalendarSync";
+import { Clock, Plus, Trash2, Calendar, Zap, CalendarOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -66,7 +64,6 @@ interface WorkingHoursEditorProps {
 }
 
 export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,39 +75,10 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     start_time: "09:00",
     end_time: "17:00",
   });
-  const [isDisconnecting, setIsDisconnecting] = useState(false);
-
-  // Calendar integration (Nylas)
-  const {
-    isConnecting,
-    isChecking,
-    calendarStatus,
-    checkConnection,
-    getAuthUrl,
-    handleAuthCallback,
-    disconnect,
-  } = useCalendarSync(instructorId);
 
   useEffect(() => {
     fetchData();
-    checkConnection();
-  }, [instructorId, checkConnection]);
-
-  // Handle OAuth callback
-  useEffect(() => {
-    const code = searchParams.get("code");
-    const isCallback = searchParams.get("calendar_callback");
-
-    if (code && isCallback) {
-      handleAuthCallback(code).then(() => {
-        searchParams.delete("code");
-        searchParams.delete("calendar_callback");
-        searchParams.delete("scope");
-        searchParams.delete("state");
-        setSearchParams(searchParams, { replace: true });
-      });
-    }
-  }, [searchParams, handleAuthCallback, setSearchParams]);
+  }, [instructorId]);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -383,19 +351,6 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
     }
   };
 
-  const handleConnectCalendar = async () => {
-    const authUrl = await getAuthUrl();
-    if (authUrl) {
-      window.location.href = authUrl;
-    }
-  };
-
-  const handleDisconnectCalendar = async () => {
-    setIsDisconnecting(true);
-    await disconnect();
-    setIsDisconnecting(false);
-  };
-
   if (isLoading) {
     return <div className="py-4 text-center text-muted-foreground">Loading working hours...</div>;
   }
@@ -483,65 +438,6 @@ export function WorkingHoursEditor({ instructorId }: WorkingHoursEditorProps) {
         <Button onClick={saveWorkingHours} className="mt-4 w-full" size="sm">
           Save Weekly Schedule
         </Button>
-      </div>
-
-      {/* Google Calendar Sync */}
-      <div className="rounded-lg border p-3 bg-muted/30">
-        <h4 className="mb-2 flex items-center gap-2 font-medium text-sm">
-          <CalendarCheck className="h-4 w-4" />
-          Google Calendar Sync
-        </h4>
-        {isChecking ? (
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Checking connection...
-          </div>
-        ) : calendarStatus?.connected ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs">
-                <Check className="h-3 w-3 mr-1" />
-                Connected
-              </Badge>
-              <span className="text-xs text-muted-foreground truncate">
-                {calendarStatus.email || "Calendar"}
-              </span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDisconnectCalendar}
-              disabled={isDisconnecting}
-              className="w-full gap-2 text-xs h-8"
-            >
-              {isDisconnecting ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Unlink className="h-3 w-3" />
-              )}
-              Disconnect
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              Sync to block lesson times automatically.
-            </p>
-            <Button
-              onClick={handleConnectCalendar}
-              disabled={isConnecting}
-              size="sm"
-              className="w-full gap-2 text-xs h-8"
-            >
-              {isConnecting ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <ExternalLink className="h-3 w-3" />
-              )}
-              Connect Google Calendar
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Date Overrides */}
