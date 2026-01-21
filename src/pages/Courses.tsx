@@ -897,7 +897,7 @@ export default function Courses() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-4 grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-3"
+                className={`mt-4 grid gap-4 rounded-xl border bg-card p-4 ${isMobile ? 'grid-cols-1' : 'sm:grid-cols-3'}`}
               >
                 <div>
                   <label className="mb-2 block text-sm font-medium">Transmission</label>
@@ -911,15 +911,17 @@ export default function Courses() {
                     <option value="automatic">Automatic</option>
                   </select>
                 </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium">Price Range</label>
-                  <select className="w-full rounded-lg border bg-background px-3 py-2">
-                    <option>Any price</option>
-                    <option>Under £500</option>
-                    <option>£500-£1000</option>
-                    <option>Over £1000</option>
-                  </select>
-                </div>
+                {!isMobile && (
+                  <div>
+                    <label className="mb-2 block text-sm font-medium">Price Range</label>
+                    <select className="w-full rounded-lg border bg-background px-3 py-2">
+                      <option>Any price</option>
+                      <option>Under £500</option>
+                      <option>£500-£1000</option>
+                      <option>Over £1000</option>
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="mb-2 block text-sm font-medium">Course Type</label>
                   <select className="w-full rounded-lg border bg-background px-3 py-2">
