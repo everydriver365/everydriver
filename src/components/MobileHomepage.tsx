@@ -10,7 +10,7 @@ import logo from "@/assets/logo-everydriver-transparent.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
-import intensiveCoursesIcon from "@/assets/intensive-courses-icon.gif";
+import intensiveCoursesIcon from "@/assets/intensive-courses-icon.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
