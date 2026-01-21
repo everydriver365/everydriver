@@ -86,7 +86,7 @@ export function LiveChatWidget({
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-40"
           >
             <Button
               size="lg"
@@ -119,7 +119,7 @@ export function LiveChatWidget({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)]"
+            className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-40 w-[380px] max-w-[calc(100vw-2rem)]"
             style={brandStyles}
           >
             <Card className="overflow-hidden shadow-2xl border-0">
