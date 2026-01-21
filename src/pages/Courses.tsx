@@ -1115,7 +1115,7 @@ export default function Courses() {
                   </div>
 
                   {/* Transmission Filter + Sort buttons */}
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     {/* Transmission Pills */}
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-muted-foreground hidden sm:inline">Transmission:</span>
@@ -1136,33 +1136,38 @@ export default function Courses() {
                           {option.label}
                         </button>
                       ))}
-                    </div>
-                    
-                    <div className="h-4 w-px bg-border hidden sm:block" />
-                    
-                    {/* Sort buttons */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-muted-foreground hidden sm:inline">Sort:</span>
-                      <Button
-                        variant={sortBy === "price-low" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSortBy("price-low")}
-                        className="gap-1 h-7 text-xs px-2"
-                      >
-                        <PoundSterling className="h-3 w-3" />
-                        Price
-                      </Button>
+                      
+                      {/* Nearest button - inline on mobile */}
                       <Button
                         variant={sortBy === "nearest" ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSortBy("nearest")}
-                        className="gap-1 h-7 text-xs px-2"
+                        className="gap-1 h-7 text-xs px-2 rounded-full"
                         disabled={!userLocation}
                       >
                         <Navigation className="h-3 w-3" />
                         Nearest
                       </Button>
                     </div>
+                    
+                    {/* Price sort - desktop only */}
+                    {!isMobile && (
+                      <>
+                        <div className="h-4 w-px bg-border" />
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-muted-foreground">Sort:</span>
+                          <Button
+                            variant={sortBy === "price-low" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSortBy("price-low")}
+                            className="gap-1 h-7 text-xs px-2"
+                          >
+                            <PoundSterling className="h-3 w-3" />
+                            Price
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
