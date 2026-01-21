@@ -122,3 +122,6 @@ verify_jwt = false
 
 [functions.square-wallet-payment]
 verify_jwt = false
+
+[functions.send-payment-receipt]
+verify_jwt = false
