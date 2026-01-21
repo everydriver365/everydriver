@@ -28,6 +28,38 @@ async function verifyState(data: string, signature: string, secret: string): Pro
   return expectedSig === signature;
 }
 
+// Helper to validate that the caller owns the instructor record
+async function validateInstructorOwnership(
+  supabaseUrl: string,
+  supabaseKey: string,
+  instructorId: string,
+  authUserId: string
+): Promise<boolean> {
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  // Check if user owns this instructor record
+  const { data: instructor } = await supabase
+    .from("instructors")
+    .select("id, auth_user_id")
+    .eq("id", instructorId)
+    .single();
+
+  const instructorData = instructor as { id: string; auth_user_id: string | null } | null;
+  if (instructorData && instructorData.auth_user_id === authUserId) {
+    return true;
+  }
+
+  // Check if user is admin
+  const { data: adminRole } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", authUserId)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  return !!adminRole;
+}
+
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   
@@ -170,12 +202,11 @@ async function handleOAuthCallback(url: URL): Promise<Response> {
 
 async function handleAPIRequest(req: Request): Promise<Response> {
   try {
-    const { action, instructorId, returnTo } = await req.json();
-
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const clientId = Deno.env.get("GOOGLE_CLIENT_ID");
     const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!clientId || !clientSecret) {
       return new Response(
@@ -184,7 +215,43 @@ async function handleAPIRequest(req: Request): Promise<Response> {
       );
     }
 
-    const supabase = createClient(supabaseUrl!, supabaseKey!);
+    // Validate authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify the user's token
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { action, instructorId, returnTo } = await req.json();
+
+    // Create service role client for privileged operations
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Validate instructor ownership for operations that require it
+    if (instructorId) {
+      const isAuthorized = await validateInstructorOwnership(supabaseUrl, supabaseKey, instructorId, user.id);
+      if (!isAuthorized) {
+        return new Response(
+          JSON.stringify({ error: "Not authorized to access this instructor's data" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     // Generate OAuth authorization URL
     if (action === "getAuthUrl") {

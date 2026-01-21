@@ -15,6 +15,49 @@ interface TokenData {
   email?: string;
 }
 
+// Helper to validate that the caller owns the instructor record
+async function validateInstructorOwnership(
+  supabase: SupabaseClient,
+  instructorId: string,
+  authUserId: string
+): Promise<boolean> {
+  // Check if user owns this instructor record
+  const { data: instructor } = await supabase
+    .from("instructors")
+    .select("id, auth_user_id")
+    .eq("id", instructorId)
+    .single();
+
+  if (instructor && instructor.auth_user_id === authUserId) {
+    return true;
+  }
+
+  // Check if user is admin
+  const { data: adminRole } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", authUserId)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  return !!adminRole;
+}
+
+// Check if request is from internal service (database trigger)
+function isInternalRequest(req: Request): boolean {
+  // Requests from database triggers come with service role authorization
+  const authHeader = req.headers.get("Authorization");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  
+  // Check if it's using the anon key format from triggers
+  if (authHeader && authHeader.includes("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9")) {
+    // This is from a database trigger using the anon key - allow it
+    return true;
+  }
+  
+  return false;
+}
+
 // Refresh access token if expired
 async function getValidAccessToken(
   supabase: SupabaseClient,
@@ -265,8 +308,9 @@ Deno.serve(async (req) => {
   try {
     const clientId = Deno.env.get("GOOGLE_CLIENT_ID");
     const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     if (!clientId || !clientSecret) {
       return new Response(
@@ -275,10 +319,51 @@ Deno.serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl!, supabaseKey!);
     const { action, instructorId, lessonId, timeMin, timeMax } = await req.json();
 
     console.log(`Calendar Sync: ${action} for instructor ${instructorId}`);
+
+    // Check if this is an internal request from database trigger
+    const internal = isInternalRequest(req);
+    
+    // For external requests, validate authentication
+    if (!internal) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: "Missing authorization header" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verify the user's token
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+
+      const { data: { user }, error: authError } = await userClient.auth.getUser();
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Validate instructor ownership
+      if (instructorId) {
+        const supabaseService = createClient(supabaseUrl, supabaseKey);
+        const isAuthorized = await validateInstructorOwnership(supabaseService, instructorId, user.id);
+        if (!isAuthorized) {
+          return new Response(
+            JSON.stringify({ error: "Not authorized to access this instructor's data" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+    }
+
+    // Use service role client for all database operations
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Sync a lesson to Google Calendar
     if (action === "syncLesson") {
@@ -500,41 +585,45 @@ Deno.serve(async (req) => {
         .from("instructor_calendar_events")
         .delete()
         .eq("instructor_id", instructorId)
+        .eq("source", "google")
         .gte("start_time", defaultTimeMin)
         .lte("end_time", defaultTimeMax);
 
       // Insert new events
-      if (events.length > 0) {
-        const eventsToInsert = events.map((event) => ({
-          instructor_id: instructorId,
-          external_event_id: event.id,
-          title: event.summary,
-          start_time: event.start,
-          end_time: event.end,
-          is_busy: true,
-          synced_at: new Date().toISOString(),
-        }));
+      const eventsToInsert = events.map((event) => ({
+        instructor_id: instructorId,
+        external_event_id: event.id,
+        title: event.summary,
+        start_time: event.start,
+        end_time: event.end,
+        source: "google",
+        is_busy: true,
+      }));
 
-        await supabase.from("instructor_calendar_events").insert(eventsToInsert);
+      if (eventsToInsert.length > 0) {
+        const { error: insertError } = await supabase
+          .from("instructor_calendar_events")
+          .insert(eventsToInsert);
+
+        if (insertError) {
+          console.error("Error inserting events:", insertError);
+        }
       }
 
       // Update last sync time
       await supabase
         .from("instructor_calendar_tokens")
-        .update({ 
-          last_external_sync: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .update({ last_external_sync: new Date().toISOString() })
         .eq("instructor_id", instructorId)
         .eq("provider", "google");
 
       return new Response(
-        JSON.stringify({ success: true, imported: events.length }),
+        JSON.stringify({ success: true, imported: eventsToInsert.length }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Full bidirectional sync
+    // Full sync - push lessons and import busy times
     if (action === "fullSync") {
       if (!instructorId) {
         return new Response(
@@ -551,9 +640,9 @@ Deno.serve(async (req) => {
         );
       }
 
-      // 1. Sync all unsynced lessons to Google
+      // Sync lessons first
       const today = new Date().toISOString().split("T")[0];
-      const { data: unsyncedLessonsRaw } = await supabase
+      const { data: lessonsRaw } = await supabase
         .from("scheduled_lessons")
         .select(`*, pupils:pupil_id (name)`)
         .eq("instructor_id", instructorId)
@@ -561,10 +650,10 @@ Deno.serve(async (req) => {
         .gte("lesson_date", today)
         .eq("status", "scheduled");
 
-      const unsyncedLessons = (unsyncedLessonsRaw || []) as LessonData[];
-
+      const lessons = (lessonsRaw || []) as LessonData[];
       let lessonsSynced = 0;
-      for (const lesson of unsyncedLessons) {
+
+      for (const lesson of lessons) {
         try {
           const startDateTime = new Date(`${lesson.lesson_date}T${lesson.start_time}`);
           const endDateTime = new Date(startDateTime.getTime() + lesson.duration_minutes * 60000);
@@ -574,7 +663,7 @@ Deno.serve(async (req) => {
             tokenInfo.calendarEmail,
             {
               summary: `Driving Lesson - ${lesson.pupils?.name || "Pupil"}`,
-              description: `Lesson Type: ${lesson.lesson_type}`,
+              description: `Lesson Type: ${lesson.lesson_type}\nNotes: ${lesson.notes || "None"}`,
               start: startDateTime.toISOString(),
               end: endDateTime.toISOString(),
               location: lesson.pickup_location || lesson.pickup_postcode,
@@ -592,55 +681,54 @@ Deno.serve(async (req) => {
         }
       }
 
-      // 2. Import busy times from Google
+      // Import busy times
       const now = new Date();
-      const timeMinDefault = now.toISOString();
-      const timeMaxDefault = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const busyTimeMin = now.toISOString();
+      const busyTimeMax = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
       const events = await fetchGoogleEvents(
         tokenInfo.accessToken,
         tokenInfo.calendarEmail,
-        timeMinDefault,
-        timeMaxDefault
+        busyTimeMin,
+        busyTimeMax
       );
 
-      // Clear and re-import
+      // Clear existing external events
       await supabase
         .from("instructor_calendar_events")
         .delete()
         .eq("instructor_id", instructorId)
-        .gte("start_time", timeMinDefault)
-        .lte("end_time", timeMaxDefault);
+        .eq("source", "google")
+        .gte("start_time", busyTimeMin)
+        .lte("end_time", busyTimeMax);
 
-      if (events.length > 0) {
-        const eventsToInsert = events.map((event) => ({
-          instructor_id: instructorId,
-          external_event_id: event.id,
-          title: event.summary,
-          start_time: event.start,
-          end_time: event.end,
-          is_busy: true,
-          synced_at: new Date().toISOString(),
-        }));
+      // Insert new events
+      const eventsToInsert = events.map((event) => ({
+        instructor_id: instructorId,
+        external_event_id: event.id,
+        title: event.summary,
+        start_time: event.start,
+        end_time: event.end,
+        source: "google",
+        is_busy: true,
+      }));
 
+      if (eventsToInsert.length > 0) {
         await supabase.from("instructor_calendar_events").insert(eventsToInsert);
       }
 
       // Update last sync time
       await supabase
         .from("instructor_calendar_tokens")
-        .update({ 
-          last_external_sync: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .update({ last_external_sync: new Date().toISOString() })
         .eq("instructor_id", instructorId)
         .eq("provider", "google");
 
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          lessonsSynced, 
-          busyTimesImported: events.length 
+        JSON.stringify({
+          success: true,
+          lessonsSynced,
+          busyTimesImported: eventsToInsert.length,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -652,7 +740,7 @@ Deno.serve(async (req) => {
     );
 
   } catch (error: unknown) {
-    console.error("Error:", error);
+    console.error("Calendar sync error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ error: message }),
