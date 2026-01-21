@@ -72,7 +72,7 @@ export function MobileHomepage() {
           transition={{ delay: 0.2 }}
           className="mx-4 -mt-20 relative z-10"
         >
-          <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-card dark:to-card border border-rose-100 dark:border-border/50 rounded-2xl p-5 shadow-xl flex items-center justify-between">
+          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-card dark:to-card border border-teal-100 dark:border-border/50 rounded-2xl p-5 shadow-xl flex items-center justify-between">
             <div className="flex-1">
               <h3 className="font-bold text-lg text-foreground uppercase tracking-wide">There's Still Time</h3>
               <p className="text-sm text-muted-foreground mt-1">Start learning to drive and get closer to your driving goal.</p>
@@ -81,9 +81,9 @@ export function MobileHomepage() {
             <div className="relative w-20 h-20 flex-shrink-0 ml-4">
               <svg className="w-full h-full -rotate-90">
                 <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" 
-                        strokeWidth="5" className="text-rose-200 dark:text-muted/30" />
+                        strokeWidth="5" className="text-teal-200 dark:text-muted/30" />
                 <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor"
-                        strokeWidth="5" className="text-rose-500 dark:text-primary" 
+                        strokeWidth="5" className="text-teal-500 dark:text-primary" 
                         strokeDasharray="214" strokeDashoffset="200" 
                         strokeLinecap="round" />
               </svg>
@@ -109,7 +109,7 @@ export function MobileHomepage() {
               showGeolocation={true}
             />
           </div>
-          <Button type="submit" className="h-12 px-5 rounded-xl font-medium bg-rose-500 hover:bg-rose-600 text-white">
+          <Button type="submit" className="h-12 px-5 rounded-xl font-medium bg-teal-600 hover:bg-teal-700 text-white">
             <Search className="h-4 w-4" />
           </Button>
         </form>
@@ -125,8 +125,8 @@ export function MobileHomepage() {
               transition={{ delay: 0.3 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center mb-3">
-                <Zap className="h-5 w-5 text-rose-500" />
+              <div className="w-11 h-11 bg-teal-500/10 rounded-full flex items-center justify-center mb-3">
+                <Zap className="h-5 w-5 text-teal-600" />
               </div>
               <h4 className="font-semibold text-sm">Intensive Courses</h4>
               <p className="text-xs text-muted-foreground mt-1">Pass in 1-2 weeks</p>
@@ -140,8 +140,8 @@ export function MobileHomepage() {
               transition={{ delay: 0.35 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center mb-3">
-                <Calendar className="h-5 w-5 text-rose-500" />
+              <div className="w-11 h-11 bg-teal-500/10 rounded-full flex items-center justify-center mb-3">
+                <Calendar className="h-5 w-5 text-teal-600" />
               </div>
               <h4 className="font-semibold text-sm">Semi Intensive</h4>
               <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
@@ -155,8 +155,8 @@ export function MobileHomepage() {
               transition={{ delay: 0.4 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center mb-3">
-                <Car className="h-5 w-5 text-rose-500" />
+              <div className="w-11 h-11 bg-teal-500/10 rounded-full flex items-center justify-center mb-3">
+                <Car className="h-5 w-5 text-teal-600" />
               </div>
               <h4 className="font-semibold text-sm">Weekly Lessons</h4>
               <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
@@ -170,8 +170,8 @@ export function MobileHomepage() {
               transition={{ delay: 0.45 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center mb-3">
-                <BookOpen className="h-5 w-5 text-rose-500" />
+              <div className="w-11 h-11 bg-teal-500/10 rounded-full flex items-center justify-center mb-3">
+                <BookOpen className="h-5 w-5 text-teal-600" />
               </div>
               <h4 className="font-semibold text-sm">Theory Practice</h4>
               <p className="text-xs text-muted-foreground mt-1">Free revision</p>
@@ -188,10 +188,10 @@ export function MobileHomepage() {
           {includedFeatures.slice(0, 4).map((feature, i) => {
             const IconComponent = feature.icon;
             const colors = [
-              "bg-rose-500/10 text-rose-500",
-              "bg-blue-500/10 text-blue-500",
-              "bg-violet-500/10 text-violet-500",
-              "bg-teal-500/10 text-teal-500",
+              "bg-teal-500/10 text-teal-600",
+              "bg-cyan-500/10 text-cyan-600",
+              "bg-emerald-500/10 text-emerald-600",
+              "bg-green-500/10 text-green-600",
             ];
             const colorClass = colors[i % colors.length];
             const [bgColor, textColor] = colorClass.split(" ");
@@ -235,7 +235,7 @@ export function MobileHomepage() {
             <p className="text-sm text-white/80 mt-1">Get £50 off when your friend books</p>
             <Button 
               size="sm" 
-              className="mt-3 w-fit bg-rose-400 hover:bg-rose-500 text-white rounded-lg px-4 text-xs font-medium"
+              className="mt-3 w-fit bg-teal-500 hover:bg-teal-600 text-white rounded-lg px-4 text-xs font-medium"
             >
               Get Referral Link
             </Button>
