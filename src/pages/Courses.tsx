@@ -878,41 +878,18 @@ export default function Courses() {
               </Button>
             </div>
 
-            {/* Transmission Filter Pills */}
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <span className="text-sm font-medium text-muted-foreground">Transmission:</span>
-              <div className="flex gap-2">
-                {[
-                  { value: "all", label: "All" },
-                  { value: "manual", label: "Manual" },
-                  { value: "automatic", label: "Automatic" },
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setTransmission(option.value)}
-                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
-                      transmission === option.value
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-              
-              <div className="ml-auto">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="gap-2"
-                >
-                  <Filter className="h-4 w-4" />
-                  More Filters
-                  <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
-                </Button>
-              </div>
+            {/* More Filters Button */}
+            <div className="mt-4 flex items-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                More Filters
+                <ChevronDown className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`} />
+              </Button>
             </div>
 
             {showFilters && (
@@ -1133,28 +1110,55 @@ export default function Courses() {
                     </p>
                   </div>
 
-                  {/* Sort buttons */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">Sort:</span>
-                    <Button
-                      variant={sortBy === "price-low" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSortBy("price-low")}
-                      className="gap-1.5"
-                    >
-                      <PoundSterling className="h-3.5 w-3.5" />
-                      Price
-                    </Button>
-                    <Button
-                      variant={sortBy === "nearest" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSortBy("nearest")}
-                      className="gap-1.5"
-                      disabled={!userLocation}
-                    >
-                      <Navigation className="h-3.5 w-3.5" />
-                      Nearest
-                    </Button>
+                  {/* Transmission Filter + Sort buttons */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Transmission Pills */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground hidden sm:inline">Transmission:</span>
+                      {[
+                        { value: "all", label: "All" },
+                        { value: "manual", label: "Manual" },
+                        { value: "automatic", label: "Auto" },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setTransmission(option.value)}
+                          className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                            transmission === option.value
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <div className="h-4 w-px bg-border hidden sm:block" />
+                    
+                    {/* Sort buttons */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground hidden sm:inline">Sort:</span>
+                      <Button
+                        variant={sortBy === "price-low" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSortBy("price-low")}
+                        className="gap-1 h-7 text-xs px-2"
+                      >
+                        <PoundSterling className="h-3 w-3" />
+                        Price
+                      </Button>
+                      <Button
+                        variant={sortBy === "nearest" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSortBy("nearest")}
+                        className="gap-1 h-7 text-xs px-2"
+                        disabled={!userLocation}
+                      >
+                        <Navigation className="h-3 w-3" />
+                        Nearest
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
