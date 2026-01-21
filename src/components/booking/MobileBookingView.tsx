@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, 
   ShieldCheck, Star, Loader2, Calendar, ChevronDown, Zap, Play, 
-  Backpack, AlertCircle, FileText, Banknote, Sparkles
+  Backpack, AlertCircle, FileText, Banknote, Sparkles, UserCog
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
+import { PreferenceSelector } from "@/components/booking/PreferenceSelector";
+import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
+import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
@@ -46,6 +49,7 @@ interface Instructor {
   adi_code_of_practice: boolean | null;
   instructor_grade: string | null;
   welcome_video_url: string | null;
+  booking_mode?: string | null;
 }
 
 interface CourseTemplate {
@@ -170,9 +174,30 @@ export function MobileBookingView({
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
   const brandColour = instructor.brand_colour || "#1e3a5f";
+  const bookingMode = instructor.booking_mode || 'pupil_choice';
+  
+  // Auto-assign preferences state
+  const [autoPreferences, setAutoPreferences] = useState<{
+    preferredTimes: string[];
+    preferredDays: string[];
+    notes?: string;
+  }>({ preferredTimes: [], preferredDays: [] });
+  
+  // Instructor assigns preferences state
+  const [instructorAssignsPrefs, setInstructorAssignsPrefs] = useState<{
+    preferredTimes: string[];
+    notes: string;
+  }>({ preferredTimes: [], notes: '' });
+  
+  // For auto_assign and instructor_assigns modes, we consider scheduling "complete" differently
+  const isScheduleComplete = bookingMode === 'instructor_assigns' 
+    ? true // No scheduling needed - instructor will do it
+    : bookingMode === 'auto_assign'
+    ? isFullyScheduled // Still need to confirm auto-assigned slots
+    : isFullyScheduled; // pupil_choice - normal behavior
   
   // Determine current step
-  const currentStep = !isPupilDetailsComplete ? 1 : !isFullyScheduled ? 2 : 3;
+  const currentStep = !isPupilDetailsComplete ? 1 : !isScheduleComplete ? 2 : 3;
   
   // Find first available date from slots
   const firstSlotDate = selectedSlots.length > 0 
@@ -502,32 +527,81 @@ export function MobileBookingView({
         </div>
       </div>
 
-      {/* Step 2: Schedule */}
+      {/* Step 2: Schedule - varies by booking mode */}
       <div className="px-4 pb-4">
         <div className="rounded-xl border bg-card p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold flex items-center gap-2">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                isFullyScheduled ? 'bg-emerald-500 text-white' : isPupilDetailsComplete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                isScheduleComplete ? 'bg-emerald-500 text-white' : isPupilDetailsComplete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
               }`}>
-                {isFullyScheduled ? <CheckCircle className="h-3.5 w-3.5" /> : '2'}
+                {isScheduleComplete ? <CheckCircle className="h-3.5 w-3.5" /> : '2'}
               </div>
-              Select Lesson Slots
+              {bookingMode === 'instructor_assigns' ? 'Scheduling Info' : 
+               bookingMode === 'auto_assign' ? 'Your Preferences' : 'Select Lesson Slots'}
             </h2>
-            <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
-              {scheduledHours}/{hours}h
-            </Badge>
+            {bookingMode === 'pupil_choice' && (
+              <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
+                {scheduledHours}/{hours}h
+              </Badge>
+            )}
+            {bookingMode === 'auto_assign' && isFullyScheduled && (
+              <Badge variant="default" className="bg-emerald-500">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Scheduled
+              </Badge>
+            )}
+            {bookingMode === 'instructor_assigns' && (
+              <Badge variant="secondary" className="gap-1">
+                <UserCog className="h-3 w-3" />
+                Instructor
+              </Badge>
+            )}
           </div>
           
-          <LessonScheduler
-            instructorId={instructor.id}
-            totalHours={hours}
-            maxLessonLength={instructor.preferred_lesson_length}
-            bookingAdvanceDays={instructor.booking_advance_days || 28}
-            availableFrom={instructor.available_from}
-            allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
-            onSlotsChange={onSlotsChange}
-          />
+          {/* Pupil Choice: Show calendar picker */}
+          {bookingMode === 'pupil_choice' && (
+            <LessonScheduler
+              instructorId={instructor.id}
+              totalHours={hours}
+              maxLessonLength={instructor.preferred_lesson_length}
+              bookingAdvanceDays={instructor.booking_advance_days || 28}
+              availableFrom={instructor.available_from}
+              allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
+              onSlotsChange={onSlotsChange}
+            />
+          )}
+          
+          {/* Auto Assign: Show preference selector + auto-schedule preview */}
+          {bookingMode === 'auto_assign' && (
+            <div className="space-y-4">
+              <PreferenceSelector
+                onPreferencesChange={(prefs) => setAutoPreferences(prefs)}
+                brandColour={brandColour}
+              />
+              {(autoPreferences.preferredTimes.length > 0 || autoPreferences.preferredDays.length > 0) && (
+                <AutoSchedulePreview
+                  instructorId={instructor.id}
+                  totalHours={hours}
+                  lessonLength={instructor.preferred_lesson_length}
+                  courseType="weekly"
+                  preferredTimes={autoPreferences.preferredTimes}
+                  preferredDays={autoPreferences.preferredDays}
+                  onSlotsConfirmed={onSlotsChange}
+                  brandColour={brandColour}
+                />
+              )}
+            </div>
+          )}
+          
+          {/* Instructor Assigns: Show info message + basic preferences */}
+          {bookingMode === 'instructor_assigns' && (
+            <InstructorAssignsView
+              instructorName={instructor.name}
+              onPreferencesChange={(prefs) => setInstructorAssignsPrefs(prefs)}
+              brandColour={brandColour}
+            />
+          )}
         </div>
       </div>
 
