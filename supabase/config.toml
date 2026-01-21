@@ -113,3 +113,6 @@ verify_jwt = false
 
 [functions.process-cancellation-waitlist]
 verify_jwt = false
+
+[functions.pupil-payment-checkout]
+verify_jwt = false

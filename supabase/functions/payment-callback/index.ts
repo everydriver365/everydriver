@@ -16,6 +16,11 @@ const corsHeaders = {
  * Supported providers:
  * - NPI Payments (Hosted Payment Page POST callback)
  * - Clearpay (token capture after redirect)
+ * - Elavon (Cardstream HPP POST callback)
+ * 
+ * Special handling for pupil balance payments (orderRef starts with "PUPIL-"):
+ * - Updates pupil account_balance directly
+ * - Redirects back to pupil portal instead of booking confirmation
  */
 serve(async (req: Request) => {
   // Handle CORS preflight
@@ -27,10 +32,12 @@ serve(async (req: Request) => {
   const provider = url.searchParams.get("provider") || "npi";
   const pupilId = url.searchParams.get("pupilId");
   const orderRef = url.searchParams.get("ref");
+  const paymentType = url.searchParams.get("type"); // "balance" for pupil payments
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const siteBaseUrl = Deno.env.get("SITE_URL") || "https://everydriver.lovable.app";
 
   try {
     console.log(`Payment callback received for provider: ${provider}, pupilId: ${pupilId}`);
@@ -67,12 +74,11 @@ serve(async (req: Request) => {
 
     console.log("Payment callback data:", JSON.stringify(formData, null, 2));
 
-    // Handle NPI Payments response
-    if (provider === "npi") {
+    // Handle NPI/Elavon Payments response
+    if (provider === "npi" || provider === "elavon") {
       // NPI response codes: 0 = approved, others = declined/error
       const responseCode = formData.responseCode || formData.ResponseCode;
       const responseMessage = formData.responseMessage || formData.ResponseMessage || "";
-      const transactionId = formData.xref || formData.transactionUnique || formData.TransactionID || "";
       const amountReceived = formData.amount || formData.Amount || "";
       const authorisationCode = formData.authorisationCode || formData.AuthorisationCode || "";
       
@@ -80,26 +86,45 @@ serve(async (req: Request) => {
       paymentSuccessful = responseCode === "0" || String(responseCode) === "0";
       errorMessage = responseMessage;
 
-      console.log(`NPI response - code: ${responseCode}, success: ${paymentSuccessful}, ref: ${paymentRef}`);
+      console.log(`${provider.toUpperCase()} response - code: ${responseCode}, success: ${paymentSuccessful}, ref: ${paymentRef}`);
+
+      // Check if this is a pupil balance payment (orderRef starts with "PUPIL-")
+      const isPupilPayment = paymentRef.startsWith("PUPIL-") || paymentType === "balance";
 
       // Record the payment in database
       if (pupilId && paymentSuccessful) {
         try {
-          // Get pupil info to find instructor
           const { data: pupil } = await supabase
             .from("pupils")
-            .select("instructor_id, name")
+            .select("instructor_id, name, account_balance")
             .eq("id", pupilId)
             .single();
 
           if (pupil) {
+            const paymentAmountPounds = amountReceived ? parseFloat(amountReceived) / 100 : 0;
+
+            // Record payment in history
             await supabase.from("payment_history").insert({
               instructor_id: pupil.instructor_id,
               pupil_id: pupilId,
-              amount: amountReceived ? parseFloat(amountReceived) / 100 : 0,
-              payment_method: "npi_card",
-              notes: `NPI Payment - Ref: ${paymentRef}, Auth: ${authorisationCode}`,
+              amount: paymentAmountPounds,
+              payment_method: `${provider}_card`,
+              notes: `${provider.toUpperCase()} Payment - Ref: ${paymentRef}, Auth: ${authorisationCode}`,
             });
+
+            // If pupil balance payment, update their account balance
+            if (isPupilPayment) {
+              const currentBalance = pupil.account_balance || 0;
+              const newBalance = currentBalance + paymentAmountPounds;
+              
+              await supabase
+                .from("pupils")
+                .update({ account_balance: newBalance })
+                .eq("id", pupilId);
+
+              console.log(`Updated pupil balance: ${currentBalance} -> ${newBalance}`);
+            }
+
             console.log("Payment recorded in history");
           }
         } catch (dbError) {
@@ -107,44 +132,71 @@ serve(async (req: Request) => {
         }
       }
 
-      // Build redirect URL to confirmation page
-      const baseUrl = Deno.env.get("SITE_URL") || "https://easy-learn-map.lovable.app";
-      const redirectParams = new URLSearchParams();
-      
-      if (pupilId) redirectParams.set("pupilId", pupilId);
-      if (paymentSuccessful) {
-        redirectParams.set("npi", "success");
-      } else {
-        redirectParams.set("responseCode", responseCode?.toString() || "1");
-        redirectParams.set("responseMessage", errorMessage);
+      // Build redirect URL - different for pupil payments vs booking
+      if (isPupilPayment) {
+        let instructorSlug = "";
+        try {
+          const { data: pupil } = await supabase
+            .from("pupils")
+            .select("instructors(app_slug)")
+            .eq("id", pupilId)
+            .single();
+          instructorSlug = (pupil?.instructors as any)?.app_slug || "";
+        } catch (e) {
+          console.error("Could not get instructor slug:", e);
+        }
+
+        const pupilRedirectUrl = instructorSlug 
+          ? `${siteBaseUrl}/i/${instructorSlug}?payment=${paymentSuccessful ? "success" : "failed"}&amount=${amountReceived ? parseFloat(amountReceived) / 100 : 0}`
+          : `${siteBaseUrl}?payment=${paymentSuccessful ? "success" : "failed"}`;
+
+        console.log("Redirecting pupil to:", pupilRedirectUrl);
+
+        return new Response(
+          `<!DOCTYPE html>
+          <html>
+            <head>
+              <meta http-equiv="refresh" content="0;url=${pupilRedirectUrl}">
+              <title>Payment ${paymentSuccessful ? "Successful" : "Failed"}</title>
+            </head>
+            <body>
+              <p>Payment ${paymentSuccessful ? "successful" : "failed"}! Redirecting...</p>
+              <script>window.location.href = "${pupilRedirectUrl}";</script>
+            </body>
+          </html>`,
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" } }
+        );
       }
-      if (paymentRef) redirectParams.set("ref", paymentRef);
-      if (amountReceived) redirectParams.set("amountReceived", amountReceived);
-      if (authorisationCode) redirectParams.set("authorisationCode", authorisationCode);
 
-      const redirectUrl = `${baseUrl}/booking-confirmation?${redirectParams.toString()}`;
-      console.log("Redirecting to:", redirectUrl);
+      // Standard booking redirect
+      const npiRedirectParams = new URLSearchParams();
+      if (pupilId) npiRedirectParams.set("pupilId", pupilId);
+      if (paymentSuccessful) {
+        npiRedirectParams.set("npi", "success");
+      } else {
+        npiRedirectParams.set("responseCode", responseCode?.toString() || "1");
+        npiRedirectParams.set("responseMessage", errorMessage);
+      }
+      if (paymentRef) npiRedirectParams.set("ref", paymentRef);
+      if (amountReceived) npiRedirectParams.set("amountReceived", amountReceived);
+      if (authorisationCode) npiRedirectParams.set("authorisationCode", authorisationCode);
 
-      // Return HTML redirect (for browser POST)
+      const npiRedirectUrl = `${siteBaseUrl}/booking-confirmation?${npiRedirectParams.toString()}`;
+      console.log("Redirecting to:", npiRedirectUrl);
+
       return new Response(
         `<!DOCTYPE html>
         <html>
           <head>
-            <meta http-equiv="refresh" content="0;url=${redirectUrl}">
+            <meta http-equiv="refresh" content="0;url=${npiRedirectUrl}">
             <title>Redirecting...</title>
           </head>
           <body>
             <p>Payment processed. Redirecting...</p>
-            <script>window.location.href = "${redirectUrl}";</script>
+            <script>window.location.href = "${npiRedirectUrl}";</script>
           </body>
         </html>`,
-        {
-          status: 200,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "text/html; charset=utf-8",
-          },
-        }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" } }
       );
     }
 
@@ -153,44 +205,44 @@ serve(async (req: Request) => {
       const token = formData.token || url.searchParams.get("token") || "";
       const status = formData.status || url.searchParams.get("status") || "";
       
+      // Check if this is a pupil balance payment
+      const isPupilPayment = paymentRef.startsWith("PUPIL-") || paymentType === "balance";
+      let capturedAmount = 0;
+
       if (status === "SUCCESS" && token) {
-        // Capture the payment
         const merchantId = Deno.env.get("CLEARPAY_MERCHANT_ID");
         const secretKey = Deno.env.get("CLEARPAY_SECRET_KEY");
         
         if (merchantId && secretKey) {
           const isSandbox = Deno.env.get("CLEARPAY_SANDBOX") === "true";
-          const baseUrl = isSandbox 
+          const clearpayBaseUrl = isSandbox 
             ? "https://global.api-sandbox.afterpay.com"
             : "https://api.eu.afterpay.com";
 
           const authHeader = btoa(`${merchantId}:${secretKey}`);
 
-          const captureResponse = await fetch(`${baseUrl}/v2/payments/capture`, {
+          const captureResponse = await fetch(`${clearpayBaseUrl}/v2/payments/capture`, {
             method: "POST",
             headers: {
               "Authorization": `Basic ${authHeader}`,
               "Content-Type": "application/json",
               "User-Agent": "EveryDriver/1.0",
             },
-            body: JSON.stringify({
-              token,
-              merchantReference: paymentRef,
-            }),
+            body: JSON.stringify({ token, merchantReference: paymentRef }),
           });
 
           const captureResult = await captureResponse.json();
           
           if (captureResponse.ok) {
             paymentSuccessful = true;
+            capturedAmount = captureResult.amount?.amount ? parseFloat(captureResult.amount.amount) : 0;
             console.log("Clearpay payment captured:", captureResult.id);
             
-            // Record payment
             if (pupilId) {
               try {
                 const { data: pupil } = await supabase
                   .from("pupils")
-                  .select("instructor_id")
+                  .select("instructor_id, account_balance")
                   .eq("id", pupilId)
                   .single();
 
@@ -198,10 +250,22 @@ serve(async (req: Request) => {
                   await supabase.from("payment_history").insert({
                     instructor_id: pupil.instructor_id,
                     pupil_id: pupilId,
-                    amount: captureResult.amount?.amount ? parseFloat(captureResult.amount.amount) : 0,
+                    amount: capturedAmount,
                     payment_method: "clearpay",
                     notes: `Clearpay Payment ${captureResult.id}`,
                   });
+
+                  if (isPupilPayment) {
+                    const currentBalance = pupil.account_balance || 0;
+                    const newBalance = currentBalance + capturedAmount;
+                    
+                    await supabase
+                      .from("pupils")
+                      .update({ account_balance: newBalance })
+                      .eq("id", pupilId);
+
+                    console.log(`Updated pupil balance: ${currentBalance} -> ${newBalance}`);
+                  }
                 }
               } catch (dbError) {
                 console.error("Failed to record Clearpay payment:", dbError);
@@ -214,34 +278,128 @@ serve(async (req: Request) => {
         }
       }
 
-      const baseUrl = Deno.env.get("SITE_URL") || "https://easy-learn-map.lovable.app";
-      const redirectParams = new URLSearchParams();
-      
-      if (pupilId) redirectParams.set("pupilId", pupilId);
-      if (paymentSuccessful) {
-        redirectParams.set("clearpay", "success");
-      } else {
-        redirectParams.set("responseCode", "1");
-        redirectParams.set("responseMessage", errorMessage || "Payment failed");
-      }
-      if (paymentRef) redirectParams.set("ref", paymentRef);
+      // Redirect for pupil payments
+      if (isPupilPayment) {
+        let instructorSlug = "";
+        try {
+          if (pupilId) {
+            const { data: pupil } = await supabase
+              .from("pupils")
+              .select("instructors(app_slug)")
+              .eq("id", pupilId)
+              .single();
+            instructorSlug = (pupil?.instructors as any)?.app_slug || "";
+          }
+        } catch (e) {
+          console.error("Could not get instructor slug:", e);
+        }
 
-      const redirectUrl = `${baseUrl}/booking-confirmation?${redirectParams.toString()}`;
+        const clearpayPupilRedirect = instructorSlug 
+          ? `${siteBaseUrl}/i/${instructorSlug}?payment=${paymentSuccessful ? "success" : "failed"}&amount=${capturedAmount}`
+          : `${siteBaseUrl}?payment=${paymentSuccessful ? "success" : "failed"}`;
+
+        return new Response(
+          `<!DOCTYPE html>
+          <html>
+            <head><meta http-equiv="refresh" content="0;url=${clearpayPupilRedirect}"></head>
+            <body><script>window.location.href = "${clearpayPupilRedirect}";</script></body>
+          </html>`,
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+        );
+      }
+
+      // Standard booking redirect for Clearpay
+      const clearpayRedirectParams = new URLSearchParams();
+      if (pupilId) clearpayRedirectParams.set("pupilId", pupilId);
+      if (paymentSuccessful) {
+        clearpayRedirectParams.set("clearpay", "success");
+      } else {
+        clearpayRedirectParams.set("responseCode", "1");
+        clearpayRedirectParams.set("responseMessage", errorMessage || "Payment failed");
+      }
+      if (paymentRef) clearpayRedirectParams.set("ref", paymentRef);
+
+      const clearpayRedirectUrl = `${siteBaseUrl}/booking-confirmation?${clearpayRedirectParams.toString()}`;
 
       return new Response(
         `<!DOCTYPE html>
         <html>
-          <head>
-            <meta http-equiv="refresh" content="0;url=${redirectUrl}">
-          </head>
-          <body>
-            <script>window.location.href = "${redirectUrl}";</script>
-          </body>
+          <head><meta http-equiv="refresh" content="0;url=${clearpayRedirectUrl}"></head>
+          <body><script>window.location.href = "${clearpayRedirectUrl}";</script></body>
         </html>`,
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "text/html" },
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+      );
+    }
+
+    // Handle Klarna callback
+    if (provider === "klarna") {
+      const klarnaOrderId = url.searchParams.get("order_id") || formData.order_id || "";
+      const isPupilPayment = paymentRef.startsWith("PUPIL-") || paymentType === "balance";
+
+      // For Klarna, the payment is already captured via HPP, we just need to record it
+      if (klarnaOrderId && pupilId) {
+        try {
+          const { data: pupil } = await supabase
+            .from("pupils")
+            .select("instructor_id, account_balance")
+            .eq("id", pupilId)
+            .single();
+
+          if (pupil) {
+            // We don't have amount from callback, use 0 as placeholder
+            // The actual amount should be retrieved from Klarna API if needed
+            await supabase.from("payment_history").insert({
+              instructor_id: pupil.instructor_id,
+              pupil_id: pupilId,
+              amount: 0, // Amount would need to be passed via query param
+              payment_method: "klarna",
+              notes: `Klarna Payment - Order: ${klarnaOrderId}`,
+            });
+
+            paymentSuccessful = true;
+          }
+        } catch (dbError) {
+          console.error("Failed to record Klarna payment:", dbError);
         }
+      }
+
+      if (isPupilPayment) {
+        let instructorSlug = "";
+        try {
+          if (pupilId) {
+            const { data: pupil } = await supabase
+              .from("pupils")
+              .select("instructors(app_slug)")
+              .eq("id", pupilId)
+              .single();
+            instructorSlug = (pupil?.instructors as any)?.app_slug || "";
+          }
+        } catch (e) {
+          console.error("Could not get instructor slug:", e);
+        }
+
+        const klarnaPupilRedirect = instructorSlug 
+          ? `${siteBaseUrl}/i/${instructorSlug}?payment=success`
+          : `${siteBaseUrl}?payment=success`;
+
+        return new Response(
+          `<!DOCTYPE html>
+          <html>
+            <head><meta http-equiv="refresh" content="0;url=${klarnaPupilRedirect}"></head>
+            <body><script>window.location.href = "${klarnaPupilRedirect}";</script></body>
+          </html>`,
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" } }
+        );
+      }
+
+      const klarnaRedirectUrl = `${siteBaseUrl}/booking-confirmation?klarna=success&order_id=${klarnaOrderId}`;
+      return new Response(
+        `<!DOCTYPE html>
+        <html>
+          <head><meta http-equiv="refresh" content="0;url=${klarnaRedirectUrl}"></head>
+          <body><script>window.location.href = "${klarnaRedirectUrl}";</script></body>
+        </html>`,
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" } }
       );
     }
 
@@ -254,8 +412,6 @@ serve(async (req: Request) => {
   } catch (error) {
     console.error("Payment callback error:", error);
     
-    // On error, still redirect to confirmation with error
-    const baseUrl = Deno.env.get("SITE_URL") || "https://easy-learn-map.lovable.app";
     const errorParams = new URLSearchParams();
     if (pupilId) errorParams.set("pupilId", pupilId);
     errorParams.set("responseCode", "500");
@@ -264,17 +420,10 @@ serve(async (req: Request) => {
     return new Response(
       `<!DOCTYPE html>
       <html>
-        <head>
-          <meta http-equiv="refresh" content="0;url=${baseUrl}/booking-confirmation?${errorParams.toString()}">
-        </head>
-        <body>
-          <p>Error processing payment. Redirecting...</p>
-        </body>
+        <head><meta http-equiv="refresh" content="0;url=${siteBaseUrl}/booking-confirmation?${errorParams.toString()}"></head>
+        <body><p>Error processing payment. Redirecting...</p></body>
       </html>`,
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "text/html" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" } }
     );
   }
 });
