@@ -117,20 +117,11 @@ export function MobileHomepage() {
           <div className="bg-gradient-to-br from-primary/25 via-primary/15 to-primary/5 dark:from-primary/30 dark:via-primary/15 dark:to-card border border-primary/25 dark:border-primary/40 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1">
-                <h3 className="font-bold text-lg text-foreground uppercase tracking-wide">​Search, Compare & Book Direct. </h3>
+                <h3 className="font-bold text-lg text-foreground uppercase tracking-wide text-center">​SEARCH, COMPARE & BOOK DIRECT 24/7.</h3>
                 <p className="text-sm text-muted-foreground mt-1">Find local instructors near you</p>
               </div>
               {/* Progress Ring with Days */}
-              <div className="relative w-16 h-16 flex-shrink-0 ml-4">
-                <svg className="w-full h-full -rotate-90">
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" strokeWidth="4" className="text-primary/20 dark:text-muted/30" />
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" strokeWidth="4" className="text-primary" strokeDasharray="176" strokeDashoffset="165" strokeLinecap="round" />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-lg font-bold text-foreground">0</span>
-                  <span className="text-[8px] uppercase text-muted-foreground font-medium">Days</span>
-                </div>
-              </div>
+              
             </div>
             {/* Search inside card */}
             <form onSubmit={handleSearch} className="flex gap-2">
