@@ -320,6 +320,37 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Guaranteed Earlier Test Promotion Banner */}
+      <section className="bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-emerald-500/10 border-y border-emerald-200 dark:border-emerald-800">
+        <div className="container py-4">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            viewport={{ once: true }}
+            className="flex flex-col sm:flex-row items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shrink-0">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">Guaranteed Earlier Test Date</h3>
+                <p className="text-sm text-muted-foreground">We'll find you an earlier slot or your money back!</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 border-0">
+                Only £49.99
+              </Badge>
+              <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                <a href="/courses">Book Now</a>
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Choose Your Learning Path Section */}
       <section className="bg-secondary/30 py-16">
         <div className="container">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift } from "lucide-react";
+import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift, CalendarSearch, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
@@ -265,6 +265,32 @@ export function MobileHomepage() {
             <Button size="sm" className="mt-3 w-fit bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 text-xs font-medium">
               Get Referral Link
             </Button>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Guaranteed Earlier Test Promotion */}
+      <div className="px-4 pt-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.75 }}
+          className="relative rounded-2xl overflow-hidden shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600"
+        >
+          <div className="p-4 flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+              <CalendarSearch className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-white text-sm">Guaranteed Earlier Test</h4>
+              <p className="text-xs text-white/80 mt-0.5">We'll find you an earlier slot or your money back!</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">Only £49.99</span>
+                <span className="text-white/70 text-xs flex items-center gap-1">
+                  <ShieldCheck className="h-3 w-3" /> Refund guarantee
+                </span>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>

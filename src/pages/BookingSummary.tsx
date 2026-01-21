@@ -1070,6 +1070,10 @@ export default function BookingSummary() {
         depositAmount={depositAmount}
         paymentOption={paymentOption}
         setPaymentOption={setPaymentOption}
+        availableUpsells={availableUpsells}
+        selectedUpsells={selectedUpsells}
+        onUpsellsChange={setSelectedUpsells}
+        upsellTotal={upsellTotal}
         canSubmit={canSubmit}
         isPupilDetailsComplete={isPupilDetailsComplete}
         isFullyScheduled={isFullyScheduled}
@@ -1594,6 +1598,22 @@ export default function BookingSummary() {
           />
         </motion.div>
 
+        {/* Boost Your Booking - Upsells */}
+        {availableUpsells.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28 }}
+            className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
+          >
+            <UpsellSelector
+              upsells={availableUpsells}
+              selectedUpsells={selectedUpsells}
+              onSelectionChange={setSelectedUpsells}
+            />
+          </motion.div>
+        )}
+
         {/* Step 3: Payment Options */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1607,8 +1627,10 @@ export default function BookingSummary() {
               Payment
             </h2>
             <div className="text-right">
-              <div className="text-2xl font-bold">£{totalPrice}</div>
-              <div className="text-xs text-muted-foreground">Total for {hours} hours</div>
+              <div className="text-2xl font-bold">£{totalPrice + upsellTotal}</div>
+              <div className="text-xs text-muted-foreground">
+                {upsellTotal > 0 ? `Course £${totalPrice} + extras £${upsellTotal.toFixed(2)}` : `Total for ${hours} hours`}
+              </div>
             </div>
           </div>
 
