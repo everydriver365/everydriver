@@ -100,9 +100,13 @@ export default function Benefits() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="pb-4 px-4 pt-0">
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {feature.detailed_content || feature.description}
-                      </p>
+                      <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
+                        {(feature.detailed_content || feature.description)
+                          .split('\n\n')
+                          .map((paragraph, i) => (
+                            <p key={i}>{paragraph}</p>
+                          ))}
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 </motion.div>
