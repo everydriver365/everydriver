@@ -15,10 +15,12 @@ import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { NPIHostedFields } from "@/components/booking/NPIHostedFields";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
+import { MobileBookingView } from "@/components/booking/MobileBookingView";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
 
 interface Instructor {
@@ -105,6 +107,7 @@ export default function BookingSummary() {
   const { instructorId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [courseDetails, setCourseDetails] = useState<CourseDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
@@ -287,7 +290,7 @@ export default function BookingSummary() {
 
   const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
   const isFullyScheduled = scheduledHours >= hours;
-  const isPupilDetailsComplete = pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim();
+  const isPupilDetailsComplete = !!(pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim());
   const canSubmit = isFullyScheduled && isPupilDetailsComplete && !isSubmitting;
 
   const ensureBookingCreated = async (
@@ -1000,6 +1003,74 @@ export default function BookingSummary() {
 
   const { instructor, courseName, totalPrice, courseImageUrl, courseDescription, features, template } = courseDetails;
   const brandColour = instructor.brand_colour || "#1e3a5f";
+
+  // Klarna handlers for mobile view
+  const handleKlarnaSuccess = async (authToken: string, orderId: string) => {
+    console.log("Klarna Express authorization success:", authToken, orderId);
+    toast.success("Payment authorized with Klarna!");
+    const pupilId = await ensureBookingCreated();
+    if (pupilId) {
+      navigate(`/booking-confirmation?pupilId=${pupilId}&klarna=success&orderId=${orderId}`);
+    }
+  };
+
+  const handleKlarnaError = (error: string) => {
+    console.error("Klarna Express error:", error);
+    toast.error(error || "Klarna payment failed");
+  };
+
+  const handleKlarnaCancel = () => {
+    console.log("Klarna Express cancelled");
+    toast.info("Klarna payment cancelled");
+  };
+
+  // Mobile View
+  if (isMobile) {
+    return (
+      <MobileBookingView
+        instructor={instructor}
+        courseName={courseName}
+        totalPrice={totalPrice}
+        hours={hours}
+        courseImageUrl={courseImageUrl}
+        courseDescription={courseDescription}
+        features={features}
+        template={template}
+        locationName={locationName}
+        pupilName={pupilName}
+        pupilEmail={pupilEmail}
+        pupilPhone={pupilPhone}
+        pupilAddress={pupilAddress}
+        pupilPostcode={pupilPostcode}
+        setPupilName={setPupilName}
+        setPupilEmail={setPupilEmail}
+        setPupilPhone={setPupilPhone}
+        setPupilAddress={setPupilAddress}
+        setPupilPostcode={setPupilPostcode}
+        selectedSlots={selectedSlots}
+        scheduledHours={scheduledHours}
+        onSlotsChange={handleSlotsChange}
+        depositEnabled={depositEnabled}
+        depositAmount={depositAmount}
+        paymentOption={paymentOption}
+        setPaymentOption={setPaymentOption}
+        canSubmit={canSubmit}
+        isPupilDetailsComplete={isPupilDetailsComplete}
+        isFullyScheduled={isFullyScheduled}
+        isSubmitting={isSubmitting}
+        isNPILoading={isNPILoading}
+        isClearpayLoading={isClearpayLoading}
+        klarnaMerchantReference={klarnaMerchantReference}
+        gatewayHealth={gatewayHealth}
+        onBookingSubmit={handleBookingSubmit}
+        onNPICheckout={handleNPICheckout}
+        onClearpayCheckout={handleClearpayCheckout}
+        onKlarnaSuccess={handleKlarnaSuccess}
+        onKlarnaError={handleKlarnaError}
+        onKlarnaCancel={handleKlarnaCancel}
+      />
+    );
+  }
 
   return (
     <MainLayout>
