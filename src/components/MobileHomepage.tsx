@@ -99,7 +99,7 @@ export function MobileHomepage() {
       
       {/* Hero Image with Overlapping Card */}
       <div className="relative">
-        <div className="relative h-[300px] overflow-hidden">
+        <div className="relative h-[380px] overflow-hidden">
           <img src={heroLearnerMobile} alt="Learn to drive" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
         </div>
@@ -113,11 +113,11 @@ export function MobileHomepage() {
         y: 0
       }} transition={{
         delay: 0.2
-      }} className="mx-4 -mt-20 relative z-10">
-          <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 border-2 border-primary-foreground/20 rounded-2xl p-5 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
+      }} className="mx-4 -mt-16 relative z-10">
+          <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 border border-primary-foreground/20 rounded-xl p-3 shadow-xl">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex-1">
-                <h3 className="font-bold text-xl text-primary-foreground uppercase tracking-wide text-center drop-shadow-sm">SEARCH, COMPARE & BOOK DIRECT 24/7</h3>
+                <h3 className="font-semibold text-sm text-primary-foreground uppercase tracking-wide text-center">Search, Compare & Book Direct 24/7</h3>
                 
               </div>
               {/* Progress Ring with Days */}
@@ -126,9 +126,9 @@ export function MobileHomepage() {
             {/* Search inside card */}
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="flex-1">
-                <PostcodeAutocomplete value={postcode} onChange={setPostcode} onSelect={pc => navigate(`/courses?postcode=${pc}`)} placeholder="Enter postcode..." inputClassName="h-12 text-sm bg-white border-2 border-primary-foreground/30 rounded-xl text-foreground placeholder:text-muted-foreground shadow-lg font-medium" showGeolocation={true} />
+                <PostcodeAutocomplete value={postcode} onChange={setPostcode} onSelect={pc => navigate(`/courses?postcode=${pc}`)} placeholder="Enter postcode..." inputClassName="h-10 text-sm bg-white border border-primary-foreground/30 rounded-lg text-foreground placeholder:text-muted-foreground shadow-sm" showGeolocation={true} />
               </div>
-              <Button type="submit" className="h-12 px-5 rounded-xl font-bold bg-white hover:bg-white/90 text-primary shadow-lg">
+              <Button type="submit" className="h-10 px-4 rounded-lg font-medium bg-white hover:bg-white/90 text-primary shadow-sm">
                 <Search className="h-4 w-4" />
               </Button>
             </form>
