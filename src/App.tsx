@@ -29,6 +29,7 @@ import InstructorAccounts from "./pages/InstructorAccounts";
 import InstructorDomainsManagement from "./pages/InstructorDomainsManagement";
 import InstructorMessages from "./pages/InstructorMessages";
 import InstructorVisitorChats from "./pages/InstructorVisitorChats";
+import InstructorAdminChat from "./pages/InstructorAdminChat";
 import InstructorFAQs from "./pages/InstructorFAQs";
 import ParentPortal from "./pages/ParentPortal";
 import AdminPortal from "./pages/AdminPortal";
@@ -147,6 +148,7 @@ const App = () => (
               <Route path="/instructor/domains" element={<InstructorDomainsManagement />} />
               <Route path="/instructor/messages" element={<InstructorMessages />} />
               <Route path="/instructor/visitor-chats" element={<InstructorVisitorChats />} />
+              <Route path="/instructor/admin-chat" element={<InstructorAdminChat />} />
               <Route path="/instructor/faqs" element={<InstructorFAQs />} />
               <Route path="/instructor/install" element={<InstallInstructor />} />
 

@@ -14,6 +14,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          last_message_at: string | null
+          last_message_preview: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_conversations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+          sender_type: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          sender_type: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "admin_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_upsells: {
         Row: {
           badge_text: string | null

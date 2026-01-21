@@ -19,7 +19,8 @@ import {
   Wallet,
   Globe,
   MessageCircle,
-  Headphones
+  Headphones,
+  ShieldCheck
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ import logoDrive365 from "@/assets/logo-drive365-dark.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
+import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
@@ -46,7 +48,8 @@ const sidebarLinks = [
   { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
   { href: "/instructor/gaps", label: "Fill Gaps", icon: MapPin },
   { href: "/instructor/messages", label: "Messages", icon: MessageCircle },
-  { href: "/instructor/visitor-chats", label: "Visitor Chats", icon: Headphones, highlight: true },
+  { href: "/instructor/admin-chat", label: "Contact Admin", icon: ShieldCheck, highlight: true },
+  { href: "/instructor/visitor-chats", label: "Visitor Chats", icon: Headphones },
   { href: "/instructor/domains", label: "Domains", icon: Globe },
   { href: "/instructor/track-lesson", label: "Track Lesson", icon: Navigation },
   { href: "/instructor/settings", label: "Settings", icon: Settings },
@@ -222,6 +225,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {sidebarLinks.map((link) => {
               const isActive = location.pathname === link.href;
               const isMessages = link.href === "/instructor/messages";
+              const isAdminChat = link.href === "/instructor/admin-chat";
+              const isVisitorChats = link.href === "/instructor/visitor-chats";
               const isHighlighted = 'highlight' in link && link.highlight;
               return (
                 <Link
@@ -236,12 +241,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
-                  <link.icon className={cn(
-                    "h-5 w-5",
-                    isHighlighted && !isActive && "text-emerald-500"
-                  )} />
+                  <span className="relative">
+                    <link.icon className={cn(
+                      "h-5 w-5",
+                      isHighlighted && !isActive && "text-emerald-500"
+                    )} />
+                    {isAdminChat && !isActive && <AdminMessageBadge />}
+                  </span>
                   {link.label}
-                  {isHighlighted && !isActive && (
+                  {isVisitorChats && !isActive && (
                     <VisitorChatBadge 
                       instructorId={instructor?.id} 
                       className="ml-auto"
