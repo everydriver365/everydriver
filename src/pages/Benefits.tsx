@@ -25,11 +25,18 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import logo from "@/assets/logo-everydriver-transparent.png";
+import featurePayments from "@/assets/feature-payments.jpg";
+import featureRetest from "@/assets/feature-retest.jpg";
+import featureTheory from "@/assets/feature-theory.jpg";
+import featureAvailability from "@/assets/feature-availability.jpg";
+import featureCancellation from "@/assets/feature-cancellation.jpg";
+import featureTheoryPro from "@/assets/feature-theory-pro.jpg";
 
 const benefits = [
   {
     id: "money-back",
     icon: Shield,
+    image: featureCancellation,
     title: "Money Back Guarantee",
     summary: "Pass first time or get your money back",
     details: "We're so confident in our instructors that if you don't pass your driving test first time, we'll refund your course fee. Terms and conditions apply, but we believe in putting our money where our mouth is."
@@ -37,6 +44,7 @@ const benefits = [
   {
     id: "free-retest",
     icon: RefreshCw,
+    image: featureRetest,
     title: "Free Retest Training",
     summary: "Didn't pass? We've got you covered",
     details: "If you don't pass your test, we provide free additional training hours to help you prepare for your retest. We're committed to getting you on the road, no matter how many attempts it takes."
@@ -44,6 +52,7 @@ const benefits = [
   {
     id: "flexible-payments",
     icon: CreditCard,
+    image: featurePayments,
     title: "Flexible Payment Options",
     summary: "Pay your way with Klarna, Clearpay & more",
     details: "Spread the cost of your driving lessons with our flexible payment options. Pay in 3 instalments with Klarna or Clearpay, or apply for finance through Ideal4Finance. No stress, just driving."
@@ -51,6 +60,7 @@ const benefits = [
   {
     id: "local-instructors",
     icon: Users,
+    image: featureAvailability,
     title: "Local Qualified Instructors",
     summary: "Expert ADIs in your area",
     details: "All our instructors are fully qualified, DSA-approved driving instructors with years of experience. We match you with instructors in your local area who know the test routes and can pick you up from home."
@@ -58,6 +68,7 @@ const benefits = [
   {
     id: "theory-support",
     icon: BookOpen,
+    image: featureTheory,
     title: "Free Theory Test Support",
     summary: "Practice materials included",
     details: "Get access to our comprehensive theory test practice platform at no extra cost. Includes all the latest DVSA questions, hazard perception clips, and progress tracking to ensure you're test-ready."
@@ -65,6 +76,7 @@ const benefits = [
   {
     id: "flexible-scheduling",
     icon: Clock,
+    image: featureAvailability,
     title: "Flexible Scheduling",
     summary: "Lessons that fit your life",
     details: "Book lessons that work around your schedule. Whether you prefer early mornings, evenings, or weekends, our instructors offer flexible availability. Easily reschedule through our app if plans change."
@@ -72,6 +84,7 @@ const benefits = [
   {
     id: "modern-vehicles",
     icon: Car,
+    image: featureRetest,
     title: "Modern, Dual-Control Vehicles",
     summary: "Learn in safe, reliable cars",
     details: "All our instructors use modern, well-maintained vehicles with dual controls for your safety. Learn in a comfortable environment with the latest safety features and easy-to-use controls."
@@ -79,6 +92,7 @@ const benefits = [
   {
     id: "pass-rates",
     icon: Award,
+    image: featureTheoryPro,
     title: "Above Average Pass Rates",
     summary: "Our students pass more often",
     details: "Our instructors consistently achieve pass rates above the national average. With structured lesson plans and experienced teaching methods, you'll be well-prepared for your test day."
@@ -86,6 +100,7 @@ const benefits = [
   {
     id: "rewards",
     icon: Gift,
+    image: featurePayments,
     title: "Loyalty Rewards Program",
     summary: "Earn rewards as you learn",
     details: "Earn points for every lesson completed, referrals made, and milestones achieved. Redeem your points for discounts on future lessons, merchandise, or even free lessons. The more you learn, the more you earn!"
@@ -137,21 +152,31 @@ export default function Benefits() {
             >
               <AccordionItem 
                 value={benefit.id} 
-                className="bg-card border rounded-lg px-4 overflow-hidden"
+                className="bg-card border rounded-xl overflow-hidden"
               >
-                <AccordionTrigger className="hover:no-underline py-4">
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <benefit.icon className="h-5 w-5 text-primary" />
+                {/* Benefit Image */}
+                <div className="relative h-28 w-full overflow-hidden">
+                  <img 
+                    src={benefit.image} 
+                    alt={benefit.title} 
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <h3 className="font-bold text-white text-sm drop-shadow-lg">{benefit.title}</h3>
+                    <p className="text-xs text-white/80 mt-0.5 drop-shadow">{benefit.summary}</p>
+                  </div>
+                </div>
+                <AccordionTrigger className="hover:no-underline py-3 px-4">
+                  <div className="flex items-center gap-2 text-left w-full">
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="h-4 w-4 text-primary" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-sm">{benefit.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">{benefit.summary}</p>
-                    </div>
+                    <span className="text-xs text-muted-foreground">Tap to learn more</span>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="pb-4 pt-0">
-                  <p className="text-sm text-muted-foreground leading-relaxed pl-13">
+                <AccordionContent className="pb-4 px-4 pt-0">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {benefit.details}
                   </p>
                 </AccordionContent>
