@@ -123,6 +123,28 @@ serve(async (req: Request) => {
                 .eq("id", pupilId);
 
               console.log(`Updated pupil balance: ${currentBalance} -> ${newBalance}`);
+
+              // Send payment receipt email
+              try {
+                const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+                await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${supabaseAnonKey}`,
+                  },
+                  body: JSON.stringify({
+                    pupilId,
+                    instructorId: pupil.instructor_id,
+                    amount: paymentAmountPounds,
+                    paymentMethod: `${provider.toUpperCase()} Card`,
+                    transactionReference: paymentRef,
+                  }),
+                });
+                console.log("Payment receipt email triggered");
+              } catch (emailError) {
+                console.error("Failed to send receipt email:", emailError);
+              }
             }
 
             console.log("Payment recorded in history");
@@ -265,6 +287,28 @@ serve(async (req: Request) => {
                       .eq("id", pupilId);
 
                     console.log(`Updated pupil balance: ${currentBalance} -> ${newBalance}`);
+
+                    // Send payment receipt email
+                    try {
+                      const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+                      await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          "Authorization": `Bearer ${supabaseAnonKey}`,
+                        },
+                        body: JSON.stringify({
+                          pupilId,
+                          instructorId: pupil.instructor_id,
+                          amount: capturedAmount,
+                          paymentMethod: "Clearpay",
+                          transactionReference: captureResult.id,
+                        }),
+                      });
+                      console.log("Payment receipt email triggered");
+                    } catch (emailError) {
+                      console.error("Failed to send receipt email:", emailError);
+                    }
                   }
                 }
               } catch (dbError) {
