@@ -25,7 +25,7 @@ export function PostcodeAutocomplete({
   value,
   onChange,
   onSelect,
-  placeholder = "Enter your postcode...",
+  placeholder = "Enter postcode...",
   className,
   inputClassName,
   showGeolocation = true,
