@@ -17,7 +17,8 @@ import {
   Moon,
   Sun,
   Wallet,
-  Globe
+  Globe,
+  MessageCircle
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import logoDrive365 from "@/assets/logo-drive365-dark.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
+import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
@@ -41,6 +43,7 @@ const sidebarLinks = [
   { href: "/instructor/accounts", label: "Accounts", icon: Wallet },
   { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
   { href: "/instructor/gaps", label: "Fill Gaps", icon: MapPin },
+  { href: "/instructor/messages", label: "Messages", icon: MessageCircle },
   { href: "/instructor/domains", label: "Domains", icon: Globe },
   { href: "/instructor/track-lesson", label: "Track Lesson", icon: Navigation },
   { href: "/instructor/settings", label: "Settings", icon: Settings },
@@ -215,6 +218,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
             {sidebarLinks.map((link) => {
               const isActive = location.pathname === link.href;
+              const isMessages = link.href === "/instructor/messages";
               return (
                 <Link
                   key={link.href}
@@ -228,6 +232,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 >
                   <link.icon className="h-5 w-5" />
                   {link.label}
+                  {isMessages && !isActive && (
+                    <MessageNotificationBadge 
+                      instructorId={instructor?.id} 
+                      className="ml-auto"
+                    />
+                  )}
                 </Link>
               );
             })}

@@ -70,6 +70,7 @@ interface ExpandablePupilCardProps {
   onViewHistory: (pupil: Pupil) => void;
   onViewReport: (pupil: Pupil) => void;
   onViewTerms?: (pupil: Pupil) => void;
+  onStartChat?: (pupil: Pupil) => void;
   hasSignedTerms?: boolean;
   instructorId?: string;
   instructorName?: string;
@@ -92,6 +93,7 @@ export function ExpandablePupilCard({
   onViewHistory,
   onViewReport,
   onViewTerms,
+  onStartChat,
   hasSignedTerms,
   instructorId,
   instructorName,
@@ -617,11 +619,26 @@ export function ExpandablePupilCard({
                   className="flex-col h-auto py-3 gap-1.5"
                   onClick={(e) => {
                     e.stopPropagation();
+                    onStartChat?.(pupil);
+                  }}
+                >
+                  <MessageSquare className="h-5 w-5 text-purple-500" />
+                  <span className="text-xs">Chat</span>
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-col h-auto py-3 gap-1.5"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onViewHistory(pupil);
                   }}
                 >
                   <History className="h-5 w-5 text-amber-500" />
-                  <span className="text-xs">History</span>
+                  <span className="text-xs">Lesson History</span>
                 </Button>
               </div>
 
