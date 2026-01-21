@@ -8,8 +8,8 @@ const corsHeaders = {
 
 interface NotifyRequest {
   instructorId: string;
-  type: "new_booking" | "cancellation" | "reschedule" | "admin_message";
-  pupilName: string;
+  type: "new_booking" | "cancellation" | "reschedule" | "admin_message" | "admin_direct_message";
+  pupilName?: string;
   lessonDate?: string;
   lessonTime?: string;
   durationMinutes?: number;
@@ -117,11 +117,23 @@ serve(async (req) => {
         };
         break;
 
+      case "admin_direct_message":
+        const directPreview = data.messagePreview?.substring(0, 50) || "New message";
+        smsMessage = `📩 New message from Drive 365 Admin: "${directPreview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}"`;
+        pushNotification = {
+          title: "📩 Message from Admin",
+          body: `${directPreview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}`,
+          tag: "admin-direct-message",
+          icon: "/favicon.png",
+          data: { type: "admin_direct_message", url: "/instructor/admin-chat" }
+        };
+        break;
+
       default:
-        smsMessage = `📱 Update for ${data.pupilName}${data.lessonDate ? `'s lesson on ${formatDate(data.lessonDate)}` : ''}.`;
+        smsMessage = `📱 Update for ${data.pupilName || 'you'}${data.lessonDate ? `'s lesson on ${formatDate(data.lessonDate)}` : ''}.`;
         pushNotification = {
           title: "📱 Update",
-          body: `Update for ${data.pupilName}${data.lessonDate ? `'s lesson on ${formatDate(data.lessonDate)}` : ''}`,
+          body: `Update for ${data.pupilName || 'you'}${data.lessonDate ? `'s lesson on ${formatDate(data.lessonDate)}` : ''}`,
           tag: "update",
           data: { type: "update", lessonDate: data.lessonDate }
         };
