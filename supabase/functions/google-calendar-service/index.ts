@@ -523,15 +523,15 @@ Deno.serve(async (req) => {
         const jwt = await generateJWT(serviceEmail, privateKey, connection.calendar_id);
         const accessToken = await getAccessToken(jwt);
 
-        // Fetch busy times for the next 30 days
+        // Fetch busy times for the next 365 days
         const now = new Date();
-        const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
         
         const busyTimes = await fetchBusyTimes(
           accessToken,
           connection.calendar_id,
           now.toISOString(),
-          thirtyDaysLater.toISOString()
+          oneYearLater.toISOString()
         );
 
         // Clear old events and insert new ones
