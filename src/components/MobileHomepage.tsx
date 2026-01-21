@@ -126,7 +126,7 @@ export function MobileHomepage() {
             {/* Search inside card */}
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="flex-1">
-                <PostcodeAutocomplete value={postcode} onChange={setPostcode} onSelect={pc => navigate(`/courses?postcode=${pc}`)} placeholder="Enter your postcode..." inputClassName="h-11 text-sm bg-white dark:bg-background border border-primary/20 dark:border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm" showGeolocation={true} />
+                <PostcodeAutocomplete value={postcode} onChange={setPostcode} onSelect={pc => navigate(`/courses?postcode=${pc}`)} placeholder="Enter postcode..." inputClassName="h-11 text-sm bg-white dark:bg-background border border-primary/20 dark:border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm" showGeolocation={true} />
               </div>
               <Button type="submit" className="h-11 px-4 rounded-xl font-medium bg-primary hover:bg-primary/90 text-primary-foreground">
                 <Search className="h-4 w-4" />
