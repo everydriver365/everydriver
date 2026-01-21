@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { motion } from "framer-motion";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
 
 interface NavItem {
   label: string;
@@ -52,6 +54,7 @@ export function InstructorBottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const pendingJobsCount = usePendingJobsCount();
+  const { instructor } = useInstructorAuth();
 
   const handleNavClick = (path: string) => {
     navigate(path);
@@ -114,6 +117,12 @@ export function InstructorBottomNav() {
                   <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-primary">
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
+                )}
+                {isLiveChat && (
+                  <VisitorChatBadge 
+                    instructorId={instructor?.id} 
+                    className="absolute -top-1.5 -right-2 text-[10px] px-1 min-w-[18px] h-[18px] flex items-center justify-center ring-2 ring-primary"
+                  />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
