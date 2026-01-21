@@ -194,12 +194,14 @@ export function MobileHomepage() {
             y: 0
           }} transition={{
             delay: 0.4
-          }} className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full">
-              <div className="w-12 h-12 rounded-full overflow-hidden mb-3">
+          }} className="bg-card border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden">
+              <div className="h-20 w-full overflow-hidden">
                 <img src={weeklyLessonsIcon} alt="Weekly Lessons" className="w-full h-full object-cover" />
               </div>
-              <h4 className="font-semibold text-sm">Weekly Lessons</h4>
-              <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
+              <div className="p-3">
+                <h4 className="font-semibold text-sm">Weekly Lessons</h4>
+                <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
+              </div>
             </motion.div>
           </Link>
         </div>
