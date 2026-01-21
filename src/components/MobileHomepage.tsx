@@ -20,6 +20,7 @@ import {
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
   const { features: includedFeatures } = useIncludedFeatures();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +30,43 @@ export function MobileHomepage() {
     if (postcode.trim()) {
       navigate(`/courses?postcode=${postcode}`);
     }
+  };
+
+  const handleGetLocation = async () => {
+    if (!navigator.geolocation) {
+      console.error("Geolocation not supported");
+      return;
+    }
+
+    setIsLocating(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          // Use postcodes.io reverse geocoding
+          const response = await fetch(
+            `https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}&limit=1`
+          );
+          const data = await response.json();
+          
+          if (data.result && data.result.length > 0) {
+            const foundPostcode = data.result[0].postcode;
+            setPostcode(foundPostcode);
+            navigate(`/courses?postcode=${foundPostcode}`);
+          }
+        } catch (error) {
+          console.error("Error getting postcode from location:", error);
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
+    );
   };
 
   const navItems = [
@@ -48,9 +86,15 @@ export function MobileHomepage() {
           <Menu className="h-5 w-5" />
         </Button>
         <img src={logo} alt="EveryDriver" className="h-9" />
-        <Button variant="outline" size="sm" className="h-8 px-3 rounded-full text-xs gap-1.5 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
-          <MapPin className="h-3.5 w-3.5" />
-          <span>Location</span>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleGetLocation}
+          disabled={isLocating}
+          className="h-8 px-3 rounded-full text-xs gap-1.5 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 disabled:opacity-50"
+        >
+          <MapPin className={`h-3.5 w-3.5 ${isLocating ? "animate-pulse" : ""}`} />
+          <span>{isLocating ? "Finding..." : "Location"}</span>
         </Button>
       </div>
       
