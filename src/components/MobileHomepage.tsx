@@ -246,35 +246,12 @@ export function MobileHomepage() {
         </div>
       </div>
 
-      {/* Guest Pass / Promo Banner - Full Width with Image */}
-      <div className="px-4 pt-6">
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        delay: 0.7
-      }} className="relative rounded-2xl overflow-hidden h-36 shadow-lg">
-          <img src={heroLearnerMobile} alt="Refer a friend" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
-          <div className="relative z-10 p-5 h-full flex flex-col justify-center">
-            <h4 className="font-bold text-xl text-white italic">Refer a Friend</h4>
-            <p className="text-sm text-white/80 mt-1">Get £50 off when your friend books</p>
-            <Button size="sm" className="mt-3 w-fit bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 text-xs font-medium">
-              Get Referral Link
-            </Button>
-          </div>
-        </motion.div>
-      </div>
-
       {/* Guaranteed Earlier Test Promotion */}
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
-          transition={{ delay: 0.75 }}
+          transition={{ delay: 0.7 }}
           className="relative rounded-2xl overflow-hidden shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600"
         >
           <div className="p-4 flex items-center gap-3">
@@ -291,6 +268,29 @@ export function MobileHomepage() {
                 </span>
               </div>
             </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Guest Pass / Promo Banner - Full Width with Image */}
+      <div className="px-4 pt-4">
+        <motion.div initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 0.75
+      }} className="relative rounded-2xl overflow-hidden h-36 shadow-lg">
+          <img src={heroLearnerMobile} alt="Refer a friend" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+          <div className="relative z-10 p-5 h-full flex flex-col justify-center">
+            <h4 className="font-bold text-xl text-white italic">Refer a Friend</h4>
+            <p className="text-sm text-white/80 mt-1">Get £50 off when your friend books</p>
+            <Button size="sm" className="mt-3 w-fit bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 text-xs font-medium">
+              Get Referral Link
+            </Button>
           </div>
         </motion.div>
       </div>
