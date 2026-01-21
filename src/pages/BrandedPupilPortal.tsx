@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
   BookOpen, Car, History, ChevronRight, X, AlertCircle,
-  Loader2, Moon, Sun, MapPin
+  Loader2, Moon, Sun, MapPin, CheckCircle2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,7 @@ type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [instructor, setInstructor] = useState<InstructorBranding | null>(null);
   const [pupil, setPupil] = useState<Pupil | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,36 @@ export default function BrandedPupilPortal() {
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
   const [notFound, setNotFound] = useState(false);
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
+
+  // Handle payment return params
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment");
+    const paymentAmount = searchParams.get("amount");
+
+    if (paymentStatus === "success") {
+      toast({ 
+        title: "Payment successful! ✓", 
+        description: paymentAmount ? `£${parseFloat(paymentAmount).toFixed(2)} has been added to your account` : "Your payment has been processed",
+      });
+      // Clear the params from URL
+      searchParams.delete("payment");
+      searchParams.delete("amount");
+      setSearchParams(searchParams);
+      // Refresh pupil data to show updated balance
+      if (pupil) {
+        fetchPupil(pupil.id);
+      }
+    } else if (paymentStatus === "failed" || paymentStatus === "cancelled") {
+      toast({ 
+        title: "Payment not completed", 
+        description: "Your payment was not processed. Please try again.",
+        variant: "destructive"
+      });
+      searchParams.delete("payment");
+      searchParams.delete("amount");
+      setSearchParams(searchParams);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchInstructor();
@@ -498,10 +529,15 @@ export default function BrandedPupilPortal() {
                 <PupilPortalPayments 
                   pupilId={pupil.id}
                   instructorId={instructor.id}
+                  instructorSlug={slug}
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                   accountBalance={pupil.account_balance}
                   prepaidHours={pupil.prepaid_hours}
+                  pupilName={pupil.name}
+                  pupilEmail={pupil.email}
+                  pupilPhone={pupil.phone}
+                  onBalanceUpdate={() => fetchPupil(pupil.id)}
                 />
               </motion.div>
             )}

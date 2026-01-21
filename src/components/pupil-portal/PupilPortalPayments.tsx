@@ -5,14 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
+import { PupilPaymentModal } from "./PupilPaymentModal";
 
 interface PupilPortalPaymentsProps {
   pupilId: string;
   instructorId: string;
+  instructorSlug?: string;
   brandColour: string | null;
   darkMode: boolean;
   accountBalance: number | null;
   prepaidHours: number | null;
+  pupilName?: string;
+  pupilEmail?: string | null;
+  pupilPhone?: string | null;
+  onBalanceUpdate?: () => void;
 }
 
 interface PaymentRecord {
@@ -25,14 +31,20 @@ interface PaymentRecord {
 
 export function PupilPortalPayments({ 
   pupilId, 
-  instructorId, 
+  instructorId,
+  instructorSlug = "",
   brandColour, 
   darkMode,
   accountBalance,
-  prepaidHours
+  prepaidHours,
+  pupilName = "Pupil",
+  pupilEmail,
+  pupilPhone,
+  onBalanceUpdate
 }: PupilPortalPaymentsProps) {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     fetchPayments();
@@ -108,11 +120,12 @@ export function PupilPortalPayments({
         <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
           <CardContent className="p-4">
             <p className="text-sm mb-3" style={{ color: 'var(--brand-text)' }}>
-              Contact your instructor to make a payment
+              Pay your balance securely online
             </p>
             <Button 
               className="w-full"
               style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
+              onClick={() => setPaymentModalOpen(true)}
             >
               <CreditCard className="h-4 w-4 mr-2" />
               Make Payment
@@ -120,6 +133,20 @@ export function PupilPortalPayments({
           </CardContent>
         </Card>
       )}
+
+      {/* Payment Modal */}
+      <PupilPaymentModal
+        open={paymentModalOpen}
+        onOpenChange={setPaymentModalOpen}
+        pupilId={pupilId}
+        pupilName={pupilName}
+        pupilEmail={pupilEmail || null}
+        pupilPhone={pupilPhone || null}
+        instructorId={instructorId}
+        instructorSlug={instructorSlug}
+        accountBalance={balance}
+        brandColour={brandColour}
+      />
 
       {/* Payment History */}
       <div>
