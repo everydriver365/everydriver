@@ -48,13 +48,12 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
   const formattedDate = format(bookableDate, "d MMM");
   const transmissionType = instructor.car_type || "Manual";
 
-  const handleBookNow = () => {
+  const handleLearnMore = () => {
     const params = new URLSearchParams({
-      instructor: instructor.id,
       hours: hours.toString(),
       date: bookableDate.toISOString(),
     });
-    navigate(`/book?${params.toString()}`);
+    navigate(`/book/${instructor.id}?${params.toString()}`);
   };
 
   // Default features if none provided
@@ -182,13 +181,13 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
                 <CompactPaymentBadges amount={price} className="justify-start" />
               </div>
 
-              {/* Book Now Button */}
+              {/* Learn More Button */}
               <Button 
-                onClick={handleBookNow}
+                onClick={handleLearnMore}
                 className="w-full"
                 size="lg"
               >
-                Book Now
+                Learn More
               </Button>
             </div>
           </AccordionContent>
