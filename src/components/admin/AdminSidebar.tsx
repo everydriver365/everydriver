@@ -30,6 +30,7 @@ import {
   Search,
   Headphones,
   CalendarClock,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -83,7 +84,8 @@ const navGroups: NavGroup[] = [
     items: [
       { id: "instructors", label: "Instructors", icon: Users },
       { id: "enquiries", label: "Enquiries & Callbacks", icon: MessageSquareText },
-      { id: "messages", label: "In-App Messages", icon: MessageCircle },
+      { id: "messages", label: "Pupil Messages", icon: MessageCircle },
+      { id: "instructor-messages", label: "Instructor Messages", icon: ShieldCheck },
       { id: "live-chat", label: "Live Chat", icon: Headphones },
     ],
   },

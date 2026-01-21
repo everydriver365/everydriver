@@ -42,6 +42,7 @@ import { EnquiriesManager } from "@/components/admin/EnquiriesManager";
 import { AdminMessagesManager } from "@/components/admin/AdminMessagesManager";
 import { LiveChatManager } from "@/components/admin/LiveChatManager";
 import { BookingModeOverview } from "@/components/admin/BookingModeOverview";
+import { AdminInstructorMessagesManager } from "@/components/admin/AdminInstructorMessagesManager";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -82,7 +83,8 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
   enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
-  messages: { title: "In-App Messages", group: "People", icon: MessageCircle },
+  messages: { title: "Pupil Messages", group: "People", icon: MessageCircle },
+  "instructor-messages": { title: "Instructor Messages", group: "People", icon: MessageCircle },
   "live-chat": { title: "Live Chat", group: "People", icon: MessageCircle },
   // Learner Website (EveryDriver)
   hero: { title: "Hero Section", group: "Learner Website", icon: Sparkles },
@@ -440,7 +442,7 @@ export default function AdminPortal() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MessageCircle className="h-5 w-5 text-accent" />
-                  In-App Messages
+                  Pupil Messages
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -449,6 +451,14 @@ export default function AdminPortal() {
             </Card>
           </motion.div>
         );
+      
+      case "instructor-messages":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminInstructorMessagesManager />
+          </motion.div>
+        );
+
       case "live-chat":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
