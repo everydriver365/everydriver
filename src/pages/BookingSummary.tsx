@@ -14,6 +14,7 @@ import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { NPIHostedFields } from "@/components/booking/NPIHostedFields";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
+import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
@@ -1463,11 +1464,11 @@ export default function BookingSummary() {
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="pupilAddress">Pickup Address *</Label>
-              <Input
-                id="pupilAddress"
+              <GoogleAddressAutocomplete
                 value={pupilAddress}
-                onChange={(e) => setPupilAddress(e.target.value)}
-                placeholder="123 High Street, London"
+                onChange={setPupilAddress}
+                onPostcodeChange={setPupilPostcode}
+                placeholder="Start typing your address..."
               />
             </div>
           </div>
