@@ -28,6 +28,7 @@ import {
   Car,
   Wrench,
   Search,
+  Headphones,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -82,6 +83,7 @@ const navGroups: NavGroup[] = [
       { id: "instructors", label: "Instructors", icon: Users },
       { id: "enquiries", label: "Enquiries & Callbacks", icon: MessageSquareText },
       { id: "messages", label: "In-App Messages", icon: MessageCircle },
+      { id: "live-chat", label: "Live Chat", icon: Headphones },
     ],
   },
   {

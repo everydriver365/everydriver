@@ -1,6 +1,7 @@
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -14,6 +15,7 @@ export function MainLayout({ children, hideFooter = false }: MainLayoutProps) {
       <main className="flex-1 pb-16 md:pb-0 overflow-x-hidden">{children}</main>
       {!hideFooter && <Footer />}
       <MobileBottomNav />
+      <LiveChatWidget sessionType="admin" />
     </div>
   );
 }

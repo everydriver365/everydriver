@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LiveChatWidget } from "@/components/live-chat/LiveChatWidget";
 
 interface Instructor {
   id: string;
@@ -242,6 +243,14 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
           </div>
         </div>
       </footer>
+
+      {/* Live Chat Widget */}
+      <LiveChatWidget
+        sessionType="instructor"
+        instructorId={instructor.id}
+        instructorName={instructor.name}
+        primaryColor={primaryColor}
+      />
     </div>
   );
 }
