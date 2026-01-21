@@ -14,6 +14,7 @@ import {
   BarChart3,
   MessageSquareQuote,
   MessageSquareText,
+  MessageCircle,
   Sparkles,
   Layers,
   Rocket,
@@ -80,6 +81,7 @@ const navGroups: NavGroup[] = [
     items: [
       { id: "instructors", label: "Instructors", icon: Users },
       { id: "enquiries", label: "Enquiries & Callbacks", icon: MessageSquareText },
+      { id: "messages", label: "In-App Messages", icon: MessageCircle },
     ],
   },
   {

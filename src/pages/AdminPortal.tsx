@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -39,7 +39,9 @@ import { InstructorFAQsManager } from "@/components/admin/InstructorFAQsManager"
 import { PublicFAQsManager } from "@/components/admin/PublicFAQsManager";
 import { BookingUpsellsManager } from "@/components/admin/BookingUpsellsManager";
 import { EnquiriesManager } from "@/components/admin/EnquiriesManager";
+import { AdminMessagesManager } from "@/components/admin/AdminMessagesManager";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -78,6 +80,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
   enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
+  messages: { title: "In-App Messages", group: "People", icon: MessageCircle },
   // Learner Website (EveryDriver)
   hero: { title: "Hero Section", group: "Learner Website", icon: Sparkles },
   sections: { title: "Page Sections", group: "Learner Website", icon: Layers },
@@ -137,6 +140,9 @@ export default function AdminPortal() {
     }
   };
 
+  // Track previous count for toast notifications
+  const prevEnquiryCountRef = useRef<number | null>(null);
+
   useEffect(() => {
     fetchInstructors();
     fetchPendingEnquiries();
@@ -147,7 +153,32 @@ export default function AdminPortal() {
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
+          schema: "public",
+          table: "course_enquiries",
+        },
+        (payload) => {
+          const newEnquiry = payload.new as { name: string; course_type: string };
+          const isCallback = newEnquiry.course_type === "callback" || newEnquiry.course_type === "general";
+          
+          toast.info(
+            isCallback 
+              ? `📞 New callback request from ${newEnquiry.name}`
+              : `📝 New bespoke enquiry from ${newEnquiry.name}`,
+            {
+              action: {
+                label: "View",
+                onClick: () => setActiveSection("enquiries"),
+              },
+            }
+          );
+          fetchPendingEnquiries();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
           schema: "public",
           table: "course_enquiries",
         },
@@ -393,6 +424,23 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <EnquiriesManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "messages":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5 text-accent" />
+                  In-App Messages
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AdminMessagesManager />
               </CardContent>
             </Card>
           </motion.div>
