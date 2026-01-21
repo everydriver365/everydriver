@@ -173,14 +173,12 @@ export function MobileHomepage() {
             y: 0
           }} transition={{
             delay: 0.35
-          }} className="bg-card border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden">
-              <div className="h-20 w-full">
+          }} className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full">
+              <div className="w-12 h-12 rounded-full overflow-hidden mb-3">
                 <img src={semiIntensiveIcon} alt="Semi Intensive" className="w-full h-full object-cover" />
               </div>
-              <div className="p-3">
-                <h4 className="font-semibold text-sm">Semi Intensive</h4>
-                <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
-              </div>
+              <h4 className="font-semibold text-sm">Semi Intensive</h4>
+              <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
             </motion.div>
           </Link>
           
