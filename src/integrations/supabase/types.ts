@@ -1886,8 +1886,10 @@ export type Database = {
           instagram_url: string | null
           instructor_grade: string | null
           is_active: boolean
+          is_online: boolean | null
           last_calendar_sync: string | null
           last_compliance_reminder_sent: string | null
+          last_seen_at: string | null
           linkedin_url: string | null
           logo_url: string | null
           mini_website_domain_id: string | null
@@ -1973,8 +1975,10 @@ export type Database = {
           instagram_url?: string | null
           instructor_grade?: string | null
           is_active?: boolean
+          is_online?: boolean | null
           last_calendar_sync?: string | null
           last_compliance_reminder_sent?: string | null
+          last_seen_at?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
@@ -2060,8 +2064,10 @@ export type Database = {
           instagram_url?: string | null
           instructor_grade?: string | null
           is_active?: boolean
+          is_online?: boolean | null
           last_calendar_sync?: string | null
           last_compliance_reminder_sent?: string | null
+          last_seen_at?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
@@ -2365,6 +2371,132 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string | null
+          sender_type: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_type: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string | null
+          sender_type?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_chat_sessions: {
+        Row: {
+          assigned_to: string | null
+          closed_at: string | null
+          created_at: string
+          id: string
+          instructor_id: string | null
+          session_type: string
+          source_page: string | null
+          status: string
+          updated_at: string
+          visitor_email: string
+          visitor_name: string
+          visitor_phone: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string | null
+          session_type: string
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+          visitor_email: string
+          visitor_name: string
+          visitor_phone?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string | null
+          session_type?: string
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+          visitor_email?: string
+          visitor_name?: string
+          visitor_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_chat_sessions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_chat_typing: {
+        Row: {
+          id: string
+          is_typing: boolean
+          session_id: string
+          updated_at: string
+          user_id: string | null
+          user_type: string
+        }
+        Insert: {
+          id?: string
+          is_typing?: boolean
+          session_id: string
+          updated_at?: string
+          user_id?: string | null
+          user_type: string
+        }
+        Update: {
+          id?: string
+          is_typing?: boolean
+          session_id?: string
+          updated_at?: string
+          user_id?: string | null
+          user_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_chat_typing_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "live_chat_sessions"
             referencedColumns: ["id"]
           },
         ]

@@ -40,6 +40,7 @@ import { PublicFAQsManager } from "@/components/admin/PublicFAQsManager";
 import { BookingUpsellsManager } from "@/components/admin/BookingUpsellsManager";
 import { EnquiriesManager } from "@/components/admin/EnquiriesManager";
 import { AdminMessagesManager } from "@/components/admin/AdminMessagesManager";
+import { LiveChatManager } from "@/components/admin/LiveChatManager";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -81,6 +82,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   instructors: { title: "Instructors", group: "People", icon: Users },
   enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
   messages: { title: "In-App Messages", group: "People", icon: MessageCircle },
+  "live-chat": { title: "Live Chat", group: "People", icon: MessageCircle },
   // Learner Website (EveryDriver)
   hero: { title: "Hero Section", group: "Learner Website", icon: Sparkles },
   sections: { title: "Page Sections", group: "Learner Website", icon: Layers },
@@ -443,6 +445,12 @@ export default function AdminPortal() {
                 <AdminMessagesManager />
               </CardContent>
             </Card>
+          </motion.div>
+        );
+      case "live-chat":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <LiveChatManager />
           </motion.div>
         );
 
