@@ -524,6 +524,38 @@ export type Database = {
           },
         ]
       }
+      enquiry_notes: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          enquiry_id: string
+          id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          enquiry_id: string
+          id?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          enquiry_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enquiry_notes_enquiry_id_fkey"
+            columns: ["enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "course_enquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favourite_locations: {
         Row: {
           address: string | null
@@ -3584,6 +3616,7 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          admin_notification_emails: string[] | null
           created_at: string
           description: string | null
           display_order: number | null
@@ -3595,6 +3628,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_notification_emails?: string[] | null
           created_at?: string
           description?: string | null
           display_order?: number | null
@@ -3606,6 +3640,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_notification_emails?: string[] | null
           created_at?: string
           description?: string | null
           display_order?: number | null
