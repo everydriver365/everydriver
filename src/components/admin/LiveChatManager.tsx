@@ -16,21 +16,35 @@ import {
   CheckCircle2,
   Circle,
   X,
+  Volume2,
+  VolumeX,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { LiveChatWindow } from "@/components/live-chat/LiveChatWindow";
 import { useLiveChatSessions, LiveChatSession } from "@/hooks/useLiveChat";
+import { useChatNotifications } from "@/hooks/useChatNotifications";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export function LiveChatManager() {
   const [selectedSession, setSelectedSession] = useState<LiveChatSession | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("active");
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { sessions, loading, refetch } = useLiveChatSessions("admin");
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  
+  const { notify, requestPermission } = useChatNotifications({
+    soundEnabled,
+    browserNotificationsEnabled: notificationsEnabled,
+  });
 
   // Fetch unread counts for each session
   useEffect(() => {
@@ -67,15 +81,29 @@ export function LiveChatManager() {
         },
         (payload) => {
           const sessionId = payload.new.session_id as string;
+          const content = payload.new.content as string;
           setUnreadCounts((prev) => ({
             ...prev,
             [sessionId]: (prev[sessionId] || 0) + 1,
           }));
+          
+          // Find session to get visitor name
+          const session = sessions.find((s) => s.id === sessionId);
+          const visitorName = session?.visitor_name || "Visitor";
+          
+          // Play sound and show browser notification
+          notify(
+            `💬 New message from ${visitorName}`,
+            content.length > 50 ? content.substring(0, 50) + "..." : content,
+            () => {
+              if (session) setSelectedSession(session);
+            }
+          );
+          
           toast.info("New chat message received", {
             action: {
               label: "View",
               onClick: () => {
-                const session = sessions.find((s) => s.id === sessionId);
                 if (session) setSelectedSession(session);
               },
             },
@@ -90,7 +118,13 @@ export function LiveChatManager() {
           table: "live_chat_sessions",
           filter: "session_type=eq.admin",
         },
-        () => {
+        (payload) => {
+          const newSession = payload.new as LiveChatSession;
+          notify(
+            "🆕 New chat started!",
+            `${newSession.visitor_name} wants to chat`,
+            () => refetch()
+          );
           toast.info("New chat started!");
           refetch();
         }
@@ -100,7 +134,7 @@ export function LiveChatManager() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessions, refetch]);
+  }, [sessions, refetch, notify]);
 
   // Filter sessions
   const filteredSessions = sessions.filter((session) => {
@@ -151,6 +185,39 @@ export function LiveChatManager() {
 
   return (
     <div className="space-y-6">
+      {/* Notification Controls */}
+      <div className="flex items-center justify-end gap-6">
+        <div className="flex items-center gap-2">
+          {soundEnabled ? <Volume2 className="h-4 w-4 text-muted-foreground" /> : <VolumeX className="h-4 w-4 text-muted-foreground" />}
+          <Label htmlFor="sound-toggle" className="text-sm text-muted-foreground">Sound</Label>
+          <Switch
+            id="sound-toggle"
+            checked={soundEnabled}
+            onCheckedChange={setSoundEnabled}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          {notificationsEnabled ? <Bell className="h-4 w-4 text-muted-foreground" /> : <BellOff className="h-4 w-4 text-muted-foreground" />}
+          <Label htmlFor="notifications-toggle" className="text-sm text-muted-foreground">Browser Notifications</Label>
+          <Switch
+            id="notifications-toggle"
+            checked={notificationsEnabled}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                requestPermission().then((granted) => {
+                  setNotificationsEnabled(granted);
+                  if (!granted) {
+                    toast.error("Browser notifications are blocked. Please enable them in your browser settings.");
+                  }
+                });
+              } else {
+                setNotificationsEnabled(false);
+              }
+            }}
+          />
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
