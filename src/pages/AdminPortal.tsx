@@ -140,6 +140,26 @@ export default function AdminPortal() {
   useEffect(() => {
     fetchInstructors();
     fetchPendingEnquiries();
+
+    // Subscribe to realtime changes for enquiries
+    const channel = supabase
+      .channel("admin-enquiries")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "course_enquiries",
+        },
+        () => {
+          fetchPendingEnquiries();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchPendingEnquiries = async () => {
