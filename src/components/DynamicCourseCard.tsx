@@ -20,6 +20,7 @@ interface DynamicCourseCardProps {
     hourly_rate: number | null;
     bio: string | null;
     brand_colour: string | null;
+    school_skim_amount?: number | null;
   };
   hours: number;
   nextAvailable?: Date | null;
@@ -50,7 +51,9 @@ export function DynamicCourseCard({
   const navigate = useNavigate();
 
   const hourlyRate = instructor.hourly_rate || 40;
-  const totalPrice = hours * hourlyRate;
+  const schoolSkim = instructor.school_skim_amount || 0;
+  const basePrice = hours * hourlyRate;
+  const totalPrice = basePrice + schoolSkim;
   const finalPrice = discountedPrice || totalPrice;
   const hasDiscount = discountedPrice && discountedPrice < totalPrice;
   const courseName = hours === 28 ? "TEST IN A WEEK" : `${hours} HOUR COURSE`;

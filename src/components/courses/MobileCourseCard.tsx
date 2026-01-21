@@ -21,6 +21,7 @@ interface CourseInstructor {
   home_postcode?: string;
   hourly_rate: number | null;
   bio: string | null;
+  school_skim_amount?: number | null;
 }
 
 interface Course {
@@ -44,7 +45,9 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
   const navigate = useNavigate();
   const { instructor, hours, bookableDate, distance, isPopular, isIntensive, discountedPrice, customFeatures } = course;
 
-  const price = discountedPrice || (instructor.hourly_rate ? instructor.hourly_rate * hours : 0);
+  const schoolSkim = instructor.school_skim_amount || 0;
+  const basePrice = instructor.hourly_rate ? instructor.hourly_rate * hours : 0;
+  const price = discountedPrice || (basePrice + schoolSkim);
   const formattedDate = format(bookableDate, "d MMM");
   const transmissionType = instructor.car_type || "Manual";
 
