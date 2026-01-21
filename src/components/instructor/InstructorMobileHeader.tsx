@@ -1,25 +1,32 @@
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Settings, Moon, Sun } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
+import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import logoDrive365 from "@/assets/logo-drive365-dark.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;
   profileImageUrl?: string | null;
   isActive?: boolean;
+  instructorId?: string;
+  paymentLink?: string | null;
 }
 
 export function InstructorMobileHeader({ 
   instructorName = "Instructor",
   profileImageUrl,
-  isActive
+  isActive,
+  instructorId,
+  paymentLink
 }: InstructorMobileHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { resolvedTheme, setTheme } = useTheme();
+  const [showQRModal, setShowQRModal] = useState(false);
   
   // Show back button on all pages except the main instructor home
   const showBackButton = location.pathname !== "/instructor";
@@ -57,8 +64,18 @@ export function InstructorMobileHeader({
         />
       </div>
       
-      {/* Settings, visibility badge, and avatar on the right */}
+      {/* QR, Settings, visibility badge, and avatar on the right */}
       <div className="flex items-center gap-1">
+        {paymentLink && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowQRModal(true)}
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 h-8 px-2"
+          >
+            <span className="text-xs font-bold border border-current rounded px-1">QR</span>
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -104,6 +121,17 @@ export function InstructorMobileHeader({
           </AvatarFallback>
         </Avatar>
       </div>
+
+      {/* QR Code Modal */}
+      {paymentLink && (
+        <PaymentQRModal
+          open={showQRModal}
+          onOpenChange={setShowQRModal}
+          paymentQrUrl={paymentLink}
+          instructorId={instructorId}
+          instructorName={instructorName}
+        />
+      )}
     </div>
   );
 }
