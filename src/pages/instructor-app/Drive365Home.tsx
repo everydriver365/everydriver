@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Calendar, CreditCard, Globe, Users, Shield, Smartphone } from "lucide-react";
 import logoDark from "@/assets/logo-drive365-dark.png";
 import logoLight from "@/assets/logo-drive365-light.png";
+import logoMobile from "@/assets/logo-drive365-header.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const features = [
   {
@@ -40,13 +42,15 @@ const features = [
 ];
 
 export default function Drive365Home() {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[hsl(228,54%,17%)] border-b border-white/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <img
-            src={logoLight}
+            src={isMobile ? logoMobile : logoLight}
             alt="Drive365"
             className="h-8 md:h-10"
           />
