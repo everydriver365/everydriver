@@ -168,29 +168,29 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
   })).filter(group => group.items.length > 0 || group.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="border-b px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <LayoutDashboard className="h-4 w-4" />
+    <Sidebar collapsible="icon" className="border-r bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
+      <SidebarHeader className="border-b border-primary/10 px-4 py-4 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25">
+            <LayoutDashboard className="h-5 w-5" />
           </div>
           {!isCollapsed && (
             <div>
-              <h2 className="font-semibold text-sm">Admin Portal</h2>
-              <p className="text-xs text-muted-foreground">Management</p>
+              <h2 className="font-bold text-sm bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Admin Portal</h2>
+              <p className="text-xs text-muted-foreground">Management Console</p>
             </div>
           )}
         </div>
         
         {/* Search input */}
         {!isCollapsed && (
-          <div className="relative mt-3">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative mt-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search sections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 text-sm"
+              className="pl-9 h-9 text-sm bg-white dark:bg-slate-800 border-primary/20 focus:border-primary/40 focus:ring-primary/20 rounded-lg shadow-sm"
             />
           </div>
         )}
@@ -231,7 +231,7 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent>
-                  <SidebarGroupContent>
+                  <SidebarGroupContent className="pl-2">
                     <SidebarMenu>
                       {group.items.map((item) => (
                         <SidebarMenuItem key={item.id}>
@@ -239,8 +239,17 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
                             onClick={() => onSectionChange(item.id)}
                             isActive={activeSection === item.id}
                             tooltip={item.label}
+                            className={cn(
+                              "transition-all duration-200 rounded-lg",
+                              activeSection === item.id 
+                                ? "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20" 
+                                : "hover:bg-muted/60"
+                            )}
                           >
-                            <item.icon className="h-4 w-4" />
+                            <item.icon className={cn(
+                              "h-4 w-4",
+                              activeSection === item.id && "text-primary"
+                            )} />
                             {!isCollapsed && <span>{item.label}</span>}
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -254,12 +263,12 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
         })}
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t border-primary/10 p-4 bg-gradient-to-r from-destructive/5 to-transparent">
         <Button
           variant="outline"
           size="sm"
           onClick={onLogout}
-          className="w-full justify-start"
+          className="w-full justify-start border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
         >
           <LogOut className="h-4 w-4 mr-2" />
           {!isCollapsed && <span>Logout</span>}
