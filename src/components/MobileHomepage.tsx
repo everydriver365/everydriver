@@ -175,8 +175,8 @@ export function MobileHomepage() {
           }} transition={{
             delay: 0.35
           }} className="bg-card border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden">
-              <div className="h-20 w-full overflow-hidden">
-                <img src={semiIntensiveIcon} alt="Semi Intensive" className="w-full h-full object-cover object-center" />
+              <div className="aspect-[4/3] w-full overflow-hidden">
+                <img src={semiIntensiveIcon} alt="Semi Intensive" className="w-full h-full object-cover scale-110" />
               </div>
               <div className="p-3">
                 <h4 className="font-semibold text-sm">Semi Intensive</h4>
