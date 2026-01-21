@@ -1453,47 +1453,6 @@ export type Database = {
           },
         ]
       }
-      instructor_nylas_grants: {
-        Row: {
-          created_at: string
-          email: string | null
-          grant_id: string
-          id: string
-          instructor_id: string
-          last_sync: string | null
-          provider: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          grant_id: string
-          id?: string
-          instructor_id: string
-          last_sync?: string | null
-          provider?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string | null
-          grant_id?: string
-          id?: string
-          instructor_id?: string
-          last_sync?: string | null
-          provider?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "instructor_nylas_grants_instructor_id_fkey"
-            columns: ["instructor_id"]
-            isOneToOne: true
-            referencedRelation: "instructors"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       instructor_subscriptions: {
         Row: {
           created_at: string | null
