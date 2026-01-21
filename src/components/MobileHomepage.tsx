@@ -42,13 +42,13 @@ export function MobileHomepage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header - Clean minimal design */}
-      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-background border-b border-border/50">
-        <Button variant="ghost" size="icon" className="h-10 w-10">
+      {/* Header - Same blue as bottom nav */}
+      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
+        <Button variant="ghost" size="icon" className="h-10 w-10 text-primary-foreground hover:bg-primary-foreground/10">
           <Menu className="h-5 w-5" />
         </Button>
         <img src={logo} alt="EveryDriver" className="h-9" />
-        <Button variant="outline" size="sm" className="h-8 px-3 rounded-full text-xs gap-1.5">
+        <Button variant="outline" size="sm" className="h-8 px-3 rounded-full text-xs gap-1.5 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10">
           <MapPin className="h-3.5 w-3.5" />
           <span>Location</span>
         </Button>
@@ -72,7 +72,7 @@ export function MobileHomepage() {
           transition={{ delay: 0.2 }}
           className="mx-4 -mt-20 relative z-10"
         >
-          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-card dark:to-card border border-teal-100 dark:border-border/50 rounded-2xl p-5 shadow-xl">
+          <div className="bg-gradient-to-br from-primary/10 to-primary/5 dark:from-card dark:to-card border border-primary/20 dark:border-border/50 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1">
                 <h3 className="font-bold text-lg text-foreground uppercase tracking-wide">There's Still Time</h3>
@@ -82,9 +82,9 @@ export function MobileHomepage() {
               <div className="relative w-16 h-16 flex-shrink-0 ml-4">
                 <svg className="w-full h-full -rotate-90">
                   <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" 
-                          strokeWidth="4" className="text-teal-200 dark:text-muted/30" />
+                          strokeWidth="4" className="text-primary/20 dark:text-muted/30" />
                   <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor"
-                          strokeWidth="4" className="text-teal-500 dark:text-primary" 
+                          strokeWidth="4" className="text-primary" 
                           strokeDasharray="176" strokeDashoffset="165" 
                           strokeLinecap="round" />
                 </svg>
@@ -102,11 +102,11 @@ export function MobileHomepage() {
                   onChange={setPostcode}
                   onSelect={(pc) => navigate(`/courses?postcode=${pc}`)}
                   placeholder="Enter your postcode..."
-                  inputClassName="h-11 text-sm bg-white dark:bg-background border border-teal-200 dark:border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm"
+                  inputClassName="h-11 text-sm bg-white dark:bg-background border border-primary/20 dark:border-border/50 rounded-xl text-foreground placeholder:text-muted-foreground shadow-sm"
                   showGeolocation={true}
                 />
               </div>
-              <Button type="submit" className="h-11 px-4 rounded-xl font-medium bg-teal-600 hover:bg-teal-700 text-white">
+              <Button type="submit" className="h-11 px-4 rounded-xl font-medium bg-primary hover:bg-primary/90 text-primary-foreground">
                 <Search className="h-4 w-4" />
               </Button>
             </form>
@@ -124,8 +124,8 @@ export function MobileHomepage() {
             transition={{ delay: 0.3 }}
             className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg flex items-center gap-4"
           >
-            <div className="w-12 h-12 bg-teal-500/10 rounded-full flex items-center justify-center">
-              <Zap className="h-6 w-6 text-teal-600" />
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <Zap className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
               <h4 className="font-semibold">Intensive Courses</h4>
@@ -144,8 +144,8 @@ export function MobileHomepage() {
               transition={{ delay: 0.35 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-11 h-11 bg-teal-500/10 rounded-full flex items-center justify-center mb-3">
-                <Calendar className="h-5 w-5 text-teal-600" />
+              <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+                <Calendar className="h-5 w-5 text-primary" />
               </div>
               <h4 className="font-semibold text-sm">Semi Intensive</h4>
               <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
@@ -159,8 +159,8 @@ export function MobileHomepage() {
               transition={{ delay: 0.4 }}
               className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full"
             >
-              <div className="w-11 h-11 bg-teal-500/10 rounded-full flex items-center justify-center mb-3">
-                <Car className="h-5 w-5 text-teal-600" />
+              <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+                <Car className="h-5 w-5 text-primary" />
               </div>
               <h4 className="font-semibold text-sm">Weekly Lessons</h4>
               <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
@@ -177,10 +177,10 @@ export function MobileHomepage() {
           {includedFeatures.slice(0, 4).map((feature, i) => {
             const IconComponent = feature.icon;
             const colors = [
-              "bg-teal-500/10 text-teal-600",
-              "bg-cyan-500/10 text-cyan-600",
-              "bg-emerald-500/10 text-emerald-600",
-              "bg-green-500/10 text-green-600",
+              "bg-primary/10 text-primary",
+              "bg-primary/10 text-primary",
+              "bg-primary/10 text-primary",
+              "bg-primary/10 text-primary",
             ];
             const colorClass = colors[i % colors.length];
             const [bgColor, textColor] = colorClass.split(" ");
@@ -224,7 +224,7 @@ export function MobileHomepage() {
             <p className="text-sm text-white/80 mt-1">Get £50 off when your friend books</p>
             <Button 
               size="sm" 
-              className="mt-3 w-fit bg-teal-500 hover:bg-teal-600 text-white rounded-lg px-4 text-xs font-medium"
+              className="mt-3 w-fit bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 text-xs font-medium"
             >
               Get Referral Link
             </Button>
