@@ -12,6 +12,7 @@ import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
 import intensiveCoursesIcon from "@/assets/intensive-courses-icon.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
@@ -172,12 +173,14 @@ export function MobileHomepage() {
             y: 0
           }} transition={{
             delay: 0.35
-          }} className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full">
-              <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center mb-3">
-                <Calendar className="h-5 w-5 text-primary" />
+          }} className="bg-card border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden">
+              <div className="h-20 w-full">
+                <img src={semiIntensiveIcon} alt="Semi Intensive" className="w-full h-full object-cover" />
               </div>
-              <h4 className="font-semibold text-sm">Semi Intensive</h4>
-              <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
+              <div className="p-3">
+                <h4 className="font-semibold text-sm">Semi Intensive</h4>
+                <p className="text-xs text-muted-foreground mt-1">2-4 weeks</p>
+              </div>
             </motion.div>
           </Link>
           
