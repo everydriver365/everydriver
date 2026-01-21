@@ -193,8 +193,8 @@ export function MobileHomepage() {
           }} transition={{
             delay: 0.4
           }} className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full">
-              <div className="w-12 h-12 rounded-full overflow-hidden mb-3 bg-primary/5">
-                <img src={weeklyLessonsIcon} alt="Weekly Lessons" className="w-full h-full object-cover" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                <Car className="h-5 w-5 text-primary" />
               </div>
               <h4 className="font-semibold text-sm">Weekly Lessons</h4>
               <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
