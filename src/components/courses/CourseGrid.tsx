@@ -3,8 +3,9 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
 import { CourseWithInstructor, SortOption } from "@/hooks/useCourseDiscovery";
-
+import { useIsMobile } from "@/hooks/use-mobile";
 interface CourseGridProps {
   selectedDate: Date | null;
   filteredCourses: CourseWithInstructor[];
@@ -26,6 +27,7 @@ export function CourseGrid({
   searchedAreaName,
   onClearSearch,
 }: CourseGridProps) {
+  const isMobile = useIsMobile();
   if (!selectedDate) {
     return (
       <div className="flex h-full items-center justify-center py-16">
@@ -123,30 +125,44 @@ export function CourseGrid({
       </div>
 
       {filteredCourses.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2">
-          {filteredCourses.slice(0, 6).map((course, index) => (
-            <motion.div
-              key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <DynamicCourseCard
-                instructor={course.instructor}
-                hours={course.hours}
-                nextAvailable={course.bookableDate}
-                courseImageUrl={course.courseImageUrl}
-                isPopular={course.isPopular}
-                availableFrom={course.availableFrom}
-                distance={course.distance}
-                features={course.features}
-                isIntensive={course.isIntensive}
-                discountedPrice={course.discountedPrice}
-                customFeatures={course.customFeatures}
+        isMobile ? (
+          // Mobile: Single column accordion cards
+          <div className="flex flex-col gap-3">
+            {filteredCourses.slice(0, 6).map((course, index) => (
+              <MobileCourseCard
+                key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                course={course}
+                index={index}
               />
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          // Desktop: 2-column grid with flip cards
+          <div className="grid gap-6 sm:grid-cols-2">
+            {filteredCourses.slice(0, 6).map((course, index) => (
+              <motion.div
+                key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <DynamicCourseCard
+                  instructor={course.instructor}
+                  hours={course.hours}
+                  nextAvailable={course.bookableDate}
+                  courseImageUrl={course.courseImageUrl}
+                  isPopular={course.isPopular}
+                  availableFrom={course.availableFrom}
+                  distance={course.distance}
+                  features={course.features}
+                  isIntensive={course.isIntensive}
+                  discountedPrice={course.discountedPrice}
+                  customFeatures={course.customFeatures}
+                />
+              </motion.div>
+            ))}
+          </div>
+        )
       ) : (
         <div className="py-16 text-center">
           <h2 className="text-xl font-semibold">No courses available</h2>
