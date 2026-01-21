@@ -69,30 +69,37 @@ interface Instructor {
   is_active: boolean;
 }
 
-// Section metadata for breadcrumbs
+// Section metadata for breadcrumbs - reorganized into clearer categories
 const sectionMeta: Record<string, { title: string; group: string; icon: React.ElementType }> = {
+  // Dashboard
   overview: { title: "Overview", group: "Dashboard", icon: LayoutDashboard },
-  instructors: { title: "Instructors", group: "Users", icon: Users },
-  courses: { title: "Course Templates", group: "Content", icon: BookOpen },
-  hero: { title: "Hero Section", group: "Homepage CMS", icon: Sparkles },
-  sections: { title: "Page Sections", group: "Homepage CMS", icon: Layers },
-  stats: { title: "Stats", group: "Homepage CMS", icon: LayoutDashboard },
-  testimonials: { title: "Testimonials", group: "Homepage CMS", icon: MessageSquareQuote },
-  features: { title: "Features", group: "Homepage CMS", icon: Rocket },
-  included: { title: "What's Included", group: "Homepage CMS", icon: Sparkles },
-  "public-faqs": { title: "FAQs", group: "Homepage CMS", icon: HelpCircle },
-  images: { title: "Site Images", group: "Media", icon: ImageIcon },
-  videos: { title: "Videos", group: "Media", icon: Video },
+  // People
+  instructors: { title: "Instructors", group: "People", icon: Users },
+  // Learner Website (EveryDriver)
+  hero: { title: "Hero Section", group: "Learner Website", icon: Sparkles },
+  sections: { title: "Page Sections", group: "Learner Website", icon: Layers },
+  stats: { title: "Stats", group: "Learner Website", icon: LayoutDashboard },
+  testimonials: { title: "Testimonials", group: "Learner Website", icon: MessageSquareQuote },
+  features: { title: "Features", group: "Learner Website", icon: Rocket },
+  included: { title: "What's Included", group: "Learner Website", icon: Sparkles },
+  "public-faqs": { title: "FAQs", group: "Learner Website", icon: HelpCircle },
+  images: { title: "Site Images", group: "Learner Website", icon: ImageIcon },
+  videos: { title: "Site Videos", group: "Learner Website", icon: Video },
+  // Instructor Platform (Drive365)
   "instructor-home": { title: "App Homepage", group: "Instructor Platform", icon: Smartphone },
   "instructor-marketing": { title: "Marketing Page", group: "Instructor Platform", icon: Globe },
-  "pwa-apps": { title: "PWA Config", group: "Mobile Apps", icon: Download },
-  promotions: { title: "Promotions", group: "Marketing", icon: Megaphone },
-  bonuses: { title: "Bonuses", group: "Marketing", icon: Gift },
-  "rewards-config": { title: "Rewards Settings", group: "Loyalty & Rewards", icon: Coins },
-  "reward-tiers": { title: "Badge Tiers", group: "Loyalty & Rewards", icon: Award },
   "instructor-faqs": { title: "Instructor FAQs", group: "Instructor Platform", icon: HelpCircle },
-  "site-settings": { title: "Site Settings & SEO", group: "Settings", icon: Globe },
-  "upsells": { title: "Booking Upsells", group: "Content", icon: Zap },
+  // Products & Booking
+  courses: { title: "Course Templates", group: "Products & Booking", icon: BookOpen },
+  upsells: { title: "Booking Upsells", group: "Products & Booking", icon: Zap },
+  promotions: { title: "Promotional Banners", group: "Products & Booking", icon: Megaphone },
+  // Engagement & Rewards
+  "rewards-config": { title: "Loyalty Settings", group: "Engagement & Rewards", icon: Coins },
+  "reward-tiers": { title: "Badge Tiers & Perks", group: "Engagement & Rewards", icon: Award },
+  bonuses: { title: "Instructor Bonuses", group: "Engagement & Rewards", icon: Gift },
+  // System Settings
+  "pwa-apps": { title: "PWA Configuration", group: "System Settings", icon: Download },
+  "site-settings": { title: "Site Settings & SEO", group: "System Settings", icon: Globe },
 };
 
 export default function AdminPortal() {

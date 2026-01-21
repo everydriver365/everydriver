@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -11,9 +10,7 @@ import {
   Gift,
   Settings,
   ChevronDown,
-  ChevronRight,
   Home,
-  Type,
   BarChart3,
   MessageSquareQuote,
   Sparkles,
@@ -25,6 +22,10 @@ import {
   Award,
   HelpCircle,
   Zap,
+  ShoppingCart,
+  Car,
+  Wrench,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -41,6 +42,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AdminSidebarProps {
@@ -52,6 +55,7 @@ interface AdminSidebarProps {
 interface NavGroup {
   label: string;
   icon: React.ElementType;
+  color: string;
   items: {
     id: string;
     label: string;
@@ -63,28 +67,23 @@ const navGroups: NavGroup[] = [
   {
     label: "Dashboard",
     icon: LayoutDashboard,
+    color: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     items: [
       { id: "overview", label: "Overview", icon: LayoutDashboard },
     ],
   },
   {
-    label: "Users",
+    label: "People",
     icon: Users,
+    color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
     items: [
       { id: "instructors", label: "Instructors", icon: Users },
     ],
   },
   {
-    label: "Content",
-    icon: BookOpen,
-    items: [
-      { id: "courses", label: "Course Templates", icon: BookOpen },
-      { id: "upsells", label: "Booking Upsells", icon: Zap },
-    ],
-  },
-  {
-    label: "Homepage CMS",
-    icon: Home,
+    label: "Learner Website",
+    icon: Globe,
+    color: "bg-green-500/10 text-green-600 dark:text-green-400",
     items: [
       { id: "hero", label: "Hero Section", icon: Sparkles },
       { id: "sections", label: "Page Sections", icon: Layers },
@@ -93,19 +92,14 @@ const navGroups: NavGroup[] = [
       { id: "features", label: "Features", icon: Rocket },
       { id: "included", label: "What's Included", icon: Sparkles },
       { id: "public-faqs", label: "FAQs", icon: HelpCircle },
-    ],
-  },
-  {
-    label: "Media",
-    icon: Image,
-    items: [
       { id: "images", label: "Site Images", icon: Image },
-      { id: "videos", label: "Videos", icon: Video },
+      { id: "videos", label: "Site Videos", icon: Video },
     ],
   },
   {
     label: "Instructor Platform",
-    icon: Smartphone,
+    icon: Car,
+    color: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
     items: [
       { id: "instructor-home", label: "App Homepage", icon: Smartphone },
       { id: "instructor-marketing", label: "Marketing Page", icon: Globe },
@@ -113,32 +107,31 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "Mobile Apps",
-    icon: Smartphone,
+    label: "Products & Booking",
+    icon: ShoppingCart,
+    color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
     items: [
-      { id: "pwa-apps", label: "PWA Config", icon: Smartphone },
+      { id: "courses", label: "Course Templates", icon: BookOpen },
+      { id: "upsells", label: "Booking Upsells", icon: Zap },
+      { id: "promotions", label: "Promotional Banners", icon: Megaphone },
     ],
   },
   {
-    label: "Marketing",
-    icon: Megaphone,
-    items: [
-      { id: "promotions", label: "Promotions", icon: Megaphone },
-      { id: "bonuses", label: "Bonuses", icon: Gift },
-    ],
-  },
-  {
-    label: "Loyalty & Rewards",
+    label: "Engagement & Rewards",
     icon: Trophy,
+    color: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     items: [
-      { id: "rewards-config", label: "Rewards Settings", icon: Gift },
-      { id: "reward-tiers", label: "Badge Tiers", icon: Award },
+      { id: "rewards-config", label: "Loyalty Settings", icon: Gift },
+      { id: "reward-tiers", label: "Badge Tiers & Perks", icon: Award },
+      { id: "bonuses", label: "Instructor Bonuses", icon: Gift },
     ],
   },
   {
-    label: "Settings",
-    icon: Settings,
+    label: "System Settings",
+    icon: Wrench,
+    color: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
     items: [
+      { id: "pwa-apps", label: "PWA Configuration", icon: Smartphone },
       { id: "site-settings", label: "Site Settings & SEO", icon: Settings },
     ],
   },
@@ -147,6 +140,7 @@ const navGroups: NavGroup[] = [
 export function AdminSidebar({ activeSection, onSectionChange, onLogout }: AdminSidebarProps) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Find which group contains the active section
   const activeGroupLabel = navGroups.find(group => 
@@ -165,6 +159,14 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
     );
   };
 
+  // Filter groups and items based on search
+  const filteredGroups = navGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item => 
+      item.label.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(group => group.items.length > 0 || group.label.toLowerCase().includes(searchQuery.toLowerCase()));
+
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="border-b px-4 py-3">
@@ -179,10 +181,23 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
             </div>
           )}
         </div>
+        
+        {/* Search input */}
+        {!isCollapsed && (
+          <div className="relative mt-3">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search sections..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 text-sm"
+            />
+          </div>
+        )}
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-2">
-        {navGroups.map((group) => {
+        {filteredGroups.map((group) => {
           const isOpen = openGroups.includes(group.label);
           const hasActiveItem = group.items.some(item => item.id === activeSection);
           
@@ -196,14 +211,21 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
                 <CollapsibleTrigger asChild>
                   <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md px-2 py-1.5 justify-between">
                     <span className="flex items-center gap-2">
-                      <group.icon className="h-4 w-4" />
+                      <span className={cn("p-1 rounded", group.color)}>
+                        <group.icon className="h-3.5 w-3.5" />
+                      </span>
                       {!isCollapsed && <span>{group.label}</span>}
                     </span>
                     {!isCollapsed && (
-                      <ChevronDown className={cn(
-                        "h-4 w-4 transition-transform",
-                        isOpen ? "rotate-0" : "-rotate-90"
-                      )} />
+                      <span className="flex items-center gap-1.5">
+                        <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-medium">
+                          {group.items.length}
+                        </Badge>
+                        <ChevronDown className={cn(
+                          "h-4 w-4 transition-transform",
+                          isOpen ? "rotate-0" : "-rotate-90"
+                        )} />
+                      </span>
                     )}
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
