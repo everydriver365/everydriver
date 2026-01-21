@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
+import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSearchParams } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Standard course hours to display
 const DISPLAY_HOURS = [10, 20, 30, 40, 28]; // 28 = Test in a Week
@@ -287,6 +289,7 @@ function SidebarCalendar({
 }
 
 export default function Courses() {
+  const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialPostcode = searchParams.get("postcode") || "";
   const [postcode, setPostcode] = useState(initialPostcode);
@@ -1151,30 +1154,44 @@ export default function Courses() {
                 </div>
 
                 {filteredCourses.length > 0 ? (
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    {filteredCourses.slice(0, 6).map((course, index) => (
-                      <motion.div
-                        key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <DynamicCourseCard
-                          instructor={course.instructor}
-                          hours={course.hours}
-                          nextAvailable={course.bookableDate}
-                          courseImageUrl={course.courseImageUrl}
-                          isPopular={course.isPopular}
-                          availableFrom={course.availableFrom}
-                          distance={course.distance}
-                          features={course.features}
-                          isIntensive={course.isIntensive}
-                          discountedPrice={course.discountedPrice}
-                          customFeatures={course.customFeatures}
+                  isMobile ? (
+                    // Mobile: Single column accordion cards
+                    <div className="flex flex-col gap-3">
+                      {filteredCourses.slice(0, 6).map((course, index) => (
+                        <MobileCourseCard
+                          key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                          course={course}
+                          index={index}
                         />
-                      </motion.div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    // Desktop: 2-column grid with flip cards
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      {filteredCourses.slice(0, 6).map((course, index) => (
+                        <motion.div
+                          key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <DynamicCourseCard
+                            instructor={course.instructor}
+                            hours={course.hours}
+                            nextAvailable={course.bookableDate}
+                            courseImageUrl={course.courseImageUrl}
+                            isPopular={course.isPopular}
+                            availableFrom={course.availableFrom}
+                            distance={course.distance}
+                            features={course.features}
+                            isIntensive={course.isIntensive}
+                            discountedPrice={course.discountedPrice}
+                            customFeatures={course.customFeatures}
+                          />
+                        </motion.div>
+                      ))}
+                    </div>
+                  )
                 ) : (
                   <div className="py-16 text-center">
                     <h2 className="text-xl font-semibold">No courses available</h2>

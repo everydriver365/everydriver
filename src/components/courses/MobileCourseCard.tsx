@@ -12,10 +12,31 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
-import { CourseWithInstructor } from "@/hooks/useCourseDiscovery";
+
+interface CourseInstructor {
+  id: string;
+  name: string;
+  profile_image_url: string | null;
+  car_type?: string;
+  home_postcode?: string;
+  hourly_rate: number | null;
+  bio: string | null;
+}
+
+interface Course {
+  instructor: CourseInstructor;
+  hours: number;
+  bookableDate: Date;
+  courseImageUrl?: string | null;
+  isPopular?: boolean;
+  distance?: number;
+  isIntensive?: boolean;
+  discountedPrice?: number | null;
+  customFeatures?: string[] | null;
+}
 
 interface MobileCourseCardProps {
-  course: CourseWithInstructor;
+  course: Course;
   index: number;
 }
 

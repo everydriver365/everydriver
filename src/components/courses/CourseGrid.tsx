@@ -28,6 +28,7 @@ export function CourseGrid({
   onClearSearch,
 }: CourseGridProps) {
   const isMobile = useIsMobile();
+
   if (!selectedDate) {
     return (
       <div className="flex h-full items-center justify-center py-16">
