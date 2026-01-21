@@ -48,6 +48,7 @@ interface Instructor {
   adi_code_of_practice: boolean | null;
   instructor_grade: string | null;
   welcome_video_url: string | null;
+  school_skim_amount?: number | null;
 }
 
 interface CourseTemplate {
@@ -261,6 +262,7 @@ export default function BookingSummary() {
       const instructorCourse = instructorCourseRes.data;
       
       const hourlyRate = instructor.hourly_rate || 40;
+      const schoolSkim = instructor.school_skim_amount || 0;
       const courseName = template?.course_name || (hours === 28 ? "Test in a Week" : `${hours} Hour Course`);
       const courseImageUrl = instructorCourse?.course_image_url || template?.default_image_url || null;
 
@@ -280,7 +282,7 @@ export default function BookingSummary() {
         },
         hours,
         courseName,
-        totalPrice: hours * hourlyRate,
+        totalPrice: (hours * hourlyRate) + schoolSkim,
         pricePerHour: hourlyRate,
         courseImageUrl,
         courseDescription: template?.full_description || template?.short_description || null,

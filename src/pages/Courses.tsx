@@ -32,6 +32,7 @@ interface Instructor {
   brand_colour: string | null;
   is_active: boolean;
   available_from: string | null;
+  school_skim_amount: number | null;
 }
 
 interface InstructorCourse {
@@ -805,8 +806,10 @@ export default function Courses() {
         case "soonest":
           return a.bookableDate.getTime() - b.bookableDate.getTime();
         case "price-low":
-          const priceA = a.hours * (a.instructor.hourly_rate || 40);
-          const priceB = b.hours * (b.instructor.hourly_rate || 40);
+          const skimA = a.instructor.school_skim_amount || 0;
+          const skimB = b.instructor.school_skim_amount || 0;
+          const priceA = (a.hours * (a.instructor.hourly_rate || 40)) + skimA;
+          const priceB = (b.hours * (b.instructor.hourly_rate || 40)) + skimB;
           return priceA - priceB;
         case "nearest":
           if (a.distance === undefined) return 1;
