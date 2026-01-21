@@ -481,6 +481,9 @@ export default function InstructorPupils() {
                   setSelectedPupil(p);
                   setIsTermsModalOpen(true);
                 }}
+                onStartChat={(p) => {
+                  navigate(`/instructor/messages?pupilId=${p.id}`);
+                }}
                 hasSignedTerms={pupilSignatures[pupil.id] || false}
                 instructorId={instructorId}
                 instructorName={instructor?.name}

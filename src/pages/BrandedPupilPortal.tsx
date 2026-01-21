@@ -21,6 +21,7 @@ import { PupilPortalTheory } from "@/components/pupil-portal/PupilPortalTheory";
 import { PupilPortalProgress } from "@/components/pupil-portal/PupilPortalProgress";
 import { PupilPortalHistory } from "@/components/pupil-portal/PupilPortalHistory";
 import { PupilPortalGaps } from "@/components/pupil-portal/PupilPortalGaps";
+import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 
 interface InstructorBranding {
@@ -47,7 +48,7 @@ interface Pupil {
   prepaid_hours: number | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -412,6 +413,7 @@ export default function BrandedPupilPortal() {
                   {[
                     { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'View & manage your schedule' },
                     { id: 'gaps' as const, icon: Clock, label: 'Book a Lesson', desc: 'See available slots' },
+                    { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with your instructor' },
                     { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & payment history' },
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & book exam' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
@@ -551,6 +553,23 @@ export default function BrandedPupilPortal() {
                   pupilId={pupil.id}
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
+                />
+              </motion.div>
+            )}
+
+            {activeSection === 'messages' && (
+              <motion.div
+                key="messages"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="h-[calc(100vh-8rem)]"
+              >
+                <PupilChat 
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
+                  instructorName={instructor.name}
+                  onBack={() => setActiveSection('home')}
                 />
               </motion.div>
             )}

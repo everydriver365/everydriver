@@ -145,6 +145,48 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          instructor_id: string
+          last_message_at: string | null
+          last_message_preview: string | null
+          pupil_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          instructor_id: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          pupil_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          instructor_id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          pupil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_enquiries: {
         Row: {
           additional_notes: string | null
@@ -2291,6 +2333,44 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          read_at: string | null
+          sender_id: string
+          sender_type: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          sender_type: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
