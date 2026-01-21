@@ -29,6 +29,7 @@ import {
   Wrench,
   Search,
   Headphones,
+  CalendarClock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -118,6 +119,7 @@ const navGroups: NavGroup[] = [
     color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
     items: [
       { id: "courses", label: "Course Templates", icon: BookOpen },
+      { id: "booking-modes", label: "Booking Modes", icon: CalendarClock },
       { id: "upsells", label: "Booking Upsells", icon: Zap },
       { id: "promotions", label: "Promotional Banners", icon: Megaphone },
     ],
