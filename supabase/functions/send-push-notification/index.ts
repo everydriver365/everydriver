@@ -22,6 +22,19 @@ interface NotificationRequest {
   notification: PushPayload;
 }
 
+// Check if request is from internal service (other edge functions)
+function isInternalRequest(req: Request): boolean {
+  const authHeader = req.headers.get("Authorization");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  
+  // Check if the Authorization header contains the service role key
+  if (authHeader && supabaseServiceKey && authHeader.includes(supabaseServiceKey.substring(0, 50))) {
+    return true;
+  }
+  
+  return false;
+}
+
 // Web Push encryption using web-push compatible approach
 async function sendWebPush(
   subscription: { endpoint: string; p256dh: string; auth: string },
@@ -91,7 +104,36 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    // Check if this is an internal request from other edge functions
+    const internal = isInternalRequest(req);
+    
+    // For external requests, validate authentication
+    if (!internal) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: "Missing authorization header" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Verify the user's token
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+      });
+
+      const { data: { user }, error: authError } = await userClient.auth.getUser();
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: "Invalid or expired token" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { instructorId, notification }: NotificationRequest = await req.json();
