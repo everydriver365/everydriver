@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift, CalendarSearch, ShieldCheck, Copy, Check, Share2 } from "lucide-react";
+import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift, CalendarSearch, ShieldCheck, Copy, Check, Share2, X, Phone, Info, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
@@ -14,6 +14,7 @@ import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
 import intensiveCoursesIcon from "@/assets/intensive-courses-icon.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
 import referFriendsImage from "@/assets/refer-friends.png";
@@ -22,6 +23,7 @@ export function MobileHomepage() {
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [showTestGuaranteeModal, setShowTestGuaranteeModal] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const {
     features: includedFeatures
@@ -98,7 +100,12 @@ export function MobileHomepage() {
   return <div className="min-h-screen bg-background">
       {/* Header - Same blue as bottom nav */}
       <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
-        <Button variant="ghost" size="icon" className="h-10 w-10 text-primary-foreground hover:bg-primary-foreground/10">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-10 w-10 text-primary-foreground hover:bg-primary-foreground/10"
+          onClick={() => setIsMenuOpen(true)}
+        >
           <Menu className="h-5 w-5" />
         </Button>
         <img src={logo} alt="EveryDriver" className="h-9" />
@@ -530,5 +537,49 @@ export function MobileHomepage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Menu Sheet */}
+      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <SheetContent side="left" className="w-[280px] p-0">
+          <SheetHeader className="p-4 border-b bg-primary">
+            <SheetTitle className="flex items-center gap-3">
+              <img src={logo} alt="EveryDriver" className="h-8" />
+            </SheetTitle>
+          </SheetHeader>
+          <nav className="flex flex-col p-2">
+            {[
+              { label: "Home", icon: Home, path: "/" },
+              { label: "Search Courses", icon: Search, path: "/courses" },
+              { label: "Intensive Courses", icon: Zap, path: "/intensives" },
+              { label: "Semi Intensive", icon: Calendar, path: "/semi-intensive" },
+              { label: "Theory Practice", icon: BookOpen, path: "/theory" },
+              { label: "FAQs", icon: HelpCircle, path: "/faqs" },
+              { label: "Help & Support", icon: MessageCircle, path: "/help" },
+              { label: "Benefits", icon: Gift, path: "/benefits" },
+              { label: "Contact Us", icon: Phone, path: "/contact" },
+              { label: "About Us", icon: Info, path: "/about" },
+              { label: "Privacy Policy", icon: FileText, path: "/privacy-policy" },
+              { label: "Terms of Service", icon: FileText, path: "/terms-of-service" },
+            ].map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive 
+                      ? "bg-primary/10 text-primary font-medium" 
+                      : "text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </SheetContent>
+      </Sheet>
     </div>;
 }
