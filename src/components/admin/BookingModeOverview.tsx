@@ -4,9 +4,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Calendar, Sparkles, UserCog, CheckCircle, AlertCircle, 
-  Clock, Loader2, User, Phone, Mail, RefreshCw
+  Loader2, User, Phone, Mail, RefreshCw, Pencil
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -41,6 +48,8 @@ export function BookingModeOverview() {
   const [pendingPupils, setPendingPupils] = useState<PendingPupil[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -138,6 +147,31 @@ export function BookingModeOverview() {
       toast.error("Failed to update pupil status");
     } finally {
       setConfirmingId(null);
+    }
+  };
+
+  const updateBookingMode = async (instructorId: string, newMode: string) => {
+    setSavingId(instructorId);
+    try {
+      const { error } = await supabase
+        .from("instructors")
+        .update({ booking_mode: newMode })
+        .eq("id", instructorId);
+
+      if (error) throw error;
+      
+      toast.success("Booking mode updated");
+      setInstructors(prev => 
+        prev.map(i => i.id === instructorId ? { ...i, booking_mode: newMode } : i)
+      );
+      setEditingId(null);
+      // Refresh data to update pending pupils if mode changed to/from instructor_assigns
+      fetchData();
+    } catch (error) {
+      console.error("Error updating booking mode:", error);
+      toast.error("Failed to update booking mode");
+    } finally {
+      setSavingId(null);
     }
   };
 
@@ -359,10 +393,58 @@ export function BookingModeOverview() {
                       </div>
                     </div>
 
-                    <Badge variant="secondary" className="gap-1.5">
-                      {getModeIcon(instructor.booking_mode)}
-                      {getModeLabel(instructor.booking_mode)}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {editingId === instructor.id ? (
+                        <Select
+                          defaultValue={instructor.booking_mode || "pupil_choice"}
+                          onValueChange={(value) => updateBookingMode(instructor.id, value)}
+                          disabled={savingId === instructor.id}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            {savingId === instructor.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <SelectValue />
+                            )}
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pupil_choice">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-primary" />
+                                Pupil Choice
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="auto_assign">
+                              <div className="flex items-center gap-2">
+                                <Sparkles className="h-4 w-4 text-amber-500" />
+                                Auto-Assign
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="instructor_assigns">
+                              <div className="flex items-center gap-2">
+                                <UserCog className="h-4 w-4 text-emerald-500" />
+                                Instructor Assigns
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <>
+                          <Badge variant="secondary" className="gap-1.5">
+                            {getModeIcon(instructor.booking_mode)}
+                            {getModeLabel(instructor.booking_mode)}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setEditingId(instructor.id)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
