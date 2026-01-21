@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, 
   ShieldCheck, Star, Loader2, Calendar, ChevronDown, Zap, Play, 
-  Backpack, AlertCircle, FileText, Banknote
+  Backpack, AlertCircle, FileText, Banknote, Sparkles
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,14 @@ import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
+import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { BookingUpsell } from "@/hooks/useBookingUpsells";
 import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
 
 interface Instructor {
@@ -98,6 +100,11 @@ interface MobileBookingViewProps {
   depositAmount: number;
   paymentOption: 'full' | 'deposit';
   setPaymentOption: (v: 'full' | 'deposit') => void;
+  // Upsells
+  availableUpsells?: BookingUpsell[];
+  selectedUpsells?: string[];
+  onUpsellsChange?: (ids: string[]) => void;
+  upsellTotal?: number;
   // Actions
   canSubmit: boolean;
   isPupilDetailsComplete: boolean;
@@ -142,6 +149,10 @@ export function MobileBookingView({
   depositAmount,
   paymentOption,
   setPaymentOption,
+  availableUpsells = [],
+  selectedUpsells = [],
+  onUpsellsChange,
+  upsellTotal = 0,
   canSubmit,
   isPupilDetailsComplete,
   isFullyScheduled,
@@ -520,6 +531,19 @@ export function MobileBookingView({
         </div>
       </div>
 
+      {/* Boost Your Booking - Upsells */}
+      {availableUpsells.length > 0 && onUpsellsChange && (
+        <div className="px-4 pb-4">
+          <div className="rounded-xl border bg-card p-4">
+            <UpsellSelector
+              upsells={availableUpsells}
+              selectedUpsells={selectedUpsells}
+              onSelectionChange={onUpsellsChange}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Step 3: Payment */}
       <div className="px-4 pb-8">
         <div className="rounded-xl border bg-card p-4">
@@ -533,7 +557,10 @@ export function MobileBookingView({
               Payment
             </h2>
             <div className="text-right">
-              <span className="text-xl font-bold">£{totalPrice}</span>
+              <span className="text-xl font-bold">£{totalPrice + upsellTotal}</span>
+              {upsellTotal > 0 && (
+                <div className="text-xs text-muted-foreground">incl. £{upsellTotal.toFixed(2)} extras</div>
+              )}
             </div>
           </div>
 
