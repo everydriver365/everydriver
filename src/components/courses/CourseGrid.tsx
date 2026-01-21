@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X } from "lucide-react";
+import { Calendar as CalendarIcon, PoundSterling, Navigation, MapPin, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DynamicCourseCard } from "@/components/DynamicCourseCard";
 import { MobileCourseCard } from "@/components/courses/MobileCourseCard";
@@ -28,6 +29,11 @@ export function CourseGrid({
   onClearSearch,
 }: CourseGridProps) {
   const isMobile = useIsMobile();
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
+
+  const handleLoadMore = () => {
+    setMobileVisibleCount(prev => Math.min(prev + 6, filteredCourses.length));
+  };
 
   if (!selectedDate) {
     return (
@@ -127,15 +133,32 @@ export function CourseGrid({
 
       {filteredCourses.length > 0 ? (
         isMobile ? (
-          // Mobile: Single column accordion cards
+          // Mobile: Single column accordion cards with load more
           <div className="flex flex-col gap-3">
-            {filteredCourses.slice(0, 6).map((course, index) => (
+            {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
               <MobileCourseCard
                 key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
                 course={course}
                 index={index}
               />
             ))}
+            {mobileVisibleCount < filteredCourses.length && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-4"
+              >
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleLoadMore}
+                  className="w-full gap-2"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                  Load More ({filteredCourses.length - mobileVisibleCount} remaining)
+                </Button>
+              </motion.div>
+            )}
           </div>
         ) : (
           // Desktop: 2-column grid with flip cards

@@ -311,8 +311,13 @@ export default function Courses() {
   
   // Instructor filter state
   const [selectedInstructorId, setSelectedInstructorId] = useState<string | null>(null);
+  
+  // Mobile load more state
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(6);
 
-  // Data from Supabase
+  const handleLoadMore = () => {
+    setMobileVisibleCount(prev => Math.min(prev + 6, filteredCourses.length));
+  };
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [instructorCourses, setInstructorCourses] = useState<InstructorCourse[]>([]);
   const [courseTemplates, setCourseTemplates] = useState<CourseTemplate[]>([]);
@@ -1155,15 +1160,32 @@ export default function Courses() {
 
                 {filteredCourses.length > 0 ? (
                   isMobile ? (
-                    // Mobile: Single column accordion cards
+                    // Mobile: Single column accordion cards with load more
                     <div className="flex flex-col gap-3">
-                      {filteredCourses.slice(0, 6).map((course, index) => (
+                      {filteredCourses.slice(0, mobileVisibleCount).map((course, index) => (
                         <MobileCourseCard
                           key={`${course.instructor.id}-${course.hours}-${course.bookableDate.toISOString()}`}
                           course={course}
                           index={index}
                         />
                       ))}
+                      {mobileVisibleCount < filteredCourses.length && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="mt-4"
+                        >
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={handleLoadMore}
+                            className="w-full gap-2"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                            Load More ({filteredCourses.length - mobileVisibleCount} remaining)
+                          </Button>
+                        </motion.div>
+                      )}
                     </div>
                   ) : (
                     // Desktop: 2-column grid with flip cards
@@ -1198,14 +1220,6 @@ export default function Courses() {
                     <p className="mt-2 text-muted-foreground">
                       Try adjusting your filters or selecting a different date.
                     </p>
-                  </div>
-                )}
-
-                {filteredCourses.length > 6 && (
-                  <div className="mt-6 text-center">
-                    <Button variant="outline" size="lg">
-                      Show all {filteredCourses.length} courses
-                    </Button>
                   </div>
                 )}
               </>
