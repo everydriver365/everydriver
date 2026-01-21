@@ -205,7 +205,7 @@ export function MobileHomepage() {
         <h3 className="font-bold text-foreground text-sm uppercase tracking-wider mb-3">What's Included</h3>
         
         <div className="grid grid-cols-2 gap-3">
-          {includedFeatures.slice(0, 4).map((feature, i) => {
+          {includedFeatures.slice(0, 6).map((feature, i) => {
           const IconComponent = feature.icon;
           return <motion.div key={feature.id} initial={{
             opacity: 0,
