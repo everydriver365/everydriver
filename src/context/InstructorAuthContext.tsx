@@ -140,7 +140,8 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    const redirectUrl = `${window.location.origin}/instructor`;
+    // Always redirect to Drive365 domain for instructor signups
+    const redirectUrl = "https://drive365.co.uk/instructor";
     
     const { error } = await supabase.auth.signUp({
       email,
@@ -235,8 +236,9 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
   };
 
   const resetPassword = async (email: string) => {
+    // Always redirect to Drive365 domain for instructor password resets
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/instructor-app/login`,
+      redirectTo: "https://drive365.co.uk/instructor-app/login",
     });
     return { error: error as Error | null };
   };
