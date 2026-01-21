@@ -13,6 +13,7 @@ import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
 import intensiveCoursesIcon from "@/assets/intensive-courses-icon.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
+import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.png";
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
@@ -192,8 +193,8 @@ export function MobileHomepage() {
           }} transition={{
             delay: 0.4
           }} className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg h-full">
-              <div className="w-11 h-11 bg-primary/10 rounded-full flex items-center justify-center mb-3">
-                <Car className="h-5 w-5 text-primary" />
+              <div className="w-12 h-12 rounded-full overflow-hidden mb-3 bg-primary/5">
+                <img src={weeklyLessonsIcon} alt="Weekly Lessons" className="w-full h-full object-cover" />
               </div>
               <h4 className="font-semibold text-sm">Weekly Lessons</h4>
               <p className="text-xs text-muted-foreground mt-1">Flexible pace</p>
