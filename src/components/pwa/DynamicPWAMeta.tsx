@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 
 interface PWAMetaConfig {
   icon: string;
+  favicon: string;
   splash: string;
   title: string;
   themeColor: string;
@@ -11,24 +12,28 @@ interface PWAMetaConfig {
 const pwaConfigs: Record<string, PWAMetaConfig> = {
   instructor: {
     icon: "/apple-touch-icon-365.png",
+    favicon: "/favicon-365.png",
     splash: "/splash-1170x2532.png",
     title: "Drive365",
     themeColor: "#141b43",
   },
   pupil: {
     icon: "/apple-touch-icon-365.png",
+    favicon: "/favicon-365.png",
     splash: "/splash-pupil.png",
     title: "DL Learner",
     themeColor: "#141b43",
   },
   parent: {
     icon: "/apple-touch-icon-365.png",
+    favicon: "/favicon-365.png",
     splash: "/splash-parent.png",
     title: "DL Parent",
     themeColor: "#141b43",
   },
   default: {
     icon: "/apple-touch-icon.png",
+    favicon: "/favicon.png",
     splash: "/splash-1170x2532.png",
     title: "EveryDriver",
     themeColor: "#141b43",
@@ -61,6 +66,12 @@ export function DynamicPWAMeta() {
   useEffect(() => {
     const portalType = getPortalType(location.pathname);
     const config = pwaConfigs[portalType] || pwaConfigs.default;
+
+    // Update favicon
+    const faviconLink = document.querySelector('link[rel="icon"]');
+    if (faviconLink) {
+      (faviconLink as HTMLLinkElement).href = config.favicon;
+    }
 
     // Update apple-touch-icon
     const iconLinks = document.querySelectorAll('link[rel="apple-touch-icon"]');
