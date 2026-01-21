@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      booking_upsells: {
+        Row: {
+          badge_text: string | null
+          created_at: string
+          display_order: number | null
+          full_description: string | null
+          highlight_color: string | null
+          icon_name: string | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          name: string
+          price: number
+          refund_policy: string | null
+          short_description: string
+          updated_at: string
+        }
+        Insert: {
+          badge_text?: string | null
+          created_at?: string
+          display_order?: number | null
+          full_description?: string | null
+          highlight_color?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name: string
+          price: number
+          refund_policy?: string | null
+          short_description: string
+          updated_at?: string
+        }
+        Update: {
+          badge_text?: string | null
+          created_at?: string
+          display_order?: number | null
+          full_description?: string | null
+          highlight_color?: string | null
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name?: string
+          price?: number
+          refund_policy?: string | null
+          short_description?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           event_type: string
@@ -2634,6 +2685,66 @@ export type Database = {
             columns: ["terms_id"]
             isOneToOne: false
             referencedRelation: "instructor_terms_conditions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pupil_upsells: {
+        Row: {
+          amount_paid: number
+          created_at: string
+          fulfilled_at: string | null
+          id: string
+          notes: string | null
+          pupil_id: string
+          purchased_at: string | null
+          refund_processed_at: string | null
+          refund_requested_at: string | null
+          status: string | null
+          updated_at: string
+          upsell_id: string
+        }
+        Insert: {
+          amount_paid: number
+          created_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          notes?: string | null
+          pupil_id: string
+          purchased_at?: string | null
+          refund_processed_at?: string | null
+          refund_requested_at?: string | null
+          status?: string | null
+          updated_at?: string
+          upsell_id: string
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          notes?: string | null
+          pupil_id?: string
+          purchased_at?: string | null
+          refund_processed_at?: string | null
+          refund_requested_at?: string | null
+          status?: string | null
+          updated_at?: string
+          upsell_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_upsells_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_upsells_upsell_id_fkey"
+            columns: ["upsell_id"]
+            isOneToOne: false
+            referencedRelation: "booking_upsells"
             referencedColumns: ["id"]
           },
         ]
