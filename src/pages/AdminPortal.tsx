@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +36,7 @@ import LoyaltyRewardsManager from "@/components/admin/LoyaltyRewardsManager";
 import RewardTiersManager from "@/components/admin/RewardTiersManager";
 import { InstructorFAQsManager } from "@/components/admin/InstructorFAQsManager";
 import { PublicFAQsManager } from "@/components/admin/PublicFAQsManager";
+import { BookingUpsellsManager } from "@/components/admin/BookingUpsellsManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -91,6 +92,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "reward-tiers": { title: "Badge Tiers", group: "Loyalty & Rewards", icon: Award },
   "instructor-faqs": { title: "Instructor FAQs", group: "Instructor Platform", icon: HelpCircle },
   "site-settings": { title: "Site Settings & SEO", group: "Settings", icon: Globe },
+  "upsells": { title: "Booking Upsells", group: "Content", icon: Zap },
 };
 
 export default function AdminPortal() {
@@ -604,6 +606,23 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <InstructorFAQsManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "upsells":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-emerald-500" />
+                  Booking Upsells
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BookingUpsellsManager />
               </CardContent>
             </Card>
           </motion.div>

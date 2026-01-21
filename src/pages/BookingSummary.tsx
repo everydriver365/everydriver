@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote, Sparkles } from "lucide-react";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -16,11 +16,13 @@ import { NPIHostedFields } from "@/components/booking/NPIHostedFields";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
+import { UpsellSelector } from "@/components/booking/UpsellSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePaymentGatewayHealth } from "@/hooks/usePaymentGatewayHealth";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import ideal4FinanceLogo from "@/assets/logo-ideal4finance.png";
 
 interface Instructor {
@@ -150,6 +152,15 @@ export default function BookingSummary() {
   const [depositEnabled, setDepositEnabled] = useState(false);
   const [depositAmount, setDepositAmount] = useState(350);
   const [paymentOption, setPaymentOption] = useState<'full' | 'deposit'>('full');
+  
+  // Upsells
+  const { data: availableUpsells = [] } = useBookingUpsells();
+  const [selectedUpsells, setSelectedUpsells] = useState<string[]>([]);
+  
+  // Calculate upsell total
+  const upsellTotal = availableUpsells
+    .filter((u) => selectedUpsells.includes(u.id))
+    .reduce((sum, u) => sum + Number(u.price), 0);
 
   const hours = parseInt(searchParams.get("hours") || "10");
   const selectedDateParam = searchParams.get("date");
@@ -319,8 +330,13 @@ export default function BookingSummary() {
         })),
         // Deposit payment fields
         paymentType,
-        amountPaid: amountPaid ?? (paymentType === 'full' ? totalPrice : depositAmount),
+        amountPaid: amountPaid ?? (paymentType === 'full' ? totalPrice + upsellTotal : depositAmount),
         depositAmount: paymentType === 'deposit' ? depositAmount : 0,
+        // Upsells
+        upsells: selectedUpsells.map((id) => {
+          const upsell = availableUpsells.find((u) => u.id === id);
+          return { id, price: upsell?.price || 0 };
+        }),
       },
     });
 

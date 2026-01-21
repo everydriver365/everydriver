@@ -28,6 +28,8 @@ interface BookingRequest {
   paymentType?: 'full' | 'deposit';
   amountPaid?: number;
   depositAmount?: number;
+  // Upsells
+  upsells?: { id: string; price: number }[];
 }
 
 serve(async (req) => {
@@ -120,8 +122,26 @@ serve(async (req) => {
       );
     }
 
-    // 3. Update pupil with next lesson date
-    const sortedLessons = lessons?.sort((a, b) => 
+    // 3. Save purchased upsells
+    if (booking.upsells && booking.upsells.length > 0) {
+      const upsellInserts = booking.upsells.map((u) => ({
+        pupil_id: pupil.id,
+        upsell_id: u.id,
+        amount_paid: u.price,
+        status: 'pending',
+      }));
+
+      const { error: upsellError } = await supabase
+        .from("pupil_upsells")
+        .insert(upsellInserts);
+
+      if (upsellError) {
+        console.error("Error saving upsells (non-fatal):", upsellError);
+      }
+    }
+
+    // 4. Update pupil with next lesson date
+    const sortedLessons = lessons?.sort((a, b) =>
       new Date(`${a.lesson_date}T${a.start_time}`).getTime() - 
       new Date(`${b.lesson_date}T${b.start_time}`).getTime()
     );

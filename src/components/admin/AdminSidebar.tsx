@@ -24,6 +24,7 @@ import {
   Trophy,
   Award,
   HelpCircle,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -78,6 +79,7 @@ const navGroups: NavGroup[] = [
     icon: BookOpen,
     items: [
       { id: "courses", label: "Course Templates", icon: BookOpen },
+      { id: "upsells", label: "Booking Upsells", icon: Zap },
     ],
   },
   {
