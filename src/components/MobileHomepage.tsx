@@ -10,6 +10,7 @@ import logo from "@/assets/logo-everydriver-transparent.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
+import intensiveCoursesIcon from "@/assets/intensive-courses-icon.gif";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
@@ -148,15 +149,15 @@ export function MobileHomepage() {
           y: 0
         }} transition={{
           delay: 0.3
-        }} className="p-4 bg-card border border-border/50 rounded-2xl shadow-lg flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-              <Zap className="h-6 w-6 text-primary" />
+        }} className="bg-card border border-border/50 rounded-2xl shadow-lg flex items-center overflow-hidden">
+            <div className="w-20 h-20 flex-shrink-0 bg-primary/5">
+              <img src={intensiveCoursesIcon} alt="Intensive Courses" className="w-full h-full object-cover" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 p-4">
               <h4 className="font-semibold">Intensive Courses</h4>
               <p className="text-sm text-muted-foreground">Pass in 1-2 weeks</p>
             </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            <ChevronRight className="h-5 w-5 text-muted-foreground mr-4" />
           </motion.div>
         </Link>
         
