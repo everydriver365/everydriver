@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { 
   MessageSquare, Search, User, Loader2, Send, ChevronLeft, 
-  Users, Car, Check, CheckCheck, Filter, X, CalendarIcon
+  Users, Car, Check, CheckCheck, Filter, X, CalendarIcon, Shield
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface Conversation {
@@ -55,6 +57,10 @@ export function AdminMessagesManager() {
     to: undefined,
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  
+  const { toast } = useToast();
 
   // Get unique instructors for filter dropdown
   const instructors = useMemo(() => {
@@ -106,6 +112,52 @@ export function AdminMessagesManager() {
       setLoading(false);
     }
   }, []);
+
+  const sendMessageAsInstructor = async () => {
+    if (!selectedConversation || !replyMessage.trim()) return;
+    
+    setSending(true);
+    try {
+      // Insert message as instructor
+      const { error: messageError } = await supabase.from("messages").insert({
+        conversation_id: selectedConversation.id,
+        sender_type: "instructor",
+        sender_id: selectedConversation.instructor_id,
+        content: replyMessage.trim(),
+      });
+
+      if (messageError) throw messageError;
+
+      // Update conversation's last message
+      const { error: convError } = await supabase
+        .from("conversations")
+        .update({
+          last_message_at: new Date().toISOString(),
+          last_message_preview: replyMessage.trim().substring(0, 100),
+        })
+        .eq("id", selectedConversation.id);
+
+      if (convError) throw convError;
+
+      setReplyMessage("");
+      toast({
+        title: "Message sent",
+        description: `Sent on behalf of ${selectedConversation.instructor?.name}`,
+      });
+      
+      // Refresh messages
+      fetchMessages(selectedConversation.id);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  };
 
   const fetchMessages = useCallback(async (conversationId: string) => {
     setMessagesLoading(true);
@@ -586,12 +638,39 @@ export function AdminMessagesManager() {
                   )}
                 </ScrollArea>
 
-                {/* Admin View Notice */}
-                <div className="p-4 border-t bg-muted/30">
-                  <p className="text-sm text-center text-muted-foreground">
-                    <MessageSquare className="h-4 w-4 inline mr-1" />
-                    Viewing conversation as admin (read-only)
-                  </p>
+                {/* Admin Reply Form */}
+                <div className="p-4 border-t bg-muted/10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <span className="text-xs text-muted-foreground">
+                      Replying as <strong>{selectedConversation.instructor?.name}</strong>
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Textarea
+                      placeholder="Type a message on behalf of the instructor..."
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      className="min-h-[60px] resize-none"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessageAsInstructor();
+                        }
+                      }}
+                    />
+                    <Button 
+                      onClick={sendMessageAsInstructor}
+                      disabled={!replyMessage.trim() || sending}
+                      className="self-end"
+                    >
+                      {sending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </>
             ) : (
