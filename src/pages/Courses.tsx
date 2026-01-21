@@ -850,7 +850,9 @@ export default function Courses() {
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto max-w-4xl"
           >
-            <h1 className="mb-6 text-2xl font-bold md:text-3xl">Find Driving Courses Near You</h1>
+            <h1 className="mb-6 text-2xl font-bold md:text-3xl">
+              {searchedAreaName ? `Courses in ${searchedAreaName}` : "Find Driving Courses Near You"}
+            </h1>
 
             <div className="flex flex-col gap-3 rounded-xl bg-card p-4 shadow-md sm:flex-row sm:items-center">
               <PostcodeAutocomplete
@@ -870,6 +872,8 @@ export default function Courses() {
                 <option value="10">10 miles</option>
                 <option value="15">15 miles</option>
                 <option value="25">25 miles</option>
+                <option value="35">35 miles</option>
+                <option value="50">50 miles</option>
               </select>
               <Button variant="accent" size="lg" className="h-11" onClick={() => handleSearch()} disabled={isSearching}>
                 {isSearching ? (
