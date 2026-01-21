@@ -11,6 +11,9 @@ interface NPICheckoutRequest {
   orderReference: string;
   customerEmail: string;
   customerName: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  customerPostcode?: string;
   description: string;
   returnUrl: string;
   cancelUrl: string;
@@ -135,6 +138,18 @@ serve(async (req: Request) => {
     }
     if (customerName) {
       requestData.customerName = customerName;
+    }
+    
+    // Add phone and address for pre-filling HPP
+    if (body.customerPhone) {
+      requestData.customerPhone = body.customerPhone;
+    }
+    if (body.customerAddress) {
+      requestData.customerAddress1 = body.customerAddress;
+    }
+    if (body.customerPostcode) {
+      requestData.customerPostcode = body.customerPostcode;
+      requestData.customerCountryCode = "826"; // UK
     }
     
     // Add merchant branding if provided
