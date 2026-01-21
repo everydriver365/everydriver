@@ -8,9 +8,8 @@ import { InstructorAuthProvider } from "@/context/InstructorAuthContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
 import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
-import { DomainRouter, isDrive365Domain } from "@/components/DomainRouter";
-import Index from "./pages/Index";
-import Drive365Home from "./pages/instructor-app/Drive365Home";
+import { DomainRouter } from "@/components/DomainRouter";
+import { ConditionalHome } from "@/components/ConditionalHome";
 import Courses from "./pages/Courses";
 import BookingSummary from "./pages/BookingSummary";
 import BookingConfirmation from "./pages/BookingConfirmation";
@@ -86,7 +85,7 @@ const App = () => (
             <DynamicPWAMeta />
             <Routes>
               {/* Root route - conditional based on domain */}
-              <Route path="/" element={isDrive365Domain() ? <Drive365Home /> : <Index />} />
+              <Route path="/" element={<ConditionalHome />} />
               {/* Learner-facing routes (EveryDriver branding) */}
               <Route path="/courses" element={<Courses />} />
               <Route path="/book/:instructorId" element={<BookingSummary />} />
