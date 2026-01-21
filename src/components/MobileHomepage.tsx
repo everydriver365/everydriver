@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift, CalendarSearch, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
+import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import heroLearnerMobile from "@/assets/mobile-hero.png";
@@ -21,6 +22,8 @@ export function MobileHomepage() {
   const {
     features: includedFeatures
   } = useIncludedFeatures();
+  const { data: upsells } = useBookingUpsells();
+  const earlierTestUpsell = upsells?.find(u => u.name.toLowerCase().includes('earlier test'));
   const navigate = useNavigate();
   const location = useLocation();
   const handleSearch = (e: React.FormEvent) => {
@@ -262,7 +265,9 @@ export function MobileHomepage() {
               <h4 className="font-bold text-white text-sm">Guaranteed Earlier Test</h4>
               <p className="text-xs text-white/80 mt-0.5">We'll find you an earlier slot or your money back!</p>
               <div className="flex items-center gap-2 mt-2">
-                <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">Only £49.99</span>
+                <span className="bg-white/20 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  Only £{earlierTestUpsell?.price?.toFixed(2) ?? '49.99'}
+                </span>
                 <span className="text-white/70 text-xs flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3" /> Refund guarantee
                 </span>
