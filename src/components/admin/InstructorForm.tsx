@@ -73,6 +73,8 @@ const instructorSchema = z.object({
   cpd_certified: z.boolean().optional(),
   adi_code_of_practice: z.boolean().optional(),
   instructor_grade: z.string().optional(),
+  // Booking mode
+  booking_mode: z.enum(["pupil_choice", "auto_assign", "instructor_assigns"]).optional(),
 });
 
 type InstructorFormData = z.infer<typeof instructorSchema>;
@@ -110,6 +112,7 @@ interface InstructorFormProps {
     adi_code_of_practice?: boolean;
     instructor_grade?: string;
     app_slug?: string;
+    booking_mode?: "pupil_choice" | "auto_assign" | "instructor_assigns";
   }>;
 }
 
@@ -167,6 +170,8 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       cpd_certified: initialData?.cpd_certified ?? false,
       adi_code_of_practice: initialData?.adi_code_of_practice ?? false,
       instructor_grade: initialData?.instructor_grade || "",
+      // Booking mode
+      booking_mode: initialData?.booking_mode ?? "pupil_choice",
     },
   });
 
@@ -344,6 +349,8 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         adi_code_of_practice: data.adi_code_of_practice ?? false,
         instructor_grade: data.instructor_grade || null,
         welcome_video_url: welcomeVideoUrlValue,
+        // Booking mode
+        booking_mode: data.booking_mode ?? "pupil_choice",
       };
 
       let instructorId = initialData?.id;
@@ -1278,13 +1285,39 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
         </div>
 
         {/* Booking Settings (Admin Only) */}
-        <div className="space-y-4 rounded-lg border border-amber-200 bg-amber-50/50 p-4">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-800">
+        <div className="space-y-4 rounded-lg border border-warning/30 bg-warning/5 p-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-warning-foreground">
             <Globe className="h-4 w-4" /> Booking Settings (Admin Only)
           </h3>
-          <p className="text-xs text-amber-700">These settings are not visible to instructors</p>
+          <p className="text-xs text-muted-foreground">These settings are not visible to instructors</p>
           
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <FormField
+              control={form.control}
+              name="booking_mode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Booking Mode</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select booking mode" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="pupil_choice">Pupil Choice</SelectItem>
+                      <SelectItem value="auto_assign">Auto-Assign</SelectItem>
+                      <SelectItem value="instructor_assigns">Instructor Assigns</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription className="text-xs">
+                    How lessons are scheduled for this instructor
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="school_skim_amount"
@@ -1301,7 +1334,7 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
-                    Fixed GBP amount deducted per booking (hidden from instructor)
+                    Fixed GBP amount deducted per booking
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
