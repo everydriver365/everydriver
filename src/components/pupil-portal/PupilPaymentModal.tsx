@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreditCard, Loader2, X, Shield, CheckCircle2 } from "lucide-react";
+import { CreditCard, Loader2, Shield } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { SquareWalletButtons } from "./SquareWalletButtons";
 
 interface PupilPaymentModalProps {
   open: boolean;
@@ -151,7 +152,7 @@ export function PupilPaymentModal({
             </div>
             {amountOwed > 0 && (
               <p className="text-sm text-muted-foreground">
-                Balance owed: <span className="font-medium text-red-500">£{amountOwed.toFixed(2)}</span>
+                Balance owed: <span className="font-medium text-destructive">£{amountOwed.toFixed(2)}</span>
               </p>
             )}
           </div>
@@ -190,9 +191,21 @@ export function PupilPaymentModal({
             </div>
           )}
 
+          {/* Apple Pay / Google Pay Express Checkout */}
+          <SquareWalletButtons
+            amount={paymentAmount}
+            pupilId={pupilId}
+            instructorId={instructorId}
+            instructorSlug={instructorSlug}
+            pupilName={pupilName}
+            pupilEmail={pupilEmail}
+            onProcessing={setProcessing}
+            disabled={processing || paymentAmount <= 0}
+          />
+
           {/* Payment Gateway Options */}
           <div className="space-y-2">
-            <Label>Choose Payment Method</Label>
+            <Label>Or choose a payment method</Label>
             <div className="grid gap-2">
               {gateways.map((gateway) => (
                 <Card
@@ -201,7 +214,7 @@ export function PupilPaymentModal({
                     selectedGateway === gateway.id && processing
                       ? "ring-2 ring-primary"
                       : ""
-                  }`}
+                  } ${processing ? "opacity-50 pointer-events-none" : ""}`}
                   onClick={() => !processing && handlePayment(gateway.id)}
                 >
                   <CardContent className="p-3 flex items-center gap-3">
@@ -223,7 +236,7 @@ export function PupilPaymentModal({
 
           {/* Security Notice */}
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-            <Shield className="h-4 w-4 text-green-600" />
+            <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />
             <span>Payments are processed securely. Your card details are never stored.</span>
           </div>
         </div>
