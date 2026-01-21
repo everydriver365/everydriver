@@ -8,14 +8,15 @@ const corsHeaders = {
 
 interface NotifyRequest {
   instructorId: string;
-  type: "new_booking" | "cancellation" | "reschedule";
+  type: "new_booking" | "cancellation" | "reschedule" | "admin_message";
   pupilName: string;
-  lessonDate: string;
-  lessonTime: string;
+  lessonDate?: string;
+  lessonTime?: string;
   durationMinutes?: number;
   oldDate?: string;
   oldTime?: string;
   chargeApplied?: boolean;
+  messagePreview?: string;
 }
 
 interface PushNotification {
@@ -76,40 +77,51 @@ serve(async (req) => {
 
     switch (data.type) {
       case "new_booking":
-        smsMessage = `📅 New booking! ${data.pupilName} has booked a ${data.durationMinutes || 60}-min lesson on ${formatDate(data.lessonDate)} at ${formatTime(data.lessonTime)}. Check your schedule for details.`;
+        smsMessage = `📅 New booking! ${data.pupilName} has booked a ${data.durationMinutes || 60}-min lesson on ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}. Check your schedule for details.`;
         pushNotification = {
           title: "📅 New Booking",
-          body: `${data.pupilName} booked ${formatDate(data.lessonDate)} at ${formatTime(data.lessonTime)}`,
+          body: `${data.pupilName} booked ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}`,
           tag: "new-booking",
           data: { type: "new_booking", lessonDate: data.lessonDate }
         };
         break;
 
       case "cancellation":
-        smsMessage = `❌ Cancellation: ${data.pupilName}'s lesson on ${formatDate(data.lessonDate)} at ${formatTime(data.lessonTime)} has been cancelled.${data.chargeApplied ? " Cancellation fee applied." : ""}`;
+        smsMessage = `❌ Cancellation: ${data.pupilName}'s lesson on ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)} has been cancelled.${data.chargeApplied ? " Cancellation fee applied." : ""}`;
         pushNotification = {
           title: "❌ Lesson Cancelled",
-          body: `${data.pupilName}'s lesson on ${formatDate(data.lessonDate)} at ${formatTime(data.lessonTime)} cancelled${data.chargeApplied ? " - fee applied" : ""}`,
+          body: `${data.pupilName}'s lesson on ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)} cancelled${data.chargeApplied ? " - fee applied" : ""}`,
           tag: "cancellation",
           data: { type: "cancellation", lessonDate: data.lessonDate }
         };
         break;
 
       case "reschedule":
-        smsMessage = `🔄 Reschedule: ${data.pupilName}'s lesson moved from ${formatDate(data.oldDate!)} at ${formatTime(data.oldTime!)} → ${formatDate(data.lessonDate)} at ${formatTime(data.lessonTime)}.`;
+        smsMessage = `🔄 Reschedule: ${data.pupilName}'s lesson moved from ${formatDate(data.oldDate!)} at ${formatTime(data.oldTime!)} → ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}.`;
         pushNotification = {
           title: "🔄 Lesson Rescheduled",
-          body: `${data.pupilName}: ${formatDate(data.oldDate!)} → ${formatDate(data.lessonDate)} at ${formatTime(data.lessonTime)}`,
+          body: `${data.pupilName}: ${formatDate(data.oldDate!)} → ${formatDate(data.lessonDate!)} at ${formatTime(data.lessonTime!)}`,
           tag: "reschedule",
           data: { type: "reschedule", lessonDate: data.lessonDate, oldDate: data.oldDate }
         };
         break;
 
-      default:
-        smsMessage = `📱 Update for ${data.pupilName}'s lesson on ${formatDate(data.lessonDate)}.`;
+      case "admin_message":
+        const preview = data.messagePreview?.substring(0, 50) || "New message";
+        smsMessage = `💬 Admin sent a message to ${data.pupilName} on your behalf: "${preview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}"`;
         pushNotification = {
-          title: "📱 Lesson Update",
-          body: `Update for ${data.pupilName}'s lesson on ${formatDate(data.lessonDate)}`,
+          title: "💬 Message Sent on Your Behalf",
+          body: `Admin messaged ${data.pupilName}: "${preview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}"`,
+          tag: "admin-message",
+          data: { type: "admin_message", pupilName: data.pupilName }
+        };
+        break;
+
+      default:
+        smsMessage = `📱 Update for ${data.pupilName}${data.lessonDate ? `'s lesson on ${formatDate(data.lessonDate)}` : ''}.`;
+        pushNotification = {
+          title: "📱 Update",
+          body: `Update for ${data.pupilName}${data.lessonDate ? `'s lesson on ${formatDate(data.lessonDate)}` : ''}`,
           tag: "update",
           data: { type: "update", lessonDate: data.lessonDate }
         };

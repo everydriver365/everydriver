@@ -139,10 +139,25 @@ export function AdminMessagesManager() {
 
       if (convError) throw convError;
 
+      // Notify instructor that admin sent a message on their behalf
+      try {
+        await supabase.functions.invoke("notify-instructor", {
+          body: {
+            instructorId: selectedConversation.instructor_id,
+            type: "admin_message",
+            pupilName: selectedConversation.pupil?.name || "Pupil",
+            messagePreview: replyMessage.trim(),
+          },
+        });
+      } catch (notifyError) {
+        console.error("Error notifying instructor:", notifyError);
+        // Don't fail the whole operation if notification fails
+      }
+
       setReplyMessage("");
       toast({
         title: "Message sent",
-        description: `Sent on behalf of ${selectedConversation.instructor?.name}`,
+        description: `Sent on behalf of ${selectedConversation.instructor?.name}. Instructor notified.`,
       });
       
       // Refresh messages
