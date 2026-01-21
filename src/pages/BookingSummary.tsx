@@ -522,6 +522,9 @@ export default function BookingSummary() {
           orderReference,
           customerEmail: pupilEmail.trim(),
           customerName: pupilName.trim(),
+          customerPhone: pupilPhone.trim(),
+          customerAddress: pupilAddress.trim(),
+          customerPostcode: pupilPostcode.trim(),
           description: isDepositPayment 
             ? `Deposit for ${courseName} - ${hours} Hour Driving Course`
             : `${courseName} - ${hours} Hour Driving Course`,
