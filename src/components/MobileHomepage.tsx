@@ -20,6 +20,7 @@ export function MobileHomepage() {
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [showTestGuaranteeModal, setShowTestGuaranteeModal] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
   const {
     features: includedFeatures
   } = useIncludedFeatures();
@@ -282,23 +283,24 @@ export function MobileHomepage() {
 
       {/* Guest Pass / Promo Banner - Full Width with Image */}
       <div className="px-4 pt-4">
-        <motion.div initial={{
-        opacity: 0,
-        y: 20
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        delay: 0.75
-      }} className="relative rounded-2xl overflow-hidden h-36 shadow-lg">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ delay: 0.75 }}
+          onClick={() => setShowReferralModal(true)}
+          className="relative rounded-2xl overflow-hidden h-36 shadow-lg cursor-pointer active:scale-[0.98] transition-transform"
+        >
           <img src={heroLearnerMobile} alt="Refer a friend" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
           <div className="relative z-10 p-5 h-full flex flex-col justify-center">
             <h4 className="font-bold text-xl text-white italic">Refer a Friend</h4>
             <p className="text-sm text-white/80 mt-1">Get £50 off when your friend books</p>
-            <Button size="sm" className="mt-3 w-fit bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-4 text-xs font-medium">
-              Get Referral Link
-            </Button>
+            <div className="flex items-center gap-2 mt-3">
+              <span className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                Learn More
+              </span>
+              <ChevronRight className="h-4 w-4 text-white/60" />
+            </div>
           </div>
         </motion.div>
       </div>
@@ -413,6 +415,61 @@ export function MobileHomepage() {
               }}
             >
               Find a Course & Add This
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Refer a Friend Modal */}
+      <Dialog open={showReferralModal} onOpenChange={setShowReferralModal}>
+        <DialogContent className="w-[calc(100vw-32px)] max-w-sm max-h-[80vh] overflow-y-auto rounded-2xl p-0">
+          <div className="relative h-32 overflow-hidden">
+            <img src={heroLearnerMobile} alt="Refer a friend" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20" />
+            <DialogHeader className="absolute bottom-0 left-0 right-0 p-4 pb-3">
+              <DialogTitle className="flex items-center gap-2 text-white text-lg">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Gift className="h-5 w-5 text-white" />
+                </div>
+                <span>Refer a Friend</span>
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="p-4 space-y-4">
+            <div className="bg-primary/10 rounded-xl p-4 text-center">
+              <span className="text-3xl font-bold text-primary">£50</span>
+              <p className="text-sm text-muted-foreground mt-1">discount for you & your friend</p>
+            </div>
+            
+            <div className="space-y-3">
+              <h4 className="font-semibold text-foreground">How it works</h4>
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</div>
+                  <p className="text-sm text-muted-foreground">Share your unique referral link with friends who want to learn to drive</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</div>
+                  <p className="text-sm text-muted-foreground">Your friend books a course using your link and gets £50 off</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</div>
+                  <p className="text-sm text-muted-foreground">Once they complete their first lesson, you get £50 credit too!</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-muted/50 rounded-xl p-3">
+              <p className="text-xs text-muted-foreground text-center">
+                Terms apply. Referral credit is applied after your friend completes their first paid lesson.
+              </p>
+            </div>
+            
+            <Button 
+              className="w-full"
+              onClick={() => setShowReferralModal(false)}
+            >
+              <Gift className="h-4 w-4 mr-2" />
+              Get My Referral Link
             </Button>
           </div>
         </DialogContent>
