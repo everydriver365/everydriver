@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift, CalendarSearch, ShieldCheck } from "lucide-react";
+import { Search, Zap, Calendar, Car, ChevronRight, Home, BookOpen, HelpCircle, MessageCircle, Menu, MapPin, Gift, CalendarSearch, ShieldCheck, Copy, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 import { useBookingUpsells } from "@/hooks/useBookingUpsells";
@@ -28,6 +29,7 @@ export function MobileHomepage() {
   const earlierTestUpsell = upsells?.find(u => u.name.toLowerCase().includes('earlier test'));
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (postcode.trim()) {
@@ -466,9 +468,25 @@ export function MobileHomepage() {
             
             <Button 
               className="w-full"
-              onClick={() => setShowReferralModal(false)}
+              onClick={async () => {
+                const referralLink = `${window.location.origin}/?ref=FRIEND50`;
+                try {
+                  await navigator.clipboard.writeText(referralLink);
+                  toast({
+                    title: "Link copied!",
+                    description: "Share this link with your friends to earn £50 each.",
+                  });
+                  setShowReferralModal(false);
+                } catch (err) {
+                  toast({
+                    title: "Couldn't copy link",
+                    description: referralLink,
+                    variant: "destructive",
+                  });
+                }
+              }}
             >
-              <Gift className="h-4 w-4 mr-2" />
+              <Copy className="h-4 w-4 mr-2" />
               Get My Referral Link
             </Button>
           </div>
