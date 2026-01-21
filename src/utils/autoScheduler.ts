@@ -1,0 +1,333 @@
+import { supabase } from "@/integrations/supabase/client";
+
+interface WorkingHours {
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  is_active: boolean;
+}
+
+interface DateOverride {
+  override_date: string;
+  is_available: boolean;
+  start_time?: string;
+  end_time?: string;
+}
+
+interface ScheduledLesson {
+  lesson_date: string;
+  start_time: string;
+  duration_minutes: number;
+}
+
+interface ExternalEvent {
+  event_date: string;
+  start_time: string;
+  end_time: string;
+}
+
+interface ManualBlock {
+  block_date: string;
+  start_time: string;
+  end_time: string;
+}
+
+interface SlotCandidate {
+  date: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  score: number;
+}
+
+interface AutoScheduleParams {
+  instructorId: string;
+  totalHours: number;
+  lessonLength: number; // in minutes
+  preferredTimes?: string[]; // 'morning', 'afternoon', 'evening'
+  preferredDays?: string[]; // 'monday', 'tuesday', etc.
+  courseType?: 'intensive' | 'semi-intensive' | 'weekly';
+  startFromDate?: Date;
+}
+
+// Time ranges for preferences
+const TIME_RANGES = {
+  morning: { start: 7, end: 12 },
+  afternoon: { start: 12, end: 17 },
+  evening: { start: 17, end: 20 },
+};
+
+// Day name to number mapping (0 = Sunday, 1 = Monday, etc.)
+const DAY_MAP: Record<string, number> = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
+function parseTime(timeStr: string): number {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function formatTime(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}
+
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function formatDate(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+function getDayOfWeek(date: Date): number {
+  return date.getDay();
+}
+
+function getDayName(dayNumber: number): string {
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  return days[dayNumber];
+}
+
+export async function findOptimalSlots(params: AutoScheduleParams): Promise<SlotCandidate[]> {
+  const {
+    instructorId,
+    totalHours,
+    lessonLength,
+    preferredTimes = [],
+    preferredDays = [],
+    courseType = 'weekly',
+    startFromDate = new Date(),
+  } = params;
+
+  const totalMinutesNeeded = totalHours * 60;
+  const lookAheadDays = courseType === 'intensive' ? 14 : courseType === 'semi-intensive' ? 30 : 60;
+
+  // Fetch all availability data
+  const [workingHoursRes, overridesRes, lessonsRes] = await Promise.all([
+    supabase
+      .from('instructor_working_hours')
+      .select('*')
+      .eq('instructor_id', instructorId),
+    supabase
+      .from('instructor_date_overrides')
+      .select('*')
+      .eq('instructor_id', instructorId)
+      .gte('override_date', formatDate(startFromDate))
+      .lte('override_date', formatDate(addDays(startFromDate, lookAheadDays))),
+    supabase
+      .from('scheduled_lessons')
+      .select('lesson_date, start_time, duration_minutes')
+      .eq('instructor_id', instructorId)
+      .gte('lesson_date', formatDate(startFromDate))
+      .lte('lesson_date', formatDate(addDays(startFromDate, lookAheadDays)))
+      .neq('status', 'cancelled'),
+  ]);
+
+  const workingHours = (workingHoursRes.data || []) as unknown as WorkingHours[];
+  const overrides = (overridesRes.data || []) as unknown as DateOverride[];
+  const lessons = (lessonsRes.data || []) as unknown as ScheduledLesson[];
+  
+  // Initialize empty arrays for external events and manual blocks (may not exist in all schemas)
+  const externalEvents: ExternalEvent[] = [];
+  const manualBlocks: ManualBlock[] = [];
+
+  // Generate all possible slots for each day
+  const allCandidates: SlotCandidate[] = [];
+
+  for (let dayOffset = 0; dayOffset < lookAheadDays; dayOffset++) {
+    const date = addDays(startFromDate, dayOffset);
+    const dateStr = formatDate(date);
+    const dayOfWeek = getDayOfWeek(date);
+    const dayName = getDayName(dayOfWeek);
+
+    // Check for date override
+    const override = overrides.find(o => o.override_date === dateStr);
+    
+    let dayStart: number;
+    let dayEnd: number;
+
+    if (override) {
+      if (!override.is_available) continue; // Day is blocked
+      dayStart = parseTime(override.start_time || '09:00');
+      dayEnd = parseTime(override.end_time || '17:00');
+    } else {
+      const hours = workingHours.find(h => h.day_of_week === dayOfWeek && h.is_active);
+      if (!hours) continue; // Not working this day
+      dayStart = parseTime(hours.start_time);
+      dayEnd = parseTime(hours.end_time);
+    }
+
+    // Get blocked time slots for this day
+    const blockedSlots: { start: number; end: number }[] = [];
+
+    // Add existing lessons
+    lessons
+      .filter(l => l.lesson_date === dateStr)
+      .forEach(l => {
+        const start = parseTime(l.start_time);
+        blockedSlots.push({ start, end: start + l.duration_minutes });
+      });
+
+    // Add external events
+    externalEvents
+      .filter(e => e.event_date === dateStr)
+      .forEach(e => {
+        blockedSlots.push({ start: parseTime(e.start_time), end: parseTime(e.end_time) });
+      });
+
+    // Add manual blocks
+    manualBlocks
+      .filter(b => b.block_date === dateStr)
+      .forEach(b => {
+        blockedSlots.push({ start: parseTime(b.start_time), end: parseTime(b.end_time) });
+      });
+
+    // Sort blocked slots
+    blockedSlots.sort((a, b) => a.start - b.start);
+
+    // Find available slots
+    let currentTime = dayStart;
+
+    for (const blocked of blockedSlots) {
+      if (currentTime + lessonLength <= blocked.start) {
+        // There's room before this blocked slot
+        const slotEnd = Math.min(blocked.start, dayEnd);
+        while (currentTime + lessonLength <= slotEnd) {
+          allCandidates.push({
+            date: dateStr,
+            startTime: formatTime(currentTime),
+            endTime: formatTime(currentTime + lessonLength),
+            duration: lessonLength,
+            score: calculateScore(currentTime, dayName, preferredTimes, preferredDays, courseType),
+          });
+          currentTime += 30; // 30-min increments
+        }
+      }
+      currentTime = Math.max(currentTime, blocked.end);
+    }
+
+    // Check remaining time after all blocks
+    while (currentTime + lessonLength <= dayEnd) {
+      allCandidates.push({
+        date: dateStr,
+        startTime: formatTime(currentTime),
+        endTime: formatTime(currentTime + lessonLength),
+        duration: lessonLength,
+        score: calculateScore(currentTime, dayName, preferredTimes, preferredDays, courseType),
+      });
+      currentTime += 30;
+    }
+  }
+
+  // Sort by score (highest first)
+  allCandidates.sort((a, b) => b.score - a.score);
+
+  // Select slots until we have enough hours
+  const selectedSlots: SlotCandidate[] = [];
+  let scheduledMinutes = 0;
+  const usedDates = new Set<string>();
+
+  for (const candidate of allCandidates) {
+    if (scheduledMinutes >= totalMinutesNeeded) break;
+
+    // Check for conflicts with already selected slots
+    const hasConflict = selectedSlots.some(
+      s => s.date === candidate.date && 
+      !(parseTime(candidate.endTime) <= parseTime(s.startTime) || 
+        parseTime(candidate.startTime) >= parseTime(s.endTime))
+    );
+
+    if (hasConflict) continue;
+
+    // Course type specific rules
+    if (courseType === 'weekly') {
+      // Max 1 lesson per day for weekly
+      if (usedDates.has(candidate.date)) continue;
+    } else if (courseType === 'semi-intensive') {
+      // Max 2 lessons per day for semi-intensive
+      const sameDayCount = selectedSlots.filter(s => s.date === candidate.date).length;
+      if (sameDayCount >= 2) continue;
+    }
+    // Intensive: no limit on lessons per day
+
+    selectedSlots.push(candidate);
+    scheduledMinutes += candidate.duration;
+    usedDates.add(candidate.date);
+  }
+
+  // Sort selected slots by date and time
+  selectedSlots.sort((a, b) => {
+    const dateCompare = a.date.localeCompare(b.date);
+    if (dateCompare !== 0) return dateCompare;
+    return parseTime(a.startTime) - parseTime(b.startTime);
+  });
+
+  return selectedSlots;
+}
+
+function calculateScore(
+  timeMinutes: number,
+  dayName: string,
+  preferredTimes: string[],
+  preferredDays: string[],
+  courseType: string
+): number {
+  let score = 50; // Base score
+
+  const timeHour = timeMinutes / 60;
+
+  // Time preference matching
+  if (preferredTimes.length > 0) {
+    for (const pref of preferredTimes) {
+      const range = TIME_RANGES[pref as keyof typeof TIME_RANGES];
+      if (range && timeHour >= range.start && timeHour < range.end) {
+        score += 20;
+        break;
+      }
+    }
+  }
+
+  // Day preference matching
+  if (preferredDays.length > 0) {
+    if (preferredDays.includes(dayName)) {
+      score += 15;
+    }
+  }
+
+  // Course type bonuses
+  if (courseType === 'intensive') {
+    // Prefer mid-day slots for intensive
+    if (timeHour >= 9 && timeHour <= 15) score += 5;
+  } else if (courseType === 'weekly') {
+    // Prefer consistent timing
+    if (timeHour >= 10 && timeHour <= 14) score += 3;
+  }
+
+  return score;
+}
+
+export function formatSlotForDisplay(slot: SlotCandidate): string {
+  const date = new Date(slot.date);
+  const dayName = date.toLocaleDateString('en-GB', { weekday: 'short' });
+  const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  
+  // Format times
+  const formatDisplayTime = (time: string) => {
+    const [h, m] = time.split(':').map(Number);
+    const period = h >= 12 ? 'pm' : 'am';
+    const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+    return m === 0 ? `${hour12}${period}` : `${hour12}:${m.toString().padStart(2, '0')}${period}`;
+  };
+
+  return `${dayName} ${dateStr}, ${formatDisplayTime(slot.startTime)} - ${formatDisplayTime(slot.endTime)}`;
+}

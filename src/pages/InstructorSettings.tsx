@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock } from "lucide-react";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -14,6 +14,7 @@ import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
 import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
 import { TermsConditionsEditor } from "@/components/instructor/TermsConditionsEditor";
 import { DepositSettingsEditor } from "@/components/instructor/DepositSettingsEditor";
+import { BookingModeSelector } from "@/components/instructor/BookingModeSelector";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -427,6 +428,19 @@ const { data, error } = await supabase
               </div>
             )}
           </div>
+        </SettingsTile>
+
+        {/* Booking Mode Section */}
+        <SettingsTile 
+          id="booking-mode" 
+          icon={CalendarClock} 
+          title="Booking Mode" 
+          description="How pupils book lessons"
+        >
+          <BookingModeSelector 
+            instructorId={instructorId} 
+            currentMode={authInstructor?.booking_mode || 'pupil_choice'}
+          />
         </SettingsTile>
 
         {/* Deposit Settings Section */}

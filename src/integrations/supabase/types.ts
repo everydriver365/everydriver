@@ -1845,6 +1845,7 @@ export type Database = {
           bio: string | null
           bonus_earned: number | null
           booking_advance_days: number | null
+          booking_mode: string | null
           brand_colour: string | null
           buffer_minutes: number
           calendar_colors: Json | null
@@ -1934,6 +1935,7 @@ export type Database = {
           bio?: string | null
           bonus_earned?: number | null
           booking_advance_days?: number | null
+          booking_mode?: string | null
           brand_colour?: string | null
           buffer_minutes?: number
           calendar_colors?: Json | null
@@ -2023,6 +2025,7 @@ export type Database = {
           bio?: string | null
           bonus_earned?: number | null
           booking_advance_days?: number | null
+          booking_mode?: string | null
           brand_colour?: string | null
           buffer_minutes?: number
           calendar_colors?: Json | null
@@ -3133,13 +3136,16 @@ export type Database = {
           payment_type: string | null
           phone: string | null
           postcode: string
+          preferred_days: string[] | null
           preferred_language: string | null
+          preferred_times: string[] | null
           prepaid_hours: number | null
           profile_image_url: string | null
           progress: number | null
           referral_code: string | null
           referred_by_pupil_id: string | null
           reward_points: number | null
+          scheduling_status: string | null
           test_attempts: number | null
           test_centre_id: string | null
           test_date: string | null
@@ -3180,13 +3186,16 @@ export type Database = {
           payment_type?: string | null
           phone?: string | null
           postcode: string
+          preferred_days?: string[] | null
           preferred_language?: string | null
+          preferred_times?: string[] | null
           prepaid_hours?: number | null
           profile_image_url?: string | null
           progress?: number | null
           referral_code?: string | null
           referred_by_pupil_id?: string | null
           reward_points?: number | null
+          scheduling_status?: string | null
           test_attempts?: number | null
           test_centre_id?: string | null
           test_date?: string | null
@@ -3227,13 +3236,16 @@ export type Database = {
           payment_type?: string | null
           phone?: string | null
           postcode?: string
+          preferred_days?: string[] | null
           preferred_language?: string | null
+          preferred_times?: string[] | null
           prepaid_hours?: number | null
           profile_image_url?: string | null
           progress?: number | null
           referral_code?: string | null
           referred_by_pupil_id?: string | null
           reward_points?: number | null
+          scheduling_status?: string | null
           test_attempts?: number | null
           test_centre_id?: string | null
           test_date?: string | null
