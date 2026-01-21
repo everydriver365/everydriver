@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +41,7 @@ import { BookingUpsellsManager } from "@/components/admin/BookingUpsellsManager"
 import { EnquiriesManager } from "@/components/admin/EnquiriesManager";
 import { AdminMessagesManager } from "@/components/admin/AdminMessagesManager";
 import { LiveChatManager } from "@/components/admin/LiveChatManager";
+import { BookingModeOverview } from "@/components/admin/BookingModeOverview";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -99,6 +100,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "instructor-faqs": { title: "Instructor FAQs", group: "Instructor Platform", icon: HelpCircle },
   // Products & Booking
   courses: { title: "Course Templates", group: "Products & Booking", icon: BookOpen },
+  "booking-modes": { title: "Booking Modes", group: "Products & Booking", icon: CalendarClock },
   upsells: { title: "Booking Upsells", group: "Products & Booking", icon: Zap },
   promotions: { title: "Promotional Banners", group: "Products & Booking", icon: Megaphone },
   // Engagement & Rewards
@@ -468,6 +470,13 @@ export default function AdminPortal() {
                 <CourseTemplateManager />
               </CardContent>
             </Card>
+          </motion.div>
+        );
+
+      case "booking-modes":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <BookingModeOverview />
           </motion.div>
         );
 
