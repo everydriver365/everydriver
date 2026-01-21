@@ -49,6 +49,7 @@ interface Instructor {
   instructor_grade: string | null;
   welcome_video_url: string | null;
   school_skim_amount?: number | null;
+  booking_mode?: string | null;
 }
 
 interface CourseTemplate {
@@ -237,7 +238,7 @@ export default function BookingSummary() {
       if (!instructorId) return;
 
       const [instructorRes, templateRes, instructorCourseRes, reviewsRes, workingHoursRes, dateOverridesRes] = await Promise.all([
-        supabase.from("instructors").select("*, deposit_enabled, deposit_amount").eq("id", instructorId).maybeSingle(),
+        supabase.from("instructors").select("*, deposit_enabled, deposit_amount, booking_mode").eq("id", instructorId).maybeSingle(),
         supabase.from("course_templates").select("*").eq("course_hours", hours).maybeSingle(),
         supabase.from("instructor_courses").select("course_image_url").eq("instructor_id", instructorId).eq("course_hours", hours).maybeSingle(),
         supabase.from("course_reviews").select("*").eq("instructor_id", instructorId).eq("course_hours", hours).order("review_date", { ascending: false }).limit(5),
@@ -279,6 +280,7 @@ export default function BookingSummary() {
           buffer_minutes: instructor.buffer_minutes || 15,
           car_image_url: instructor.car_image_url || null,
           welcome_video_url: instructor.welcome_video_url || null,
+          booking_mode: instructor.booking_mode || 'pupil_choice',
         },
         hours,
         courseName,
