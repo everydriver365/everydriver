@@ -19,6 +19,7 @@ export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [showTestGuaranteeModal, setShowTestGuaranteeModal] = useState(false);
   const {
     features: includedFeatures
   } = useIncludedFeatures();
@@ -255,7 +256,8 @@ export function MobileHomepage() {
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ delay: 0.7 }}
-          className="relative rounded-2xl overflow-hidden shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600"
+          onClick={() => setShowTestGuaranteeModal(true)}
+          className="relative rounded-2xl overflow-hidden shadow-lg bg-gradient-to-r from-emerald-500 to-teal-600 cursor-pointer active:scale-[0.98] transition-transform"
         >
           <div className="p-4 flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center shrink-0">
@@ -273,6 +275,7 @@ export function MobileHomepage() {
                 </span>
               </div>
             </div>
+            <ChevronRight className="h-5 w-5 text-white/60 shrink-0" />
           </div>
         </motion.div>
       </div>
@@ -359,6 +362,59 @@ export function MobileHomepage() {
             __html: selectedFeature.detailed_content
           }} />}
             </div>}
+        </DialogContent>
+      </Dialog>
+      {/* Guaranteed Earlier Test Modal */}
+      <Dialog open={showTestGuaranteeModal} onOpenChange={setShowTestGuaranteeModal}>
+        <DialogContent className="w-[calc(100vw-32px)] max-w-sm max-h-[80vh] overflow-y-auto rounded-2xl p-0">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-4">
+            <DialogHeader className="pb-0">
+              <DialogTitle className="flex items-center gap-2 text-white text-lg">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <CalendarSearch className="h-5 w-5 text-white" />
+                </div>
+                <span>Guaranteed Earlier Test</span>
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-foreground">
+                £{earlierTestUpsell?.price?.toFixed(2) ?? '49.99'}
+              </span>
+              <span className="bg-emerald-100 text-emerald-700 text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1">
+                <ShieldCheck className="h-3 w-3" /> Money-back guarantee
+              </span>
+            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              {earlierTestUpsell?.short_description ?? "We'll actively search for earlier test cancellations and book you in when one becomes available."}
+            </p>
+            
+            {earlierTestUpsell?.full_description && (
+              <div 
+                className="prose prose-sm dark:prose-invert max-w-none text-sm [&>p]:mb-3 [&>p]:leading-relaxed [&>ul]:my-2 [&>ul]:space-y-1"
+                dangerouslySetInnerHTML={{ __html: earlierTestUpsell.full_description }}
+              />
+            )}
+            
+            {earlierTestUpsell?.refund_policy && (
+              <div className="bg-muted/50 rounded-xl p-3">
+                <h4 className="font-semibold text-sm text-foreground mb-1">Refund Policy</h4>
+                <p className="text-xs text-muted-foreground">{earlierTestUpsell.refund_policy}</p>
+              </div>
+            )}
+            
+            <Button 
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+              onClick={() => {
+                setShowTestGuaranteeModal(false);
+                navigate('/courses');
+              }}
+            >
+              Find a Course & Add This
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>;
