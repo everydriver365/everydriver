@@ -389,7 +389,7 @@ export default function BookingSummary() {
 
       const { data, error } = await supabase.functions.invoke("clearpay-checkout", {
         body: {
-          amount: totalPrice,
+          amount: totalPrice + upsellTotal,
           currency: "GBP",
           merchantReference,
           consumer: {
@@ -406,9 +406,9 @@ export default function BookingSummary() {
           },
           items: [
             {
-              name: `${courseName} - ${hours} Hour Driving Course`,
+              name: `${courseName} - ${hours} Hour Driving Course${upsellTotal > 0 ? ' + extras' : ''}`,
               quantity: 1,
-              price: totalPrice,
+              price: totalPrice + upsellTotal,
             },
           ],
           redirectUrls: {
@@ -460,7 +460,7 @@ export default function BookingSummary() {
 
       const { data, error } = await supabase.functions.invoke("klarna-checkout", {
         body: {
-          amount: totalPrice,
+          amount: totalPrice + upsellTotal,
           currency: "GBP",
           merchantReference,
           consumer: {
@@ -477,9 +477,9 @@ export default function BookingSummary() {
           },
           items: [
             {
-              name: `${courseName} - ${hours} Hour Driving Course`,
+              name: `${courseName} - ${hours} Hour Driving Course${upsellTotal > 0 ? ' + extras' : ''}`,
               quantity: 1,
-              unitPrice: totalPrice,
+              unitPrice: totalPrice + upsellTotal,
             },
           ],
           redirectUrls: {
@@ -525,9 +525,10 @@ export default function BookingSummary() {
     try {
       // Determine payment type based on selection
       const isDepositPayment = paymentOption === 'deposit' && depositEnabled;
+      const fullPaymentAmount = totalPrice + upsellTotal;
       const pupilId = await ensureBookingCreated(
         isDepositPayment ? 'deposit' : 'full',
-        isDepositPayment ? depositAmount : totalPrice
+        isDepositPayment ? depositAmount : fullPaymentAmount
       );
       if (!pupilId) return;
 
@@ -535,7 +536,7 @@ export default function BookingSummary() {
       const currentUrl = window.location.origin;
 
       // Determine payment amount based on selection
-      const paymentAmount = isDepositPayment ? depositAmount : totalPrice;
+      const paymentAmount = isDepositPayment ? depositAmount : fullPaymentAmount;
 
       const { data, error } = await supabase.functions.invoke("npi-checkout", {
         body: {
@@ -1699,7 +1700,7 @@ export default function BookingSummary() {
                       }`}
                     >
                       <div className="font-medium">Pay in Full</div>
-                      <div className="text-lg font-bold">£{totalPrice}</div>
+                      <div className="text-lg font-bold">£{totalPrice + upsellTotal}</div>
                     </button>
                     <button
                       onClick={() => setPaymentOption('deposit')}
@@ -1715,7 +1716,7 @@ export default function BookingSummary() {
                   </div>
                   {paymentOption === 'deposit' && (
                     <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 rounded p-2">
-                      <strong>⚠️ Important:</strong> Remaining £{totalPrice - depositAmount} must be paid 30 days before your first lesson, or booking will be cancelled and deposit forfeited.
+                      <strong>⚠️ Important:</strong> Remaining £{(totalPrice + upsellTotal) - depositAmount} must be paid 30 days before your first lesson, or booking will be cancelled and deposit forfeited.
                     </div>
                   )}
                 </div>
@@ -1729,7 +1730,7 @@ export default function BookingSummary() {
                 {isNPILoading ? (
                   <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Processing...</>
                 ) : (
-                  <>Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice} with Card</>
+                  <>Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal} with Card</>
                 )}
               </Button>
               <p className="text-xs text-muted-foreground mt-2 text-center">Visa, Mastercard, Amex accepted</p>
@@ -1750,7 +1751,7 @@ export default function BookingSummary() {
                   {isClearpayLoading ? "Loading..." : "Pay in 4"}
                 </span>
               </div>
-              <div className="font-semibold text-sm">4 × £{(totalPrice / 4).toFixed(2)}</div>
+              <div className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</div>
               <div className="text-xs text-muted-foreground">Interest-free instalments</div>
             </button>
 
@@ -1764,11 +1765,11 @@ export default function BookingSummary() {
                   Pay in 3 instalments
                 </span>
               </div>
-              <div className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</div>
+              <div className="font-semibold text-sm mb-2">3 × £{((totalPrice + upsellTotal) / 3).toFixed(2)}</div>
               <KlarnaExpressButton
-                amount={totalPrice}
+                amount={totalPrice + upsellTotal}
                 merchantReference={klarnaMerchantReference}
-                orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course`}
+                orderDescription={`${courseDetails?.courseName || "Driving Course"} - ${hours} Hour Course${upsellTotal > 0 ? ' + extras' : ''}`}
                 disabled={!canSubmit}
                 onSuccess={async (authToken, orderId) => {
                   console.log("Klarna Express authorization success:", authToken, orderId);
@@ -1816,7 +1817,7 @@ export default function BookingSummary() {
                 </button>
               </div>
               <NPIHostedFields
-                amount={totalPrice}
+                amount={totalPrice + upsellTotal}
                 orderReference={`NPI-${instructor.id.slice(0, 8)}-${Date.now()}`}
                 customerEmail={pupilEmail.trim()}
                 customerName={pupilName.trim()}
