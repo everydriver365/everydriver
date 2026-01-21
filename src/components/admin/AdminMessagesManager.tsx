@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { 
   MessageSquare, Search, User, Loader2, Send, ChevronLeft, 
-  Users, Car, Check, CheckCheck
+  Users, Car, Check, CheckCheck, Filter, X, CalendarIcon
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
 interface Conversation {
@@ -43,6 +46,29 @@ export function AdminMessagesManager() {
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Filter states
+  const [instructorFilter, setInstructorFilter] = useState<string>("all");
+  const [unreadFilter, setUnreadFilter] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+    from: undefined,
+    to: undefined,
+  });
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Get unique instructors for filter dropdown
+  const instructors = useMemo(() => {
+    const uniqueInstructors = new Map<string, { id: string; name: string }>();
+    conversations.forEach(conv => {
+      if (conv.instructor) {
+        uniqueInstructors.set(conv.instructor.id, {
+          id: conv.instructor.id,
+          name: conv.instructor.name
+        });
+      }
+    });
+    return Array.from(uniqueInstructors.values());
+  }, [conversations]);
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -146,13 +172,63 @@ export function AdminMessagesManager() {
     }
   }, [selectedConversation, fetchMessages]);
 
-  const filteredConversations = conversations.filter(conv => {
-    const query = searchQuery.toLowerCase();
-    return (
-      conv.instructor?.name.toLowerCase().includes(query) ||
-      conv.pupil?.name.toLowerCase().includes(query)
-    );
-  });
+  const filteredConversations = useMemo(() => {
+    return conversations.filter(conv => {
+      // Search filter
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = 
+        conv.instructor?.name.toLowerCase().includes(query) ||
+        conv.pupil?.name.toLowerCase().includes(query);
+      
+      if (!matchesSearch) return false;
+      
+      // Instructor filter
+      if (instructorFilter !== "all" && conv.instructor?.id !== instructorFilter) {
+        return false;
+      }
+      
+      // Unread filter
+      if (unreadFilter === "unread" && (conv.unread_count || 0) === 0) {
+        return false;
+      }
+      if (unreadFilter === "read" && (conv.unread_count || 0) > 0) {
+        return false;
+      }
+      
+      // Date range filter
+      if (dateRange.from || dateRange.to) {
+        const msgDate = new Date(conv.last_message_at);
+        if (dateRange.from && dateRange.to) {
+          if (!isWithinInterval(msgDate, { 
+            start: startOfDay(dateRange.from), 
+            end: endOfDay(dateRange.to) 
+          })) {
+            return false;
+          }
+        } else if (dateRange.from) {
+          if (msgDate < startOfDay(dateRange.from)) return false;
+        } else if (dateRange.to) {
+          if (msgDate > endOfDay(dateRange.to)) return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [conversations, searchQuery, instructorFilter, unreadFilter, dateRange]);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (instructorFilter !== "all") count++;
+    if (unreadFilter !== "all") count++;
+    if (dateRange.from || dateRange.to) count++;
+    return count;
+  }, [instructorFilter, unreadFilter, dateRange]);
+
+  const clearFilters = () => {
+    setInstructorFilter("all");
+    setUnreadFilter("all");
+    setDateRange({ from: undefined, to: undefined });
+  };
 
   const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
 
@@ -209,19 +285,131 @@ export function AdminMessagesManager() {
         <div className="flex h-full">
           {/* Conversations List */}
           <div className={cn(
-            "w-full md:w-80 border-r flex flex-col",
+            "w-full md:w-96 border-r flex flex-col",
             selectedConversation ? "hidden md:flex" : "flex"
           )}>
-            <div className="p-4 border-b">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search conversations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
+            <div className="p-4 border-b space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search conversations..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Button
+                  variant={showFilters ? "secondary" : "outline"}
+                  size="icon"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="relative"
+                >
+                  <Filter className="h-4 w-4" />
+                  {activeFiltersCount > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button>
               </div>
+              
+              {/* Filter Panel */}
+              {showFilters && (
+                <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Filters</span>
+                    {activeFiltersCount > 0 && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 text-xs">
+                        <X className="h-3 w-3 mr-1" />
+                        Clear all
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Instructor Filter */}
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground">Instructor</label>
+                    <Select value={instructorFilter} onValueChange={setInstructorFilter}>
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="All instructors" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All instructors</SelectItem>
+                        {instructors.map(instructor => (
+                          <SelectItem key={instructor.id} value={instructor.id}>
+                            {instructor.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Unread Filter */}
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground">Status</label>
+                    <Select value={unreadFilter} onValueChange={setUnreadFilter}>
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="All messages" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All messages</SelectItem>
+                        <SelectItem value="unread">Unread only</SelectItem>
+                        <SelectItem value="read">Read only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Date Range Filter */}
+                  <div className="space-y-1">
+                    <label className="text-xs text-muted-foreground">Date range</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full h-8 justify-start text-left font-normal text-sm",
+                            !dateRange.from && !dateRange.to && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-3 w-3" />
+                          {dateRange.from ? (
+                            dateRange.to ? (
+                              <>
+                                {format(dateRange.from, "dd/MM/yy")} - {format(dateRange.to, "dd/MM/yy")}
+                              </>
+                            ) : (
+                              format(dateRange.from, "dd MMM yyyy")
+                            )
+                          ) : (
+                            "Select dates"
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="range"
+                          selected={{ from: dateRange.from, to: dateRange.to }}
+                          onSelect={(range) => setDateRange({ from: range?.from, to: range?.to })}
+                          numberOfMonths={1}
+                        />
+                        {(dateRange.from || dateRange.to) && (
+                          <div className="p-2 border-t">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => setDateRange({ from: undefined, to: undefined })}
+                            >
+                              Clear dates
+                            </Button>
+                          </div>
+                        )}
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              )}
             </div>
             
             <ScrollArea className="flex-1">
