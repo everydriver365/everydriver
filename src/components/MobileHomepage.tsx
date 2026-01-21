@@ -72,7 +72,7 @@ export function MobileHomepage() {
           transition={{ delay: 0.2 }}
           className="mx-4 -mt-20 relative z-10"
         >
-          <div className="bg-gradient-to-br from-primary/15 via-primary/10 to-primary/5 dark:from-primary/20 dark:via-primary/10 dark:to-card border border-primary/20 dark:border-primary/30 rounded-2xl p-5 shadow-xl">
+          <div className="bg-gradient-to-br from-primary/25 via-primary/15 to-primary/5 dark:from-primary/30 dark:via-primary/15 dark:to-card border border-primary/25 dark:border-primary/40 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1">
                 <h3 className="font-bold text-lg text-foreground uppercase tracking-wide">There's Still Time</h3>
