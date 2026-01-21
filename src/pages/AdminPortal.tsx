@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +37,7 @@ import RewardTiersManager from "@/components/admin/RewardTiersManager";
 import { InstructorFAQsManager } from "@/components/admin/InstructorFAQsManager";
 import { PublicFAQsManager } from "@/components/admin/PublicFAQsManager";
 import { BookingUpsellsManager } from "@/components/admin/BookingUpsellsManager";
+import { EnquiriesManager } from "@/components/admin/EnquiriesManager";
 import { supabase } from "@/integrations/supabase/client";
 
 const stats = [
@@ -75,6 +76,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   overview: { title: "Overview", group: "Dashboard", icon: LayoutDashboard },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
+  enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
   // Learner Website (EveryDriver)
   hero: { title: "Hero Section", group: "Learner Website", icon: Sparkles },
   sections: { title: "Page Sections", group: "Learner Website", icon: Layers },
@@ -290,6 +292,23 @@ export default function AdminPortal() {
                     onRefresh={fetchInstructors}
                   />
                 )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "enquiries":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileEdit className="h-5 w-5 text-accent" />
+                  Bespoke Enquiries & Callback Requests
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EnquiriesManager />
               </CardContent>
             </Card>
           </motion.div>
