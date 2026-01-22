@@ -35,6 +35,7 @@ import 'leaflet/dist/leaflet.css';
 import DamoovScoresDisplay from './DamoovScoresDisplay';
 import PupilGamificationStats from './PupilGamificationStats';
 import SpeedLimitRoundel from './SpeedLimitRoundel';
+import { GPSPermissionHelper } from './GPSPermissionHelper';
 import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -321,23 +322,26 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
             <Navigation className="h-5 w-5 text-primary" />
             GPS Telematics
           </CardTitle>
-          <Button
-            size="sm"
-            variant={isTracking ? 'destructive' : 'default'}
-            onClick={() => isTracking ? handleStopTracking() : handleStartTracking()}
-          >
-            {isTracking ? (
-              <>
-                <Square className="h-4 w-4 mr-1.5" />
-                <span className="hidden sm:inline">Stop</span>
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4 mr-1.5" />
-                <span className="hidden sm:inline">Start</span>
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            {!isTracking && <GPSPermissionHelper />}
+            <Button
+              size="sm"
+              variant={isTracking ? 'destructive' : 'default'}
+              onClick={() => isTracking ? handleStopTracking() : handleStartTracking()}
+            >
+              {isTracking ? (
+                <>
+                  <Square className="h-4 w-4 mr-1.5" />
+                  <span className="hidden sm:inline">Stop</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-1.5" />
+                  <span className="hidden sm:inline">Start</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
