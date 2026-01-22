@@ -609,7 +609,7 @@ export function MobileHomepage() {
                 Parent
               </Link>
               <Link
-                to="/pupil"
+                to="/pupil/login"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
               >

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   GraduationCap, Calendar, BookOpen, CreditCard, Clock, Award, ChevronRight, 
@@ -149,62 +149,9 @@ export default function PupilPortal() {
   const totalScheduledHours = upcomingLessons.reduce((acc, l) => acc + l.duration_minutes / 60, 0);
   const totalCompletedHours = lessonHistory.reduce((acc, l) => acc + l.duration_minutes / 60, 0);
 
-  // Demo mode if no pupilId
+  // Redirect to login if no pupilId
   if (!pupilId) {
-    return (
-      <MainLayout>
-        <div className="container py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <h1 className="text-2xl font-bold md:text-3xl">Welcome back, Alex!</h1>
-            <p className="text-muted-foreground">Track your progress and manage your lessons</p>
-          </motion.div>
-
-          {/* Quick Stats */}
-          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { icon: Clock, label: "Total Hours", value: "24", color: "bg-primary" },
-              { icon: Calendar, label: "Lessons Completed", value: "12", color: "bg-emerald-500" },
-              { icon: BookOpen, label: "Theory Progress", value: "78%", color: "bg-amber-500" },
-              { icon: Award, label: "Skills Mastered", value: "8/15", color: "bg-blue-500" },
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card>
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.color}`}>
-                      <stat.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                      <div className="text-sm text-muted-foreground">{stat.label}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="text-center py-12">
-            <User className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Demo Mode</h2>
-            <p className="text-muted-foreground mb-6">
-              This is a demo view. To see your actual lessons and progress, access your portal via the link sent to your email after booking.
-            </p>
-            <Button asChild>
-              <Link to="/courses">Browse Courses</Link>
-            </Button>
-          </div>
-        </div>
-      </MainLayout>
-    );
+    return <Navigate to="/pupil/login" replace />;
   }
 
   if (loading) {
