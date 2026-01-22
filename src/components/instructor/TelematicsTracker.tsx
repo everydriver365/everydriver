@@ -293,7 +293,9 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                     <p className="text-xs text-muted-foreground">
                       {Math.round(currentSpeed * 0.621371)} mph · {(totalDistance * 0.621371).toFixed(1)} mi
                     </p>
-                    <span className={`text-xs ${getGPSStatusColor()}`}>{gpsQuality.status}</span>
+                    <span className={`text-xs ${getGPSStatusColor()}`}>
+                      {gpsQuality.status === 'unavailable' ? gpsQuality.message : gpsQuality.status}
+                    </span>
                   </div>
                 )}
               </div>
