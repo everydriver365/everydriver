@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Mail } from "lucide-react";
+import { MessageCircle, Mail, FileEdit, Phone, Users, CreditCard, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -72,11 +72,27 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
   const [counts, setCounts] = useState({
     liveChats: 0,
     emails: 0,
+    bespokeRequests: 0,
+    callbackRequests: 0,
+  });
+
+  const [stats, setStats] = useState({
+    totalInstructors: 0,
+    totalPayments: 0,
+    totalCoursesBooked: 0,
   });
 
   const fetchCounts = useCallback(async () => {
     try {
-      const [activeSessionsRes, offlineMessagesRes] = await Promise.all([
+      const [
+        activeSessionsRes,
+        offlineMessagesRes,
+        bespokeRes,
+        callbackRes,
+        instructorsRes,
+        paymentsRes,
+        coursesBookedRes,
+      ] = await Promise.all([
         supabase
           .from("live_chat_sessions")
           .select("id")
@@ -87,6 +103,26 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
           .select("id", { count: "exact", head: true })
           .eq("session_type", "admin")
           .eq("status", "offline_message"),
+        supabase
+          .from("course_enquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending")
+          .not("course_type", "in", '("callback","general")'),
+        supabase
+          .from("course_enquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending")
+          .in("course_type", ["callback", "general"]),
+        supabase
+          .from("instructors")
+          .select("id", { count: "exact", head: true }),
+        supabase
+          .from("payment_history")
+          .select("id", { count: "exact", head: true }),
+        supabase
+          .from("course_enquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "accepted"),
       ]);
 
       const activeSessionIds = (activeSessionsRes.data ?? []).map((s) => s.id);
@@ -108,6 +144,14 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       setCounts({
         liveChats: liveChatUnreadCount,
         emails: offlineMessagesRes.count || 0,
+        bespokeRequests: bespokeRes.count || 0,
+        callbackRequests: callbackRes.count || 0,
+      });
+
+      setStats({
+        totalInstructors: instructorsRes.count || 0,
+        totalPayments: paymentsRes.count || 0,
+        totalCoursesBooked: coursesBookedRes.count || 0,
       });
     } catch (error) {
       console.error("Error fetching notification counts:", error);
@@ -126,7 +170,22 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       )
       .on(
         "postgres_changes",
+        { event: "*", schema: "public", table: "course_enquiries" },
+        () => fetchCounts()
+      )
+      .on(
+        "postgres_changes",
         { event: "*", schema: "public", table: "live_chat_messages" },
+        () => fetchCounts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "instructors" },
+        () => fetchCounts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "payment_history" },
         () => fetchCounts()
       )
       .subscribe();
@@ -136,7 +195,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
     };
   }, [fetchCounts]);
 
-  const tiles = [
+  const primaryTiles = [
     {
       icon: MessageCircle,
       label: "Live Chats",
@@ -153,19 +212,91 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
     },
   ];
 
+  const enquiryTiles = [
+    {
+      icon: FileEdit,
+      label: "Bespoke Requests",
+      count: counts.bespokeRequests,
+      hasNew: counts.bespokeRequests > 0,
+      section: "enquiries",
+    },
+    {
+      icon: Phone,
+      label: "Callback Requests",
+      count: counts.callbackRequests,
+      hasNew: counts.callbackRequests > 0,
+      section: "enquiries",
+    },
+  ];
+
+  const statsTiles = [
+    {
+      icon: Users,
+      label: "Instructors Joined",
+      count: stats.totalInstructors,
+      section: "instructors",
+    },
+    {
+      icon: CreditCard,
+      label: "Payments Taken",
+      count: stats.totalPayments,
+      section: "overview",
+    },
+    {
+      icon: BookOpen,
+      label: "Courses Booked",
+      count: stats.totalCoursesBooked,
+      section: "enquiries",
+    },
+  ];
+
   return (
-    <div className="mb-6 grid gap-4 sm:grid-cols-2">
-      {tiles.map((tile, index) => (
-        <NotificationTile
-          key={tile.label}
-          icon={tile.icon}
-          label={tile.label}
-          count={tile.count}
-          hasNew={tile.hasNew}
-          onClick={() => onNavigate(tile.section)}
-          delay={index * 0.05}
-        />
-      ))}
+    <div className="mb-6 space-y-4">
+      {/* Top row: chats + offline messages */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {primaryTiles.map((tile, index) => (
+          <NotificationTile
+            key={tile.label}
+            icon={tile.icon}
+            label={tile.label}
+            count={tile.count}
+            hasNew={tile.hasNew}
+            onClick={() => onNavigate(tile.section)}
+            delay={index * 0.05}
+          />
+        ))}
+      </div>
+
+      {/* Second row: enquiries */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {enquiryTiles.map((tile, index) => (
+          <NotificationTile
+            key={tile.label}
+            icon={tile.icon}
+            label={tile.label}
+            count={tile.count}
+            hasNew={tile.hasNew}
+            onClick={() => onNavigate(tile.section)}
+            delay={(primaryTiles.length + index) * 0.05}
+          />
+        ))}
+      </div>
+
+      {/* Third row: system stats */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {statsTiles.map((tile, index) => (
+          <NotificationTile
+            key={tile.label}
+            icon={tile.icon}
+            label={tile.label}
+            count={tile.count}
+            hasNew={false}
+            isStats
+            onClick={() => onNavigate(tile.section)}
+            delay={(primaryTiles.length + enquiryTiles.length + index) * 0.05}
+          />
+        ))}
+      </div>
     </div>
   );
 }
