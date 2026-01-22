@@ -1,21 +1,28 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Users, Calendar, CreditCard, FileText, Clock, Bell, Phone, LogOut, Star, MessageSquare } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Users, Calendar, CreditCard, Clock, Bell, Phone, LogOut, Star, 
+  MessageSquare, ChevronRight, Loader2, CheckCircle2 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
+import { ParentMessageCard } from "@/components/parent/ParentMessageCard";
 
 interface Child {
   id: string;
   name: string;
+  instructor_id: string;
   instructor_name: string;
+  instructor_phone: string | null;
   lessons_completed: number;
   progress: number;
   account_balance: number;
@@ -41,9 +48,12 @@ interface LessonFeedback {
   rating: number | null;
 }
 
+type AuthStep = 'phone' | 'otp' | 'verified';
+
 export default function ParentPortal() {
   const [parentPhone, setParentPhone] = useState("");
-  const [isVerified, setIsVerified] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [authStep, setAuthStep] = useState<AuthStep>('phone');
   const [loading, setLoading] = useState(false);
   const [children, setChildren] = useState<Child[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -52,15 +62,15 @@ export default function ParentPortal() {
 
   // Check for existing session
   useEffect(() => {
-    const savedPhone = localStorage.getItem('parent_phone');
+    const savedPhone = localStorage.getItem('parent_phone_verified');
     if (savedPhone) {
       setParentPhone(savedPhone);
-      setIsVerified(true);
+      setAuthStep('verified');
       fetchChildrenData(savedPhone);
     }
   }, []);
 
-  const handleVerifyPhone = async () => {
+  const handleSendOTP = async () => {
     if (!parentPhone.trim()) {
       toast.error("Please enter your phone number");
       return;
@@ -68,36 +78,54 @@ export default function ParentPortal() {
 
     setLoading(true);
     try {
-      // Look up pupils linked to this parent phone
-      const { data: pupils, error } = await supabase
-        .from("pupils")
-        .select(`
-          id,
-          name,
-          lessons_completed,
-          progress,
-          account_balance,
-          prepaid_hours,
-          test_date,
-          instructor_id,
-          instructors!inner(name)
-        `)
-        .eq("parent_phone", parentPhone.trim());
+      const { data, error } = await supabase.functions.invoke("send-parent-otp", {
+        body: { phone: parentPhone.trim() },
+      });
 
       if (error) throw error;
 
-      if (!pupils || pupils.length === 0) {
-        toast.error("No children found linked to this phone number. Please contact your instructor.");
+      if (data.error) {
+        toast.error(data.error);
         return;
       }
 
-      localStorage.setItem('parent_phone', parentPhone.trim());
-      setIsVerified(true);
-      await fetchChildrenData(parentPhone.trim());
-      toast.success(`Welcome! Found ${pupils.length} child${pupils.length > 1 ? 'ren' : ''}`);
+      toast.success(`Verification code sent! Found ${data.childCount} child${data.childCount > 1 ? 'ren' : ''}`);
+      setAuthStep('otp');
     } catch (error) {
-      console.error("Error verifying phone:", error);
-      toast.error("Unable to verify. Please try again.");
+      console.error("Error sending OTP:", error);
+      toast.error("Unable to send verification code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (otp.length !== 6) {
+      toast.error("Please enter the 6-digit code");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("verify-parent-otp", {
+        body: { phone: parentPhone.trim(), code: otp },
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      // Store verified phone
+      localStorage.setItem('parent_phone_verified', parentPhone.trim());
+      setAuthStep('verified');
+      await fetchChildrenData(parentPhone.trim());
+      toast.success("Welcome to the Parent Portal!");
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      toast.error("Verification failed");
     } finally {
       setLoading(false);
     }
@@ -105,6 +133,8 @@ export default function ParentPortal() {
 
   const fetchChildrenData = async (phone: string) => {
     try {
+      const cleanPhone = phone.replace(/\s+/g, "");
+      
       // Fetch pupils linked to parent phone
       const { data: pupils, error: pupilsError } = await supabase
         .from("pupils")
@@ -118,7 +148,7 @@ export default function ParentPortal() {
           test_date,
           instructor_id
         `)
-        .eq("parent_phone", phone);
+        .or(`parent_phone.ilike.%${cleanPhone.slice(-9)}`);
 
       if (pupilsError) throw pupilsError;
 
@@ -127,16 +157,16 @@ export default function ParentPortal() {
         return;
       }
 
-      // Get instructor names
+      // Get instructor info
       const instructorIds = [...new Set(pupils.map(p => p.instructor_id))];
       const { data: instructors } = await supabase
         .from("instructors")
-        .select("id, name")
+        .select("id, name, phone")
         .in("id", instructorIds);
 
-      const instructorMap = new Map(instructors?.map(i => [i.id, i.name]) || []);
+      const instructorMap = new Map(instructors?.map(i => [i.id, i]) || []);
 
-      // Get next lessons for each pupil
+      // Get next lessons
       const pupilIds = pupils.map(p => p.id);
       const today = format(new Date(), 'yyyy-MM-dd');
       
@@ -149,7 +179,6 @@ export default function ParentPortal() {
         .order("lesson_date", { ascending: true })
         .order("start_time", { ascending: true });
 
-      // Map next lesson to each pupil
       const nextLessonMap = new Map<string, { date: string; time: string }>();
       nextLessons?.forEach(lesson => {
         if (!nextLessonMap.has(lesson.pupil_id)) {
@@ -160,25 +189,26 @@ export default function ParentPortal() {
         }
       });
 
-      const childrenData: Child[] = pupils.map(p => ({
-        id: p.id,
-        name: p.name,
-        instructor_name: instructorMap.get(p.instructor_id) || 'Unknown',
-        lessons_completed: p.lessons_completed || 0,
-        progress: p.progress || 0,
-        account_balance: p.account_balance || 0,
-        prepaid_hours: p.prepaid_hours || 0,
-        next_lesson_date: nextLessonMap.get(p.id)?.date || null,
-        next_lesson_time: nextLessonMap.get(p.id)?.time || null,
-        test_date: p.test_date
-      }));
+      const childrenData: Child[] = pupils.map(p => {
+        const instructor = instructorMap.get(p.instructor_id);
+        return {
+          id: p.id,
+          name: p.name,
+          instructor_id: p.instructor_id,
+          instructor_name: instructor?.name || 'Unknown',
+          instructor_phone: instructor?.phone || null,
+          lessons_completed: p.lessons_completed || 0,
+          progress: p.progress || 0,
+          account_balance: p.account_balance || 0,
+          prepaid_hours: p.prepaid_hours || 0,
+          next_lesson_date: nextLessonMap.get(p.id)?.date || null,
+          next_lesson_time: nextLessonMap.get(p.id)?.time || null,
+          test_date: p.test_date
+        };
+      });
 
       setChildren(childrenData);
-
-      // Fetch recent activities
       await fetchRecentActivities(pupilIds);
-      
-      // Fetch recent feedback
       await fetchRecentFeedback(pupilIds, pupils);
 
     } catch (error) {
@@ -189,7 +219,6 @@ export default function ParentPortal() {
 
   const fetchRecentActivities = async (pupilIds: string[]) => {
     try {
-      // Get recent lesson history
       const { data: lessons } = await supabase
         .from("lesson_history")
         .select("id, pupil_id, lesson_date, duration_minutes")
@@ -197,7 +226,6 @@ export default function ParentPortal() {
         .order("created_at", { ascending: false })
         .limit(5);
 
-      // Get recent payments
       const { data: payments } = await supabase
         .from("payment_history")
         .select("id, pupil_id, amount, recorded_at")
@@ -205,14 +233,12 @@ export default function ParentPortal() {
         .order("recorded_at", { ascending: false })
         .limit(5);
 
-      // Get pupil names
       const { data: pupils } = await supabase
         .from("pupils")
         .select("id, name")
         .in("id", pupilIds);
 
       const pupilMap = new Map(pupils?.map(p => [p.id, p.name]) || []);
-
       const allActivities: Activity[] = [];
 
       lessons?.forEach(l => {
@@ -235,9 +261,7 @@ export default function ParentPortal() {
         });
       });
 
-      // Sort by time (most recent first) and limit
       setActivities(allActivities.slice(0, 8));
-
     } catch (error) {
       console.error("Error fetching activities:", error);
     }
@@ -270,12 +294,14 @@ export default function ParentPortal() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('parent_phone');
-    setIsVerified(false);
+    localStorage.removeItem('parent_phone_verified');
+    setAuthStep('phone');
     setChildren([]);
     setActivities([]);
     setRecentFeedback([]);
     setParentPhone("");
+    setOtp("");
+    setSelectedChild(null);
     toast.success("Logged out successfully");
   };
 
@@ -296,8 +322,8 @@ export default function ParentPortal() {
     }
   };
 
-  // Phone verification screen
-  if (!isVerified) {
+  // Phone entry screen
+  if (authStep === 'phone') {
     return (
       <MainLayout>
         <div className="container py-8">
@@ -313,7 +339,7 @@ export default function ParentPortal() {
                 </div>
                 <CardTitle className="text-2xl">Parent Portal</CardTitle>
                 <p className="text-muted-foreground mt-2">
-                  Enter your phone number to view your children's progress
+                  Monitor your children's driving progress and contact their instructor
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -329,21 +355,96 @@ export default function ParentPortal() {
                         value={parentPhone}
                         onChange={(e) => setParentPhone(e.target.value)}
                         className="pl-10"
-                        onKeyDown={(e) => e.key === 'Enter' && handleVerifyPhone()}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendOTP()}
                       />
                     </div>
                   </div>
                 </div>
                 <Button 
                   className="w-full" 
-                  onClick={handleVerifyPhone}
+                  onClick={handleSendOTP}
                   disabled={loading}
                 >
-                  {loading ? "Verifying..." : "View My Children's Progress"}
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending Code...
+                    </>
+                  ) : (
+                    "Send Verification Code"
+                  )}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  Your instructor will have linked your phone number to your child's account
+                  We'll send a 6-digit code to verify your identity
                 </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // OTP verification screen
+  if (authStep === 'otp') {
+    return (
+      <MainLayout>
+        <div className="container py-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-md mx-auto"
+          >
+            <Card>
+              <CardHeader className="text-center">
+                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-2xl">Enter Verification Code</CardTitle>
+                <p className="text-muted-foreground mt-2">
+                  We sent a 6-digit code to {parentPhone}
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex justify-center">
+                  <InputOTP
+                    value={otp}
+                    onChange={(value) => setOtp(value)}
+                    maxLength={6}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                <Button 
+                  className="w-full" 
+                  onClick={handleVerifyOTP}
+                  disabled={loading || otp.length !== 6}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    "Verify & Continue"
+                  )}
+                </Button>
+                <div className="text-center">
+                  <Button 
+                    variant="link" 
+                    onClick={() => setAuthStep('phone')}
+                    className="text-muted-foreground"
+                  >
+                    Use a different number
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -382,6 +483,149 @@ export default function ParentPortal() {
     );
   }
 
+  // Child detail view
+  if (selectedChild) {
+    return (
+      <MainLayout>
+        <div className="container py-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => setSelectedChild(null)}
+            className="mb-4"
+          >
+            ← Back to Dashboard
+          </Button>
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Child Info */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground">
+                      {selectedChild.name.split(" ").map(n => n[0]).join("")}
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl">{selectedChild.name}</CardTitle>
+                      <p className="text-muted-foreground">
+                        Instructor: {selectedChild.instructor_name}
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="text-center p-4 rounded-lg bg-secondary">
+                      <div className="text-2xl font-bold">{selectedChild.lessons_completed}</div>
+                      <div className="text-xs text-muted-foreground">Lessons</div>
+                    </div>
+                    <div className="text-center p-4 rounded-lg bg-secondary">
+                      <div className="text-2xl font-bold">{selectedChild.progress}%</div>
+                      <div className="text-xs text-muted-foreground">Progress</div>
+                    </div>
+                    <div className="text-center p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950">
+                      <div className="text-2xl font-bold text-emerald-600">{selectedChild.prepaid_hours}h</div>
+                      <div className="text-xs text-muted-foreground">Credit</div>
+                    </div>
+                    <div className="text-center p-4 rounded-lg bg-amber-50 dark:bg-amber-950">
+                      <div className="text-2xl font-bold text-amber-600">
+                        £{selectedChild.account_balance.toFixed(0)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Balance</div>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span>Learning Progress</span>
+                      <span>{selectedChild.progress}%</span>
+                    </div>
+                    <Progress value={selectedChild.progress} className="h-3" />
+                  </div>
+
+                  {selectedChild.next_lesson_date && (
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 mb-3">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <div>
+                        <div className="font-medium">Next Lesson</div>
+                        <div className="text-sm text-muted-foreground">
+                          {format(parseISO(selectedChild.next_lesson_date), 'EEEE, d MMMM')}
+                          {selectedChild.next_lesson_time && ` at ${formatTime(selectedChild.next_lesson_time)}`}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedChild.test_date && (
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-amber-500/10">
+                      <Calendar className="h-5 w-5 text-amber-600" />
+                      <div>
+                        <div className="font-medium">Test Date</div>
+                        <div className="text-sm text-muted-foreground">
+                          {format(parseISO(selectedChild.test_date), 'EEEE, d MMMM yyyy')}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Feedback for this child */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Recent Instructor Feedback</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {recentFeedback.filter(f => f.pupil_name === selectedChild.name).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">
+                      No feedback yet for {selectedChild.name}
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentFeedback
+                        .filter(f => f.pupil_name === selectedChild.name)
+                        .map((feedback) => (
+                          <div key={feedback.id} className="p-3 rounded-lg border">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm text-muted-foreground">
+                                {format(parseISO(feedback.lesson_date), 'EEE d MMM')}
+                              </span>
+                              {feedback.rating && (
+                                <div className="flex gap-0.5">
+                                  {[1,2,3,4,5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`h-3 w-3 ${star <= feedback.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted'}`}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-sm">{feedback.notes}</p>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar - Message Instructor */}
+            <div>
+              <ParentMessageCard
+                instructorId={selectedChild.instructor_id}
+                instructorName={selectedChild.instructor_name}
+                childName={selectedChild.name}
+                parentPhone={parentPhone}
+              />
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Main dashboard
   return (
     <MainLayout>
       <PortalIOSInstallBanner 
@@ -413,7 +657,7 @@ export default function ParentPortal() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedChild(child)}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -423,42 +667,30 @@ export default function ParentPortal() {
                       <div>
                         <CardTitle className="text-lg">{child.name}</CardTitle>
                         <p className="text-sm text-muted-foreground">
-                          Instructor: {child.instructor_name}
+                          {child.instructor_name}
                         </p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setSelectedChild(child)}
-                    >
-                      View Details
-                    </Button>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="mt-4 grid grid-cols-3 gap-4 text-center">
                     <div className="rounded-lg bg-secondary p-3">
                       <div className="text-xl font-bold">{child.lessons_completed}</div>
-                      <div className="text-xs text-muted-foreground">Lessons Done</div>
+                      <div className="text-xs text-muted-foreground">Lessons</div>
                     </div>
                     <div className="rounded-lg bg-secondary p-3">
                       <div className="text-xl font-bold">{child.progress}%</div>
                       <div className="text-xs text-muted-foreground">Progress</div>
                     </div>
                     <div className="rounded-lg bg-emerald-500/10 p-3">
-                      <div className="text-xl font-bold text-emerald-600">
-                        {child.prepaid_hours}h
-                      </div>
+                      <div className="text-xl font-bold text-emerald-600">{child.prepaid_hours}h</div>
                       <div className="text-xs text-muted-foreground">Credit</div>
                     </div>
                   </div>
 
                   <div className="mt-4">
-                    <div className="mb-2 flex justify-between text-sm">
-                      <span>Learning Progress</span>
-                      <span>{child.progress}%</span>
-                    </div>
                     <Progress value={child.progress} className="h-2" />
                   </div>
 
@@ -466,28 +698,9 @@ export default function ParentPortal() {
                     <div className="mt-4 flex items-center gap-2 rounded-lg bg-primary/10 p-3">
                       <Clock className="h-4 w-4 text-primary" />
                       <span className="text-sm">
-                        <strong>Next lesson:</strong>{' '}
+                        <strong>Next:</strong>{' '}
                         {format(parseISO(child.next_lesson_date), 'EEE d MMM')}
                         {child.next_lesson_time && ` at ${formatTime(child.next_lesson_time)}`}
-                      </span>
-                    </div>
-                  )}
-
-                  {child.test_date && (
-                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-500/10 p-3">
-                      <Calendar className="h-4 w-4 text-amber-600" />
-                      <span className="text-sm">
-                        <strong>Test Date:</strong>{' '}
-                        {format(parseISO(child.test_date), 'EEE d MMMM yyyy')}
-                      </span>
-                    </div>
-                  )}
-
-                  {child.account_balance > 0 && (
-                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-500/10 p-3">
-                      <CreditCard className="h-4 w-4 text-red-600" />
-                      <span className="text-sm text-red-600">
-                        <strong>Outstanding:</strong> £{child.account_balance.toFixed(2)}
                       </span>
                     </div>
                   )}
@@ -520,10 +733,7 @@ export default function ParentPortal() {
                 ) : (
                   <div className="space-y-4">
                     {recentFeedback.map((feedback) => (
-                      <div
-                        key={feedback.id}
-                        className="rounded-lg border p-4"
-                      >
+                      <div key={feedback.id} className="rounded-lg border p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{feedback.pupil_name}</span>
@@ -574,10 +784,7 @@ export default function ParentPortal() {
                     {activities.map((activity) => {
                       const Icon = getActivityIcon(activity.type);
                       return (
-                        <div
-                          key={activity.id}
-                          className="flex items-start gap-3 text-sm"
-                        >
+                        <div key={activity.id} className="flex items-start gap-3 text-sm">
                           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary">
                             <Icon className="h-4 w-4 text-muted-foreground" />
                           </div>
