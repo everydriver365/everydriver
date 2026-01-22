@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,13 +14,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AnimatePresence } from "framer-motion";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 interface ChatWindowProps {
   conversation: Conversation;
   instructorId: string;
   onBack: () => void;
+  onDelete?: () => void;
 }
 
-export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowProps) {
+export function ChatWindow({ conversation, instructorId, onBack, onDelete }: ChatWindowProps) {
   const { messages, loading, sendMessage, markAsRead } = useConversationMessages(
     conversation.id,
     "instructor"
@@ -30,6 +48,9 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -211,8 +232,58 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
 
   const messageGroups = groupMessagesByDate(messages);
 
+  const handleClearMessages = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .delete()
+        .eq("conversation_id", conversation.id);
+
+      if (error) throw error;
+
+      toast({ title: "Messages cleared" });
+      setShowClearDialog(false);
+    } catch (error) {
+      console.error("Error clearing messages:", error);
+      toast({ title: "Failed to clear messages", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    setDeleting(true);
+    try {
+      // First delete all messages
+      await supabase
+        .from("messages")
+        .delete()
+        .eq("conversation_id", conversation.id);
+
+      // Then delete the conversation
+      const { error } = await supabase
+        .from("conversations")
+        .delete()
+        .eq("id", conversation.id);
+
+      if (error) throw error;
+
+      toast({ title: "Conversation deleted" });
+      setShowDeleteDialog(false);
+      onDelete?.();
+      onBack();
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast({ title: "Failed to delete conversation", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
-    <Card className="h-[calc(100vh-12rem)] flex flex-col">
+    <>
+    <Card className="h-[calc(100vh-10rem)] md:h-[calc(100vh-12rem)] flex flex-col">
       <CardHeader className="pb-3 border-b shrink-0">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
@@ -231,6 +302,26 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
               <p className="text-sm text-muted-foreground">{conversation.pupil.phone}</p>
             ) : null}
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="shrink-0">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setShowClearDialog(true)}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear Messages
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Chat
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
 
@@ -319,30 +410,27 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
         )}
       </ScrollArea>
 
-      <CardContent className="p-3 border-t shrink-0 space-y-2">
+      <CardContent className="p-2 border-t shrink-0 space-y-1.5">
         {/* File preview */}
         {selectedFile && (
-          <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+          <div className="flex items-center gap-2 p-1.5 bg-muted rounded-lg">
             {previewUrl ? (
-              <img src={previewUrl} alt="Preview" className="h-12 w-12 object-cover rounded" />
+              <img src={previewUrl} alt="Preview" className="h-8 w-8 object-cover rounded" />
             ) : (
-              <div className="h-12 w-12 bg-background rounded flex items-center justify-center">
-                <File className="h-6 w-6 text-muted-foreground" />
+              <div className="h-8 w-8 bg-background rounded flex items-center justify-center">
+                <File className="h-4 w-4 text-muted-foreground" />
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {(selectedFile.size / 1024).toFixed(1)} KB
-              </p>
+              <p className="text-xs font-medium truncate">{selectedFile.name}</p>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="shrink-0"
+              className="shrink-0 h-6 w-6"
               onClick={clearSelectedFile}
             >
-              <X className="h-4 w-4" />
+              <X className="h-3 w-3" />
             </Button>
           </div>
         )}
@@ -370,7 +458,7 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={sending}
-            className="flex-1"
+            className="flex-1 h-9 text-sm"
           />
           <Button
             size="icon"
@@ -386,5 +474,50 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
         </div>
       </CardContent>
     </Card>
+
+    {/* Clear Messages Dialog */}
+    <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Clear all messages?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will delete all messages in this conversation. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleClearMessages}
+            disabled={deleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleting ? "Clearing..." : "Clear Messages"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    {/* Delete Conversation Dialog */}
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will permanently delete this conversation and all messages. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleDeleteConversation}
+            disabled={deleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deleting ? "Deleting..." : "Delete Chat"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

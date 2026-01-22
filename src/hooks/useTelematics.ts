@@ -238,7 +238,8 @@ export const useTelematics = (instructorId: string) => {
       return { status: 'poor', accuracy_m: accuracy, message: 'Weak GPS signal - still recording' };
     }
     // Only show unavailable when we truly stop recording (> 500m)
-    return { status: 'unavailable', accuracy_m: accuracy, message: 'GPS signal lost - move outdoors' };
+    // Don't show accuracy value in this case as it's confusing
+    return { status: 'unavailable', accuracy_m: null, message: 'GPS signal lost - move to open area' };
   }, []);
 
   // Request wake lock to keep screen on during tracking

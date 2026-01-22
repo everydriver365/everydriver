@@ -391,8 +391,8 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
         )}
 
         {/* GPS Quality Warning */}
-        {isTracking && gpsQuality.status === 'poor' && (
-          <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-600 text-xs flex items-center gap-2">
+        {isTracking && (gpsQuality.status === 'poor' || gpsQuality.status === 'unavailable') && (
+          <div className={`p-2 ${gpsQuality.status === 'unavailable' ? 'bg-red-500/10 border-red-500/20 text-red-600' : 'bg-amber-500/10 border-amber-500/20 text-amber-600'} border rounded-lg text-xs flex items-center gap-2`}>
             <AlertTriangle className="h-4 w-4 flex-shrink-0" />
             {gpsQuality.message}
           </div>

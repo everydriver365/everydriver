@@ -161,6 +161,11 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
   const existingPupilIds = conversations.map(c => c.pupil_id);
   const availablePupils = filteredPupils.filter(p => !existingPupilIds.includes(p.id));
 
+  const handleDeleteConversation = () => {
+    setSelectedConversation(null);
+    fetchConversations();
+  };
+
   // Show pupil chat window
   if (selectedConversation) {
     return (
@@ -168,6 +173,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
         conversation={selectedConversation}
         instructorId={instructorId}
         onBack={() => setSelectedConversation(null)}
+        onDelete={handleDeleteConversation}
       />
     );
   }
