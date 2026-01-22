@@ -189,15 +189,12 @@ export function MobileBookingView({
     notes: string;
   }>({ preferredTimes: [], notes: '' });
   
-  // For auto_assign and instructor_assigns modes, we consider scheduling "complete" differently
-  const isScheduleComplete = bookingMode === 'instructor_assigns' 
-    ? true // No scheduling needed - instructor will do it
-    : bookingMode === 'auto_assign'
-    ? isFullyScheduled // Still need to confirm auto-assigned slots
-    : isFullyScheduled; // pupil_choice - normal behavior
+  // For auto_assign and instructor_assigns modes, skip the scheduling step entirely
+  const requiresSlotSelection = bookingMode === 'pupil_choice';
+  const isScheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
   
-  // Determine current step
-  const currentStep = !isPupilDetailsComplete ? 1 : !isScheduleComplete ? 2 : 3;
+  // Determine current step - only 2 steps for non-pupil_choice modes
+  const currentStep = !isPupilDetailsComplete ? 1 : (requiresSlotSelection && !isScheduleComplete) ? 2 : (requiresSlotSelection ? 3 : 2);
   
   // Find first available date from slots
   const firstSlotDate = selectedSlots.length > 0 
@@ -219,14 +216,20 @@ export function MobileBookingView({
         </div>
       </div>
 
-      {/* Progress Steps */}
+      {/* Progress Steps - 2 steps for auto/instructor modes, 3 for pupil choice */}
       <div className="px-4 py-4 bg-muted/30">
         <div className="flex items-center gap-2">
-          {[
-            { step: 1, label: "Details" },
-            { step: 2, label: "Schedule" },
-            { step: 3, label: "Pay" },
-          ].map((s, i) => {
+          {(requiresSlotSelection 
+            ? [
+                { step: 1, label: "Details" },
+                { step: 2, label: "Schedule" },
+                { step: 3, label: "Pay" },
+              ]
+            : [
+                { step: 1, label: "Details" },
+                { step: 2, label: "Pay" },
+              ]
+          ).map((s, i, arr) => {
             const isDone = currentStep > s.step;
             const isCurrent = currentStep === s.step;
             return (
@@ -242,7 +245,7 @@ export function MobileBookingView({
                 >
                   {isDone ? <CheckCircle className="h-4 w-4" /> : s.step}
                 </motion.div>
-                {i < 2 && <div className={`flex-1 h-0.5 ${isDone ? 'bg-emerald-500' : 'bg-muted'}`} />}
+                {i < arr.length - 1 && <div className={`flex-1 h-0.5 ${isDone ? 'bg-emerald-500' : 'bg-muted'}`} />}
               </div>
             );
           })}
@@ -527,40 +530,24 @@ export function MobileBookingView({
         </div>
       </div>
 
-      {/* Step 2: Schedule - varies by booking mode */}
-      <div className="px-4 pb-4">
-        <div className="rounded-xl border bg-card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                isScheduleComplete ? 'bg-emerald-500 text-white' : isPupilDetailsComplete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-              }`}>
-                {isScheduleComplete ? <CheckCircle className="h-3.5 w-3.5" /> : '2'}
-              </div>
-              {bookingMode === 'instructor_assigns' ? 'Scheduling Info' : 
-               bookingMode === 'auto_assign' ? 'Your Preferences' : 'Select Lesson Slots'}
-            </h2>
-            {bookingMode === 'pupil_choice' && (
+      {/* Step 2: Schedule - Only show for pupil_choice mode */}
+      {requiresSlotSelection && (
+        <div className="px-4 pb-4">
+          <div className="rounded-xl border bg-card p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold flex items-center gap-2">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  isScheduleComplete ? 'bg-emerald-500 text-white' : isPupilDetailsComplete ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                }`}>
+                  {isScheduleComplete ? <CheckCircle className="h-3.5 w-3.5" /> : '2'}
+                </div>
+                Select Lesson Slots
+              </h2>
               <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
                 {scheduledHours}/{hours}h
               </Badge>
-            )}
-            {bookingMode === 'auto_assign' && isFullyScheduled && (
-              <Badge variant="default" className="bg-emerald-500">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Scheduled
-              </Badge>
-            )}
-            {bookingMode === 'instructor_assigns' && (
-              <Badge variant="secondary" className="gap-1">
-                <UserCog className="h-3 w-3" />
-                Instructor
-              </Badge>
-            )}
-          </div>
-          
-          {/* Pupil Choice: Show calendar picker */}
-          {bookingMode === 'pupil_choice' && (
+            </div>
+            
             <LessonScheduler
               instructorId={instructor.id}
               totalHours={hours}
@@ -570,40 +557,9 @@ export function MobileBookingView({
               allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
               onSlotsChange={onSlotsChange}
             />
-          )}
-          
-          {/* Auto Assign: Show preference selector + auto-schedule preview */}
-          {bookingMode === 'auto_assign' && (
-            <div className="space-y-4">
-              <PreferenceSelector
-                onPreferencesChange={(prefs) => setAutoPreferences(prefs)}
-                brandColour={brandColour}
-              />
-              {(autoPreferences.preferredTimes.length > 0 || autoPreferences.preferredDays.length > 0) && (
-                <AutoSchedulePreview
-                  instructorId={instructor.id}
-                  totalHours={hours}
-                  lessonLength={instructor.preferred_lesson_length}
-                  courseType="weekly"
-                  preferredTimes={autoPreferences.preferredTimes}
-                  preferredDays={autoPreferences.preferredDays}
-                  onSlotsConfirmed={onSlotsChange}
-                  brandColour={brandColour}
-                />
-              )}
-            </div>
-          )}
-          
-          {/* Instructor Assigns: Show info message + basic preferences */}
-          {bookingMode === 'instructor_assigns' && (
-            <InstructorAssignsView
-              instructorName={instructor.name}
-              onPreferencesChange={(prefs) => setInstructorAssignsPrefs(prefs)}
-              brandColour={brandColour}
-            />
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Boost Your Booking - Upsells */}
       {availableUpsells.length > 0 && onUpsellsChange && (
@@ -643,7 +599,9 @@ export function MobileBookingView({
               <span className="text-amber-700 dark:text-amber-300 text-xs font-medium">
                 {!isPupilDetailsComplete 
                   ? "Complete your details above"
-                  : `Schedule all ${hours} hours to continue`}
+                  : requiresSlotSelection 
+                    ? `Schedule all ${hours} hours to continue`
+                    : "Complete your details above"}
               </span>
             </div>
           )}

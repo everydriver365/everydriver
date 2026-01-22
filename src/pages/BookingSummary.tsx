@@ -306,7 +306,13 @@ export default function BookingSummary() {
   const scheduledHours = selectedSlots.reduce((acc, slot) => acc + slot.duration / 60, 0);
   const isFullyScheduled = scheduledHours >= hours;
   const isPupilDetailsComplete = !!(pupilName.trim() && pupilEmail.trim() && pupilPhone.trim() && pupilAddress.trim() && pupilPostcode.trim());
-  const canSubmit = isFullyScheduled && isPupilDetailsComplete && !isSubmitting;
+  
+  // Get booking mode - default to pupil_choice
+  const bookingMode = courseDetails?.instructor?.booking_mode || 'pupil_choice';
+  
+  // For auto_assign and instructor_assigns modes, we don't require slot selection
+  const requiresSlotSelection = bookingMode === 'pupil_choice';
+  const canSubmit = isPupilDetailsComplete && (requiresSlotSelection ? isFullyScheduled : true) && !isSubmitting;
 
   const ensureBookingCreated = async (
     paymentType: 'full' | 'deposit' = 'full',
@@ -1477,7 +1483,7 @@ export default function BookingSummary() {
           <p className="text-sm text-muted-foreground">Complete the steps below to secure your lessons</p>
         </div>
 
-        {/* Progress Indicator */}
+        {/* Progress Indicator - Show 2 steps for auto/instructor modes, 3 for pupil choice */}
         <div className="flex items-center justify-between mb-6 px-2">
           <div className="flex items-center gap-3">
             <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${isPupilDetailsComplete ? 'bg-emerald-500 text-white' : 'bg-primary text-white'}`}>
@@ -1488,18 +1494,22 @@ export default function BookingSummary() {
             </span>
           </div>
           <div className="flex-1 h-0.5 bg-border mx-3" />
-          <div className="flex items-center gap-3">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${isFullyScheduled ? 'bg-emerald-500 text-white' : isPupilDetailsComplete ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
-              {isFullyScheduled ? <CheckCircle className="h-5 w-5" /> : '2'}
-            </div>
-            <span className={`text-sm font-medium ${isFullyScheduled ? 'text-emerald-600' : isPupilDetailsComplete ? 'text-foreground' : 'text-muted-foreground'}`}>
-              Choose slots
-            </span>
-          </div>
-          <div className="flex-1 h-0.5 bg-border mx-3" />
+          {requiresSlotSelection && (
+            <>
+              <div className="flex items-center gap-3">
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${isFullyScheduled ? 'bg-emerald-500 text-white' : isPupilDetailsComplete ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+                  {isFullyScheduled ? <CheckCircle className="h-5 w-5" /> : '2'}
+                </div>
+                <span className={`text-sm font-medium ${isFullyScheduled ? 'text-emerald-600' : isPupilDetailsComplete ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  Choose slots
+                </span>
+              </div>
+              <div className="flex-1 h-0.5 bg-border mx-3" />
+            </>
+          )}
           <div className="flex items-center gap-3">
             <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${canSubmit ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
-              3
+              {requiresSlotSelection ? '3' : '2'}
             </div>
             <span className={`text-sm font-medium ${canSubmit ? 'text-foreground' : 'text-muted-foreground'}`}>
               Pay
@@ -1570,38 +1580,40 @@ export default function BookingSummary() {
           </div>
         </motion.div>
 
-        {/* Step 2: Lesson Scheduler */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                Select Your Lesson Slots
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Schedule {hours} hours across multiple lessons
-              </p>
+        {/* Step 2: Lesson Scheduler - Only show for pupil_choice mode */}
+        {requiresSlotSelection && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="rounded-2xl border bg-card p-4 sm:p-6 shadow-sm mb-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Select Your Lesson Slots
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Schedule {hours} hours across multiple lessons
+                </p>
+              </div>
+              <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
+                {scheduledHours}/{hours}h
+              </Badge>
             </div>
-            <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
-              {scheduledHours}/{hours}h
-            </Badge>
-          </div>
-          
-          <LessonScheduler
-            instructorId={instructor.id}
-            totalHours={hours}
-            maxLessonLength={instructor.preferred_lesson_length}
-            bookingAdvanceDays={instructor.booking_advance_days || 28}
-            availableFrom={instructor.available_from}
-            allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
-            onSlotsChange={handleSlotsChange}
-          />
-        </motion.div>
+            
+            <LessonScheduler
+              instructorId={instructor.id}
+              totalHours={hours}
+              maxLessonLength={instructor.preferred_lesson_length}
+              bookingAdvanceDays={instructor.booking_advance_days || 28}
+              availableFrom={instructor.available_from}
+              allowedLessonLengths={instructor.allowed_lesson_lengths || undefined}
+              onSlotsChange={handleSlotsChange}
+            />
+          </motion.div>
+        )}
 
         {/* Boost Your Booking - Upsells */}
         {availableUpsells.length > 0 && (
@@ -1644,7 +1656,9 @@ export default function BookingSummary() {
               <span className="text-amber-700 text-sm font-medium">
                 {!isPupilDetailsComplete 
                   ? "Please complete all your details above"
-                  : `Please schedule all ${hours} hours first`}
+                  : requiresSlotSelection 
+                    ? `Please schedule all ${hours} hours first`
+                    : "Please complete your details above"}
               </span>
             </div>
           )}
