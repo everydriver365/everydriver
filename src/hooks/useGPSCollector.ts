@@ -17,16 +17,25 @@ export interface GPSQuality {
   lastUpdate: Date | null;
 }
 
+export interface SpeedLimitData {
+  speedLimit: number | null;
+  roadName: string | null;
+  isExceeding: boolean;
+  lastFetched: number;
+}
+
 interface UseGPSCollectorOptions {
   minAccuracy?: number; // Maximum acceptable accuracy in meters
   minDistance?: number; // Minimum distance between points to record (meters)
   recordInterval?: number; // Minimum time between recordings (ms)
+  enableSpeedLimits?: boolean; // Fetch speed limits from TomTom
 }
 
 const DEFAULT_OPTIONS: UseGPSCollectorOptions = {
   minAccuracy: 500, // Accept up to 500m for weak signal areas
   minDistance: 5, // Record if moved at least 5 meters
   recordInterval: 1000, // At least 1 second between recordings
+  enableSpeedLimits: true, // Enable speed limit fetching
 };
 
 // Haversine distance calculation
@@ -67,11 +76,20 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [pointCount, setPointCount] = useState(0);
+  
+  // Speed limit state
+  const [speedLimitData, setSpeedLimitData] = useState<SpeedLimitData>({
+    speedLimit: null,
+    roadName: null,
+    isExceeding: false,
+    lastFetched: 0,
+  });
 
   const watchIdRef = useRef<number | null>(null);
   const lastRecordedPointRef = useRef<GPSPoint | null>(null);
   const lastRecordTimeRef = useRef<number>(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const lastSpeedLimitFetchRef = useRef<{ lat: number; lon: number; time: number } | null>(null);
 
   // Request wake lock to keep screen on during tracking
   const requestWakeLock = useCallback(async () => {
@@ -93,9 +111,58 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
     }
   }, []);
 
-  // Record GPS point to database
-  const recordPoint = useCallback(async (point: GPSPoint) => {
+  // Fetch speed limit from TomTom via edge function
+  const fetchSpeedLimit = useCallback(async (lat: number, lon: number, currentSpeedKmh: number) => {
+    const now = Date.now();
+    const lastFetch = lastSpeedLimitFetchRef.current;
+    
+    // Throttle: don't fetch more than once per 3 seconds or if position hasn't changed much
+    if (lastFetch) {
+      const timeSince = now - lastFetch.time;
+      const distance = calculateDistance(lastFetch.lat, lastFetch.lon, lat, lon);
+      
+      if (timeSince < 3000 && distance < 50) {
+        // Just update isExceeding with current speed
+        setSpeedLimitData(prev => ({
+          ...prev,
+          isExceeding: prev.speedLimit !== null && currentSpeedKmh > prev.speedLimit + 5,
+        }));
+        return speedLimitData;
+      }
+    }
+
+    try {
+      const { data, error: fetchError } = await supabase.functions.invoke('tomtom-speed-limits', {
+        body: { lat, lon },
+      });
+
+      if (fetchError) {
+        console.warn('[GPS Collector] Speed limit fetch failed:', fetchError);
+        return null;
+      }
+
+      lastSpeedLimitFetchRef.current = { lat, lon, time: now };
+
+      const newData: SpeedLimitData = {
+        speedLimit: data?.speedLimit || null,
+        roadName: data?.roadName || null,
+        isExceeding: data?.speedLimit ? currentSpeedKmh > data.speedLimit + 5 : false,
+        lastFetched: now,
+      };
+
+      setSpeedLimitData(newData);
+      return newData;
+    } catch (err) {
+      console.error('[GPS Collector] Speed limit error:', err);
+      return null;
+    }
+  }, [speedLimitData]);
+
+  // Record GPS point to database with speed limit
+  const recordPoint = useCallback(async (point: GPSPoint, speedLimit: number | null, roadName: string | null) => {
     if (!sessionId) return;
+
+    const speedKmh = point.speed !== null ? point.speed * 3.6 : null;
 
     try {
       const { error: insertError } = await supabase
@@ -106,9 +173,11 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
           longitude: point.longitude,
           altitude_m: point.altitude,
           accuracy_m: point.accuracy,
-          speed_kmh: point.speed !== null ? point.speed * 3.6 : null, // Convert m/s to km/h
+          speed_kmh: speedKmh,
           heading: point.heading,
           recorded_at: new Date(point.timestamp).toISOString(),
+          speed_limit_kmh: speedLimit,
+          road_name: roadName,
         });
 
       if (insertError) {
@@ -124,7 +193,7 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
   }, [sessionId]);
 
   // Handle position update from watchPosition
-  const handlePositionUpdate = useCallback((position: GeolocationPosition) => {
+  const handlePositionUpdate = useCallback(async (position: GeolocationPosition) => {
     const now = Date.now();
     const coords = position.coords;
 
@@ -154,8 +223,19 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
     setCurrentPosition(point);
     
     // Update current speed (use native speed only, convert to km/h)
-    if (coords.speed !== null && coords.speed >= 0) {
-      setCurrentSpeed(coords.speed * 3.6);
+    const speedKmh = coords.speed !== null && coords.speed >= 0 ? coords.speed * 3.6 : 0;
+    setCurrentSpeed(speedKmh);
+
+    // Fetch speed limit if enabled and moving
+    let currentSpeedLimit: number | null = speedLimitData.speedLimit;
+    let currentRoadName: string | null = speedLimitData.roadName;
+    
+    if (opts.enableSpeedLimits && speedKmh > 5) {
+      const limitData = await fetchSpeedLimit(point.latitude, point.longitude, speedKmh);
+      if (limitData) {
+        currentSpeedLimit = limitData.speedLimit;
+        currentRoadName = limitData.roadName;
+      }
     }
 
     // Check if we should record this point
@@ -187,9 +267,9 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
       }
     }
 
-    // Record the point
-    recordPoint(point);
-  }, [opts.minAccuracy, opts.minDistance, opts.recordInterval, recordPoint]);
+    // Record the point with speed limit data
+    recordPoint(point, currentSpeedLimit, currentRoadName);
+  }, [opts.minAccuracy, opts.minDistance, opts.recordInterval, opts.enableSpeedLimits, recordPoint, fetchSpeedLimit, speedLimitData]);
 
   // Handle position error
   const handlePositionError = useCallback((error: GeolocationPositionError) => {
@@ -229,8 +309,15 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
     setError(null);
     setTotalDistance(0);
     setPointCount(0);
+    setSpeedLimitData({
+      speedLimit: null,
+      roadName: null,
+      isExceeding: false,
+      lastFetched: 0,
+    });
     lastRecordedPointRef.current = null;
     lastRecordTimeRef.current = 0;
+    lastSpeedLimitFetchRef.current = null;
 
     await requestWakeLock();
 
@@ -285,5 +372,6 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
     totalDistance,
     pointCount,
     error,
+    speedLimitData,
   };
 };
