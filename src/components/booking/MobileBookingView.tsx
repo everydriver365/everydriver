@@ -84,6 +84,7 @@ interface MobileBookingViewProps {
   features: string[] | null;
   template: CourseTemplate | null;
   locationName: string;
+  selectedDate?: Date | null;
   // Form state
   pupilName: string;
   pupilEmail: string;
@@ -136,6 +137,7 @@ export function MobileBookingView({
   features,
   template,
   locationName,
+  selectedDate,
   pupilName,
   pupilEmail,
   pupilPhone,
@@ -257,6 +259,23 @@ export function MobileBookingView({
         </div>
       </div>
 
+      {/* Selected Date Banner - Show when date is selected */}
+      {selectedDate && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-4 mt-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3"
+        >
+          <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center">
+            <Calendar className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div>
+            <p className="font-semibold text-sm text-emerald-700">You have selected</p>
+            <p className="text-sm text-emerald-600">{format(selectedDate, "EEEE, MMMM d, yyyy")}</p>
+          </div>
+        </motion.div>
+      )}
+
       {/* "Book in 60 seconds" Badge */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -365,44 +384,46 @@ export function MobileBookingView({
             </AccordionContent>
           </AccordionItem>
 
-          {/* Start Dates Tile */}
-          <AccordionItem value="dates" className="border rounded-xl overflow-hidden bg-card">
-            <AccordionTrigger className="px-4 py-3 hover:no-underline">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-primary" />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-semibold text-sm">Start Dates</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {firstSlotDate || "Select your lesson times below"}
-                  </p>
-                </div>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4">
-              <div className="text-sm">
-                {selectedSlots.length > 0 ? (
-                  <div className="space-y-2">
-                    {selectedSlots.map((slot, idx) => (
-                      <div key={idx} className="flex items-center justify-between py-2 border-b last:border-0">
-                        <span className="font-medium">{format(slot.date, "EEE, MMM d")}</span>
-                        <span className="text-muted-foreground">{slot.startTime} - {slot.endTime}</span>
-                      </div>
-                    ))}
-                    <div className="pt-2 flex items-center justify-between">
-                      <span className="font-semibold">Total Scheduled</span>
-                      <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
-                        {scheduledHours}/{hours}h
-                      </Badge>
-                    </div>
+          {/* Start Dates Tile - Only show for pupil_choice mode */}
+          {requiresSlotSelection && (
+            <AccordionItem value="dates" className="border rounded-xl overflow-hidden bg-card">
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Calendar className="h-5 w-5 text-primary" />
                   </div>
-                ) : (
-                  <p className="text-muted-foreground">No lessons scheduled yet. Use the scheduler below to pick your times.</p>
-                )}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
+                  <div className="text-left">
+                    <h3 className="font-semibold text-sm">Start Dates</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {firstSlotDate || "Select your lesson times below"}
+                    </p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                <div className="text-sm">
+                  {selectedSlots.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedSlots.map((slot, idx) => (
+                        <div key={idx} className="flex items-center justify-between py-2 border-b last:border-0">
+                          <span className="font-medium">{format(slot.date, "EEE, MMM d")}</span>
+                          <span className="text-muted-foreground">{slot.startTime} - {slot.endTime}</span>
+                        </div>
+                      ))}
+                      <div className="pt-2 flex items-center justify-between">
+                        <span className="font-semibold">Total Scheduled</span>
+                        <Badge variant={isFullyScheduled ? "default" : "secondary"} className={isFullyScheduled ? "bg-emerald-500" : ""}>
+                          {scheduledHours}/{hours}h
+                        </Badge>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">No lessons scheduled yet. Use the scheduler below to pick your times.</p>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
 
           {/* Prerequisites Tile (if any) */}
           {template?.prerequisites && template.prerequisites.length > 0 && (
