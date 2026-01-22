@@ -23,6 +23,7 @@ import { PupilPortalHistory } from "@/components/pupil-portal/PupilPortalHistory
 import { PupilPortalGaps } from "@/components/pupil-portal/PupilPortalGaps";
 import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
+import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 
 interface InstructorBranding {
@@ -408,8 +409,14 @@ export default function BrandedPupilPortal() {
                 exit={{ opacity: 0, x: -20 }}
                 className="p-4 space-y-4"
               >
+                {/* Push Notification Banner */}
+                <PushNotificationBanner 
+                  pupilId={pupil.id}
+                  brandColour={instructor.brand_colour}
+                />
+
                 {/* Welcome & Next Lesson Countdown */}
-                <PupilPortalLessonCountdown 
+                <PupilPortalLessonCountdown
                   pupilId={pupil.id} 
                   instructorId={instructor.id}
                   brandColour={instructor.brand_colour}
