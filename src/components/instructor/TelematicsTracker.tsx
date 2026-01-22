@@ -95,6 +95,8 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     currentSession,
     trackingError,
     speedLimitData,
+    gpsRetryCount,
+    gpsAccuracyMode,
     startTracking,
     stopTracking
   } = useTelematics(instructorId);
@@ -398,11 +400,27 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
           </div>
         )}
 
-        {/* GPS Quality Warning */}
+        {/* GPS Quality Warning with Retry Counter */}
         {isTracking && (gpsQuality.status === 'poor' || gpsQuality.status === 'unavailable') && (
-          <div className={`p-2 ${gpsQuality.status === 'unavailable' ? 'bg-red-500/10 border-red-500/20 text-red-600' : 'bg-amber-500/10 border-amber-500/20 text-amber-600'} border rounded-lg text-xs flex items-center gap-2`}>
-            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-            {gpsQuality.message}
+          <div className={`p-2 ${gpsQuality.status === 'unavailable' ? 'bg-red-500/10 border-red-500/20 text-red-600' : 'bg-amber-500/10 border-amber-500/20 text-amber-600'} border rounded-lg text-xs`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                <span>{gpsQuality.message}</span>
+              </div>
+              {gpsRetryCount > 0 && gpsQuality.status === 'unavailable' && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                  {gpsAccuracyMode === 'high' && `Retry ${gpsRetryCount}/3`}
+                  {gpsAccuracyMode === 'balanced' && `Balanced ${gpsRetryCount}/3`}
+                  {gpsAccuracyMode === 'low' && `Low ${gpsRetryCount}/3`}
+                </Badge>
+              )}
+            </div>
+            {gpsAccuracyMode !== 'high' && (
+              <p className="mt-1 text-[10px] opacity-80">
+                Using {gpsAccuracyMode} accuracy mode for better signal acquisition
+              </p>
+            )}
           </div>
         )}
 

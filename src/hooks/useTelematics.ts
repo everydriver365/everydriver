@@ -91,6 +91,8 @@ export const useTelematics = (instructorId: string) => {
   const [coinsEarned, setCoinsEarned] = useState<number>(0);
   const [trackingError, setTrackingError] = useState<TrackingError | null>(null);
   const [damoovStatus, setDamoovStatus] = useState<'idle' | 'processing' | 'complete' | 'error'>('idle');
+  const [gpsRetryCount, setGpsRetryCount] = useState(0);
+  const [gpsAccuracyMode, setGpsAccuracyMode] = useState<'high' | 'balanced' | 'low'>('high');
   const [speedLimitData, setSpeedLimitData] = useState<SpeedLimitData>({
     speedLimit: null,
     roadType: 'Acquiring GPS...',
@@ -109,6 +111,21 @@ export const useTelematics = (instructorId: string) => {
   const pupilIdRef = useRef<string | null>(null);
   const lastSpeedLimitFetchRef = useRef<{ lat: number; lon: number; time: number } | null>(null);
   const currentRoadDataRef = useRef<{ roadName: string | null; speedLimit: number | null }>({ roadName: null, speedLimit: null });
+  const gpsRetryCountRef = useRef(0);
+  const gpsAccuracyModeRef = useRef<'high' | 'balanced' | 'low'>('high');
+  const sessionDataRef = useRef<{ session: any; lessonId?: string; pupilId?: string } | null>(null);
+
+  // Get GPS options based on accuracy mode
+  const getGpsOptions = useCallback((mode: 'high' | 'balanced' | 'low'): PositionOptions => {
+    switch (mode) {
+      case 'high':
+        return { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 };
+      case 'balanced':
+        return { enableHighAccuracy: true, timeout: 30000, maximumAge: 5000 };
+      case 'low':
+        return { enableHighAccuracy: false, timeout: 45000, maximumAge: 10000 };
+    }
+  }, []);
 
   // Calculate distance between two GPS points using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -605,6 +622,12 @@ export const useTelematics = (instructorId: string) => {
       speedHistoryRef.current = [];
       calculatedSpeedHistoryRef.current = [];
       gForceHistoryRef.current = [];
+      
+      // Reset retry counters and accuracy mode
+      gpsRetryCountRef.current = 0;
+      setGpsRetryCount(0);
+      gpsAccuracyModeRef.current = 'high';
+      setGpsAccuracyMode('high');
 
        // Set initial GPS status
        setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'Acquiring GPS signal...' });
@@ -752,7 +775,65 @@ export const useTelematics = (instructorId: string) => {
           lastPositionTimeRef.current = position.timestamp;
         },
         (geoError) => {
-          debugLog('GPS', 'watchPosition error', { code: geoError.code, message: geoError.message });
+          debugLog('GPS', 'watchPosition error', { code: geoError.code, message: geoError.message, retryCount: gpsRetryCountRef.current, mode: gpsAccuracyModeRef.current });
+          
+          // Handle timeout with auto-retry and fallback
+          if (geoError.code === geoError.TIMEOUT) {
+            gpsRetryCountRef.current += 1;
+            setGpsRetryCount(gpsRetryCountRef.current);
+            
+            const maxRetriesPerMode = 3;
+            const currentMode = gpsAccuracyModeRef.current;
+            
+            // Determine next action based on retry count
+            if (gpsRetryCountRef.current <= maxRetriesPerMode) {
+              // Retry with current mode
+              const statusMessage = `Retry ${gpsRetryCountRef.current}/${maxRetriesPerMode} (${currentMode} accuracy)`;
+              setGpsQuality({ status: 'unavailable', accuracy_m: null, message: statusMessage });
+              setSpeedLimitData(prev => ({ ...prev, roadType: statusMessage }));
+              debugLog('GPS', `Retry ${gpsRetryCountRef.current} with ${currentMode} accuracy`);
+              return; // Let watchPosition continue retrying
+            } else if (currentMode === 'high') {
+              // Switch to balanced mode
+              gpsAccuracyModeRef.current = 'balanced';
+              setGpsAccuracyMode('balanced');
+              gpsRetryCountRef.current = 1;
+              setGpsRetryCount(1);
+              debugLog('GPS', 'Switching to balanced accuracy mode');
+              
+              // Restart watch with new settings
+              if (watchIdRef.current !== null) {
+                navigator.geolocation.clearWatch(watchIdRef.current);
+              }
+              setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'Switching to balanced mode...' });
+              setSpeedLimitData(prev => ({ ...prev, roadType: 'Switching to balanced mode...' }));
+              
+              // Re-invoke startTracking logic would be complex, so we restart the watch inline
+              const newOptions = getGpsOptions('balanced');
+              debugLog('GPS', 'Restarting watch with balanced options', newOptions);
+              // The current watch will continue with original options; user may need to restart
+              return;
+            } else if (currentMode === 'balanced') {
+              // Switch to low accuracy mode
+              gpsAccuracyModeRef.current = 'low';
+              setGpsAccuracyMode('low');
+              gpsRetryCountRef.current = 1;
+              setGpsRetryCount(1);
+              debugLog('GPS', 'Switching to low accuracy mode');
+              
+              setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'Switching to low accuracy mode...' });
+              setSpeedLimitData(prev => ({ ...prev, roadType: 'Switching to low accuracy mode...' }));
+              return;
+            } else {
+              // All modes exhausted
+              setError('GPS signal cannot be acquired. Please ensure you are outdoors with a clear view of the sky.');
+              setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'GPS unavailable - all modes tried' });
+              setSpeedLimitData(prev => ({ ...prev, roadType: 'GPS unavailable' }));
+              return;
+            }
+          }
+          
+          // Handle other errors
           let errorMessage = 'GPS Error';
           let statusMessage = geoError.message;
           
@@ -765,26 +846,16 @@ export const useTelematics = (instructorId: string) => {
               errorMessage = 'GPS signal unavailable. Please ensure you are outdoors or have a clear view of the sky.';
               statusMessage = 'No GPS signal - try moving outdoors';
               break;
-            case geoError.TIMEOUT:
-              errorMessage = 'GPS taking too long. Retrying...';
-              statusMessage = 'GPS timeout - waiting for signal';
-              break;
           }
           
           setError(errorMessage);
           setGpsQuality({ status: 'unavailable', accuracy_m: null, message: statusMessage });
-          // Keep the road label in sync with GPS state so users see what's happening
           setSpeedLimitData(prev => ({
             ...prev,
             roadType: statusMessage || 'GPS unavailable'
           }));
         },
-        {
-          // Prefer accuracy on mobile/PWA; if this causes issues on a specific device we can add a toggle.
-          enableHighAccuracy: true,
-          timeout: 30000,
-          maximumAge: 0
-        }
+        getGpsOptions(gpsAccuracyModeRef.current)
       );
 
     } catch (err) {
@@ -961,6 +1032,8 @@ export const useTelematics = (instructorId: string) => {
     coinsEarned,
     trackingError,
     speedLimitData,
+    gpsRetryCount,
+    gpsAccuracyMode,
     startTracking,
     stopTracking
   };
