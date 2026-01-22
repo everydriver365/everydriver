@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Loader2, MessageCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface PreChatFormProps {
   onSubmit: (data: PreChatFormData) => void;
@@ -47,78 +47,64 @@ export function PreChatForm({ onSubmit, loading, instructorName }: PreChatFormPr
 
   return (
     <motion.form
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 space-y-3 h-full overflow-y-auto"
+      className="p-3 flex flex-col h-full"
       onSubmit={handleSubmit}
     >
-      <div className="text-center mb-4">
-        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-          <MessageCircle className="h-5 w-5 text-primary" />
-        </div>
-        <h3 className="font-semibold">
+      <div className="text-center mb-2">
+        <h3 className="font-semibold text-sm">
           {instructorName ? `Chat with ${instructorName}` : "Start a Conversation"}
         </h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          Enter your name to begin
-        </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2 flex-1">
         <div>
-          <Label htmlFor="chat-name">Name *</Label>
           <Input
             id="chat-name"
-            placeholder="Your name"
+            placeholder="Your name *"
             value={formData.name}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, name: e.target.value }))
             }
-            className={errors.name ? "border-destructive" : ""}
+            className={cn("h-9", errors.name && "border-destructive")}
           />
           {errors.name && (
-            <p className="text-sm text-destructive mt-1">{errors.name}</p>
+            <p className="text-xs text-destructive mt-0.5">{errors.name}</p>
           )}
         </div>
 
-        <div>
-          <Label htmlFor="chat-phone">Phone (optional)</Label>
-          <Input
-            id="chat-phone"
-            type="tel"
-            placeholder="Your phone number"
-            value={formData.phone}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, phone: e.target.value }))
-            }
-          />
-        </div>
+        <Input
+          id="chat-phone"
+          type="tel"
+          placeholder="Phone (optional)"
+          value={formData.phone}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, phone: e.target.value }))
+          }
+          className="h-9"
+        />
 
-        <div>
-          <Label htmlFor="chat-message">How can we help? (optional)</Label>
-          <Textarea
-            id="chat-message"
-            placeholder="Tell us what you're looking for..."
-            value={formData.message}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, message: e.target.value }))
-            }
-            rows={2}
-          />
-        </div>
+        <Textarea
+          id="chat-message"
+          placeholder="How can we help? (optional)"
+          value={formData.message}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, message: e.target.value }))
+          }
+          rows={2}
+          className="resize-none text-sm"
+        />
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button type="submit" className="w-full mt-2 h-9" disabled={loading}>
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Starting Chat...
+            Starting...
           </>
         ) : (
-          <>
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Start Chat
-          </>
+          "Start Chat"
         )}
       </Button>
     </motion.form>
