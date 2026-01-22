@@ -15,13 +15,12 @@ interface PaymentHealthResponse {
   elavon: GatewayStatus;
 }
 
-// CONFIRMED WORKING gateways - Square and Klarna have credential issues
 const defaultHealth: PaymentHealthResponse = {
-  clearpay: { available: true, configured: true },
-  klarna: { available: true, configured: true },
-  npi: { available: true, configured: true },
-  square: { available: false, configured: true, error: "Credentials not configured for production" },
-  elavon: { available: true, configured: true },
+  clearpay: { available: false, configured: false },
+  klarna: { available: false, configured: false },
+  npi: { available: false, configured: false },
+  square: { available: false, configured: false },
+  elavon: { available: false, configured: false },
 };
 
 export function usePaymentGatewayHealth() {
@@ -29,10 +28,33 @@ export function usePaymentGatewayHealth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // For now, use hardcoded defaults since we know Square has credential issues
-    // The health check API exists but doesn't validate credentials actually work
-    setHealth(defaultHealth);
-    setLoading(false);
+    async function fetchHealth() {
+      try {
+        const { data, error } = await supabase.functions.invoke("payment-health");
+        
+        if (error) {
+          console.error("Payment health check failed:", error);
+          setLoading(false);
+          return;
+        }
+
+        if (data) {
+          setHealth({
+            clearpay: data.clearpay || defaultHealth.clearpay,
+            klarna: data.klarna || defaultHealth.klarna,
+            npi: data.npi || defaultHealth.npi,
+            square: data.square || defaultHealth.square,
+            elavon: data.elavon || defaultHealth.elavon,
+          });
+        }
+      } catch (err) {
+        console.error("Payment health check error:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchHealth();
   }, []);
 
   return { health, loading };
