@@ -22,6 +22,7 @@ import { PupilPortalProgress } from "@/components/pupil-portal/PupilPortalProgre
 import { PupilPortalHistory } from "@/components/pupil-portal/PupilPortalHistory";
 import { PupilPortalGaps } from "@/components/pupil-portal/PupilPortalGaps";
 import { PupilChat } from "@/components/pupil-portal/PupilChat";
+import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 
 interface InstructorBranding {
@@ -472,6 +473,14 @@ export default function BrandedPupilPortal() {
                     </Card>
                   ))}
                 </div>
+
+                {/* Referral Card */}
+                <ReferralCard 
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
+                  instructorSlug={slug}
+                  brandColour={instructor.brand_colour}
+                />
 
                 {/* Contact Instructor */}
                 <PupilPortalContact 

@@ -19,6 +19,7 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 
 interface Pupil {
   id: string;
@@ -49,6 +50,7 @@ export default function InstructorPortal() {
   const [todaysLessonCount, setTodaysLessonCount] = useState(0);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { hoursThisWeek, monthEarnings, loading: statsLoading } = useInstructorLiveStats(instructorId);
 
   // Redirect to login if not authenticated (after loading completes)
   useEffect(() => {
@@ -239,8 +241,8 @@ export default function InstructorPortal() {
           {[
             { icon: Calendar, label: "Today's Lessons", value: String(todaysLessonCount), color: "text-blue-500" },
             { icon: Users, label: "Active Pupils", value: String(pupils.length), color: "text-emerald-500" },
-            { icon: Clock, label: "Hours This Week", value: "32", color: "text-amber-500" },
-            { icon: TrendingUp, label: "Month Earnings", value: "£2,450", color: "text-purple-500" },
+            { icon: Clock, label: "Hours This Week", value: statsLoading ? "..." : String(hoursThisWeek), color: "text-amber-500" },
+            { icon: TrendingUp, label: "Month Earnings", value: statsLoading ? "..." : `£${monthEarnings.toLocaleString()}`, color: "text-purple-500" },
           ].map((stat) => (
             <Card key={stat.label} className="p-4">
               <div className="flex items-center gap-3">
