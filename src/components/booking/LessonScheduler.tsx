@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { format, addDays, startOfDay, startOfMonth, isSameDay, isAfter, isBefore, parse } from "date-fns";
-import { Calendar, Clock, X, Check } from "lucide-react";
+import { Calendar, Clock, X, Check, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { WaitlistDialog } from "./WaitlistDialog";
 
 interface WorkingHour {
   day_of_week: number;
@@ -44,10 +45,11 @@ interface SelectedSlot {
 interface LessonSchedulerProps {
   instructorId: string;
   totalHours: number;
-  maxLessonLength: number; // in minutes - maximum lesson duration allowed
+  maxLessonLength: number;
   bookingAdvanceDays?: number;
-  availableFrom?: string | null; // earliest date instructor accepts bookings (YYYY-MM-DD)
-  allowedLessonLengths?: number[]; // array of allowed durations in minutes
+  availableFrom?: string | null;
+  allowedLessonLengths?: number[];
+  pupilId?: string; // Optional - needed for waitlist functionality
   onSlotsChange: (slots: SelectedSlot[]) => void;
 }
 
@@ -75,6 +77,7 @@ export function LessonScheduler({
   bookingAdvanceDays = 28,
   availableFrom,
   allowedLessonLengths,
+  pupilId,
   onSlotsChange,
 }: LessonSchedulerProps) {
   const [workingHours, setWorkingHours] = useState<WorkingHour[]>([]);
@@ -84,6 +87,7 @@ export function LessonScheduler({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [loading, setLoading] = useState(true);
   const [viewMonth, setViewMonth] = useState(new Date());
+  const [waitlistDialogOpen, setWaitlistDialogOpen] = useState(false);
   
   // Use allowed lesson lengths or default to 1-7 hours
   const durationOptions = useMemo(() => {
@@ -517,9 +521,22 @@ export function LessonScheduler({
                   </Button>
                 ))}
                 {getAvailableTimeSlots(selectedDate).length === 0 && (
-                  <p className="col-span-2 text-xs text-muted-foreground py-4 text-center">
-                    No available slots
-                  </p>
+                  <div className="col-span-2 text-center py-4 space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      No available slots for this date
+                    </p>
+                    {pupilId && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setWaitlistDialogOpen(true)}
+                        className="gap-2"
+                      >
+                        <Bell className="h-4 w-4" />
+                        Join Waitlist
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -586,6 +603,17 @@ export function LessonScheduler({
           <Clock className="h-4 w-4" />
           All {totalHours} hours have been scheduled!
         </p>
+      )}
+
+      {/* Waitlist Dialog */}
+      {pupilId && (
+        <WaitlistDialog
+          open={waitlistDialogOpen}
+          onOpenChange={setWaitlistDialogOpen}
+          instructorId={instructorId}
+          pupilId={pupilId}
+          selectedDate={selectedDate}
+        />
       )}
     </div>
   );

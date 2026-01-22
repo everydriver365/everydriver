@@ -161,7 +161,21 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
 
       if (updateError) throw updateError;
 
-      // Send notification to pupil via edge function
+      // Send notifications to pupil
+      if (offer.pupil_id) {
+        // Send push notification
+        await supabase.functions.invoke("notify-pupil", {
+          body: {
+            pupilId: offer.pupil_id,
+            type: "slot_offer",
+            title: "Lesson Slot Available! 🎉",
+            body: `A slot on ${format(new Date(offer.lesson_date), "EEEE, d MMM")} at ${formatTime(offer.start_time)} is available. Book now!`,
+            data: { offerId: offer.id },
+          },
+        });
+      }
+
+      // Also send SMS if phone available
       if (offer.pupil?.phone) {
         await supabase.functions.invoke("send-gap-sms", {
           body: {
