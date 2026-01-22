@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -22,9 +21,7 @@ import {
   Bell,
   HelpCircle,
   Palette,
-  Navigation,
-  QrCode,
-  X
+  Navigation
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -82,7 +79,7 @@ export function InstructorMobileHome({
   const { resolvedTheme, setTheme } = useTheme();
   const { refreshInstructor, instructor: authInstructor } = useInstructorAuth();
   const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
-  const [showFullscreenQR, setShowFullscreenQR] = useState(false);
+  // QR modal is now handled by parent via onPaymentClick
 
   // Use auth context for visibility status (gets refreshed properly)
   const instructorId = authInstructor?.id || instructor?.id;
@@ -165,10 +162,10 @@ export function InstructorMobileHome({
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/10 h-8 px-2 font-bold text-sm"
-              onClick={() => setShowFullscreenQR(true)}
+              className="text-white hover:bg-white/10 h-8 px-2"
+              onClick={onPaymentClick}
             >
-              QR
+              <span className="text-xs font-bold border border-current rounded px-1">QR</span>
             </Button>
           )}
 
@@ -502,44 +499,6 @@ export function InstructorMobileHome({
       {/* Bottom Navigation */}
       <InstructorBottomNav />
 
-      {/* Fullscreen QR Overlay - Rendered via Portal */}
-      {showFullscreenQR && instructor?.payment_qr_url && createPortal(
-        <div 
-          className="fixed inset-0 bg-black flex items-center justify-center"
-          onClick={() => setShowFullscreenQR(false)}
-          style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            zIndex: 99999,
-            width: '100vw',
-            height: '100vh'
-          }}
-        >
-          <button
-            onClick={() => setShowFullscreenQR(false)}
-            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors"
-            style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
-          >
-            <X className="h-8 w-8" />
-          </button>
-          
-          <div className="flex flex-col items-center gap-6 p-8 w-full max-w-md">
-            <div className="bg-white p-6 rounded-2xl shadow-2xl">
-              <img 
-                src={instructor.payment_qr_url} 
-                alt="Payment QR Code" 
-                className="w-64 h-64 sm:w-80 sm:h-80 object-contain"
-              />
-            </div>
-            <p className="text-white/90 text-lg font-medium text-center">Scan to pay {instructor.name}</p>
-            <p className="text-white/60 text-sm">Tap anywhere to close</p>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 }
