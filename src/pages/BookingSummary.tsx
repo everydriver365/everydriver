@@ -1107,6 +1107,7 @@ export default function BookingSummary() {
         onKlarnaSuccess={handleKlarnaSuccess}
         onKlarnaError={handleKlarnaError}
         onKlarnaCancel={handleKlarnaCancel}
+        onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
       />
     );
   }
