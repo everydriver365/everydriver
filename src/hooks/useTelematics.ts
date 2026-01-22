@@ -610,8 +610,13 @@ export const useTelematics = (instructorId: string) => {
           setGpsQuality(quality);
 
           // Skip recording only if accuracy is extremely poor (> 500m)
+          // Also update the road label so the UI doesn't look "stuck" on "Acquiring GPS..."
           if (accuracy && accuracy > 500) {
             console.log(`GPS accuracy too poor (${accuracy}m), skipping point`);
+            setSpeedLimitData(prev => ({
+              ...prev,
+              roadType: `GPS too inaccurate (±${Math.round(accuracy)}m)`
+            }));
             return;
           }
 
@@ -730,11 +735,18 @@ export const useTelematics = (instructorId: string) => {
           
           setError(errorMessage);
           setGpsQuality({ status: 'unavailable', accuracy_m: null, message: statusMessage });
+          // Keep the road label in sync with GPS state so users see what's happening
+          setSpeedLimitData(prev => ({
+            ...prev,
+            roadType: statusMessage || 'GPS unavailable'
+          }));
         },
         {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 1000
+          // Reliability-first: some devices/browsers stall with high accuracy.
+          // We still record the accuracy_m so the UI can show quality.
+          enableHighAccuracy: false,
+          timeout: 20000,
+          maximumAge: 5000
         }
       );
 
