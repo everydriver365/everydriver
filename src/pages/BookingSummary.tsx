@@ -378,8 +378,9 @@ export default function BookingSummary() {
   };
 
   const handleClearpayCheckout = async () => {
-    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
-      toast.error("Please complete all details and schedule all lessons first");
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
       return;
     }
 
@@ -446,8 +447,9 @@ export default function BookingSummary() {
   };
 
   const handleKlarnaCheckout = async () => {
-    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
-      toast.error("Please complete all details and schedule all lessons first");
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
       return;
     }
 
@@ -524,8 +526,9 @@ export default function BookingSummary() {
   };
 
   const handleNPICheckout = async () => {
-    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
-      toast.error("Please complete all details and schedule all lessons first");
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
       return;
     }
 
@@ -608,8 +611,9 @@ export default function BookingSummary() {
 
   // Handler for showing embedded hosted fields
   const handleShowHostedFields = async () => {
-    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
-      toast.error("Please complete all details and schedule all lessons first");
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
       return;
     }
 
@@ -620,8 +624,9 @@ export default function BookingSummary() {
   };
 
   const handleSquareCheckout = async () => {
-    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
-      toast.error("Please complete all details and schedule all lessons first");
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
       return;
     }
 
@@ -676,8 +681,9 @@ export default function BookingSummary() {
   };
 
   const handleElavonCheckout = async () => {
-    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
-      toast.error("Please complete all details and schedule all lessons first");
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
       return;
     }
 
@@ -740,8 +746,9 @@ export default function BookingSummary() {
 
   // Step 1: Create WooCommerce order and show in-app payment options
   const handleWooCommerceCheckout = async () => {
-    if (!isFullyScheduled || !isPupilDetailsComplete || !courseDetails) {
-      toast.error("Please complete all details and schedule all lessons first");
+    const scheduleComplete = requiresSlotSelection ? isFullyScheduled : true;
+    if (!scheduleComplete || !isPupilDetailsComplete || !courseDetails) {
+      toast.error(requiresSlotSelection ? "Please complete all details and schedule all lessons first" : "Please complete all your details first");
       return;
     }
 
