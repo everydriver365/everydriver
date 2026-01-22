@@ -362,8 +362,10 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
               <div className={`flex items-center gap-1 ${getGPSStatusColor()}`}>
                 {getGPSIcon()}
                 <span className="text-xs font-medium">
-                  GPS: {gpsQuality.status}
-                  {gpsQuality.accuracy_m && ` (±${gpsQuality.accuracy_m.toFixed(0)}m)`}
+                  {gpsQuality.status === 'unavailable' 
+                    ? gpsQuality.message 
+                    : `GPS: ${gpsQuality.status}${gpsQuality.accuracy_m ? ` (±${gpsQuality.accuracy_m.toFixed(0)}m)` : ''}`
+                  }
                 </span>
               </div>
               
@@ -433,8 +435,10 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                       <div className={`flex items-center gap-1.5 ${getGPSStatusColor()}`}>
                         {getGPSIcon()}
                         <span className="text-xs font-medium">
-                          {gpsQuality.status}
-                          {gpsQuality.accuracy_m && ` ±${gpsQuality.accuracy_m.toFixed(0)}m`}
+                          {gpsQuality.status === 'unavailable' 
+                            ? gpsQuality.message 
+                            : `${gpsQuality.status}${gpsQuality.accuracy_m ? ` ±${gpsQuality.accuracy_m.toFixed(0)}m` : ''}`
+                          }
                         </span>
                       </div>
                       
