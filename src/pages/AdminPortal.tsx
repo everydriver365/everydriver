@@ -295,51 +295,6 @@ export default function AdminPortal() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Pending Enquiries Widget */}
-              {pendingEnquiries.length > 0 && (
-                <Card className="border-amber-500/30 bg-amber-500/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        <FileEdit className="h-5 w-5 text-amber-600" />
-                        Pending Enquiries
-                      </span>
-                      <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/30">
-                        {pendingEnquiries.length} new
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {pendingEnquiries.map((enquiry) => (
-                        <div
-                          key={enquiry.id}
-                          className="flex items-center justify-between p-3 rounded-lg bg-background border cursor-pointer hover:bg-muted/50 transition-colors"
-                          onClick={() => setActiveSection("enquiries")}
-                        >
-                          <div>
-                            <div className="font-medium">{enquiry.name}</div>
-                            <div className="text-xs text-muted-foreground capitalize">
-                              {enquiry.course_type === "callback" ? "Callback Request" : enquiry.course_type.replace("-", " ")} • {new Date(enquiry.created_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <Button variant="ghost" size="sm">
-                            View
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full mt-3"
-                      onClick={() => setActiveSection("enquiries")}
-                    >
-                      View All Enquiries
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </>
         );
