@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Mail, FileEdit, Phone } from "lucide-react";
@@ -67,11 +67,71 @@ interface NotificationTilesProps {
 
 export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
   const [counts, setCounts] = useState({
+    // Unread visitor messages across active admin live-chat sessions
     liveChats: 0,
     emails: 0,
     bespokeRequests: 0,
     callbackRequests: 0,
   });
+
+  const fetchCounts = useCallback(async () => {
+    try {
+      // Fetch all counts we can in parallel
+      const [
+        activeSessionsRes,
+        offlineMessagesRes,
+        bespokeRes,
+        callbackRes,
+      ] = await Promise.all([
+        supabase
+          .from("live_chat_sessions")
+          .select("id")
+          .eq("session_type", "admin")
+          .eq("status", "active"),
+        supabase
+          .from("live_chat_sessions")
+          .select("id", { count: "exact", head: true })
+          .eq("session_type", "admin")
+          .eq("status", "offline_message"),
+        supabase
+          .from("course_enquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending")
+          .not("course_type", "in", '("callback","general")'),
+        supabase
+          .from("course_enquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending")
+          .in("course_type", ["callback", "general"]),
+      ]);
+
+      const activeSessionIds = (activeSessionsRes.data ?? []).map((s) => s.id);
+
+      // Live chats tile should reflect NEW items (unread visitor messages), not just “active sessions”.
+      let liveChatUnreadCount = 0;
+      if (!activeSessionsRes.error && activeSessionIds.length > 0) {
+        const { count: unreadCount, error: unreadError } = await supabase
+          .from("live_chat_messages")
+          .select("id", { count: "exact", head: true })
+          .in("session_id", activeSessionIds)
+          .eq("sender_type", "visitor")
+          .is("read_at", null);
+
+        if (!unreadError && unreadCount !== null) {
+          liveChatUnreadCount = unreadCount;
+        }
+      }
+
+      setCounts({
+        liveChats: liveChatUnreadCount,
+        emails: offlineMessagesRes.count || 0,
+        bespokeRequests: bespokeRes.count || 0,
+        callbackRequests: callbackRes.count || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching notification counts:", error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchCounts();
@@ -99,50 +159,9 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchCounts]);
 
-  const fetchCounts = async () => {
-    try {
-      // Active live chats with unread messages
-      const { count: activeChatCount } = await supabase
-        .from("live_chat_sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("session_type", "admin")
-        .eq("status", "active");
-
-      // Offline messages (emails)
-      const { count: offlineMessageCount } = await supabase
-        .from("live_chat_sessions")
-        .select("id", { count: "exact", head: true })
-        .eq("session_type", "admin")
-        .eq("status", "offline_message");
-
-      // Bespoke course requests (pending)
-      const { count: bespokeCount } = await supabase
-        .from("course_enquiries")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending")
-        .not("course_type", "in", '("callback","general")');
-
-      // Callback requests (pending)
-      const { count: callbackCount } = await supabase
-        .from("course_enquiries")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "pending")
-        .in("course_type", ["callback", "general"]);
-
-      setCounts({
-        liveChats: activeChatCount || 0,
-        emails: offlineMessageCount || 0,
-        bespokeRequests: bespokeCount || 0,
-        callbackRequests: callbackCount || 0,
-      });
-    } catch (error) {
-      console.error("Error fetching notification counts:", error);
-    }
-  };
-
-  const tiles = [
+  const primaryTiles = [
     {
       icon: MessageCircle,
       label: "Live Chats",
@@ -157,6 +176,9 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       hasNew: counts.emails > 0,
       section: "live-chat",
     },
+  ];
+
+  const enquiryTiles = [
     {
       icon: FileEdit,
       label: "Bespoke Requests",
@@ -174,18 +196,36 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
   ];
 
   return (
-    <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {tiles.map((tile, index) => (
-        <NotificationTile
-          key={tile.label}
-          icon={tile.icon}
-          label={tile.label}
-          count={tile.count}
-          hasNew={tile.hasNew}
-          onClick={() => onNavigate(tile.section)}
-          delay={index * 0.05}
-        />
-      ))}
+    <div className="mb-6 space-y-4">
+      {/* Top row: chats + offline messages */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+        {primaryTiles.map((tile, index) => (
+          <NotificationTile
+            key={tile.label}
+            icon={tile.icon}
+            label={tile.label}
+            count={tile.count}
+            hasNew={tile.hasNew}
+            onClick={() => onNavigate(tile.section)}
+            delay={index * 0.05}
+          />
+        ))}
+      </div>
+
+      {/* Second row: enquiries */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+        {enquiryTiles.map((tile, index) => (
+          <NotificationTile
+            key={tile.label}
+            icon={tile.icon}
+            label={tile.label}
+            count={tile.count}
+            hasNew={tile.hasNew}
+            onClick={() => onNavigate(tile.section)}
+            delay={(primaryTiles.length + index) * 0.05}
+          />
+        ))}
+      </div>
     </div>
   );
 }
