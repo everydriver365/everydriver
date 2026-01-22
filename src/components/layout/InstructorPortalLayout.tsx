@@ -20,7 +20,8 @@ import {
   Globe,
   MessageCircle,
   Headphones,
-  ShieldCheck
+  ShieldCheck,
+  ClipboardList
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
   { href: "/instructor/schedule", label: "Schedule", icon: Calendar },
+  { href: "/instructor/pending-scheduling", label: "Pending Scheduling", icon: ClipboardList },
   { href: "/instructor/pupils", label: "Pupils", icon: Users },
   { href: "/instructor/jobs", label: "Jobs", icon: Briefcase },
   { href: "/instructor/pay", label: "Payments", icon: CreditCard },
