@@ -38,6 +38,7 @@ import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
 import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
+import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
 
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
@@ -229,6 +230,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               const isMessages = link.href === "/instructor/messages";
               const isAdminChat = link.href === "/instructor/admin-chat";
               const isVisitorChats = link.href === "/instructor/visitor-chats";
+              const isPendingScheduling = link.href === "/instructor/pending-scheduling";
               const isHighlighted = 'highlight' in link && link.highlight;
               return (
                 <Link
@@ -259,6 +261,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   )}
                   {isMessages && !isActive && (
                     <MessageNotificationBadge 
+                      instructorId={instructor?.id} 
+                      className="ml-auto"
+                    />
+                  )}
+                  {isPendingScheduling && !isActive && (
+                    <PendingSchedulingBadge 
                       instructorId={instructor?.id} 
                       className="ml-auto"
                     />
