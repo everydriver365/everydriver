@@ -106,7 +106,6 @@ export const useTelematics = (instructorId: string) => {
   const lastPositionTimeRef = useRef<number | null>(null);
   const speedHistoryRef = useRef<number[]>([]);
   const gForceHistoryRef = useRef<number[]>([]);
-  const calculatedSpeedHistoryRef = useRef<number[]>([]);
   const sessionIdRef = useRef<string | null>(null);
   const pupilIdRef = useRef<string | null>(null);
   const lastSpeedLimitFetchRef = useRef<{ lat: number; lon: number; time: number } | null>(null);
@@ -114,6 +113,10 @@ export const useTelematics = (instructorId: string) => {
   const gpsRetryCountRef = useRef(0);
   const gpsAccuracyModeRef = useRef<'high' | 'balanced' | 'low'>('high');
   const sessionDataRef = useRef<{ session: any; lessonId?: string; pupilId?: string } | null>(null);
+  
+  // Event cooldown tracking to prevent spam
+  const lastEventTimeRef = useRef<Record<string, number>>({});
+  const EVENT_COOLDOWN_MS = 5000; // 5 seconds between same event type
 
   // Get GPS options based on accuracy mode
   const getGpsOptions = useCallback((mode: 'high' | 'balanced' | 'low'): PositionOptions => {
@@ -140,6 +143,7 @@ export const useTelematics = (instructorId: string) => {
   };
 
   // Calculate speed from position changes when GPS speed is unavailable
+  // NO averaging - use raw calculation for instant response
   const calculateSpeedFromPositions = useCallback((
     currentPos: GeolocationPosition
   ): number | null => {
@@ -167,27 +171,22 @@ export const useTelematics = (instructorId: string) => {
       return null;
     }
 
-    // Apply smoothing with moving average (last 3 readings)
-    calculatedSpeedHistoryRef.current.push(speedKmh);
-    if (calculatedSpeedHistoryRef.current.length > 3) {
-      calculatedSpeedHistoryRef.current.shift();
-    }
-    
-    const avgSpeed = calculatedSpeedHistoryRef.current.reduce((a, b) => a + b, 0) / calculatedSpeedHistoryRef.current.length;
-    return avgSpeed;
+    // Return raw speed immediately - no averaging for faster response
+    return speedKmh;
   }, []);
 
   // Fetch speed limit for current position and store in ref for DB insertion
+  // Reduced throttle: 50m or 5 seconds for more responsive updates
   const fetchSpeedLimit = useCallback(async (lat: number, lon: number, currentSpeedKmh: number) => {
     const now = Date.now();
     const lastFetch = lastSpeedLimitFetchRef.current;
     
-    // Only fetch if moved significantly (100m) or 10 seconds passed
+    // Only fetch if moved significantly (50m) or 5 seconds passed
     if (lastFetch) {
       const distance = calculateDistance(lastFetch.lat, lastFetch.lon, lat, lon);
       const timeSinceLastFetch = now - lastFetch.time;
       
-      if (distance < 0.1 && timeSinceLastFetch < 10000) {
+      if (distance < 0.05 && timeSinceLastFetch < 5000) {
         // Just update isExceeding without fetching
         setSpeedLimitData(prev => ({
           ...prev,
@@ -352,14 +351,29 @@ export const useTelematics = (instructorId: string) => {
     return gForce;
   }, []);
 
-  // Detect motion-based events
+  // Detect motion-based events with higher thresholds and cooldowns
   const detectMotionEvents = useCallback((gForce: number, position: GeolocationPosition | null, currentSpeedKmh: number): DrivingEvent[] => {
     const events: DrivingEvent[] = [];
     const lat = position?.coords.latitude ?? null;
     const lon = position?.coords.longitude ?? null;
+    const now = Date.now();
+    
+    // Minimum speed filter - ignore events when nearly stationary
+    if (currentSpeedKmh < 5) {
+      return events;
+    }
+    
+    // GPS accuracy gate - skip if position accuracy is poor
+    if (position && position.coords.accuracy > 50) {
+      return events;
+    }
 
-    // Sharp turn detection (lateral G-force > 0.3g)
-    if (gForce > 0.3 && gForce <= 0.5) {
+    // Check cooldown for sharp_turn/hard_impact
+    const lastSharpTurn = lastEventTimeRef.current['sharp_turn'] || 0;
+    const lastHardImpact = lastEventTimeRef.current['hard_impact'] || 0;
+    
+    // Sharp turn detection - RAISED threshold from 0.3g to 0.4g
+    if (gForce > 0.4 && gForce <= 0.6 && (now - lastSharpTurn) > EVENT_COOLDOWN_MS) {
       events.push({
         event_type: 'sharp_turn',
         severity: 'low',
@@ -370,7 +384,8 @@ export const useTelematics = (instructorId: string) => {
         sensor_source: 'motion',
         notes: `Lateral force: ${gForce.toFixed(2)}g`
       });
-    } else if (gForce > 0.5 && gForce <= 0.7) {
+      lastEventTimeRef.current['sharp_turn'] = now;
+    } else if (gForce > 0.6 && gForce <= 0.8 && (now - lastSharpTurn) > EVENT_COOLDOWN_MS) {
       events.push({
         event_type: 'sharp_turn',
         severity: 'medium',
@@ -381,7 +396,8 @@ export const useTelematics = (instructorId: string) => {
         sensor_source: 'motion',
         notes: `Lateral force: ${gForce.toFixed(2)}g`
       });
-    } else if (gForce > 0.7) {
+      lastEventTimeRef.current['sharp_turn'] = now;
+    } else if (gForce > 0.8 && (now - lastHardImpact) > EVENT_COOLDOWN_MS) {
       events.push({
         event_type: 'hard_impact',
         severity: 'high',
@@ -392,6 +408,7 @@ export const useTelematics = (instructorId: string) => {
         sensor_source: 'motion',
         notes: `Impact force: ${gForce.toFixed(2)}g`
       });
+      lastEventTimeRef.current['hard_impact'] = now;
     }
 
     // Smooth cornering detection (consistently low G-force during turns)
@@ -401,7 +418,8 @@ export const useTelematics = (instructorId: string) => {
         gForceHistoryRef.current.shift();
       }
       const avgGForce = gForceHistoryRef.current.reduce((a, b) => a + b, 0) / gForceHistoryRef.current.length;
-      if (avgGForce < 0.1 && gForceHistoryRef.current.length >= 5) {
+      const lastSmooth = lastEventTimeRef.current['smooth_cornering'] || 0;
+      if (avgGForce < 0.1 && gForceHistoryRef.current.length >= 5 && (now - lastSmooth) > EVENT_COOLDOWN_MS) {
         events.push({
           event_type: 'smooth_cornering',
           severity: 'low',
@@ -413,45 +431,73 @@ export const useTelematics = (instructorId: string) => {
           notes: 'Smooth vehicle control'
         });
         gForceHistoryRef.current = []; // Reset after detecting
+        lastEventTimeRef.current['smooth_cornering'] = now;
       }
     }
 
     return events;
   }, []);
 
-  // Detect driving behavior events from GPS
+  // Detect driving behavior events from GPS with time-normalization, accuracy gates, and cooldowns
   const detectDrivingEvents = useCallback((currentSpeedKmh: number, previousSpeedKmh: number, position: GeolocationPosition): DrivingEvent[] => {
-    const speedDiff = currentSpeedKmh - previousSpeedKmh;
     const events: DrivingEvent[] = [];
-
-    // Harsh braking (deceleration > 15 km/h per second)
-    if (speedDiff < -15) {
+    const now = Date.now();
+    
+    // GPS accuracy gate - skip events if GPS accuracy is poor (> 50m)
+    if (position.coords.accuracy > 50) {
+      return events;
+    }
+    
+    // Calculate time delta for time-normalized thresholds
+    const timeDeltaMs = lastPositionTimeRef.current 
+      ? position.timestamp - lastPositionTimeRef.current 
+      : 1000;
+    const timeDeltaSeconds = Math.max(timeDeltaMs / 1000, 0.5); // Minimum 0.5s to avoid division issues
+    
+    // Speed difference
+    const speedDiff = currentSpeedKmh - previousSpeedKmh;
+    
+    // Convert to m/s² for proper physics-based thresholds
+    // speedDiff is km/h, divide by 3.6 to get m/s, then divide by time to get m/s²
+    const accelerationMps2 = (speedDiff / 3.6) / timeDeltaSeconds;
+    
+    // Harsh braking: < -5 m/s² (about 0.5g) AND speed > 5 km/h
+    // Must be moving at meaningful speed to register braking
+    const lastBrake = lastEventTimeRef.current['harsh_brake'] || 0;
+    if (accelerationMps2 < -5 && currentSpeedKmh > 5 && (now - lastBrake) > EVENT_COOLDOWN_MS) {
+      const severity = accelerationMps2 < -8 ? 'high' : accelerationMps2 < -6.5 ? 'medium' : 'low';
       events.push({
         event_type: 'harsh_brake',
-        severity: speedDiff < -25 ? 'high' : speedDiff < -20 ? 'medium' : 'low',
+        severity,
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         speed_at_event: currentSpeedKmh,
         sensor_source: 'gps',
-        notes: `Deceleration: ${Math.abs(speedDiff).toFixed(1)} km/h`
+        notes: `Deceleration: ${Math.abs(accelerationMps2).toFixed(1)} m/s² (${Math.abs(speedDiff).toFixed(1)} km/h in ${timeDeltaSeconds.toFixed(1)}s)`
       });
+      lastEventTimeRef.current['harsh_brake'] = now;
     }
 
-    // Harsh acceleration (acceleration > 12 km/h per second)
-    if (speedDiff > 12) {
+    // Harsh acceleration: > 4 m/s² (about 0.4g) AND previous speed > 3 km/h
+    // Must already be moving to avoid false positives from standstill
+    const lastAccel = lastEventTimeRef.current['harsh_acceleration'] || 0;
+    if (accelerationMps2 > 4 && previousSpeedKmh > 3 && (now - lastAccel) > EVENT_COOLDOWN_MS) {
+      const severity = accelerationMps2 > 6 ? 'high' : accelerationMps2 > 5 ? 'medium' : 'low';
       events.push({
         event_type: 'harsh_acceleration',
-        severity: speedDiff > 20 ? 'high' : speedDiff > 15 ? 'medium' : 'low',
+        severity,
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         speed_at_event: currentSpeedKmh,
         sensor_source: 'gps',
-        notes: `Acceleration: ${speedDiff.toFixed(1)} km/h`
+        notes: `Acceleration: ${accelerationMps2.toFixed(1)} m/s² (${speedDiff.toFixed(1)} km/h in ${timeDeltaSeconds.toFixed(1)}s)`
       });
+      lastEventTimeRef.current['harsh_acceleration'] = now;
     }
 
-    // Speeding (over 70 mph / 113 km/h on any road)
-    if (currentSpeedKmh > 113) {
+    // Speeding (over 70 mph / 113 km/h on any road) with cooldown
+    const lastSpeeding = lastEventTimeRef.current['speeding'] || 0;
+    if (currentSpeedKmh > 113 && (now - lastSpeeding) > EVENT_COOLDOWN_MS) {
       events.push({
         event_type: 'speeding',
         severity: currentSpeedKmh > 130 ? 'high' : currentSpeedKmh > 120 ? 'medium' : 'low',
@@ -461,10 +507,12 @@ export const useTelematics = (instructorId: string) => {
         sensor_source: 'gps',
         notes: `Speed: ${currentSpeedKmh.toFixed(1)} km/h`
       });
+      lastEventTimeRef.current['speeding'] = now;
     }
 
-    // Good smooth stop (gradual deceleration to stop)
-    if (currentSpeedKmh < 2 && previousSpeedKmh > 10 && speedDiff > -8) {
+    // Good smooth stop (gradual deceleration to stop) - acceleration between -2 and -5 m/s²
+    const lastSmoothStop = lastEventTimeRef.current['smooth_stop'] || 0;
+    if (currentSpeedKmh < 2 && previousSpeedKmh > 10 && accelerationMps2 > -5 && accelerationMps2 < -0.5 && (now - lastSmoothStop) > EVENT_COOLDOWN_MS) {
       events.push({
         event_type: 'smooth_stop',
         severity: 'low',
@@ -474,10 +522,12 @@ export const useTelematics = (instructorId: string) => {
         sensor_source: 'gps',
         notes: 'Smooth gradual stop'
       });
+      lastEventTimeRef.current['smooth_stop'] = now;
     }
 
-    // Good acceleration (smooth start from stop)
-    if (previousSpeedKmh < 2 && currentSpeedKmh > 10 && speedDiff < 10) {
+    // Good acceleration (smooth start from stop) - acceleration between 1 and 3.5 m/s²
+    const lastGoodAccel = lastEventTimeRef.current['good_acceleration'] || 0;
+    if (previousSpeedKmh < 2 && currentSpeedKmh > 10 && accelerationMps2 > 0.5 && accelerationMps2 < 3.5 && (now - lastGoodAccel) > EVENT_COOLDOWN_MS) {
       events.push({
         event_type: 'good_acceleration',
         severity: 'low',
@@ -487,6 +537,7 @@ export const useTelematics = (instructorId: string) => {
         sensor_source: 'gps',
         notes: 'Smooth acceleration from stop'
       });
+      lastEventTimeRef.current['good_acceleration'] = now;
     }
 
     return events;
@@ -641,8 +692,8 @@ export const useTelematics = (instructorId: string) => {
       setDamoovScores(null);
       setCoinsEarned(0);
       speedHistoryRef.current = [];
-      calculatedSpeedHistoryRef.current = [];
       gForceHistoryRef.current = [];
+      lastEventTimeRef.current = {}; // Reset event cooldowns
       
       // Reset retry counters and accuracy mode
       gpsRetryCountRef.current = 0;
@@ -940,8 +991,8 @@ export const useTelematics = (instructorId: string) => {
     lastPositionRef.current = null;
     lastPositionTimeRef.current = null;
     speedHistoryRef.current = [];
-    calculatedSpeedHistoryRef.current = [];
     gForceHistoryRef.current = [];
+    lastEventTimeRef.current = {};
     setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'GPS not active' });
     setMotionData({ acceleration: null, rotationRate: null, gForce: 0 });
 
