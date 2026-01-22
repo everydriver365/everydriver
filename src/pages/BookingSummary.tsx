@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote, Sparkles } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Car, CheckCircle, CreditCard, User, Award, ShieldCheck, Star, Loader2, Calendar, Play, Backpack, AlertCircle, FileText, Banknote, Sparkles, UserCog } from "lucide-react";
 import { format, parseISO, startOfDay, addDays, getDay, isAfter } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
@@ -1579,6 +1579,32 @@ export default function BookingSummary() {
             </div>
           </div>
         </motion.div>
+
+        {/* Info Banner - Show when instructor will assign slots */}
+        {!requiresSlotSelection && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 sm:p-6 mb-6"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
+                <UserCog className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  {bookingMode === 'auto_assign' ? 'Your lessons will be scheduled automatically' : 'Your instructor will schedule your lessons'}
+                </h3>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  {bookingMode === 'auto_assign' 
+                    ? 'After payment, our system will automatically find the best available times for your lessons based on your instructor\'s availability. You\'ll receive confirmation with your lesson schedule shortly.'
+                    : 'After payment, your instructor will contact you to arrange lesson times that work best for both of you. You\'ll receive confirmation once your lessons are scheduled.'}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Step 2: Lesson Scheduler - Only show for pupil_choice mode */}
         {requiresSlotSelection && (

@@ -530,6 +530,29 @@ export function MobileBookingView({
         </div>
       </div>
 
+      {/* Info Banner - Show when instructor will assign slots */}
+      {!requiresSlotSelection && (
+        <div className="px-4 pb-4">
+          <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
+                <UserCog className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100 mb-0.5">
+                  {bookingMode === 'auto_assign' ? 'Lessons scheduled automatically' : 'Instructor will schedule lessons'}
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  {bookingMode === 'auto_assign' 
+                    ? 'After payment, we\'ll find the best times for your lessons. You\'ll receive your schedule shortly.'
+                    : 'After payment, your instructor will contact you to arrange lesson times that work for you.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Step 2: Schedule - Only show for pupil_choice mode */}
       {requiresSlotSelection && (
         <div className="px-4 pb-4">
