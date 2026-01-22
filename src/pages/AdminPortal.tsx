@@ -83,8 +83,8 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   compliance: { title: "Compliance Dashboard", group: "People", icon: Shield },
   enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
   messages: { title: "Pupil Messages", group: "People", icon: MessageCircle },
-  "instructor-messages": { title: "Instructor Messages", group: "People", icon: MessageCircle },
-  "live-chat": { title: "Live Chat", group: "People", icon: MessageCircle },
+  "instructor-messages": { title: "Instructor Support", group: "Live Chats", icon: MessageCircle },
+  "live-chat": { title: "Visitor Chats", group: "Live Chats", icon: MessageCircle },
   // Learner Website (EveryDriver)
   hero: { title: "Hero Section", group: "Learner Website", icon: Sparkles },
   sections: { title: "Page Sections", group: "Learner Website", icon: Layers },

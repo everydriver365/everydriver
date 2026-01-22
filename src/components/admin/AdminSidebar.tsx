@@ -58,16 +58,26 @@ interface AdminSidebarProps {
   onLogout: () => void;
 }
 
+interface NavSubItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  badgeKey?: string;
+}
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  badgeKey?: string;
+  subItems?: NavSubItem[];
+}
+
 interface NavGroup {
   label: string;
   icon: React.ElementType;
   color: string;
-  items: {
-    id: string;
-    label: string;
-    icon: React.ElementType;
-    badgeKey?: string;
-  }[];
+  items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
@@ -87,8 +97,16 @@ const navGroups: NavGroup[] = [
       { id: "instructors", label: "Instructors", icon: Users },
       { id: "enquiries", label: "Enquiries & Callbacks", icon: MessageSquareText },
       { id: "messages", label: "Pupil Messages", icon: MessageCircle },
-      { id: "instructor-messages", label: "Instructor Messages", icon: ShieldCheck, badgeKey: "instructorMessages" },
-      { id: "live-chat", label: "Live Chat", icon: Headphones, badgeKey: "liveChat" },
+      { 
+        id: "live-chat-group", 
+        label: "Live Chats", 
+        icon: Headphones, 
+        badgeKey: "liveChatTotal",
+        subItems: [
+          { id: "live-chat", label: "Visitor Chats", icon: MessageCircle, badgeKey: "liveChat" },
+          { id: "instructor-messages", label: "Instructor Support", icon: ShieldCheck, badgeKey: "instructorMessages" },
+        ]
+      },
     ],
   },
   {
@@ -156,16 +174,29 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
   const [badgeCounts, setBadgeCounts] = useState<Record<string, number>>({
     instructorMessages: 0,
     liveChat: 0,
+    liveChatTotal: 0,
   });
+  const [openSubItems, setOpenSubItems] = useState<string[]>(["live-chat-group"]);
   
-  // Find which group contains the active section
+  // Find which group contains the active section (including sub-items)
   const activeGroupLabel = navGroups.find(group => 
-    group.items.some(item => item.id === activeSection)
+    group.items.some(item => 
+      item.id === activeSection || 
+      item.subItems?.some(sub => sub.id === activeSection)
+    )
   )?.label;
 
   const [openGroups, setOpenGroups] = useState<string[]>(
     activeGroupLabel ? [activeGroupLabel] : ["Dashboard"]
   );
+
+  const toggleSubItems = (itemId: string) => {
+    setOpenSubItems(prev => 
+      prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
+    );
+  };
 
   const fetchBadgeCounts = useCallback(async () => {
     try {
@@ -198,6 +229,7 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
       setBadgeCounts({
         instructorMessages: instructorMsgCount || 0,
         liveChat: liveChatUnread,
+        liveChatTotal: (instructorMsgCount || 0) + liveChatUnread,
       });
     } catch (error) {
       console.error("Error fetching badge counts:", error);
@@ -244,7 +276,8 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
   const filteredGroups = navGroups.map(group => ({
     ...group,
     items: group.items.filter(item => 
-      item.label.toLowerCase().includes(searchQuery.toLowerCase())
+      item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.subItems?.some(sub => sub.label.toLowerCase().includes(searchQuery.toLowerCase()))
     )
   })).filter(group => group.items.length > 0 || group.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -316,6 +349,100 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
                     <SidebarMenu>
                       {group.items.map((item) => {
                         const badgeCount = item.badgeKey ? badgeCounts[item.badgeKey] || 0 : 0;
+                        const hasSubItems = item.subItems && item.subItems.length > 0;
+                        const isSubItemsOpen = openSubItems.includes(item.id);
+                        const hasActiveSubItem = item.subItems?.some(sub => sub.id === activeSection);
+                        
+                        if (hasSubItems) {
+                          return (
+                            <SidebarMenuItem key={item.id}>
+                              <Collapsible 
+                                open={isSubItemsOpen || hasActiveSubItem} 
+                                onOpenChange={() => toggleSubItems(item.id)}
+                              >
+                                <CollapsibleTrigger asChild>
+                                  <SidebarMenuButton
+                                    tooltip={item.label}
+                                    className={cn(
+                                      "transition-all duration-200 rounded-lg",
+                                      hasActiveSubItem 
+                                        ? "bg-primary/5 text-primary font-medium" 
+                                        : "hover:bg-muted/60"
+                                    )}
+                                  >
+                                    <item.icon className={cn(
+                                      "h-4 w-4",
+                                      hasActiveSubItem && "text-primary"
+                                    )} />
+                                    {!isCollapsed && (
+                                      <span className="flex-1 flex items-center justify-between">
+                                        <span>{item.label}</span>
+                                        <span className="flex items-center gap-1">
+                                          {badgeCount > 0 && (
+                                            <Badge 
+                                              variant="destructive" 
+                                              className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold animate-pulse"
+                                            >
+                                              {badgeCount > 99 ? "99+" : badgeCount}
+                                            </Badge>
+                                          )}
+                                          <ChevronDown className={cn(
+                                            "h-3.5 w-3.5 transition-transform text-muted-foreground",
+                                            (isSubItemsOpen || hasActiveSubItem) ? "rotate-0" : "-rotate-90"
+                                          )} />
+                                        </span>
+                                      </span>
+                                    )}
+                                    {isCollapsed && badgeCount > 0 && (
+                                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] text-destructive-foreground font-bold">
+                                        {badgeCount > 9 ? "9+" : badgeCount}
+                                      </span>
+                                    )}
+                                  </SidebarMenuButton>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-muted pl-2">
+                                    {item.subItems?.map((subItem) => {
+                                      const subBadgeCount = subItem.badgeKey ? badgeCounts[subItem.badgeKey] || 0 : 0;
+                                      return (
+                                        <SidebarMenuButton
+                                          key={subItem.id}
+                                          onClick={() => onSectionChange(subItem.id)}
+                                          isActive={activeSection === subItem.id}
+                                          tooltip={subItem.label}
+                                          className={cn(
+                                            "transition-all duration-200 rounded-lg text-sm",
+                                            activeSection === subItem.id 
+                                              ? "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20" 
+                                              : "hover:bg-muted/60"
+                                          )}
+                                        >
+                                          <subItem.icon className={cn(
+                                            "h-3.5 w-3.5",
+                                            activeSection === subItem.id && "text-primary"
+                                          )} />
+                                          {!isCollapsed && (
+                                            <span className="flex-1 flex items-center justify-between">
+                                              <span>{subItem.label}</span>
+                                              {subBadgeCount > 0 && (
+                                                <Badge 
+                                                  variant="destructive" 
+                                                  className="h-4 min-w-[16px] px-1 text-[9px] font-bold animate-pulse"
+                                                >
+                                                  {subBadgeCount > 99 ? "99+" : subBadgeCount}
+                                                </Badge>
+                                              )}
+                                            </span>
+                                          )}
+                                        </SidebarMenuButton>
+                                      );
+                                    })}
+                                  </div>
+                                </CollapsibleContent>
+                              </Collapsible>
+                            </SidebarMenuItem>
+                          );
+                        }
                         
                         return (
                           <SidebarMenuItem key={item.id}>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Mail, FileEdit, Phone } from "lucide-react";
+import { MessageCircle, Mail, FileEdit, Phone, ShieldCheck, Headphones } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -183,15 +183,15 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
 
   const primaryTiles = [
     {
-      icon: MessageCircle,
-      label: "Instructor Messages",
+      icon: ShieldCheck,
+      label: "Instructor Support",
       count: counts.instructorMessages,
       hasNew: counts.instructorMessages > 0,
       section: "instructor-messages",
     },
     {
-      icon: MessageCircle,
-      label: "Live Chats",
+      icon: Headphones,
+      label: "Visitor Chats",
       count: counts.liveChats,
       hasNew: counts.liveChatsUnread > 0,
       section: "live-chat",
