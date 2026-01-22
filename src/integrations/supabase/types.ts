@@ -2678,6 +2678,33 @@ export type Database = {
           },
         ]
       }
+      parent_otp_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          phone: string
+          verified: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          phone: string
+          verified?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          phone?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       payment_history: {
         Row: {
           amount: number
@@ -4238,6 +4265,7 @@ export type Database = {
     }
     Functions: {
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
+      cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       generate_calendar_share_token: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {
