@@ -125,7 +125,18 @@ export function LiveChatManager() {
             `${newSession.visitor_name} wants to chat`,
             () => refetch()
           );
-          toast.info("New chat started!");
+          toast.success(`🆕 New Chat: ${newSession.visitor_name} wants to talk!`, {
+            duration: 10000,
+            action: {
+              label: "Open Chat",
+              onClick: () => {
+                refetch().then(() => {
+                  // Find and select the new session after refetch
+                  setSelectedSession(newSession);
+                });
+              },
+            },
+          });
           refetch();
         }
       )
@@ -140,7 +151,7 @@ export function LiveChatManager() {
   const filteredSessions = sessions.filter((session) => {
     const matchesSearch =
       session.visitor_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      session.visitor_email.toLowerCase().includes(searchQuery.toLowerCase());
+      (session.visitor_email?.toLowerCase() || "").includes(searchQuery.toLowerCase());
 
     const matchesTab =
       activeTab === "all" ||
