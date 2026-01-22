@@ -12,11 +12,18 @@ interface NotificationTileProps {
   count: number;
   hasNew: boolean;
   isStats?: boolean;
+  isActiveCount?: boolean;
   onClick: () => void;
   delay?: number;
 }
 
-function NotificationTile({ icon: Icon, label, count, hasNew, isStats = false, onClick, delay = 0 }: NotificationTileProps) {
+function NotificationTile({ icon: Icon, label, count, hasNew, isStats = false, isActiveCount = false, onClick, delay = 0 }: NotificationTileProps) {
+  const getSubtitle = () => {
+    if (isStats) return `${count} total`;
+    if (isActiveCount) return count === 0 ? "No active" : `${count} active`;
+    return count === 0 ? "No pending" : `${count} pending`;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -46,9 +53,7 @@ function NotificationTile({ icon: Icon, label, count, hasNew, isStats = false, o
               <div>
                 <div className="font-medium">{label}</div>
                 <div className="text-sm text-muted-foreground">
-                  {isStats 
-                    ? `${count} total` 
-                    : (count === 0 ? "No pending" : `${count} pending`)}
+                  {getSubtitle()}
                 </div>
               </div>
             </div>
@@ -71,6 +76,7 @@ interface NotificationTilesProps {
 export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
   const [counts, setCounts] = useState({
     liveChats: 0,
+    liveChatsUnread: 0,
     emails: 0,
     bespokeRequests: 0,
     callbackRequests: 0,
@@ -86,7 +92,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       ] = await Promise.all([
         supabase
           .from("live_chat_sessions")
-          .select("id")
+          .select("id", { count: "exact" })
           .eq("session_type", "admin")
           .eq("status", "active"),
         supabase
@@ -107,6 +113,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       ]);
 
       const activeSessionIds = (activeSessionsRes.data ?? []).map((s) => s.id);
+      const activeSessionCount = activeSessionsRes.count || activeSessionIds.length;
 
       let liveChatUnreadCount = 0;
       if (!activeSessionsRes.error && activeSessionIds.length > 0) {
@@ -123,7 +130,8 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       }
 
       setCounts({
-        liveChats: liveChatUnreadCount,
+        liveChats: activeSessionCount,
+        liveChatsUnread: liveChatUnreadCount,
         emails: offlineMessagesRes.count || 0,
         bespokeRequests: bespokeRes.count || 0,
         callbackRequests: callbackRes.count || 0,
@@ -165,8 +173,9 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       icon: MessageCircle,
       label: "Live Chats",
       count: counts.liveChats,
-      hasNew: counts.liveChats > 0,
+      hasNew: counts.liveChatsUnread > 0,
       section: "live-chat",
+      isActiveCount: true,
     },
     {
       icon: Mail,
@@ -205,6 +214,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
             label={tile.label}
             count={tile.count}
             hasNew={tile.hasNew}
+            isActiveCount={'isActiveCount' in tile ? tile.isActiveCount : false}
             onClick={() => onNavigate(tile.section)}
             delay={index * 0.05}
           />
