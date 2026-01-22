@@ -16,6 +16,7 @@ interface HealthResponse {
   klarna: GatewayStatus;
   npi: GatewayStatus;
   square: GatewayStatus;
+  elavon: GatewayStatus;
 }
 
 /**
@@ -31,22 +32,11 @@ serve(async (req: Request) => {
 
   try {
     const response: HealthResponse = {
-      clearpay: {
-        available: false,
-        configured: false,
-      },
-      klarna: {
-        available: false,
-        configured: false,
-      },
-      npi: {
-        available: false,
-        configured: false,
-      },
-      square: {
-        available: false,
-        configured: false,
-      },
+      clearpay: { available: false, configured: false },
+      klarna: { available: false, configured: false },
+      npi: { available: false, configured: false },
+      square: { available: false, configured: false },
+      elavon: { available: false, configured: false },
     };
 
     // Check Clearpay credentials
@@ -62,13 +52,7 @@ serve(async (req: Request) => {
     const klarnaPassword = Deno.env.get("KLARNA_API_PASSWORD");
     if (klarnaUsername && klarnaPassword) {
       response.klarna.configured = true;
-      // Klarna needs sandbox flag to work properly
-      const klarnaSandbox = Deno.env.get("KLARNA_SANDBOX");
-      if (klarnaSandbox !== undefined) {
-        response.klarna.available = true;
-      } else {
-        response.klarna.error = "KLARNA_SANDBOX not set";
-      }
+      response.klarna.available = true;
     }
 
     // Check NPI credentials
@@ -82,19 +66,23 @@ serve(async (req: Request) => {
     // Check Square credentials
     const squareAccessToken = Deno.env.get("SQUARE_ACCESS_TOKEN");
     const squareLocationId = Deno.env.get("SQUARE_LOCATION_ID");
-    const squareEnvironment = Deno.env.get("SQUARE_ENVIRONMENT");
-    if (squareAccessToken && squareLocationId) {
+    const squareAppId = Deno.env.get("SQUARE_APPLICATION_ID");
+    if (squareAccessToken && squareLocationId && squareAppId) {
       response.square.configured = true;
-      // Square token should start with EAAA for production
-      if (squareEnvironment === "production" && !squareAccessToken.startsWith("EAAA")) {
-        response.square.error = "Production token expected (EAAA prefix)";
-      } else if (squareEnvironment === "sandbox" && !squareAccessToken.startsWith("EAAA")) {
-        response.square.available = true;
-      } else {
-        response.square.available = true;
-      }
-    } else if (!squareLocationId) {
-      response.square.error = "SQUARE_LOCATION_ID not set";
+      response.square.available = true;
+    } else {
+      response.square.configured = !!(squareAccessToken || squareLocationId);
+      if (!squareAccessToken) response.square.error = "SQUARE_ACCESS_TOKEN not set";
+      else if (!squareLocationId) response.square.error = "SQUARE_LOCATION_ID not set";
+      else if (!squareAppId) response.square.error = "SQUARE_APPLICATION_ID not set";
+    }
+
+    // Check Elavon/Cardstream credentials
+    const elavonMerchantAlias = Deno.env.get("ELAVON_MERCHANT_ALIAS");
+    const elavonSecretKey = Deno.env.get("ELAVON_SECRET_KEY");
+    if (elavonMerchantAlias && elavonSecretKey) {
+      response.elavon.configured = true;
+      response.elavon.available = true;
     }
 
     console.log("Payment health check:", response);
