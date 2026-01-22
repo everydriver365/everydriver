@@ -45,6 +45,7 @@ import { BookingModeOverview } from "@/components/admin/BookingModeOverview";
 import { AdminInstructorMessagesManager } from "@/components/admin/AdminInstructorMessagesManager";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { NotificationTiles } from "@/components/admin/NotificationTiles";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -233,6 +234,9 @@ export default function AdminPortal() {
       case "overview":
         return (
           <>
+            {/* Notification Tiles */}
+            <NotificationTiles onNavigate={setActiveSection} />
+
             {/* Stats Grid */}
             <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {stats.map((stat, index) => (
