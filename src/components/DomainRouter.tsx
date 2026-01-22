@@ -15,6 +15,7 @@ const INSTRUCTOR_ROUTE_PREFIXES = [
 // Routes that should stay on their current domain (shared routes)
 const SHARED_ROUTES = [
   "/", // Root path - handled by ConditionalHome, never redirect
+  "/.well-known", // Apple Pay domain verification - must not redirect
   "/calendar-callback", // OAuth callback - must stay on originating domain
   "/privacy-policy",
   "/terms-of-service",
