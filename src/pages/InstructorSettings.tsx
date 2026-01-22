@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin } from "lucide-react";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -16,6 +16,9 @@ import { TermsConditionsEditor } from "@/components/instructor/TermsConditionsEd
 import { DepositSettingsEditor } from "@/components/instructor/DepositSettingsEditor";
 import { BookingModeSelector } from "@/components/instructor/BookingModeSelector";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
+import { InstructorCoursesManager } from "@/components/instructor/InstructorCoursesManager";
+import { InstructorTestCentresManager } from "@/components/instructor/InstructorTestCentresManager";
+import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -341,6 +344,36 @@ const { data, error } = await supabase
           ) : (
             <p className="text-muted-foreground text-center py-4">Profile not found</p>
           )}
+        </SettingsTile>
+
+        {/* Courses Section */}
+        <SettingsTile 
+          id="courses" 
+          icon={BookOpen} 
+          title="My Courses" 
+          description="Manage your course offerings & pricing"
+        >
+          <InstructorCoursesManager instructorId={instructorId} />
+        </SettingsTile>
+
+        {/* Test Centres Section */}
+        <SettingsTile 
+          id="test-centres" 
+          icon={MapPin} 
+          title="Test Centres" 
+          description="Test centres you cover"
+        >
+          <InstructorTestCentresManager instructorId={instructorId} />
+        </SettingsTile>
+
+        {/* Vehicle & Details Section */}
+        <SettingsTile 
+          id="details" 
+          icon={Car} 
+          title="Vehicle & Qualifications" 
+          description="Car details, skills & social links"
+        >
+          <InstructorDetailsEditor instructorId={instructorId} />
         </SettingsTile>
 
         {/* Mini-Website Share Section */}
