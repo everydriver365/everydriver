@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -47,6 +47,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { NotificationTiles } from "@/components/admin/NotificationTiles";
 import { SystemAlertsCard } from "@/components/admin/SystemAlertsCard";
+import { ComplianceDashboard } from "@/components/admin/ComplianceDashboard";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -79,6 +80,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   overview: { title: "Overview", group: "Dashboard", icon: LayoutDashboard },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
+  compliance: { title: "Compliance Dashboard", group: "People", icon: Shield },
   enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
   messages: { title: "Pupil Messages", group: "People", icon: MessageCircle },
   "instructor-messages": { title: "Instructor Messages", group: "People", icon: MessageCircle },
@@ -325,6 +327,23 @@ export default function AdminPortal() {
                     onRefresh={fetchInstructors}
                   />
                 )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "compliance":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-accent" />
+                  Instructor Compliance Dashboard
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ComplianceDashboard />
               </CardContent>
             </Card>
           </motion.div>
