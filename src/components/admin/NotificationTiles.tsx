@@ -197,13 +197,6 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       section: "live-chat",
       isActiveCount: true,
     },
-    {
-      icon: Mail,
-      label: "Offline Messages",
-      count: counts.emails,
-      hasNew: counts.emails > 0,
-      section: "live-chat",
-    },
   ];
 
   const enquiryTiles = [
