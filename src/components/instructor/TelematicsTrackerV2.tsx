@@ -21,6 +21,7 @@ import {
   Vibrate
 } from 'lucide-react';
 import { useGPSCollector } from '@/hooks/useGPSCollector';
+import { useMotionCollector } from '@/hooks/useMotionCollector';
 import { useRealtimeAlerts, TelematicsAlert } from '@/hooks/useRealtimeAlerts';
 import { useTelematicsSession } from '@/hooks/useTelematicsSession';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -30,6 +31,7 @@ import 'leaflet/dist/leaflet.css';
 import DamoovScoresDisplay from './DamoovScoresDisplay';
 import PupilGamificationStats from './PupilGamificationStats';
 import SpeedLimitRoundel from './SpeedLimitRoundel';
+import SpeedComplianceReport from './SpeedComplianceReport';
 import { RealtimeAlertDisplay, AlertBadge } from './RealtimeAlertDisplay';
 import { GPSPermissionHelper } from './GPSPermissionHelper';
 import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
@@ -71,6 +73,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   const [elapsedTime, setElapsedTime] = useState(0);
   const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([]);
   const [maxSpeedRecorded, setMaxSpeedRecorded] = useState(0);
+  const [lastSessionId, setLastSessionId] = useState<string | null>(null);
   
   // Feedback settings
   const [voiceEnabled, setVoiceEnabled] = useState(true);
@@ -78,6 +81,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   
   // New focused hooks
   const gpsCollector = useGPSCollector();
+  const motionCollector = useMotionCollector();
   const session = useTelematicsSession(instructorId);
   const alerts = useRealtimeAlerts(session.currentSession?.id || null, {
     onNewAlert: handleNewAlert,
@@ -156,10 +160,13 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     // Start GPS collection
     gpsCollector.startCollection(newSession.id);
     
+    // Start motion collection
+    motionCollector.startCollection(newSession.id);
+    
     // Feedback on start
     if (hapticEnabled) haptic.triggerStart();
     if (voiceEnabled) voice.announceStart();
-  }, [lessonId, pupilId, session, gpsCollector, hapticEnabled, haptic, voiceEnabled, voice]);
+  }, [lessonId, pupilId, session, gpsCollector, motionCollector, hapticEnabled, haptic, voiceEnabled, voice]);
 
   // Stop tracking
   const handleStopTracking = useCallback(async () => {
@@ -168,6 +175,10 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     
     // Stop GPS collection and get final stats
     const { totalDistance, pointCount } = gpsCollector.stopCollection();
+    
+    // Stop motion collection
+    const { peakGForce, sampleCount: motionSamples } = await motionCollector.stopCollection();
+    console.log(`[TelematicsTracker] Motion stopped: ${motionSamples} samples, peak G: ${peakGForce.toFixed(2)}`);
     
     // Calculate average speed
     const durationSeconds = trackingStartTime ? (Date.now() - trackingStartTime.getTime()) / 1000 : 0;
@@ -180,6 +191,9 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     const finalSession = await session.endSession(totalDistance, maxSpeedRecorded, avgSpeedKmh);
     
     if (finalSession) {
+      // Save session ID for compliance report
+      setLastSessionId(finalSession.id);
+      
       if (voiceEnabled) {
         const score = session.damoovScores?.overallScore || 75;
         voice.announceStop(score);
@@ -327,8 +341,19 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                     {gpsCollector.gpsQuality.accuracy && ` (±${gpsCollector.gpsQuality.accuracy.toFixed(0)}m)`}
                   </span>
                 </div>
+                
+                {/* Motion sensor status */}
+                {motionCollector.motionQuality.hasPermission && (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    <span className="text-xs">
+                      {motionCollector.currentMotion.gForce.toFixed(2)}g
+                    </span>
+                  </div>
+                )}
+                
                 <div className="text-xs text-muted-foreground">
-                  {gpsCollector.pointCount} points recorded
+                  {gpsCollector.pointCount} pts
                 </div>
               </div>
               
@@ -657,6 +682,13 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                 </div>
               )}
               
+              {/* Speed Compliance Report */}
+              {session.currentSession?.id || lastSessionId ? (
+                <SpeedComplianceReport 
+                  telematicsId={session.currentSession?.id || lastSessionId || ''} 
+                />
+              ) : null}
+              
               {/* Damoov Scores Display */}
               <DamoovScoresDisplay
                 scores={session.damoovScores}
@@ -670,7 +702,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
               )}
               
               {/* Session Summary */}
-              <div className="grid grid-cols-3 gap-2 text-center p-3 bg-muted/30 rounded-lg">
+              <div className="grid grid-cols-4 gap-2 text-center p-3 bg-muted/30 rounded-lg">
                 <div>
                   <p className="text-lg font-bold">{(gpsCollector.totalDistance / 1000 * 0.621371).toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground">miles</p>
@@ -678,6 +710,10 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                 <div>
                   <p className="text-lg font-bold">{Math.round(maxSpeedRecorded * 0.621371)}</p>
                   <p className="text-xs text-muted-foreground">max mph</p>
+                </div>
+                <div>
+                  <p className="text-lg font-bold">{motionCollector.peakGForce.toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground">peak G</p>
                 </div>
                 <div>
                   <p className="text-lg font-bold">{alerts.alertCounts.total}</p>
