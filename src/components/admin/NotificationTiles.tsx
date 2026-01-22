@@ -77,6 +77,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
   const [counts, setCounts] = useState({
     liveChats: 0,
     liveChatsUnread: 0,
+    instructorMessages: 0,
     emails: 0,
     bespokeRequests: 0,
     callbackRequests: 0,
@@ -86,6 +87,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
     try {
       const [
         activeSessionsRes,
+        instructorUnreadRes,
         offlineMessagesRes,
         bespokeRes,
         callbackRes,
@@ -95,6 +97,11 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
           .select("id", { count: "exact" })
           .eq("session_type", "admin")
           .eq("status", "active"),
+        supabase
+          .from("admin_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("sender_type", "instructor")
+          .is("read_at", null),
         supabase
           .from("live_chat_sessions")
           .select("id", { count: "exact", head: true })
@@ -132,6 +139,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       setCounts({
         liveChats: activeSessionCount,
         liveChatsUnread: liveChatUnreadCount,
+        instructorMessages: instructorUnreadRes.count || 0,
         emails: offlineMessagesRes.count || 0,
         bespokeRequests: bespokeRes.count || 0,
         callbackRequests: callbackRes.count || 0,
@@ -161,6 +169,11 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
         { event: "*", schema: "public", table: "live_chat_messages" },
         () => fetchCounts()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "admin_messages" },
+        () => fetchCounts()
+      )
       .subscribe();
 
     return () => {
@@ -169,6 +182,13 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
   }, [fetchCounts]);
 
   const primaryTiles = [
+    {
+      icon: MessageCircle,
+      label: "Instructor Messages",
+      count: counts.instructorMessages,
+      hasNew: counts.instructorMessages > 0,
+      section: "instructor-messages",
+    },
     {
       icon: MessageCircle,
       label: "Live Chats",
@@ -206,7 +226,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
   return (
     <div className="mb-6 space-y-4">
       {/* Top row: chats + offline messages */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         {primaryTiles.map((tile, index) => (
           <NotificationTile
             key={tile.label}
