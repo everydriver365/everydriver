@@ -502,6 +502,7 @@ export const useTelematics = (instructorId: string) => {
     debugLog('START', 'Beginning tracking session', { lessonId, pupilId, instructorId });
     setTrackingError(null);
     setDamoovStatus('idle');
+    setError(null);
     
     if (!('geolocation' in navigator)) {
       const err: TrackingError = {
@@ -605,8 +606,38 @@ export const useTelematics = (instructorId: string) => {
       calculatedSpeedHistoryRef.current = [];
       gForceHistoryRef.current = [];
 
-      // Set initial GPS status
-      setGpsQuality({ status: 'fair', accuracy_m: null, message: 'Acquiring GPS signal...' });
+       // Set initial GPS status
+       setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'Acquiring GPS signal...' });
+
+       // Warm-up: force an initial GPS fix (helps some mobile browsers/PWA)
+       await new Promise<void>((resolve) => {
+         try {
+           navigator.geolocation.getCurrentPosition(
+             (pos) => {
+               debugLog('GPS', 'Initial fix acquired', {
+                 accuracy: pos.coords.accuracy,
+                 lat: pos.coords.latitude,
+                 lon: pos.coords.longitude,
+               });
+               resolve();
+             },
+             (err) => {
+               debugLog('GPS', 'Initial fix failed (continuing with watchPosition)', {
+                 code: err.code,
+                 message: err.message,
+               });
+               resolve();
+             },
+             {
+               enableHighAccuracy: true,
+               timeout: 15000,
+               maximumAge: 0,
+             }
+           );
+         } catch {
+           resolve();
+         }
+       });
 
       // Start watching position
       watchIdRef.current = navigator.geolocation.watchPosition(
@@ -721,6 +752,7 @@ export const useTelematics = (instructorId: string) => {
           lastPositionTimeRef.current = position.timestamp;
         },
         (geoError) => {
+          debugLog('GPS', 'watchPosition error', { code: geoError.code, message: geoError.message });
           let errorMessage = 'GPS Error';
           let statusMessage = geoError.message;
           
@@ -748,11 +780,10 @@ export const useTelematics = (instructorId: string) => {
           }));
         },
         {
-          // Reliability-first: some devices/browsers stall with high accuracy.
-          // We still record the accuracy_m so the UI can show quality.
-          enableHighAccuracy: false,
-          timeout: 20000,
-          maximumAge: 5000
+          // Prefer accuracy on mobile/PWA; if this causes issues on a specific device we can add a toggle.
+          enableHighAccuracy: true,
+          timeout: 30000,
+          maximumAge: 0
         }
       );
 
