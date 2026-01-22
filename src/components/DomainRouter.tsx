@@ -14,6 +14,7 @@ const INSTRUCTOR_ROUTE_PREFIXES = [
 
 // Routes that should stay on their current domain (shared routes)
 const SHARED_ROUTES = [
+  "/", // Root path - handled by ConditionalHome, never redirect
   "/calendar-callback", // OAuth callback - must stay on originating domain
   "/privacy-policy",
   "/terms-of-service",
@@ -78,28 +79,32 @@ export function DomainRouter() {
 
     // Don't redirect shared routes
     if (isSharedRoute(pathname)) {
+      console.log('[DomainRouter] Shared route, no redirect:', pathname);
       return;
     }
 
-    // On Drive365 domain
-    if (isDrive365Domain()) {
-      // Root path "/" is handled by the conditional route in App.tsx
-      // so we don't redirect it here
-      if (pathname === "/") {
-        return;
-      }
+    const onDrive365 = isDrive365Domain();
+    const onEveryDriver = isEveryDriverDomain();
+    
+    console.log('[DomainRouter] Domain check:', { 
+      hostname: window.location.hostname,
+      pathname,
+      onDrive365, 
+      onEveryDriver 
+    });
 
+    // Use else-if to ensure mutual exclusivity
+    if (onDrive365) {
       // If NOT an instructor route, redirect to EveryDriver
       if (!isInstructorRoute(pathname)) {
+        console.log('[DomainRouter] Redirecting from Drive365 to EveryDriver:', fullPath);
         window.location.href = `https://${EVERYDRIVER_DOMAIN}${fullPath}`;
         return;
       }
-    }
-
-    // On EveryDriver domain
-    if (isEveryDriverDomain()) {
+    } else if (onEveryDriver) {
       // If it's an instructor route, redirect to Drive365
       if (isInstructorRoute(pathname)) {
+        console.log('[DomainRouter] Redirecting from EveryDriver to Drive365:', fullPath);
         window.location.href = `https://drive365.co.uk${fullPath}`;
         return;
       }
