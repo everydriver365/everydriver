@@ -293,27 +293,28 @@ export function BookingWalletButtons({
   // Don't render if neither wallet is available
   if (!applePayAvailable && !googlePayAvailable) return null;
 
+  // Always render the container divs so SDK can attach to them
+  // The divs are hidden until wallet availability is confirmed
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-        <div className="h-px flex-1 bg-border" />
-        <span>Express Checkout</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
+      {(applePayAvailable || googlePayAvailable) && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+          <div className="h-px flex-1 bg-border" />
+          <span>Express Checkout</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      )}
 
       <div className="grid gap-2">
-        {applePayAvailable && (
-          <div 
-            id="booking-apple-pay-button" 
-            className={`min-h-[44px] ${disabled || processingWallet ? "opacity-50 pointer-events-none" : ""}`}
-          />
-        )}
-        {googlePayAvailable && (
-          <div 
-            id="booking-google-pay-button" 
-            className={`min-h-[44px] ${disabled || processingWallet ? "opacity-50 pointer-events-none" : ""}`}
-          />
-        )}
+        {/* Always render the button containers so SDK can attach - hide until available */}
+        <div 
+          id="booking-apple-pay-button" 
+          className={`min-h-[44px] ${!applePayAvailable ? "hidden" : ""} ${disabled || processingWallet ? "opacity-50 pointer-events-none" : ""}`}
+        />
+        <div 
+          id="booking-google-pay-button" 
+          className={`min-h-[44px] ${!googlePayAvailable ? "hidden" : ""} ${disabled || processingWallet ? "opacity-50 pointer-events-none" : ""}`}
+        />
       </div>
 
       {processingWallet && (
