@@ -142,6 +142,8 @@ const navGroups: NavGroup[] = [
     items: [
       { id: "courses", label: "Course Templates", icon: BookOpen },
       { id: "booking-modes", label: "Booking Modes", icon: CalendarClock },
+      { id: "bookings", label: "All Bookings", icon: CalendarClock },
+      { id: "payments", label: "Payment History", icon: Settings },
       { id: "upsells", label: "Booking Upsells", icon: Zap },
       { id: "promotions", label: "Promotional Banners", icon: Megaphone },
     ],
