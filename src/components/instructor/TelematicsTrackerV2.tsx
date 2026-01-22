@@ -645,15 +645,70 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                 
                 <MapUpdater position={currentPosition} />
               </MapContainer>
+              
+              {/* Speed Limit Roundel overlay */}
+              <div className="absolute bottom-2 right-2 z-10">
+                <SpeedLimitRoundel 
+                  speedLimit={gpsCollector.speedLimitData.speedLimit}
+                  isExceeding={gpsCollector.speedLimitData.isExceeding}
+                  size="md"
+                />
+              </div>
+              
+              {/* Road name display */}
+              {gpsCollector.speedLimitData.roadName && (
+                <div className="absolute bottom-2 left-2 bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm z-10 max-w-[150px]">
+                  <div className="flex items-center gap-1.5">
+                    <Navigation className="h-3 w-3 text-primary flex-shrink-0" />
+                    <span className="text-xs font-medium truncate">
+                      {gpsCollector.speedLimitData.roadName}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Road name banner when tracking (inline mode) */}
+          {gpsCollector.isCollecting && !isFullscreen && gpsCollector.speedLimitData.roadName && (
+            <div className={`flex items-center justify-between p-2 rounded-lg ${
+              gpsCollector.speedLimitData.isExceeding 
+                ? 'bg-destructive/10 border border-destructive/20' 
+                : 'bg-muted/50'
+            }`}>
+              <div className="flex items-center gap-2">
+                <Navigation className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">{gpsCollector.speedLimitData.roadName}</span>
+              </div>
+              {gpsCollector.speedLimitData.speedLimit && (
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-bold ${
+                    gpsCollector.speedLimitData.isExceeding ? 'text-destructive' : 'text-foreground'
+                  }`}>
+                    {Math.round(gpsCollector.currentSpeed * 0.621371)} mph
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    / {Math.round(gpsCollector.speedLimitData.speedLimit * 0.621371)} limit
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
           {/* Real-time stats when tracking */}
           {gpsCollector.isCollecting && !isFullscreen && (
             <div className="grid grid-cols-4 gap-2 text-center">
-              <div className="p-2 bg-muted/50 rounded-lg">
-                <p className="text-lg font-bold">{Math.round(gpsCollector.currentSpeed * 0.621371)}</p>
-                <p className="text-xs text-muted-foreground">mph</p>
+              <div className={`p-2 rounded-lg ${
+                gpsCollector.speedLimitData.isExceeding 
+                  ? 'bg-destructive/20 ring-1 ring-destructive' 
+                  : 'bg-muted/50'
+              }`}>
+                <p className={`text-lg font-bold ${
+                  gpsCollector.speedLimitData.isExceeding ? 'text-destructive' : ''
+                }`}>{Math.round(gpsCollector.currentSpeed * 0.621371)}</p>
+                <p className="text-xs text-muted-foreground">
+                  mph{gpsCollector.speedLimitData.speedLimit && ` / ${Math.round(gpsCollector.speedLimitData.speedLimit * 0.621371)}`}
+                </p>
               </div>
               <div className="p-2 bg-muted/50 rounded-lg">
                 <p className="text-lg font-bold">{(gpsCollector.totalDistance / 1000 * 0.621371).toFixed(2)}</p>
