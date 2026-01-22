@@ -115,7 +115,22 @@ export const useTelematicsSession = (
 
       if (updateError) throw updateError;
 
-      console.log('[Telematics Session] Session ended, submitting to Damoov...');
+      console.log('[Telematics Session] Session ended, running batch enrichment...');
+
+      // Run batch TomTom enrichment for accurate road data and alerts
+      try {
+        const { data: enrichData } = await supabase.functions.invoke('enrich-session-road-data', {
+          body: { 
+            telematicsId: currentSession.id,
+            generateAlerts: true,
+          },
+        });
+        console.log('[Telematics Session] Enrichment complete:', enrichData);
+      } catch (err) {
+        console.warn('[Telematics Session] Enrichment failed:', err);
+      }
+
+      console.log('[Telematics Session] Submitting to Damoov...');
 
       // Register with Damoov if pupil exists
       let deviceToken: string | null = null;
