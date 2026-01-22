@@ -10,6 +10,8 @@ export interface Message {
   content: string;
   read_at: string | null;
   created_at: string;
+  attachment_url?: string | null;
+  attachment_type?: string | null;
 }
 
 export interface Conversation {
@@ -240,18 +242,43 @@ export function useConversationMessages(conversationId: string | null, userType:
     };
   }, [conversationId]);
 
-  const sendMessage = async (content: string, senderId: string) => {
-    if (!conversationId || !content.trim()) return false;
+  const sendMessage = async (
+    content: string, 
+    senderId: string, 
+    options?: { attachmentUrl?: string; attachmentType?: string; instructorId?: string; pupilName?: string }
+  ) => {
+    if (!conversationId || (!content.trim() && !options?.attachmentUrl)) return false;
 
     try {
       const { error } = await supabase.from("messages").insert({
         conversation_id: conversationId,
         sender_type: userType,
         sender_id: senderId,
-        content: content.trim(),
+        content: content.trim() || (options?.attachmentUrl ? "" : ""),
+        attachment_url: options?.attachmentUrl || null,
+        attachment_type: options?.attachmentType || null,
       });
 
       if (error) throw error;
+
+      // If pupil sends a message, notify instructor via push
+      if (userType === "pupil" && options?.instructorId) {
+        try {
+          await supabase.functions.invoke("notify-instructor", {
+            body: {
+              instructorId: options.instructorId,
+              type: "pupil_message",
+              pupilName: options.pupilName || "Pupil",
+              messagePreview: content.trim(),
+              hasAttachment: !!options?.attachmentUrl,
+            },
+          });
+        } catch (notifyError) {
+          console.error("Error sending push notification:", notifyError);
+          // Don't fail the message send if notification fails
+        }
+      }
+
       return true;
     } catch (error) {
       console.error("Error sending message:", error);

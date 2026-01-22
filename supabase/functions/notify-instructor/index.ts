@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface NotifyRequest {
   instructorId: string;
-  type: "new_booking" | "cancellation" | "reschedule" | "admin_message" | "admin_direct_message";
+  type: "new_booking" | "cancellation" | "reschedule" | "admin_message" | "admin_direct_message" | "pupil_message";
   pupilName?: string;
   lessonDate?: string;
   lessonTime?: string;
@@ -17,6 +17,7 @@ interface NotifyRequest {
   oldTime?: string;
   chargeApplied?: boolean;
   messagePreview?: string;
+  hasAttachment?: boolean;
 }
 
 interface PushNotification {
@@ -126,6 +127,18 @@ serve(async (req) => {
           tag: "admin-direct-message",
           icon: "/favicon.png",
           data: { type: "admin_direct_message", url: "/instructor/admin-chat" }
+        };
+        break;
+
+      case "pupil_message":
+        const msgPreview = data.messagePreview?.substring(0, 50) || (data.hasAttachment ? "Sent an attachment" : "New message");
+        smsMessage = `💬 New message from ${data.pupilName}: "${msgPreview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}"`;
+        pushNotification = {
+          title: `💬 ${data.pupilName}`,
+          body: `${msgPreview}${(data.messagePreview?.length || 0) > 50 ? '...' : ''}`,
+          tag: "pupil-message",
+          icon: "/favicon.png",
+          data: { type: "pupil_message", pupilName: data.pupilName, url: "/instructor/messages" }
         };
         break;
 
