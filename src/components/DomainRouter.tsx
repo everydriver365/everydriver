@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 
 // Domain configurations
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
-const EVERYDRIVER_DOMAIN = "everydriver.lovable.app";
+const EVERYDRIVER_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk", "everydriver.lovable.app"];
+const EVERYDRIVER_REDIRECT_TARGET = "everydriver.co.uk";
 
 // Routes that belong to Drive365 (instructor platform)
 const INSTRUCTOR_ROUTE_PREFIXES = [
@@ -30,11 +31,11 @@ export function isDrive365Domain(): boolean {
 }
 
 /**
- * Checks if the current hostname is the EveryDriver domain
+ * Checks if the current hostname is an EveryDriver domain
  */
 export function isEveryDriverDomain(): boolean {
   const hostname = window.location.hostname.toLowerCase();
-  return hostname.includes("everydriver") || hostname.includes("lovable.app");
+  return EVERYDRIVER_DOMAINS.some(domain => hostname.includes(domain.replace("www.", ""))) || hostname.includes("lovable.app");
 }
 
 /**
@@ -99,7 +100,7 @@ export function DomainRouter() {
       // If NOT an instructor route, redirect to EveryDriver
       if (!isInstructorRoute(pathname)) {
         console.log('[DomainRouter] Redirecting from Drive365 to EveryDriver:', fullPath);
-        window.location.href = `https://${EVERYDRIVER_DOMAIN}${fullPath}`;
+        window.location.href = `https://${EVERYDRIVER_REDIRECT_TARGET}${fullPath}`;
         return;
       }
     } else if (onEveryDriver) {
