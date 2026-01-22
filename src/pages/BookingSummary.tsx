@@ -1151,9 +1151,9 @@ export default function BookingSummary() {
 
             {/* Price Badge with Payment Messaging */}
             <div className="hidden sm:block bg-white text-primary rounded-xl px-4 py-3 shadow-lg">
-              <span className="text-2xl font-bold">£{totalPrice}</span>
+              <span className="text-2xl font-bold">£{totalPrice + upsellTotal}</span>
               <div className="mt-1 border-t border-primary/10 pt-1">
-                <PaymentMessaging amount={totalPrice} layout="stacked" showIdeal={false} className="text-primary" />
+                <PaymentMessaging amount={totalPrice + upsellTotal} layout="stacked" showIdeal={false} className="text-primary" />
               </div>
             </div>
           </div>

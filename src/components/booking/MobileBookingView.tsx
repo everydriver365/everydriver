@@ -712,7 +712,7 @@ export function MobileBookingView({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-[10px] font-bold text-black">clearpay</span>
-                  <p className="font-semibold text-sm mt-1">4 × £{(totalPrice / 4).toFixed(2)}</p>
+                  <p className="font-semibold text-sm mt-1">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</p>
                 </div>
                 <span className="text-xs text-muted-foreground">Interest-free</span>
               </div>
@@ -724,11 +724,11 @@ export function MobileBookingView({
                 <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-[10px] font-bold text-black">Klarna.</span>
                 <span className="text-xs text-muted-foreground">Pay in 3</span>
               </div>
-              <p className="font-semibold text-sm mb-2">3 × £{(totalPrice / 3).toFixed(2)}</p>
+              <p className="font-semibold text-sm mb-2">3 × £{((totalPrice + upsellTotal) / 3).toFixed(2)}</p>
               <KlarnaExpressButton
-                amount={totalPrice}
+                amount={totalPrice + upsellTotal}
                 merchantReference={klarnaMerchantReference}
-                orderDescription={`${courseName} - ${hours} Hour Course`}
+                orderDescription={`${courseName} - ${hours} Hour Course${upsellTotal > 0 ? ' + extras' : ''}`}
                 disabled={!canSubmit}
                 onSuccess={onKlarnaSuccess}
                 onError={onKlarnaError}
