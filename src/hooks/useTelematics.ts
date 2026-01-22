@@ -654,6 +654,7 @@ export const useTelematics = (instructorId: string) => {
        setGpsQuality({ status: 'unavailable', accuracy_m: null, message: 'Acquiring GPS signal...' });
 
        // Warm-up: force an initial GPS fix (helps some mobile browsers/PWA)
+       let initialFixSuccess = false;
        await new Promise<void>((resolve) => {
          try {
            navigator.geolocation.getCurrentPosition(
@@ -663,6 +664,13 @@ export const useTelematics = (instructorId: string) => {
                  lat: pos.coords.latitude,
                  lon: pos.coords.longitude,
                });
+               initialFixSuccess = true;
+               // Set initial GPS quality based on warm-up fix
+               const quality = evaluateGPSQuality(pos.coords.accuracy);
+               setGpsQuality(quality);
+               // Store as last known position
+               lastPositionRef.current = pos;
+               lastPositionTimeRef.current = pos.timestamp;
                resolve();
              },
              (err) => {
@@ -805,14 +813,20 @@ export const useTelematics = (instructorId: string) => {
             
             const maxRetriesPerMode = 3;
             const currentMode = gpsAccuracyModeRef.current;
+            const hadPreviousFix = lastPositionRef.current !== null;
             
             // Determine next action based on retry count
             if (gpsRetryCountRef.current <= maxRetriesPerMode) {
-              // Retry with current mode
-              const statusMessage = `Retry ${gpsRetryCountRef.current}/${maxRetriesPerMode} (${currentMode} accuracy)`;
-              setGpsQuality({ status: 'unavailable', accuracy_m: null, message: statusMessage });
+              // Retry with current mode - show as 'poor' if we had a fix before, otherwise 'unavailable'
+              const statusMessage = `Retry ${gpsRetryCountRef.current}/${maxRetriesPerMode} (${currentMode})`;
+              if (hadPreviousFix) {
+                // We had GPS before, it's just temporarily weak
+                setGpsQuality({ status: 'poor', accuracy_m: null, message: `Weak signal - ${statusMessage}` });
+              } else {
+                setGpsQuality({ status: 'unavailable', accuracy_m: null, message: statusMessage });
+              }
               setSpeedLimitData(prev => ({ ...prev, roadType: statusMessage }));
-              debugLog('GPS', `Retry ${gpsRetryCountRef.current} with ${currentMode} accuracy`);
+              debugLog('GPS', `Retry ${gpsRetryCountRef.current} with ${currentMode} accuracy, hadPreviousFix: ${hadPreviousFix}`);
               return; // Let watchPosition continue retrying
             } else if (currentMode === 'high') {
               // Switch to balanced mode
