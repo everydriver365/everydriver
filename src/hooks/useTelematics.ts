@@ -311,19 +311,37 @@ export const useTelematics = (instructorId: string) => {
   }, [isTracking, requestWakeLock]);
 
   // Request motion permission (required on iOS)
+  // IMPORTANT: On iOS, this MUST be called synchronously from user gesture
   const requestMotionPermission = useCallback(async (): Promise<boolean> => {
     // Check if DeviceMotionEvent requires permission (iOS 13+)
     if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
       try {
+        debugLog('MOTION', 'iOS detected - requesting DeviceMotionEvent permission');
         const permission = await (DeviceMotionEvent as any).requestPermission();
+        debugLog('MOTION', `DeviceMotionEvent permission result: ${permission}`);
         return permission === 'granted';
       } catch (err) {
         console.error('Motion permission request failed:', err);
+        debugLog('MOTION', 'Motion permission request threw error', err);
         return false;
       }
     }
-    // No permission required on Android/other platforms
-    return true;
+    // Check if DeviceOrientationEvent also needs permission (some iOS versions)
+    if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      try {
+        debugLog('MOTION', 'Requesting DeviceOrientationEvent permission');
+        await (DeviceOrientationEvent as any).requestPermission();
+      } catch (err) {
+        debugLog('MOTION', 'DeviceOrientationEvent permission failed (non-critical)', err);
+      }
+    }
+    // No permission required on Android/other platforms, but check if API exists
+    if ('DeviceMotionEvent' in window) {
+      debugLog('MOTION', 'DeviceMotionEvent available without permission request');
+      return true;
+    }
+    debugLog('MOTION', 'DeviceMotionEvent not available on this device');
+    return false;
   }, []);
 
   // Calculate G-force from accelerometer data
@@ -521,6 +539,20 @@ export const useTelematics = (instructorId: string) => {
     setDamoovStatus('idle');
     setError(null);
     
+    // CRITICAL: Request motion permission FIRST, synchronously from user gesture
+    // On iOS, this must happen before any async operations or the permission dialog won't show
+    debugLog('MOTION', 'Requesting motion sensor permission (must be first for iOS)');
+    const motionGranted = await requestMotionPermission();
+    setHasMotionPermission(motionGranted);
+    debugLog('MOTION', `Motion permission ${motionGranted ? 'granted' : 'denied/not available'}`);
+    
+    if (motionGranted) {
+      window.addEventListener('devicemotion', handleDeviceMotion);
+      debugLog('MOTION', 'DeviceMotion listener attached');
+    } else {
+      debugLog('MOTION', 'Tracking without motion sensors (GPS only)');
+    }
+    
     if (!('geolocation' in navigator)) {
       const err: TrackingError = {
         type: 'gps',
@@ -534,7 +566,7 @@ export const useTelematics = (instructorId: string) => {
       return;
     }
 
-    // First check if we have location permission
+    // Check if we have location permission
     try {
       const permissionStatus = await navigator.permissions?.query({ name: 'geolocation' });
       debugLog('PERMISSION', 'GPS permission status', permissionStatus?.state);
@@ -561,18 +593,7 @@ export const useTelematics = (instructorId: string) => {
       debugLog('WAKELOCK', 'Requesting screen wake lock');
       await requestWakeLock();
 
-      // Request motion permission on iOS
-      debugLog('MOTION', 'Requesting motion sensor permission');
-      const motionGranted = await requestMotionPermission();
-      setHasMotionPermission(motionGranted);
-      debugLog('MOTION', `Motion permission ${motionGranted ? 'granted' : 'denied/not available'}`);
-      
-      if (motionGranted) {
-        window.addEventListener('devicemotion', handleDeviceMotion);
-        debugLog('MOTION', 'DeviceMotion listener attached');
-      } else {
-        debugLog('MOTION', 'Tracking without motion sensors (GPS only)');
-      }
+      // Motion permission already requested at start of function
 
       // Create telematics session in database
       debugLog('DATABASE', 'Creating telematics session');
