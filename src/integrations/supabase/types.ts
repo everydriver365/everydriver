@@ -2942,6 +2942,33 @@ export type Database = {
           },
         ]
       }
+      pupil_otp_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          verified: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+          verified?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       pupil_referrals: {
         Row: {
           bonus_points_awarded: number | null
@@ -4169,6 +4196,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       generate_calendar_share_token: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {

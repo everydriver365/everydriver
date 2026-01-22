@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Palette, Upload, Loader2, Eye, Moon, Sun, Link as LinkIcon, Copy, Check } from "lucide-react";
+import { Palette, Upload, Loader2, Eye, Moon, Sun, Link as LinkIcon, Copy, Check, QrCode, Download } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -133,6 +134,10 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
   if (!settings) return null;
 
   const previewUrl = `/p/${settings.app_slug || 'preview'}`;
+  const portalUrl = `${window.location.origin}/p/${settings.app_slug}`;
+  const qrCodeUrl = settings.app_slug
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(portalUrl)}`
+    : null;
 
   return (
     <motion.div
@@ -168,26 +173,64 @@ export function PupilAppBrandingEditor({ instructorId }: PupilAppBrandingEditorP
             <>
               {/* Share Link */}
               {settings.app_slug && (
-                <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <LinkIcon className="h-4 w-4" />
-                    Your Pupil App Link
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      readOnly
-                      value={`${window.location.origin}/p/${settings.app_slug}`}
-                      className="bg-background"
-                    />
-                    <Button variant="outline" size="icon" onClick={copyLink}>
-                      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                    <Button variant="outline" size="icon" asChild>
-                      <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                        <Eye className="h-4 w-4" />
-                      </a>
-                    </Button>
+                <div className="rounded-lg border bg-muted/50 p-4 space-y-4">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <LinkIcon className="h-4 w-4" />
+                      Your Pupil App Link
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={portalUrl}
+                        className="bg-background"
+                      />
+                      <Button variant="outline" size="icon" onClick={copyLink}>
+                        {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                      <Button variant="outline" size="icon" asChild>
+                        <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                          <Eye className="h-4 w-4" />
+                        </a>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={() => setShowQR(!showQR)}
+                        className={showQR ? "bg-primary text-primary-foreground" : ""}
+                      >
+                        <QrCode className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
+
+                  {/* QR Code Display */}
+                  {showQR && qrCodeUrl && (
+                    <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-lg border">
+                      <img 
+                        src={qrCodeUrl} 
+                        alt="QR Code for pupil portal"
+                        className="w-48 h-48"
+                      />
+                      <p className="text-xs text-muted-foreground text-center">
+                        Pupils can scan this to access their portal
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = qrCodeUrl;
+                          link.download = `pupil-portal-qr-${settings.app_slug}.png`;
+                          link.click();
+                          toast({ title: "QR Code downloaded!" });
+                        }}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download QR Code
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 

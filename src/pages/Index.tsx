@@ -28,6 +28,7 @@ import { useHomepageHero } from "@/hooks/useHomepageHero";
 import { useHomepageTestimonials } from "@/hooks/useHomepageTestimonials";
 import { useIncludedFeatures, IncludedFeatureData } from "@/hooks/useIncludedFeatures";
 import { useHomepageStats } from "@/hooks/useHomepageStats";
+import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileHomepage } from "@/components/MobileHomepage";
 import testimonialSarahFallback from "@/assets/testimonial-sarah.jpg";
@@ -73,6 +74,8 @@ export default function Index() {
   const { featuredTestimonials, testimonials } = useHomepageTestimonials();
   const { features: includedFeatures } = useIncludedFeatures();
   const { stats } = useHomepageStats();
+  const { data: upsells } = useBookingUpsells();
+  const earlierTestUpsell = upsells?.find(u => u.name.toLowerCase().includes('earlier test'));
 
   // Show mobile-optimized layout on mobile devices
   if (isMobile) {
@@ -341,7 +344,7 @@ export default function Index() {
             </div>
             <div className="flex items-center gap-3">
               <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 border-0">
-                Only £49.99
+                Only £{earlierTestUpsell?.price?.toFixed(2) ?? '49.99'}
               </Badge>
               <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                 <a href="/courses">Book Now</a>
