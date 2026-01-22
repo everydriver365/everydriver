@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2 } from "lucide-react";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -19,6 +19,7 @@ import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorCoursesManager } from "@/components/instructor/InstructorCoursesManager";
 import { InstructorTestCentresManager } from "@/components/instructor/InstructorTestCentresManager";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
+import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -770,6 +771,24 @@ const { data, error } = await supabase
           description="Track ADI badge, insurance, MOT & CPD hours"
         >
           <ComplianceTracker instructorId={instructorId} />
+        </SettingsTile>
+
+        {/* Reset Stats Section */}
+        <SettingsTile 
+          id="reset-stats" 
+          icon={Trash2} 
+          title="Reset Statistics" 
+          description="Clear lesson history, payments, or progress"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Reset your statistics if you need to start fresh. This action is permanent and cannot be undone.
+            </p>
+            <ResetStatsDialog 
+              instructorId={instructorId} 
+              instructorName={profile?.name}
+            />
+          </div>
         </SettingsTile>
       </div>
     </InstructorPortalLayout>

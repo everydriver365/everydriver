@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Car, Edit2, Trash2, User, MoreVertical, UserX, Users, Power } from "lucide-react";
+import { MapPin, Car, Edit2, Trash2, User, MoreVertical, UserX, Users, Power, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReassignPupilsDialog } from "./ReassignPupilsDialog";
+import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 
 interface Instructor {
   id: string;
