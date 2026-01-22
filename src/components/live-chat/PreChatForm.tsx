@@ -14,7 +14,7 @@ interface PreChatFormProps {
 
 export interface PreChatFormData {
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
   message?: string;
 }
@@ -22,7 +22,6 @@ export interface PreChatFormData {
 export function PreChatForm({ onSubmit, loading, instructorName }: PreChatFormProps) {
   const [formData, setFormData] = useState<PreChatFormData>({
     name: "",
-    email: "",
     phone: "",
     message: "",
   });
@@ -33,12 +32,6 @@ export function PreChatForm({ onSubmit, loading, instructorName }: PreChatFormPr
     
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
-    }
-    
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
     }
 
     setErrors(newErrors);
@@ -56,18 +49,18 @@ export function PreChatForm({ onSubmit, loading, instructorName }: PreChatFormPr
     <motion.form
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 space-y-4"
+      className="p-4 space-y-3 h-full overflow-y-auto"
       onSubmit={handleSubmit}
     >
-      <div className="text-center mb-6">
-        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-          <MessageCircle className="h-6 w-6 text-primary" />
+      <div className="text-center mb-4">
+        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+          <MessageCircle className="h-5 w-5 text-primary" />
         </div>
-        <h3 className="font-semibold text-lg">
+        <h3 className="font-semibold">
           {instructorName ? `Chat with ${instructorName}` : "Start a Conversation"}
         </h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          Please provide your details to begin
+        <p className="text-xs text-muted-foreground mt-1">
+          Enter your name to begin
         </p>
       </div>
 
@@ -85,23 +78,6 @@ export function PreChatForm({ onSubmit, loading, instructorName }: PreChatFormPr
           />
           {errors.name && (
             <p className="text-sm text-destructive mt-1">{errors.name}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="chat-email">Email *</Label>
-          <Input
-            id="chat-email"
-            type="email"
-            placeholder="your@email.com"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, email: e.target.value }))
-            }
-            className={errors.email ? "border-destructive" : ""}
-          />
-          {errors.email && (
-            <p className="text-sm text-destructive mt-1">{errors.email}</p>
           )}
         </div>
 
@@ -127,7 +103,7 @@ export function PreChatForm({ onSubmit, loading, instructorName }: PreChatFormPr
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, message: e.target.value }))
             }
-            rows={3}
+            rows={2}
           />
         </div>
       </div>
