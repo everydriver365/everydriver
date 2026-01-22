@@ -48,6 +48,8 @@ import { toast } from "sonner";
 import { NotificationTiles } from "@/components/admin/NotificationTiles";
 import { SystemAlertsCard } from "@/components/admin/SystemAlertsCard";
 import { ComplianceDashboard } from "@/components/admin/ComplianceDashboard";
+import { AdminBookingsManager } from "@/components/admin/AdminBookingsManager";
+import { AdminPaymentsManager } from "@/components/admin/AdminPaymentsManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -111,6 +113,9 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // System Settings
   "pwa-apps": { title: "PWA Configuration", group: "System Settings", icon: Download },
   "site-settings": { title: "Site Settings & SEO", group: "System Settings", icon: Globe },
+  // Products & Booking - Additional
+  bookings: { title: "All Bookings", group: "Products & Booking", icon: Calendar },
+  payments: { title: "Payment History", group: "Products & Booking", icon: CreditCard },
 };
 
 export default function AdminPortal() {
@@ -286,11 +291,19 @@ export default function AdminPortal() {
                       <Users className="h-6 w-6" />
                       <span>Manage Users</span>
                     </Button>
-                    <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+                    <Button 
+                      variant="outline" 
+                      className="h-auto flex-col gap-2 py-4"
+                      onClick={() => setActiveSection("bookings")}
+                    >
                       <Calendar className="h-6 w-6" />
                       <span>View Bookings</span>
                     </Button>
-                    <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+                    <Button 
+                      variant="outline" 
+                      className="h-auto flex-col gap-2 py-4"
+                      onClick={() => setActiveSection("payments")}
+                    >
                       <CreditCard className="h-6 w-6" />
                       <span>Payments</span>
                     </Button>
@@ -397,7 +410,20 @@ export default function AdminPortal() {
           </motion.div>
         );
 
-      case "courses":
+      case "bookings":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBookingsManager />
+          </motion.div>
+        );
+
+      case "payments":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminPaymentsManager />
+          </motion.div>
+        );
+
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card>
