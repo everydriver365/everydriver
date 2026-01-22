@@ -119,7 +119,7 @@ export function LiveChatWidget({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-40 w-[380px] max-w-[calc(100vw-2rem)]"
+            className="fixed bottom-20 md:bottom-6 right-2 left-2 md:left-auto md:right-6 z-40 md:w-[380px] max-h-[70vh] md:max-h-none"
             style={brandStyles}
           >
             <Card className="overflow-hidden shadow-2xl border-0">
@@ -162,7 +162,7 @@ export function LiveChatWidget({
               </div>
 
               {/* Content */}
-              <div className="h-[400px] bg-background">
+              <div className="h-[50vh] md:h-[400px] max-h-[400px] bg-background">
                 {!sessionId ? (
                   <PreChatForm
                     onSubmit={handlePreChatSubmit}
