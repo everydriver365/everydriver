@@ -546,9 +546,13 @@ export type Database = {
       }
       driving_behavior_events: {
         Row: {
+          dismissed_at: string | null
+          dismissed_by: string | null
+          dismissed_reason: string | null
           event_type: string
           g_force: number | null
           id: string
+          is_dismissed: boolean | null
           latitude: number | null
           longitude: number | null
           notes: string | null
@@ -559,9 +563,13 @@ export type Database = {
           telematics_id: string
         }
         Insert: {
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          dismissed_reason?: string | null
           event_type: string
           g_force?: number | null
           id?: string
+          is_dismissed?: boolean | null
           latitude?: number | null
           longitude?: number | null
           notes?: string | null
@@ -572,9 +580,13 @@ export type Database = {
           telematics_id: string
         }
         Update: {
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          dismissed_reason?: string | null
           event_type?: string
           g_force?: number | null
           id?: string
+          is_dismissed?: boolean | null
           latitude?: number | null
           longitude?: number | null
           notes?: string | null

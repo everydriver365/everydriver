@@ -17,7 +17,8 @@ import {
   FileText,
   Route,
   ArrowRight,
-  Download
+  Download,
+  ListFilter
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -25,6 +26,7 @@ import { MapContainer, TileLayer, Polyline, CircleMarker, Popup } from 'react-le
 import 'leaflet/dist/leaflet.css';
 import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
 import { generateDrivingReportPDF } from './DrivingReportPDF';
+import { EventReviewPanel } from './EventReviewPanel';
 
 interface RoadSegment {
   name: string;
@@ -518,60 +520,14 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
         </CardContent>
       </Card>
 
-      {/* Driving Events */}
-      {report.events && report.events.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center justify-between">
-              Driving Events
-              <Badge variant="outline">
-                {report.events.length} {report.events.length === 1 ? 'event' : 'events'}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="max-h-64">
-              <div className="divide-y">
-                {report.events.map((event) => (
-                  <div key={event.id} className="p-3 flex items-center gap-3">
-                    {getEventIcon(event.type, event.severity)}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{formatEventType(event.type)}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
-                        <span className="truncate">{event.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                        {event.speedAtEvent && (
-                          <span>{Math.round(event.speedAtEvent * 0.621371)} mph</span>
-                        )}
-                        {event.gForce && (
-                          <>
-                            <span>•</span>
-                            <span>{event.gForce.toFixed(2)}g</span>
-                          </>
-                        )}
-                        {event.notes && (
-                          <>
-                            <span>•</span>
-                            <span className="truncate">{event.notes}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${getSeverityColor(event.severity)}`}
-                    >
-                      {event.severity}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
+      {/* Event Review Panel - Interactive event management */}
+      <EventReviewPanel 
+        telematicsId={telematicsId} 
+        onEventDismissed={() => {
+          // Refresh the report to reflect dismissed events
+          generateReport();
+        }}
+      />
 
       {/* Regenerate button */}
       <Button variant="outline" className="w-full" onClick={generateReport} disabled={loading}>
