@@ -425,6 +425,32 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                   </Button>
                 </motion.div>
 
+                {/* Road Name & Speed Limit Bar */}
+                <div className="flex items-center justify-between px-4 py-2 bg-muted/80 backdrop-blur-sm border-b z-20">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Navigation className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-sm font-medium truncate">
+                      {gpsCollector.speedLimitData.roadName || 'Detecting road...'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {gpsCollector.speedLimitData.speedLimit ? (
+                      <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${
+                        gpsCollector.speedLimitData.isExceeding 
+                          ? 'bg-destructive text-destructive-foreground' 
+                          : 'bg-background/80'
+                      }`}>
+                        <span className="text-xs font-medium">Limit:</span>
+                        <span className="text-sm font-bold tabular-nums">
+                          {Math.round(gpsCollector.speedLimitData.speedLimit * 0.621371)} mph
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Fetching limit...</span>
+                    )}
+                  </div>
+                </div>
+
                 {/* Speed Limit Warning Banner */}
                 <AnimatePresence>
                   {gpsCollector.speedLimitData.isExceeding && (
