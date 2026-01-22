@@ -193,6 +193,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
 
   // Reset results when starting new tracking
   const handleStartTracking = () => {
+    console.log('[TelematicsTracker] handleStartTracking called', { lessonId, pupilId, instructorId });
     setShowResults(false);
     setSessionEnded(false);
     setSessionSummary(null);
@@ -204,6 +205,7 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
     if (hapticEnabled) haptic.triggerStart();
     if (voiceEnabled) voice.announceStart();
     
+    console.log('[TelematicsTracker] Calling startTracking...');
     startTracking(lessonId, pupilId);
   };
 
