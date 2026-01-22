@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import TelematicsTracker from "@/components/instructor/TelematicsTracker";
+import TelematicsTracker from "@/components/instructor/TelematicsTrackerV2";
 import SessionRouteReport from "@/components/instructor/SessionRouteReport";
 import { TelematicsSessionHistory } from "@/components/instructor/TelematicsSessionHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
