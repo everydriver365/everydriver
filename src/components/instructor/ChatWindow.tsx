@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, Image, X, File } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useConversationMessages, Conversation, Message } from "@/hooks/useMessaging";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { TypingIndicator } from "@/components/ui/typing-indicator";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { AnimatePresence } from "framer-motion";
 
 interface ChatWindowProps {
   conversation: Conversation;
@@ -32,12 +35,18 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Scroll to bottom on new messages
+  const { isOtherTyping, handleTyping, broadcastStopTyping } = useTypingIndicator({
+    conversationId: conversation.id,
+    userId: instructorId,
+    userType: "instructor",
+  });
+
+  // Scroll to bottom on new messages or typing indicator
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isOtherTyping]);
 
   // Mark messages as read when viewing
   useEffect(() => {
@@ -56,7 +65,6 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast({
           title: "File too large",
@@ -116,6 +124,7 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
 
     setSending(true);
     setUploading(!!selectedFile);
+    broadcastStopTyping();
 
     let attachmentData: { url: string; type: string } | null = null;
     
@@ -148,6 +157,11 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    handleTyping();
   };
 
   const groupMessagesByDate = (msgs: Message[]) => {
@@ -211,9 +225,11 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
           </Avatar>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold truncate">{conversation.pupil?.name || "Unknown"}</h3>
-            {conversation.pupil?.phone && (
+            {isOtherTyping ? (
+              <p className="text-sm text-primary animate-pulse">typing...</p>
+            ) : conversation.pupil?.phone ? (
               <p className="text-sm text-muted-foreground">{conversation.pupil.phone}</p>
-            )}
+            ) : null}
           </div>
         </div>
       </CardHeader>
@@ -292,6 +308,13 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
                 </div>
               </div>
             ))}
+            
+            {/* Typing indicator */}
+            <AnimatePresence>
+              {isOtherTyping && (
+                <TypingIndicator name={conversation.pupil?.name} />
+              )}
+            </AnimatePresence>
           </div>
         )}
       </ScrollArea>
@@ -344,7 +367,7 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
             ref={inputRef}
             placeholder="Type a message..."
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={sending}
             className="flex-1"

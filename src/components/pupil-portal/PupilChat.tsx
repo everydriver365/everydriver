@@ -8,8 +8,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useConversationMessages, Message } from "@/hooks/useMessaging";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { TypingIndicator } from "@/components/ui/typing-indicator";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { AnimatePresence } from "framer-motion";
 
 interface PupilChatProps {
   pupilId: string;
@@ -36,7 +39,6 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
   useEffect(() => {
     const getOrCreateConversation = async () => {
       try {
-        // Check for existing conversation
         const { data: existing } = await supabase
           .from("conversations")
           .select("id")
@@ -47,7 +49,6 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
         if (existing) {
           setConversationId(existing.id);
         } else {
-          // Create new conversation
           const { data: newConv, error } = await supabase
             .from("conversations")
             .insert({
@@ -73,12 +74,18 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
 
   const { messages, sendMessage, markAsRead } = useConversationMessages(conversationId, "pupil");
 
-  // Scroll to bottom on new messages
+  const { isOtherTyping, handleTyping, broadcastStopTyping } = useTypingIndicator({
+    conversationId,
+    userId: pupilId,
+    userType: "pupil",
+  });
+
+  // Scroll to bottom on new messages or typing indicator
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isOtherTyping]);
 
   // Mark messages as read when viewing
   useEffect(() => {
@@ -99,7 +106,6 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast({
           title: "File too large",
@@ -159,6 +165,7 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
 
     setSending(true);
     setUploading(!!selectedFile);
+    broadcastStopTyping();
 
     let attachmentData: { url: string; type: string } | null = null;
     
@@ -193,6 +200,11 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value);
+    handleTyping();
   };
 
   const groupMessagesByDate = (msgs: Message[]) => {
@@ -266,7 +278,11 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
           </Avatar>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold truncate">{instructorName}</h3>
-            <p className="text-sm text-muted-foreground">Your Instructor</p>
+            {isOtherTyping ? (
+              <p className="text-sm text-primary animate-pulse">typing...</p>
+            ) : (
+              <p className="text-sm text-muted-foreground">Your Instructor</p>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -343,6 +359,13 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
                 </div>
               </div>
             ))}
+            
+            {/* Typing indicator */}
+            <AnimatePresence>
+              {isOtherTyping && (
+                <TypingIndicator name={instructorName} />
+              )}
+            </AnimatePresence>
           </div>
         )}
       </ScrollArea>
@@ -395,7 +418,7 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
             ref={inputRef}
             placeholder="Type a message..."
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             disabled={sending}
             className="flex-1"
