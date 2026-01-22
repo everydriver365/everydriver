@@ -14,6 +14,7 @@ import Courses from "./pages/Courses";
 import BookingSummary from "./pages/BookingSummary";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import PupilPortal from "./pages/PupilPortal";
+import PupilLogin from "./pages/PupilLogin";
 import InstructorPortal from "./pages/InstructorPortal";
 import InstructorPupils from "./pages/InstructorPupils";
 import InstructorSchedule from "./pages/InstructorSchedule";
@@ -94,6 +95,7 @@ const App = () => (
               <Route path="/book/:instructorId" element={<BookingSummary />} />
               <Route path="/booking-confirmation" element={<BookingConfirmation />} />
               <Route path="/pupil" element={<PupilPortal />} />
+              <Route path="/pupil/login" element={<PupilLogin />} />
               <Route path="/p/:slug" element={<BrandedPupilPortal />} />
               <Route path="/theory" element={<Theory />} />
               <Route path="/faqs" element={<FAQs />} />

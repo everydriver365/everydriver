@@ -1107,7 +1107,7 @@ export default function Index() {
         {/* First Row - Portals */}
         <div className="mt-16 grid gap-6 md:grid-cols-2">
           {/* Pupil Portal */}
-          <Link to="/pupil">
+          <Link to="/pupil/login">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
