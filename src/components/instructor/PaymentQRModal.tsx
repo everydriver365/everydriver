@@ -314,7 +314,7 @@ export function PaymentQRModal({
   return (
     <>
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-sm max-h-[85vh] overflow-y-auto p-4">
+        <DialogContent className="sm:max-w-[340px] max-w-[95vw] max-h-[85vh] overflow-hidden p-4">
           <DialogHeader className="pb-2">
             <DialogTitle className="flex items-center gap-2 text-base">
               <CreditCard className="h-4 w-4 text-primary" />
@@ -480,18 +480,18 @@ export function PaymentQRModal({
             </TabsContent>
             
             {/* QR Code Tab */}
-            <TabsContent value="qr" className="mt-3">
-              <div className="flex flex-col items-center gap-4">
+            <TabsContent value="qr" className="mt-3 overflow-hidden">
+              <div className="flex flex-col items-center gap-3">
                 {paymentQrUrl ? (
-                  <div className="bg-white p-4 rounded-xl shadow-md w-full max-w-[280px] aspect-square flex items-center justify-center">
+                  <div className="bg-white p-3 rounded-xl shadow-md">
                     <img 
                       src={paymentQrUrl} 
                       alt="Payment QR Code" 
-                      className="w-full h-full object-contain"
+                      className="w-56 h-56 sm:w-64 sm:h-64 object-contain"
                     />
                   </div>
                 ) : (
-                  <div className="w-full max-w-[280px] aspect-square bg-muted flex items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30">
+                  <div className="w-56 h-56 sm:w-64 sm:h-64 bg-muted flex items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30">
                     <div className="text-center">
                       <QrCode className="h-12 w-12 text-muted-foreground/50 mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground">No QR Code</p>
@@ -502,24 +502,6 @@ export function PaymentQRModal({
                 <p className="text-sm text-muted-foreground text-center font-medium">
                   Scan to pay {instructorName}
                 </p>
-                
-                <div className="w-full flex gap-2">
-                  <div className="flex-1 bg-muted rounded-lg px-3 py-2 text-xs truncate font-mono">
-                    {baseUrl}/{instructorId?.slice(0, 8)}...
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    className="h-9 w-9 shrink-0"
-                    onClick={() => handleCopy(`${baseUrl}/${instructorId}`)}
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-emerald-500" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
               </div>
             </TabsContent>
 
