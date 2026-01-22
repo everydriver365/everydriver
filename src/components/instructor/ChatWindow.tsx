@@ -51,6 +51,8 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
+  const [deletingMessage, setDeletingMessage] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -252,6 +254,27 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
     }
   };
 
+  const handleDeleteMessage = async () => {
+    if (!messageToDelete) return;
+    setDeletingMessage(true);
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .delete()
+        .eq("id", messageToDelete);
+
+      if (error) throw error;
+
+      toast({ title: "Message deleted" });
+      setMessageToDelete(null);
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      toast({ title: "Failed to delete message", variant: "destructive" });
+    } finally {
+      setDeletingMessage(false);
+    }
+  };
+
   const handleDeleteConversation = async () => {
     setDeleting(true);
     try {
@@ -283,8 +306,8 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
 
   return (
     <>
-    <Card className="h-[calc(100vh-10rem)] md:h-[calc(100vh-12rem)] flex flex-col">
-      <CardHeader className="pb-3 border-b shrink-0">
+    <Card className="h-[calc(100vh-14rem)] md:h-[calc(100vh-16rem)] flex flex-col">
+      <CardHeader className="pb-2 border-b shrink-0">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
             <ArrowLeft className="h-5 w-5" />
@@ -350,13 +373,24 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
                       <div
                         key={message.id}
                         className={cn(
-                          "flex",
+                          "flex group",
                           isInstructor ? "justify-end" : "justify-start"
                         )}
                       >
+                        {/* Delete button for instructor's own messages - appears on left */}
+                        {isInstructor && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity mr-1 shrink-0 self-center"
+                            onClick={() => setMessageToDelete(message.id)}
+                          >
+                            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                          </Button>
+                        )}
                         <div
                           className={cn(
-                            "max-w-[75%] rounded-2xl px-4 py-2",
+                            "max-w-[70%] rounded-2xl px-3 py-2",
                             isInstructor
                               ? "bg-primary text-primary-foreground rounded-br-md"
                               : "bg-muted rounded-bl-md"
@@ -514,6 +548,28 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {deleting ? "Deleting..." : "Delete Chat"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    {/* Delete Single Message Dialog */}
+    <AlertDialog open={!!messageToDelete} onOpenChange={(open) => !open && setMessageToDelete(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this message?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This message will be permanently deleted. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deletingMessage}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleDeleteMessage}
+            disabled={deletingMessage}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {deletingMessage ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
