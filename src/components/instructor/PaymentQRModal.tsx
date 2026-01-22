@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { QrCode, CreditCard, Copy, Check, User, PoundSterling, Send, MessageSquare, ExternalLink, Clock, Eye, X, Maximize2 } from "lucide-react";
+import { QrCode, CreditCard, Copy, Check, User, PoundSterling, Send, MessageSquare, ExternalLink, Clock, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,7 +76,7 @@ export function PaymentQRModal({
   const [sendingLink, setSendingLink] = useState(false);
   const [linkHistory, setLinkHistory] = useState<PaymentLinkTracking[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [showFullscreenQR, setShowFullscreenQR] = useState(false);
+  
   
   const baseUrl = `${window.location.origin}/pay`;
   const selectedPupil = pupils.find(p => p.id === selectedPupilId);
@@ -482,54 +481,42 @@ export function PaymentQRModal({
             
             {/* QR Code Tab */}
             <TabsContent value="qr" className="mt-3">
-              <div className="flex flex-col items-center gap-3">
-                <div 
-                  className="bg-white p-2 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-shadow relative group"
-                  onClick={() => paymentQrUrl && setShowFullscreenQR(true)}
-                >
-                  {paymentQrUrl ? (
-                    <>
-                      <img 
-                        src={paymentQrUrl} 
-                        alt="Payment QR Code" 
-                        className="w-28 h-28 object-contain"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg flex items-center justify-center">
-                        <Maximize2 className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
-                      </div>
-                    </>
-                  ) : (
-                    <div className="w-28 h-28 bg-muted flex items-center justify-center rounded border-2 border-dashed border-muted-foreground/30">
-                      <div className="text-center">
-                        <QrCode className="h-8 w-8 text-muted-foreground/50 mx-auto mb-1" />
-                        <p className="text-[9px] text-muted-foreground">No QR Code</p>
-                      </div>
+              <div className="flex flex-col items-center gap-4">
+                {paymentQrUrl ? (
+                  <div className="bg-white p-4 rounded-xl shadow-md w-full max-w-[280px] aspect-square flex items-center justify-center">
+                    <img 
+                      src={paymentQrUrl} 
+                      alt="Payment QR Code" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full max-w-[280px] aspect-square bg-muted flex items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/30">
+                    <div className="text-center">
+                      <QrCode className="h-12 w-12 text-muted-foreground/50 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">No QR Code</p>
                     </div>
-                  )}
-                </div>
-                
-                {paymentQrUrl && (
-                  <p className="text-[10px] text-muted-foreground">Tap QR to fullscreen</p>
+                  </div>
                 )}
                 
-                <p className="text-xs text-muted-foreground text-center">
-                  Scan to pay via card, Apple Pay, or Google Pay
+                <p className="text-sm text-muted-foreground text-center font-medium">
+                  Scan to pay {instructorName}
                 </p>
                 
-                <div className="w-full flex gap-1.5">
-                  <div className="flex-1 bg-muted rounded px-2 py-1.5 text-xs truncate">
-                    {baseUrl}/...
+                <div className="w-full flex gap-2">
+                  <div className="flex-1 bg-muted rounded-lg px-3 py-2 text-xs truncate font-mono">
+                    {baseUrl}/{instructorId?.slice(0, 8)}...
                   </div>
                   <Button 
                     variant="outline" 
                     size="icon"
-                    className="h-8 w-8 shrink-0"
+                    className="h-9 w-9 shrink-0"
                     onClick={() => handleCopy(`${baseUrl}/${instructorId}`)}
                   >
                     {copied ? (
-                      <Check className="h-3.5 w-3.5 text-emerald-500" />
+                      <Check className="h-4 w-4 text-emerald-500" />
                     ) : (
-                      <Copy className="h-3.5 w-3.5" />
+                      <Copy className="h-4 w-4" />
                     )}
                   </Button>
                 </div>
@@ -577,45 +564,6 @@ export function PaymentQRModal({
           </Tabs>
         </DialogContent>
       </Dialog>
-
-      {/* Fullscreen QR Overlay - Rendered via Portal to document.body for guaranteed fullscreen on mobile */}
-      {showFullscreenQR && paymentQrUrl && createPortal(
-        <div 
-          className="fixed inset-0 bg-black flex items-center justify-center"
-          onClick={() => setShowFullscreenQR(false)}
-          style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            zIndex: 99999,
-            width: '100vw',
-            height: '100vh'
-          }}
-        >
-          <button
-            onClick={() => setShowFullscreenQR(false)}
-            className="absolute top-4 right-4 p-2 text-white/80 hover:text-white transition-colors"
-            style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
-          >
-            <X className="h-8 w-8" />
-          </button>
-          
-          <div className="flex flex-col items-center gap-6 p-8 w-full max-w-md">
-            <div className="bg-white p-6 rounded-2xl shadow-2xl">
-              <img 
-                src={paymentQrUrl} 
-                alt="Payment QR Code" 
-                className="w-64 h-64 sm:w-80 sm:h-80 object-contain"
-              />
-            </div>
-            <p className="text-white/90 text-lg font-medium text-center">Scan to pay {instructorName}</p>
-            <p className="text-white/60 text-sm">Tap anywhere to close</p>
-          </div>
-        </div>,
-        document.body
-      )}
     </>
   );
 }
