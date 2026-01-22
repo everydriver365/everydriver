@@ -119,11 +119,13 @@ export function BookingWalletButtons({
 
     const loadSquareSDK = async () => {
       // Check if SDK already loaded
-      if (!window.Square) {
+        if (!window.Square) {
         const script = document.createElement("script");
-        script.src = squareConfig.environment === "production"
-          ? "https://web.squarecdn.com/v1/square.js"
-          : "https://sandbox.web.squarecdn.com/v1/square.js";
+          const env = (squareConfig.environment || "").toLowerCase();
+          const isProduction = env === "production" || env === "prod";
+          script.src = isProduction
+            ? "https://web.squarecdn.com/v1/square.js"
+            : "https://sandbox.web.squarecdn.com/v1/square.js";
         script.async = true;
         
         await new Promise<void>((resolve, reject) => {

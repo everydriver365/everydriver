@@ -282,7 +282,9 @@ export function LessonScheduler({
       if (isBefore(date, availableFromDate)) return false;
     }
     
-    return getAvailabilityForDate(date) !== null;
+    // Only treat a day as available if it has at least one valid slot
+    // (accounts for lesson duration, past times, selected slots, and external calendar conflicts)
+    return getAvailableTimeSlots(date).length > 0;
   };
 
   const getAvailableTimeSlots = (date: Date) => {
@@ -466,12 +468,12 @@ export function LessonScheduler({
             modifiersStyles={{
               booked: {
                 backgroundColor: "hsl(var(--primary))",
-                color: "white",
+                color: "hsl(var(--primary-foreground))",
                 fontWeight: "bold",
               },
               available: {
-                backgroundColor: "hsl(142 76% 90%)",
-                color: "hsl(142 76% 25%)",
+                backgroundColor: "hsl(var(--success) / 0.15)",
+                color: "hsl(var(--success))",
                 fontWeight: "600",
               },
             }}
@@ -592,14 +594,14 @@ export function LessonScheduler({
 
       {/* Remaining Hours Warning */}
       {remainingHours > 0 && selectedSlots.length > 0 && (
-        <p className="text-sm text-amber-600">
+        <p className="text-sm text-warning">
           You still have {remainingHours} hours to schedule. Continue selecting
           dates and times above.
         </p>
       )}
 
       {remainingHours <= 0 && (
-        <p className="text-sm text-emerald-600 flex items-center gap-2">
+        <p className="text-sm text-success flex items-center gap-2">
           <Clock className="h-4 w-4" />
           All {totalHours} hours have been scheduled!
         </p>
