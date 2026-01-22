@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Check, CheckCheck, Send, User } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, Image, X, File } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useConversationMessages, Conversation, Message } from "@/hooks/useMessaging";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatWindowProps {
   conversation: Conversation;
@@ -22,8 +24,13 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
   );
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -37,13 +44,100 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
     markAsRead(instructorId);
   }, [instructorId, markAsRead]);
 
+  // Cleanup preview URL
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Maximum file size is 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      setSelectedFile(file);
+      if (file.type.startsWith("image/")) {
+        setPreviewUrl(URL.createObjectURL(file));
+      }
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
+  const uploadFile = async (file: File): Promise<{ url: string; type: string } | null> => {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${instructorId}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("chat-attachments")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("chat-attachments")
+        .getPublicUrl(fileName);
+
+      const attachmentType = file.type.startsWith("image/") ? "image" : "file";
+      return { url: publicUrl, type: attachmentType };
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "Upload failed",
+        description: "Could not upload file",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   const handleSend = async () => {
-    if (!newMessage.trim() || sending) return;
+    if ((!newMessage.trim() && !selectedFile) || sending) return;
 
     setSending(true);
-    const success = await sendMessage(newMessage, instructorId);
+    setUploading(!!selectedFile);
+
+    let attachmentData: { url: string; type: string } | null = null;
+    
+    if (selectedFile) {
+      attachmentData = await uploadFile(selectedFile);
+      if (!attachmentData && !newMessage.trim()) {
+        setSending(false);
+        setUploading(false);
+        return;
+      }
+    }
+
+    setUploading(false);
+
+    const success = await sendMessage(newMessage, instructorId, {
+      attachmentUrl: attachmentData?.url,
+      attachmentType: attachmentData?.type,
+    });
+
     if (success) {
       setNewMessage("");
+      clearSelectedFile();
       inputRef.current?.focus();
     }
     setSending(false);
@@ -71,6 +165,34 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
     });
     
     return groups;
+  };
+
+  const renderAttachment = (message: Message) => {
+    if (!message.attachment_url) return null;
+
+    if (message.attachment_type === "image") {
+      return (
+        <img
+          src={message.attachment_url}
+          alt="Attachment"
+          className="max-w-full rounded-lg mt-2 cursor-pointer hover:opacity-90 transition-opacity"
+          style={{ maxHeight: "200px" }}
+          onClick={() => window.open(message.attachment_url!, "_blank")}
+        />
+      );
+    }
+
+    return (
+      <a
+        href={message.attachment_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 mt-2 p-2 bg-background/20 rounded-lg hover:bg-background/30 transition-colors"
+      >
+        <File className="h-4 w-4" />
+        <span className="text-sm underline">View attachment</span>
+      </a>
+    );
   };
 
   const messageGroups = groupMessagesByDate(messages);
@@ -133,9 +255,12 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
                               : "bg-muted rounded-bl-md"
                           )}
                         >
-                          <p className="text-sm whitespace-pre-wrap break-words">
-                            {message.content}
-                          </p>
+                          {message.content && (
+                            <p className="text-sm whitespace-pre-wrap break-words">
+                              {message.content}
+                            </p>
+                          )}
+                          {renderAttachment(message)}
                           <div
                             className={cn(
                               "flex items-center gap-1 mt-1",
@@ -171,8 +296,50 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
         )}
       </ScrollArea>
 
-      <CardContent className="p-3 border-t shrink-0">
+      <CardContent className="p-3 border-t shrink-0 space-y-2">
+        {/* File preview */}
+        {selectedFile && (
+          <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+            {previewUrl ? (
+              <img src={previewUrl} alt="Preview" className="h-12 w-12 object-cover rounded" />
+            ) : (
+              <div className="h-12 w-12 bg-background rounded flex items-center justify-center">
+                <File className="h-6 w-6 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{selectedFile.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {(selectedFile.size / 1024).toFixed(1)} KB
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              onClick={clearSelectedFile}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
         <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf,.doc,.docx,.txt"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending}
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
           <Input
             ref={inputRef}
             placeholder="Type a message..."
@@ -185,9 +352,13 @@ export function ChatWindow({ conversation, instructorId, onBack }: ChatWindowPro
           <Button
             size="icon"
             onClick={handleSend}
-            disabled={!newMessage.trim() || sending}
+            disabled={(!newMessage.trim() && !selectedFile) || sending}
           >
-            <Send className="h-4 w-4" />
+            {uploading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </CardContent>
