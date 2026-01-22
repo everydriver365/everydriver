@@ -33,6 +33,7 @@ import PupilGamificationStats from './PupilGamificationStats';
 import SpeedLimitRoundel from './SpeedLimitRoundel';
 import SpeedComplianceReport from './SpeedComplianceReport';
 import { RealtimeAlertDisplay, AlertBadge } from './RealtimeAlertDisplay';
+import RealtimeAlertsList from './RealtimeAlertsList';
 import { GPSPermissionHelper } from './GPSPermissionHelper';
 import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -699,6 +700,22 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
               {/* Pupil Gamification Stats */}
               {pupilId && showResults && (
                 <PupilGamificationStats pupilId={pupilId} />
+              )}
+              
+              {/* Real-time Alerts List */}
+              {alerts.alerts.length > 0 && (
+                <div className="border rounded-lg p-4">
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-primary" />
+                    Session Alerts ({alerts.alerts.length})
+                  </h4>
+                  <RealtimeAlertsList
+                    alerts={alerts.alerts}
+                    onAcknowledge={alerts.acknowledgeAlert}
+                    onAcknowledgeAll={alerts.acknowledgeAll}
+                    maxHeight="200px"
+                  />
+                </div>
               )}
               
               {/* Session Summary */}
