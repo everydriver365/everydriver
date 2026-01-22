@@ -377,17 +377,18 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                 </span>
               </div>
               
-              {/* Motion Sensor Status */}
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Smartphone className="h-4 w-4" />
-                <span className="text-xs">
-                  {hasMotionPermission === false 
-                    ? 'Motion: Denied' 
-                    : hasMotionPermission 
-                      ? `G: ${motionData.gForce.toFixed(2)}` 
-                      : 'Motion: N/A'}
-                </span>
-              </div>
+              {/* Motion Sensor Status - only show if granted or actively tracking G-force */}
+              {hasMotionPermission === true ? (
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Smartphone className="h-4 w-4" />
+                  <span className="text-xs">G: {motionData.gForce.toFixed(2)}</span>
+                </div>
+              ) : hasMotionPermission === false ? (
+                <div className="flex items-center gap-1 text-muted-foreground/50">
+                  <Smartphone className="h-4 w-4" />
+                  <span className="text-xs">Motion: Off</span>
+                </div>
+              ) : null}
             </div>
             
             {/* Real-time G-force indicator */}
