@@ -4101,6 +4101,62 @@ export type Database = {
         }
         Relationships: []
       }
+      telematics_alerts: {
+        Row: {
+          acknowledged: boolean | null
+          acknowledged_at: string | null
+          alert_type: string
+          created_at: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          road_name: string | null
+          severity: string | null
+          speed_delta: number | null
+          speed_kmh: number | null
+          speed_limit_kmh: number | null
+          telematics_id: string
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          road_name?: string | null
+          severity?: string | null
+          speed_delta?: number | null
+          speed_kmh?: number | null
+          speed_limit_kmh?: number | null
+          telematics_id: string
+        }
+        Update: {
+          acknowledged?: boolean | null
+          acknowledged_at?: string | null
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          road_name?: string | null
+          severity?: string | null
+          speed_delta?: number | null
+          speed_kmh?: number | null
+          speed_limit_kmh?: number | null
+          telematics_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telematics_alerts_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       telematics_gps_points: {
         Row: {
           accuracy_m: number | null
@@ -4147,6 +4203,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "telematics_gps_points_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telematics_motion_raw: {
+        Row: {
+          acceleration_x: number | null
+          acceleration_y: number | null
+          acceleration_z: number | null
+          g_force: number | null
+          id: string
+          recorded_at: string | null
+          rotation_alpha: number | null
+          rotation_beta: number | null
+          rotation_gamma: number | null
+          telematics_id: string
+        }
+        Insert: {
+          acceleration_x?: number | null
+          acceleration_y?: number | null
+          acceleration_z?: number | null
+          g_force?: number | null
+          id?: string
+          recorded_at?: string | null
+          rotation_alpha?: number | null
+          rotation_beta?: number | null
+          rotation_gamma?: number | null
+          telematics_id: string
+        }
+        Update: {
+          acceleration_x?: number | null
+          acceleration_y?: number | null
+          acceleration_z?: number | null
+          g_force?: number | null
+          id?: string
+          recorded_at?: string | null
+          rotation_alpha?: number | null
+          rotation_beta?: number | null
+          rotation_gamma?: number | null
+          telematics_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telematics_motion_raw_telematics_id_fkey"
             columns: ["telematics_id"]
             isOneToOne: false
             referencedRelation: "lesson_telematics"
