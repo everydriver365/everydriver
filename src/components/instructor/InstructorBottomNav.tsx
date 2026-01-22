@@ -5,20 +5,20 @@ import {
   Users, 
   Wallet, 
   Navigation,
-  Headphones,
+  MessageCircle,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { motion } from "framer-motion";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
+import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 
 interface NavItem {
   label: string;
   icon: LucideIcon;
   path: string;
   showBadge?: boolean;
-  isLiveChat?: boolean;
+  isMessages?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -38,10 +38,10 @@ const navItems: NavItem[] = [
     path: "/instructor/track-lesson"
   },
   { 
-    label: "Chats", 
-    icon: Headphones, 
-    path: "/instructor/visitor-chats",
-    isLiveChat: true
+    label: "Messages", 
+    icon: MessageCircle, 
+    path: "/instructor/messages",
+    isMessages: true
   },
   { 
     label: "Pay", 
@@ -67,7 +67,7 @@ export function InstructorBottomNav() {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
-          const isLiveChat = item.isLiveChat;
+          const isMessages = item.isMessages;
           
           return (
             <button
@@ -76,7 +76,7 @@ export function InstructorBottomNav() {
               className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                 isActive
                   ? "text-emerald-500"
-                  : isLiveChat
+                  : isMessages
                   ? "text-cyan-400"
                   : "text-white dark:text-white/70 hover:text-emerald-300 dark:hover:text-white"
               }`}
@@ -98,14 +98,7 @@ export function InstructorBottomNav() {
                     y: isActive ? -2 : 0
                   }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  className={isLiveChat && !isActive ? "relative" : ""}
                 >
-                  {isLiveChat && !isActive && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
-                  )}
-                  {isLiveChat && !isActive && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full" />
-                  )}
                   <item.icon
                     className={`h-5 w-5 transition-all duration-200 ${
                       isActive ? 'drop-shadow-sm' : ''
@@ -118,15 +111,15 @@ export function InstructorBottomNav() {
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
                 )}
-                {isLiveChat && (
-                  <VisitorChatBadge 
+                {isMessages && (
+                  <MessageNotificationBadge 
                     instructorId={instructor?.id} 
                     className="absolute -top-1.5 -right-2 text-[10px] px-1 min-w-[18px] h-[18px] flex items-center justify-center ring-2 ring-primary"
                   />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                isActive ? "font-semibold" : isLiveChat ? "font-medium text-cyan-400" : "font-medium opacity-80"
+                isActive ? "font-semibold" : isMessages ? "font-medium text-cyan-400" : "font-medium opacity-80"
               }`}>
                 {item.label}
               </span>
