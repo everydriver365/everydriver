@@ -323,7 +323,7 @@ export function PaymentQRModal({
             </DialogTitle>
           </DialogHeader>
           
-          <Tabs defaultValue="record" className="w-full">
+          <Tabs defaultValue="qr" className="w-full">
             <TabsList className="grid w-full grid-cols-4 h-9">
               <TabsTrigger value="record" className="text-[10px] gap-0.5 px-1">
                 <PoundSterling className="h-3 w-3" />
