@@ -17,6 +17,7 @@ import { PreferenceSelector } from "@/components/booking/PreferenceSelector";
 import { AutoSchedulePreview } from "@/components/booking/AutoSchedulePreview";
 import { InstructorAssignsView } from "@/components/booking/InstructorAssignsView";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
+import { BookingWalletButtons } from "@/components/booking/BookingWalletButtons";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
@@ -125,6 +126,7 @@ interface MobileBookingViewProps {
   onKlarnaSuccess: (authToken: string, orderId: string) => Promise<void>;
   onKlarnaError: (error: string) => void;
   onKlarnaCancel: () => void;
+  onWalletSuccess: (pupilId: string) => void;
 }
 
 export function MobileBookingView({
@@ -173,10 +175,14 @@ export function MobileBookingView({
   onKlarnaSuccess,
   onKlarnaError,
   onKlarnaCancel,
+  onWalletSuccess,
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
   const brandColour = instructor.brand_colour || "#1e3a5f";
   const bookingMode = instructor.booking_mode || 'pupil_choice';
+  
+  // Wallet processing state
+  const [isWalletProcessing, setIsWalletProcessing] = useState(false);
   
   // Auto-assign preferences state
   const [autoPreferences, setAutoPreferences] = useState<{
@@ -652,6 +658,29 @@ export function MobileBookingView({
 
           {/* Payment Options */}
           <div className="space-y-2">
+            {/* Express Checkout - Apple/Google Pay */}
+            {canSubmit && (
+              <BookingWalletButtons
+                amount={totalPrice + upsellTotal}
+                instructorId={instructor.id}
+                pupilName={pupilName}
+                pupilEmail={pupilEmail}
+                pupilPhone={pupilPhone}
+                pupilAddress={pupilAddress}
+                pupilPostcode={pupilPostcode}
+                courseType={courseName}
+                courseHours={hours}
+                totalPrice={totalPrice}
+                slots={selectedSlots}
+                upsells={availableUpsells
+                  .filter((u) => selectedUpsells.includes(u.id))
+                  .map((u) => ({ id: u.id, price: Number(u.price) }))}
+                onSuccess={onWalletSuccess}
+                onProcessing={setIsWalletProcessing}
+                disabled={isWalletProcessing || isSubmitting || isNPILoading || isClearpayLoading}
+              />
+            )}
+
             {/* NPI Card Payment - Recommended */}
             <div className="rounded-lg border-2 border-primary p-3 bg-primary/5 relative">
               <div className="absolute -top-2 right-3 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
@@ -690,7 +719,7 @@ export function MobileBookingView({
 
               <Button
                 onClick={onNPICheckout}
-                disabled={!canSubmit || isNPILoading || !gatewayHealth.npi.available}
+                disabled={!canSubmit || isNPILoading || !gatewayHealth.npi.available || isWalletProcessing}
                 className="w-full h-12"
               >
                 {isNPILoading ? (
@@ -708,7 +737,7 @@ export function MobileBookingView({
             {/* Clearpay */}
             <button
               onClick={onClearpayCheckout}
-              disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available}
+              disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available || isWalletProcessing}
               className="w-full rounded-lg border-2 border-[#b2fce4] p-3 bg-[#b2fce4]/10 hover:bg-[#b2fce4]/20 transition-colors text-left disabled:opacity-50"
             >
               <div className="flex items-center justify-between">
@@ -731,7 +760,7 @@ export function MobileBookingView({
                 amount={totalPrice + upsellTotal}
                 merchantReference={klarnaMerchantReference}
                 orderDescription={`${courseName} - ${hours} Hour Course${upsellTotal > 0 ? ' + extras' : ''}`}
-                disabled={!canSubmit}
+                disabled={!canSubmit || isWalletProcessing}
                 onSuccess={onKlarnaSuccess}
                 onError={onKlarnaError}
                 onCancel={onKlarnaCancel}
@@ -741,7 +770,7 @@ export function MobileBookingView({
             {/* Finance Option */}
             <button
               onClick={onBookingSubmit}
-              disabled={!canSubmit || isSubmitting}
+              disabled={!canSubmit || isSubmitting || isWalletProcessing}
               className="w-full rounded-lg border-2 border-orange-400 p-3 bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-950/50 transition-colors text-left disabled:opacity-50"
             >
               <div className="flex items-center justify-between">
