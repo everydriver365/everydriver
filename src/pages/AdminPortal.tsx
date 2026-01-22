@@ -54,11 +54,6 @@ const stats = [
   { icon: CreditCard, label: "Revenue (Month)", value: "£48,250", change: "+18%", trend: "up" },
 ];
 
-const alerts = [
-  { type: "warning", message: "3 instructors haven't updated availability", action: "Remind" },
-  { type: "info", message: "12 pending payment approvals", action: "Review" },
-  { type: "success", message: "System backup completed", action: "View" },
-];
 
 interface Instructor {
   id: string;
@@ -270,123 +265,77 @@ export default function AdminPortal() {
             </div>
 
             <div className="grid gap-8">
-              {/* Alerts */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-accent" />
-                      System Alerts
+              {/* Quick Management */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Management</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <Button 
+                      variant="outline" 
+                      className="h-auto flex-col gap-2 py-4"
+                      onClick={() => setActiveSection("instructors")}
+                    >
+                      <Users className="h-6 w-6" />
+                      <span>Manage Users</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+                      <Calendar className="h-6 w-6" />
+                      <span>View Bookings</span>
+                    </Button>
+                    <Button variant="outline" className="h-auto flex-col gap-2 py-4">
+                      <CreditCard className="h-6 w-6" />
+                      <span>Payments</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pending Enquiries Widget */}
+              {pendingEnquiries.length > 0 && (
+                <Card className="border-amber-500/30 bg-amber-500/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <FileEdit className="h-5 w-5 text-amber-600" />
+                        Pending Enquiries
+                      </span>
+                      <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/30">
+                        {pendingEnquiries.length} new
+                      </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      {alerts.map((alert, index) => (
+                    <div className="space-y-2">
+                      {pendingEnquiries.map((enquiry) => (
                         <div
-                          key={index}
-                          className={`flex items-center justify-between rounded-lg border p-4 ${
-                            alert.type === "warning"
-                              ? "border-warning/30 bg-warning/5"
-                              : alert.type === "success"
-                              ? "border-success/30 bg-success/5"
-                              : "border-primary/30 bg-primary/5"
-                          }`}
+                          key={enquiry.id}
+                          className="flex items-center justify-between p-3 rounded-lg bg-background border cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => setActiveSection("enquiries")}
                         >
-                          <div className="flex items-center gap-3">
-                            {alert.type === "warning" ? (
-                              <AlertTriangle className="h-5 w-5 text-warning" />
-                            ) : alert.type === "success" ? (
-                              <CheckCircle className="h-5 w-5 text-success" />
-                            ) : (
-                              <Clock className="h-5 w-5 text-primary" />
-                            )}
-                            <span>{alert.message}</span>
+                          <div>
+                            <div className="font-medium">{enquiry.name}</div>
+                            <div className="text-xs text-muted-foreground capitalize">
+                              {enquiry.course_type === "callback" ? "Callback Request" : enquiry.course_type.replace("-", " ")} • {new Date(enquiry.created_at).toLocaleDateString()}
+                            </div>
                           </div>
                           <Button variant="ghost" size="sm">
-                            {alert.action}
+                            View
                           </Button>
                         </div>
                       ))}
                     </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-3"
+                      onClick={() => setActiveSection("enquiries")}
+                    >
+                      View All Enquiries
+                    </Button>
                   </CardContent>
                 </Card>
-
-                {/* Quick Management */}
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle>Quick Management</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <Button 
-                        variant="outline" 
-                        className="h-auto flex-col gap-2 py-4"
-                        onClick={() => setActiveSection("instructors")}
-                      >
-                        <Users className="h-6 w-6" />
-                        <span>Manage Users</span>
-                      </Button>
-                      <Button variant="outline" className="h-auto flex-col gap-2 py-4">
-                        <Calendar className="h-6 w-6" />
-                        <span>View Bookings</span>
-                      </Button>
-                      <Button variant="outline" className="h-auto flex-col gap-2 py-4">
-                        <CreditCard className="h-6 w-6" />
-                        <span>Payments</span>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Pending Enquiries Widget */}
-                {pendingEnquiries.length > 0 && (
-                  <Card className="mt-6 border-amber-500/30 bg-amber-500/5">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="flex items-center gap-2">
-                          <FileEdit className="h-5 w-5 text-amber-600" />
-                          Pending Enquiries
-                        </span>
-                        <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/30">
-                          {pendingEnquiries.length} new
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {pendingEnquiries.map((enquiry) => (
-                          <div
-                            key={enquiry.id}
-                            className="flex items-center justify-between p-3 rounded-lg bg-background border cursor-pointer hover:bg-muted/50 transition-colors"
-                            onClick={() => setActiveSection("enquiries")}
-                          >
-                            <div>
-                              <div className="font-medium">{enquiry.name}</div>
-                              <div className="text-xs text-muted-foreground capitalize">
-                                {enquiry.course_type === "callback" ? "Callback Request" : enquiry.course_type.replace("-", " ")} • {new Date(enquiry.created_at).toLocaleDateString()}
-                              </div>
-                            </div>
-                            <Button variant="ghost" size="sm">
-                              View
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        className="w-full mt-3"
-                        onClick={() => setActiveSection("enquiries")}
-                      >
-                        View All Enquiries
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-              </motion.div>
+              )}
             </div>
           </>
         );
