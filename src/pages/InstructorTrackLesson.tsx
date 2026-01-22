@@ -34,8 +34,11 @@ interface ScheduledLesson {
 }
 
 export default function InstructorTrackLesson() {
-  const { instructor } = useInstructorAuth();
+  const { instructor, loading: authLoading } = useInstructorAuth();
   const instructorId = instructor?.id;
+  
+  // Debug logging
+  console.log('[InstructorTrackLesson] Auth state:', { instructor: !!instructor, instructorId, authLoading });
   const isMobile = useIsMobile();
   
   const [todaysLessons, setTodaysLessons] = useState<ScheduledLesson[]>([]);
@@ -162,11 +165,21 @@ export default function InstructorTrackLesson() {
     return `${displayHour}:${minutes} ${ampm}`;
   };
 
+  if (authLoading) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading authentication...</p>
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
+
   if (!instructorId) {
     return (
       <InstructorPortalLayout>
         <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">No instructor profile found. Please log in.</p>
         </div>
       </InstructorPortalLayout>
     );
