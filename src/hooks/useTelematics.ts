@@ -231,9 +231,14 @@ export const useTelematics = (instructorId: string) => {
       return { status: 'fair', accuracy_m: accuracy, message: 'Good GPS signal' };
     }
     if (accuracy <= 200) {
-      return { status: 'poor', accuracy_m: accuracy, message: 'Weak GPS signal - accuracy reduced' };
+      return { status: 'fair', accuracy_m: accuracy, message: 'Moderate GPS signal' };
     }
-    return { status: 'unavailable', accuracy_m: accuracy, message: 'GPS too inaccurate - try moving outdoors' };
+    if (accuracy <= 500) {
+      // Still recording but with reduced accuracy - show as poor, not unavailable
+      return { status: 'poor', accuracy_m: accuracy, message: 'Weak GPS signal - still recording' };
+    }
+    // Only show unavailable when we truly stop recording (> 500m)
+    return { status: 'unavailable', accuracy_m: accuracy, message: 'GPS signal lost - move outdoors' };
   }, []);
 
   // Request wake lock to keep screen on during tracking
@@ -615,7 +620,7 @@ export const useTelematics = (instructorId: string) => {
             console.log(`GPS accuracy too poor (${accuracy}m), skipping point`);
             setSpeedLimitData(prev => ({
               ...prev,
-              roadType: `GPS too inaccurate (±${Math.round(accuracy)}m)`
+              roadType: 'Acquiring GPS signal...'
             }));
             return;
           }
