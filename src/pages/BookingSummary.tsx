@@ -1064,6 +1064,7 @@ export default function BookingSummary() {
         features={features}
         template={template}
         locationName={locationName}
+        selectedDate={selectedDate}
         pupilName={pupilName}
         pupilEmail={pupilEmail}
         pupilPhone={pupilPhone}
@@ -1167,6 +1168,23 @@ export default function BookingSummary() {
       </div>
 
       <div className="container py-6">
+        {/* Selected Date Banner - Show when date is selected */}
+        {selectedDate && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-4"
+          >
+            <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center">
+              <Calendar className="h-6 w-6 text-emerald-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-emerald-700">You have selected</p>
+              <p className="text-emerald-600">{format(selectedDate, "EEEE, MMMM d, yyyy")}</p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Course Details Section - Always Visible First */}
         <div className="space-y-4 mb-8">
           {/* Instructor Card */}
