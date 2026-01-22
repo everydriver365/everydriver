@@ -2497,7 +2497,7 @@ export type Database = {
           source_page: string | null
           status: string
           updated_at: string
-          visitor_email: string
+          visitor_email: string | null
           visitor_name: string
           visitor_phone: string | null
         }
@@ -2511,7 +2511,7 @@ export type Database = {
           source_page?: string | null
           status?: string
           updated_at?: string
-          visitor_email: string
+          visitor_email?: string | null
           visitor_name: string
           visitor_phone?: string | null
         }
@@ -2525,7 +2525,7 @@ export type Database = {
           source_page?: string | null
           status?: string
           updated_at?: string
-          visitor_email?: string
+          visitor_email?: string | null
           visitor_name?: string
           visitor_phone?: string | null
         }
