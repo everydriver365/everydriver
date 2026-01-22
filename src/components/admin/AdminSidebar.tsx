@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -50,6 +50,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminSidebarProps {
   activeSection: string;
@@ -65,6 +66,7 @@ interface NavGroup {
     id: string;
     label: string;
     icon: React.ElementType;
+    badgeKey?: string;
   }[];
 }
 
@@ -85,8 +87,8 @@ const navGroups: NavGroup[] = [
       { id: "instructors", label: "Instructors", icon: Users },
       { id: "enquiries", label: "Enquiries & Callbacks", icon: MessageSquareText },
       { id: "messages", label: "Pupil Messages", icon: MessageCircle },
-      { id: "instructor-messages", label: "Instructor Messages", icon: ShieldCheck },
-      { id: "live-chat", label: "Live Chat", icon: Headphones },
+      { id: "instructor-messages", label: "Instructor Messages", icon: ShieldCheck, badgeKey: "instructorMessages" },
+      { id: "live-chat", label: "Live Chat", icon: Headphones, badgeKey: "liveChat" },
     ],
   },
   {
@@ -151,6 +153,10 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [searchQuery, setSearchQuery] = useState("");
+  const [badgeCounts, setBadgeCounts] = useState<Record<string, number>>({
+    instructorMessages: 0,
+    liveChat: 0,
+  });
   
   // Find which group contains the active section
   const activeGroupLabel = navGroups.find(group => 
@@ -160,6 +166,71 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
   const [openGroups, setOpenGroups] = useState<string[]>(
     activeGroupLabel ? [activeGroupLabel] : ["Dashboard"]
   );
+
+  const fetchBadgeCounts = useCallback(async () => {
+    try {
+      // Fetch instructor messages unread count
+      const { count: instructorMsgCount } = await supabase
+        .from("admin_messages")
+        .select("id", { count: "exact", head: true })
+        .eq("sender_type", "instructor")
+        .is("read_at", null);
+
+      // Fetch live chat unread count
+      const { data: activeSessions } = await supabase
+        .from("live_chat_sessions")
+        .select("id")
+        .eq("session_type", "admin")
+        .eq("status", "active");
+
+      let liveChatUnread = 0;
+      if (activeSessions && activeSessions.length > 0) {
+        const sessionIds = activeSessions.map(s => s.id);
+        const { count: unreadCount } = await supabase
+          .from("live_chat_messages")
+          .select("id", { count: "exact", head: true })
+          .in("session_id", sessionIds)
+          .eq("sender_type", "visitor")
+          .is("read_at", null);
+        liveChatUnread = unreadCount || 0;
+      }
+
+      setBadgeCounts({
+        instructorMessages: instructorMsgCount || 0,
+        liveChat: liveChatUnread,
+      });
+    } catch (error) {
+      console.error("Error fetching badge counts:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBadgeCounts();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel("admin_sidebar_badges")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "admin_messages" },
+        () => fetchBadgeCounts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "live_chat_messages" },
+        () => fetchBadgeCounts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "live_chat_sessions" },
+        () => fetchBadgeCounts()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchBadgeCounts]);
 
   const toggleGroup = (label: string) => {
     setOpenGroups(prev => 
@@ -243,27 +314,48 @@ export function AdminSidebar({ activeSection, onSectionChange, onLogout }: Admin
                 <CollapsibleContent>
                   <SidebarGroupContent className="pl-2">
                     <SidebarMenu>
-                      {group.items.map((item) => (
-                        <SidebarMenuItem key={item.id}>
-                          <SidebarMenuButton
-                            onClick={() => onSectionChange(item.id)}
-                            isActive={activeSection === item.id}
-                            tooltip={item.label}
-                            className={cn(
-                              "transition-all duration-200 rounded-lg",
-                              activeSection === item.id 
-                                ? "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20" 
-                                : "hover:bg-muted/60"
-                            )}
-                          >
-                            <item.icon className={cn(
-                              "h-4 w-4",
-                              activeSection === item.id && "text-primary"
-                            )} />
-                            {!isCollapsed && <span>{item.label}</span>}
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
+                      {group.items.map((item) => {
+                        const badgeCount = item.badgeKey ? badgeCounts[item.badgeKey] || 0 : 0;
+                        
+                        return (
+                          <SidebarMenuItem key={item.id}>
+                            <SidebarMenuButton
+                              onClick={() => onSectionChange(item.id)}
+                              isActive={activeSection === item.id}
+                              tooltip={item.label}
+                              className={cn(
+                                "transition-all duration-200 rounded-lg",
+                                activeSection === item.id 
+                                  ? "bg-primary/10 text-primary font-medium shadow-sm border border-primary/20" 
+                                  : "hover:bg-muted/60"
+                              )}
+                            >
+                              <item.icon className={cn(
+                                "h-4 w-4",
+                                activeSection === item.id && "text-primary"
+                              )} />
+                              {!isCollapsed && (
+                                <span className="flex-1 flex items-center justify-between">
+                                  <span>{item.label}</span>
+                                  {badgeCount > 0 && (
+                                    <Badge 
+                                      variant="destructive" 
+                                      className="ml-2 h-5 min-w-[20px] px-1.5 text-[10px] font-bold animate-pulse"
+                                    >
+                                      {badgeCount > 99 ? "99+" : badgeCount}
+                                    </Badge>
+                                  )}
+                                </span>
+                              )}
+                              {isCollapsed && badgeCount > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] text-destructive-foreground font-bold">
+                                  {badgeCount > 9 ? "9+" : badgeCount}
+                                </span>
+                              )}
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        );
+                      })}
                     </SidebarMenu>
                   </SidebarGroupContent>
                 </CollapsibleContent>
