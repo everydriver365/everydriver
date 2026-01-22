@@ -93,7 +93,7 @@ export const useTelematics = (instructorId: string) => {
   const [damoovStatus, setDamoovStatus] = useState<'idle' | 'processing' | 'complete' | 'error'>('idle');
   const [speedLimitData, setSpeedLimitData] = useState<SpeedLimitData>({
     speedLimit: null,
-    roadType: undefined,
+    roadType: 'Acquiring GPS...',
     lastFetched: 0,
     isExceeding: false
   });
@@ -181,15 +181,21 @@ export const useTelematics = (instructorId: string) => {
     }
     
     try {
+      console.log('[fetchSpeedLimit] Calling edge function for:', lat, lon);
       const { data, error } = await supabase.functions.invoke('tomtom-speed-limits', {
         body: { lat, lon }
       });
       
       if (error) {
-        console.log('Speed limit fetch error:', error);
+        console.log('[fetchSpeedLimit] Edge function error:', error);
+        setSpeedLimitData(prev => ({
+          ...prev,
+          roadType: 'Unknown Road'
+        }));
         return;
       }
       
+      console.log('[fetchSpeedLimit] Response:', data);
       lastSpeedLimitFetchRef.current = { lat, lon, time: now };
       
       // Store in ref for use when saving GPS points
@@ -200,14 +206,18 @@ export const useTelematics = (instructorId: string) => {
       
       setSpeedLimitData({
         speedLimit: data.speedLimit,
-        roadType: data.roadType,
+        roadType: data.roadType || 'Unknown Road',
         lastFetched: now,
         isExceeding: data.speedLimit !== null && currentSpeedKmh > data.speedLimit
       });
       
       debugLog('SPEED_LIMIT', `Fetched: ${data.speedLimit} km/h on ${data.roadType || 'unknown road'}`);
     } catch (err) {
-      console.log('Speed limit fetch failed:', err);
+      console.log('[fetchSpeedLimit] Exception:', err);
+      setSpeedLimitData(prev => ({
+        ...prev,
+        roadType: 'Unknown Road'
+      }));
     }
   }, []);
   const evaluateGPSQuality = useCallback((accuracy: number | null): GPSQuality => {
