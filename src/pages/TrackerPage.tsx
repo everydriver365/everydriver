@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -20,6 +21,11 @@ interface GPSPoint {
   timestamp: number;
   harshBrake?: boolean;
   speeding?: boolean;
+}
+
+interface Pupil {
+  id: string;
+  name: string;
 }
 
 // Map auto-pan helper
@@ -46,6 +52,8 @@ export default function TrackerPage() {
   const navigate = useNavigate();
 
   const [phase, setPhase] = useState<TrackerPhase>('idle');
+  const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [selectedPupil, setSelectedPupil] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [gpsPoints, setGpsPoints] = useState<GPSPoint[]>([]);
   const [currentPos, setCurrentPos] = useState<[number, number] | null>(null);
@@ -59,6 +67,39 @@ export default function TrackerPage() {
   const harshBraking = useHarshBrakingDetector({});
   const drivingBehavior = useDrivingBehavior({});
   const tripScore = useLocalTripScore();
+
+  /* ---------------- Fetch Pupils --------------------------- */
+  useEffect(() => {
+    const fetchPupils = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) return;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: instructorData } = await (supabase as any)
+        .from('instructors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!instructorData) return;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: pupilsData } = await (supabase as any)
+        .from('pupils')
+        .select('id, name')
+        .eq('instructor_id', instructorData.id);
+
+      if (pupilsData) {
+        const validPupils = (pupilsData as Array<{ id: string; name: string | null }>)
+          .filter(p => p.name !== null)
+          .map(p => ({ id: p.id, name: p.name as string }));
+        setPupils(validPupils);
+      }
+    };
+
+    fetchPupils();
+  }, []);
 
   /* ---------------- Wake Lock ------------------------------ */
   const requestWakeLock = async () => {
@@ -174,20 +215,8 @@ export default function TrackerPage() {
     }
   }, [phase, sessionId, gpsTracker, harshBraking, drivingBehavior, elapsedTime, tripScore]);
 
-  /* ---------------- Derived Values ------------------------ */
-  const lastPoint = gpsPoints[gpsPoints.length - 1];
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  /* ---------------- Auto-start on mount ------------------- */
+  /* ---------------- Cleanup ------------------------------- */
   useEffect(() => {
-    if (sessionId && phase === 'idle') {
-      startTracking();
-    }
-    
     return () => {
       gpsTracker.stopTracking();
       harshBraking.stopDetection();
@@ -195,18 +224,30 @@ export default function TrackerPage() {
       releaseWakeLock();
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [sessionId]);
+  }, []);
+
+  /* ---------------- Derived Values ------------------------ */
+  const lastPoint = gpsPoints[gpsPoints.length - 1];
+  const selectedPupilName = pupils.find(p => p.id === selectedPupil)?.name;
+  
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-card border-b z-[1000]">
-        <div className="flex-1">
-          <p className="text-sm text-muted-foreground">Time: {formatTime(elapsedTime)}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-muted-foreground">
+            Pupil: {selectedPupilName || '-'} • {formatTime(elapsedTime)}
+          </p>
           <div className="flex items-center gap-2">
-            <span className="font-medium truncate">{lastPoint?.roadName || 'Acquiring GPS...'}</span>
+            <span className="font-medium truncate">{lastPoint?.roadName || '-'}</span>
             {lastPoint?.speedLimit > 0 && (
-              <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-red-600 bg-white font-bold text-black text-sm">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-red-600 bg-white font-bold text-black text-sm shrink-0">
                 {lastPoint.speedLimit}
               </div>
             )}
@@ -220,12 +261,40 @@ export default function TrackerPage() {
           <Button
             variant={phase === 'tracking' ? 'destructive' : 'default'}
             onClick={phase === 'tracking' ? stopTracking : startTracking}
-            disabled={phase === 'stopped'}
+            disabled={phase === 'stopped' || (phase === 'idle' && !selectedPupil)}
           >
             {phase === 'tracking' ? 'Stop' : 'Start'}
           </Button>
         </div>
       </div>
+
+      {/* Pupil Selection Overlay */}
+      {phase === 'idle' && (
+        <div className="absolute inset-0 bg-background/95 z-[1001] flex items-center justify-center p-4">
+          <div className="bg-card rounded-xl border p-6 w-full max-w-sm space-y-4">
+            <h2 className="text-xl font-bold text-center">Select Pupil</h2>
+            
+            <Select value={selectedPupil || ''} onValueChange={setSelectedPupil}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a pupil" />
+              </SelectTrigger>
+              <SelectContent>
+                {pupils.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button 
+              className="w-full" 
+              onClick={startTracking}
+              disabled={!selectedPupil}
+            >
+              Start Tracking
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Map */}
       <div className="flex-1 relative">
