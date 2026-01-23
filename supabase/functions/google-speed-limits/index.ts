@@ -45,43 +45,91 @@ serve(async (req) => {
     let roadName: string | null = null;
     let source: 'tomtom' | 'osm' | null = null;
 
-    // Method 1: TomTom Reverse Geocode with speed limit
+    // Method 1: TomTom Snap to Roads API (map-matching with speed limits)
     if (tomtomApiKey) {
       try {
-        const reverseUrl = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${tomtomApiKey}&returnSpeedLimit=true&radius=50`;
-        console.log(`Trying TomTom Reverse Geocode...`);
+        // Use POST for Snap to Roads with fields parameter
+        const snapUrl = `https://api.tomtom.com/snap/1/synchronous?key=${tomtomApiKey}`;
+        console.log(`Trying TomTom Snap to Roads API...`);
+        
+        const snapBody = {
+          points: [
+            {
+              latitude: lat,
+              longitude: lon
+            }
+          ],
+          fields: {
+            snappedPoints: [
+              "speedLimit",
+              "road"
+            ]
+          }
+        };
+        
+        const snapResponse = await fetch(snapUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(snapBody)
+        });
+        
+        const responseText = await snapResponse.text();
+        
+        if (snapResponse.ok) {
+          const snapData = JSON.parse(responseText);
+          console.log(`TomTom Snap response:`, JSON.stringify(snapData));
+          
+          if (snapData.snappedPoints && snapData.snappedPoints.length > 0) {
+            const point = snapData.snappedPoints[0];
+            
+            // Get speed limit (TomTom returns in km/h)
+            if (point.speedLimit !== undefined && point.speedLimit !== null) {
+              speedLimit = point.speedLimit;
+              source = 'tomtom';
+              console.log(`TomTom: speed limit = ${speedLimit} km/h`);
+            }
+            
+            // Get road name from road object
+            if (point.road) {
+              roadName = point.road.name || point.road.shieldInfo?.label || null;
+              console.log(`TomTom road name: ${roadName}`);
+            }
+          }
+        } else {
+          console.log(`TomTom Snap API error: ${snapResponse.status} - ${responseText}`);
+        }
+      } catch (tomtomError) {
+        console.error('TomTom Snap API error:', tomtomError);
+      }
+    }
+
+    // Method 2: TomTom Reverse Geocode fallback for road name
+    if (!roadName && tomtomApiKey) {
+      try {
+        const reverseUrl = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${tomtomApiKey}&radius=50`;
+        console.log(`Trying TomTom Reverse Geocode for road name...`);
         
         const reverseResponse = await fetch(reverseUrl);
-        const responseText = await reverseResponse.text();
         
         if (reverseResponse.ok) {
-          const reverseData = JSON.parse(responseText);
-          console.log(`TomTom Reverse response:`, JSON.stringify(reverseData));
+          const reverseData = await reverseResponse.json();
           
           if (reverseData.addresses && reverseData.addresses.length > 0) {
             const addr = reverseData.addresses[0].address;
             roadName = addr.streetName || addr.street || addr.freeformAddress || null;
-            console.log(`TomTom road name: ${roadName}`);
-            
-            // Check for speed limit in response
-            if (reverseData.addresses[0].speedLimit) {
-              speedLimit = reverseData.addresses[0].speedLimit;
-              source = 'tomtom';
-              console.log(`TomTom speed limit: ${speedLimit} km/h`);
-            }
+            console.log(`TomTom Reverse road name: ${roadName}`);
           }
-        } else {
-          console.log(`TomTom Reverse API error: ${reverseResponse.status} - ${responseText}`);
         }
-      } catch (tomtomError) {
-        console.error('TomTom API error:', tomtomError);
+      } catch (reverseError) {
+        console.error('TomTom Reverse Geocode error:', reverseError);
       }
     }
 
-    // Method 2: OSM Overpass - only for EXPLICIT maxspeed tags (real sign data)
+    // Method 3: OSM Overpass - only for EXPLICIT maxspeed tags (real sign data)
     if (speedLimit === null) {
       try {
-        // Only query for roads WITH maxspeed tag - real data only
         const overpassQuery = `
           [out:json][timeout:5];
           way(around:25,${lat},${lon})["highway"]["maxspeed"];
@@ -148,7 +196,7 @@ serve(async (req) => {
       }
     }
 
-    // Method 3: Get road name from OSM if still missing
+    // Method 4: Get road name from OSM if still missing
     if (!roadName) {
       try {
         const overpassQuery = `
