@@ -45,62 +45,33 @@ serve(async (req) => {
     let roadName: string | null = null;
     let source: 'tomtom' | 'osm' | null = null;
 
-    // Method 1: TomTom Snap to Roads API
+    // Method 1: TomTom Reverse Geocode with speed limit
     if (tomtomApiKey) {
       try {
-        // Use TomTom Snap to Roads API with speed limit info
-        const snapUrl = `https://api.tomtom.com/snap/1/snap?key=${tomtomApiKey}&points=${lat},${lon}&fields={speedLimit,road{name}}`;
-        console.log(`Trying TomTom Snap to Roads API...`);
+        const reverseUrl = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${tomtomApiKey}&returnSpeedLimit=true&radius=50`;
+        console.log(`Trying TomTom Reverse Geocode...`);
         
-        const snapResponse = await fetch(snapUrl);
-        const responseText = await snapResponse.text();
+        const reverseResponse = await fetch(reverseUrl);
+        const responseText = await reverseResponse.text();
         
-        if (snapResponse.ok) {
-          const snapData = JSON.parse(responseText);
-          console.log(`TomTom Snap response:`, JSON.stringify(snapData));
+        if (reverseResponse.ok) {
+          const reverseData = JSON.parse(responseText);
+          console.log(`TomTom Reverse response:`, JSON.stringify(reverseData));
           
-          if (snapData.snappedPoints && snapData.snappedPoints.length > 0) {
-            const point = snapData.snappedPoints[0];
+          if (reverseData.addresses && reverseData.addresses.length > 0) {
+            const addr = reverseData.addresses[0].address;
+            roadName = addr.streetName || addr.street || addr.freeformAddress || null;
+            console.log(`TomTom road name: ${roadName}`);
             
-            // Get speed limit (TomTom returns in km/h)
-            if (point.speedLimit !== undefined && point.speedLimit !== null) {
-              speedLimit = point.speedLimit;
+            // Check for speed limit in response
+            if (reverseData.addresses[0].speedLimit) {
+              speedLimit = reverseData.addresses[0].speedLimit;
               source = 'tomtom';
-              console.log(`TomTom: speed limit = ${speedLimit} km/h`);
-            }
-            
-            // Get road name
-            if (point.road?.name) {
-              roadName = point.road.name;
+              console.log(`TomTom speed limit: ${speedLimit} km/h`);
             }
           }
         } else {
-          console.log(`TomTom Snap API error: ${snapResponse.status} - ${responseText}`);
-          
-          // Try TomTom Reverse Geocode for road name at least
-          try {
-            const reverseUrl = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${tomtomApiKey}&returnSpeedLimit=true`;
-            console.log(`Trying TomTom Reverse Geocode...`);
-            
-            const reverseResponse = await fetch(reverseUrl);
-            if (reverseResponse.ok) {
-              const reverseData = await reverseResponse.json();
-              console.log(`TomTom Reverse response:`, JSON.stringify(reverseData));
-              
-              if (reverseData.addresses && reverseData.addresses.length > 0) {
-                const addr = reverseData.addresses[0].address;
-                roadName = addr.streetName || addr.street || null;
-                
-                // Check for speed limit in response
-                if (reverseData.addresses[0].speedLimit) {
-                  speedLimit = reverseData.addresses[0].speedLimit;
-                  source = 'tomtom';
-                }
-              }
-            }
-          } catch (reverseError) {
-            console.error('TomTom Reverse Geocode error:', reverseError);
-          }
+          console.log(`TomTom Reverse API error: ${reverseResponse.status} - ${responseText}`);
         }
       } catch (tomtomError) {
         console.error('TomTom API error:', tomtomError);
@@ -132,7 +103,10 @@ serve(async (req) => {
             const road = overpassData.elements[0];
             const tags = road.tags || {};
             
-            roadName = tags.name || tags.ref || roadName;
+            // Only update road name if we don't have one
+            if (!roadName) {
+              roadName = tags.name || tags.ref || null;
+            }
             
             const maxspeed = tags.maxspeed;
             if (maxspeed) {
@@ -155,7 +129,6 @@ serve(async (req) => {
               
               // Handle "national" - this IS real data (the sign exists)
               if (maxspeed === 'national' || maxspeed === 'GB:national') {
-                // National limit depends on road type - but this is REAL, the sign is there
                 const highway = tags.highway;
                 if (highway === 'motorway') {
                   speedLimit = 113; // 70 mph
@@ -175,31 +148,40 @@ serve(async (req) => {
       }
     }
 
-    // Get road name from TomTom reverse geocode if we don't have it yet
-    if (!roadName && tomtomApiKey) {
+    // Method 3: Get road name from OSM if still missing
+    if (!roadName) {
       try {
-        const reverseUrl = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${tomtomApiKey}`;
-        const reverseResponse = await fetch(reverseUrl);
+        const overpassQuery = `
+          [out:json][timeout:5];
+          way(around:25,${lat},${lon})["highway"]["name"];
+          out body 1;
+        `;
         
-        if (reverseResponse.ok) {
-          const reverseData = await reverseResponse.json();
-          
-          if (reverseData.addresses && reverseData.addresses.length > 0) {
-            const addr = reverseData.addresses[0].address;
-            roadName = addr.streetName || addr.street || null;
+        const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+        console.log(`Trying OSM for road name...`);
+        
+        const overpassResponse = await fetch(overpassUrl, {
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (overpassResponse.ok) {
+          const overpassData = await overpassResponse.json();
+          if (overpassData.elements && overpassData.elements.length > 0) {
+            const tags = overpassData.elements[0].tags || {};
+            roadName = tags.name || tags.ref || null;
+            console.log(`OSM road name: ${roadName}`);
           }
         }
-      } catch (geocodeError) {
-        console.error('TomTom geocoding error:', geocodeError);
+      } catch (osmError) {
+        console.error('OSM road name error:', osmError);
       }
     }
 
-    // NO FALLBACK - return null if we don't have real data
     console.log(`[SpeedLimit] LIVE Result: limit=${speedLimit} km/h, road="${roadName}", source=${source}`);
 
     return new Response(
       JSON.stringify({ 
-        speedLimit,  // Will be null if no real data
+        speedLimit,
         roadName,
         source
       } as SpeedLimitResponse),
