@@ -487,7 +487,7 @@ export default function TrackerPage() {
                 {gpsPoints.map((p, i) => (
                   <tr key={i} className={p.speeding || p.harshBrake ? 'bg-destructive/10' : ''}>
                     <td className="px-2 py-1">{new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
-                    <td className="px-2 py-1 truncate max-w-[100px]">{p.roadName}</td>
+                    <td className="px-2 py-1 truncate max-w-[60px]">{p.roadName}</td>
                     <td className="px-2 py-1 text-right font-mono">{kmhToMph(p.speedKmh)}</td>
                     <td className="px-2 py-1 text-right font-mono">{p.speedLimit ? kmhToMph(p.speedLimit) : '-'}</td>
                     <td className="px-2 py-1 text-center">
