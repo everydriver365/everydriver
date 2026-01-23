@@ -312,8 +312,8 @@ export function DrivingTestReportForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0">
-        <DialogHeader className="px-6 py-4 border-b bg-muted/30">
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 flex flex-col overflow-hidden">
+        <DialogHeader className="px-6 py-4 border-b bg-muted/30 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg ${isMock ? "bg-blue-100 dark:bg-blue-900" : "bg-primary/10"}`}>
@@ -343,7 +343,7 @@ export function DrivingTestReportForm({
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 max-h-[calc(90vh-180px)]">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="p-6 space-y-6">
             {/* Test Info Header */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -854,7 +854,7 @@ export function DrivingTestReportForm({
         </ScrollArea>
 
         {/* Footer with Totals and Result */}
-        <div className="px-6 py-4 border-t bg-muted/30 space-y-4">
+        <div className="px-6 py-4 border-t bg-muted/30 space-y-4 flex-shrink-0">
           {/* Fault Summary */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
