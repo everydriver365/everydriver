@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Car, User, Clock, MapPin, History, Route, Bookmark, Beaker, PlayCircle } from "lucide-react";
+import { Car, User, Clock, MapPin, History, Route, Bookmark, Beaker, PlayCircle, FolderOpen } from "lucide-react";
 import { format } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SaveRouteDialog } from "@/components/instructor/SaveRouteDialog";
@@ -21,6 +21,7 @@ import PreFlightChecks from "@/components/instructor/PreFlightChecks";
 import TrackingDebugPanel from "@/components/instructor/TrackingDebugPanel";
 import RouteSimulator from "@/components/instructor/RouteSimulator";
 import OfflineIndicator from "@/components/instructor/OfflineIndicator";
+import { SavedRoutesViewer } from "@/components/instructor/SavedRoutesViewer";
 interface ScheduledLesson {
   id: string;
   lesson_date: string;
@@ -65,7 +66,7 @@ export default function InstructorTrackLesson() {
   const [currentGpsStatus, setCurrentGpsStatus] = useState('unavailable');
   const [currentMotionStatus, setCurrentMotionStatus] = useState<boolean | null>(null);
   const [currentDamoovStatus, setCurrentDamoovStatus] = useState<'idle' | 'processing' | 'complete' | 'error'>('idle');
-  const [activeTab, setActiveTab] = useState<'track' | 'simulate'>('track');
+  const [activeTab, setActiveTab] = useState<'track' | 'simulate' | 'routes'>('track');
 
   useEffect(() => {
     if (instructorId) {
@@ -225,17 +226,21 @@ export default function InstructorTrackLesson() {
           </div>
         </div>
 
-        {/* Mode Tabs - Track or Simulate */}
+        {/* Mode Tabs - Track, Simulate, or Saved Routes */}
         {!showHistory ? (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'track' | 'simulate')}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="track" className="gap-1.5">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'track' | 'simulate' | 'routes')}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="track" className="gap-1.5 text-xs sm:text-sm">
                 <Car className="h-4 w-4" />
-                Live Tracking
+                <span className="hidden sm:inline">Live</span> Track
               </TabsTrigger>
-              <TabsTrigger value="simulate" className="gap-1.5">
+              <TabsTrigger value="simulate" className="gap-1.5 text-xs sm:text-sm">
                 <PlayCircle className="h-4 w-4" />
-                Simulate Route
+                Simulate
+              </TabsTrigger>
+              <TabsTrigger value="routes" className="gap-1.5 text-xs sm:text-sm">
+                <FolderOpen className="h-4 w-4" />
+                Routes
               </TabsTrigger>
             </TabsList>
 
@@ -413,6 +418,10 @@ export default function InstructorTrackLesson() {
 
             <TabsContent value="simulate" className="mt-4">
               <RouteSimulator instructorId={instructorId} />
+            </TabsContent>
+
+            <TabsContent value="routes" className="mt-4">
+              <SavedRoutesViewer instructorId={instructorId} />
             </TabsContent>
           </Tabs>
         ) : (
