@@ -157,12 +157,13 @@ export function DrivingTestReportForm({
 
   const fetchTestCentres = async () => {
     if (!instructor?.id) return;
-    const { data } = await supabase
+    // @ts-ignore - Supabase type depth issue
+    const result = await supabase
       .from("test_centres")
       .select("id, name")
       .eq("instructor_id", instructor.id)
       .order("name");
-    if (data) setTestCentres(data);
+    if (result.data) setTestCentres(result.data as Array<{ id: string; name: string }>);
   };
 
   const loadExistingResult = async () => {
@@ -886,7 +887,7 @@ export function DrivingTestReportForm({
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant={result === "pass" || autoResult === null && result === "pass" ? "default" : "outline"}
+                  variant={result === "pass" ? "default" : "outline"}
                   size="sm"
                   disabled={!!autoResult}
                   onClick={() => setResult("pass")}

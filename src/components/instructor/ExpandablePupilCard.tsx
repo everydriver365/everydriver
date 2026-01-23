@@ -21,7 +21,9 @@ import {
   Check,
   X,
   FileSignature,
-  CheckCircle2
+  CheckCircle2,
+  Award,
+  ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +73,8 @@ interface ExpandablePupilCardProps {
   onViewReport: (pupil: Pupil) => void;
   onViewTerms?: (pupil: Pupil) => void;
   onStartChat?: (pupil: Pupil) => void;
+  onRecordTestResult?: (pupil: Pupil, isMock: boolean) => void;
+  onViewTestHistory?: (pupil: Pupil) => void;
   hasSignedTerms?: boolean;
   instructorId?: string;
   instructorName?: string;
@@ -94,6 +98,8 @@ export function ExpandablePupilCard({
   onViewReport,
   onViewTerms,
   onStartChat,
+  onRecordTestResult,
+  onViewTestHistory,
   hasSignedTerms,
   instructorId,
   instructorName,
@@ -626,6 +632,54 @@ export function ExpandablePupilCard({
                   <span className="text-xs">Chat</span>
                 </Button>
               </div>
+
+              {/* Test Results Actions */}
+              {(onRecordTestResult || onViewTestHistory) && (
+                <div className="grid grid-cols-3 gap-2">
+                  {onRecordTestResult && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-col h-auto py-3 gap-1.5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRecordTestResult(pupil, false);
+                        }}
+                      >
+                        <Award className="h-5 w-5 text-primary" />
+                        <span className="text-xs">Record Test</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-col h-auto py-3 gap-1.5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRecordTestResult(pupil, true);
+                        }}
+                      >
+                        <ClipboardList className="h-5 w-5 text-blue-500" />
+                        <span className="text-xs">Mock Test</span>
+                      </Button>
+                    </>
+                  )}
+                  {onViewTestHistory && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-col h-auto py-3 gap-1.5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewTestHistory(pupil);
+                      }}
+                    >
+                      <FileText className="h-5 w-5 text-amber-500" />
+                      <span className="text-xs">Test History</span>
+                    </Button>
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-2">
                 <Button

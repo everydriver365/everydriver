@@ -52,6 +52,7 @@ import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal";
 import { PupilPickerDialog } from "@/components/instructor/PupilPickerDialog";
+import { DrivingTestReportForm, TestResultsHistory } from "@/components/instructor/driving-test";
 
 interface Pupil {
   id: string;
@@ -121,6 +122,11 @@ export default function InstructorPupils() {
   const [isLookingUpW3W, setIsLookingUpW3W] = useState(false);
   const [isPupilPickerOpen, setIsPupilPickerOpen] = useState(false);
   const [pendingPupilAction, setPendingPupilAction] = useState<"terms" | null>(null);
+  
+  // Test result states
+  const [isTestFormOpen, setIsTestFormOpen] = useState(false);
+  const [isTestHistoryOpen, setIsTestHistoryOpen] = useState(false);
+  const [testFormIsMock, setTestFormIsMock] = useState(false);
 
   useEffect(() => {
     if (instructorId) {
@@ -484,6 +490,15 @@ export default function InstructorPupils() {
                 onStartChat={(p) => {
                   navigate(`/instructor/messages?pupilId=${p.id}`);
                 }}
+                onRecordTestResult={(p, isMock) => {
+                  setSelectedPupil(p);
+                  setTestFormIsMock(isMock);
+                  setIsTestFormOpen(true);
+                }}
+                onViewTestHistory={(p) => {
+                  setSelectedPupil(p);
+                  setIsTestHistoryOpen(true);
+                }}
                 hasSignedTerms={pupilSignatures[pupil.id] || false}
                 instructorId={instructorId}
                 instructorName={instructor?.name}
@@ -833,6 +848,31 @@ export default function InstructorPupils() {
           onSignatureComplete={() => {
             fetchSignatureStatus();
           }}
+        />
+      )}
+
+      {/* Driving Test Report Form */}
+      {selectedPupil && (
+        <DrivingTestReportForm
+          open={isTestFormOpen}
+          onOpenChange={setIsTestFormOpen}
+          pupilId={selectedPupil.id}
+          pupilName={selectedPupil.name}
+          defaultIsMock={testFormIsMock}
+          onSaved={() => {
+            fetchPupils();
+          }}
+        />
+      )}
+
+      {/* Test Results History */}
+      {selectedPupil && instructorId && (
+        <TestResultsHistory
+          open={isTestHistoryOpen}
+          onOpenChange={setIsTestHistoryOpen}
+          pupilId={selectedPupil.id}
+          pupilName={selectedPupil.name}
+          instructorId={instructorId}
         />
       )}
     </InstructorPortalLayout>
