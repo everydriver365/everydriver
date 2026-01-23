@@ -8,24 +8,8 @@ const corsHeaders = {
 interface SpeedLimitResponse {
   speedLimit: number | null;
   roadName: string | null;
-  roadType: string | null;
-  confidence: 'high' | 'medium' | 'low' | null;
-  source: 'google' | 'inferred' | null;
+  source: 'osm' | 'google' | null;
 }
-
-// UK road type to speed limit mapping (mph converted to km/h)
-const UK_SPEED_LIMITS: Record<string, number> = {
-  'motorway': 113, // 70 mph
-  'trunk': 97, // 60 mph (single carriageway) or 113 (dual)
-  'primary': 97, // 60 mph
-  'secondary': 97, // 60 mph
-  'tertiary': 48, // 30 mph (usually built-up)
-  'residential': 48, // 30 mph
-  'living_street': 32, // 20 mph
-  'unclassified': 97, // 60 mph (rural) or 48 (urban)
-  'service': 24, // 15 mph
-  'default': 48, // 30 mph as safe default
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -33,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
+    const googleApiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
     
     let lat: number, lon: number;
     try {
@@ -49,151 +33,171 @@ serve(async (req) => {
     }
 
     if (!lat || !lon || typeof lat !== 'number' || typeof lon !== 'number') {
-      console.error("Invalid coordinates:", { lat, lon });
       return new Response(
         JSON.stringify({ error: "lat and lon must be valid numbers" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[Google] Fetching road info for ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-
-    if (!apiKey) {
-      console.error("GOOGLE_PLACES_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ 
-          speedLimit: UK_SPEED_LIMITS.default,
-          roadName: null,
-          roadType: null,
-          confidence: 'low',
-          source: 'inferred',
-          error: "API key not configured, using default"
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    console.log(`[SpeedLimit] Fetching for ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
 
     let speedLimit: number | null = null;
     let roadName: string | null = null;
-    let roadType: string | null = null;
-    let confidence: 'high' | 'medium' | 'low' | null = null;
-    let source: 'google' | 'inferred' | null = null;
+    let source: 'osm' | 'google' | null = null;
 
-    // Method 1: Try Google Roads API Speed Limits (requires Roads API enabled)
+    // Method 1: OpenStreetMap Overpass API - get actual posted speed limits
     try {
-      const roadsUrl = `https://roads.googleapis.com/v1/speedLimits?path=${lat},${lon}&key=${apiKey}`;
-      console.log(`Trying Roads API...`);
+      // Query for roads within 20m of the point with maxspeed tag
+      const overpassQuery = `
+        [out:json][timeout:5];
+        way(around:20,${lat},${lon})["highway"]["maxspeed"];
+        out body;
+      `;
       
-      const roadsResponse = await fetch(roadsUrl);
+      const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+      console.log(`Querying Overpass API...`);
       
-      if (roadsResponse.ok) {
-        const roadsData = await roadsResponse.json();
-        console.log(`Roads API response:`, JSON.stringify(roadsData));
-        
-        if (roadsData.speedLimits && roadsData.speedLimits.length > 0) {
-          const limitData = roadsData.speedLimits[0];
-          // Google returns speed in km/h
-          speedLimit = limitData.speedLimit;
-          confidence = 'high';
-          source = 'google';
-          console.log(`Roads API: speed limit = ${speedLimit} km/h`);
-        }
-      } else {
-        const errorText = await roadsResponse.text();
-        console.log(`Roads API not available: ${roadsResponse.status} - ${errorText}`);
-      }
-    } catch (roadsError) {
-      console.log('Roads API error:', roadsError);
-    }
+      const overpassResponse = await fetch(overpassUrl, {
+        headers: { 'Accept': 'application/json' }
+      });
 
-    // Method 2: Use Reverse Geocoding to get road name and infer speed limit
-    try {
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}&result_type=route`;
-      console.log(`Trying Geocoding API...`);
-      
-      const geocodeResponse = await fetch(geocodeUrl);
-      
-      if (geocodeResponse.ok) {
-        const geocodeData = await geocodeResponse.json();
-        console.log(`Geocode response status:`, geocodeData.status);
+      if (overpassResponse.ok) {
+        const overpassData = await overpassResponse.json();
+        console.log(`Overpass returned ${overpassData.elements?.length || 0} roads`);
         
-        if (geocodeData.status === 'OK' && geocodeData.results && geocodeData.results.length > 0) {
-          const result = geocodeData.results[0];
+        if (overpassData.elements && overpassData.elements.length > 0) {
+          // Get the first road with a speed limit
+          const road = overpassData.elements[0];
+          const tags = road.tags || {};
           
-          // Get road name from address components
-          for (const component of result.address_components || []) {
-            if (component.types.includes('route')) {
-              roadName = component.long_name;
-              break;
+          roadName = tags.name || tags.ref || null;
+          
+          // Parse maxspeed - can be "30", "30 mph", "50 km/h", "national", etc.
+          const maxspeed = tags.maxspeed;
+          if (maxspeed) {
+            console.log(`OSM maxspeed tag: "${maxspeed}"`);
+            
+            // Handle numeric values
+            const numMatch = maxspeed.match(/^(\d+)/);
+            if (numMatch) {
+              let value = parseInt(numMatch[1], 10);
+              
+              // Check if it's mph (UK uses mph)
+              if (maxspeed.toLowerCase().includes('mph') || !maxspeed.includes('km')) {
+                // UK roads - value is in mph, convert to km/h
+                speedLimit = Math.round(value * 1.60934);
+              } else {
+                speedLimit = value;
+              }
+              source = 'osm';
+              console.log(`OSM speed limit: ${speedLimit} km/h (from ${maxspeed})`);
+            }
+            
+            // Handle "national" speed limit (UK: 60mph single, 70mph dual/motorway)
+            if (maxspeed === 'national' || maxspeed === 'GB:national') {
+              const highway = tags.highway;
+              if (highway === 'motorway' || tags.dual_carriageway === 'yes') {
+                speedLimit = 113; // 70 mph
+              } else {
+                speedLimit = 97; // 60 mph
+              }
+              source = 'osm';
+              console.log(`OSM national limit: ${speedLimit} km/h`);
             }
           }
+        }
+      } else {
+        console.log(`Overpass API error: ${overpassResponse.status}`);
+      }
+    } catch (osmError) {
+      console.error('OSM Overpass error:', osmError);
+    }
+
+    // Method 2: Google Geocoding for road name only (if OSM didn't find it)
+    if (!roadName && googleApiKey) {
+      try {
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${googleApiKey}&result_type=route`;
+        const geocodeResponse = await fetch(geocodeUrl);
+        
+        if (geocodeResponse.ok) {
+          const geocodeData = await geocodeResponse.json();
           
-          // If no road name from components, use formatted address
-          if (!roadName) {
-            roadName = result.formatted_address?.split(',')[0] || null;
-          }
-          
-          // Infer road type from the name
-          const nameLower = (roadName || '').toLowerCase();
-          
-          if (nameLower.includes('motorway') || nameLower.match(/^m\d+/)) {
-            roadType = 'motorway';
-          } else if (nameLower.match(/^a\d+/) || nameLower.includes('dual carriageway')) {
-            roadType = 'trunk';
-          } else if (nameLower.match(/^b\d+/)) {
-            roadType = 'primary';
-          } else if (nameLower.includes('lane') || nameLower.includes('close') || nameLower.includes('avenue') || nameLower.includes('road') || nameLower.includes('street') || nameLower.includes('drive') || nameLower.includes('way') || nameLower.includes('crescent')) {
-            roadType = 'residential';
-          }
-          
-          // If we don't have a speed limit from Roads API, infer from road type
-          if (speedLimit === null && roadType) {
-            speedLimit = UK_SPEED_LIMITS[roadType] || UK_SPEED_LIMITS.default;
-            confidence = 'medium';
-            source = 'inferred';
-            console.log(`Inferred speed limit from road type '${roadType}': ${speedLimit} km/h`);
-          } else if (speedLimit === null) {
-            // Default to 30mph (48 km/h) for unknown roads - safe assumption for UK
-            speedLimit = UK_SPEED_LIMITS.default;
-            confidence = 'low';
-            source = 'inferred';
-            console.log(`Using default speed limit: ${speedLimit} km/h`);
+          if (geocodeData.status === 'OK' && geocodeData.results?.length > 0) {
+            const result = geocodeData.results[0];
+            for (const component of result.address_components || []) {
+              if (component.types.includes('route')) {
+                roadName = component.long_name;
+                break;
+              }
+            }
           }
         }
+      } catch (geocodeError) {
+        console.error('Geocoding error:', geocodeError);
       }
-    } catch (geocodeError) {
-      console.error('Geocoding error:', geocodeError);
     }
 
-    // Final fallback
+    // Method 3: If still no speed limit, try a wider OSM search
     if (speedLimit === null) {
-      speedLimit = UK_SPEED_LIMITS.default;
-      confidence = 'low';
-      source = 'inferred';
+      try {
+        const widerQuery = `
+          [out:json][timeout:5];
+          way(around:50,${lat},${lon})["highway"];
+          out body;
+        `;
+        
+        const widerUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(widerQuery)}`;
+        const widerResponse = await fetch(widerUrl);
+        
+        if (widerResponse.ok) {
+          const widerData = await widerResponse.json();
+          
+          if (widerData.elements && widerData.elements.length > 0) {
+            const road = widerData.elements[0];
+            const tags = road.tags || {};
+            
+            if (!roadName) {
+              roadName = tags.name || tags.ref || null;
+            }
+            
+            // Check maxspeed again in wider results
+            if (tags.maxspeed) {
+              const numMatch = tags.maxspeed.match(/^(\d+)/);
+              if (numMatch) {
+                let value = parseInt(numMatch[1], 10);
+                if (tags.maxspeed.toLowerCase().includes('mph') || !tags.maxspeed.includes('km')) {
+                  speedLimit = Math.round(value * 1.60934);
+                } else {
+                  speedLimit = value;
+                }
+                source = 'osm';
+              }
+            }
+          }
+        }
+      } catch (widerError) {
+        console.error('Wider OSM search error:', widerError);
+      }
     }
 
-    console.log(`[Google] Final result: speedLimit=${speedLimit} km/h, roadName="${roadName}", roadType="${roadType}"`);
+    console.log(`[SpeedLimit] Result: limit=${speedLimit} km/h, road="${roadName}", source=${source}`);
 
     return new Response(
       JSON.stringify({ 
         speedLimit,
         roadName,
-        roadType,
-        confidence,
         source
       } as SpeedLimitResponse),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error("Error fetching road info:", error);
+    console.error("Error fetching speed limit:", error);
     return new Response(
       JSON.stringify({ 
-        speedLimit: 48, // Default 30mph
+        speedLimit: null,
         roadName: null,
-        roadType: null,
-        confidence: 'low',
-        source: 'inferred'
+        source: null
       } as SpeedLimitResponse),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
