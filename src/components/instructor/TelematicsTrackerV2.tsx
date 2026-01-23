@@ -75,6 +75,8 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([]);
   const [maxSpeedRecorded, setMaxSpeedRecorded] = useState(0);
   const [lastSessionId, setLastSessionId] = useState<string | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
   
   // Feedback settings
   const [voiceEnabled, setVoiceEnabled] = useState(true);
@@ -144,29 +146,48 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
   // Start tracking
   const handleStartTracking = useCallback(async () => {
     console.log('[TelematicsTracker] Starting tracking...', { lessonId, pupilId });
+    setIsStarting(true);
+    setStartError(null);
     setShowResults(false);
     setSessionEnded(false);
     setElapsedTime(0);
     setRouteCoordinates([]);
     setMaxSpeedRecorded(0);
-    setTrackingStartTime(new Date());
     
-    // Create session first
-    const newSession = await session.createSession(lessonId, pupilId);
-    if (!newSession) {
-      console.error('[TelematicsTracker] Failed to create session');
-      return;
+    try {
+      // Create session first
+      const newSession = await session.createSession(lessonId, pupilId);
+      if (!newSession) {
+        const errorMsg = session.error || 'Failed to create tracking session. Please try again.';
+        console.error('[TelematicsTracker] Failed to create session:', errorMsg);
+        setStartError(errorMsg);
+        setIsStarting(false);
+        return;
+      }
+      
+      console.log('[TelematicsTracker] Session created:', newSession.id);
+      setTrackingStartTime(new Date());
+      
+      // Start GPS collection
+      console.log('[TelematicsTracker] Starting GPS collection...');
+      await gpsCollector.startCollection(newSession.id);
+      
+      // Start motion collection
+      console.log('[TelematicsTracker] Starting motion collection...');
+      motionCollector.startCollection(newSession.id);
+      
+      // Feedback on start
+      if (hapticEnabled) haptic.triggerStart();
+      if (voiceEnabled) voice.announceStart();
+      
+      console.log('[TelematicsTracker] Tracking started successfully');
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'An unexpected error occurred';
+      console.error('[TelematicsTracker] Start tracking error:', err);
+      setStartError(errorMsg);
+    } finally {
+      setIsStarting(false);
     }
-    
-    // Start GPS collection
-    gpsCollector.startCollection(newSession.id);
-    
-    // Start motion collection
-    motionCollector.startCollection(newSession.id);
-    
-    // Feedback on start
-    if (hapticEnabled) haptic.triggerStart();
-    if (voiceEnabled) voice.announceStart();
   }, [lessonId, pupilId, session, gpsCollector, motionCollector, hapticEnabled, haptic, voiceEnabled, voice]);
 
   // Stop tracking
@@ -247,12 +268,12 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-full ${gpsCollector.isCollecting ? 'bg-green-500/20 animate-pulse' : 'bg-muted'}`}>
-                <Navigation className={`h-4 w-4 ${gpsCollector.isCollecting ? 'text-green-500' : 'text-muted-foreground'}`} />
+              <div className={`p-2 rounded-full ${gpsCollector.isCollecting ? 'bg-green-500/20 animate-pulse' : isStarting ? 'bg-amber-500/20 animate-pulse' : 'bg-muted'}`}>
+                <Navigation className={`h-4 w-4 ${gpsCollector.isCollecting ? 'text-green-500' : isStarting ? 'text-amber-500' : 'text-muted-foreground'}`} />
               </div>
               <div>
                 <p className="text-sm font-medium">
-                  {gpsCollector.isCollecting ? 'Tracking Active' : 'GPS Tracking'}
+                  {isStarting ? 'Starting GPS...' : gpsCollector.isCollecting ? 'Tracking Active' : 'GPS Tracking'}
                 </p>
                 {gpsCollector.isCollecting && (
                   <div className="flex items-center gap-2">
@@ -269,14 +290,24 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                     )}
                   </div>
                 )}
+                {startError && (
+                  <p className="text-xs text-destructive">{startError}</p>
+                )}
               </div>
             </div>
             <Button
               size="sm"
               variant={gpsCollector.isCollecting ? 'destructive' : 'default'}
               onClick={() => gpsCollector.isCollecting ? handleStopTracking() : handleStartTracking()}
+              disabled={isStarting}
             >
-              {gpsCollector.isCollecting ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              {isStarting ? (
+                <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : gpsCollector.isCollecting ? (
+                <Square className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </CardContent>
@@ -307,8 +338,14 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                 size="sm"
                 variant={gpsCollector.isCollecting ? 'destructive' : 'default'}
                 onClick={() => gpsCollector.isCollecting ? handleStopTracking() : handleStartTracking()}
+                disabled={isStarting}
               >
-                {gpsCollector.isCollecting ? (
+                {isStarting ? (
+                  <>
+                    <div className="h-4 w-4 mr-1.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="hidden sm:inline">Starting...</span>
+                  </>
+                ) : gpsCollector.isCollecting ? (
                   <>
                     <Square className="h-4 w-4 mr-1.5" />
                     <span className="hidden sm:inline">Stop</span>
@@ -325,9 +362,10 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Error display */}
-          {(gpsCollector.error || session.error) && (
+          {(startError || gpsCollector.error || session.error) && (
             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-              <p>{gpsCollector.error || session.error}</p>
+              <p className="font-medium">Tracking Error</p>
+              <p>{startError || gpsCollector.error || session.error}</p>
             </div>
           )}
 

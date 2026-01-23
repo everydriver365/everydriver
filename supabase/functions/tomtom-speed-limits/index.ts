@@ -19,26 +19,40 @@ serve(async (req) => {
 
   try {
     const apiKey = Deno.env.get("TOMTOM_API_KEY");
-    const { lat, lon } = await req.json();
-
-    if (!lat || !lon) {
+    
+    let lat: number, lon: number;
+    try {
+      const body = await req.json();
+      lat = body.lat;
+      lon = body.lon;
+    } catch (parseError) {
+      console.error("Failed to parse request body:", parseError);
       return new Response(
-        JSON.stringify({ error: "lat and lon are required" }),
+        JSON.stringify({ error: "Invalid request body" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`Fetching TomTom speed limit for ${lat}, ${lon}`);
+    if (!lat || !lon || typeof lat !== 'number' || typeof lon !== 'number') {
+      console.error("Invalid coordinates:", { lat, lon });
+      return new Response(
+        JSON.stringify({ error: "lat and lon must be valid numbers" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[TomTom] Fetching speed limit for ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
 
     if (!apiKey) {
-      console.error("TOMTOM_API_KEY not configured");
+      console.error("TOMTOM_API_KEY not configured in secrets");
       return new Response(
         JSON.stringify({ 
           speedLimit: null,
           roadType: null,
           confidence: null,
-          source: null
-        } as SpeedLimitResponse),
+          source: null,
+          error: "API key not configured"
+        } as SpeedLimitResponse & { error: string }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -143,7 +157,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Final result: speedLimit=${speedLimit}, roadName=${roadName}`);
+    console.log(`[TomTom] Final result: speedLimit=${speedLimit} km/h, roadName="${roadName}"`);
 
     return new Response(
       JSON.stringify({ 
