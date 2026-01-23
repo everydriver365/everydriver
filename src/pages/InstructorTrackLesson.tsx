@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import TelematicsTracker from "@/components/instructor/TelematicsTrackerV2";
+import { SimpleTracker } from "@/components/instructor/SimpleTracker";
 import SessionRouteReport from "@/components/instructor/SessionRouteReport";
 import { TelematicsSessionHistory } from "@/components/instructor/TelematicsSessionHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -347,37 +347,13 @@ export default function InstructorTrackLesson() {
                 </Card>
               )}
 
-              {/* Telematics Tracker */}
-              <TelematicsTracker
+              {/* Simple Tracker - Rebuilt for reliability */}
+              <SimpleTracker
                 instructorId={instructorId}
                 lessonId={isDemoMode ? undefined : selectedLessonId}
                 pupilId={isDemoMode ? undefined : selectedPupilId}
-                onSessionEnd={async (sessionId) => {
+                onSessionEnd={(sessionId) => {
                   setLastTelematicsId(sessionId);
-                  // Fetch session stats for save dialog
-                  try {
-                    const { data: session } = await supabase
-                      .from("lesson_telematics")
-                      .select("total_distance_km")
-                      .eq("id", sessionId)
-                      .single();
-                    
-                    const { data: gpsPoints } = await supabase
-                      .from("telematics_gps_points")
-                      .select("latitude, longitude")
-                      .eq("telematics_id", sessionId)
-                      .order("recorded_at", { ascending: true });
-
-                    if (gpsPoints && gpsPoints.length > 0) {
-                      setLastSessionStats({
-                        startLocation: `${gpsPoints[0].latitude.toFixed(4)}, ${gpsPoints[0].longitude.toFixed(4)}`,
-                        endLocation: `${gpsPoints[gpsPoints.length - 1].latitude.toFixed(4)}, ${gpsPoints[gpsPoints.length - 1].longitude.toFixed(4)}`,
-                        distanceKm: session?.total_distance_km || undefined
-                      });
-                    }
-                  } catch (error) {
-                    console.error("Error fetching session stats:", error);
-                  }
                 }}
               />
 

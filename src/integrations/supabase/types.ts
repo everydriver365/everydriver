@@ -2551,11 +2551,16 @@ export type Database = {
           damoov_speeding_score: number | null
           damoov_trip_token: string | null
           ended_at: string | null
+          harsh_brake_count: number | null
           id: string
           instructor_id: string
           lesson_id: string | null
+          local_score: number | null
           max_speed_kmh: number | null
+          max_speed_over_limit_kmh: number | null
           pupil_id: string | null
+          speeding_events_count: number | null
+          speeding_total_seconds: number | null
           started_at: string
           total_distance_km: number | null
         }
@@ -2572,11 +2577,16 @@ export type Database = {
           damoov_speeding_score?: number | null
           damoov_trip_token?: string | null
           ended_at?: string | null
+          harsh_brake_count?: number | null
           id?: string
           instructor_id: string
           lesson_id?: string | null
+          local_score?: number | null
           max_speed_kmh?: number | null
+          max_speed_over_limit_kmh?: number | null
           pupil_id?: string | null
+          speeding_events_count?: number | null
+          speeding_total_seconds?: number | null
           started_at?: string
           total_distance_km?: number | null
         }
@@ -2593,11 +2603,16 @@ export type Database = {
           damoov_speeding_score?: number | null
           damoov_trip_token?: string | null
           ended_at?: string | null
+          harsh_brake_count?: number | null
           id?: string
           instructor_id?: string
           lesson_id?: string | null
+          local_score?: number | null
           max_speed_kmh?: number | null
+          max_speed_over_limit_kmh?: number | null
           pupil_id?: string | null
+          speeding_events_count?: number | null
+          speeding_total_seconds?: number | null
           started_at?: string
           total_distance_km?: number | null
         }
