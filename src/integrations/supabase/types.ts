@@ -606,6 +606,113 @@ export type Database = {
           },
         ]
       }
+      driving_test_results: {
+        Row: {
+          adi_cert_no: string | null
+          application_ref: string | null
+          cat_type: string | null
+          created_at: string
+          debrief_activity_code: string | null
+          eta_code: string | null
+          examiner_id: string | null
+          examiner_took_action: boolean
+          faults: Json
+          id: string
+          instructor_id: string
+          is_mock: boolean
+          notes: string | null
+          pupil_id: string
+          result: string
+          survey_answers: Json | null
+          test_centre_id: string | null
+          test_date: string
+          test_time: string | null
+          total_dangerous_faults: number
+          total_minor_faults: number
+          total_serious_faults: number
+          updated_at: string
+        }
+        Insert: {
+          adi_cert_no?: string | null
+          application_ref?: string | null
+          cat_type?: string | null
+          created_at?: string
+          debrief_activity_code?: string | null
+          eta_code?: string | null
+          examiner_id?: string | null
+          examiner_took_action?: boolean
+          faults?: Json
+          id?: string
+          instructor_id: string
+          is_mock?: boolean
+          notes?: string | null
+          pupil_id: string
+          result: string
+          survey_answers?: Json | null
+          test_centre_id?: string | null
+          test_date: string
+          test_time?: string | null
+          total_dangerous_faults?: number
+          total_minor_faults?: number
+          total_serious_faults?: number
+          updated_at?: string
+        }
+        Update: {
+          adi_cert_no?: string | null
+          application_ref?: string | null
+          cat_type?: string | null
+          created_at?: string
+          debrief_activity_code?: string | null
+          eta_code?: string | null
+          examiner_id?: string | null
+          examiner_took_action?: boolean
+          faults?: Json
+          id?: string
+          instructor_id?: string
+          is_mock?: boolean
+          notes?: string | null
+          pupil_id?: string
+          result?: string
+          survey_answers?: Json | null
+          test_centre_id?: string | null
+          test_date?: string
+          test_time?: string | null
+          total_dangerous_faults?: number
+          total_minor_faults?: number
+          total_serious_faults?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driving_test_results_examiner_id_fkey"
+            columns: ["examiner_id"]
+            isOneToOne: false
+            referencedRelation: "examiners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driving_test_results_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driving_test_results_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driving_test_results_test_centre_id_fkey"
+            columns: ["test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enquiry_notes: {
         Row: {
           content: string
@@ -634,6 +741,54 @@ export type Database = {
             columns: ["enquiry_id"]
             isOneToOne: false
             referencedRelation: "course_enquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      examiners: {
+        Row: {
+          created_at: string
+          dvsa_staff_number: string | null
+          id: string
+          instructor_id: string | null
+          is_active: boolean
+          name: string
+          notes: string | null
+          test_centre_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          dvsa_staff_number?: string | null
+          id?: string
+          instructor_id?: string | null
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          test_centre_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          dvsa_staff_number?: string | null
+          id?: string
+          instructor_id?: string | null
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          test_centre_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "examiners_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "examiners_test_centre_id_fkey"
+            columns: ["test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
             referencedColumns: ["id"]
           },
         ]
@@ -1602,6 +1757,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "instructor_manual_blocks_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_standards_check: {
+        Row: {
+          avg_minor_faults: number
+          avg_serious_faults: number
+          calculated_at: string
+          id: string
+          instructor_id: string
+          pass_rate_percentage: number
+          period_end: string
+          period_start: string
+          physical_action_percentage: number
+          total_tests: number
+          trigger_details: Json
+          triggers_met: number
+        }
+        Insert: {
+          avg_minor_faults?: number
+          avg_serious_faults?: number
+          calculated_at?: string
+          id?: string
+          instructor_id: string
+          pass_rate_percentage?: number
+          period_end: string
+          period_start: string
+          physical_action_percentage?: number
+          total_tests?: number
+          trigger_details?: Json
+          triggers_met?: number
+        }
+        Update: {
+          avg_minor_faults?: number
+          avg_serious_faults?: number
+          calculated_at?: string
+          id?: string
+          instructor_id?: string
+          pass_rate_percentage?: number
+          period_end?: string
+          period_start?: string
+          physical_action_percentage?: number
+          total_tests?: number
+          trigger_details?: Json
+          triggers_met?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_standards_check_instructor_id_fkey"
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
