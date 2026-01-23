@@ -230,8 +230,12 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     }
     lastPositionRef.current = point;
 
-    // Fetch speed limit (async, don't block)
-    if (point.speedKmh > 3) {
+    // Fetch speed limit - on first position OR when moving OR every 10 seconds when stationary
+    const shouldFetchLimit = !speedLimitCacheRef.current || // No cache yet
+      point.speedKmh > 3 || // Moving
+      (Date.now() - (speedLimitCacheRef.current?.time || 0) > 10000); // Cache stale
+    
+    if (shouldFetchLimit) {
       fetchSpeedLimit(point.latitude, point.longitude);
     }
 
