@@ -47,11 +47,9 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
   const [elapsedTime, setElapsedTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [roadStats, setRoadStats] = useState<Record<string, number>>({});
-  const [headerVisible, setHeaderVisible] = useState(true);
 
   const startTimeRef = useRef(0);
   const timerRef = useRef<number | null>(null);
-  const hideHeaderTimer = useRef<number | null>(null);
 
   const drivingBehavior = useDrivingBehavior({});
   const gpsTracker = useSimpleGPSTracker({ onSpeedingDetected: () => {} });
@@ -79,17 +77,6 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     setRoadStats((prev) => ({ ...prev, [road]: Math.max(prev[road] ?? 0, speedMph) }));
   }, [gpsTracker.currentPosition, gpsTracker.speedLimitInfo, phase]);
 
-  /* ---------------- Header Auto-hide ------------------------------ */
-  const resetHeaderTimer = useCallback(() => {
-    setHeaderVisible(true);
-    if (hideHeaderTimer.current) clearTimeout(hideHeaderTimer.current);
-    hideHeaderTimer.current = window.setTimeout(() => setHeaderVisible(false), 3000);
-  }, []);
-
-  useEffect(() => {
-    if (phase === 'tracking') resetHeaderTimer();
-  }, [phase, resetHeaderTimer]);
-
   /* ---------------- Cleanup --------------------------------------- */
   useEffect(() => {
     return () => {
@@ -97,7 +84,6 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
       harshBraking.stopDetection();
       drivingBehavior.stopTracking();
       if (timerRef.current !== null) clearInterval(timerRef.current);
-      if (hideHeaderTimer.current !== null) clearTimeout(hideHeaderTimer.current);
     };
   }, []);
 
@@ -116,13 +102,12 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
       startTimeRef.current = Date.now();
       setElapsedTime(0);
       setPhase('tracking');
-      resetHeaderTimer();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start tracking');
       telematicsSession.cancelSession();
       setPhase('idle');
     }
-  }, [phase, lessonId, pupilId, telematicsSession, gpsTracker, harshBraking, drivingBehavior, resetHeaderTimer]);
+  }, [phase, lessonId, pupilId, telematicsSession, gpsTracker, harshBraking, drivingBehavior]);
 
   /* ---------------- Stop ------------------------------------------ */
   const handleStop = useCallback(async () => {
@@ -186,10 +171,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
 
   /* ---------------- RENDER ---------------------------------------- */
   return (
-    <div
-      className="relative w-full h-[70vh] rounded-xl overflow-hidden border"
-      onTouchStart={() => phase === 'tracking' && resetHeaderTimer()}
-    >
+    <div className="relative w-full h-[70vh] rounded-xl overflow-hidden border">
       {/* FULL SCREEN MAP */}
       {mapPosition && (
         <MapContainer center={mapPosition} zoom={17} className="h-full w-full" zoomControl={false} attributionControl={false}>
@@ -199,39 +181,37 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
         </MapContainer>
       )}
 
-      {/* AUTO-HIDING TOP NAV WITH UK SPEED LIMIT ROUNDEL */}
-      {headerVisible && (
-        <div className="absolute top-0 z-[1000] w-full bg-background/80 backdrop-blur-md transition-opacity duration-300">
-          <div className="flex items-center justify-between px-4 py-3">
-            {/* Road Name */}
-            <div className="truncate text-lg font-semibold text-foreground">{roadName}</div>
+      {/* TOP NAV WITH UK ROUNDEL (ALWAYS VISIBLE) */}
+      <div className="absolute top-0 z-[1000] w-full bg-background/80 backdrop-blur-md">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Road Name */}
+          <div className="truncate text-lg font-semibold text-foreground">{roadName}</div>
 
-            {/* Speed Display */}
-            <div className="flex items-center gap-3">
-              {/* UK Speed Limit Roundel */}
-              {limitMph !== undefined && (
-                <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-red-600 bg-white font-bold text-black text-sm">
-                  {limitMph}
-                </div>
-              )}
+          {/* Speed & Limit */}
+          <div className="flex items-center gap-3">
+            {/* UK Speed Limit Roundel */}
+            {limitMph !== undefined && (
+              <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-red-600 bg-white font-bold text-black text-sm">
+                {limitMph}
+              </div>
+            )}
 
-              {/* Current Speed */}
-              {speedMph !== undefined && (
-                <div className={`font-semibold text-sm ${isSpeeding ? 'text-destructive' : 'text-foreground'}`}>
-                  {speedMph} mph
-                </div>
-              )}
+            {/* Current Speed */}
+            {speedMph !== undefined && (
+              <div className={`font-semibold text-sm ${isSpeeding ? 'text-destructive' : 'text-foreground'}`}>
+                {speedMph} mph
+              </div>
+            )}
 
-              {/* Stop Button */}
-              {phase === 'tracking' && (
-                <Button size="sm" variant="destructive" onClick={handleStop}>
-                  <Square className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            {/* Stop Button */}
+            {phase === 'tracking' && (
+              <Button size="sm" variant="destructive" onClick={handleStop}>
+                <Square className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* START BUTTON */}
       {phase === 'idle' && (
