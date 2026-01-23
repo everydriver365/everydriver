@@ -9,8 +9,7 @@ import { toast } from "sonner";
 import { Loader2, AlertCircle, ArrowLeft, Eye, EyeOff, Share, Plus, Download, X, Fingerprint } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import logoDark from "@/assets/logo-drive365-dark.png";
-import logoLight from "@/assets/logo-drive365-light.png";
+import mainLogo from "@/assets/everydriver-logo-main.png";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -328,8 +327,8 @@ export default function InstructorPortalLogin() {
           className="text-center mb-8"
         >
           <img 
-            src={isDark ? logoLight : logoDark} 
-            alt="Drive365" 
+            src={mainLogo} 
+            alt="EveryDriver" 
             className="h-16 mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-foreground">

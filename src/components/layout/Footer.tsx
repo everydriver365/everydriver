@@ -1,15 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
-import everyDriverLogo from "@/assets/logo-everydriver-transparent.png";
-import drive365LogoLight from "@/assets/logo-drive365-light.png";
+import mainLogo from "@/assets/everydriver-logo-main.png";
 
 export function Footer() {
-  const location = useLocation();
-  const isInstructorApp = location.pathname.startsWith("/instructor-app");
-  
-  const logo = isInstructorApp ? drive365LogoLight : everyDriverLogo;
-  const logoAlt = isInstructorApp ? "Drive365" : "EveryDriver";
-  const homeLink = isInstructorApp ? "/instructor-app" : "/";
+  const logo = mainLogo;
+  const logoAlt = "EveryDriver";
+  const homeLink = "/";
 
   return (
     <footer className="border-t bg-primary text-primary-foreground">

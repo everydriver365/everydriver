@@ -4,7 +4,7 @@ import { Menu, X, MapPin, Search, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import logo from "@/assets/logo-everydriver-transparent.png";
+import logo from "@/assets/everydriver-logo-main.png";
 import { PromoBanner } from "./PromoBanner";
 import { SecondaryNav } from "./SecondaryNav";
 import { ThemeToggle } from "@/components/ThemeToggle";

@@ -2,9 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Calendar, CreditCard, Globe, Users, Shield, Smartphone } from "lucide-react";
-import logoDark from "@/assets/logo-drive365-dark.png";
-import logoLight from "@/assets/logo-drive365-light.png";
-import logoMobile from "@/assets/logo-drive365-header.png";
+import mainLogo from "@/assets/everydriver-logo-main.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Drive365InstallBanner } from "@/components/pwa/Drive365InstallBanner";
@@ -54,8 +52,8 @@ export default function Drive365Home() {
       <header className="sticky top-0 z-50 bg-[hsl(228,54%,17%)] border-b border-white/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <img
-            src={isMobile ? logoMobile : logoLight}
-            alt="Drive365"
+            src={mainLogo}
+            alt="EveryDriver"
             className="h-8 md:h-10"
           />
           <div className="flex items-center gap-3">
@@ -189,8 +187,8 @@ export default function Drive365Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <img
-              src={logoLight}
-              alt="Drive365"
+              src={mainLogo}
+              alt="EveryDriver"
               className="h-8"
             />
             <nav className="flex flex-wrap items-center justify-center gap-6 text-sm">

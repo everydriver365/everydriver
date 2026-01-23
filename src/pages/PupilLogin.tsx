@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import logo from "@/assets/logo-everydriver-transparent.png";
+import logo from "@/assets/everydriver-logo-main.png";
 import {
   InputOTP,
   InputOTPGroup,
