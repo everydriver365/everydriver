@@ -1,4 +1,5 @@
 export * from "./types";
+export * from "./DrivingTestReportForm";
 export * from "./ExaminerSelector";
 export * from "./ExaminerManager";
 export * from "./StandardsCheckTrigger";
