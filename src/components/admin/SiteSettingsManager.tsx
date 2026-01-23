@@ -1,10 +1,20 @@
 import { useState, useEffect } from "react";
-import { Globe, Save, Loader2, Info, CreditCard, Gift } from "lucide-react";
+import { Globe, Save, Loader2, Info, CreditCard, Gift, AlertTriangle, Download, RotateCcw, Database, FileJson } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { CMSImageUpload } from "./CMSImageUpload";
@@ -23,6 +33,10 @@ export function SiteSettingsManager() {
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [confirmResetText, setConfirmResetText] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const [exporting, setExporting] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -70,6 +84,98 @@ export function SiteSettingsManager() {
       toast({ title: "Error", description: "Failed to save settings", variant: "destructive" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResetStats = async () => {
+    if (confirmResetText !== "RESET") return;
+    
+    setResetting(true);
+    try {
+      // Reset payment history
+      await supabase.from("payment_history").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      
+      // Reset scheduled lessons
+      await supabase.from("scheduled_lessons").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      
+      // Reset driving test results
+      await supabase.from("driving_test_results").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      
+      toast({ title: "Stats Reset", description: "All statistics have been reset successfully" });
+      setResetDialogOpen(false);
+      setConfirmResetText("");
+    } catch (error) {
+      console.error("Error resetting stats:", error);
+      toast({ title: "Error", description: "Failed to reset statistics", variant: "destructive" });
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  const handleExportData = async (tableName: string, displayName: string) => {
+    setExporting(tableName);
+    try {
+      const { data, error } = await supabase.from(tableName as any).select("*");
+      
+      if (error) throw error;
+      
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${tableName}_export_${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({ title: "Export Complete", description: `${displayName} data exported successfully` });
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      toast({ title: "Error", description: `Failed to export ${displayName}`, variant: "destructive" });
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleExportAllData = async () => {
+    setExporting("all");
+    try {
+      const tables = [
+        "instructors",
+        "pupils",
+        "scheduled_lessons",
+        "payment_history",
+        "course_templates",
+        "instructor_subscriptions",
+        "course_enquiries",
+      ];
+      
+      const allData: Record<string, any[]> = {};
+      
+      for (const table of tables) {
+        const { data } = await supabase.from(table as any).select("*");
+        allData[table] = data || [];
+      }
+      
+      const jsonStr = JSON.stringify(allData, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `full_backup_${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast({ title: "Full Backup Complete", description: "All data exported successfully" });
+    } catch (error) {
+      console.error("Error exporting all data:", error);
+      toast({ title: "Error", description: "Failed to create full backup", variant: "destructive" });
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -329,9 +435,148 @@ export function SiteSettingsManager() {
         </Card>
       )}
 
+      {/* Data Export & Backup */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Data Export & Backup
+          </CardTitle>
+          <CardDescription>
+            Download backups of your data for safekeeping or migration
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <Button
+              variant="outline"
+              onClick={() => handleExportData("instructors", "Instructors")}
+              disabled={exporting !== null}
+              className="justify-start"
+            >
+              {exporting === "instructors" ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileJson className="h-4 w-4 mr-2" />
+              )}
+              Export Instructors
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExportData("pupils", "Pupils")}
+              disabled={exporting !== null}
+              className="justify-start"
+            >
+              {exporting === "pupils" ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileJson className="h-4 w-4 mr-2" />
+              )}
+              Export Pupils
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExportData("scheduled_lessons", "Lessons")}
+              disabled={exporting !== null}
+              className="justify-start"
+            >
+              {exporting === "scheduled_lessons" ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileJson className="h-4 w-4 mr-2" />
+              )}
+              Export Lessons
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExportData("payment_history", "Payments")}
+              disabled={exporting !== null}
+              className="justify-start"
+            >
+              {exporting === "payment_history" ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileJson className="h-4 w-4 mr-2" />
+              )}
+              Export Payments
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExportData("course_enquiries", "Enquiries")}
+              disabled={exporting !== null}
+              className="justify-start"
+            >
+              {exporting === "course_enquiries" ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileJson className="h-4 w-4 mr-2" />
+              )}
+              Export Enquiries
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExportData("instructor_subscriptions", "Subscriptions")}
+              disabled={exporting !== null}
+              className="justify-start"
+            >
+              {exporting === "instructor_subscriptions" ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileJson className="h-4 w-4 mr-2" />
+              )}
+              Export Subscriptions
+            </Button>
+          </div>
+          <div className="pt-2 border-t">
+            <Button
+              onClick={handleExportAllData}
+              disabled={exporting !== null}
+              className="w-full sm:w-auto"
+            >
+              {exporting === "all" ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              Download Full Backup
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone - Reset Stats */}
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+            Danger Zone
+          </CardTitle>
+          <CardDescription>
+            Irreversible actions that affect your data permanently
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+            <div>
+              <h4 className="font-medium">Reset All Statistics</h4>
+              <p className="text-sm text-muted-foreground">
+                Clear all payment history, lessons, and test results. This cannot be undone.
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => setResetDialogOpen(true)}
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset Stats
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Info Note */}
-      <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-4 flex gap-3">
-        <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+      <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 flex gap-3">
+        <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
         <div className="text-sm text-muted-foreground">
           <p className="font-medium text-foreground mb-1">Note about SEO changes</p>
           <p>
@@ -352,6 +597,54 @@ export function SiteSettingsManager() {
           Save All Settings
         </Button>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Are you absolutely sure?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p>
+                This action <strong>cannot be undone</strong>. This will permanently delete:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>All payment history records</li>
+                <li>All scheduled lessons</li>
+                <li>All driving test results</li>
+              </ul>
+              <p className="pt-2">
+                Type <strong>RESET</strong> below to confirm:
+              </p>
+              <Input
+                value={confirmResetText}
+                onChange={(e) => setConfirmResetText(e.target.value.toUpperCase())}
+                placeholder="Type RESET to confirm"
+                className="font-mono"
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmResetText("")}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResetStats}
+              disabled={confirmResetText !== "RESET" || resetting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {resetting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RotateCcw className="h-4 w-4 mr-2" />
+              )}
+              Reset All Stats
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
