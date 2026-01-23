@@ -37,11 +37,15 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
   const [phase, setPhase] = useState<TrackerPhase>('idle');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [roadEvents, setRoadEvents] = useState<Record<string, RoadEvent>>({});
+  const [roadEventsState, setRoadEventsState] = useState<Record<string, RoadEvent>>({});
 
   const startTimeRef = useRef(0);
   const timerRef = useRef<number | null>(null);
   const lastHeadingRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  // Persist road events through rotation
+  const roadEventsRef = useRef<Record<string, RoadEvent>>({});
 
   const drivingBehavior = useDrivingBehavior({});
   const gpsTracker = useSimpleGPSTracker({});
@@ -49,7 +53,25 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
   const tripScore = useLocalTripScore();
   const telematicsSession = useTelematicsSession(instructorId);
 
-  /* ---------------- Timer ----------------------------------------- */
+  /* ---------------- Wake Lock ------------------------------------ */
+  const requestWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        wakeLockRef.current.addEventListener('release', () => console.log('WakeLock released'));
+        console.log('WakeLock acquired');
+      }
+    } catch (err) {
+      console.error('WakeLock error:', err);
+    }
+  };
+
+  const releaseWakeLock = () => {
+    wakeLockRef.current?.release();
+    wakeLockRef.current = null;
+  };
+
+  /* ---------------- Timer ---------------------------------------- */
   useEffect(() => {
     if (phase !== 'tracking') return;
     timerRef.current = window.setInterval(() => {
@@ -60,7 +82,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     };
   }, [phase]);
 
-  /* ---------------- Track Road Events ----------------------------- */
+  /* ---------------- Track Road Events ---------------------------- */
   useEffect(() => {
     if (phase !== 'tracking' || !gpsTracker.currentPosition) return;
 
@@ -71,57 +93,61 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
       ? Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)
       : 0;
 
-    setRoadEvents(prev => {
-      const prevEvent = prev[road] ?? {
-        roadName: road,
-        speedLimit: limitMph,
-        maxSpeed: 0,
-        speedExceeded: false,
-        harshBrakes: 0,
-        harshAccelerations: 0,
-        turns: 0,
-      };
+    const prevEvent = roadEventsRef.current[road] ?? {
+      roadName: road,
+      speedLimit: limitMph,
+      maxSpeed: 0,
+      speedExceeded: false,
+      harshBrakes: 0,
+      harshAccelerations: 0,
+      turns: 0,
+    };
 
-      const updatedEvent = { ...prevEvent };
-      updatedEvent.maxSpeed = Math.max(prevEvent.maxSpeed, speedMph);
-      if (limitMph > 0 && speedMph > limitMph) updatedEvent.speedExceeded = true;
+    prevEvent.maxSpeed = Math.max(prevEvent.maxSpeed, speedMph);
+    if (limitMph > 0 && speedMph > limitMph) prevEvent.speedExceeded = true;
 
-      // Turns detection based on heading change
-      if (pos.heading !== null && lastHeadingRef.current !== null) {
-        const headingDiff = Math.abs(pos.heading - lastHeadingRef.current);
-        if (headingDiff > 30) updatedEvent.turns = prevEvent.turns + 1;
-      }
-      lastHeadingRef.current = pos.heading;
+    // Turns detection based on heading change
+    if (pos.heading !== null && lastHeadingRef.current !== null) {
+      const headingDiff = Math.abs(pos.heading - lastHeadingRef.current);
+      if (headingDiff > 30) prevEvent.turns += 1;
+    }
+    lastHeadingRef.current = pos.heading;
 
-      return { ...prev, [road]: updatedEvent };
-    });
+    roadEventsRef.current = { ...roadEventsRef.current, [road]: prevEvent };
+    setRoadEventsState({ ...roadEventsRef.current });
   }, [gpsTracker.currentPosition, gpsTracker.speedLimitInfo, phase]);
 
-  /* ---------------- Cleanup --------------------------------------- */
+  /* ---------------- Cleanup -------------------------------------- */
   useEffect(() => {
     return () => {
       gpsTracker.stopTracking();
       harshBraking.stopDetection();
       drivingBehavior.stopTracking();
+      releaseWakeLock();
       if (timerRef.current !== null) clearInterval(timerRef.current);
     };
   }, []);
 
-  /* ---------------- Start ----------------------------------------- */
+  /* ---------------- Start Tracking ------------------------------- */
   const handleStart = useCallback(async () => {
     if (phase !== 'idle') return;
     setPhase('starting');
     setError(null);
-    setRoadEvents({});
+    setRoadEventsState({});
+    roadEventsRef.current = {};
+
     try {
       const session = await telematicsSession.createSession(lessonId, pupilId);
       if (!session) throw new Error('Failed to create session');
+
       await gpsTracker.startTracking(session.id);
       await harshBraking.startDetection();
       drivingBehavior.startTracking(session.id);
       startTimeRef.current = Date.now();
       setElapsedTime(0);
       setPhase('tracking');
+
+      await requestWakeLock();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start tracking');
       telematicsSession.cancelSession();
@@ -129,10 +155,12 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     }
   }, [phase, lessonId, pupilId, telematicsSession, gpsTracker, harshBraking, drivingBehavior]);
 
-  /* ---------------- Stop ------------------------------------------ */
+  /* ---------------- Stop Tracking -------------------------------- */
   const handleStop = useCallback(async () => {
     if (phase !== 'tracking') return;
     setPhase('stopping');
+    releaseWakeLock();
+
     try {
       const gpsResult = gpsTracker.stopTracking();
       harshBraking.stopDetection();
@@ -158,7 +186,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     }
   }, [phase, gpsTracker, harshBraking, drivingBehavior, elapsedTime, telematicsSession, tripScore, onSessionEnd]);
 
-  /* ---------------- Derived --------------------------------------- */
+  /* ---------------- Derived -------------------------------------- */
   const roadName = gpsTracker.speedLimitInfo?.roadName ?? 'Unknown road';
   const limitMph = gpsTracker.speedLimitInfo?.speedLimit
     ? Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)
@@ -168,13 +196,13 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     : undefined;
   const isSpeeding = limitMph !== undefined && speedMph !== undefined && speedMph > limitMph;
 
-  /* ---------------- COMPLETE REPORT -------------------------------- */
+  /* ---------------- COMPLETE REPORT ----------------------------- */
   if (phase === 'complete') {
     return (
       <div className="p-6 bg-card rounded-xl border">
         <h2 className="text-lg font-semibold mb-4">Drive Report</h2>
         <div className="space-y-4">
-          {Object.values(roadEvents).map(event => (
+          {Object.values(roadEventsRef.current).map(event => (
             <div key={event.roadName} className="border-b border-border pb-3 last:border-0">
               <div className="flex justify-between text-sm mb-1">
                 <span className="font-medium text-foreground">{event.roadName}</span>
@@ -194,10 +222,10 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     );
   }
 
-  /* ---------------- RENDER ---------------------------------------- */
+  /* ---------------- Render ---------------------------------------- */
   return (
     <div className="relative w-full min-h-[200px] rounded-xl overflow-hidden border bg-card">
-      {/* TOP NAV */}
+      {/* Top nav */}
       <div className="w-full bg-background/80 backdrop-blur-md">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="truncate text-lg font-semibold text-foreground">{roadName}</div>
@@ -234,7 +262,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
         </div>
       </div>
 
-      {/* START BUTTON */}
+      {/* Start button */}
       {phase === 'idle' && (
         <div className="flex items-center justify-center py-12">
           <Button size="lg" className="rounded-full px-8 py-6 text-lg" onClick={handleStart}>
@@ -244,7 +272,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
         </div>
       )}
 
-      {/* ERROR */}
+      {/* Error */}
       {error && (
         <div className="p-4">
           <Alert variant="destructive">
