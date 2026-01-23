@@ -23,6 +23,7 @@ import InstructorJobs from "./pages/InstructorJobs";
 import InstructorPay from "./pages/InstructorPay";
 import InstructorContact from "./pages/InstructorContact";
 import InstructorSettings from "./pages/InstructorSettings";
+import InstructorQuickAvailability from "./pages/InstructorQuickAvailability";
 import InstructorGaps from "./pages/InstructorGaps";
 import InstructorExpenses from "./pages/InstructorExpenses";
 import InstructorSatNav from "./pages/InstructorSatNav";
@@ -143,6 +144,7 @@ const App = () => (
               <Route path="/instructor/pay" element={<InstructorPay />} />
               <Route path="/instructor/contact" element={<InstructorContact />} />
               <Route path="/instructor/settings" element={<InstructorSettings />} />
+              <Route path="/instructor/availability" element={<InstructorQuickAvailability />} />
               <Route path="/instructor/gaps" element={<InstructorGaps />} />
               <Route path="/instructor/expenses" element={<InstructorExpenses />} />
               <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
