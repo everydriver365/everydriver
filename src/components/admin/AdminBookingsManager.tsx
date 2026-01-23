@@ -4,7 +4,6 @@ import { Search, Eye, CheckCircle, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -30,6 +29,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ArloPageLayout, ArloTableWrapper } from "@/components/ui/arlo-page-layout";
 
 interface Booking {
   id: string;
@@ -254,62 +254,34 @@ export function AdminBookingsManager() {
     return `ORD-${(totalCount - ((currentPage - 1) * ITEMS_PER_PAGE) - index).toString().padStart(3, '0')}`;
   };
 
+  const stats = [
+    { value: statusCounts.scheduled, label: "Scheduled", color: "muted" as const },
+    { value: statusCounts.completed, label: "Completed" },
+    { value: statusCounts.cancelled, label: "Cancelled", color: "muted" as const },
+    { value: statusCounts.pending, label: "Awaiting Payment" },
+    { value: statusCounts.unpaid, label: "Unpaid", highlight: true },
+  ];
+
+  const filters = statusFilters.map((f) => ({
+    id: f.id,
+    label: f.label,
+    count: f.count,
+    color: f.color,
+  }));
+
   return (
-    <div className="flex gap-6">
-      {/* Left Sidebar - Status Filters */}
-      <aside className="w-52 shrink-0">
-        <div className="sticky top-24 space-y-1">
-          {statusFilters.map((filter) => (
-            <button
-              key={filter.id}
-              onClick={() => {
-                setActiveFilter(filter.id);
-                setCurrentPage(1);
-              }}
-              className={cn(
-                "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors",
-                activeFilter === filter.id
-                  ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
-                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <span className={filter.color}>{filter.label}</span>
-              <span className={cn(
-                "text-xs",
-                filter.color || "text-muted-foreground"
-              )}>
-                {filter.count}
-              </span>
-            </button>
-          ))}
-        </div>
-      </aside>
+    <ArloPageLayout
+      stats={stats}
+      filters={filters}
+      activeFilter={activeFilter}
+      onFilterChange={(id) => {
+        setActiveFilter(id);
+        setCurrentPage(1);
+      }}
+    >
 
       {/* Main Content */}
-      <div className="flex-1 min-w-0">
-        {/* Stats Header */}
-        <div className="flex items-center gap-4 mb-6 pb-4 border-b overflow-x-auto">
-          <div className="text-center px-4">
-            <div className="text-2xl font-bold text-muted-foreground">{statusCounts.scheduled}</div>
-            <div className="text-xs text-muted-foreground">Scheduled</div>
-          </div>
-          <div className="text-center px-4">
-            <div className="text-2xl font-bold">{statusCounts.completed}</div>
-            <div className="text-xs text-muted-foreground">Completed</div>
-          </div>
-          <div className="text-center px-4">
-            <div className="text-2xl font-bold text-muted-foreground">{statusCounts.cancelled}</div>
-            <div className="text-xs text-muted-foreground">Cancelled</div>
-          </div>
-          <div className="text-center px-4">
-            <div className="text-2xl font-bold">{statusCounts.pending}</div>
-            <div className="text-xs text-muted-foreground">Awaiting Payment</div>
-          </div>
-          <div className="text-center px-4 bg-destructive/10 rounded-lg py-2">
-            <div className="text-2xl font-bold text-destructive">{statusCounts.unpaid}</div>
-            <div className="text-xs text-destructive">Unpaid</div>
-          </div>
-        </div>
+      <div className="space-y-4">
 
         {/* Search & Actions */}
         <div className="flex items-center justify-between gap-4 mb-4">
@@ -529,6 +501,6 @@ export function AdminBookingsManager() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </ArloPageLayout>
   );
 }

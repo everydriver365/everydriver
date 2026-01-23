@@ -34,6 +34,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArloPageLayout, ArloStatsCard, ArloTableWrapper } from "@/components/ui/arlo-page-layout";
 
 interface Enquiry {
   id: string;
@@ -350,41 +351,28 @@ export function EnquiriesManager() {
     );
   }
 
+  const statusFilters = [
+    { id: "all", label: "All", count: enquiries.length },
+    { id: "pending", label: "Pending", count: enquiries.filter(e => e.status === "pending").length, color: "text-amber-600" },
+    { id: "contacted", label: "Contacted", count: enquiries.filter(e => e.status === "contacted").length },
+    { id: "accepted", label: "Accepted", count: enquiries.filter(e => e.status === "accepted").length, color: "text-emerald-600" },
+    { id: "declined", label: "Declined", count: enquiries.filter(e => e.status === "declined").length, color: "text-destructive" },
+  ];
+
+  const stats = [
+    { value: enquiries.length, label: "Total" },
+    { value: enquiries.filter(e => e.status === "pending").length, label: "Pending", color: "warning" as const },
+    { value: enquiries.filter(e => e.status === "accepted").length, label: "Accepted", color: "success" as const },
+    { value: enquiries.filter(e => e.status === "contacted").length, label: "Contacted" },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{enquiries.length}</div>
-            <div className="text-sm text-muted-foreground">Total Enquiries</div>
-          </CardContent>
-        </Card>
-        <Card className="border-amber-500/30 bg-amber-500/5">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-              {enquiries.filter(e => e.status === "pending").length}
-            </div>
-            <div className="text-sm text-muted-foreground">Pending</div>
-          </CardContent>
-        </Card>
-        <Card className="border-green-500/30 bg-green-500/5">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {enquiries.filter(e => e.status === "accepted").length}
-            </div>
-            <div className="text-sm text-muted-foreground">Accepted</div>
-          </CardContent>
-        </Card>
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-primary">
-              {enquiries.filter(e => e.status === "contacted").length}
-            </div>
-            <div className="text-sm text-muted-foreground">Contacted</div>
-          </CardContent>
-        </Card>
-      </div>
+    <ArloPageLayout
+      stats={stats}
+      filters={statusFilters}
+      activeFilter={filterStatus}
+      onFilterChange={setFilterStatus}
+    >
 
       {/* Filter */}
       <div className="flex items-center gap-4">
@@ -683,6 +671,6 @@ export function EnquiriesManager() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </ArloPageLayout>
   );
 }

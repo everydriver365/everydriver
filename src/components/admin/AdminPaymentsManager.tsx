@@ -36,6 +36,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { toast } from "sonner";
+import { ArloPageLayout, ArloStatsCard } from "@/components/ui/arlo-page-layout";
 
 interface Payment {
   id: string;
@@ -230,63 +231,28 @@ export function AdminPaymentsManager() {
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  return (
-    <div className="space-y-6">
-      {/* Revenue Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-primary opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">This Month</p>
-                <p className="text-2xl font-bold">{formatCurrency(stats.thisMonth)}</p>
-              </div>
-              <CreditCard className="h-8 w-8 text-primary opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Last Month</p>
-                <p className="text-2xl font-bold">{formatCurrency(stats.lastMonth)}</p>
-              </div>
-              <CreditCard className="h-8 w-8 text-muted-foreground opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Growth</p>
-                <p className={`text-2xl font-bold ${stats.growthPercent >= 0 ? "text-green-600" : "text-red-600"}`}>
-                  {stats.growthPercent >= 0 ? "+" : ""}{stats.growthPercent}%
-                </p>
-              </div>
-              {stats.growthPercent >= 0 ? (
-                <TrendingUp className="h-8 w-8 text-primary opacity-80" />
-              ) : (
-                <TrendingDown className="h-8 w-8 text-destructive opacity-80" />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+  const arloStats = [
+    { value: formatCurrency(stats.totalRevenue), label: "Total Revenue" },
+    { value: formatCurrency(stats.thisMonth), label: "This Month" },
+    { value: formatCurrency(stats.lastMonth), label: "Last Month", color: "muted" as const },
+    { value: `${stats.growthPercent >= 0 ? "+" : ""}${stats.growthPercent}%`, label: "Growth", color: stats.growthPercent >= 0 ? "success" as const : "destructive" as const },
+  ];
 
-      {/* Payments Table */}
+  const methodFilters = [
+    { id: "all", label: "All Methods" },
+    { id: "cash", label: "Cash" },
+    { id: "card", label: "Card" },
+    { id: "bank_transfer", label: "Bank Transfer" },
+    { id: "online", label: "Online" },
+  ];
+
+  return (
+    <ArloPageLayout
+      stats={arloStats}
+      filters={methodFilters}
+      activeFilter={methodFilter}
+      onFilterChange={setMethodFilter}
+    >
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -474,6 +440,6 @@ export function AdminPaymentsManager() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </ArloPageLayout>
   );
 }
