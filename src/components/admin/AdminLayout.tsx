@@ -8,7 +8,8 @@ import {
   BarChart3, 
   FileText,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ const navTabs = [
   { id: "instructors", label: "Instructors", icon: Users },
   { id: "subscribers", label: "Subscribers", icon: CreditCard },
   { id: "mini-websites", label: "Websites", icon: FileText },
+  { id: "domains", label: "Domains", icon: Globe },
   { id: "enquiries", label: "Pupils", icon: GraduationCap },
   { id: "payments", label: "Money", icon: CreditCard },
   { id: "bookings", label: "Stats", icon: BarChart3 },
@@ -57,7 +59,7 @@ export function AdminLayout({
       "instructor-messages": "instructors",
       subscribers: "subscribers",
       "mini-websites": "mini-websites",
-      domains: "mini-websites",
+      domains: "domains",
       enquiries: "enquiries",
       "live-chat": "enquiries",
       messages: "enquiries",
