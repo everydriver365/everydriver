@@ -41,8 +41,8 @@ import { toast } from "@/hooks/use-toast";
 import {
   StandardsCheckTrigger,
   ExaminerManager,
+  DrivingTestReportForm,
 } from "@/components/instructor/driving-test";
-import { RecordTestResultDialog } from "@/components/instructor/RecordTestResultDialog";
 
 interface TestResult {
   id: string;
@@ -410,14 +410,15 @@ export default function InstructorTestResults() {
         </Tabs>
       </div>
 
-      {/* Test Form Dialog */}
+      {/* Test Form Dialog (DL25A) */}
       {selectedPupilId && (
-        <RecordTestResultDialog
+        <DrivingTestReportForm
           open={isTestFormOpen}
           onOpenChange={setIsTestFormOpen}
           pupilId={selectedPupilId}
           pupilName={selectedPupilName}
-          onResultRecorded={fetchData}
+          defaultIsMock={isMock}
+          onSaved={fetchData}
         />
       )}
     </InstructorPortalLayout>
