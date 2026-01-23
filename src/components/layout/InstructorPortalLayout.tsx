@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, 
   Calendar, 
+  CalendarClock,
   Users, 
   Briefcase, 
   CreditCard, 
@@ -12,8 +13,6 @@ import {
   Navigation,
   MapPin,
   ArrowLeft,
-  Eye,
-  EyeOff,
   Moon,
   Sun,
   Wallet,
@@ -26,7 +25,7 @@ import {
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/context/ThemeContext";
@@ -119,7 +118,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               />
             </div>
             
-            {/* Right: QR, Theme, Settings, Visibility, Avatar */}
+            {/* Right: QR, Availability, Theme, Settings, Avatar */}
             <div className="flex items-center gap-1">
               {instructor?.payment_qr_url && (
                 <Button
@@ -131,6 +130,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   <span className="text-xs font-bold border border-current rounded px-1">QR</span>
                 </Button>
               )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/instructor/availability")}
+                className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
+                title="Quick Availability"
+              >
+                <CalendarClock className="h-5 w-5" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -151,24 +159,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               >
                 <Settings className="h-5 w-5" />
               </Button>
-              {instructor?.is_active !== undefined && (
-                <Badge 
-                  variant="secondary" 
-                  className={`gap-1 text-xs ${instructor.is_active ? "bg-emerald-500/90 text-white" : "bg-amber-500/90 text-white"}`}
-                >
-                  {instructor.is_active ? (
-                    <>
-                      <Eye className="h-3 w-3" />
-                      <span className="hidden xs:inline">Visible</span>
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="h-3 w-3" />
-                      <span className="hidden xs:inline">Hidden</span>
-                    </>
-                  )}
-                </Badge>
-              )}
               <Avatar className="h-9 w-9 border-2 border-nav-foreground/30">
                 <AvatarImage src={instructor?.profile_image_url || undefined} />
                 <AvatarFallback className="bg-nav-foreground text-nav text-xs font-semibold">
