@@ -230,6 +230,9 @@ export default function TrackerPage() {
   const lastPoint = gpsPoints[gpsPoints.length - 1];
   const selectedPupilName = pupils.find(p => p.id === selectedPupil)?.name;
   
+  // Convert km/h to mph
+  const kmhToMph = (kmh: number) => Math.round(kmh * 0.621371);
+  
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -248,7 +251,7 @@ export default function TrackerPage() {
             <span className="font-medium truncate">{lastPoint?.roadName || '-'}</span>
             {lastPoint?.speedLimit > 0 && (
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-red-600 bg-white font-bold text-black text-sm shrink-0">
-                {lastPoint.speedLimit}
+                {kmhToMph(lastPoint.speedLimit)}
               </div>
             )}
           </div>
@@ -256,7 +259,7 @@ export default function TrackerPage() {
 
         <div className="flex items-center gap-3">
           <p className={`text-2xl font-bold ${lastPoint?.speeding ? 'text-destructive' : ''}`}>
-            {Math.round(lastPoint?.speedKmh || 0)} <span className="text-sm font-normal">km/h</span>
+            {kmhToMph(lastPoint?.speedKmh || 0)} <span className="text-sm font-normal">mph</span>
           </p>
           <Button
             variant={phase === 'tracking' ? 'destructive' : 'default'}
@@ -342,8 +345,8 @@ export default function TrackerPage() {
                     <tr key={i} className={p.speeding ? 'bg-destructive/10' : ''}>
                       <td className="px-3 py-2">{new Date(p.timestamp).toLocaleTimeString()}</td>
                       <td className="px-3 py-2 truncate max-w-[120px]">{p.roadName}</td>
-                      <td className="px-3 py-2 text-right">{Math.round(p.speedKmh)}</td>
-                      <td className="px-3 py-2 text-right">{p.speedLimit || '-'}</td>
+                      <td className="px-3 py-2 text-right">{kmhToMph(p.speedKmh)}</td>
+                      <td className="px-3 py-2 text-right">{p.speedLimit ? kmhToMph(p.speedLimit) : '-'}</td>
                       <td className="px-3 py-2 text-center">{p.speeding ? '⚠️' : '-'}</td>
                       <td className="px-3 py-2 text-center">{p.harshBrake ? '⚠️' : '-'}</td>
                     </tr>
