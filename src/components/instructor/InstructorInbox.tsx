@@ -326,7 +326,7 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
                   </div>
                   <div className="flex-1 text-left">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">Drive 365 Support</h3>
+                      <h3 className="font-semibold">EveryDriver Support</h3>
                       {adminUnreadCount > 0 && (
                         <Badge variant="destructive">{adminUnreadCount}</Badge>
                       )}

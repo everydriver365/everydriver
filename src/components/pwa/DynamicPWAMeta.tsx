@@ -11,17 +11,17 @@ interface PWAMetaConfig {
 
 const pwaConfigs: Record<string, PWAMetaConfig> = {
   instructor: {
-    icon: "/apple-touch-icon-365.png",
-    favicon: "/favicon-365.png",
+    icon: "/apple-touch-icon.png",
+    favicon: "/favicon.png",
     splash: "/splash-1170x2532.png",
-    title: "Drive365",
+    title: "EveryDriver",
     themeColor: "#141b43",
   },
   pupil: {
-    icon: "/apple-touch-icon-365.png",
-    favicon: "/favicon-365.png",
+    icon: "/apple-touch-icon.png",
+    favicon: "/favicon.png",
     splash: "/splash-pupil.png",
-    title: "DL Learner",
+    title: "EveryDriver Learner",
     themeColor: "#141b43",
   },
   parent: {
