@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, AlertTriangle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,7 +50,7 @@ export function CancelLessonDialog({
   const [waitlistCount, setWaitlistCount] = useState<number | null>(null);
 
   // Check waitlist count when dialog opens
-  useState(() => {
+  useEffect(() => {
     const checkWaitlist = async () => {
       const { count } = await supabase
         .from("lesson_waitlist")
@@ -60,7 +60,7 @@ export function CancelLessonDialog({
       setWaitlistCount(count || 0);
     };
     if (open) checkWaitlist();
-  });
+  }, [open, instructorId]);
 
   const handleCancel = async () => {
     setCancelling(true);
