@@ -3,13 +3,15 @@ import { format } from "date-fns";
 import { 
   Search, Plus, Eye, Edit2, Trash2, Users, Power, 
   MoreVertical, ExternalLink, Mail, Phone, MapPin,
-  UserCheck, UserX, Globe, RotateCcw
+  UserCheck, UserX, Globe, RotateCcw, Crown, Sparkles
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Table,
   TableBody,
@@ -38,6 +40,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -46,6 +49,19 @@ import { cn } from "@/lib/utils";
 import { ArloPageLayout } from "@/components/ui/arlo-page-layout";
 import { ReassignPupilsDialog } from "./ReassignPupilsDialog";
 import { InstructorForm } from "./InstructorForm";
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  slug: string;
+  price_monthly: number;
+  price_yearly: number;
+  max_pupils: number | null;
+  sms_credits_monthly: number;
+  features: unknown; // JSON type
+  display_order: number;
+  is_active: boolean;
+}
 
 interface Instructor {
   id: string;
@@ -66,14 +82,53 @@ interface Instructor {
   website_slug?: string | null;
   pupil_count?: number;
   completed_courses?: number;
+  subscription?: {
+    plan_id: string;
+    plan_name: string;
+    plan_slug: string;
+    status: string;
+  } | null;
 }
 
 interface InstructorManagerProps {
   onEdit: (instructor: Instructor) => void;
 }
 
+// Plan badge component with color coding
+function PlanBadge({ planSlug, planName }: { planSlug?: string; planName?: string }) {
+  const getPlanStyle = (slug?: string) => {
+    switch (slug) {
+      case "pro":
+        return "bg-blue-500/10 text-blue-600 border-blue-500/30";
+      case "max":
+        return "bg-purple-500/10 text-purple-600 border-purple-500/30";
+      case "multi":
+        return "bg-accent/10 text-accent border-accent/30";
+      case "enterprise":
+        return "bg-primary/10 text-primary border-primary/30";
+      default:
+        return "bg-muted text-muted-foreground border-muted";
+    }
+  };
+
+  const displayName = planName || "Free";
+  const icon = planSlug === "enterprise" || planSlug === "multi" ? (
+    <Crown className="h-3 w-3 mr-1" />
+  ) : planSlug === "max" || planSlug === "pro" ? (
+    <Sparkles className="h-3 w-3 mr-1" />
+  ) : null;
+
+  return (
+    <Badge variant="outline" className={cn("text-xs", getPlanStyle(planSlug))}>
+      {icon}
+      {displayName}
+    </Badge>
+  );
+}
+
 export function InstructorManager({ onEdit }: InstructorManagerProps) {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -85,6 +140,18 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
+  const [planDialogInstructor, setPlanDialogInstructor] = useState<Instructor | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string>("");
+  const [savingPlan, setSavingPlan] = useState(false);
+
+  const fetchPlans = useCallback(async () => {
+    const { data } = await supabase
+      .from("subscription_plans")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order");
+    setPlans(data || []);
+  }, []);
 
   const fetchInstructors = useCallback(async () => {
     setLoading(true);
@@ -103,14 +170,31 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
         .select("instructor_id")
         .in("instructor_id", instructorIds);
 
+      // Get subscriptions for each instructor
+      const { data: subscriptions } = await supabase
+        .from("instructor_subscriptions")
+        .select("instructor_id, plan_id, status, subscription_plans(name, slug)")
+        .in("instructor_id", instructorIds);
+
       const countMap: Record<string, number> = {};
       pupilCounts?.forEach(p => {
         countMap[p.instructor_id] = (countMap[p.instructor_id] || 0) + 1;
       });
 
+      const subMap: Record<string, Instructor["subscription"]> = {};
+      subscriptions?.forEach((s: any) => {
+        subMap[s.instructor_id] = {
+          plan_id: s.plan_id,
+          plan_name: s.subscription_plans?.name || "Unknown",
+          plan_slug: s.subscription_plans?.slug || "free",
+          status: s.status,
+        };
+      });
+
       const enrichedData = (data || []).map(i => ({
         ...i,
         pupil_count: countMap[i.id] || 0,
+        subscription: subMap[i.id] || null,
       }));
 
       setInstructors(enrichedData);
@@ -123,8 +207,13 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
   }, []);
 
   useEffect(() => {
+    fetchPlans();
     fetchInstructors();
-  }, [fetchInstructors]);
+  }, [fetchInstructors, fetchPlans]);
+  useEffect(() => {
+    fetchPlans();
+    fetchInstructors();
+  }, [fetchInstructors, fetchPlans]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -282,7 +371,7 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
                   <TableHead className="text-primary font-semibold">Email</TableHead>
                   <TableHead className="text-primary font-semibold hidden md:table-cell">Phone</TableHead>
                   <TableHead className="text-primary font-semibold hidden lg:table-cell">Location</TableHead>
-                  <TableHead className="text-primary font-semibold hidden lg:table-cell">Website</TableHead>
+                  <TableHead className="text-primary font-semibold text-center">Plan</TableHead>
                   <TableHead className="text-primary font-semibold text-center">Pupils</TableHead>
                   <TableHead className="text-primary font-semibold text-center">Status</TableHead>
                   <TableHead className="w-12"></TableHead>
@@ -341,19 +430,17 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
                     <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
                       {instructor.home_postcode}
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {instructor.website_slug ? (
-                        <a 
-                          href={`/instructor/${instructor.website_slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline text-sm"
-                        >
-                          Website
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      )}
+                    <TableCell className="text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPlanDialogInstructor(instructor);
+                          setSelectedPlanId(instructor.subscription?.plan_id || "");
+                        }}
+                        className="hover:opacity-80 transition-opacity"
+                      >
+                        <PlanBadge planSlug={instructor.subscription?.plan_slug} planName={instructor.subscription?.plan_name} />
+                      </button>
                     </TableCell>
                     <TableCell className="text-center">
                       <span className={cn(
@@ -365,7 +452,7 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
                     </TableCell>
                     <TableCell className="text-center">
                       {instructor.is_active ? (
-                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                           Active
                         </Badge>
                       ) : (
@@ -391,6 +478,13 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
                           <DropdownMenuItem onClick={() => setReassignInstructor(instructor)}>
                             <Users className="mr-2 h-4 w-4" />
                             Reassign Pupils
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            setPlanDialogInstructor(instructor);
+                            setSelectedPlanId(instructor.subscription?.plan_id || "");
+                          }}>
+                            <Crown className="mr-2 h-4 w-4" />
+                            Change Plan
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleToggleActive(instructor)}>
@@ -547,6 +641,104 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
             onCancel={() => setIsFormOpen(false)}
             initialData={editingInstructor || undefined}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Plan Dialog */}
+      <Dialog open={!!planDialogInstructor} onOpenChange={() => setPlanDialogInstructor(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-accent" />
+              Change Subscription Plan
+            </DialogTitle>
+            <DialogDescription>
+              Select a plan for {planDialogInstructor?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <RadioGroup value={selectedPlanId} onValueChange={setSelectedPlanId} className="space-y-3">
+              {plans.map((plan) => (
+                <div 
+                  key={plan.id} 
+                  className={cn(
+                    "flex items-center space-x-3 rounded-lg border p-4 cursor-pointer transition-colors",
+                    selectedPlanId === plan.id ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                  )}
+                  onClick={() => setSelectedPlanId(plan.id)}
+                >
+                  <RadioGroupItem value={plan.id} id={plan.id} />
+                  <div className="flex-1">
+                    <Label htmlFor={plan.id} className="font-medium cursor-pointer flex items-center gap-2">
+                      {plan.name}
+                      {(plan.slug === "multi" || plan.slug === "enterprise") && (
+                        <Crown className="h-3.5 w-3.5 text-accent" />
+                      )}
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      {plan.price_monthly === 0 ? "Free" : `£${plan.price_monthly}/month`}
+                      {plan.max_pupils ? ` • Up to ${plan.max_pupils} pupils` : " • Unlimited pupils"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setPlanDialogInstructor(null)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={async () => {
+                if (!planDialogInstructor || !selectedPlanId) return;
+                setSavingPlan(true);
+                
+                // Check if subscription exists
+                const { data: existing } = await supabase
+                  .from("instructor_subscriptions")
+                  .select("id")
+                  .eq("instructor_id", planDialogInstructor.id)
+                  .single();
+                
+                if (existing) {
+                  // Update existing
+                  const { error } = await supabase
+                    .from("instructor_subscriptions")
+                    .update({ plan_id: selectedPlanId, status: "active" })
+                    .eq("instructor_id", planDialogInstructor.id);
+                  
+                  if (error) {
+                    toast.error("Failed to update plan");
+                  } else {
+                    toast.success("Plan updated successfully");
+                    fetchInstructors();
+                    setPlanDialogInstructor(null);
+                  }
+                } else {
+                  // Insert new
+                  const { error } = await supabase
+                    .from("instructor_subscriptions")
+                    .insert({
+                      instructor_id: planDialogInstructor.id,
+                      plan_id: selectedPlanId,
+                      status: "active",
+                    });
+                  
+                  if (error) {
+                    toast.error("Failed to assign plan");
+                  } else {
+                    toast.success("Plan assigned successfully");
+                    fetchInstructors();
+                    setPlanDialogInstructor(null);
+                  }
+                }
+                setSavingPlan(false);
+              }}
+              disabled={savingPlan || !selectedPlanId}
+            >
+              {savingPlan ? "Saving..." : "Save Plan"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </ArloPageLayout>
