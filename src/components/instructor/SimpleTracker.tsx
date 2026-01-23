@@ -1,36 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Play, Square, AlertTriangle, Star } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-import { useSimpleGPSTracker } from '@/hooks/useSimpleGPSTracker';
-import { useHarshBrakingDetector } from '@/hooks/useHarshBrakingDetector';
-import { useDrivingBehavior } from '@/hooks/useDrivingBehavior';
-import { useLocalTripScore, TripStats } from '@/hooks/useLocalTripScore';
+import { Play, AlertTriangle, Navigation } from 'lucide-react';
 import { useTelematicsSession } from '@/hooks/useTelematicsSession';
-import { saveFavoriteRoute } from '@/lib/favoriteRoutes';
-
-// Map auto-pan helper
-const MapUpdater = ({ position }: { position: [number, number] | null }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (position) map.panTo(position, { animate: true });
-  }, [position, map]);
-  return null;
-};
-
-interface RoadEvent {
-  roadName: string;
-  speedLimit: number;      // mph
-  maxSpeed: number;        // mph
-  speedExceeded: boolean;
-  harshBrakes: number;
-  harshAccelerations: number;
-  turns: number;
-}
 
 interface SimpleTrackerProps {
   instructorId: string;
@@ -39,301 +12,76 @@ interface SimpleTrackerProps {
   onSessionEnd?: (telematicsId: string) => void;
 }
 
-type TrackerPhase = 'idle' | 'starting' | 'tracking' | 'stopping' | 'complete';
-
-// Custom marker icon
-const currentMarkerIcon = L.divIcon({
-  className: 'current-location-marker',
-  html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
-
 export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
   instructorId,
   lessonId,
   pupilId,
-  onSessionEnd,
 }) => {
-  const [phase, setPhase] = useState<TrackerPhase>('idle');
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [roadEventsState, setRoadEventsState] = useState<Record<string, RoadEvent>>({});
-  const [pathForRender, setPathForRender] = useState<[number, number][]>([]);
-
-  const startTimeRef = useRef(0);
-  const timerRef = useRef<number | null>(null);
-  const lastHeadingRef = useRef<number | null>(null);
-  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const fullPathRef = useRef<[number, number][]>([]);
-  const roadEventsRef = useRef<Record<string, RoadEvent>>({});
-
-  // Hooks
-  const gpsTracker = useSimpleGPSTracker({});
-  const harshBraking = useHarshBrakingDetector({});
-  const drivingBehavior = useDrivingBehavior({});
-  const tripScore = useLocalTripScore();
+  const navigate = useNavigate();
   const telematicsSession = useTelematicsSession(instructorId);
 
-  /* ---------------- Wake Lock ------------------------------ */
-  const requestWakeLock = async () => {
-    try {
-      if ('wakeLock' in navigator) {
-        wakeLockRef.current = await navigator.wakeLock.request('screen');
-        console.log('WakeLock acquired');
-      }
-    } catch (err) {
-      console.error('WakeLock error:', err);
-    }
-  };
-
-  const releaseWakeLock = () => {
-    wakeLockRef.current?.release();
-    wakeLockRef.current = null;
-  };
-
-  /* ---------------- Timer --------------------------------- */
-  useEffect(() => {
-    if (phase !== 'tracking') return;
-    timerRef.current = window.setInterval(() => {
-      setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
-    }, 1000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [phase]);
-
-  /* ---------------- Track Road Events -------------------- */
-  useEffect(() => {
-    if (phase !== 'tracking' || !gpsTracker.currentPosition) return;
-
-    const pos = gpsTracker.currentPosition;
-    const road = gpsTracker.speedLimitInfo?.roadName ?? 'Unknown road';
-    const speedMph = Math.round(pos.speedKmh * 0.621371);
-    const limitMph = gpsTracker.speedLimitInfo?.speedLimit
-      ? Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)
-      : 0;
-
-    // Track full path
-    fullPathRef.current.push([pos.latitude, pos.longitude]);
-    setPathForRender([...fullPathRef.current]);
-
-    const prevEvent = roadEventsRef.current[road] ?? {
-      roadName: road,
-      speedLimit: limitMph,
-      maxSpeed: 0,
-      speedExceeded: false,
-      harshBrakes: 0,
-      harshAccelerations: 0,
-      turns: 0,
-    };
-
-    prevEvent.maxSpeed = Math.max(prevEvent.maxSpeed, speedMph);
-    if (limitMph > 0 && speedMph > limitMph) prevEvent.speedExceeded = true;
-
-    // Turns detection based on heading change
-    if (pos.heading !== null && lastHeadingRef.current !== null) {
-      const headingDiff = Math.abs(pos.heading - lastHeadingRef.current);
-      if (headingDiff > 30) prevEvent.turns += 1;
-    }
-    lastHeadingRef.current = pos.heading;
-
-    roadEventsRef.current = { ...roadEventsRef.current, [road]: prevEvent };
-    setRoadEventsState({ ...roadEventsRef.current });
-  }, [gpsTracker.currentPosition, gpsTracker.speedLimitInfo, phase]);
-
-  /* ---------------- Cleanup ----------------------------- */
-  useEffect(() => {
-    return () => {
-      gpsTracker.stopTracking();
-      harshBraking.stopDetection();
-      drivingBehavior.stopTracking();
-      releaseWakeLock();
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  /* ---------------- Start Tracking ------------------------ */
   const handleStart = useCallback(async () => {
-    if (phase !== 'idle') return;
-    setPhase('starting');
+    if (isStarting) return;
+    setIsStarting(true);
     setError(null);
-    setRoadEventsState({});
-    setPathForRender([]);
-    fullPathRef.current = [];
-    roadEventsRef.current = {};
 
     try {
+      // Create session first
       const session = await telematicsSession.createSession(lessonId, pupilId);
-      if (!session) throw new Error('Failed to create session');
+      if (!session) throw new Error('Failed to create tracking session');
 
-      await gpsTracker.startTracking(session.id);
-      await harshBraking.startDetection();
-      drivingBehavior.startTracking(session.id);
-      startTimeRef.current = Date.now();
-      setElapsedTime(0);
-      setPhase('tracking');
-
-      await requestWakeLock();
+      // Navigate to full-screen tracker
+      navigate(`/instructor/tracker/${session.id}`);
     } catch (err) {
+      console.error('Failed to start tracking:', err);
       setError(err instanceof Error ? err.message : 'Failed to start tracking');
       telematicsSession.cancelSession();
-      setPhase('idle');
+      setIsStarting(false);
     }
-  }, [phase, lessonId, pupilId, telematicsSession, gpsTracker, harshBraking, drivingBehavior]);
+  }, [isStarting, telematicsSession, lessonId, pupilId, navigate]);
 
-  /* ---------------- Stop Tracking ------------------------- */
-  const handleStop = useCallback(async () => {
-    if (phase !== 'tracking') return;
-    setPhase('stopping');
-    releaseWakeLock();
-
-    try {
-      const gpsResult = gpsTracker.stopTracking();
-      harshBraking.stopDetection();
-      const behaviorStats = await drivingBehavior.stopTracking();
-
-      const tripStats: TripStats = {
-        harshBrakeCount: behaviorStats.harshBrakeCount,
-        speedingEventsCount: behaviorStats.speedingEventsCount,
-        speedingTotalSeconds: behaviorStats.speedingTotalSeconds,
-        maxSpeedOverLimitKmh: behaviorStats.maxSpeedOverLimitKmh,
-        totalDistanceKm: gpsResult.totalDistance / 1000,
-        durationMinutes: elapsedTime / 60,
-      };
-
-      const sessionId = telematicsSession.currentSession?.id;
-      if (sessionId) {
-        await tripScore.calculateAndSaveScore(sessionId, tripStats);
-        await telematicsSession.endSession(gpsResult.totalDistance, gpsResult.maxSpeed);
-        onSessionEnd?.(sessionId);
-      }
-    } finally {
-      setPhase('complete');
-    }
-  }, [phase, gpsTracker, harshBraking, drivingBehavior, elapsedTime, telematicsSession, tripScore, onSessionEnd]);
-
-  /* ---------------- Save Favorite ------------------------ */
-  const handleSaveFavorite = () => {
-    const name = prompt('Enter a name for this route:', `Route ${new Date().toLocaleString()}`);
-    if (!name) return;
-    saveFavoriteRoute({
-      name,
-      path: fullPathRef.current,
-      roadEvents: roadEventsRef.current,
-      createdAt: new Date().toISOString(),
-    });
-    alert(`Route "${name}" saved!`);
-  };
-
-  /* ---------------- Derived -------------------------------- */
-  const roadName = gpsTracker.speedLimitInfo?.roadName ?? 'Unknown road';
-  const limitMph = gpsTracker.speedLimitInfo?.speedLimit
-    ? Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)
-    : undefined;
-  const speedMph = gpsTracker.currentPosition?.speedKmh
-    ? Math.round(gpsTracker.currentPosition.speedKmh * 0.621371)
-    : undefined;
-  const isSpeeding = limitMph !== undefined && speedMph !== undefined && speedMph > limitMph;
-
-  const mapPosition: [number, number] | null = gpsTracker.currentPosition
-    ? [gpsTracker.currentPosition.latitude, gpsTracker.currentPosition.longitude]
-    : null;
-
-  /* ---------------- COMPLETE REPORT -------------------- */
-  if (phase === 'complete') {
-    return (
-      <div className="p-6 bg-card rounded-xl border">
-        <h2 className="text-lg font-semibold mb-4">Drive Report</h2>
-        <Button variant="outline" size="sm" className="mb-4" onClick={handleSaveFavorite}>
-          <Star className="h-4 w-4 mr-1" />
-          Save as Favorite
-        </Button>
-        <div className="space-y-4">
-          {Object.values(roadEventsRef.current).map(event => (
-            <div key={event.roadName} className="border-b border-border pb-3 last:border-0">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium text-foreground">{event.roadName}</span>
-                <span className={`font-medium ${event.speedExceeded ? 'text-destructive' : 'text-foreground'}`}>
-                  {event.maxSpeed} / {event.speedLimit} mph {event.speedExceeded ? '⚠️' : ''}
-                </span>
-              </div>
-              <div className="flex gap-4 text-xs text-muted-foreground">
-                <span>Harsh Brakes: {event.harshBrakes}</span>
-                <span>Harsh Accel: {event.harshAccelerations}</span>
-                <span>Turns: {event.turns}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  /* ---------------- Render -------------------------------- */
   return (
-    <div className="relative w-full h-[70vh] rounded-xl overflow-hidden border">
-      {/* Top nav */}
-      <div className="absolute top-0 z-[1000] w-full bg-background/80 backdrop-blur-md">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="truncate text-lg font-semibold text-foreground">{roadName}</div>
-          <div className="flex items-center gap-3">
-            {limitMph !== undefined && (
-              <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-red-600 bg-white font-bold text-black text-sm">
-                {limitMph}
-              </div>
-            )}
-            {speedMph !== undefined && (
-              <div className={`font-semibold text-sm ${isSpeeding ? 'text-destructive' : 'text-foreground'}`}>
-                {speedMph} mph
-              </div>
-            )}
-            {phase === 'tracking' && (
-              <Button size="sm" variant="destructive" onClick={handleStop}>
-                <Square className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+    <div className="bg-card rounded-xl border p-6">
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center">
+          <Navigation className="h-8 w-8 text-primary" />
         </div>
-      </div>
+        
+        <div>
+          <h2 className="text-lg font-semibold">GPS Tracker</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Track speed, route, and driving behavior in real-time
+          </p>
+        </div>
 
-      {/* Full-screen map */}
-      {phase === 'tracking' && mapPosition && (
-        <MapContainer
-          center={mapPosition}
-          zoom={17}
-          className="h-full w-full"
-          zoomControl={false}
-          attributionControl={false}
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={handleStart}
+          disabled={isStarting}
         >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <MapUpdater position={mapPosition} />
-          <Marker position={mapPosition} icon={currentMarkerIcon} />
-          {pathForRender.length > 1 && (
-            <Polyline positions={pathForRender} color="#3b82f6" weight={4} />
+          {isStarting ? (
+            <>
+              <span className="animate-spin mr-2">⏳</span>
+              Starting...
+            </>
+          ) : (
+            <>
+              <Play className="h-5 w-5 mr-2" />
+              Start Tracking
+            </>
           )}
-        </MapContainer>
-      )}
+        </Button>
 
-      {/* Start button */}
-      {phase === 'idle' && (
-        <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-background/50">
-          <Button size="lg" className="rounded-full px-8 py-6 text-lg" onClick={handleStart}>
-            <Play className="h-5 w-5 mr-2" />
-            Start
-          </Button>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="absolute bottom-4 left-4 right-4 z-[1000]">
+        {error && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
