@@ -82,9 +82,13 @@ export function AdminLayout({
       {/* Navy Blue Header */}
       <header className="sticky top-0 z-50 bg-[#142040]">
         <div className="flex items-center justify-between px-6 h-14">
-          {/* Logo / Brand */}
+          {/* Logo */}
           <div className="flex items-center gap-3">
-            <span className="text-white font-bold text-xl">EveryDriver</span>
+            <img 
+              src="/everydriver-logo-main.png" 
+              alt="EveryDriver" 
+              className="h-8"
+            />
             <span className="text-white/60 text-sm">Admin</span>
           </div>
 
