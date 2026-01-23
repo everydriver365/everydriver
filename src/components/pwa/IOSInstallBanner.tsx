@@ -32,7 +32,7 @@ export function IOSInstallBanner() {
           {!showInstructions ? (
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">
-                Install Drive365 for a fullscreen experience
+                Install EveryDriver for a fullscreen experience
               </p>
               <Button
                 size="sm"

@@ -171,7 +171,7 @@ export default function Drive365Home() {
               Ready to Transform Your Business?
             </h2>
             <p className="text-white/80 text-lg mb-8 max-w-xl mx-auto">
-              Join hundreds of driving instructors already using Drive365
+              Join hundreds of driving instructors already using EveryDriver
             </p>
             <Link to="/instructor-app/signup">
               <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 text-lg">
@@ -212,7 +212,7 @@ export default function Drive365Home() {
               </Link>
             </nav>
             <p className="text-sm">
-              © {new Date().getFullYear()} Drive365. All rights reserved.
+              © {new Date().getFullYear()} EveryDriver. All rights reserved.
             </p>
           </div>
         </div>

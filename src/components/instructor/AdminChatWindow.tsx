@@ -83,7 +83,7 @@ export function AdminChatWindow({ instructorId, onBack }: AdminChatWindowProps) 
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold">Drive 365 Support</h3>
+            <h3 className="font-semibold">EveryDriver Support</h3>
             <p className="text-sm text-muted-foreground">Admin Team</p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export function AdminChatWindow({ instructorId, onBack }: AdminChatWindowProps) 
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-center px-4">
             <ShieldCheck className="h-12 w-12 mb-3 opacity-50" />
             <p className="font-medium">Contact Support</p>
-            <p className="text-sm">Send a message to the Drive 365 admin team</p>
+            <p className="text-sm">Send a message to the EveryDriver admin team</p>
           </div>
         ) : (
           <div className="space-y-6">

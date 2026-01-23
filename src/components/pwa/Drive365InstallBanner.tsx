@@ -23,7 +23,7 @@ export function Drive365InstallBanner({ onDismiss }: Drive365InstallBannerProps)
       const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
         || (window.navigator as any).standalone === true;
-      const isDismissed = localStorage.getItem('drive365-install-dismissed');
+      const isDismissed = localStorage.getItem('everydriver-install-dismissed');
       
       setIsIOS(isIOSDevice);
       
@@ -61,7 +61,7 @@ export function Drive365InstallBanner({ onDismiss }: Drive365InstallBannerProps)
   };
 
   const handleDismiss = () => {
-    localStorage.setItem('drive365-install-dismissed', 'true');
+    localStorage.setItem('everydriver-install-dismissed', 'true');
     setShowBanner(false);
     onDismiss?.();
   };
@@ -84,7 +84,7 @@ export function Drive365InstallBanner({ onDismiss }: Drive365InstallBannerProps)
                   <div className="flex items-center gap-2">
                     <Download className="h-5 w-5 flex-shrink-0" />
                     <p className="text-sm font-medium">
-                      Install Drive365 for the best experience
+                      Install EveryDriver for the best experience
                     </p>
                   </div>
                   <Button
@@ -98,7 +98,7 @@ export function Drive365InstallBanner({ onDismiss }: Drive365InstallBannerProps)
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">To install Drive365:</p>
+                  <p className="text-sm font-medium">To install EveryDriver:</p>
                   <ol className="text-sm space-y-1.5 pl-1">
                     <li className="flex items-center gap-2">
                       <span className="bg-white/20 rounded-full w-5 h-5 flex items-center justify-center text-xs shrink-0">1</span>

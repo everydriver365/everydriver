@@ -29,7 +29,7 @@ export default function InstructorAdminChat() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Contact Admin</h1>
-          <p className="text-muted-foreground">Send a message to the Drive 365 support team</p>
+          <p className="text-muted-foreground">Send a message to the EveryDriver support team</p>
         </div>
         <AdminChatWindow instructorId={instructor.id} />
       </div>
