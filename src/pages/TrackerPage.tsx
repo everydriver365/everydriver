@@ -93,7 +93,17 @@ export default function TrackerPage() {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [routeName, setRouteName] = useState('');
   const [routeDescription, setRouteDescription] = useState('');
+  const [routeCategory, setRouteCategory] = useState('test_routes');
   const [saving, setSaving] = useState(false);
+
+  // Category options
+  const categoryOptions = [
+    { value: 'test_routes', label: 'Test Routes' },
+    { value: 'training', label: 'Training Routes' },
+    { value: 'manoeuvres', label: 'Manoeuvres Practice' },
+    { value: 'motorway', label: 'Motorway Driving' },
+    { value: 'night', label: 'Night Driving' },
+  ];
 
   const startTimeRef = useRef(Date.now());
   const timerRef = useRef<number | null>(null);
@@ -294,6 +304,11 @@ export default function TrackerPage() {
       const startPoint = gpsPoints[0];
       const endPoint = gpsPoints[gpsPoints.length - 1];
 
+      // Determine category - use pupil name if selected, otherwise use selected category
+      const finalCategory = selectedPupil 
+        ? `pupil_${selectedPupilName}` 
+        : routeCategory;
+
       // Insert route
       const { data: routeData, error: routeError } = await supabase
         .from('saved_routes')
@@ -303,6 +318,7 @@ export default function TrackerPage() {
           name: routeName.trim(),
           description: routeDescription.trim() || null,
           route_type: 'recorded',
+          category: finalCategory,
           start_location: `${startPoint.lat.toFixed(4)}, ${startPoint.lng.toFixed(4)}`,
           end_location: `${endPoint.lat.toFixed(4)}, ${endPoint.lng.toFixed(4)}`,
           distance_km: totalDistance
@@ -331,6 +347,7 @@ export default function TrackerPage() {
       setShowSaveDialog(false);
       setRouteName('');
       setRouteDescription('');
+      setRouteCategory('test_routes');
     } catch (error) {
       console.error('Error saving route:', error);
       toast.error('Failed to save route');
@@ -527,6 +544,25 @@ export default function TrackerPage() {
                 value={routeName}
                 onChange={(e) => setRouteName(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Category</Label>
+              <Select value={routeCategory} onValueChange={setRouteCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                  {selectedPupilName && (
+                    <SelectItem value={`pupil_${selectedPupilName}`}>
+                      {selectedPupilName}'s Routes
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
