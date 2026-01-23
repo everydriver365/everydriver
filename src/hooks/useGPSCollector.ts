@@ -321,7 +321,30 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
 
     await requestWakeLock();
 
+    // Warm-up call: get current position first for faster initial fix
+    console.log('[GPS Collector] Warm-up: requesting initial position...');
+    try {
+      const initialPosition = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        });
+      });
+      console.log('[GPS Collector] Initial position acquired:', {
+        lat: initialPosition.coords.latitude.toFixed(6),
+        lon: initialPosition.coords.longitude.toFixed(6),
+        accuracy: initialPosition.coords.accuracy.toFixed(0) + 'm',
+      });
+      // Process this initial position immediately
+      handlePositionUpdate(initialPosition);
+    } catch (warmupError) {
+      console.warn('[GPS Collector] Warm-up failed, continuing with watchPosition:', warmupError);
+      // Don't fail - watchPosition may still work
+    }
+
     // Start watching position with high accuracy
+    console.log('[GPS Collector] Starting watchPosition...');
     watchIdRef.current = navigator.geolocation.watchPosition(
       handlePositionUpdate,
       handlePositionError,
@@ -331,6 +354,7 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
         maximumAge: 0,
       }
     );
+    console.log('[GPS Collector] watchPosition started, watchId:', watchIdRef.current);
   }, [isCollecting, handlePositionUpdate, handlePositionError, requestWakeLock]);
 
   // Stop GPS collection

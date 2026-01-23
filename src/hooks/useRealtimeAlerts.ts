@@ -91,14 +91,18 @@ export const useRealtimeAlerts = (
     return !error;
   }, [sessionId]);
 
-  // Fetch existing alerts for session
-  const fetchAlerts = useCallback(async () => {
-    if (!sessionId) return;
+  // Use ref for callback to avoid infinite loop
+  const onNewAlertRef = useRef(onNewAlert);
+  useEffect(() => {
+    onNewAlertRef.current = onNewAlert;
+  }, [onNewAlert]);
 
+  // Fetch existing alerts for session
+  const fetchAlerts = useCallback(async (sid: string) => {
     const { data, error } = await supabase
       .from('telematics_alerts')
       .select('*')
-      .eq('telematics_id', sessionId)
+      .eq('telematics_id', sid)
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -106,7 +110,7 @@ export const useRealtimeAlerts = (
       setAlerts(typedAlerts);
       setUnacknowledgedCount(typedAlerts.filter(a => !a.acknowledged).length);
     }
-  }, [sessionId]);
+  }, []);
 
   // Subscribe to realtime alerts
   useEffect(() => {
@@ -123,7 +127,7 @@ export const useRealtimeAlerts = (
     }
 
     // Fetch existing alerts first
-    fetchAlerts();
+    fetchAlerts(sessionId);
 
     // Set up realtime subscription
     const channel = supabase
@@ -147,8 +151,8 @@ export const useRealtimeAlerts = (
           // Trigger haptic feedback
           triggerHaptic(newAlert.severity);
           
-          // Call callback if provided
-          onNewAlert?.(newAlert);
+          // Call callback if provided (use ref to avoid stale closure)
+          onNewAlertRef.current?.(newAlert);
         }
       )
       .subscribe((status) => {
@@ -164,7 +168,7 @@ export const useRealtimeAlerts = (
         channelRef.current = null;
       }
     };
-  }, [sessionId, fetchAlerts, triggerHaptic, onNewAlert]);
+  }, [sessionId, fetchAlerts, triggerHaptic]);
 
   // Get alerts by type
   const getAlertsByType = useCallback((type: TelematicsAlert['alert_type']) => {
