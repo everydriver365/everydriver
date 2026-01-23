@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Play, Square, AlertTriangle } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
@@ -28,11 +28,11 @@ const MapUpdater = ({ position }: { position: [number, number] | null }) => {
 };
 
 /* ------------------------------------------------------------------ */
-/* Current location marker                                             */
+/* Marker                                                              */
 /* ------------------------------------------------------------------ */
 const currentMarkerIcon = L.divIcon({
   className: 'current-location-marker',
-  html: `<div style="width:16px;height:16px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+  html: `<div style="width:20px;height:20px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
   iconSize: [20, 20],
   iconAnchor: [10, 10],
 });
@@ -60,16 +60,12 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
   const [elapsedTime, setElapsedTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const startTimeRef = useRef<number>(0);
+  const startTimeRef = useRef(0);
   const timerRef = useRef<number | null>(null);
 
-  /* ---------------------- Hooks ----------------------------------- */
+  /* ---------------- Hooks ----------------------------------------- */
 
-  const drivingBehavior = useDrivingBehavior({
-    onEvent: (event) => {
-      console.log('[Tracker] Driving event:', event.type);
-    },
-  });
+  const drivingBehavior = useDrivingBehavior({});
 
   const gpsTracker = useSimpleGPSTracker({
     onSpeedingDetected: (speed, limit, location) => {
@@ -91,7 +87,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
   const tripScore = useLocalTripScore();
   const telematicsSession = useTelematicsSession(instructorId);
 
-  /* ---------------------- Timer ----------------------------------- */
+  /* ---------------- Timer ----------------------------------------- */
 
   useEffect(() => {
     if (phase !== 'tracking') return;
@@ -108,7 +104,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     };
   }, [phase]);
 
-  /* ---------------------- Cleanup --------------------------------- */
+  /* ---------------- Cleanup --------------------------------------- */
 
   useEffect(() => {
     return () => {
@@ -121,7 +117,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     };
   }, []);
 
-  /* ---------------------- Start ----------------------------------- */
+  /* ---------------- Start ----------------------------------------- */
 
   const handleStart = useCallback(async () => {
     if (phase !== 'idle') return;
@@ -149,7 +145,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     }
   }, [phase, lessonId, pupilId, telematicsSession, gpsTracker, harshBraking, drivingBehavior]);
 
-  /* ---------------------- Stop ------------------------------------ */
+  /* ---------------- Stop ------------------------------------------ */
 
   const handleStop = useCallback(async () => {
     if (phase !== 'tracking') return;
@@ -178,7 +174,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
         onSessionEnd?.(sessionId);
       }
     } catch (err) {
-      console.error('[Tracker] Stop error:', err);
+      console.error(err);
     } finally {
       if (timerRef.current !== null) {
         clearInterval(timerRef.current);
@@ -188,41 +184,47 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     }
   }, [phase, gpsTracker, harshBraking, drivingBehavior, elapsedTime, telematicsSession, tripScore, onSessionEnd]);
 
-  /* ---------------------- Reset ----------------------------------- */
+  /* ---------------- Derived values -------------------------------- */
 
-  const handleReset = useCallback(() => {
-    setPhase('idle');
-    setElapsedTime(0);
-    setError(null);
-  }, []);
+  const roadName = gpsTracker.speedLimitInfo?.roadName ?? 'Unknown road';
 
-  /* ---------------------- Helpers --------------------------------- */
+  const limitMph =
+    gpsTracker.speedLimitInfo?.speedLimit !== undefined
+      ? Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)
+      : undefined;
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  const speedMph =
+    gpsTracker.currentPosition?.speedKmh !== undefined
+      ? Math.round(gpsTracker.currentPosition.speedKmh * 0.621371)
+      : undefined;
 
-  const currentPos = gpsTracker.currentPosition;
-  const mapPosition: [number, number] | null = currentPos
-    ? [currentPos.latitude, currentPos.longitude]
+  const isSpeeding = limitMph !== undefined && speedMph !== undefined && speedMph > limitMph;
+
+  const mapPosition: [number, number] | null = gpsTracker.currentPosition
+    ? [gpsTracker.currentPosition.latitude, gpsTracker.currentPosition.longitude]
     : null;
 
-  const speedLimit = gpsTracker.speedLimitInfo?.speedLimit;
-  const roadName = gpsTracker.speedLimitInfo?.roadName;
-  const currentSpeed = gpsTracker.currentPosition?.speedKmh;
-  const isSpeeding = speedLimit !== undefined && currentSpeed !== undefined && currentSpeed > speedLimit;
-
-  /* ---------------------- UI -------------------------------------- */
+  /* ---------------- UI -------------------------------------------- */
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Driving Session</CardTitle>
-      </CardHeader>
+    <Card className="w-full overflow-hidden">
+      {/* Apple-style nav header */}
+      <div className="bg-muted/80 backdrop-blur-sm border-b px-4 py-3">
+        <p className="text-xs text-muted-foreground text-center truncate">
+          {roadName}
+        </p>
+        <p
+          className={`text-lg font-semibold text-center tabular-nums ${
+            isSpeeding ? 'text-destructive' : 'text-foreground'
+          }`}
+        >
+          {speedMph !== undefined && limitMph !== undefined
+            ? `${speedMph} / ${limitMph} mph`
+            : '—'}
+        </p>
+      </div>
 
-      <CardContent className="space-y-4">
+      <CardContent className="p-4 space-y-4">
         {error && (
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
@@ -230,29 +232,8 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
           </Alert>
         )}
 
-        {/* Road + Speed Limit */}
-        {phase === 'tracking' && (
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground mb-1">Road</p>
-              <p className="text-sm font-medium truncate">{roadName ?? 'Unknown road'}</p>
-            </div>
-            <div className={`rounded-lg p-3 ${isSpeeding ? 'bg-destructive/10 border border-destructive/30' : 'bg-muted/50'}`}>
-              <p className="text-xs text-muted-foreground mb-1">Speed limit</p>
-              <p className={`text-sm font-medium ${isSpeeding ? 'text-destructive' : ''}`}>
-                {speedLimit !== undefined ? `${speedLimit} km/h` : '—'}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Controls */}
         <div className="flex gap-2">
-          <Button
-            onClick={handleStart}
-            disabled={phase !== 'idle'}
-            className="flex-1"
-          >
+          <Button onClick={handleStart} disabled={phase !== 'idle'} className="flex-1">
             <Play className="h-4 w-4 mr-2" />
             Start
           </Button>
@@ -268,25 +249,11 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
           </Button>
         </div>
 
-        {/* Timer */}
-        <div className="text-center text-2xl font-mono font-bold text-foreground">
-          {formatTime(elapsedTime)}
-        </div>
+        <p className="text-center text-sm text-muted-foreground tabular-nums">
+          Elapsed: {Math.floor(elapsedTime / 60)}:
+          {(elapsedTime % 60).toString().padStart(2, '0')}
+        </p>
 
-        {/* Status */}
-        <div className="text-center text-sm text-muted-foreground">
-          {phase === 'idle' && 'Ready to start'}
-          {phase === 'starting' && 'Starting...'}
-          {phase === 'tracking' && `Recording • ${gpsTracker.pointCount} points`}
-          {phase === 'stopping' && 'Saving...'}
-          {phase === 'complete' && (
-            <Button variant="link" onClick={handleReset} className="p-0 h-auto">
-              Session complete – Start new
-            </Button>
-          )}
-        </div>
-
-        {/* Map */}
         {mapPosition && (
           <div className="h-48 rounded-lg overflow-hidden border">
             <MapContainer
