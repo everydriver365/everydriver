@@ -381,13 +381,40 @@ export default function TrackerPage() {
           <Button
             variant={phase === 'tracking' ? 'destructive' : 'default'}
             onClick={phase === 'tracking' ? stopTracking : startTracking}
-            disabled={phase === 'stopped'}
+            disabled={phase === 'stopped' || (phase === 'idle' && !selectedPupil)}
           >
             {phase === 'tracking' ? 'Stop' : 'Start'}
           </Button>
         </div>
       </div>
 
+      {/* Pupil Selection Overlay */}
+      {phase === 'idle' && (
+        <div className="absolute inset-0 bg-background/95 z-[1001] flex items-center justify-center p-4">
+          <div className="bg-card rounded-xl border p-6 w-full max-w-sm space-y-4">
+            <h2 className="text-xl font-bold text-center">Select Pupil</h2>
+            
+            <Select value={selectedPupil || ''} onValueChange={setSelectedPupil}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a pupil" />
+              </SelectTrigger>
+              <SelectContent>
+                {pupils.map(p => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Button 
+              className="w-full" 
+              onClick={startTracking}
+              disabled={!selectedPupil}
+            >
+              Start Tracking
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Map */}
       <div className="flex-1 relative">
