@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { 
   Plus, MoreHorizontal, Search, ChevronLeft, Save, Trash2, 
   Star, Type, Layers, MessageSquare, Sparkles, Image, 
-  GripVertical, Eye, EyeOff 
+  GripVertical, Eye, EyeOff, Pencil 
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -852,6 +852,8 @@ function SectionsEditor() {
   const [sections, setSections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
 
   useEffect(() => { fetchSections(); }, []);
 
@@ -862,17 +864,46 @@ function SectionsEditor() {
     setLoading(false);
   };
 
-  const handleSave = async () => {
+  const handleEdit = (section: any) => {
+    setEditing({ ...section });
+    setDialogOpen(true);
+  };
+
+  const handleSaveSection = async () => {
+    if (!editing) return;
     setSaving(true);
-    for (const section of sections) {
-      await supabase.from("homepage_sections").update(section).eq("id", section.id);
+    const { error } = await supabase
+      .from("homepage_sections")
+      .update({
+        title: editing.title,
+        subtitle: editing.subtitle,
+        badge_text: editing.badge_text,
+        is_visible: editing.is_visible,
+        display_order: editing.display_order,
+      })
+      .eq("id", editing.id);
+
+    if (error) {
+      toast.error("Failed to save section");
+    } else {
+      toast.success("Section updated");
+      await fetchSections();
+      setDialogOpen(false);
+      setEditing(null);
     }
-    toast.success("Sections saved");
     setSaving(false);
   };
 
-  const updateSection = (id: string, updates: any) => {
-    setSections(sections.map(s => s.id === id ? { ...s, ...updates } : s));
+  const handleToggleVisibility = async (section: any) => {
+    const { error } = await supabase
+      .from("homepage_sections")
+      .update({ is_visible: !section.is_visible })
+      .eq("id", section.id);
+
+    if (!error) {
+      toast.success(section.is_visible ? "Section hidden" : "Section visible");
+      await fetchSections();
+    }
   };
 
   if (loading) return <div className="h-32 animate-pulse bg-muted rounded-lg" />;
@@ -881,10 +912,6 @@ function SectionsEditor() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Page Sections</h2>
-        <Button onClick={handleSave} disabled={saving}>
-          <Save className="mr-2 h-4 w-4" />
-          {saving ? 'Saving...' : 'Save Changes'}
-        </Button>
       </div>
 
       <div className="rounded-md border bg-card overflow-hidden">
@@ -894,29 +921,151 @@ function SectionsEditor() {
               <TableHead className="w-12">#</TableHead>
               <TableHead className="text-primary font-semibold">Section</TableHead>
               <TableHead className="text-primary font-semibold">Title</TableHead>
-              <TableHead className="text-primary font-semibold hidden md:table-cell">Subtitle</TableHead>
+              <TableHead className="text-primary font-semibold hidden md:table-cell">Badge</TableHead>
               <TableHead className="text-primary font-semibold text-center">Visible</TableHead>
+              <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sections.map((section, index) => (
-              <TableRow key={section.id}>
+              <TableRow 
+                key={section.id} 
+                className="hover:bg-muted/50 cursor-pointer"
+                onClick={() => handleEdit(section)}
+              >
                 <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-                <TableCell className="font-medium">{section.section_name}</TableCell>
                 <TableCell>
-                  <Input value={section.title} onChange={(e) => updateSection(section.id, { title: e.target.value })} className="max-w-xs" />
+                  <div>
+                    <div className="font-medium">{section.section_name}</div>
+                    <div className="text-xs text-muted-foreground font-mono">{section.section_key}</div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{section.title}</div>
+                    {section.subtitle && (
+                      <div className="text-sm text-muted-foreground line-clamp-1">{section.subtitle}</div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <Input value={section.subtitle || ""} onChange={(e) => updateSection(section.id, { subtitle: e.target.value })} className="max-w-sm" />
+                  {section.badge_text ? (
+                    <Badge variant="secondary" className="text-xs">{section.badge_text}</Badge>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">—</span>
+                  )}
                 </TableCell>
-                <TableCell className="text-center">
-                  <Switch checked={section.is_visible} onCheckedChange={(checked) => updateSection(section.id, { is_visible: checked })} />
+                <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
+                  <Switch 
+                    checked={section.is_visible} 
+                    onCheckedChange={() => handleToggleVisibility(section)} 
+                  />
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEdit(section)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleVisibility(section)}>
+                        {section.is_visible ? (
+                          <>
+                            <EyeOff className="mr-2 h-4 w-4" />
+                            Hide
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Show
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      {/* Edit Section Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Section</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-muted/50 p-3">
+                <div className="text-sm font-medium">{editing.section_name}</div>
+                <div className="text-xs text-muted-foreground font-mono">{editing.section_key}</div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input
+                  value={editing.title}
+                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                  placeholder="Section title..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Subtitle</Label>
+                <Textarea
+                  value={editing.subtitle || ""}
+                  onChange={(e) => setEditing({ ...editing, subtitle: e.target.value })}
+                  placeholder="Section subtitle or description..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Badge Text (optional)</Label>
+                  <Input
+                    value={editing.badge_text || ""}
+                    onChange={(e) => setEditing({ ...editing, badge_text: e.target.value })}
+                    placeholder="e.g. New, Popular"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Display Order</Label>
+                  <Input
+                    type="number"
+                    value={editing.display_order || 0}
+                    onChange={(e) => setEditing({ ...editing, display_order: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <Switch
+                  checked={editing.is_visible}
+                  onCheckedChange={(checked) => setEditing({ ...editing, is_visible: checked })}
+                />
+                <Label>Visible on homepage</Label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveSection} disabled={saving}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
