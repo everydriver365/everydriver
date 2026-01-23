@@ -197,18 +197,12 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
     const now = Date.now();
     const coords = position.coords;
 
-    // Update quality indicator
+    // Update quality indicator ALWAYS
     setGpsQuality({
       status: evaluateGPSQuality(coords.accuracy),
       accuracy: coords.accuracy,
       lastUpdate: new Date(),
     });
-
-    // Filter by accuracy threshold
-    if (coords.accuracy > opts.minAccuracy!) {
-      console.log(`[GPS Collector] Skipping low accuracy point: ${coords.accuracy}m`);
-      return;
-    }
 
     const point: GPSPoint = {
       latitude: coords.latitude,
@@ -220,22 +214,35 @@ export const useGPSCollector = (options: UseGPSCollectorOptions = {}) => {
       timestamp: position.timestamp,
     };
 
+    // ALWAYS update current position for map display
     setCurrentPosition(point);
     
     // Update current speed (use native speed only, convert to km/h)
     const speedKmh = coords.speed !== null && coords.speed >= 0 ? coords.speed * 3.6 : 0;
     setCurrentSpeed(speedKmh);
 
-    // Fetch speed limit if enabled and moving
+    // Fetch speed limit if enabled - do this EVEN with poor accuracy for UX
+    // But only skip the DB recording for low accuracy points
     let currentSpeedLimit: number | null = speedLimitData.speedLimit;
     let currentRoadName: string | null = speedLimitData.roadName;
     
-    if (opts.enableSpeedLimits && speedKmh > 5) {
+    const isFirstFetch = lastSpeedLimitFetchRef.current === null;
+    // Fetch on first position OR when moving, even with poor accuracy for better UX
+    const shouldFetch = opts.enableSpeedLimits && (isFirstFetch || speedKmh > 3);
+    
+    if (shouldFetch) {
+      console.log('[GPS Collector] Fetching speed limit, first:', isFirstFetch, 'speed:', speedKmh, 'accuracy:', coords.accuracy);
       const limitData = await fetchSpeedLimit(point.latitude, point.longitude, speedKmh);
       if (limitData) {
         currentSpeedLimit = limitData.speedLimit;
         currentRoadName = limitData.roadName;
       }
+    }
+
+    // Filter by accuracy threshold ONLY for recording to database, not for speed limits
+    if (coords.accuracy > opts.minAccuracy!) {
+      console.log(`[GPS Collector] Skipping DB record for low accuracy: ${coords.accuracy}m`);
+      return;
     }
 
     // Check if we should record this point

@@ -468,7 +468,13 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <Navigation className="h-4 w-4 text-primary flex-shrink-0" />
                     <span className="text-sm font-medium truncate">
-                      {gpsCollector.speedLimitData.roadName || 'Detecting road...'}
+                      {gpsCollector.speedLimitData.roadName 
+                        ? gpsCollector.speedLimitData.roadName 
+                        : gpsCollector.gpsQuality.status === 'poor' || gpsCollector.gpsQuality.status === 'unavailable'
+                          ? 'Waiting for better GPS...'
+                          : gpsCollector.currentSpeed < 3
+                            ? 'Start moving to detect road...'
+                            : 'Detecting road...'}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
@@ -484,7 +490,9 @@ const TelematicsTracker: React.FC<TelematicsTrackerProps> = ({
                         </span>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground">Fetching limit...</span>
+                      <span className="text-xs text-muted-foreground">
+                        {gpsCollector.gpsQuality.status === 'poor' ? 'GPS weak' : 'Waiting...'}
+                      </span>
                     )}
                   </div>
                 </div>
