@@ -1,12 +1,16 @@
 import { ReactNode } from "react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { 
+  Settings, 
+  BookOpen, 
+  Users, 
+  GraduationCap, 
+  CreditCard, 
+  BarChart3, 
+  FileText,
+  LogOut
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -17,30 +21,124 @@ interface AdminLayoutProps {
   onLogout: () => void;
 }
 
+const navTabs = [
+  { id: "overview", label: "Settings", icon: Settings },
+  { id: "courses", label: "Courses", icon: BookOpen },
+  { id: "instructors", label: "Instructors", icon: Users },
+  { id: "enquiries", label: "Pupils", icon: GraduationCap },
+  { id: "payments", label: "Money", icon: CreditCard },
+  { id: "bookings", label: "Stats", icon: BarChart3 },
+  { id: "hero", label: "CMS", icon: FileText },
+];
+
 export function AdminLayout({
   children,
-  sectionTitle,
-  groupTitle,
+  activeSection,
+  onSectionChange,
+  onLogout,
 }: AdminLayoutProps) {
+  // Determine which tab is active based on the current section
+  const getActiveTab = () => {
+    // Map sections to their parent tabs
+    const sectionToTab: Record<string, string> = {
+      overview: "overview",
+      "site-settings": "overview",
+      "pwa-apps": "overview",
+      courses: "courses",
+      "booking-modes": "courses",
+      upsells: "courses",
+      instructors: "instructors",
+      compliance: "instructors",
+      "instructor-messages": "instructors",
+      enquiries: "enquiries",
+      "live-chat": "enquiries",
+      messages: "enquiries",
+      payments: "payments",
+      bookings: "bookings",
+      hero: "hero",
+      sections: "hero",
+      features: "hero",
+      testimonials: "hero",
+      stats: "hero",
+      included: "hero",
+      "public-faqs": "hero",
+      images: "hero",
+      videos: "hero",
+      "instructor-home": "hero",
+      "instructor-marketing": "hero",
+      "instructor-faqs": "hero",
+      "rewards-config": "overview",
+      "reward-tiers": "overview",
+      bonuses: "overview",
+      promotions: "overview",
+    };
+    return sectionToTab[activeSection] || "overview";
+  };
+
+  const activeTab = getActiveTab();
+
   return (
     <div className="min-h-screen flex flex-col w-full bg-background">
-      <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>{groupTitle}</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{sectionTitle}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      {/* Navy Blue Header */}
+      <header className="sticky top-0 z-50 bg-[#142040]">
+        <div className="flex items-center justify-between px-6 h-14">
+          {/* Logo / Brand */}
+          <div className="flex items-center gap-3">
+            <span className="text-white font-bold text-xl">EveryDriver</span>
+            <span className="text-white/60 text-sm">Admin</span>
+          </div>
+
+          {/* Navigation Tabs */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => onSectionChange(tab.id)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                  activeTab === tab.id
+                    ? "bg-white/20 text-white"
+                    : "text-white/70 hover:text-white hover:bg-white/10"
+                )}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Logout Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onLogout}
+            className="text-white/70 hover:text-white hover:bg-white/10"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+
+        {/* Mobile Navigation */}
+        <nav className="md:hidden flex items-center gap-1 px-4 pb-2 overflow-x-auto">
+          {navTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => onSectionChange(tab.id)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap",
+                activeTab === tab.id
+                  ? "bg-white/20 text-white"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
+              )}
+            >
+              <tab.icon className="h-3 w-3" />
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </header>
+
       <main className="flex-1 p-6">
         {children}
       </main>
