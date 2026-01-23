@@ -23,15 +23,10 @@ import { SiteImageManager } from "@/components/admin/SiteImageManager";
 import { SiteVideoManager } from "@/components/admin/SiteVideoManager";
 import { PromotionalMessageManager } from "@/components/admin/PromotionalMessageManager";
 import { InstructorBonusManager } from "@/components/admin/InstructorBonusManager";
-import { HomepageFeaturesManager } from "@/components/admin/HomepageFeaturesManager";
-import { HomepageStatsManager } from "@/components/admin/HomepageStatsManager";
-import { HomepageTestimonialsManager } from "@/components/admin/HomepageTestimonialsManager";
-import { HomepageHeroManager } from "@/components/admin/HomepageHeroManager";
-import { IncludedFeaturesManager } from "@/components/admin/IncludedFeaturesManager";
+import { CMSManager } from "@/components/admin/CMSManager";
 import { InstructorHomepageManager } from "@/components/admin/InstructorHomepageManager";
 import { PWAConfigManager } from "@/components/admin/PWAConfigManager";
 import { SiteSettingsManager } from "@/components/admin/SiteSettingsManager";
-import { HomepageSectionsManager } from "@/components/admin/HomepageSectionsManager";
 import { InstructorAppCMSManager } from "@/components/admin/InstructorAppCMSManager";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import LoyaltyRewardsManager from "@/components/admin/LoyaltyRewardsManager";
@@ -396,104 +391,17 @@ export default function AdminPortal() {
         );
 
       case "sections":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Layers className="h-5 w-5 text-accent" />
-                  Homepage Sections
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HomepageSectionsManager />
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
-
       case "hero":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Type className="h-5 w-5 text-accent" />
-                  Hero Section Content
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HomepageHeroManager />
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
-
       case "stats":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LayoutDashboard className="h-5 w-5 text-accent" />
-                  Homepage Statistics
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HomepageStatsManager />
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
-
       case "testimonials":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquareQuote className="h-5 w-5 text-accent" />
-                  Testimonials
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HomepageTestimonialsManager />
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
-
       case "included":
-        return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-accent" />
-                  What's Included Features
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <IncludedFeaturesManager />
-              </CardContent>
-            </Card>
-          </motion.div>
-        );
-
       case "features":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-accent" />
-                  Homepage Features
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HomepageFeaturesManager />
-              </CardContent>
-            </Card>
+            <CMSManager 
+              onNavigate={setActiveSection} 
+              initialSection={activeSection as "features" | "testimonials" | "stats" | "hero" | "sections" | "included"} 
+            />
           </motion.div>
         );
 
@@ -571,7 +479,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Gift className="h-5 w-5 text-amber-500" />
+                  <Gift className="h-5 w-5 text-accent" />
                   Instructor Bonuses
                 </CardTitle>
               </CardHeader>
@@ -588,7 +496,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Coins className="h-5 w-5 text-amber-500" />
+                  <Coins className="h-5 w-5 text-accent" />
                   Loyalty & Rewards Configuration
                 </CardTitle>
               </CardHeader>
@@ -656,7 +564,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-emerald-500" />
+                  <Zap className="h-5 w-5 text-accent" />
                   Booking Upsells
                 </CardTitle>
               </CardHeader>
