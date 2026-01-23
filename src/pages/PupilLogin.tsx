@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import logo from "@/assets/everydriver-logo-main.png";
+
 import {
   InputOTP,
   InputOTPGroup,
@@ -169,8 +169,8 @@ export default function PupilLogin() {
         >
           <Card className="border-2">
             <CardHeader className="text-center pb-2">
-              <div className="mx-auto mb-4">
-                <img src={logo} alt="EveryDriver" className="h-12 mx-auto" />
+              <div className="bg-[#142040] rounded-xl p-4 mb-2 mx-auto inline-block">
+                <img src="/everydriver-logo-blue-bg.png" alt="EveryDriver" className="h-8 mx-auto" />
               </div>
               <CardTitle className="text-2xl">Pupil Login</CardTitle>
               <CardDescription>

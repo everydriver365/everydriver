@@ -85,11 +85,10 @@ export function AdminLayout({
           {/* Logo */}
           <div className="flex items-center gap-3">
             <img 
-              src="/everydriver-logo-main.png" 
+              src="/everydriver-logo-blue-bg.png" 
               alt="EveryDriver" 
               className="h-8"
             />
-            <span className="text-white/60 text-sm">Admin</span>
           </div>
 
           {/* Navigation Tabs */}

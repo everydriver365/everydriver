@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -177,8 +177,8 @@ export default function AdminLogin() {
         >
           <Card>
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Shield className="h-6 w-6 text-primary" />
+              <div className="bg-[#142040] rounded-xl p-4 mb-2 mx-auto inline-block">
+                <img src="/everydriver-logo-blue-bg.png" alt="EveryDriver" className="h-8 mx-auto" />
               </div>
               <CardTitle>{getTitle()}</CardTitle>
               <CardDescription>{getDescription()}</CardDescription>
