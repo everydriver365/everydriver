@@ -129,7 +129,7 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     });
   }, []);
 
-  // Fetch speed limit from TomTom (with caching)
+  // Fetch speed limit from Google Maps (with caching)
   const fetchSpeedLimit = useCallback(async (lat: number, lon: number): Promise<void> => {
     // Use cache if position hasn't changed much (within ~50m) and cache is fresh (<30s)
     const cache = speedLimitCacheRef.current;
@@ -142,8 +142,8 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('tomtom-speed-limits', {
-        body: { latitude: lat, longitude: lon },
+      const { data, error } = await supabase.functions.invoke('google-speed-limits', {
+        body: { lat, lon },
       });
 
       if (!error && data) {
@@ -160,6 +160,8 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
           speedLimit: data.speedLimit,
           roadName: data.roadName,
         }));
+        
+        console.log(`[GPS] Road: ${data.roadName}, Limit: ${data.speedLimit} km/h (${data.confidence})`);
       }
     } catch (err) {
       console.warn('[GPS Tracker] Speed limit fetch failed:', err);
