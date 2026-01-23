@@ -20,7 +20,8 @@ import {
   Bell,
   HelpCircle,
   Palette,
-  Navigation
+  Navigation,
+  Award
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -52,7 +53,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Settings,
   Car,
   Receipt,
-  Navigation
+  Navigation,
+  Award
 };
 
 interface InstructorMobileHomeProps {
@@ -258,6 +260,10 @@ export function InstructorMobileHome({
               <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
                 <User className="mr-2 h-4 w-4" />
                 View Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/instructor/test-results")}>
+                <Award className="mr-2 h-4 w-4" />
+                Test Results
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/instructor/pay")}>
                 <CreditCard className="mr-2 h-4 w-4" />

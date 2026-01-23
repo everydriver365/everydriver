@@ -60,6 +60,7 @@ import MiniWebsiteReviews from "./pages/mini-website/MiniWebsiteReviews";
 import MiniWebsiteContact from "./pages/mini-website/MiniWebsiteContact";
 import InstallInstructor from "./pages/InstallInstructor";
 import InstructorPendingScheduling from "./pages/InstructorPendingScheduling";
+import InstructorTestResults from "./pages/InstructorTestResults";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
 import PublicAvailability from "./pages/PublicAvailability";
@@ -157,6 +158,7 @@ const App = () => (
               <Route path="/instructor/faqs" element={<InstructorFAQs />} />
               <Route path="/instructor/install" element={<InstallInstructor />} />
               <Route path="/instructor/pending-scheduling" element={<InstructorPendingScheduling />} />
+              <Route path="/instructor/test-results" element={<InstructorTestResults />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />
