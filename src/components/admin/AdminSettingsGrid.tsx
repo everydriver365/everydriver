@@ -6,7 +6,10 @@ import {
   Smartphone, 
   Gift, 
   Settings,
-  LucideIcon
+  LucideIcon,
+  TrendingUp,
+  Calendar,
+  CreditCard
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -105,12 +108,62 @@ interface BadgeCounts {
   enquiries: number;
 }
 
+interface DashboardStats {
+  instructors: number;
+  revenue: number;
+  bookings: number;
+  coursesBooked: number;
+}
+
 export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
   const [badgeCounts, setBadgeCounts] = useState<BadgeCounts>({
     liveChats: 0,
     instructorMessages: 0,
     enquiries: 0,
   });
+  
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
+    instructors: 0,
+    revenue: 0,
+    bookings: 0,
+    coursesBooked: 0,
+  });
+
+  const fetchDashboardStats = useCallback(async () => {
+    try {
+      const [instructorsRes, bookingsRes, paymentsRes] = await Promise.all([
+        supabase
+          .from("instructors")
+          .select("id", { count: "exact", head: true }),
+        supabase
+          .from("scheduled_lessons")
+          .select("id", { count: "exact", head: true }),
+        supabase
+          .from("payment_history")
+          .select("amount"),
+      ]);
+
+      const totalRevenue = (paymentsRes.data || []).reduce(
+        (sum, p) => sum + (Number(p.amount) || 0),
+        0
+      );
+
+      // Get unique course bookings (pupils with assigned courses)
+      const { count: coursesCount } = await supabase
+        .from("pupils")
+        .select("id", { count: "exact", head: true })
+        .not("assigned_course", "is", null);
+
+      setDashboardStats({
+        instructors: instructorsRes.count || 0,
+        revenue: totalRevenue,
+        bookings: bookingsRes.count || 0,
+        coursesBooked: coursesCount || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+    }
+  }, []);
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -172,6 +225,7 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
 
   useEffect(() => {
     fetchCounts();
+    fetchDashboardStats();
 
     const channel = supabase
       .channel("admin_settings_grid_badges")
@@ -200,15 +254,74 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchCounts]);
+  }, [fetchCounts, fetchDashboardStats]);
 
   const getBadgeCount = (badgeKey?: string): number => {
     if (!badgeKey) return 0;
     return badgeCounts[badgeKey as keyof BadgeCounts] || 0;
   };
 
+  const formatRevenue = (amount: number) => {
+    if (amount >= 1000) {
+      return `£${(amount / 1000).toFixed(1)}k`;
+    }
+    return `£${amount.toFixed(0)}`;
+  };
+
+  const statTiles = [
+    {
+      icon: Users,
+      label: "Instructors",
+      value: dashboardStats.instructors.toString(),
+      color: "bg-blue-500/10 text-blue-600",
+      onClick: () => onNavigate("instructors"),
+    },
+    {
+      icon: TrendingUp,
+      label: "Revenue",
+      value: formatRevenue(dashboardStats.revenue),
+      color: "bg-green-500/10 text-green-600",
+      onClick: () => onNavigate("payments"),
+    },
+    {
+      icon: Calendar,
+      label: "Bookings",
+      value: dashboardStats.bookings.toString(),
+      color: "bg-purple-500/10 text-purple-600",
+      onClick: () => onNavigate("bookings"),
+    },
+    {
+      icon: CreditCard,
+      label: "Courses Booked",
+      value: dashboardStats.coursesBooked.toString(),
+      color: "bg-orange-500/10 text-orange-600",
+      onClick: () => onNavigate("courses"),
+    },
+  ];
+
   return (
-    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="space-y-8">
+      {/* Stats Tiles */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statTiles.map((tile) => (
+          <button
+            key={tile.label}
+            onClick={tile.onClick}
+            className="flex items-center gap-3 p-4 bg-card rounded-lg border hover:border-primary/50 hover:shadow-sm transition-all text-left"
+          >
+            <div className={`flex h-10 w-10 items-center justify-center rounded-lg shrink-0 ${tile.color}`}>
+              <tile.icon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-2xl font-bold truncate">{tile.value}</div>
+              <div className="text-xs text-muted-foreground truncate">{tile.label}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Settings Grid */}
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {settingsCategories.map((category) => (
         <div key={category.title} className="space-y-3">
           {/* Category Header */}
@@ -246,6 +359,7 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }
