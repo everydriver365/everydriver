@@ -313,7 +313,7 @@ export function DrivingTestReportForm({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 flex flex-col overflow-hidden">
-        <DialogHeader className="px-6 py-4 border-b bg-muted/30 flex-shrink-0">
+        <div className="px-6 py-4 border-b bg-muted/30 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg ${isMock ? "bg-blue-100 dark:bg-blue-900" : "bg-primary/10"}`}>
@@ -324,10 +324,12 @@ export function DrivingTestReportForm({
                 )}
               </div>
               <div>
-                <DialogTitle className="text-lg">
-                  {isMock ? "Mock Test" : "Driving Test Report"} - DL25A
-                </DialogTitle>
-                <DialogDescription>{pupilName}</DialogDescription>
+                <DialogHeader className="p-0 space-y-1">
+                  <DialogTitle className="text-lg">
+                    {isMock ? "Mock Test" : "Driving Test Report"} - DL25A
+                  </DialogTitle>
+                  <DialogDescription>{pupilName}</DialogDescription>
+                </DialogHeader>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -341,7 +343,7 @@ export function DrivingTestReportForm({
               />
             </div>
           </div>
-        </DialogHeader>
+        </div>
 
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-6 space-y-6">
