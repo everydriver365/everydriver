@@ -1,102 +1,212 @@
+import { useState, useEffect, useCallback } from "react";
 import { 
-  Settings, Users, CreditCard, Globe, BookOpen, 
-  Shield, FileEdit, MessageCircle, Sparkles, Layers,
-  LayoutDashboard, MessageSquareQuote, Rocket, HelpCircle,
-  ImageIcon, Video, Smartphone, Megaphone, CalendarClock,
-  Zap, Coins, Award, Gift, Download, Calendar
+  Users, 
+  BookOpen, 
+  Globe, 
+  Smartphone, 
+  Gift, 
+  Settings,
+  LucideIcon
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SettingsLink {
   key: string;
   title: string;
   description: string;
+  badgeKey?: string;
 }
 
 interface SettingsCategory {
   title: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   iconColor: string;
   links: SettingsLink[];
-}
-
-interface AdminSettingsGridProps {
-  onNavigate: (section: string) => void;
 }
 
 const settingsCategories: SettingsCategory[] = [
   {
     title: "People & Support",
     icon: Users,
-    iconColor: "text-amber-500",
+    iconColor: "text-blue-500",
     links: [
       { key: "instructors", title: "Instructors", description: "Manage instructor accounts and profiles." },
       { key: "compliance", title: "Compliance Dashboard", description: "Track ADI badge, DBS, and document expiry." },
-      { key: "enquiries", title: "Enquiries & Callbacks", description: "Review bespoke course requests and callback requests." },
-      { key: "instructor-messages", title: "Instructor Support", description: "Handle support chats with instructors." },
-      { key: "live-chat", title: "Visitor Chats", description: "Manage live chat sessions with website visitors." },
+      { key: "enquiries", title: "Enquiries & Callbacks", description: "Review bespoke course requests and callback requests.", badgeKey: "enquiries" },
+      { key: "instructor-messages", title: "Instructor Support", description: "Handle support chats with instructors.", badgeKey: "instructorMessages" },
+      { key: "live-chat", title: "Visitor Chats", description: "Manage live chat sessions with website visitors.", badgeKey: "liveChats" },
     ],
   },
   {
     title: "Products & Booking",
     icon: BookOpen,
-    iconColor: "text-amber-500",
+    iconColor: "text-green-500",
     links: [
-      { key: "courses", title: "Course Templates", description: "Configure course types and pricing." },
-      { key: "booking-modes", title: "Booking Modes", description: "View instructor booking mode settings." },
-      { key: "upsells", title: "Booking Upsells", description: "Add-ons offered during checkout." },
-      { key: "promotions", title: "Promotional Banners", description: "Configure site-wide promotional messages." },
-      { key: "bookings", title: "All Bookings", description: "View and manage all lesson bookings." },
-      { key: "payments", title: "Payment History", description: "Track payments and transactions." },
+      { key: "courses", title: "Course Templates", description: "Create and manage driving course packages." },
+      { key: "booking-modes", title: "Booking Modes", description: "Configure instructor booking preferences." },
+      { key: "upsells", title: "Booking Upsells", description: "Add-on services during checkout." },
+      { key: "bookings", title: "All Bookings", description: "View and manage all course bookings." },
+      { key: "payments", title: "Payment History", description: "Track all payment transactions." },
     ],
   },
   {
     title: "Learner Website",
     icon: Globe,
-    iconColor: "text-amber-500",
+    iconColor: "text-purple-500",
     links: [
-      { key: "hero", title: "Hero Section", description: "Edit the main homepage hero content." },
-      { key: "sections", title: "Page Sections", description: "Configure section visibility and order." },
-      { key: "stats", title: "Stats Counter", description: "Set the statistics displayed on homepage." },
-      { key: "testimonials", title: "Testimonials", description: "Manage customer reviews and testimonials." },
-      { key: "features", title: "Features", description: "Edit feature highlights." },
-      { key: "included", title: "What's Included", description: "Configure the included features section." },
-      { key: "public-faqs", title: "FAQs", description: "Edit frequently asked questions." },
+      { key: "hero", title: "Hero Section", description: "Edit the main homepage banner." },
+      { key: "sections", title: "Page Sections", description: "Manage homepage section visibility." },
+      { key: "features", title: "Features", description: "Highlight key selling points." },
+      { key: "testimonials", title: "Testimonials", description: "Customer reviews and quotes." },
+      { key: "public-faqs", title: "FAQs", description: "Frequently asked questions." },
       { key: "images", title: "Site Images", description: "Upload and manage site imagery." },
-      { key: "videos", title: "Site Videos", description: "Manage promotional videos." },
     ],
   },
   {
     title: "Instructor Platform",
     icon: Smartphone,
-    iconColor: "text-amber-500",
+    iconColor: "text-orange-500",
     links: [
-      { key: "instructor-home", title: "App Homepage", description: "Configure instructor app dashboard content." },
-      { key: "instructor-marketing", title: "Marketing Page", description: "Edit the instructor sign-up landing page." },
-      { key: "instructor-faqs", title: "Instructor FAQs", description: "Help articles for instructors." },
+      { key: "instructor-home", title: "App Homepage", description: "Configure instructor app home screen." },
+      { key: "instructor-marketing", title: "Marketing Page", description: "Drive365 landing page content." },
+      { key: "instructor-faqs", title: "Instructor FAQs", description: "Help content for instructors." },
     ],
   },
   {
     title: "Engagement & Rewards",
     icon: Gift,
-    iconColor: "text-amber-500",
+    iconColor: "text-pink-500",
     links: [
-      { key: "rewards-config", title: "Loyalty Settings", description: "Configure points and rewards system." },
-      { key: "reward-tiers", title: "Badge Tiers & Perks", description: "Set up achievement levels and benefits." },
-      { key: "bonuses", title: "Instructor Bonuses", description: "Manage referral and performance bonuses." },
+      { key: "rewards-config", title: "Loyalty Settings", description: "Points and rewards configuration." },
+      { key: "reward-tiers", title: "Badge Tiers & Perks", description: "Membership levels and benefits." },
+      { key: "bonuses", title: "Instructor Bonuses", description: "Performance incentive programs." },
+      { key: "promotions", title: "Promotional Banners", description: "Marketing messages and offers." },
     ],
   },
   {
     title: "System Settings",
     icon: Settings,
-    iconColor: "text-amber-500",
+    iconColor: "text-slate-500",
     links: [
-      { key: "pwa-apps", title: "PWA Configuration", description: "Configure progressive web app settings." },
-      { key: "site-settings", title: "Site Settings & SEO", description: "General site configuration and meta tags." },
+      { key: "pwa-apps", title: "PWA Configuration", description: "Mobile app settings and icons." },
+      { key: "site-settings", title: "Site Settings & SEO", description: "Global configuration and metadata." },
     ],
   },
 ];
 
+interface AdminSettingsGridProps {
+  onNavigate: (section: string) => void;
+}
+
+interface BadgeCounts {
+  liveChats: number;
+  instructorMessages: number;
+  enquiries: number;
+}
+
 export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
+  const [badgeCounts, setBadgeCounts] = useState<BadgeCounts>({
+    liveChats: 0,
+    instructorMessages: 0,
+    enquiries: 0,
+  });
+
+  const fetchCounts = useCallback(async () => {
+    try {
+      const [
+        activeSessionsRes,
+        instructorUnreadRes,
+        bespokeRes,
+        callbackRes,
+      ] = await Promise.all([
+        // Active live chat sessions with unread messages
+        supabase
+          .from("live_chat_sessions")
+          .select("id")
+          .eq("session_type", "admin")
+          .eq("status", "active"),
+        // Unread instructor messages
+        supabase
+          .from("admin_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("sender_type", "instructor")
+          .is("read_at", null),
+        // Pending bespoke requests
+        supabase
+          .from("course_enquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending")
+          .not("course_type", "in", '("callback","general")'),
+        // Pending callback requests
+        supabase
+          .from("course_enquiries")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending")
+          .in("course_type", ["callback", "general"]),
+      ]);
+
+      const activeSessionIds = (activeSessionsRes.data ?? []).map((s) => s.id);
+      
+      let liveChatUnreadCount = 0;
+      if (!activeSessionsRes.error && activeSessionIds.length > 0) {
+        const { count: unreadCount } = await supabase
+          .from("live_chat_messages")
+          .select("id", { count: "exact", head: true })
+          .in("session_id", activeSessionIds)
+          .eq("sender_type", "visitor")
+          .is("read_at", null);
+
+        liveChatUnreadCount = unreadCount || 0;
+      }
+
+      setBadgeCounts({
+        liveChats: liveChatUnreadCount,
+        instructorMessages: instructorUnreadRes.count || 0,
+        enquiries: (bespokeRes.count || 0) + (callbackRes.count || 0),
+      });
+    } catch (error) {
+      console.error("Error fetching notification counts:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCounts();
+
+    const channel = supabase
+      .channel("admin_settings_grid_badges")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "live_chat_sessions" },
+        () => fetchCounts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "live_chat_messages" },
+        () => fetchCounts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "admin_messages" },
+        () => fetchCounts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "course_enquiries" },
+        () => fetchCounts()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchCounts]);
+
+  const getBadgeCount = (badgeKey?: string): number => {
+    if (!badgeKey) return 0;
+    return badgeCounts[badgeKey as keyof BadgeCounts] || 0;
+  };
+
   return (
     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {settingsCategories.map((category) => (
@@ -109,20 +219,30 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
           
           {/* Links */}
           <div className="space-y-1 pl-9">
-            {category.links.map((link) => (
-              <button
-                key={link.key}
-                onClick={() => onNavigate(link.key)}
-                className="block w-full text-left group"
-              >
-                <span className="text-primary hover:underline font-medium text-sm">
-                  {link.title}
-                </span>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {link.description}
-                </p>
-              </button>
-            ))}
+            {category.links.map((link) => {
+              const count = getBadgeCount(link.badgeKey);
+              return (
+                <button
+                  key={link.key}
+                  onClick={() => onNavigate(link.key)}
+                  className="block w-full text-left group"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <span className="text-primary hover:underline font-medium text-sm">
+                      {link.title}
+                    </span>
+                    {count > 0 && (
+                      <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs animate-pulse">
+                        {count}
+                      </Badge>
+                    )}
+                  </span>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {link.description}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </div>
       ))}
