@@ -41,7 +41,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import logoDark from "@/assets/logo-drive365-dark.png";
+import mainLogo from "@/assets/everydriver-logo-main.png";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -150,8 +150,8 @@ export function InstructorMobileHome({
       <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-primary dark:bg-card/95 dark:backdrop-blur-md dark:border-b dark:border-white/10">
         {/* Logo on the left */}
         <img 
-          src={logoDark} 
-          alt="Drive365" 
+          src={mainLogo} 
+          alt="EveryDriver" 
           className="h-8 object-contain"
         />
         

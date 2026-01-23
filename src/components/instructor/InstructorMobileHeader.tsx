@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import logoDrive365 from "@/assets/logo-drive365-dark.png";
+import mainLogo from "@/assets/everydriver-logo-main.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;
@@ -58,8 +58,8 @@ export function InstructorMobileHeader({
           </Button>
         )}
         <img 
-          src={logoDrive365} 
-          alt="Drive365" 
+          src={mainLogo} 
+          alt="EveryDriver" 
           className="h-7 object-contain"
         />
       </div>
