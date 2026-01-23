@@ -86,21 +86,22 @@ export function ExaminerManager({ instructorId }: ExaminerManagerProps) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [examinersRes, centresRes] = await Promise.all([
-        supabase
-          .from("examiners")
-          .select("*")
-          .eq("instructor_id", instructorId)
-          .order("name"),
-        supabase
-          .from("test_centres")
-          .select("id, name")
-          .eq("instructor_id", instructorId)
-          .order("name"),
-      ]);
+      // @ts-ignore - Supabase type depth issue
+      const examinersRes = await supabase
+        .from("examiners")
+        .select("*")
+        .eq("instructor_id", instructorId)
+        .order("name");
+      
+      // @ts-ignore - Supabase type depth issue
+      const centresRes = await supabase
+        .from("test_centres")
+        .select("id, name")
+        .eq("instructor_id", instructorId)
+        .order("name");
 
       if (examinersRes.data) setExaminers(examinersRes.data as Examiner[]);
-      if (centresRes.data) setTestCentres(centresRes.data);
+      if (centresRes.data) setTestCentres(centresRes.data as TestCentre[]);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
