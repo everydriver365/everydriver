@@ -21,7 +21,8 @@ import {
   Headphones,
   ShieldCheck,
   ClipboardList,
-  Award
+  Award,
+  ChevronRight
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -159,6 +160,21 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </div>
         </header>
 
+        {/* Breadcrumb - Mobile */}
+        {showBackButton && (
+          <div className="px-4 py-2 bg-muted/30 border-b">
+            <nav className="flex items-center text-sm text-muted-foreground">
+              <Link to="/instructor" className="hover:text-foreground transition-colors">
+                Dashboard
+              </Link>
+              <ChevronRight className="h-4 w-4 mx-2" />
+              <span className="text-foreground font-medium">
+                {sidebarLinks.find(l => l.href === location.pathname)?.label || "Page"}
+              </span>
+            </nav>
+          </div>
+        )}
+
         <main className="px-4 py-4 overflow-x-hidden">
           {children}
         </main>
@@ -272,6 +288,22 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
       {/* Main Content */}
       <main className="flex-1 ml-64">
+        {/* Breadcrumb - Desktop */}
+        <div className="border-b bg-muted/30 px-6 py-2">
+          <nav className="flex items-center text-sm text-muted-foreground">
+            <Link to="/instructor" className="hover:text-foreground transition-colors">
+              Dashboard
+            </Link>
+            {location.pathname !== "/instructor" && (
+              <>
+                <ChevronRight className="h-4 w-4 mx-2" />
+                <span className="text-foreground font-medium">
+                  {sidebarLinks.find(l => l.href === location.pathname)?.label || "Page"}
+                </span>
+              </>
+            )}
+          </nav>
+        </div>
         <div className="container py-6 max-w-6xl">
           {children}
         </div>

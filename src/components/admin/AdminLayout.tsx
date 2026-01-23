@@ -7,7 +7,8 @@ import {
   CreditCard, 
   BarChart3, 
   FileText,
-  LogOut
+  LogOut,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,8 @@ const navTabs = [
 export function AdminLayout({
   children,
   activeSection,
+  sectionTitle,
+  groupTitle,
   onSectionChange,
   onLogout,
 }: AdminLayoutProps) {
@@ -141,6 +144,22 @@ export function AdminLayout({
           ))}
         </nav>
       </header>
+
+      {/* Breadcrumb */}
+      <div className="border-b bg-muted/30 px-6 py-2">
+        <nav className="flex items-center text-sm text-muted-foreground">
+          <button 
+            onClick={() => onSectionChange("overview")}
+            className="hover:text-foreground transition-colors"
+          >
+            Admin
+          </button>
+          <ChevronRight className="h-4 w-4 mx-2" />
+          <span className="text-muted-foreground">{groupTitle}</span>
+          <ChevronRight className="h-4 w-4 mx-2" />
+          <span className="text-foreground font-medium">{sectionTitle}</span>
+        </nav>
+      </div>
 
       <main className="flex-1 p-6">
         {children}
