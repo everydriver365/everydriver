@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { InstructorForm } from "@/components/admin/InstructorForm";
 import { InstructorList } from "@/components/admin/InstructorList";
+import { InstructorManager } from "@/components/admin/InstructorManager";
 import { CourseTemplateManager } from "@/components/admin/CourseTemplateManager";
 import { SiteImageManager } from "@/components/admin/SiteImageManager";
 import { SiteVideoManager } from "@/components/admin/SiteVideoManager";
@@ -246,31 +247,7 @@ export default function AdminPortal() {
       case "instructors":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-accent" />
-                  Manage Instructors
-                </CardTitle>
-                <Button onClick={() => setIsFormOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Instructor
-                </Button>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                  </div>
-                ) : (
-                  <InstructorList
-                    instructors={instructors}
-                    onEdit={handleEdit}
-                    onRefresh={fetchInstructors}
-                  />
-                )}
-              </CardContent>
-            </Card>
+            <InstructorManager onEdit={handleEdit} />
           </motion.div>
         );
 
