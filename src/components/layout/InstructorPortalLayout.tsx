@@ -118,7 +118,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               />
             </div>
             
-            {/* Right: QR, Availability, Theme, Settings, Avatar */}
+            {/* Right: QR, Availability, Settings, Avatar */}
             <div className="flex items-center gap-1">
               {instructor?.payment_qr_url && (
                 <Button
@@ -138,18 +138,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 title="Quick Availability"
               >
                 <CalendarClock className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className="text-nav-foreground hover:bg-nav-foreground/10 h-8 w-8"
-              >
-                {resolvedTheme === 'dark' ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
               </Button>
               <Button
                 variant="ghost"
