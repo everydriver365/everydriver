@@ -9,7 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Bookmark, MapPin } from 'lucide-react';
+import { Bookmark, MapPin, FileText, X } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import SessionRouteReport from '@/components/instructor/SessionRouteReport';
 import { toast } from 'sonner';
 
 import { useSimpleGPSTracker } from '@/hooks/useSimpleGPSTracker';
@@ -95,6 +97,9 @@ export default function TrackerPage() {
   const [routeDescription, setRouteDescription] = useState('');
   const [routeCategory, setRouteCategory] = useState('test_routes');
   const [saving, setSaving] = useState(false);
+  
+  // Route report sheet state
+  const [showReportSheet, setShowReportSheet] = useState(false);
 
   // Category options
   const categoryOptions = [
@@ -441,6 +446,10 @@ export default function TrackerPage() {
           <div className="flex items-center justify-between p-3 border-b bg-card shrink-0">
             <h2 className="text-lg font-bold">Trip Report</h2>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowReportSheet(true)}>
+                <FileText className="h-4 w-4" />
+                Full Report
+              </Button>
               <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowSaveDialog(true)}>
                 <Bookmark className="h-4 w-4" />
                 Save
@@ -507,6 +516,31 @@ export default function TrackerPage() {
           </div>
         </div>
       )}
+
+      {/* Full Route Report Sheet */}
+      <Sheet open={showReportSheet} onOpenChange={setShowReportSheet}>
+        <SheetContent side="bottom" className="h-[90vh] p-0 overflow-hidden">
+          <SheetHeader className="p-4 border-b bg-card">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Detailed Route Report
+              </SheetTitle>
+              <Button variant="ghost" size="icon" onClick={() => setShowReportSheet(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </SheetHeader>
+          <div className="flex-1 overflow-auto p-4 h-[calc(90vh-60px)]">
+            {sessionId && (
+              <SessionRouteReport 
+                telematicsId={sessionId} 
+                onClose={() => setShowReportSheet(false)} 
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Save Route Dialog */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
