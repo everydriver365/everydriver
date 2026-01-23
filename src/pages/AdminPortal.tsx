@@ -238,46 +238,8 @@ export default function AdminPortal() {
       case "overview":
         return (
           <>
-            {/* Notification Tiles */}
-            <NotificationTiles onNavigate={setActiveSection} />
-
-            {/* Stats Grid - Keep the top tiles */}
-            <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                          <stat.icon className="h-5 w-5 text-primary" />
-                        </div>
-                        <span className={`flex items-center gap-1 text-xs ${
-                          stat.trend === "up" ? "text-success" : "text-muted-foreground"
-                        }`}>
-                          {stat.trend === "up" && <TrendingUp className="h-3 w-3" />}
-                          {stat.change}
-                        </span>
-                      </div>
-                      <div className="mt-3">
-                        <div className="text-2xl font-bold">{stat.value}</div>
-                        <div className="text-sm text-muted-foreground">{stat.label}</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Settings-style Grid (Arlo design) */}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-6">Settings</h2>
-              <AdminSettingsGrid onNavigate={setActiveSection} />
-            </div>
+            {/* Settings-style Grid with integrated alerts */}
+            <AdminSettingsGrid onNavigate={setActiveSection} />
           </>
         );
 
