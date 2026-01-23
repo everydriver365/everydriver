@@ -8,7 +8,7 @@ const corsHeaders = {
 interface SpeedLimitResponse {
   speedLimit: number | null;
   roadName: string | null;
-  source: 'google_roads' | 'osm' | null;
+  source: 'tomtom' | 'osm' | null;
 }
 
 serve(async (req) => {
@@ -17,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    const googleApiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
+    const tomtomApiKey = Deno.env.get("TOMTOM_API_KEY");
     
     let lat: number, lon: number;
     try {
@@ -43,57 +43,67 @@ serve(async (req) => {
 
     let speedLimit: number | null = null;
     let roadName: string | null = null;
-    let source: 'google_roads' | 'osm' | null = null;
+    let source: 'tomtom' | 'osm' | null = null;
 
-    // Method 1: Google Roads API - provides real speed limit data
-    if (googleApiKey) {
+    // Method 1: TomTom Snap to Roads API
+    if (tomtomApiKey) {
       try {
-        const roadsUrl = `https://roads.googleapis.com/v1/speedLimits?path=${lat},${lon}&key=${googleApiKey}`;
-        console.log(`Trying Google Roads API...`);
+        // Use TomTom Snap to Roads API with speed limit info
+        const snapUrl = `https://api.tomtom.com/snap/1/snap?key=${tomtomApiKey}&points=${lat},${lon}&fields={speedLimit,road{name}}`;
+        console.log(`Trying TomTom Snap to Roads API...`);
         
-        const roadsResponse = await fetch(roadsUrl);
-        const responseText = await roadsResponse.text();
+        const snapResponse = await fetch(snapUrl);
+        const responseText = await snapResponse.text();
         
-        if (roadsResponse.ok) {
-          const roadsData = JSON.parse(responseText);
-          console.log(`Google Roads response:`, JSON.stringify(roadsData));
+        if (snapResponse.ok) {
+          const snapData = JSON.parse(responseText);
+          console.log(`TomTom Snap response:`, JSON.stringify(snapData));
           
-          if (roadsData.speedLimits && roadsData.speedLimits.length > 0) {
-            const limitData = roadsData.speedLimits[0];
-            // Google returns speed in km/h
-            speedLimit = limitData.speedLimit;
-            source = 'google_roads';
-            console.log(`Google Roads: speed limit = ${speedLimit} km/h`);
-          }
-          
-          // Get snapped road info if available
-          if (roadsData.snappedPoints && roadsData.snappedPoints.length > 0) {
-            const placeId = roadsData.snappedPoints[0].placeId;
-            if (placeId) {
-              // Get road name from Places API
-              try {
-                const placeUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name&key=${googleApiKey}`;
-                const placeResponse = await fetch(placeUrl);
-                if (placeResponse.ok) {
-                  const placeData = await placeResponse.json();
-                  if (placeData.result?.name) {
-                    roadName = placeData.result.name;
-                  }
-                }
-              } catch (placeErr) {
-                console.log('Place details error:', placeErr);
-              }
+          if (snapData.snappedPoints && snapData.snappedPoints.length > 0) {
+            const point = snapData.snappedPoints[0];
+            
+            // Get speed limit (TomTom returns in km/h)
+            if (point.speedLimit !== undefined && point.speedLimit !== null) {
+              speedLimit = point.speedLimit;
+              source = 'tomtom';
+              console.log(`TomTom: speed limit = ${speedLimit} km/h`);
+            }
+            
+            // Get road name
+            if (point.road?.name) {
+              roadName = point.road.name;
             }
           }
         } else {
-          console.log(`Google Roads API error: ${roadsResponse.status} - ${responseText}`);
-          // Check if it's a permissions/billing issue
-          if (roadsResponse.status === 403 || roadsResponse.status === 400) {
-            console.log('Note: Roads API may need to be enabled in Google Cloud Console');
+          console.log(`TomTom Snap API error: ${snapResponse.status} - ${responseText}`);
+          
+          // Try TomTom Reverse Geocode for road name at least
+          try {
+            const reverseUrl = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${tomtomApiKey}&returnSpeedLimit=true`;
+            console.log(`Trying TomTom Reverse Geocode...`);
+            
+            const reverseResponse = await fetch(reverseUrl);
+            if (reverseResponse.ok) {
+              const reverseData = await reverseResponse.json();
+              console.log(`TomTom Reverse response:`, JSON.stringify(reverseData));
+              
+              if (reverseData.addresses && reverseData.addresses.length > 0) {
+                const addr = reverseData.addresses[0].address;
+                roadName = addr.streetName || addr.street || null;
+                
+                // Check for speed limit in response
+                if (reverseData.addresses[0].speedLimit) {
+                  speedLimit = reverseData.addresses[0].speedLimit;
+                  source = 'tomtom';
+                }
+              }
+            }
+          } catch (reverseError) {
+            console.error('TomTom Reverse Geocode error:', reverseError);
           }
         }
-      } catch (roadsError) {
-        console.error('Google Roads API error:', roadsError);
+      } catch (tomtomError) {
+        console.error('TomTom API error:', tomtomError);
       }
     }
 
@@ -165,26 +175,22 @@ serve(async (req) => {
       }
     }
 
-    // Get road name from Google if we don't have it yet
-    if (!roadName && googleApiKey) {
+    // Get road name from TomTom reverse geocode if we don't have it yet
+    if (!roadName && tomtomApiKey) {
       try {
-        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${googleApiKey}&result_type=route`;
-        const geocodeResponse = await fetch(geocodeUrl);
+        const reverseUrl = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${tomtomApiKey}`;
+        const reverseResponse = await fetch(reverseUrl);
         
-        if (geocodeResponse.ok) {
-          const geocodeData = await geocodeResponse.json();
+        if (reverseResponse.ok) {
+          const reverseData = await reverseResponse.json();
           
-          if (geocodeData.status === 'OK' && geocodeData.results?.length > 0) {
-            for (const component of geocodeData.results[0].address_components || []) {
-              if (component.types.includes('route')) {
-                roadName = component.long_name;
-                break;
-              }
-            }
+          if (reverseData.addresses && reverseData.addresses.length > 0) {
+            const addr = reverseData.addresses[0].address;
+            roadName = addr.streetName || addr.street || null;
           }
         }
       } catch (geocodeError) {
-        console.error('Geocoding error:', geocodeError);
+        console.error('TomTom geocoding error:', geocodeError);
       }
     }
 
