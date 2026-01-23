@@ -46,53 +46,33 @@ serve(async (req) => {
     let roadName: string | null = null;
     let source: 'here' | 'tomtom' | 'osm' | null = null;
 
-    // Method 1: HERE Route Matching API (primary - most accurate speed limits)
+    // Method 1: HERE Reverse Geocode API (primary - includes speed limits)
     if (hereApiKey) {
       try {
-        // Use same point twice for single-point matching
-        const hereUrl = `https://routematching.hereapi.com/v8/match/routelinks?apikey=${hereApiKey}&waypoint0=${lat},${lon}&waypoint1=${lat},${lon}&mode=fastest;car&routeMatch=1&attributes=SPEED_LIMITS_FCn(*)`;
-        console.log(`Trying HERE Route Matching API...`);
+        const hereUrl = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${lon}&lang=en-US&apiKey=${hereApiKey}`;
+        console.log(`Trying HERE Reverse Geocode API...`);
         
         const hereResponse = await fetch(hereUrl);
         const responseText = await hereResponse.text();
         
         if (hereResponse.ok) {
           const hereData = JSON.parse(responseText);
-          console.log(`HERE response status: ${hereResponse.status}`);
+          console.log(`HERE response:`, JSON.stringify(hereData).substring(0, 500));
           
-          // Parse route links for speed limit data
-          if (hereData.response?.route?.[0]?.leg?.[0]?.link) {
-            const links = hereData.response.route[0].leg[0].link;
+          if (hereData.items && hereData.items.length > 0) {
+            const item = hereData.items[0];
             
-            for (const link of links) {
-              // Get road name
-              if (!roadName && link.roadName) {
-                roadName = link.roadName;
-                console.log(`HERE road name: ${roadName}`);
-              }
-              
-              // Get speed limit from SPEED_LIMITS_FCn attributes
-              if (speedLimit === null && link.attributes?.SPEED_LIMITS_FCn) {
-                const speedLimits = link.attributes.SPEED_LIMITS_FCn;
-                // Speed limits are in km/h, find the first valid one
-                for (const sl of speedLimits) {
-                  if (sl.FROM_REF_SPEED_LIMIT) {
-                    speedLimit = sl.FROM_REF_SPEED_LIMIT;
-                    source = 'here';
-                    console.log(`HERE speed limit: ${speedLimit} km/h`);
-                    break;
-                  }
-                  if (sl.TO_REF_SPEED_LIMIT) {
-                    speedLimit = sl.TO_REF_SPEED_LIMIT;
-                    source = 'here';
-                    console.log(`HERE speed limit: ${speedLimit} km/h`);
-                    break;
-                  }
-                }
-              }
-              
-              // Stop if we have both
-              if (speedLimit !== null && roadName) break;
+            // Get road name from address
+            if (item.address?.street) {
+              roadName = item.address.street;
+              console.log(`HERE road name: ${roadName}`);
+            }
+            
+            // Check for speed limit in the response
+            if (item.access?.[0]?.speedLimit) {
+              speedLimit = item.access[0].speedLimit;
+              source = 'here';
+              console.log(`HERE speed limit: ${speedLimit} km/h`);
             }
           }
         } else {
@@ -100,6 +80,29 @@ serve(async (req) => {
         }
       } catch (hereError) {
         console.error('HERE API error:', hereError);
+      }
+    }
+    
+    // Method 1b: HERE Discover API for speed limits (if reverse geocode didn't get it)
+    if (speedLimit === null && hereApiKey) {
+      try {
+        const discoverUrl = `https://discover.search.hereapi.com/v1/discover?at=${lat},${lon}&q=road&limit=1&apiKey=${hereApiKey}`;
+        console.log(`Trying HERE Discover API for speed limit...`);
+        
+        const discoverResponse = await fetch(discoverUrl);
+        
+        if (discoverResponse.ok) {
+          const discoverData = await discoverResponse.json();
+          console.log(`HERE Discover response:`, JSON.stringify(discoverData).substring(0, 500));
+          
+          if (discoverData.items?.[0]?.access?.[0]?.speedLimit) {
+            speedLimit = discoverData.items[0].access[0].speedLimit;
+            source = 'here';
+            console.log(`HERE Discover speed limit: ${speedLimit} km/h`);
+          }
+        }
+      } catch (discoverError) {
+        console.error('HERE Discover API error:', discoverError);
       }
     }
 
