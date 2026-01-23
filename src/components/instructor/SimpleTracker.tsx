@@ -1,32 +1,13 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card } from '@/components/ui/card';
-import { Play, Square, AlertTriangle } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { Play, Square, AlertTriangle, MapPin } from 'lucide-react';
 
 import { useSimpleGPSTracker } from '@/hooks/useSimpleGPSTracker';
 import { useHarshBrakingDetector } from '@/hooks/useHarshBrakingDetector';
 import { useDrivingBehavior } from '@/hooks/useDrivingBehavior';
 import { useLocalTripScore, TripStats } from '@/hooks/useLocalTripScore';
 import { useTelematicsSession } from '@/hooks/useTelematicsSession';
-
-const MapUpdater = ({ position }: { position: [number, number] | null }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (position) map.panTo(position, { animate: true });
-  }, [position, map]);
-  return null;
-};
-
-const currentMarkerIcon = L.divIcon({
-  className: 'current-location-marker',
-  html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
 
 interface RoadEvent {
   roadName: string;
@@ -101,11 +82,8 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
         turns: 0,
       };
 
-      // Update max speed
       const updatedEvent = { ...prevEvent };
       updatedEvent.maxSpeed = Math.max(prevEvent.maxSpeed, speedMph);
-
-      // Speeding
       if (limitMph > 0 && speedMph > limitMph) updatedEvent.speedExceeded = true;
 
       // Turns detection based on heading change
@@ -117,7 +95,6 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
 
       return { ...prev, [road]: updatedEvent };
     });
-
   }, [gpsTracker.currentPosition, gpsTracker.speedLimitInfo, phase]);
 
   /* ---------------- Cleanup --------------------------------------- */
@@ -160,6 +137,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
       const gpsResult = gpsTracker.stopTracking();
       harshBraking.stopDetection();
       const behaviorStats = await drivingBehavior.stopTracking();
+
       const tripStats: TripStats = {
         harshBrakeCount: behaviorStats.harshBrakeCount,
         speedingEventsCount: behaviorStats.speedingEventsCount,
@@ -168,6 +146,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
         totalDistanceKm: gpsResult.totalDistance / 1000,
         durationMinutes: elapsedTime / 60,
       };
+
       const sessionId = telematicsSession.currentSession?.id;
       if (sessionId) {
         await tripScore.calculateAndSaveScore(sessionId, tripStats);
@@ -181,24 +160,18 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
 
   /* ---------------- Derived --------------------------------------- */
   const roadName = gpsTracker.speedLimitInfo?.roadName ?? 'Unknown road';
-  const limitMph =
-    gpsTracker.speedLimitInfo?.speedLimit !== undefined
-      ? Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)
-      : undefined;
-  const speedMph =
-    gpsTracker.currentPosition?.speedKmh !== undefined
-      ? Math.round(gpsTracker.currentPosition.speedKmh * 0.621371)
-      : undefined;
+  const limitMph = gpsTracker.speedLimitInfo?.speedLimit
+    ? Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)
+    : undefined;
+  const speedMph = gpsTracker.currentPosition?.speedKmh
+    ? Math.round(gpsTracker.currentPosition.speedKmh * 0.621371)
+    : undefined;
   const isSpeeding = limitMph !== undefined && speedMph !== undefined && speedMph > limitMph;
-
-  const mapPosition: [number, number] | null = gpsTracker.currentPosition
-    ? [gpsTracker.currentPosition.latitude, gpsTracker.currentPosition.longitude]
-    : null;
 
   /* ---------------- COMPLETE REPORT -------------------------------- */
   if (phase === 'complete') {
     return (
-      <Card className="p-6">
+      <div className="p-6 bg-card rounded-xl border">
         <h2 className="text-lg font-semibold mb-4">Drive Report</h2>
         <div className="space-y-4">
           {Object.values(roadEvents).map(event => (
@@ -217,48 +190,44 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
             </div>
           ))}
         </div>
-      </Card>
+      </div>
     );
   }
 
   /* ---------------- RENDER ---------------------------------------- */
   return (
-    <div className="relative w-full h-[70vh] rounded-xl overflow-hidden border">
-      {/* FULL SCREEN MAP */}
-      {mapPosition && (
-        <MapContainer center={mapPosition} zoom={17} className="h-full w-full" zoomControl={false} attributionControl={false}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <MapUpdater position={mapPosition} />
-          <Marker position={mapPosition} icon={currentMarkerIcon} />
-        </MapContainer>
-      )}
-
-      {/* TOP NAV WITH UK ROUNDEL (ALWAYS VISIBLE) */}
-      <div className="absolute top-0 z-[1000] w-full bg-background/80 backdrop-blur-md">
+    <div className="relative w-full min-h-[200px] rounded-xl overflow-hidden border bg-card">
+      {/* TOP NAV */}
+      <div className="w-full bg-background/80 backdrop-blur-md">
         <div className="flex items-center justify-between px-4 py-3">
-          {/* Road Name */}
           <div className="truncate text-lg font-semibold text-foreground">{roadName}</div>
-
-          {/* Speed & Limit */}
           <div className="flex items-center gap-3">
-            {/* UK Speed Limit Roundel */}
             {limitMph !== undefined && (
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-red-600 bg-white font-bold text-black text-sm">
                 {limitMph}
               </div>
             )}
-
-            {/* Current Speed */}
             {speedMph !== undefined && (
               <div className={`font-semibold text-sm ${isSpeeding ? 'text-destructive' : 'text-foreground'}`}>
                 {speedMph} mph
               </div>
             )}
-
-            {/* Stop Button */}
             {phase === 'tracking' && (
               <Button size="sm" variant="destructive" onClick={handleStop}>
                 <Square className="h-4 w-4" />
+              </Button>
+            )}
+            {phase === 'tracking' && gpsTracker.currentPosition && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const { latitude, longitude } = gpsTracker.currentPosition!;
+                  window.open(`/tracker-map?lat=${latitude}&lng=${longitude}`, '_blank');
+                }}
+              >
+                <MapPin className="h-4 w-4 mr-1" />
+                Open Map
               </Button>
             )}
           </div>
@@ -267,7 +236,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
 
       {/* START BUTTON */}
       {phase === 'idle' && (
-        <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-background/50">
+        <div className="flex items-center justify-center py-12">
           <Button size="lg" className="rounded-full px-8 py-6 text-lg" onClick={handleStart}>
             <Play className="h-5 w-5 mr-2" />
             Start
@@ -277,7 +246,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
 
       {/* ERROR */}
       {error && (
-        <div className="absolute bottom-4 left-4 right-4 z-[1000]">
+        <div className="p-4">
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
