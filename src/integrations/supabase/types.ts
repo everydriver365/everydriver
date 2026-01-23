@@ -3970,6 +3970,7 @@ export type Database = {
       }
       saved_routes: {
         Row: {
+          category: string | null
           created_at: string
           description: string | null
           distance_km: number | null
@@ -3985,6 +3986,7 @@ export type Database = {
           telematics_id: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
           distance_km?: number | null
@@ -4000,6 +4002,7 @@ export type Database = {
           telematics_id?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
           distance_km?: number | null
