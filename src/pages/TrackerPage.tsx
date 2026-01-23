@@ -436,100 +436,74 @@ export default function TrackerPage() {
 
       {/* Trip Report */}
       {phase === 'stopped' && (
-        <div className="absolute inset-0 bg-background/95 z-[1001] overflow-auto p-2 sm:p-4">
-          <div className="max-w-2xl mx-auto space-y-3 sm:space-y-4">
-            {/* Header - stacks on mobile */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <h2 className="text-lg sm:text-xl font-bold">Trip Report</h2>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => setShowSaveDialog(true)}>
-                  <Bookmark className="h-4 w-4" />
-                  <span className="hidden xs:inline">Save</span> Route
-                </Button>
-                <Button size="sm" className="flex-1 sm:flex-none" onClick={() => navigate('/instructor/track-lesson')}>
-                  Done
-                </Button>
-              </div>
+        <div className="absolute inset-0 bg-background z-[1001] flex flex-col">
+          {/* Fixed Header */}
+          <div className="flex items-center justify-between p-3 border-b bg-card shrink-0">
+            <h2 className="text-lg font-bold">Trip Report</h2>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowSaveDialog(true)}>
+                <Bookmark className="h-4 w-4" />
+                Save
+              </Button>
+              <Button size="sm" onClick={() => navigate('/instructor/track-lesson')}>
+                Done
+              </Button>
             </div>
+          </div>
 
-            {/* Trip Summary - compact on mobile */}
-            <div className="bg-card rounded-lg border p-3 sm:p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm">
-                <div>
-                  <span className="text-muted-foreground">Duration:</span>
-                  <p className="font-medium">{formatTime(elapsedTime)}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Distance:</span>
-                  <p className="font-medium">{totalDistance.toFixed(1)} km</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Points:</span>
-                  <p className="font-medium">{gpsPoints.length}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Speeding:</span>
-                  <p className="font-medium">{gpsPoints.filter(p => p.speeding).length}</p>
-                </div>
-              </div>
-              
-              {gpsPoints.length > 0 && (
-                <div className="mt-3 pt-3 border-t space-y-1.5 text-xs sm:text-sm">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 shrink-0" />
-                    <span className="text-muted-foreground">Start:</span>
-                    <span className="truncate">{gpsPoints[0].lat.toFixed(4)}, {gpsPoints[0].lng.toFixed(4)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 shrink-0" />
-                    <span className="text-muted-foreground">End:</span>
-                    <span className="truncate">{lastPoint?.lat.toFixed(4)}, {lastPoint?.lng.toFixed(4)}</span>
-                  </div>
-                </div>
-              )}
+          {/* Summary Stats - Compact */}
+          <div className="grid grid-cols-4 gap-1 p-2 bg-muted/50 text-center text-xs shrink-0">
+            <div>
+              <p className="text-muted-foreground">Time</p>
+              <p className="font-semibold">{formatTime(elapsedTime)}</p>
             </div>
-            
-            {/* Table with horizontal scroll on mobile */}
-            <div className="bg-card rounded-lg border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs sm:text-sm min-w-[400px]">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="px-2 sm:px-3 py-2 text-left whitespace-nowrap">Time</th>
-                      <th className="px-2 sm:px-3 py-2 text-left">Road</th>
-                      <th className="px-2 sm:px-3 py-2 text-right whitespace-nowrap">Speed</th>
-                      <th className="px-2 sm:px-3 py-2 text-right whitespace-nowrap">Limit</th>
-                      <th className="px-2 sm:px-3 py-2 text-center">⚠️</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {gpsPoints.slice(-50).map((p, i) => (
-                      <tr key={i} className={p.speeding || p.harshBrake ? 'bg-destructive/10' : ''}>
-                        <td className="px-2 sm:px-3 py-1.5 sm:py-2 whitespace-nowrap">{new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                        <td className="px-2 sm:px-3 py-1.5 sm:py-2 truncate max-w-[80px] sm:max-w-[120px]">{p.roadName}</td>
-                        <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">{kmhToMph(p.speedKmh)}</td>
-                        <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-right">{p.speedLimit ? kmhToMph(p.speedLimit) : '-'}</td>
-                        <td className="px-2 sm:px-3 py-1.5 sm:py-2 text-center">
-                          {p.speeding ? '🚗' : p.harshBrake ? '🛑' : '-'}
-                        </td>
-                      </tr>
-                    ))}
-                    {gpsPoints.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
-                          No GPS points recorded
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              {gpsPoints.length > 50 && (
-                <p className="text-xs text-muted-foreground text-center py-2 border-t">
-                  Showing last 50 of {gpsPoints.length} points
-                </p>
-              )}
+            <div>
+              <p className="text-muted-foreground">Distance</p>
+              <p className="font-semibold">{totalDistance.toFixed(1)}km</p>
             </div>
+            <div>
+              <p className="text-muted-foreground">Points</p>
+              <p className="font-semibold">{gpsPoints.length}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Alerts</p>
+              <p className="font-semibold text-destructive">{gpsPoints.filter(p => p.speeding || p.harshBrake).length}</p>
+            </div>
+          </div>
+
+          {/* Scrollable Table Area */}
+          <div className="flex-1 overflow-auto min-h-0">
+            <table className="w-full text-xs">
+              <thead className="bg-muted sticky top-0">
+                <tr>
+                  <th className="px-2 py-1.5 text-left">Time</th>
+                  <th className="px-2 py-1.5 text-left">Road</th>
+                  <th className="px-2 py-1.5 text-right">mph</th>
+                  <th className="px-2 py-1.5 text-right">Limit</th>
+                  <th className="px-2 py-1.5 text-center w-8">⚠️</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {gpsPoints.map((p, i) => (
+                  <tr key={i} className={p.speeding || p.harshBrake ? 'bg-destructive/10' : ''}>
+                    <td className="px-2 py-1">{new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                    <td className="px-2 py-1 truncate max-w-[100px]">{p.roadName}</td>
+                    <td className="px-2 py-1 text-right font-mono">{kmhToMph(p.speedKmh)}</td>
+                    <td className="px-2 py-1 text-right font-mono">{p.speedLimit ? kmhToMph(p.speedLimit) : '-'}</td>
+                    <td className="px-2 py-1 text-center">
+                      {p.speeding ? '🚗' : p.harshBrake ? '🛑' : ''}
+                    </td>
+                  </tr>
+                ))}
+                {gpsPoints.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-8 text-center text-muted-foreground">
+                      No GPS points recorded
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
