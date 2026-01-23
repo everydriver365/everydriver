@@ -18,7 +18,7 @@ import {
 import { InstructorForm } from "@/components/admin/InstructorForm";
 import { InstructorList } from "@/components/admin/InstructorList";
 import { InstructorManager } from "@/components/admin/InstructorManager";
-import { CourseTemplateManager } from "@/components/admin/CourseTemplateManager";
+import { CourseManager } from "@/components/admin/CourseManager";
 import { SiteImageManager } from "@/components/admin/SiteImageManager";
 import { SiteVideoManager } from "@/components/admin/SiteVideoManager";
 import { PromotionalMessageManager } from "@/components/admin/PromotionalMessageManager";
@@ -333,17 +333,7 @@ export default function AdminPortal() {
       case "courses":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-accent" />
-                  Course Templates
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CourseTemplateManager />
-              </CardContent>
-            </Card>
+            <CourseManager onNavigate={setActiveSection} />
           </motion.div>
         );
 
