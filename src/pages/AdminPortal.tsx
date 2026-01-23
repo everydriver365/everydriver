@@ -47,6 +47,7 @@ import { ComplianceDashboard } from "@/components/admin/ComplianceDashboard";
 import { AdminBookingsManager } from "@/components/admin/AdminBookingsManager";
 import { AdminPaymentsManager } from "@/components/admin/AdminPaymentsManager";
 import { AdminSettingsGrid } from "@/components/admin/AdminSettingsGrid";
+import { SubscribersManager } from "@/components/admin/SubscribersManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -79,6 +80,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   overview: { title: "Overview", group: "Dashboard", icon: LayoutDashboard },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
+  subscribers: { title: "Subscribers", group: "People", icon: CreditCard },
   compliance: { title: "Compliance Dashboard", group: "People", icon: Shield },
   enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
   messages: { title: "Pupil Messages", group: "People", icon: MessageCircle },
@@ -243,6 +245,13 @@ export default function AdminPortal() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <InstructorManager onEdit={handleEdit} />
+          </motion.div>
+        );
+
+      case "subscribers":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <SubscribersManager />
           </motion.div>
         );
 
