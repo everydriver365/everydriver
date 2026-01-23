@@ -4,9 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Bookmark, MapPin } from "lucide-react";
+
+const categoryOptions = [
+  { value: 'test_routes', label: 'Test Routes' },
+  { value: 'training', label: 'Training Routes' },
+  { value: 'manoeuvres', label: 'Manoeuvres Practice' },
+  { value: 'motorway', label: 'Motorway Driving' },
+  { value: 'night', label: 'Night Driving' },
+  { value: 'general', label: 'General' },
+];
 
 interface SaveRouteDialogProps {
   open: boolean;
@@ -31,6 +41,7 @@ export function SaveRouteDialog({
 }: SaveRouteDialogProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("test_routes");
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -49,6 +60,7 @@ export function SaveRouteDialog({
           name: name.trim(),
           description: description.trim() || null,
           route_type: "recorded",
+          category: category,
           start_location: startLocation || null,
           end_location: endLocation || null,
           distance_km: distanceKm || null
@@ -59,6 +71,7 @@ export function SaveRouteDialog({
       toast.success("Route saved successfully");
       setName("");
       setDescription("");
+      setCategory("test_routes");
       onOpenChange(false);
       onSaved?.();
     } catch (error) {
@@ -88,6 +101,20 @@ export function SaveRouteDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
