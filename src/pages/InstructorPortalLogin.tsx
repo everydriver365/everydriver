@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Loader2, AlertCircle, ArrowLeft, Eye, EyeOff, Share, Plus, Download, X, Fingerprint } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-import mainLogo from "@/assets/everydriver-logo-main.png";
+
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -319,18 +319,20 @@ export default function InstructorPortalLogin() {
         transition={{ duration: 0.5 }}
         className="relative z-10 w-full max-w-sm"
       >
-        {/* Logo */}
+        {/* Logo with blue background header */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
           className="text-center mb-8"
         >
-          <img 
-            src={mainLogo} 
-            alt="EveryDriver" 
-            className="h-16 mx-auto mb-4"
-          />
+          <div className="bg-[#142040] rounded-xl p-4 mb-6 mx-auto inline-block">
+            <img 
+              src="/everydriver-logo-blue-bg.png" 
+              alt="EveryDriver" 
+              className="h-10 mx-auto"
+            />
+          </div>
           <h1 className="text-2xl font-bold text-foreground">
             {isForgotPassword ? "Reset Password" : "Instructor Portal"}
           </h1>
