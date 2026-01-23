@@ -199,17 +199,32 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
         </MapContainer>
       )}
 
-      {/* AUTO-HIDING TOP NAV */}
+      {/* AUTO-HIDING TOP NAV WITH UK SPEED LIMIT ROUNDEL */}
       {headerVisible && (
-        <div className="absolute top-0 left-0 right-0 z-[1000] p-3 transition-opacity duration-300">
-          <div className="bg-background/90 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg">
-            <p className="text-xs text-muted-foreground text-center truncate">{roadName}</p>
-            <div className="flex items-center justify-center gap-3">
-              <p className={`text-2xl font-bold tabular-nums ${isSpeeding ? 'text-destructive' : 'text-foreground'}`}>
-                {speedMph !== undefined && limitMph !== undefined ? `${speedMph} / ${limitMph} mph` : '—'}
-              </p>
+        <div className="absolute top-0 z-[1000] w-full bg-background/80 backdrop-blur-md transition-opacity duration-300">
+          <div className="flex items-center justify-between px-4 py-3">
+            {/* Road Name */}
+            <div className="truncate text-lg font-semibold text-foreground">{roadName}</div>
+
+            {/* Speed Display */}
+            <div className="flex items-center gap-3">
+              {/* UK Speed Limit Roundel */}
+              {limitMph !== undefined && (
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-red-600 bg-white font-bold text-black text-sm">
+                  {limitMph}
+                </div>
+              )}
+
+              {/* Current Speed */}
+              {speedMph !== undefined && (
+                <div className={`font-semibold text-sm ${isSpeeding ? 'text-destructive' : 'text-foreground'}`}>
+                  {speedMph} mph
+                </div>
+              )}
+
+              {/* Stop Button */}
               {phase === 'tracking' && (
-                <Button size="icon" variant="destructive" className="h-10 w-10 rounded-full" onClick={handleStop}>
+                <Button size="sm" variant="destructive" onClick={handleStop}>
                   <Square className="h-4 w-4" />
                 </Button>
               )}
