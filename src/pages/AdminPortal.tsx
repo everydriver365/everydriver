@@ -48,6 +48,8 @@ import { AdminBookingsManager } from "@/components/admin/AdminBookingsManager";
 import { AdminPaymentsManager } from "@/components/admin/AdminPaymentsManager";
 import { AdminSettingsGrid } from "@/components/admin/AdminSettingsGrid";
 import { SubscribersManager } from "@/components/admin/SubscribersManager";
+import { MiniWebsitesManager } from "@/components/admin/MiniWebsitesManager";
+import { DomainsManager } from "@/components/admin/DomainsManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -86,6 +88,9 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   messages: { title: "Pupil Messages", group: "People", icon: MessageCircle },
   "instructor-messages": { title: "Instructor Support", group: "Live Chats", icon: MessageCircle },
   "live-chat": { title: "Visitor Chats", group: "Live Chats", icon: MessageCircle },
+  // Mini Websites & Domains
+  "mini-websites": { title: "Mini Websites", group: "Instructor Sites", icon: Globe },
+  domains: { title: "Purchased Domains", group: "Instructor Sites", icon: Globe },
   // Learner Website (EveryDriver)
   hero: { title: "Hero Section", group: "Learner Website", icon: Sparkles },
   sections: { title: "Page Sections", group: "Learner Website", icon: Layers },
@@ -252,6 +257,20 @@ export default function AdminPortal() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <SubscribersManager />
+          </motion.div>
+        );
+
+      case "mini-websites":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <MiniWebsitesManager />
+          </motion.div>
+        );
+
+      case "domains":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <DomainsManager />
           </motion.div>
         );
 
