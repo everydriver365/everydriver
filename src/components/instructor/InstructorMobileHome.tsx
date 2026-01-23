@@ -168,6 +168,17 @@ export function InstructorMobileHome({
             </Button>
           )}
 
+          {/* Quick Availability Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/10 h-8 w-8"
+            onClick={() => navigate("/instructor/availability")}
+            title="Quick Availability"
+          >
+            <CalendarClock className="h-5 w-5" />
+          </Button>
+
           {/* Notifications/Alerts Button */}
           <Button
             variant="ghost"
@@ -225,17 +236,6 @@ export function InstructorMobileHome({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Quick Availability Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/10 h-8 w-8"
-            onClick={() => navigate("/instructor/availability")}
-            title="Quick Availability"
-          >
-            <CalendarClock className="h-5 w-5" />
-          </Button>
 
           {/* Avatar Dropdown */}
           <DropdownMenu>
