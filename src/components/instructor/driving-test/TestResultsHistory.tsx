@@ -45,7 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { DrivingTestResult, Examiner } from "./types";
-import { DrivingTestReportForm } from "./DrivingTestReportForm";
+import { RecordTestResultDialog } from "../RecordTestResultDialog";
 import { cn } from "@/lib/utils";
 
 interface TestResultsHistoryProps {
@@ -284,15 +284,14 @@ export function TestResultsHistory({
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog - using simple record form for now */}
       {editingResultId && (
-        <DrivingTestReportForm
+        <RecordTestResultDialog
           open={!!editingResultId}
           onOpenChange={() => setEditingResultId(null)}
           pupilId={pupilId}
           pupilName={pupilName}
-          existingResultId={editingResultId}
-          onSaved={fetchResults}
+          onResultRecorded={fetchResults}
         />
       )}
 

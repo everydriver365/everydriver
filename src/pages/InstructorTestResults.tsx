@@ -39,10 +39,10 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
-  DrivingTestReportForm,
   StandardsCheckTrigger,
   ExaminerManager,
 } from "@/components/instructor/driving-test";
+import { RecordTestResultDialog } from "@/components/instructor/RecordTestResultDialog";
 
 interface TestResult {
   id: string;
@@ -412,13 +412,12 @@ export default function InstructorTestResults() {
 
       {/* Test Form Dialog */}
       {selectedPupilId && (
-        <DrivingTestReportForm
+        <RecordTestResultDialog
           open={isTestFormOpen}
           onOpenChange={setIsTestFormOpen}
           pupilId={selectedPupilId}
           pupilName={selectedPupilName}
-          defaultIsMock={isMock}
-          onSaved={fetchData}
+          onResultRecorded={fetchData}
         />
       )}
     </InstructorPortalLayout>
