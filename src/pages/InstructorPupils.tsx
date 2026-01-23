@@ -52,8 +52,7 @@ import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal";
 import { PupilPickerDialog } from "@/components/instructor/PupilPickerDialog";
-import { TestResultsHistory } from "@/components/instructor/driving-test";
-import { RecordTestResultDialog } from "@/components/instructor/RecordTestResultDialog";
+import { TestResultsHistory, DrivingTestReportForm } from "@/components/instructor/driving-test";
 
 interface Pupil {
   id: string;
@@ -852,14 +851,15 @@ export default function InstructorPupils() {
         />
       )}
 
-      {/* Record Test Result Dialog */}
+      {/* Record Test Result Dialog (DL25A) */}
       {selectedPupil && (
-        <RecordTestResultDialog
+        <DrivingTestReportForm
           open={isTestFormOpen}
           onOpenChange={setIsTestFormOpen}
           pupilId={selectedPupil.id}
           pupilName={selectedPupil.name}
-          onResultRecorded={() => {
+          defaultIsMock={testFormIsMock}
+          onSaved={() => {
             fetchPupils();
           }}
         />
