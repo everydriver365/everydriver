@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
+  CalendarClock,
   Users, 
   Briefcase, 
   CreditCard, 
@@ -12,8 +13,6 @@ import {
   Car,
   ChevronRight,
   Receipt,
-  Eye,
-  EyeOff,
   Moon,
   Sun,
   LogOut,
@@ -246,26 +245,16 @@ export function InstructorMobileHome({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {instructorId && isVisible !== undefined && (
-            <button
-              onClick={toggleVisibility}
-              disabled={isTogglingVisibility}
-              className={`flex items-center justify-center h-6 w-6 rounded-full transition-all duration-200 ${
-                isVisible 
-                  ? "bg-emerald-500 hover:bg-emerald-600" 
-                  : "bg-amber-500 hover:bg-amber-600"
-              } ${isTogglingVisibility ? "opacity-50" : ""}`}
-              title={isVisible ? "Tap to hide from learners" : "Tap to show to learners"}
-            >
-              {isTogglingVisibility ? (
-                <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : isVisible ? (
-                <Eye className="h-3.5 w-3.5 text-white" />
-              ) : (
-                <EyeOff className="h-3.5 w-3.5 text-white" />
-              )}
-            </button>
-          )}
+          {/* Quick Availability Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-white/10 h-8 w-8"
+            onClick={() => navigate("/instructor/availability")}
+            title="Quick Availability"
+          >
+            <CalendarClock className="h-5 w-5" />
+          </Button>
 
           {/* Avatar Dropdown */}
           <DropdownMenu>
