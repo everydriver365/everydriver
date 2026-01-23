@@ -73,7 +73,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
 
   const gpsTracker = useSimpleGPSTracker({
     onSpeedingDetected: (speed, limit, location) => {
-      drivingBehavior.checkSpeeding(speed, limit, location, gpsTracker.speedLimitInfo.roadName);
+      drivingBehavior.checkSpeeding(speed, limit, location, gpsTracker.speedLimitInfo?.roadName);
     },
   });
 
@@ -209,6 +209,11 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     ? [currentPos.latitude, currentPos.longitude]
     : null;
 
+  const speedLimit = gpsTracker.speedLimitInfo?.speedLimit;
+  const roadName = gpsTracker.speedLimitInfo?.roadName;
+  const currentSpeed = gpsTracker.currentPosition?.speedKmh;
+  const isSpeeding = speedLimit !== undefined && currentSpeed !== undefined && currentSpeed > speedLimit;
+
   /* ---------------------- UI -------------------------------------- */
 
   return (
@@ -223,6 +228,22 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+        )}
+
+        {/* Road + Speed Limit */}
+        {phase === 'tracking' && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground mb-1">Road</p>
+              <p className="text-sm font-medium truncate">{roadName ?? 'Unknown road'}</p>
+            </div>
+            <div className={`rounded-lg p-3 ${isSpeeding ? 'bg-destructive/10 border border-destructive/30' : 'bg-muted/50'}`}>
+              <p className="text-xs text-muted-foreground mb-1">Speed limit</p>
+              <p className={`text-sm font-medium ${isSpeeding ? 'text-destructive' : ''}`}>
+                {speedLimit !== undefined ? `${speedLimit} km/h` : '—'}
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Controls */}
