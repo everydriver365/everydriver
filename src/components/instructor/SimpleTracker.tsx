@@ -273,39 +273,53 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
           {/* Phase: Tracking */}
           {phase === 'tracking' && (
             <div className="space-y-4">
-              {/* Speed Display */}
+              {/* Speed Display with Limit */}
               <div className="flex items-center justify-between">
-                <div>
+                {/* Current Speed */}
+                <div className="flex-1">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold">
-                      {Math.round(gpsTracker.currentPosition?.speedKmh || 0)}
+                    <span className="text-5xl font-bold">
+                      {Math.round((gpsTracker.currentPosition?.speedKmh || 0) * 0.621371)}
                     </span>
-                    <span className="text-sm text-muted-foreground">km/h</span>
+                    <span className="text-lg text-muted-foreground">mph</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     {gpsTracker.speedLimitInfo.roadName || 'Detecting road...'}
                   </p>
                 </div>
 
-                {/* Speed Limit */}
+                {/* Speed Limit Circle */}
                 <div className={cn(
-                  "w-16 h-16 rounded-full border-4 flex items-center justify-center",
+                  "w-20 h-20 rounded-full border-[6px] flex flex-col items-center justify-center",
                   gpsTracker.speedLimitInfo.isExceeding 
                     ? "border-destructive bg-destructive/10"
-                    : "border-muted"
+                    : "border-red-500 bg-white"
                 )}>
                   {gpsTracker.speedLimitInfo.speedLimit ? (
-                    <span className={cn(
-                      "text-xl font-bold",
-                      gpsTracker.speedLimitInfo.isExceeding && "text-destructive"
-                    )}>
-                      {gpsTracker.speedLimitInfo.speedLimit}
-                    </span>
+                    <>
+                      <span className={cn(
+                        "text-2xl font-bold text-black",
+                        gpsTracker.speedLimitInfo.isExceeding && "text-destructive"
+                      )}>
+                        {Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">mph</span>
+                    </>
                   ) : (
                     <span className="text-xs text-muted-foreground">--</span>
                   )}
                 </div>
               </div>
+
+              {/* Speeding Alert */}
+              {gpsTracker.speedLimitInfo.isExceeding && (
+                <Alert variant="destructive" className="py-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    {Math.round(gpsTracker.speedLimitInfo.excessKmh * 0.621371)} mph over limit!
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-2 text-center">
@@ -316,13 +330,13 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
                 <div className="bg-muted/50 rounded-lg p-2">
                   <Route className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
                   <p className="text-sm font-medium">
-                    {(gpsTracker.totalDistance / 1000).toFixed(1)} km
+                    {(gpsTracker.totalDistance / 1609.34).toFixed(1)} mi
                   </p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-2">
-                  <AlertTriangle className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
+                  <Gauge className="h-4 w-4 mx-auto mb-1 text-muted-foreground" />
                   <p className="text-sm font-medium">
-                    {drivingBehavior.events.length}
+                    {Math.round(gpsTracker.maxSpeed * 0.621371)} mph
                   </p>
                 </div>
               </div>
@@ -425,9 +439,9 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold">
-                    {(gpsTracker.totalDistance / 1000).toFixed(1)}
+                    {(gpsTracker.totalDistance / 1609.34).toFixed(1)}
                   </p>
-                  <p className="text-xs text-muted-foreground">km travelled</p>
+                  <p className="text-xs text-muted-foreground">miles travelled</p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
                   <p className="text-2xl font-bold">{formatTime(elapsedTime)}</p>
