@@ -8,7 +8,7 @@ const corsHeaders = {
 interface SpeedLimitResponse {
   speedLimit: number | null;
   roadName: string | null;
-  source: 'tomtom' | 'osm' | null;
+  source: 'here' | 'tomtom' | 'osm' | null;
 }
 
 serve(async (req) => {
@@ -17,6 +17,7 @@ serve(async (req) => {
   }
 
   try {
+    const hereApiKey = Deno.env.get("HERE_API_KEY");
     const tomtomApiKey = Deno.env.get("TOMTOM_API_KEY");
     
     let lat: number, lon: number;
@@ -43,7 +44,64 @@ serve(async (req) => {
 
     let speedLimit: number | null = null;
     let roadName: string | null = null;
-    let source: 'tomtom' | 'osm' | null = null;
+    let source: 'here' | 'tomtom' | 'osm' | null = null;
+
+    // Method 1: HERE Route Matching API (primary - most accurate speed limits)
+    if (hereApiKey) {
+      try {
+        // Use same point twice for single-point matching
+        const hereUrl = `https://routematching.hereapi.com/v8/match/routelinks?apikey=${hereApiKey}&waypoint0=${lat},${lon}&waypoint1=${lat},${lon}&mode=fastest;car&routeMatch=1&attributes=SPEED_LIMITS_FCn(*)`;
+        console.log(`Trying HERE Route Matching API...`);
+        
+        const hereResponse = await fetch(hereUrl);
+        const responseText = await hereResponse.text();
+        
+        if (hereResponse.ok) {
+          const hereData = JSON.parse(responseText);
+          console.log(`HERE response status: ${hereResponse.status}`);
+          
+          // Parse route links for speed limit data
+          if (hereData.response?.route?.[0]?.leg?.[0]?.link) {
+            const links = hereData.response.route[0].leg[0].link;
+            
+            for (const link of links) {
+              // Get road name
+              if (!roadName && link.roadName) {
+                roadName = link.roadName;
+                console.log(`HERE road name: ${roadName}`);
+              }
+              
+              // Get speed limit from SPEED_LIMITS_FCn attributes
+              if (speedLimit === null && link.attributes?.SPEED_LIMITS_FCn) {
+                const speedLimits = link.attributes.SPEED_LIMITS_FCn;
+                // Speed limits are in km/h, find the first valid one
+                for (const sl of speedLimits) {
+                  if (sl.FROM_REF_SPEED_LIMIT) {
+                    speedLimit = sl.FROM_REF_SPEED_LIMIT;
+                    source = 'here';
+                    console.log(`HERE speed limit: ${speedLimit} km/h`);
+                    break;
+                  }
+                  if (sl.TO_REF_SPEED_LIMIT) {
+                    speedLimit = sl.TO_REF_SPEED_LIMIT;
+                    source = 'here';
+                    console.log(`HERE speed limit: ${speedLimit} km/h`);
+                    break;
+                  }
+                }
+              }
+              
+              // Stop if we have both
+              if (speedLimit !== null && roadName) break;
+            }
+          }
+        } else {
+          console.log(`HERE API error: ${hereResponse.status} - ${responseText}`);
+        }
+      } catch (hereError) {
+        console.error('HERE API error:', hereError);
+      }
+    }
 
     // Method 1: TomTom Snap to Roads API (map-matching with speed limits)
     if (tomtomApiKey) {
