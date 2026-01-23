@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { format, addWeeks, subWeeks, startOfWeek, addDays, isSameDay, parseISO } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar, Plus, X, Clock } from "lucide-react";
+import { format, addWeeks, subWeeks, startOfWeek, addDays, isSameDay } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2 } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+
+interface TimeSlot {
+  start: string;
+  end: string;
+}
 
 interface DateOverride {
   id: string;
@@ -46,9 +51,7 @@ export default function InstructorQuickAvailability() {
   const [editingDate, setEditingDate] = useState<Date | null>(null);
   const [editForm, setEditForm] = useState({
     isAvailable: true,
-    startTime: "09:00",
-    endTime: "17:00",
-    additionalSlots: [] as { start: string; end: string }[],
+    timeSlots: [{ start: "09:00", end: "17:00" }] as TimeSlot[],
   });
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
@@ -96,15 +99,32 @@ export default function InstructorQuickAvailability() {
 
   const getDateAvailability = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    const override = overrides.find(o => o.override_date === dateStr);
+    // Get all overrides for this date
+    const dateOverrides = overrides.filter(o => o.override_date === dateStr);
     
-    if (override) {
+    if (dateOverrides.length > 0) {
+      // Check if any override marks unavailable
+      const unavailableOverride = dateOverrides.find(o => !o.is_available);
+      if (unavailableOverride) {
+        return {
+          hasOverride: true,
+          isAvailable: false,
+          timeSlots: [],
+        };
+      }
+      
+      // Get all time slots from overrides
+      const timeSlots = dateOverrides
+        .filter(o => o.is_available && o.start_time && o.end_time)
+        .map(o => ({
+          start: o.start_time!,
+          end: o.end_time!,
+        }));
+      
       return {
         hasOverride: true,
-        isAvailable: override.is_available,
-        startTime: override.start_time,
-        endTime: override.end_time,
-        override,
+        isAvailable: true,
+        timeSlots,
       };
     }
 
@@ -115,16 +135,14 @@ export default function InstructorQuickAvailability() {
       return {
         hasOverride: false,
         isAvailable: true,
-        startTime: defaultHours.start_time,
-        endTime: defaultHours.end_time,
+        timeSlots: [{ start: defaultHours.start_time, end: defaultHours.end_time }],
       };
     }
 
     return {
       hasOverride: false,
       isAvailable: false,
-      startTime: null,
-      endTime: null,
+      timeSlots: [],
     };
   };
 
@@ -142,10 +160,31 @@ export default function InstructorQuickAvailability() {
     setEditingDate(date);
     setEditForm({
       isAvailable: availability.isAvailable,
-      startTime: availability.startTime?.slice(0, 5) || "09:00",
-      endTime: availability.endTime?.slice(0, 5) || "17:00",
-      additionalSlots: [],
+      timeSlots: availability.timeSlots.length > 0 
+        ? availability.timeSlots.map(s => ({ start: s.start.slice(0, 5), end: s.end.slice(0, 5) }))
+        : [{ start: "09:00", end: "17:00" }],
     });
+  };
+
+  const addTimeSlot = () => {
+    setEditForm({
+      ...editForm,
+      timeSlots: [...editForm.timeSlots, { start: "12:00", end: "14:00" }],
+    });
+  };
+
+  const removeTimeSlot = (index: number) => {
+    if (editForm.timeSlots.length <= 1) return;
+    setEditForm({
+      ...editForm,
+      timeSlots: editForm.timeSlots.filter((_, i) => i !== index),
+    });
+  };
+
+  const updateTimeSlot = (index: number, field: 'start' | 'end', value: string) => {
+    const newSlots = [...editForm.timeSlots];
+    newSlots[index] = { ...newSlots[index], [field]: value };
+    setEditForm({ ...editForm, timeSlots: newSlots });
   };
 
   const saveOverride = async () => {
@@ -154,33 +193,41 @@ export default function InstructorQuickAvailability() {
     const dateStr = format(editingDate, "yyyy-MM-dd");
     
     try {
-      // Check if override exists
-      const existingOverride = overrides.find(o => o.override_date === dateStr);
+      // First, delete all existing overrides for this date
+      const { error: deleteError } = await supabase
+        .from("instructor_date_overrides")
+        .delete()
+        .eq("instructor_id", instructorId)
+        .eq("override_date", dateStr);
 
-      if (existingOverride) {
-        // Update existing
-        const { error } = await supabase
-          .from("instructor_date_overrides")
-          .update({
-            is_available: editForm.isAvailable,
-            start_time: editForm.isAvailable ? editForm.startTime : null,
-            end_time: editForm.isAvailable ? editForm.endTime : null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingOverride.id);
+      if (deleteError) throw deleteError;
 
-        if (error) throw error;
-      } else {
-        // Create new
+      if (!editForm.isAvailable) {
+        // Insert single unavailable override
         const { error } = await supabase
           .from("instructor_date_overrides")
           .insert({
             instructor_id: instructorId,
             override_date: dateStr,
-            is_available: editForm.isAvailable,
-            start_time: editForm.isAvailable ? editForm.startTime : null,
-            end_time: editForm.isAvailable ? editForm.endTime : null,
+            is_available: false,
+            start_time: null,
+            end_time: null,
           });
+
+        if (error) throw error;
+      } else {
+        // Insert multiple time slot overrides
+        const inserts = editForm.timeSlots.map(slot => ({
+          instructor_id: instructorId,
+          override_date: dateStr,
+          is_available: true,
+          start_time: slot.start,
+          end_time: slot.end,
+        }));
+
+        const { error } = await supabase
+          .from("instructor_date_overrides")
+          .insert(inserts);
 
         if (error) throw error;
       }
@@ -195,22 +242,16 @@ export default function InstructorQuickAvailability() {
   };
 
   const removeOverride = async () => {
-    if (!editingDate) return;
+    if (!editingDate || !instructorId) return;
     
     const dateStr = format(editingDate, "yyyy-MM-dd");
-    const existingOverride = overrides.find(o => o.override_date === dateStr);
     
-    if (!existingOverride) {
-      toast.info("No override to remove");
-      setEditingDate(null);
-      return;
-    }
-
     try {
       const { error } = await supabase
         .from("instructor_date_overrides")
         .delete()
-        .eq("id", existingOverride.id);
+        .eq("instructor_id", instructorId)
+        .eq("override_date", dateStr);
 
       if (error) throw error;
 
@@ -306,14 +347,18 @@ export default function InstructorQuickAvailability() {
                   </div>
 
                   {/* Availability Info */}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     {availability.isAvailable ? (
                       <>
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium text-sm">
                           Available
                         </span>
-                        <div className="text-sm text-muted-foreground">
-                          {formatTime(availability.startTime)} - {formatTime(availability.endTime)}
+                        <div className="text-sm text-muted-foreground space-y-0.5">
+                          {availability.timeSlots.map((slot, idx) => (
+                            <div key={idx}>
+                              {formatTime(slot.start)} - {formatTime(slot.end)}
+                            </div>
+                          ))}
                         </div>
                       </>
                     ) : (
@@ -335,7 +380,7 @@ export default function InstructorQuickAvailability() {
                     size="icon"
                     onClick={() => openEditSheet(date)}
                     disabled={isPast}
-                    className="text-primary"
+                    className="text-primary shrink-0"
                   >
                     <Calendar className="h-5 w-5" />
                   </Button>
@@ -353,7 +398,7 @@ export default function InstructorQuickAvailability() {
 
       {/* Edit Sheet */}
       <Sheet open={!!editingDate} onOpenChange={(open) => !open && setEditingDate(null)}>
-        <SheetContent side="bottom" className="rounded-t-xl">
+        <SheetContent side="bottom" className="rounded-t-xl max-h-[85vh] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>
               {editingDate && format(editingDate, "EEEE, MMMM d, yyyy")}
@@ -375,39 +420,60 @@ export default function InstructorQuickAvailability() {
               />
             </div>
 
-            {/* Time Inputs */}
+            {/* Time Slots */}
             {editForm.isAvailable && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="start-time" className="text-sm text-muted-foreground">
-                      Start Time
-                    </Label>
-                    <Input
-                      id="start-time"
-                      type="time"
-                      value={editForm.startTime}
-                      onChange={(e) => 
-                        setEditForm({ ...editForm, startTime: e.target.value })
-                      }
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="end-time" className="text-sm text-muted-foreground">
-                      End Time
-                    </Label>
-                    <Input
-                      id="end-time"
-                      type="time"
-                      value={editForm.endTime}
-                      onChange={(e) => 
-                        setEditForm({ ...editForm, endTime: e.target.value })
-                      }
-                      className="mt-1"
-                    />
-                  </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Time Slots</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addTimeSlot}
+                    className="gap-1"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Slot
+                  </Button>
                 </div>
+                
+                {editForm.timeSlots.map((slot, index) => (
+                  <div key={index} className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <Label className="text-xs text-muted-foreground">
+                        Start
+                      </Label>
+                      <Input
+                        type="time"
+                        value={slot.start}
+                        onChange={(e) => updateTimeSlot(index, 'start', e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Label className="text-xs text-muted-foreground">
+                        End
+                      </Label>
+                      <Input
+                        type="time"
+                        value={slot.end}
+                        onChange={(e) => updateTimeSlot(index, 'end', e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    {editForm.timeSlots.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeTimeSlot(index)}
+                        className="text-destructive shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
 

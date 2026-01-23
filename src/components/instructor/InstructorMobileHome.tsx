@@ -183,40 +183,7 @@ export function InstructorMobileHome({
             )}
           </Button>
 
-          {/* Theme Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/10 h-8 w-8"
-              >
-                {resolvedTheme === 'dark' ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel>Appearance</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setTheme('light')}>
-                <Sun className="mr-2 h-4 w-4" />
-                Light Mode
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('dark')}>
-                <Moon className="mr-2 h-4 w-4" />
-                Dark Mode
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme('system')}>
-                <Palette className="mr-2 h-4 w-4" />
-                System Default
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Settings Dropdown */}
+          {/* Settings Dropdown - includes theme options */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -241,6 +208,20 @@ export function InstructorMobileHome({
               <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
                 <HelpCircle className="mr-2 h-4 w-4" />
                 Help & Support
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Appearance</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setTheme('light')}>
+                <Sun className="mr-2 h-4 w-4" />
+                Light Mode
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('dark')}>
+                <Moon className="mr-2 h-4 w-4" />
+                Dark Mode
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('system')}>
+                <Palette className="mr-2 h-4 w-4" />
+                System Default
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
