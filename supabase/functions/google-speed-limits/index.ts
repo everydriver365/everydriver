@@ -46,23 +46,28 @@ serve(async (req) => {
     let roadName: string | null = null;
     let source: 'here' | 'tomtom' | 'osm' | null = null;
 
-    // Method 1: HERE Route Matching API (primary - accurate speed limits)
+    // Method 1: HERE Route Matching API v8 (primary - accurate speed limits)
     if (hereApiKey && speedLimit === null) {
       try {
-        // Create a small offset for second waypoint (about 10 meters)
+        // Create small offset for second waypoint (~10m)
         const offset = 0.0001;
         const lat2 = lat + offset;
         const lon2 = lon + offset;
         
-        const hereUrl = `https://routematching.hereapi.com/v8/match/routelinks?apikey=${hereApiKey}&waypoint0=${lat},${lon}&waypoint1=${lat2},${lon2}&mode=fastest;car&routeMatch=1&attributes=SPEED_LIMITS_FCn(*)`;
-        console.log(`Trying HERE Route Matching API...`);
+        // Use proper URL encoding
+        const hereUrl = `https://routematching.hereapi.com/v8/match/routelinks?apikey=${encodeURIComponent(hereApiKey)}&waypoint0=${lat},${lon}&waypoint1=${lat2},${lon2}&mode=fastest;car&routeMatch=1&attributes=SPEED_LIMITS_FCn(*)`;
+        console.log(`Trying HERE Route Matching API v8...`);
         
-        const hereResponse = await fetch(hereUrl);
+        const hereResponse = await fetch(hereUrl, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
         const responseText = await hereResponse.text();
         
         if (hereResponse.ok) {
           const hereData = JSON.parse(responseText);
-          console.log(`HERE Route Matching response received`);
+          console.log(`HERE Route Matching: received response`);
           
           // Parse route links for speed limit data
           const route = hereData.response?.route?.[0];
@@ -80,8 +85,13 @@ serve(async (req) => {
               if (speedLimit === null && link.attributes?.SPEED_LIMITS_FCn) {
                 const speedLimits = link.attributes.SPEED_LIMITS_FCn;
                 for (const sl of speedLimits) {
-                  const limit = sl.FROM_REF_SPEED_LIMIT || sl.TO_REF_SPEED_LIMIT;
+                  // Check FROM_REF_SPEED_LIMIT first, then TO_REF_SPEED_LIMIT
+                  let limit = parseInt(sl.FROM_REF_SPEED_LIMIT, 10) || parseInt(sl.TO_REF_SPEED_LIMIT, 10);
                   if (limit && limit > 0) {
+                    // Check unit - M = metric (km/h), I = imperial (mph)
+                    if (sl.SPEED_LIMIT_UNIT === 'I') {
+                      limit = Math.round(limit * 1.60934); // Convert mph to km/h
+                    }
                     speedLimit = limit;
                     source = 'here';
                     console.log(`HERE speed limit: ${speedLimit} km/h`);
@@ -94,80 +104,42 @@ serve(async (req) => {
             }
           }
         } else {
-          console.log(`HERE Route Matching error: ${hereResponse.status} - ${responseText.substring(0, 200)}`);
+          console.log(`HERE Route Matching error: ${hereResponse.status} - ${responseText.substring(0, 300)}`);
         }
       } catch (hereError) {
         console.error('HERE Route Matching error:', hereError);
       }
     }
 
-    // Method 2: HERE Reverse Geocode (fallback for road name)
-    if (!roadName && hereApiKey) {
+    // Method 2: HERE Reverse Geocode (fallback for road name + check for speed limit)
+    if (hereApiKey && (!roadName || speedLimit === null)) {
       try {
-        const hereUrl = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${lon}&lang=en-US&apiKey=${hereApiKey}`;
-        console.log(`Trying HERE Reverse Geocode for road name...`);
+        const hereUrl = `https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat},${lon}&lang=en-US&apiKey=${encodeURIComponent(hereApiKey)}`;
+        console.log(`Trying HERE Reverse Geocode...`);
         
         const hereResponse = await fetch(hereUrl);
         
         if (hereResponse.ok) {
           const hereData = await hereResponse.json();
           
-          if (hereData.items?.[0]?.address?.street) {
-            roadName = hereData.items[0].address.street;
-            console.log(`HERE Reverse road name: ${roadName}`);
+          if (hereData.items?.[0]) {
+            const item = hereData.items[0];
+            
+            if (!roadName && item.address?.street) {
+              roadName = item.address.street;
+              console.log(`HERE Reverse road name: ${roadName}`);
+            }
           }
+        } else {
+          const errorText = await hereResponse.text();
+          console.log(`HERE Reverse Geocode error: ${hereResponse.status} - ${errorText.substring(0, 200)}`);
         }
       } catch (hereError) {
         console.error('HERE Reverse Geocode error:', hereError);
       }
     }
 
-    // Method 3: TomTom Snap to Roads API (fallback)
-    if (speedLimit === null && tomtomApiKey) {
-      try {
-        const snapUrl = `https://api.tomtom.com/snap/1/synchronous?key=${tomtomApiKey}`;
-        console.log(`Trying TomTom Snap to Roads API...`);
-        
-        const snapBody = {
-          points: [{ latitude: lat, longitude: lon }],
-          fields: {
-            snappedPoints: ["speedLimit", "road"]
-          }
-        };
-        
-        const snapResponse = await fetch(snapUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(snapBody)
-        });
-        
-        if (snapResponse.ok) {
-          const snapData = await snapResponse.json();
-          
-          if (snapData.snappedPoints?.[0]) {
-            const point = snapData.snappedPoints[0];
-            
-            if (point.speedLimit !== undefined && point.speedLimit !== null) {
-              speedLimit = point.speedLimit;
-              source = 'tomtom';
-              console.log(`TomTom speed limit: ${speedLimit} km/h`);
-            }
-            
-            if (!roadName && point.road?.name) {
-              roadName = point.road.name;
-              console.log(`TomTom road name: ${roadName}`);
-            }
-          }
-        } else {
-          const errorText = await snapResponse.text();
-          console.log(`TomTom Snap error: ${snapResponse.status} - ${errorText.substring(0, 200)}`);
-        }
-      } catch (tomtomError) {
-        console.error('TomTom Snap error:', tomtomError);
-      }
-    }
-
-    // Method 4: TomTom Reverse Geocode (fallback for road name)
+    // Method 3: TomTom Reverse Geocode (fallback for road name)
     if (!roadName && tomtomApiKey) {
       try {
         const reverseUrl = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lon}.json?key=${tomtomApiKey}&radius=50`;
@@ -181,18 +153,21 @@ serve(async (req) => {
           if (reverseData.addresses?.[0]?.address) {
             const addr = reverseData.addresses[0].address;
             roadName = addr.streetName || addr.street || addr.freeformAddress || null;
-            console.log(`TomTom Reverse road name: ${roadName}`);
+            console.log(`TomTom road name: ${roadName}`);
           }
+        } else {
+          const errorText = await reverseResponse.text();
+          console.log(`TomTom Reverse error: ${reverseResponse.status}`);
         }
-      } catch (reverseError) {
-        console.error('TomTom Reverse error:', reverseError);
+      } catch (tomtomError) {
+        console.error('TomTom Reverse error:', tomtomError);
       }
     }
 
-    // Method 5: OSM Overpass - explicit maxspeed tags only
+    // Method 4: OSM Overpass - explicit maxspeed tags only (real sign data)
     if (speedLimit === null) {
       try {
-        const overpassQuery = `[out:json][timeout:5];way(around:25,${lat},${lon})["highway"]["maxspeed"];out body;`;
+        const overpassQuery = `[out:json][timeout:5];way(around:30,${lat},${lon})["highway"]["maxspeed"];out body;`;
         const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
         console.log(`Trying OSM Overpass (maxspeed only)...`);
         
@@ -216,6 +191,7 @@ serve(async (req) => {
             if (maxspeed) {
               console.log(`OSM maxspeed tag: "${maxspeed}"`);
               
+              // Parse numeric value
               const numMatch = maxspeed.match(/^(\d+)/);
               if (numMatch) {
                 let value = parseInt(numMatch[1], 10);
@@ -244,10 +220,10 @@ serve(async (req) => {
       }
     }
 
-    // Method 6: OSM road name fallback
+    // Method 5: OSM road name fallback
     if (!roadName) {
       try {
-        const overpassQuery = `[out:json][timeout:5];way(around:25,${lat},${lon})["highway"]["name"];out body 1;`;
+        const overpassQuery = `[out:json][timeout:5];way(around:30,${lat},${lon})["highway"]["name"];out body 1;`;
         const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
         console.log(`Trying OSM for road name...`);
         
