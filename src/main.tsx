@@ -4,9 +4,12 @@ import "./index.css";
 import "leaflet/dist/leaflet.css";
 import "./i18n";
 import { ThemeProvider } from "./context/ThemeContext";
+import { AppErrorBoundary } from "@/components/common/AppErrorBoundary";
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider>
-    <App />
+    <AppErrorBoundary>
+      <App />
+    </AppErrorBoundary>
   </ThemeProvider>
 );
