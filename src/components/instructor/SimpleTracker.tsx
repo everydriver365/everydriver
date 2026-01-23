@@ -28,6 +28,16 @@ const currentMarkerIcon = L.divIcon({
   iconAnchor: [9, 9],
 });
 
+interface RoadEvent {
+  roadName: string;
+  speedLimit: number;      // mph
+  maxSpeed: number;        // mph
+  speedExceeded: boolean;
+  harshBrakes: number;
+  harshAccelerations: number;
+  turns: number;
+}
+
 interface SimpleTrackerProps {
   instructorId: string;
   lessonId?: string;
@@ -46,14 +56,15 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
   const [phase, setPhase] = useState<TrackerPhase>('idle');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [roadStats, setRoadStats] = useState<Record<string, number>>({});
+  const [roadEvents, setRoadEvents] = useState<Record<string, RoadEvent>>({});
 
   const startTimeRef = useRef(0);
   const timerRef = useRef<number | null>(null);
+  const lastHeadingRef = useRef<number | null>(null);
 
   const drivingBehavior = useDrivingBehavior({});
-  const gpsTracker = useSimpleGPSTracker({ onSpeedingDetected: () => {} });
-  const harshBraking = useHarshBrakingDetector({ onHarshBrake: () => {} });
+  const gpsTracker = useSimpleGPSTracker({});
+  const harshBraking = useHarshBrakingDetector({});
   const tripScore = useLocalTripScore();
   const telematicsSession = useTelematicsSession(instructorId);
 
@@ -68,13 +79,45 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     };
   }, [phase]);
 
-  /* ---------------- Track road speeds ----------------------------- */
+  /* ---------------- Track Road Events ----------------------------- */
   useEffect(() => {
     if (phase !== 'tracking' || !gpsTracker.currentPosition) return;
-    const road = gpsTracker.speedLimitInfo?.roadName;
-    const speedMph = Math.round(gpsTracker.currentPosition.speedKmh * 0.621371);
-    if (!road) return;
-    setRoadStats((prev) => ({ ...prev, [road]: Math.max(prev[road] ?? 0, speedMph) }));
+
+    const pos = gpsTracker.currentPosition;
+    const road = gpsTracker.speedLimitInfo?.roadName ?? 'Unknown road';
+    const speedMph = Math.round(pos.speedKmh * 0.621371);
+    const limitMph = gpsTracker.speedLimitInfo?.speedLimit
+      ? Math.round(gpsTracker.speedLimitInfo.speedLimit * 0.621371)
+      : 0;
+
+    setRoadEvents(prev => {
+      const prevEvent = prev[road] ?? {
+        roadName: road,
+        speedLimit: limitMph,
+        maxSpeed: 0,
+        speedExceeded: false,
+        harshBrakes: 0,
+        harshAccelerations: 0,
+        turns: 0,
+      };
+
+      // Update max speed
+      const updatedEvent = { ...prevEvent };
+      updatedEvent.maxSpeed = Math.max(prevEvent.maxSpeed, speedMph);
+
+      // Speeding
+      if (limitMph > 0 && speedMph > limitMph) updatedEvent.speedExceeded = true;
+
+      // Turns detection based on heading change
+      if (pos.heading !== null && lastHeadingRef.current !== null) {
+        const headingDiff = Math.abs(pos.heading - lastHeadingRef.current);
+        if (headingDiff > 30) updatedEvent.turns = prevEvent.turns + 1;
+      }
+      lastHeadingRef.current = pos.heading;
+
+      return { ...prev, [road]: updatedEvent };
+    });
+
   }, [gpsTracker.currentPosition, gpsTracker.speedLimitInfo, phase]);
 
   /* ---------------- Cleanup --------------------------------------- */
@@ -92,7 +135,7 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     if (phase !== 'idle') return;
     setPhase('starting');
     setError(null);
-    setRoadStats({});
+    setRoadEvents({});
     try {
       const session = await telematicsSession.createSession(lessonId, pupilId);
       if (!session) throw new Error('Failed to create session');
@@ -157,11 +200,20 @@ export const SimpleTracker: React.FC<SimpleTrackerProps> = ({
     return (
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-4">Drive Report</h2>
-        <div className="space-y-2">
-          {Object.entries(roadStats).map(([road, maxSpeed]) => (
-            <div key={road} className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{road}</span>
-              <span className="font-medium">{maxSpeed} mph</span>
+        <div className="space-y-4">
+          {Object.values(roadEvents).map(event => (
+            <div key={event.roadName} className="border-b border-border pb-3 last:border-0">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium text-foreground">{event.roadName}</span>
+                <span className={`font-medium ${event.speedExceeded ? 'text-destructive' : 'text-foreground'}`}>
+                  {event.maxSpeed} / {event.speedLimit} mph {event.speedExceeded ? '⚠️' : ''}
+                </span>
+              </div>
+              <div className="flex gap-4 text-xs text-muted-foreground">
+                <span>Harsh Brakes: {event.harshBrakes}</span>
+                <span>Harsh Accel: {event.harshAccelerations}</span>
+                <span>Turns: {event.turns}</span>
+              </div>
             </div>
           ))}
         </div>
