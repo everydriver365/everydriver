@@ -2,15 +2,22 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Bookmark, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { useSimpleGPSTracker } from '@/hooks/useSimpleGPSTracker';
 import { useHarshBrakingDetector } from '@/hooks/useHarshBrakingDetector';
 import { useDrivingBehavior } from '@/hooks/useDrivingBehavior';
 import { useLocalTripScore, TripStats } from '@/hooks/useLocalTripScore';
 import { supabase } from '@/integrations/supabase/client';
+import { useInstructorAuth } from '@/context/InstructorAuthContext';
 
 interface GPSPoint {
   lat: number;
@@ -47,9 +54,33 @@ const currentMarkerIcon = L.divIcon({
 
 type TrackerPhase = 'idle' | 'tracking' | 'stopped';
 
+// Calculate distance between two points using Haversine formula
+const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Calculate total route distance
+const calculateTotalDistance = (points: GPSPoint[]): number => {
+  if (points.length < 2) return 0;
+  let total = 0;
+  for (let i = 1; i < points.length; i++) {
+    total += calculateDistance(points[i - 1].lat, points[i - 1].lng, points[i].lat, points[i].lng);
+  }
+  return Math.round(total * 10) / 10;
+};
+
 export default function TrackerPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
+  const { instructor } = useInstructorAuth();
+  const instructorId = instructor?.id;
 
   const [phase, setPhase] = useState<TrackerPhase>('idle');
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -57,6 +88,12 @@ export default function TrackerPage() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [gpsPoints, setGpsPoints] = useState<GPSPoint[]>([]);
   const [currentPos, setCurrentPos] = useState<[number, number] | null>(null);
+
+  // Save route dialog state
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [routeName, setRouteName] = useState('');
+  const [routeDescription, setRouteDescription] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const startTimeRef = useRef(Date.now());
   const timerRef = useRef<number | null>(null);
@@ -229,6 +266,7 @@ export default function TrackerPage() {
   /* ---------------- Derived Values ------------------------ */
   const lastPoint = gpsPoints[gpsPoints.length - 1];
   const selectedPupilName = pupils.find(p => p.id === selectedPupil)?.name;
+  const totalDistance = calculateTotalDistance(gpsPoints);
   
   // Convert km/h to mph
   const kmhToMph = (kmh: number) => Math.round(kmh * 0.621371);
@@ -237,6 +275,68 @@ export default function TrackerPage() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  /* ---------------- Save Route ----------------------------- */
+  const saveRoute = async () => {
+    if (!instructorId || !routeName.trim()) {
+      toast.error('Please enter a route name');
+      return;
+    }
+
+    if (gpsPoints.length < 2) {
+      toast.error('Not enough GPS points to save route');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const startPoint = gpsPoints[0];
+      const endPoint = gpsPoints[gpsPoints.length - 1];
+
+      // Insert route
+      const { data: routeData, error: routeError } = await supabase
+        .from('saved_routes')
+        .insert({
+          instructor_id: instructorId,
+          telematics_id: sessionId,
+          name: routeName.trim(),
+          description: routeDescription.trim() || null,
+          route_type: 'recorded',
+          start_location: `${startPoint.lat.toFixed(4)}, ${startPoint.lng.toFixed(4)}`,
+          end_location: `${endPoint.lat.toFixed(4)}, ${endPoint.lng.toFixed(4)}`,
+          distance_km: totalDistance
+        })
+        .select()
+        .single();
+
+      if (routeError) throw routeError;
+
+      // Insert waypoints
+      const waypoints = gpsPoints.map((point, index) => ({
+        route_id: routeData.id,
+        sequence: index,
+        latitude: point.lat,
+        longitude: point.lng,
+        name: point.roadName || null
+      }));
+
+      const { error: waypointsError } = await supabase
+        .from('saved_route_waypoints')
+        .insert(waypoints);
+
+      if (waypointsError) throw waypointsError;
+
+      toast.success('Route saved successfully!');
+      setShowSaveDialog(false);
+      setRouteName('');
+      setRouteDescription('');
+    } catch (error) {
+      console.error('Error saving route:', error);
+      toast.error('Failed to save route');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -320,12 +420,55 @@ export default function TrackerPage() {
       {/* Trip Report */}
       {phase === 'stopped' && (
         <div className="absolute inset-0 bg-background/95 z-[1001] overflow-auto p-4">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center justify-between mb-4">
+          <div className="max-w-2xl mx-auto space-y-4">
+            <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold">Trip Report</h2>
-              <Button variant="outline" onClick={() => navigate('/instructor/track-lesson')}>
-                Done
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" className="gap-2" onClick={() => setShowSaveDialog(true)}>
+                  <Bookmark className="h-4 w-4" />
+                  Save Route
+                </Button>
+                <Button onClick={() => navigate('/instructor/track-lesson')}>
+                  Done
+                </Button>
+              </div>
+            </div>
+
+            {/* Trip Summary */}
+            <div className="bg-card rounded-lg border p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Duration:</span>
+                  <p className="font-medium">{formatTime(elapsedTime)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Distance:</span>
+                  <p className="font-medium">{totalDistance.toFixed(1)} km</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">GPS Points:</span>
+                  <p className="font-medium">{gpsPoints.length}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Speeding Events:</span>
+                  <p className="font-medium">{gpsPoints.filter(p => p.speeding).length}</p>
+                </div>
+              </div>
+              
+              {gpsPoints.length > 0 && (
+                <div className="mt-4 pt-4 border-t space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-green-500" />
+                    <span className="text-muted-foreground">Start:</span>
+                    <span>{gpsPoints[0].lat.toFixed(4)}, {gpsPoints[0].lng.toFixed(4)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-red-500" />
+                    <span className="text-muted-foreground">End:</span>
+                    <span>{lastPoint?.lat.toFixed(4)}, {lastPoint?.lng.toFixed(4)}</span>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="bg-card rounded-lg border overflow-hidden">
@@ -364,6 +507,66 @@ export default function TrackerPage() {
           </div>
         </div>
       )}
+
+      {/* Save Route Dialog */}
+      <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bookmark className="h-5 w-5 text-primary" />
+              Save Route
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="route-name">Route Name *</Label>
+              <Input
+                id="route-name"
+                placeholder="e.g., Test Centre Route A"
+                value={routeName}
+                onChange={(e) => setRouteName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="route-description">Description (optional)</Label>
+              <Textarea
+                id="route-description"
+                placeholder="Add notes about this route..."
+                value={routeDescription}
+                onChange={(e) => setRouteDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-3 space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-green-500" />
+                <span className="text-muted-foreground">Start:</span>
+                <span>{gpsPoints[0]?.lat.toFixed(4)}, {gpsPoints[0]?.lng.toFixed(4)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-red-500" />
+                <span className="text-muted-foreground">End:</span>
+                <span>{lastPoint?.lat.toFixed(4)}, {lastPoint?.lng.toFixed(4)}</span>
+              </div>
+              <div className="text-muted-foreground">
+                Distance: {totalDistance.toFixed(1)} km • {gpsPoints.length} points
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSaveDialog(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button onClick={saveRoute} disabled={saving}>
+              {saving ? 'Saving...' : 'Save Route'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
