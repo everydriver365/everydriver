@@ -79,7 +79,7 @@ export default function TrackerPage() {
       const { data: instructorData } = await (supabase as any)
         .from('instructors')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('auth_user_id', user.id)
         .single();
 
       if (!instructorData) return;
