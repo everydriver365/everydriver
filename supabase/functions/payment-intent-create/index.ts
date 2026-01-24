@@ -36,8 +36,12 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const merchantId = Deno.env.get("NPI_MERCHANT_ID") || "";
+    // Keep gateway host consistent between Hosted Fields SDK + Direct API.
+    // Prefer the existing secret used by the Direct Sale function.
     const directUrl =
-      Deno.env.get("NPI_DIRECT_URL") || "https://gateway.cardstream.com/direct/";
+      Deno.env.get("CARDSTREAM_DIRECT_URL") ||
+      Deno.env.get("NPI_DIRECT_URL") ||
+      "https://gateway.cardstream.com/direct/";
     const gatewayOrigin = new URL(directUrl).origin;
     const hostedFieldsScriptUrl = `${gatewayOrigin}/sdk/web/v1/js/hostedfields.min.js`;
     const supabase = createClient(supabaseUrl, serviceKey);

@@ -51,6 +51,39 @@ function loadScriptStrict(url: string, timeoutMs = 15000): Promise<void> {
   });
 }
 
+/**
+ * Best-effort diagnostics to confirm what the browser can actually fetch.
+ * Note: this may be limited by CORS (opaque responses) and adblockers.
+ */
+async function probeHostedFieldsUrl(url: string): Promise<void> {
+  try {
+    // Attempt a normal CORS fetch so we can read status/text where allowed.
+    const res = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
+    const ct = res.headers.get("content-type") || "";
+    let preview = "";
+    try {
+      // Only read small preview to avoid big downloads.
+      const text = await res.text();
+      preview = text.slice(0, 800);
+    } catch {
+      // ignore
+    }
+
+    console.log("[CardstreamEmbeddedCheckout] SDK probe:", {
+      url,
+      status: res.status,
+      ok: res.ok,
+      contentType: ct,
+      preview,
+    });
+  } catch (err) {
+    console.error("[CardstreamEmbeddedCheckout] SDK probe failed (likely blocked by CSP/adblock/network/CORS):", {
+      url,
+      err,
+    });
+  }
+}
+
 function getHostedFieldsFormClass(): (new (el: HTMLFormElement, options: any) => any) | null {
   const hf = (window as any).hostedFields;
   return hf?.classes?.Form ?? null;
@@ -149,6 +182,8 @@ export function CardstreamEmbeddedCheckout({
         console.log("[CardstreamEmbeddedCheckout] Hosted Fields SDK URL:", resolvedSdkUrl);
 
         // 3) Load jQuery + Hosted Fields SDK (strict, ordered)
+        // Probe first so we can log the real HTTP status / body preview when possible.
+        await probeHostedFieldsUrl(resolvedSdkUrl);
         await loadCardstreamHostedFieldsSDK(resolvedSdkUrl);
 
         if (!mounted) return;
