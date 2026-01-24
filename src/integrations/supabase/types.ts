@@ -3324,6 +3324,72 @@ export type Database = {
           },
         ]
       }
+      pupil_assignments: {
+        Row: {
+          assignment_type: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          feedback: string | null
+          id: string
+          instructor_id: string
+          notes: string | null
+          pupil_id: string
+          rating: number | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignment_type?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          feedback?: string | null
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          pupil_id: string
+          rating?: number | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignment_type?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          feedback?: string | null
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          pupil_id?: string
+          rating?: number | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_assignments_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_assignments_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_badges: {
         Row: {
           id: string

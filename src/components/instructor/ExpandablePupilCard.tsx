@@ -26,6 +26,7 @@ import {
   ClipboardList,
   Car
 } from "lucide-react";
+import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -631,6 +632,15 @@ export function ExpandablePupilCard({
                   </div>
                 )}
               </div>
+
+              {/* Assignments Panel */}
+              {instructorId && (
+                <PupilAssignmentsPanel 
+                  pupilId={pupil.id} 
+                  instructorId={instructorId}
+                  pupilName={pupil.name}
+                />
+              )}
 
               {/* Quick Actions - 4 columns */}
               <div className="grid grid-cols-4 gap-1.5">
