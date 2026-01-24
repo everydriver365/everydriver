@@ -5,14 +5,34 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Loader2, Lock, CreditCard } from "lucide-react";
 
-// Local interface - uses existing window.hostedFields from CardstreamCheckout types
-interface EmbeddedHostedFieldsInstance {
-  getPaymentDetails: (data: { customerName?: string }, validate: boolean) => Promise<{
+// Types for Cardstream Hosted Fields SDK (non-jQuery API)
+interface HostedFieldsConfig {
+  merchantID: string;
+  stylesheet?: string;
+  fields: {
+    cardNumber: { selector: string; placeholder?: string };
+    cardExpiryDate: { selector: string; placeholder?: string };
+    cardCVV: { selector: string; placeholder?: string };
+  };
+}
+
+interface HostedFieldsInstance {
+  getPaymentDetails(options?: { customerName?: string }): Promise<{
     success: boolean;
     paymentToken?: string;
     error?: string;
   }>;
-  destroy?: () => void;
+  destroy(): void;
+}
+
+declare global {
+  interface Window {
+    hostedFields?: {
+      classes: {
+        HostedFields: new (config: HostedFieldsConfig) => HostedFieldsInstance;
+      };
+    };
+  }
 }
 
 type Props = {
@@ -53,8 +73,7 @@ export function CardstreamEmbeddedCheckout({
   const [initError, setInitError] = useState<string | null>(null);
   const [resolvedMerchantId, setResolvedMerchantId] = useState<string>(merchantId || "");
 
-  const hostedInstanceRef = useRef<EmbeddedHostedFieldsInstance | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+  const hostedInstanceRef = useRef<HostedFieldsInstance | null>(null);
 
   const amountLabel = `£${amount.toFixed(2)}`;
 
@@ -91,28 +110,29 @@ export function CardstreamEmbeddedCheckout({
 
         if (!mounted) return;
 
-        // 3) Initialize hosted fields using jQuery plugin (standard Cardstream approach)
-        const win = window as any;
-        if (win.jQuery && formRef.current) {
-          const $form = win.jQuery(formRef.current);
-          
-          // Set merchant ID for tokenization
-          const merchantInput = formRef.current.querySelector('input[name="merchantID"]') as HTMLInputElement;
-          if (merchantInput) {
-            merchantInput.value = mId;
-          }
-
-          // Initialize with jQuery plugin
-          $form.hostedForm({
-            autoSetup: true,
-            autoSubmit: false,
-            fields: { any: { nativeEvents: true } },
-          });
-
-          hostedInstanceRef.current = $form.hostedForm("instance");
-        } else {
-          throw new Error("Hosted Fields SDK requires jQuery. Please ensure jQuery is loaded.");
+        // 3) Initialize hosted fields using non-jQuery API
+        if (!window.hostedFields?.classes?.HostedFields) {
+          throw new Error("Hosted Fields SDK failed to load properly");
         }
+
+        // Create hosted fields instance
+        hostedInstanceRef.current = new window.hostedFields.classes.HostedFields({
+          merchantID: mId,
+          fields: {
+            cardNumber: { 
+              selector: "#cs-card-number-embed",
+              placeholder: "Card number"
+            },
+            cardExpiryDate: { 
+              selector: "#cs-card-expiry-embed",
+              placeholder: "MM/YY"
+            },
+            cardCVV: { 
+              selector: "#cs-card-cvv-embed",
+              placeholder: "CVV"
+            },
+          },
+        });
 
         setLoading(false);
       } catch (e) {
@@ -120,14 +140,18 @@ export function CardstreamEmbeddedCheckout({
         setLoading(false);
         const message = e instanceof Error ? e.message : "Failed to initialize payment";
         setInitError(message);
-        toast.error(message);
+        console.error("CardstreamEmbeddedCheckout init error:", e);
       }
     })();
 
     return () => {
       mounted = false;
-      if (hostedInstanceRef.current?.destroy) {
-        hostedInstanceRef.current.destroy();
+      if (hostedInstanceRef.current) {
+        try {
+          hostedInstanceRef.current.destroy();
+        } catch (e) {
+          console.warn("Error destroying hosted fields:", e);
+        }
       }
     };
   }, [amount, pupilId, instructorId, customerName, customerEmail, merchantId]);
@@ -147,10 +171,9 @@ export function CardstreamEmbeddedCheckout({
       setPaying(true);
 
       // Tokenize card details
-      const details = await hostedInstanceRef.current.getPaymentDetails(
-        { customerName: customerName ?? "" },
-        true,
-      );
+      const details = await hostedInstanceRef.current.getPaymentDetails({
+        customerName: customerName ?? "",
+      });
 
       if (!details?.success || !details?.paymentToken) {
         throw new Error(details?.error || "Card validation failed");
@@ -211,44 +234,41 @@ export function CardstreamEmbeddedCheckout({
           </div>
         ) : (
           <>
-            <form ref={formRef} id="cs-embedded-form" className="space-y-4">
+            <div className="space-y-4">
               <input type="hidden" name="merchantID" value={resolvedMerchantId} />
 
               <div className="space-y-2">
-                <label htmlFor="cs-card-number" className="text-sm font-medium">
+                <label htmlFor="cs-card-number-embed" className="text-sm font-medium">
                   Card Number
                 </label>
                 <div
-                  id="cs-card-number"
-                  className="h-10 border rounded-md px-3 bg-background"
-                  data-hostedfield="cardNumber"
+                  id="cs-card-number-embed"
+                  className="h-10 border rounded-md px-3 bg-background flex items-center"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label htmlFor="cs-card-expiry" className="text-sm font-medium">
+                  <label htmlFor="cs-card-expiry-embed" className="text-sm font-medium">
                     Expiry
                   </label>
                   <div
-                    id="cs-card-expiry"
-                    className="h-10 border rounded-md px-3 bg-background"
-                    data-hostedfield="cardExpiryDate"
+                    id="cs-card-expiry-embed"
+                    className="h-10 border rounded-md px-3 bg-background flex items-center"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="cs-card-cvv" className="text-sm font-medium">
+                  <label htmlFor="cs-card-cvv-embed" className="text-sm font-medium">
                     CVV
                   </label>
                   <div
-                    id="cs-card-cvv"
-                    className="h-10 border rounded-md px-3 bg-background"
-                    data-hostedfield="cardCVV"
+                    id="cs-card-cvv-embed"
+                    className="h-10 border rounded-md px-3 bg-background flex items-center"
                   />
                 </div>
               </div>
-            </form>
+            </div>
 
             <Button
               onClick={payNow}
