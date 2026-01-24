@@ -83,28 +83,30 @@ export default function InstructorLiveTracking() {
             </Button>
             <div>
               <h1 className="text-lg font-semibold">Live Tracking</h1>
-              <p className="text-xs text-muted-foreground">Monitor active pupils in real-time</p>
+              <p className="text-xs text-muted-foreground">Monitor active pupils</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <OfflineIndicator />
-            <Button
-              size="sm"
-              onClick={handleStartTracking}
-              disabled={isStarting}
-              className="gap-1.5"
-            >
-              <Navigation className="h-4 w-4" />
-              {isStarting ? 'Starting...' : 'Track'}
-            </Button>
-          </div>
+          <OfflineIndicator />
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 overflow-hidden">
+      <main className="flex-1 p-4 overflow-hidden pb-24">
         <LivePupilsDashboard instructorId={instructor.id} />
       </main>
+
+      {/* Floating Track Button - Very Prominent */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <Button
+          size="lg"
+          onClick={handleStartTracking}
+          disabled={isStarting}
+          className="h-14 px-8 rounded-full shadow-lg shadow-primary/30 text-base font-semibold gap-2"
+        >
+          <Navigation className="h-5 w-5" />
+          {isStarting ? 'Starting...' : 'Start Tracking'}
+        </Button>
+      </div>
     </div>
   );
 }
