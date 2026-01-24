@@ -221,15 +221,15 @@ export function MobileBookingView({
 
   return (
     <div className="min-h-screen bg-background pb-safe">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background border-b">
+      {/* Header - Navy Blue */}
+      <div className="sticky top-0 z-50 bg-[#142040] border-b border-[#0f1a30]">
         <div className="px-4 py-3 flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-white/80 hover:text-white hover:bg-white/10" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="font-semibold flex-1 truncate">{courseName}</h1>
+          <h1 className="font-semibold flex-1 truncate text-white">{courseName}</h1>
           <div className="text-right">
-            <span className="text-lg font-bold text-primary">£{totalPrice}</span>
+            <span className="text-lg font-bold text-emerald-400">£{totalPrice}</span>
           </div>
         </div>
       </div>

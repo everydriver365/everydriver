@@ -98,12 +98,12 @@ export function MobileHomepage() {
     path: "/benefits"
   }];
   return <div className="min-h-screen bg-background">
-      {/* Header - Same blue as bottom nav */}
-      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
+      {/* Header - Navy Blue to match brand */}
+      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-[#142040] border-b border-[#0f1a30]">
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-10 w-10 text-primary-foreground hover:bg-primary-foreground/10"
+          className="h-10 w-10 text-white hover:bg-white/10"
           onClick={() => setIsMenuOpen(true)}
         >
           <Menu className="h-5 w-5" />

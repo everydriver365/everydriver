@@ -33,8 +33,8 @@ export default function Benefits() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-center sticky top-0 z-50 bg-nav border-b border-nav-foreground/20">
+      {/* Header - Navy Blue to match brand */}
+      <div className="px-4 py-3 flex items-center justify-center sticky top-0 z-50 bg-[#142040] border-b border-[#0f1a30]">
         <img src={logo} alt="EveryDriver" className="h-10" />
       </div>
 
