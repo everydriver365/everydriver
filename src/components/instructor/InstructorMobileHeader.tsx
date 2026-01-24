@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import mainLogo from "@/assets/everydriver-logo-transparent.png";
+import mainLogo from "@/assets/everydriver-logo-new.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;

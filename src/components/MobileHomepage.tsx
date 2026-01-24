@@ -8,7 +8,7 @@ import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import heroLearnerMobile from "@/assets/mobile-hero.png";
-import logo from "@/assets/everydriver-logo-transparent.png";
+import logo from "@/assets/everydriver-logo-new.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";

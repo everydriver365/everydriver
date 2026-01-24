@@ -12,7 +12,7 @@ import testimonialEmma from "@/assets/testimonial-emma.jpg";
 import testimonialPriya from "@/assets/testimonial-priya.jpg";
 import heroImage from "@/assets/hero-driving.jpg";
 import heroLearnerMobile from "@/assets/hero-learner-mobile.jpg";
-import everyDriverLogo from "@/assets/everydriver-logo-transparent.png";
+import everyDriverLogo from "@/assets/everydriver-logo-new.png";
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
