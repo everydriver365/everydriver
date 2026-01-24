@@ -28,11 +28,11 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      {/* Header - Navy Blue to match brand */}
+      <header className="sticky top-0 z-50 w-full border-b border-[#0f1a30] bg-[#142040]">
         <nav className="container max-w-7xl flex h-16 items-center justify-between">
           <Link to="/instructor-app" className="flex items-center">
-            <img src={logo} alt="Drive365" className="h-10" />
+            <img src={logo} alt="EveryDriver" className="h-10" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -41,8 +41,8 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location.pathname === link.href ? "text-primary" : "text-gray-600 dark:text-gray-300"
+                className={`text-sm font-medium transition-colors hover:text-emerald-400 ${
+                  location.pathname === link.href ? "text-emerald-400" : "text-white/80"
                 }`}
               >
                 {link.label}
@@ -53,10 +53,10 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
           <div className="hidden items-center gap-2 md:flex">
             <LanguageToggle />
             <ThemeToggle />
-            <Button variant="ghost" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800" asChild>
+            <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10" asChild>
               <Link to="/instructor-app/login">Log in</Link>
             </Button>
-            <Button variant="default" asChild>
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" asChild>
               <Link to="/instructor-app/signup">Get Started Free</Link>
             </Button>
           </div>
@@ -65,7 +65,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="md:hidden text-white hover:bg-white/10"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
