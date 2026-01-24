@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, Lock, CreditCard } from "lucide-react";
 
-// jQuery + Cardstream SDK URLs
-const JQUERY_URL = "https://code.jquery.com/jquery-3.6.4.min.js";
-const HOSTEDFIELDS_URL = "https://gateway.cardstream.com/sdk/web/v1/js/hostedfields.min.js";
+// jQuery URL (must load BEFORE hostedfields)
+const JQUERY_URL = "https://code.jquery.com/jquery-3.7.1.min.js";
 
 declare global {
   interface Window {
@@ -43,29 +42,46 @@ function loadScriptStrict(url: string, timeoutMs = 15000): Promise<void> {
       window.clearTimeout(t);
       resolve();
     };
-    s.onerror = () => {
+    s.onerror = (ev) => {
       window.clearTimeout(t);
+      console.error("[CardstreamEmbeddedCheckout] Script load failed:", url, ev);
       reject(new Error(`Failed to load script: ${url}. Check DevTools → Network.`));
     };
     document.head.appendChild(s);
   });
 }
 
-/** Ensures jQuery loads before hostedfields, then verifies plugin */
-async function loadCardstreamHostedFieldsSDK(): Promise<any> {
+function getHostedFieldsFormClass(): (new (el: HTMLFormElement, options: any) => any) | null {
+  const hf = (window as any).hostedFields;
+  return hf?.classes?.Form ?? null;
+}
+
+/** Ensures jQuery loads before hostedfields, then verifies SDK via window.hostedFields.classes.Form */
+async function loadCardstreamHostedFieldsSDK(hostedFieldsUrl: string): Promise<void> {
+  // 1) Ensure jQuery exists first
   if (!window.jQuery) {
     await loadScriptStrict(JQUERY_URL);
   }
-  await loadScriptStrict(HOSTEDFIELDS_URL);
-  
-  const $ = window.jQuery;
-  if (!$) {
-    throw new Error("jQuery missing after load.");
+
+  if (!window.jQuery) {
+    throw new Error(
+      "jQuery loaded but window.jQuery is missing (blocked/overridden). Check CSP/adblock."
+    );
   }
-  if (!$.fn || !$.fn.hostedForm) {
-    throw new Error("Hosted Fields SDK loaded but $.fn.hostedForm is missing.");
+  // Some SDK builds expect $ as well
+  (window as any).$ = window.jQuery;
+
+  // 2) Load Hosted Fields SDK after jQuery
+  await loadScriptStrict(hostedFieldsUrl);
+
+  // 3) Verify SDK surface (do not rely on $.fn.hostedForm)
+  const FormClass = getHostedFieldsFormClass();
+  if (!FormClass) {
+    throw new Error(
+      "Hosted Fields SDK loaded but window.hostedFields.classes.Form is missing. " +
+        "This usually means the JS was blocked by CSP/adblock or the gateway hostname/URL is wrong."
+    );
   }
-  return $;
 }
 
 export function CardstreamEmbeddedCheckout({
@@ -84,7 +100,14 @@ export function CardstreamEmbeddedCheckout({
   const [resolvedMerchantId, setResolvedMerchantId] = useState<string>(merchantId || "");
 
   const hostedInstanceRef = useRef<any>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const formId = "cs-form-embed";
+
+  const gatewayBaseUrl = useMemo(() => {
+    // Optional front-end override (white-label gateways)
+    const envBase = import.meta.env.VITE_CARDSTREAM_GATEWAY_BASE_URL as string | undefined;
+    return (envBase || "").replace(/\/$/, "");
+  }, []);
 
   const amountLabel = `£${amount.toFixed(2)}`;
 
@@ -95,6 +118,8 @@ export function CardstreamEmbeddedCheckout({
       try {
         setLoading(true);
         setInitError(null);
+
+        console.log("[CardstreamEmbeddedCheckout] Initializing...");
 
         // 1) Create payment intent
         const { data, error } = await supabase.functions.invoke("payment-intent-create", {
@@ -115,22 +140,35 @@ export function CardstreamEmbeddedCheckout({
         }
         setResolvedMerchantId(mId);
 
-        // 2) Load jQuery + Hosted Fields SDK
-        const $ = await loadCardstreamHostedFieldsSDK();
+        // 2) Resolve Hosted Fields SDK URL
+        const sdkUrlFromBackend: string | undefined = data?.hostedFieldsScriptUrl;
+        const resolvedSdkUrl = gatewayBaseUrl
+          ? `${gatewayBaseUrl}/sdk/web/v1/js/hostedfields.min.js`
+          : (sdkUrlFromBackend || "https://gateway.cardstream.com/sdk/web/v1/js/hostedfields.min.js");
+
+        console.log("[CardstreamEmbeddedCheckout] Hosted Fields SDK URL:", resolvedSdkUrl);
+
+        // 3) Load jQuery + Hosted Fields SDK (strict, ordered)
+        await loadCardstreamHostedFieldsSDK(resolvedSdkUrl);
 
         if (!mounted) return;
 
-        // 3) Initialize hosted fields with jQuery plugin
-        const $form = $(`#${formId}`);
-        $form.find('input[name="merchantID"]').val(mId);
+        // 4) Initialize via window.hostedFields.classes.Form (no plugin dependency)
+        const FormClass = getHostedFieldsFormClass();
+        const formEl = formRef.current;
+        if (!FormClass) throw new Error("Hosted Fields Form class missing after SDK load");
+        if (!formEl) throw new Error("Payment form not mounted");
 
-        $form.hostedForm({
+        // Ensure merchantID input exists & is set (tokeniser reads this)
+        const merchantInput = formEl.querySelector('input[name="merchantID"]') as HTMLInputElement | null;
+        if (merchantInput) merchantInput.value = mId;
+
+        hostedInstanceRef.current = new FormClass(formEl, {
           autoSetup: true,
           autoSubmit: false,
-          fields: { any: { nativeEvents: true } },
+          nativeEvents: true,
         });
 
-        hostedInstanceRef.current = $form.hostedForm("instance");
         setLoading(false);
       } catch (e) {
         if (!mounted) return;
@@ -161,9 +199,10 @@ export function CardstreamEmbeddedCheckout({
       setPaying(true);
 
       // Tokenize card details
-      const details = await hostedInstanceRef.current.getPaymentDetails({
-        customerName: customerName ?? "",
-      });
+      const details = await hostedInstanceRef.current.getPaymentDetails(
+        { orderRef },
+        true
+      );
 
       if (!details?.success || !details?.paymentToken) {
         throw new Error(details?.error || "Card validation failed");
@@ -217,14 +256,20 @@ export function CardstreamEmbeddedCheckout({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
+        {loading && (
+          <div className="flex items-center justify-center py-4">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             <span className="ml-2 text-muted-foreground">Loading secure payment...</span>
           </div>
-        ) : (
-          <form id={formId} className="space-y-4">
-            <input type="hidden" name="merchantID" value={resolvedMerchantId} />
+        )}
+
+        {/* Keep the form mounted (required for SDK init). When loading, it stays invisible. */}
+        <form
+          ref={formRef}
+          id={formId}
+          className={`space-y-4 ${loading ? "invisible h-0 overflow-hidden" : ""}`}
+        >
+          <input type="hidden" name="merchantID" value={resolvedMerchantId} />
 
             <div className="space-y-2">
               <label htmlFor="card-number" className="text-sm font-medium">
@@ -289,7 +334,6 @@ export function CardstreamEmbeddedCheckout({
               Card details are tokenized securely. We never see your full card number.
             </p>
           </form>
-        )}
       </CardContent>
     </Card>
   );
