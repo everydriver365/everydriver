@@ -33,6 +33,11 @@ const navItems: NavItem[] = [
     path: "/instructor/schedule"
   },
   { 
+    label: "Track", 
+    icon: Navigation, 
+    path: "/instructor/track-lesson"
+  },
+  { 
     label: "Pupils", 
     icon: Users, 
     path: "/instructor/pupils"
