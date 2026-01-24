@@ -28,6 +28,7 @@ const navTabs = [
   { id: "courses", label: "Courses", icon: BookOpen },
   { id: "instructors", label: "Instructors", icon: Users },
   { id: "subscribers", label: "Subscribers", icon: CreditCard },
+  { id: "plans", label: "Plans", icon: CreditCard },
   { id: "mini-websites", label: "Websites", icon: FileText },
   { id: "domains", label: "Domains", icon: Globe },
   { id: "enquiries", label: "Pupils", icon: GraduationCap },
