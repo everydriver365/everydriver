@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LessonScheduler } from "@/components/booking/LessonScheduler";
 import { KlarnaExpressButton } from "@/components/booking/KlarnaExpressButton";
-import { NPIHostedFields } from "@/components/booking/NPIHostedFields";
+import { CardstreamEmbeddedCheckout } from "@/components/payments/CardstreamEmbeddedCheckout";
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { MobileBookingView } from "@/components/booking/MobileBookingView";
@@ -543,67 +543,11 @@ export default function BookingSummary() {
       );
       if (!pupilId) return;
 
-      const orderReference = `NPI-${instructor.id.slice(0, 8)}-${Date.now()}`;
-      const currentUrl = window.location.origin;
-
-      // Determine payment amount based on selection
-      const paymentAmount = isDepositPayment ? depositAmount : fullPaymentAmount;
-
-      const { data, error } = await supabase.functions.invoke("npi-checkout", {
-        body: {
-          amount: paymentAmount,
-          currency: "GBP",
-          orderReference,
-          customerEmail: pupilEmail.trim(),
-          customerName: pupilName.trim(),
-          customerPhone: pupilPhone.trim(),
-          customerAddress: pupilAddress.trim(),
-          customerPostcode: pupilPostcode.trim(),
-          description: isDepositPayment 
-            ? `Deposit for ${courseName} - ${hours} Hour Driving Course`
-            : `${courseName} - ${hours} Hour Driving Course`,
-          returnUrl: `${currentUrl}/booking-confirmation?pupilId=${pupilId}&npi=success&ref=${orderReference}&paymentType=${isDepositPayment ? 'deposit' : 'full'}&amountPaid=${paymentAmount}`,
-          cancelUrl: `${currentUrl}/book/${instructor.id}?hours=${hours}&npi=cancelled`,
-          instructorId: instructor.id,
-          pupilId: pupilId,
-          // HPP customization from CMS
-          formResponsive: true,
-          merchantName: getSetting("npi_merchant_name") || undefined,
-        },
-      });
-
-      if (error) {
-        console.error("NPI checkout error:", error);
-        toast.error("Failed to start NPI checkout. Please try again.");
-        return;
-      }
-
-      // NPI HPP requires form POST submission (not URL redirect)
-      if (data?.gatewayUrl && data?.formData) {
-        // Create and submit hidden form to NPI gateway
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = data.gatewayUrl;
-        form.style.display = 'none';
-
-        // Add all form fields from the response
-        for (const [key, value] of Object.entries(data.formData)) {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = String(value);
-          form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        toast.success("Redirecting to payment page...");
-        form.submit();
-      } else {
-        toast.error("Could not get NPI payment form data");
-      }
+      // Show embedded checkout instead of redirecting
+      setShowHostedFields(true);
     } catch (err) {
       console.error("NPI error:", err);
-      toast.error("Something went wrong with NPI Payments. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsNPILoading(false);
     }
@@ -1108,6 +1052,15 @@ export default function BookingSummary() {
         onKlarnaError={handleKlarnaError}
         onKlarnaCancel={handleKlarnaCancel}
         onWalletSuccess={(pupilId) => navigate(`/booking-confirmation?pupilId=${pupilId}`)}
+        showEmbeddedCheckout={showHostedFields}
+        embeddedCheckoutPupilId={bookingPupilId}
+        onEmbeddedCheckoutSuccess={() => {
+          toast.success("Payment successful!");
+          if (bookingPupilId) {
+            navigate(`/booking-confirmation?pupilId=${bookingPupilId}&npi=success`);
+          }
+        }}
+        onEmbeddedCheckoutCancel={() => setShowHostedFields(false)}
       />
     );
   }
@@ -1865,7 +1818,7 @@ export default function BookingSummary() {
           </div>
 
 
-          {/* NPI Hosted Fields - Embedded Card Form */}
+          {/* Cardstream Embedded Card Form */}
           {showHostedFields && bookingPupilId && courseDetails && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -1874,7 +1827,7 @@ export default function BookingSummary() {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-blue-600" />
+                  <CreditCard className="h-5 w-5 text-primary" />
                   Enter Card Details
                 </h3>
                 <button 
@@ -1884,21 +1837,15 @@ export default function BookingSummary() {
                   Cancel
                 </button>
               </div>
-              <NPIHostedFields
-                amount={totalPrice + upsellTotal}
-                orderReference={`NPI-${instructor.id.slice(0, 8)}-${Date.now()}`}
-                customerEmail={pupilEmail.trim()}
-                customerName={pupilName.trim()}
-                returnUrl={`${window.location.origin}/booking-confirmation?pupilId=${bookingPupilId}&npi=success`}
-                instructorId={instructor.id}
+              <CardstreamEmbeddedCheckout
+                amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
                 pupilId={bookingPupilId}
-                brandColor={getSetting("npi_brand_color") || "#3b82f6"}
+                instructorId={instructor.id}
+                customerName={pupilName.trim()}
+                customerEmail={pupilEmail.trim()}
                 onSuccess={() => {
                   toast.success("Payment successful!");
-                }}
-                onError={(error) => {
-                  toast.error(error);
-                  setShowHostedFields(false);
+                  navigate(`/booking-confirmation?pupilId=${bookingPupilId}&npi=success`);
                 }}
               />
             </motion.div>

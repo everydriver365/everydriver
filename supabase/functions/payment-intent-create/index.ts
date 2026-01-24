@@ -35,6 +35,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const merchantId = Deno.env.get("NPI_MERCHANT_ID") || "";
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const { error } = await supabase.from("payment_intents").insert({
@@ -57,10 +58,9 @@ serve(async (req) => {
         transactionUnique,
         amountPence,
         currencyCode: "826",
-        cardstream: {
-          hostedFieldsScriptUrl:
-            "https://gateway.cardstream.com/sdk/web/v1/js/hostedfields.min.js",
-        },
+        merchantId, // Return merchant ID for client-side tokenization
+        hostedFieldsScriptUrl:
+          "https://gateway.cardstream.com/sdk/web/v1/js/hostedfields.min.js",
         applePay: { supported: true },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
