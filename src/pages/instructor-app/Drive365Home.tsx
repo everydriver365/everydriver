@@ -48,8 +48,8 @@ export default function Drive365Home() {
       {/* PWA Install Banner */}
       <Drive365InstallBanner />
       
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-[hsl(228,54%,17%)] border-b border-white/10">
+      {/* Header - Navy Blue to match brand */}
+      <header className="sticky top-0 z-50 bg-[#142040] border-b border-[#0f1a30]">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <img
             src={mainLogo}

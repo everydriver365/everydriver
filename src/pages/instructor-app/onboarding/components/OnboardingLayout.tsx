@@ -21,8 +21,8 @@ export function OnboardingLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with progress */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      {/* Header with progress - Navy Blue to match brand */}
+      <header className="border-b border-[#0f1a30] bg-[#142040] sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
@@ -31,12 +31,12 @@ export function OnboardingLayout({
                 alt="EveryDriver"
                 className="h-8"
               />
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-white/70">
                 Step {step} of {totalSteps}
               </span>
             </div>
           </div>
-          <Progress value={progress} className="h-2" />
+          <Progress value={progress} className="h-2 bg-white/20" />
         </div>
       </header>
 
