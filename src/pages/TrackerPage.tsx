@@ -421,9 +421,21 @@ export default function TrackerPage() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-card border-b z-[1000]">
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-muted-foreground">
-            Pupil: {selectedPupilName || '-'} • {formatTime(elapsedTime)}
-          </p>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Pupil: {selectedPupilName || '-'} • {formatTime(elapsedTime)}</span>
+            {/* GPS Quality Indicator */}
+            {gpsTracker.currentPosition && (
+              <span className={`text-xs px-1.5 py-0.5 rounded ${
+                gpsTracker.currentPosition.accuracy <= 20 
+                  ? 'bg-green-500/20 text-green-600' 
+                  : gpsTracker.currentPosition.accuracy <= 50 
+                    ? 'bg-yellow-500/20 text-yellow-600' 
+                    : 'bg-red-500/20 text-red-600'
+              }`}>
+                GPS ±{Math.round(gpsTracker.currentPosition.accuracy)}m
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <span className="font-medium truncate">{lastPoint?.roadName || '-'}</span>
             {lastPoint?.speedLimit > 0 && (

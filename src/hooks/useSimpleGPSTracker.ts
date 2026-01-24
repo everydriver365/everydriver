@@ -75,6 +75,7 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
   const lastPositionRef = useRef<GPSPoint | null>(null);
   const speedLimitCacheRef = useRef<{ lat: number; lon: number; limit: number | null; road: string | null; time: number } | null>(null);
   const speedingStartRef = useRef<number | null>(null);
+  const lastSpeedLimitFetchRef = useRef<number>(0); // Rate limiting for API calls
 
   // Check GPS availability
   useEffect(() => {
@@ -129,17 +130,26 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     });
   }, []);
 
-  // Fetch speed limit from Google Maps (with caching)
+  // Fetch speed limit from edge function (with caching and rate limiting)
   const fetchSpeedLimit = useCallback(async (lat: number, lon: number): Promise<void> => {
-    // Use cache if position hasn't changed much (within ~50m) and cache is fresh (<30s)
+    const now = Date.now();
+    
+    // Rate limiting: minimum 5 seconds between API calls to avoid 429 errors
+    if (now - lastSpeedLimitFetchRef.current < 5000) {
+      return;
+    }
+    
+    // Use cache if position hasn't changed much (within ~100m) and cache is fresh (<60s)
     const cache = speedLimitCacheRef.current;
     if (cache) {
       const dist = calculateDistance(lat, lon, cache.lat, cache.lon);
-      const age = Date.now() - cache.time;
-      if (dist < 50 && age < 30000) {
+      const age = now - cache.time;
+      if (dist < 100 && age < 60000) {
         return; // Use existing cached values
       }
     }
+
+    lastSpeedLimitFetchRef.current = now;
 
     try {
       const { data, error } = await supabase.functions.invoke('google-speed-limits', {
@@ -152,7 +162,7 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
           lon,
           limit: data.speedLimit,
           road: data.roadName,
-          time: Date.now(),
+          time: now,
         };
 
         setSpeedLimitInfo(prev => ({
@@ -161,7 +171,7 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
           roadName: data.roadName,
         }));
         
-        console.log(`[GPS] Road: ${data.roadName}, Limit: ${data.speedLimit} km/h (${data.confidence})`);
+        console.log(`[GPS] Road: ${data.roadName}, Limit: ${data.speedLimit} km/h, Source: ${data.source}`);
       }
     } catch (err) {
       console.warn('[GPS Tracker] Speed limit fetch failed:', err);
@@ -226,8 +236,8 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     }
     lastPositionRef.current = point;
 
-    // Add to route points (filter poor accuracy for cleaner route line)
-    if (coords.accuracy <= 50) {
+    // Add to route points (relaxed threshold for better visual feedback on map)
+    if (coords.accuracy <= 100) {
       setRoutePoints(prev => [...prev, [point.latitude, point.longitude]]);
     }
 

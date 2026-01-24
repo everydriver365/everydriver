@@ -244,6 +244,29 @@ serve(async (req) => {
       }
     }
 
+    // UK Default Speed Limits: If no speed limit found but we have a road name, apply UK defaults
+    if (speedLimit === null && roadName) {
+      // Check for road type indicators in the name
+      const lowerRoad = roadName.toLowerCase();
+      const isMotorway = lowerRoad.includes('motorway') || /^m\d+/.test(lowerRoad);
+      const isDualCarriageway = lowerRoad.includes('dual') || lowerRoad.includes('a road') || /^a\d+/.test(lowerRoad);
+      
+      if (isMotorway) {
+        speedLimit = 113; // 70 mph
+        source = 'osm'; // Mark as default
+        console.log(`[SpeedLimit] Using UK motorway default: 70 mph (113 km/h)`);
+      } else if (isDualCarriageway) {
+        speedLimit = 113; // 70 mph for dual carriageways
+        source = 'osm';
+        console.log(`[SpeedLimit] Using UK dual carriageway default: 70 mph (113 km/h)`);
+      } else {
+        // Default to 30 mph for residential/urban roads with names
+        speedLimit = 48; // 30 mph
+        source = 'osm';
+        console.log(`[SpeedLimit] Using UK residential default: 30 mph (48 km/h)`);
+      }
+    }
+
     console.log(`[SpeedLimit] LIVE Result: limit=${speedLimit} km/h, road="${roadName}", source=${source}`);
 
     return new Response(
