@@ -120,12 +120,10 @@ interface MobileBookingViewProps {
   isNPILoading: boolean;
   isClearpayLoading: boolean;
   klarnaMerchantReference: string;
-  gatewayHealth: { npi: { available: boolean }; clearpay: { available: boolean }; elavon: { available: boolean } };
-  isElavonLoading: boolean;
+  gatewayHealth: { npi: { available: boolean }; clearpay: { available: boolean } };
   onBookingSubmit: () => void;
   onNPICheckout: () => void;
   onClearpayCheckout: () => void;
-  onElavonCheckout: () => void;
   onKlarnaSuccess: (authToken: string, orderId: string) => Promise<void>;
   onKlarnaError: (error: string) => void;
   onKlarnaCancel: () => void;
@@ -180,8 +178,6 @@ export function MobileBookingView({
   onBookingSubmit,
   onNPICheckout,
   onClearpayCheckout,
-  onElavonCheckout,
-  isElavonLoading,
   onKlarnaSuccess,
   onKlarnaError,
   onKlarnaCancel,
@@ -779,24 +775,6 @@ export function MobileBookingView({
                 onCancel={onKlarnaCancel}
               />
             </div>
-
-            {/* Elavon Card Payment */}
-            <button
-              onClick={onElavonCheckout}
-              disabled={!canSubmit || isElavonLoading || !gatewayHealth.elavon.available || isWalletProcessing}
-              className="w-full rounded-lg border-2 border-blue-400 p-3 bg-gradient-to-br from-blue-100/10 to-blue-200/20 hover:from-blue-200/20 hover:to-blue-300/30 transition-colors text-left disabled:opacity-50 flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-blue-500 px-2 py-0.5 text-[10px] font-bold text-white">Elavon</span>
-                <span className="text-xs text-muted-foreground">
-                  {isElavonLoading ? "Loading..." : "Secure Payment"}
-                </span>
-              </div>
-              <p className="font-semibold text-sm">
-                Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">Visa, Mastercard, Amex</p>
-            </button>
 
             {/* Finance Option */}
             <button
