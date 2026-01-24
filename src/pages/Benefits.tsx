@@ -15,7 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import logo from "@/assets/everydriver-logo-transparent.png";
+import logo from "@/assets/everydriver-logo-orange-blue.png";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 
 export default function Benefits() {

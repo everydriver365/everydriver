@@ -44,7 +44,7 @@ export function Header() {
       <div className="border-b border-nav/20 bg-[#142040] overflow-x-hidden">
       <nav className="container max-w-7xl flex h-16 items-center justify-between relative">
         <Link to="/" className="flex items-center">
-          <img src="/everydriver-logo-white-bg.png" alt="EveryDriver" className="h-8" />
+          <img src="/everydriver-logo-orange-blue.png" alt="EveryDriver" className="h-8" />
         </Link>
 
         {/* Desktop Navigation - Centered */}
