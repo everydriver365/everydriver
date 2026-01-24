@@ -2988,6 +2988,51 @@ export type Database = {
           },
         ]
       }
+      payment_intents: {
+        Row: {
+          amount_pence: number
+          created_at: string
+          currency_code: string
+          gateway_response: Json | null
+          id: string
+          instructor_id: string | null
+          order_ref: string
+          provider: string
+          pupil_id: string | null
+          status: string
+          transaction_unique: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_pence: number
+          created_at?: string
+          currency_code?: string
+          gateway_response?: Json | null
+          id?: string
+          instructor_id?: string | null
+          order_ref: string
+          provider?: string
+          pupil_id?: string | null
+          status?: string
+          transaction_unique?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_pence?: number
+          created_at?: string
+          currency_code?: string
+          gateway_response?: Json | null
+          id?: string
+          instructor_id?: string | null
+          order_ref?: string
+          provider?: string
+          pupil_id?: string | null
+          status?: string
+          transaction_unique?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_link_tracking: {
         Row: {
           amount_requested: number | null
