@@ -328,7 +328,7 @@ export default function InstructorPortalLogin() {
         >
           <div className="mb-6 mx-auto inline-block">
             <img 
-              src="/everydriver-logo-white-bg.png" 
+              src="/everydriver-logo-orange-blue.png" 
               alt="EveryDriver" 
               className="h-12 mx-auto"
             />
