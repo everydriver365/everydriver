@@ -381,7 +381,12 @@ export function LessonScheduler({
         duration,
       },
     ]);
-    setSelectedDate(undefined);
+    // Keep the date selected so users can pick multiple slots on the same day
+    // Only clear if no more hours remaining after this selection
+    const newRemainingHours = remainingHours - (duration / 60);
+    if (newRemainingHours <= 0) {
+      setSelectedDate(undefined);
+    }
   };
 
   const handleRemoveSlot = (index: number) => {
@@ -508,17 +513,25 @@ export function LessonScheduler({
               <h4 className="font-medium mb-2 text-sm">
                 Times for {format(selectedDate, "EEE, d MMM")}
               </h4>
-              <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-1.5 max-h-[240px] overflow-y-auto touch-pan-y">
                 {getAvailableTimeSlots(selectedDate).map((time) => (
                   <Button
                     key={time}
                     variant="outline"
                     size="sm"
-                    onClick={() => handleSelectSlot(selectedDate, time)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSelectSlot(selectedDate, time);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleSelectSlot(selectedDate, time);
+                    }}
                     disabled={remainingHours <= 0}
-                    className="text-xs h-8"
+                    className="text-xs h-10 min-h-[44px] active:scale-95 transition-transform touch-manipulation"
                   >
-                    <Clock className="h-3 w-3 mr-1" />
+                    <Clock className="h-3 w-3 mr-1 pointer-events-none" />
                     {time}
                   </Button>
                 ))}

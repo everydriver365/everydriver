@@ -116,16 +116,23 @@ export function StepServices({
                 <button
                   key={duration}
                   type="button"
-                  onClick={() => toggleDuration(duration)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleDuration(duration);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    toggleDuration(duration);
+                  }}
                   className={cn(
-                    "relative p-3 rounded-lg border-2 transition-all text-center",
+                    "relative p-3 rounded-lg border-2 transition-all text-center min-h-[60px] touch-manipulation active:scale-95",
                     selected
                       ? "border-primary bg-primary/10"
                       : "border-border hover:border-primary/50"
                   )}
                 >
                   {selected && (
-                    <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5">
+                    <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 pointer-events-none">
                       <Check className="h-3 w-3 text-primary-foreground" />
                     </div>
                   )}

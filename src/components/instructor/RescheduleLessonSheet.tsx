@@ -345,15 +345,23 @@ export function RescheduleLessonSheet({
                   <Clock className="h-4 w-4" />
                   Available Times for {format(selectedDate, "EEE d MMM")}
                 </h4>
-                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto touch-pan-y">
                   {availableSlots.length > 0 ? (
                     availableSlots.map((time) => (
                       <Button
                         key={time}
                         variant={selectedTime === time ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setSelectedTime(time)}
-                        className="text-sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedTime(time);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          setSelectedTime(time);
+                        }}
+                        className="text-sm min-h-[44px] touch-manipulation active:scale-95 transition-transform"
                       >
                         {time}
                       </Button>

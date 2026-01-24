@@ -318,18 +318,25 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
                   <Button variant="ghost" size="sm" onClick={clearAll}>Clear</Button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto touch-pan-y">
                 {gaps.map((slot) => (
                   <div
                     key={slot.id}
-                    onClick={() => toggleSlot(slot.id)}
-                    className={`flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-colors ${
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleSlot(slot.id);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      toggleSlot(slot.id);
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors min-h-[48px] touch-manipulation active:scale-[0.98] ${
                       slot.selected 
                         ? "border-purple-500 bg-purple-500/10" 
                         : "border-border hover:border-purple-500/50"
                     }`}
                   >
-                    <Checkbox checked={slot.selected} />
+                    <Checkbox checked={slot.selected} className="pointer-events-none" />
                     <div className="flex-1 flex items-center gap-2">
                       <Badge variant="outline" className="text-xs">
                         {formatSlotDate(slot.date)}

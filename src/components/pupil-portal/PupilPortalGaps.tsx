@@ -279,14 +279,25 @@ export function PupilPortalGaps({
                     <Button
                       size="sm"
                       disabled={isBooking}
-                      onClick={() => handleBookSlot(slot)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleBookSlot(slot);
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        if (!isBooking) {
+                          handleBookSlot(slot);
+                        }
+                      }}
+                      className="min-h-[44px] touch-manipulation active:scale-95 transition-transform"
                       style={{ backgroundColor: brandColour || '#1e3a5f', color: '#ffffff' }}
                     >
                       {isBooking ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin pointer-events-none" />
                       ) : (
                         <>
-                          <Check className="h-4 w-4 mr-1" />
+                          <Check className="h-4 w-4 mr-1 pointer-events-none" />
                           Book
                         </>
                       )}
