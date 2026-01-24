@@ -21,6 +21,7 @@ import { BookingWalletButtons } from "@/components/booking/BookingWalletButtons"
 import { PaymentMessaging } from "@/components/payments/PaymentMessaging";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { UpsellSelector } from "@/components/booking/UpsellSelector";
+import { CardstreamEmbeddedCheckout } from "@/components/payments/CardstreamEmbeddedCheckout";
 import {
   Accordion,
   AccordionContent,
@@ -127,6 +128,11 @@ interface MobileBookingViewProps {
   onKlarnaError: (error: string) => void;
   onKlarnaCancel: () => void;
   onWalletSuccess: (pupilId: string) => void;
+  // Embedded checkout
+  showEmbeddedCheckout?: boolean;
+  embeddedCheckoutPupilId?: string | null;
+  onEmbeddedCheckoutSuccess?: () => void;
+  onEmbeddedCheckoutCancel?: () => void;
 }
 
 export function MobileBookingView({
@@ -176,6 +182,10 @@ export function MobileBookingView({
   onKlarnaError,
   onKlarnaCancel,
   onWalletSuccess,
+  showEmbeddedCheckout,
+  embeddedCheckoutPupilId,
+  onEmbeddedCheckoutSuccess,
+  onEmbeddedCheckoutCancel,
 }: MobileBookingViewProps) {
   const navigate = useNavigate();
   const brandColour = instructor.brand_colour || "#1e3a5f";
@@ -784,6 +794,36 @@ export function MobileBookingView({
               </div>
             </button>
           </div>
+
+          {/* Embedded Card Checkout */}
+          {showEmbeddedCheckout && embeddedCheckoutPupilId && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-4 rounded-xl border-2 border-primary bg-card"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  Enter Card Details
+                </h3>
+                <button 
+                  onClick={onEmbeddedCheckoutCancel}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+              <CardstreamEmbeddedCheckout
+                amount={paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
+                pupilId={embeddedCheckoutPupilId}
+                instructorId={instructor.id}
+                customerName={pupilName.trim()}
+                customerEmail={pupilEmail.trim()}
+                onSuccess={onEmbeddedCheckoutSuccess}
+              />
+            </motion.div>
+          )}
 
           <p className="text-[10px] text-center text-muted-foreground mt-4">
             Secure checkout with SSL encryption

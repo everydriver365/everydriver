@@ -22,7 +22,7 @@ type Props = {
   customerName?: string;
   customerEmail?: string;
   onSuccess?: () => void;
-  merchantId: string; // public merchant ID for tokenization
+  merchantId?: string; // optional - will be fetched from payment-intent-create if not provided
 };
 
 function loadScript(src: string): Promise<void> {
@@ -51,6 +51,7 @@ export function CardstreamEmbeddedCheckout({
   const [paying, setPaying] = useState(false);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
+  const [resolvedMerchantId, setResolvedMerchantId] = useState<string>(merchantId || "");
 
   const hostedInstanceRef = useRef<EmbeddedHostedFieldsInstance | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -77,6 +78,13 @@ export function CardstreamEmbeddedCheckout({
         }
 
         setOrderRef(data.orderRef);
+        
+        // Use merchant ID from response or prop
+        const mId = data.merchantId || merchantId || "";
+        if (!mId) {
+          throw new Error("Merchant ID not configured");
+        }
+        setResolvedMerchantId(mId);
 
         // 2) Load hosted fields script
         await loadScript(data.hostedFieldsScriptUrl);
@@ -91,7 +99,7 @@ export function CardstreamEmbeddedCheckout({
           // Set merchant ID for tokenization
           const merchantInput = formRef.current.querySelector('input[name="merchantID"]') as HTMLInputElement;
           if (merchantInput) {
-            merchantInput.value = merchantId;
+            merchantInput.value = mId;
           }
 
           // Initialize with jQuery plugin
@@ -204,7 +212,7 @@ export function CardstreamEmbeddedCheckout({
         ) : (
           <>
             <form ref={formRef} id="cs-embedded-form" className="space-y-4">
-              <input type="hidden" name="merchantID" value={merchantId} />
+              <input type="hidden" name="merchantID" value={resolvedMerchantId} />
 
               <div className="space-y-2">
                 <label htmlFor="cs-card-number" className="text-sm font-medium">
