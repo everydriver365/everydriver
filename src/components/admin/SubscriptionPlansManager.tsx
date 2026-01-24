@@ -45,6 +45,7 @@ interface SubscriptionPlan {
   max_pupils: number | null;
   sms_credits_monthly: number | null;
   display_order: number;
+  gocardless_plan_id: string | null;
 }
 
 const defaultPlan: Omit<SubscriptionPlan, "id"> = {
@@ -60,6 +61,7 @@ const defaultPlan: Omit<SubscriptionPlan, "id"> = {
   max_pupils: null,
   sms_credits_monthly: 0,
   display_order: 0,
+  gocardless_plan_id: null,
 };
 
 export function SubscriptionPlansManager() {
@@ -126,6 +128,7 @@ export function SubscriptionPlansManager() {
       max_pupils: editingPlan.max_pupils,
       sms_credits_monthly: editingPlan.sms_credits_monthly,
       display_order: editingPlan.display_order,
+      gocardless_plan_id: editingPlan.gocardless_plan_id,
     };
 
     if (isCreating) {
@@ -511,6 +514,27 @@ export function SubscriptionPlansManager() {
                   }
                   placeholder="e.g. Get Started"
                 />
+              </div>
+
+              {/* GoCardless Integration */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  GoCardless Plan ID
+                  <span className="text-xs text-muted-foreground font-normal">
+                    (for recurring payments)
+                  </span>
+                </Label>
+                <Input
+                  value={editingPlan.gocardless_plan_id || ""}
+                  onChange={(e) =>
+                    setEditingPlan({ ...editingPlan, gocardless_plan_id: e.target.value || null })
+                  }
+                  placeholder="e.g. PLN_xxxxxxxx"
+                  className="font-mono"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Create a plan in GoCardless dashboard and paste the ID here
+                </p>
               </div>
 
               {/* Features */}

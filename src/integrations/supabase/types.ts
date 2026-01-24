@@ -4346,6 +4346,7 @@ export type Database = {
           description: string | null
           display_order: number | null
           features: Json | null
+          gocardless_plan_id: string | null
           id: string
           is_active: boolean | null
           is_popular: boolean | null
@@ -4363,6 +4364,7 @@ export type Database = {
           description?: string | null
           display_order?: number | null
           features?: Json | null
+          gocardless_plan_id?: string | null
           id?: string
           is_active?: boolean | null
           is_popular?: boolean | null
@@ -4380,6 +4382,7 @@ export type Database = {
           description?: string | null
           display_order?: number | null
           features?: Json | null
+          gocardless_plan_id?: string | null
           id?: string
           is_active?: boolean | null
           is_popular?: boolean | null
