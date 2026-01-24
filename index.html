@@ -3,19 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    
-    <!-- CSP: Allow Cardstream gateway, jQuery CDN, Klarna, and other payment providers -->
-    <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://code.jquery.com https://*.cardstream.com https://gateway.cardstream.com https://x.klarnacdn.net https://*.klarna.com https://*.clearpay.com https://*.afterpay.com https://fonts.googleapis.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
-      img-src 'self' data: blob: https: http:;
-      frame-src 'self' https://*.cardstream.com https://gateway.cardstream.com https://*.klarna.com https://*.clearpay.com https://*.afterpay.com;
-      connect-src 'self' https: wss:;
-      worker-src 'self' blob:;
-    " />
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
