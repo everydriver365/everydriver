@@ -49,10 +49,12 @@ interface OnboardingData {
   website_theme: string;
   primary_color: string;
   slug: string;
+  welcome_video_url: string | null;
   // Domain & Hosting
   wantsDomain: boolean;
   wantsHosting: boolean;
   selectedDomain: string | null;
+  selectedHostingPackage: string | null;
 }
 
 const initialData: OnboardingData = {
@@ -81,9 +83,11 @@ const initialData: OnboardingData = {
   website_theme: "modern",
   primary_color: "#10b981",
   slug: "",
+  welcome_video_url: null,
   wantsDomain: false,
   wantsHosting: false,
   selectedDomain: null,
+  selectedHostingPackage: null,
 };
 
 export default function InstructorOnboarding() {

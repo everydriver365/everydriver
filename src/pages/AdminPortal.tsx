@@ -51,7 +51,7 @@ import { SubscribersManager } from "@/components/admin/SubscribersManager";
 import { MiniWebsitesManager } from "@/components/admin/MiniWebsitesManager";
 import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
-import { OnboardingWizardManager } from "@/components/admin/OnboardingWizardManager";
+import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -432,7 +432,7 @@ export default function AdminPortal() {
       case "instructor-onboarding":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <OnboardingWizardManager />
+            <OnboardingStepEditor />
           </motion.div>
         );
 
