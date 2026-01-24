@@ -32,7 +32,6 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
-import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -112,6 +111,17 @@ export function ExpandablePupilCard({
   const [newFeedback, setNewFeedback] = useState("");
   const [newRating, setNewRating] = useState(0);
   const [savingFeedback, setSavingFeedback] = useState(false);
+  const [testStats, setTestStats] = useState<{ 
+    realTests: number; 
+    mockTests: number; 
+    lastResult: 'pass' | 'fail' | null;
+    lastTestDate: string | null;
+  }>({ realTests: 0, mockTests: 0, lastResult: null, lastTestDate: null });
+
+  // Fetch test stats on mount
+  useEffect(() => {
+    fetchTestStats();
+  }, [pupil.id]);
 
   // Fetch latest feedback when card expands
   useEffect(() => {
@@ -119,6 +129,30 @@ export function ExpandablePupilCard({
       fetchLatestFeedback();
     }
   }, [isExpanded, pupil.id]);
+
+  const fetchTestStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("driving_test_results")
+        .select("id, is_mock, result, test_date")
+        .eq("pupil_id", pupil.id)
+        .order("test_date", { ascending: false });
+
+      if (!error && data) {
+        const realTests = data.filter(t => !t.is_mock).length;
+        const mockTests = data.filter(t => t.is_mock).length;
+        const lastTest = data[0];
+        setTestStats({
+          realTests,
+          mockTests,
+          lastResult: lastTest?.result as 'pass' | 'fail' | null,
+          lastTestDate: lastTest?.test_date || null
+        });
+      }
+    } catch (error) {
+      // Silent fail
+    }
+  };
 
   const fetchLatestFeedback = async () => {
     try {
@@ -304,6 +338,25 @@ export function ExpandablePupilCard({
                 <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
                   <GraduationCap className="h-3 w-3 mr-1" />
                   Passed
+                </Badge>
+              )}
+              {/* Test Stats Badges */}
+              {testStats.mockTests > 0 && (
+                <Badge variant="outline" className="text-xs gap-1">
+                  <ClipboardList className="h-3 w-3" />
+                  {testStats.mockTests} mock
+                </Badge>
+              )}
+              {testStats.realTests > 0 && (
+                <Badge 
+                  className={`text-xs gap-1 ${
+                    testStats.lastResult === 'pass' 
+                      ? 'bg-emerald-100 text-emerald-700 border-0' 
+                      : 'bg-destructive/10 text-destructive border-0'
+                  }`}
+                >
+                  <Award className="h-3 w-3" />
+                  {testStats.realTests} test{testStats.realTests > 1 ? 's' : ''}
                 </Badge>
               )}
             </div>
@@ -696,10 +749,19 @@ export function ExpandablePupilCard({
                   <History className="h-5 w-5 text-amber-500" />
                   <span className="text-xs">Lesson History</span>
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-col h-auto py-3 gap-1.5"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewReport(pupil);
+                  }}
+                >
+                  <Car className="h-5 w-5 text-primary" />
+                  <span className="text-xs">Driving Report</span>
+                </Button>
               </div>
-
-              {/* Tracking History */}
-              <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
 
               {/* Secondary Actions */}
               <div className="flex gap-2 pt-2 border-t border-border flex-wrap">
