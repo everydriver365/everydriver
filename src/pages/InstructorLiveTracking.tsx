@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, WifiOff, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useInstructorAuth } from '@/context/InstructorAuthContext';
 import LivePupilsDashboard from '@/components/instructor/LivePupilsDashboard';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useTelematicsSession } from '@/hooks/useTelematicsSession';
 
 // Simple offline indicator
 function OfflineIndicator() {
@@ -33,6 +34,25 @@ function OfflineIndicator() {
 export default function InstructorLiveTracking() {
   const navigate = useNavigate();
   const { instructor, loading } = useInstructorAuth();
+  const [isStarting, setIsStarting] = useState(false);
+  
+  const telematicsSession = useTelematicsSession(instructor?.id || '');
+
+  const handleStartTracking = useCallback(async () => {
+    if (!instructor?.id || isStarting) return;
+    
+    setIsStarting(true);
+    try {
+      const session = await telematicsSession.createSession();
+      if (session) {
+        navigate(`/instructor/tracker/${session.id}`);
+      }
+    } catch (err) {
+      console.error('Failed to start tracking:', err);
+    } finally {
+      setIsStarting(false);
+    }
+  }, [instructor?.id, isStarting, telematicsSession, navigate]);
 
   if (loading) {
     return (
@@ -66,7 +86,18 @@ export default function InstructorLiveTracking() {
               <p className="text-xs text-muted-foreground">Monitor active pupils in real-time</p>
             </div>
           </div>
-          <OfflineIndicator />
+          <div className="flex items-center gap-2">
+            <OfflineIndicator />
+            <Button
+              size="sm"
+              onClick={handleStartTracking}
+              disabled={isStarting}
+              className="gap-1.5"
+            >
+              <Navigation className="h-4 w-4" />
+              {isStarting ? 'Starting...' : 'Track'}
+            </Button>
+          </div>
         </div>
       </header>
 
