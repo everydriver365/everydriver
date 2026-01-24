@@ -71,6 +71,7 @@ const settingsCategories: SettingsCategory[] = [
     icon: Smartphone,
     iconColor: "text-orange-500",
     links: [
+      { key: "instructor-onboarding", title: "Signup Wizard", description: "Manage instructor onboarding steps." },
       { key: "instructor-home", title: "App Homepage", description: "Configure instructor app home screen." },
       { key: "instructor-marketing", title: "Marketing Page", description: "Drive365 landing page content." },
       { key: "instructor-faqs", title: "Instructor FAQs", description: "Help content for instructors." },
