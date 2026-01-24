@@ -2,6 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import InstructorTrackLesson from "./pages/InstructorTrackLesson";
 import InstructorLiveTracking from "./pages/InstructorLiveTracking";
 import TrackerPage from "./pages/TrackerPage";
+import InstructorTraccarSetup from "./pages/InstructorTraccarSetup";
+import InstructorTraccarSession from "./pages/InstructorTraccarSession";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -158,6 +160,8 @@ const App = () => (
               <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
               <Route path="/instructor/live-tracking" element={<InstructorLiveTracking />} />
               <Route path="/instructor/tracker/:sessionId" element={<TrackerPage />} />
+              <Route path="/instructor/traccar" element={<InstructorTraccarSession />} />
+              <Route path="/instructor/settings/traccar" element={<InstructorTraccarSetup />} />
               <Route path="/instructor/satnav" element={<InstructorSatNav />} />
               <Route path="/instructor/accounts" element={<InstructorAccounts />} />
               <Route path="/instructor/domains" element={<InstructorDomainsManagement />} />
