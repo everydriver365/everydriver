@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2 } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
@@ -49,6 +50,7 @@ interface InstructorProfile {
 }
 
 export default function InstructorSettings() {
+  const navigate = useNavigate();
   const { instructor: authInstructor, refreshInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   
@@ -509,6 +511,44 @@ const { data, error } = await supabase
           description="Sync lessons to your calendar"
         >
           <CalendarConnect instructorId={instructorId} />
+        </SettingsTile>
+
+        {/* Traccar GPS Tracking Section */}
+        <SettingsTile 
+          id="traccar" 
+          icon={Navigation} 
+          title="GPS Tracker Setup" 
+          description="Configure Traccar for background tracking"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Use the Traccar Client app on your phone for reliable background GPS tracking during lessons. 
+              Works even when screen is off.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={() => navigate('/instructor/settings/traccar')}
+                className="w-full justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Device Setup
+                </span>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/instructor/traccar')}
+                className="w-full justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <Navigation className="h-4 w-4" />
+                  Start Tracking Session
+                </span>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </SettingsTile>
 
         {/* Push Notifications Section */}
