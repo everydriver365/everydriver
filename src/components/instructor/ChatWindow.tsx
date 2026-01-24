@@ -309,8 +309,8 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
     <Card className="h-[calc(100vh-14rem)] md:h-[calc(100vh-16rem)] flex flex-col">
       <CardHeader className="pb-2 border-b shrink-0">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0 touch-manipulation">
+            <ArrowLeft className="h-5 w-5 pointer-events-none" />
           </Button>
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-primary text-primary-foreground">
@@ -325,6 +325,15 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
               <p className="text-sm text-muted-foreground">{conversation.pupil.phone}</p>
             ) : null}
           </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onBack} 
+            className="shrink-0 touch-manipulation md:hidden"
+            aria-label="Close chat"
+          >
+            <X className="h-5 w-5 pointer-events-none" />
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="shrink-0">
