@@ -264,18 +264,60 @@ export default function TrackerPage() {
 
       await tripScore.calculateAndSaveScore(sessionId, tripStats);
 
+      // Update session with final stats
       await supabase
         .from('lesson_telematics')
         .update({
-          end_time: new Date().toISOString(),
+          ended_at: new Date().toISOString(),
           total_distance_km: gpsResult.totalDistance / 1000,
           max_speed_kmh: gpsResult.maxSpeed,
+          avg_speed_kmh: null,
         })
         .eq('id', sessionId);
+
+      // Process with Damoov if a pupil was selected
+      if (selectedPupil) {
+        console.log('[TrackerPage] Processing with Damoov for pupil:', selectedPupil);
+        
+        try {
+          // Register pupil with Damoov
+          const { data: registerData } = await supabase.functions.invoke('damoov-register', {
+            body: { pupilId: selectedPupil },
+          });
+          
+          const deviceToken = registerData?.deviceToken;
+          console.log('[TrackerPage] Damoov device token:', deviceToken);
+          
+          if (deviceToken) {
+            // Submit trip data to Damoov
+            await supabase.functions.invoke('damoov-submit-trip', {
+              body: { telematicsId: sessionId, deviceToken },
+            });
+            
+            console.log('[TrackerPage] Trip submitted to Damoov, waiting for processing...');
+            
+            // Wait for Damoov to process
+            await new Promise(resolve => setTimeout(resolve, 4000));
+            
+            // Get scores from Damoov
+            const { data: scoresData } = await supabase.functions.invoke('damoov-get-scores', {
+              body: { telematicsId: sessionId, deviceToken, pupilId: selectedPupil },
+            });
+            
+            if (scoresData?.scores) {
+              console.log('[TrackerPage] Damoov scores received:', scoresData.scores);
+              toast.success(`Damoov Score: ${scoresData.scores.overallScore || 'Processing...'}`);
+            }
+          }
+        } catch (damoovErr) {
+          console.warn('[TrackerPage] Damoov processing failed:', damoovErr);
+          // Don't fail the whole stop - Damoov is optional enrichment
+        }
+      }
     } finally {
       setPhase('stopped');
     }
-  }, [phase, sessionId, gpsTracker, harshBraking, drivingBehavior, elapsedTime, tripScore]);
+  }, [phase, sessionId, selectedPupil, gpsTracker, harshBraking, drivingBehavior, elapsedTime, tripScore]);
 
   /* ---------------- Cleanup ------------------------------- */
   useEffect(() => {
