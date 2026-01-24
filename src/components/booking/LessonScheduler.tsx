@@ -483,13 +483,13 @@ export function LessonScheduler({
               },
             }}
             components={{
-              DayContent: ({ date }) => {
-                const isBooked = selectedSlots.some((s) => isSameDay(s.date, date));
+              DayContent: (props: { date: Date }) => {
+                const isBooked = selectedSlots.some((s) => isSameDay(s.date, props.date));
                 return (
                   <div className="relative flex items-center justify-center w-full h-full">
-                    <span>{date.getDate()}</span>
+                    <span>{props.date.getDate()}</span>
                     {isBooked && (
-                      <Check className="absolute bottom-0 right-0 h-3 w-3 text-white" strokeWidth={3} />
+                      <Check className="absolute bottom-0 right-0 h-3 w-3 text-white pointer-events-none" strokeWidth={3} />
                     )}
                   </div>
                 );
