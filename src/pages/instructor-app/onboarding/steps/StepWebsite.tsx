@@ -112,10 +112,18 @@ export function StepWebsite({
     }
   }, [data.name, data.slug, onUpdate]);
 
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   const handleDomainSearch = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      toast.error("Please enter a domain name to search");
+      return;
+    }
 
     setIsSearching(true);
+    setSearchError(null);
+    setSearchResults([]);
+    
     try {
       const { data: result, error } = await supabase.functions.invoke("twentyi-api", {
         body: {
@@ -129,24 +137,12 @@ export function StepWebsite({
       if (Array.isArray(result) && result.length > 0) {
         setSearchResults(result);
       } else {
-        // Mock results for demo
-        const baseName = searchQuery.toLowerCase().replace(/\s+/g, "");
-        setSearchResults([
-          { domain: `${baseName}.co.uk`, available: true, price: 9.99, currency: "GBP" },
-          { domain: `${baseName}.com`, available: true, price: 12.99, currency: "GBP" },
-          { domain: `${baseName}-driving.co.uk`, available: true, price: 9.99, currency: "GBP" },
-          { domain: `${baseName}.uk`, available: false, price: 5.99, currency: "GBP" },
-        ]);
+        setSearchError("No results found. Please try a different domain name.");
       }
     } catch (error) {
       console.error("Domain search error:", error);
-      // Show mock results on error
-      const baseName = searchQuery.toLowerCase().replace(/\s+/g, "");
-      setSearchResults([
-        { domain: `${baseName}.co.uk`, available: true, price: 9.99, currency: "GBP" },
-        { domain: `${baseName}.com`, available: true, price: 12.99, currency: "GBP" },
-        { domain: `${baseName}-driving.co.uk`, available: true, price: 9.99, currency: "GBP" },
-      ]);
+      setSearchError("Unable to search domains. Please try again later.");
+      toast.error("Domain search failed. Please try again.");
     } finally {
       setIsSearching(false);
     }
@@ -307,6 +303,13 @@ export function StepWebsite({
                   )}
                 </Button>
               </div>
+
+              {/* Error Message */}
+              {searchError && (
+                <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5 text-center">
+                  <p className="text-sm text-destructive">{searchError}</p>
+                </div>
+              )}
 
               {/* Search Results */}
               {searchResults.length > 0 && (
