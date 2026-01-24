@@ -197,12 +197,6 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     const coords = position.coords;
     const now = Date.now();
 
-    // Skip if accuracy is too poor for reliable tracking (> 30m is questionable)
-    if (coords.accuracy > 50) {
-      console.log(`[GPS] Skipping low accuracy point: ${coords.accuracy.toFixed(0)}m`);
-      return;
-    }
-
     const point: GPSPoint = {
       latitude: coords.latitude,
       longitude: coords.longitude,
@@ -214,11 +208,12 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
       timestamp: now,
     };
 
+    // Always update current position for UI display (even with poor accuracy)
     setCurrentPosition(point);
 
-    // Calculate distance from last position
+    // Calculate distance from last position (filter GPS jumps)
     const lastPos = lastPositionRef.current;
-    if (lastPos) {
+    if (lastPos && coords.accuracy <= 100) {
       const dist = calculateDistance(
         lastPos.latitude, lastPos.longitude,
         point.latitude, point.longitude
@@ -231,8 +226,8 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     }
     lastPositionRef.current = point;
 
-    // Add to route points (only good accuracy points for cleaner line)
-    if (coords.accuracy <= 25) {
+    // Add to route points (filter poor accuracy for cleaner route line)
+    if (coords.accuracy <= 50) {
       setRoutePoints(prev => [...prev, [point.latitude, point.longitude]]);
     }
 
@@ -241,7 +236,7 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
       setMaxSpeed(point.speedKmh);
     }
 
-    // Fetch speed limit (async, doesn't block)
+    // Always fetch speed limit - even with poor GPS accuracy, road lookup still works
     fetchSpeedLimit(point.latitude, point.longitude);
 
     // Check speeding
