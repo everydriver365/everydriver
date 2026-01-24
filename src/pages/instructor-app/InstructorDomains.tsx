@@ -78,6 +78,7 @@ export default function InstructorDomains() {
     setIsSearching(true);
     setHasSearched(true);
     setAvailabilityError(null);
+    setDomainResults([]);
 
     try {
       const { data, error } = await supabase.functions.invoke('twentyi-api', {
@@ -98,21 +99,8 @@ export default function InstructorDomains() {
       console.error('Error searching domains:', error);
       toast.error("Failed to search domains. Please try again.");
       setAvailabilityError(
-        'Domain lookup is currently unavailable. Showing demo results for now.'
+        'Domain lookup is currently unavailable. Please try again later.'
       );
-
-      // Show mock results for demo
-      const mockDomain = searchQuery.toLowerCase().replace(/\s+/g, '');
-      setDomainResults([
-        { domain: `${mockDomain}.co.uk`, available: true, price: 9.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.com`, available: true, price: 12.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.uk`, available: false, price: 5.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.org`, available: true, price: 14.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.net`, available: true, price: 14.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.info`, available: true, price: 4.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.biz`, available: false, price: 14.99, currency: 'GBP', period: 1 },
-        { domain: `${mockDomain}.me`, available: true, price: 19.99, currency: 'GBP', period: 1 },
-      ]);
     } finally {
       setIsSearching(false);
     }
