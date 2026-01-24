@@ -1819,9 +1819,13 @@ export type Database = {
       }
       instructor_subscriptions: {
         Row: {
+          billing_cycle: string | null
           created_at: string | null
           current_period_end: string | null
           current_period_start: string | null
+          gocardless_customer_id: string | null
+          gocardless_mandate_id: string | null
+          gocardless_subscription_id: string | null
           id: string
           instructor_id: string
           plan_id: string
@@ -1831,9 +1835,13 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          billing_cycle?: string | null
           created_at?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          gocardless_customer_id?: string | null
+          gocardless_mandate_id?: string | null
+          gocardless_subscription_id?: string | null
           id?: string
           instructor_id: string
           plan_id: string
@@ -1843,9 +1851,13 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          billing_cycle?: string | null
           created_at?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          gocardless_customer_id?: string | null
+          gocardless_mandate_id?: string | null
+          gocardless_subscription_id?: string | null
           id?: string
           instructor_id?: string
           plan_id?: string
@@ -4330,10 +4342,13 @@ export type Database = {
       subscription_plans: {
         Row: {
           created_at: string | null
+          cta_text: string | null
+          description: string | null
           display_order: number | null
           features: Json | null
           id: string
           is_active: boolean | null
+          is_popular: boolean | null
           max_pupils: number | null
           name: string
           price_monthly: number
@@ -4344,10 +4359,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          cta_text?: string | null
+          description?: string | null
           display_order?: number | null
           features?: Json | null
           id?: string
           is_active?: boolean | null
+          is_popular?: boolean | null
           max_pupils?: number | null
           name: string
           price_monthly?: number
@@ -4358,10 +4376,13 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          cta_text?: string | null
+          description?: string | null
           display_order?: number | null
           features?: Json | null
           id?: string
           is_active?: boolean | null
+          is_popular?: boolean | null
           max_pupils?: number | null
           name?: string
           price_monthly?: number

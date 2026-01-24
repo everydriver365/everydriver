@@ -1,66 +1,60 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
-const plans = [
-  {
-    name: "Free",
-    slug: "free",
-    price: 0,
-    description: "Perfect for getting started",
-    features: [
-      "Smart diary",
-      "Up to 5 pupils",
-      "Basic pupil management",
-      "Your own mini-website",
-      "Mobile app access"
-    ],
-    cta: "Get Started Free",
-    popular: false
-  },
-  {
-    name: "Pro",
-    slug: "pro",
-    price: 29,
-    description: "For established instructors",
-    features: [
-      "Everything in Free",
-      "Up to 50 pupils",
-      "Advanced pupil management",
-      "Payment tracking & requests",
-      "SMS notifications (100/mo)",
-      "Telematics tracking",
-      "Google Calendar sync",
-      "Priority email support"
-    ],
-    cta: "Start Free Trial",
-    popular: true
-  },
-  {
-    name: "Business",
-    slug: "business",
-    price: 49,
-    description: "For growing driving schools",
-    features: [
-      "Everything in Pro",
-      "Unlimited pupils",
-      "Expense tracking",
-      "Custom branding",
-      "SMS notifications (500/mo)",
-      "Advanced analytics",
-      "Priority phone support",
-      "Dedicated account manager"
-    ],
-    cta: "Start Free Trial",
-    popular: false
-  }
-];
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  slug: string;
+  price_monthly: number;
+  price_yearly: number | null;
+  description: string | null;
+  features: string[] | null;
+  is_popular: boolean;
+  cta_text: string | null;
+  max_pupils: number | null;
+}
 
 export default function InstructorPricing() {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      const { data, error } = await supabase
+        .from("subscription_plans")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (!error && data) {
+        const typedPlans = data.map(plan => ({
+          ...plan,
+          features: (plan.features as string[] | null) || []
+        }));
+        setPlans(typedPlans);
+      }
+      setLoading(false);
+    };
+    fetchPlans();
+  }, []);
+
+  if (loading) {
+    return (
+      <InstructorSaaSLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </InstructorSaaSLayout>
+    );
+  }
+
   return (
     <InstructorSaaSLayout>
       <section className="py-20 bg-background">
@@ -81,7 +75,7 @@ export default function InstructorPricing() {
 
           {/* Plans Grid */}
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {plans.map((plan, index) => (
+            {plans.slice(0, 3).map((plan, index) => (
               <motion.div
                 key={plan.slug}
                 initial={{ opacity: 0, y: 20 }}
@@ -90,12 +84,12 @@ export default function InstructorPricing() {
               >
                 <Card 
                   className={`relative h-full ${
-                    plan.popular 
+                    plan.is_popular 
                       ? "border-emerald-500 shadow-lg shadow-emerald-500/10" 
                       : "border-border"
                   }`}
                 >
-                  {plan.popular && (
+                  {plan.is_popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <Badge className="bg-emerald-500 text-white">
                         Most Popular
@@ -108,9 +102,9 @@ export default function InstructorPricing() {
                     <p className="text-muted-foreground text-sm">{plan.description}</p>
                     <div className="pt-4">
                       <span className="text-4xl font-bold text-foreground">
-                        £{plan.price}
+                        £{plan.price_monthly}
                       </span>
-                      {plan.price > 0 && (
+                      {plan.price_monthly > 0 && (
                         <span className="text-muted-foreground">/month</span>
                       )}
                     </div>
@@ -118,7 +112,7 @@ export default function InstructorPricing() {
                   
                   <CardContent>
                     <ul className="space-y-3 mb-6">
-                      {plan.features.map((feature) => (
+                      {(plan.features || []).map((feature) => (
                         <li key={feature} className="flex items-start gap-3">
                           <Check className="h-5 w-5 text-success shrink-0 mt-0.5" />
                           <span className="text-muted-foreground text-sm">{feature}</span>
@@ -127,12 +121,12 @@ export default function InstructorPricing() {
                     </ul>
                     
                     <Button 
-                      className={plan.popular ? "w-full bg-emerald-500 text-white hover:bg-emerald-600" : "w-full"}
-                      variant={plan.popular ? undefined : "outline"}
+                      className={plan.is_popular ? "w-full bg-emerald-500 text-white hover:bg-emerald-600" : "w-full"}
+                      variant={plan.is_popular ? undefined : "outline"}
                       asChild
                     >
                       <Link to={`/instructor-app/signup?plan=${plan.slug}`}>
-                        {plan.cta}
+                        {plan.cta_text || "Get Started"}
                       </Link>
                     </Button>
                   </CardContent>
