@@ -35,7 +35,7 @@ const previewData = {
   follows_code_of_practice: true,
   // Services
   hourly_rate: 38,
-  lesson_duration_default: 90,
+  lesson_durations: [60, 90, 120],
   offers_intensive: true,
   offers_refresher: true,
   offers_motorway: false,
