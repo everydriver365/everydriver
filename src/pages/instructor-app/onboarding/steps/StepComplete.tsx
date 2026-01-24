@@ -48,6 +48,13 @@ export function StepComplete({ data }: StepCompleteProps) {
       desc: "Get started with teaching",
       action: () => navigate("/instructor/pupils"),
     },
+    {
+      icon: Globe,
+      label: "Your Website",
+      desc: `${data.slug}.everydriver.co.uk`,
+      action: () => {},
+      disabled: true,
+    },
   ];
 
   return (
@@ -91,17 +98,19 @@ export function StepComplete({ data }: StepCompleteProps) {
           transition={{ delay: 0.4 }}
           className="space-y-3 mb-8"
         >
-          {quickActions.map((action, index) => (
+          {quickActions.map((action) => (
             <Card
               key={action.label}
-              className={`cursor-pointer transition-all hover:shadow-md ${
-                action.primary ? "border-primary" : ""
+              className={`transition-all ${
+                action.primary ? "border-primary cursor-pointer hover:shadow-md" : 
+                action.disabled ? "opacity-75" : "cursor-pointer hover:shadow-md"
               }`}
-              onClick={action.action}
+              onClick={action.disabled ? undefined : action.action}
             >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className={`p-3 rounded-xl ${
-                  action.primary ? "bg-primary text-primary-foreground" : "bg-secondary"
+                  action.primary ? "bg-primary text-primary-foreground" : 
+                  action.disabled ? "bg-muted" : "bg-secondary"
                 }`}>
                   <action.icon className="h-5 w-5" />
                 </div>
@@ -109,7 +118,12 @@ export function StepComplete({ data }: StepCompleteProps) {
                   <div className="font-medium text-foreground">{action.label}</div>
                   <div className="text-sm text-muted-foreground">{action.desc}</div>
                 </div>
-                <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                {!action.disabled && <ArrowRight className="h-5 w-5 text-muted-foreground" />}
+                {action.disabled && (
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                    Coming soon
+                  </span>
+                )}
               </CardContent>
             </Card>
           ))}

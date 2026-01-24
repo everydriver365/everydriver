@@ -45,8 +45,7 @@ import MobileHomeDemo from "./pages/MobileHomeDemo";
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
 import Help from "./pages/Help";
-import Contact from "./pages/Contact";
-import About from "./pages/About";
+import { ConditionalAbout, ConditionalContact, ConditionalServices, ConditionalReviews } from "./components/ConditionalRoutes";
 import Intensives from "./pages/Intensives";
 import SemiIntensive from "./pages/SemiIntensive";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -106,8 +105,10 @@ const App = () => (
               <Route path="/theory" element={<Theory />} />
               <Route path="/faqs" element={<FAQs />} />
               <Route path="/help" element={<Help />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<ConditionalContact />} />
+              <Route path="/about" element={<ConditionalAbout />} />
+              <Route path="/services" element={<ConditionalServices />} />
+              <Route path="/reviews" element={<ConditionalReviews />} />
               <Route path="/intensives" element={<Intensives />} />
               <Route path="/semi-intensive" element={<SemiIntensive />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />

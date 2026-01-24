@@ -1,5 +1,6 @@
 import { OnboardingLayout } from "../components/OnboardingLayout";
 import { StepNavigation } from "../components/StepNavigation";
+import { ImageUploadField } from "../components/ImageUploadField";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
@@ -11,7 +12,9 @@ interface StepQualificationsProps {
     adi_grade: "A" | "B" | "Trainee" | null;
     is_cpd_certified: boolean;
     follows_code_of_practice: boolean;
+    adi_badge_image_url?: string | null;
   };
+  instructorId: string;
   onUpdate: (data: Partial<StepQualificationsProps["data"]>) => void;
   onNext: () => void;
   onBack: () => void;
@@ -19,6 +22,7 @@ interface StepQualificationsProps {
 
 export function StepQualifications({
   data,
+  instructorId,
   onUpdate,
   onNext,
   onBack,
@@ -116,6 +120,18 @@ export function StepQualifications({
             </div>
           </div>
         </div>
+
+        {/* ADI Badge Photo */}
+        <ImageUploadField
+          label="ADI Badge Photo"
+          value={data.adi_badge_image_url || null}
+          instructorId={instructorId}
+          folder="adi-badge"
+          onChange={(url) => onUpdate({ adi_badge_image_url: url })}
+          aspectRatio="badge"
+          placeholder="Upload your ADI badge"
+          helpText="Shows pupils you're qualified and verified"
+        />
 
         {/* Badge preview */}
         {(data.is_cpd_certified || data.follows_code_of_practice) && (
