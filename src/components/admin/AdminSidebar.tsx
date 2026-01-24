@@ -132,6 +132,7 @@ const navGroups: NavGroup[] = [
     items: [
       { id: "instructor-home", label: "App Homepage", icon: Smartphone },
       { id: "instructor-marketing", label: "Marketing Page", icon: Globe },
+      { id: "instructor-onboarding", label: "Signup Wizard", icon: Rocket },
       { id: "instructor-faqs", label: "Instructor FAQs", icon: HelpCircle },
     ],
   },

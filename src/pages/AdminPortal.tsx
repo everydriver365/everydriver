@@ -51,6 +51,7 @@ import { SubscribersManager } from "@/components/admin/SubscribersManager";
 import { MiniWebsitesManager } from "@/components/admin/MiniWebsitesManager";
 import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
+import { OnboardingWizardManager } from "@/components/admin/OnboardingWizardManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -106,6 +107,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // Instructor Platform (Drive365)
   "instructor-home": { title: "App Homepage", group: "Instructor Platform", icon: Smartphone },
   "instructor-marketing": { title: "Marketing Page", group: "Instructor Platform", icon: Globe },
+  "instructor-onboarding": { title: "Signup Wizard", group: "Instructor Platform", icon: Rocket },
   "instructor-faqs": { title: "Instructor FAQs", group: "Instructor Platform", icon: HelpCircle },
   // Products & Booking
   courses: { title: "Course Templates", group: "Products & Booking", icon: BookOpen },
@@ -424,6 +426,13 @@ export default function AdminPortal() {
                 <InstructorAppCMSManager />
               </CardContent>
             </Card>
+          </motion.div>
+        );
+
+      case "instructor-onboarding":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <OnboardingWizardManager />
           </motion.div>
         );
 
