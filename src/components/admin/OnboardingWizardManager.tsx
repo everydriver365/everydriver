@@ -85,6 +85,7 @@ export function OnboardingWizardManager() {
   
   const signupUrl = `${window.location.origin}/instructor-app/signup`;
   const onboardingUrl = `${window.location.origin}/instructor-app/onboarding`;
+  const previewUrl = `${window.location.origin}/instructor-app/onboarding-preview`;
 
   // Fetch steps from database
   useEffect(() => {
@@ -294,6 +295,38 @@ export function OnboardingWizardManager() {
             </div>
             <p className="text-xs text-muted-foreground">
               Multi-step wizard for profile completion (requires login)
+            </p>
+          </div>
+
+          {/* Preview Link */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              Preview Mode
+              <Badge variant="secondary" className="text-xs">No Login Required</Badge>
+            </Label>
+            <div className="flex gap-2">
+              <Input 
+                value={previewUrl} 
+                readOnly 
+                className="font-mono text-sm bg-muted"
+              />
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => handleCopy(previewUrl)}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={() => window.open(previewUrl, "_blank")}
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              View all onboarding steps with sample data (no account needed)
             </p>
           </div>
         </CardContent>
