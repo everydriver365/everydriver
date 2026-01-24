@@ -190,13 +190,7 @@ export default function TrackerPage() {
     }
   }, [sessionId, gpsTracker, harshBraking, drivingBehavior]);
 
-  /* ---------------- Auto-Start when navigated with sessionId -- */
-  useEffect(() => {
-    if (sessionId && phase === 'idle') {
-      startTracking();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]); // Only run once when sessionId is available
+  /* ---------------- Auto-Start removed - user must select pupil first -- */
 
   /* ---------------- Timer --------------------------------- */
   useEffect(() => {
