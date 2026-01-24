@@ -258,6 +258,7 @@ export default function InstructorOnboarding() {
       return (
         <StepVehicle
           data={data}
+          instructorId={instructorId || ""}
           onUpdate={updateData}
           onNext={handleNext}
           onBack={handleBack}
@@ -267,6 +268,7 @@ export default function InstructorOnboarding() {
       return (
         <StepQualifications
           data={data}
+          instructorId={instructorId || ""}
           onUpdate={updateData}
           onNext={handleNext}
           onBack={handleBack}
@@ -296,6 +298,7 @@ export default function InstructorOnboarding() {
       return (
         <StepWebsite
           data={data}
+          instructorId={instructorId || ""}
           onUpdate={updateData}
           onNext={handleNext}
           onBack={handleBack}

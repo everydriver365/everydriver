@@ -182,6 +182,7 @@ export default function OnboardingPreview() {
           <div className={wrapperClass}>
             <StepVehicle
               data={data}
+              instructorId="preview"
               onUpdate={updateData}
               onNext={handleNext}
               onBack={handleBack}
@@ -193,6 +194,7 @@ export default function OnboardingPreview() {
           <div className={wrapperClass}>
             <StepQualifications
               data={data}
+              instructorId="preview"
               onUpdate={updateData}
               onNext={handleNext}
               onBack={handleBack}
@@ -228,6 +230,7 @@ export default function OnboardingPreview() {
           <div className={wrapperClass}>
             <StepWebsite
               data={data}
+              instructorId="preview"
               onUpdate={updateData}
               onNext={handleNext}
               onBack={handleBack}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { OnboardingLayout } from "../components/OnboardingLayout";
 import { StepNavigation } from "../components/StepNavigation";
+import { VideoUploadField } from "../components/VideoUploadField";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Globe, Palette, ExternalLink, Check } from "lucide-react";
@@ -12,7 +13,9 @@ interface StepWebsiteProps {
     primary_color: string;
     slug: string;
     name: string;
+    welcome_video_url?: string | null;
   };
+  instructorId: string;
   onUpdate: (data: Partial<StepWebsiteProps["data"]>) => void;
   onNext: () => void;
   onBack: () => void;
@@ -35,6 +38,7 @@ const colors = [
 
 export function StepWebsite({
   data,
+  instructorId,
   onUpdate,
   onNext,
   onBack,
@@ -135,6 +139,17 @@ export function StepWebsite({
             ))}
           </div>
         </div>
+
+        {/* Welcome Video Upload */}
+        <VideoUploadField
+          label="Welcome Video (Optional)"
+          value={data.welcome_video_url || null}
+          instructorId={instructorId}
+          folder="welcome-video"
+          onChange={(url) => onUpdate({ welcome_video_url: url })}
+          helpText="Introduce yourself to prospective pupils"
+          maxSizeMB={50}
+        />
 
         {/* Preview hint */}
         <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-center">

@@ -1,5 +1,6 @@
 import { OnboardingLayout } from "../components/OnboardingLayout";
 import { StepNavigation } from "../components/StepNavigation";
+import { ImageUploadField } from "../components/ImageUploadField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -11,7 +12,9 @@ interface StepVehicleProps {
     car_type: "Manual" | "Automatic";
     car_make: string;
     car_model: string;
+    car_image_url?: string | null;
   };
+  instructorId: string;
   onUpdate: (data: Partial<StepVehicleProps["data"]>) => void;
   onNext: () => void;
   onBack: () => void;
@@ -19,6 +22,7 @@ interface StepVehicleProps {
 
 export function StepVehicle({
   data,
+  instructorId,
   onUpdate,
   onNext,
   onBack,
@@ -108,12 +112,17 @@ export function StepVehicle({
           </div>
         </div>
 
-        {/* Info box */}
-        <div className="bg-secondary rounded-lg p-4">
-          <p className="text-sm text-muted-foreground text-center">
-            You can add photos of your car later in settings
-          </p>
-        </div>
+        {/* Car Photo Upload */}
+        <ImageUploadField
+          label="Car Photo"
+          value={data.car_image_url || null}
+          instructorId={instructorId}
+          folder="car"
+          onChange={(url) => onUpdate({ car_image_url: url })}
+          aspectRatio="video"
+          placeholder="Show off your teaching car"
+          helpText="A good photo helps pupils recognise your car"
+        />
       </div>
 
       <StepNavigation
