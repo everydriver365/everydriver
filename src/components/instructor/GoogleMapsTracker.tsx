@@ -46,7 +46,7 @@ const mapOptions: google.maps.MapOptions = {
 export default function GoogleMapsTracker({ currentPos, gpsPoints, isTracking }: GoogleMapsTrackerProps) {
   // Use the existing GOOGLE_PLACES_API_KEY - ensure Maps JavaScript API is enabled in Google Console
   const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_PLACES_API_KEY || '',
     libraries: ['places'],
   });
 
