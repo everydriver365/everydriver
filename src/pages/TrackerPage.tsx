@@ -411,7 +411,7 @@ export default function TrackerPage() {
               <SelectTrigger>
                 <SelectValue placeholder="Select a pupil" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[1100] bg-popover">
                 {pupils.map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                 ))}
