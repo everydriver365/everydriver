@@ -8,8 +8,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, Mail, MapPin, Globe, Facebook, Instagram, Twitter, Linkedin, Calendar, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function MiniWebsiteContact() {
-  const { slug } = useParams<{ slug: string }>();
+interface MiniWebsiteContactProps {
+  subdomainSlug?: string | null;
+}
+
+export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContactProps = {}) {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = subdomainSlug || paramSlug;
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "contact");
 
   if (loading) {

@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
+import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
 import { Button } from "@/components/ui/button";
@@ -19,9 +20,15 @@ interface Course {
   custom_features: string[] | null;
 }
 
-export default function MiniWebsiteServices() {
-  const { slug } = useParams<{ slug: string }>();
+interface MiniWebsiteServicesProps {
+  subdomainSlug?: string | null;
+}
+
+export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServicesProps = {}) {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = subdomainSlug || paramSlug;
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "services");
+  const links = useMiniWebsiteLinks(slug);
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
@@ -154,7 +161,7 @@ export default function MiniWebsiteServices() {
               <p className="text-gray-500 mb-4">
                 Contact me directly to discuss available courses and packages.
               </p>
-              <Link to={`/i/${slug}/contact`}>
+              <Link to={links.contact}>
                 <Button style={{ backgroundColor: primaryColor }} className="text-white">
                   Get in Touch
                 </Button>
