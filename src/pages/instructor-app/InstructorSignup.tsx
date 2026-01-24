@@ -66,8 +66,8 @@ export default function InstructorSignup() {
           setError(signUpError.message);
         }
       } else {
-        toast.success("Account created! Welcome to Drive365.");
-        navigate("/instructor");
+        toast.success("Account created! Let's set up your profile.");
+        navigate("/instructor-app/onboarding?step=1");
       }
     } catch (err) {
       setError("An unexpected error occurred");
