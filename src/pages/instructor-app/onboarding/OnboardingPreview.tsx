@@ -36,6 +36,7 @@ const previewData = {
   // Services
   hourly_rate: 38,
   lesson_durations: [60, 90, 120],
+  offers_weekly: true,
   offers_intensive: true,
   offers_refresher: true,
   offers_motorway: false,

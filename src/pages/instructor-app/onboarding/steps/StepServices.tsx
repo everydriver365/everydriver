@@ -32,6 +32,7 @@ const formatDuration = (minutes: number): string => {
 };
 
 const specialServices = [
+  { key: "offers_weekly", label: "Weekly Lessons", desc: "Regular recurring lesson slots" },
   { key: "offers_intensive", label: "Intensive Courses", desc: "Block bookings for fast-track learners" },
   { key: "offers_refresher", label: "Refresher Lessons", desc: "For drivers returning after a break" },
   { key: "offers_motorway", label: "Motorway Training", desc: "For new and experienced drivers" },
