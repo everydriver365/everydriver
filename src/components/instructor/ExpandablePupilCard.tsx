@@ -24,7 +24,8 @@ import {
   CheckCircle2,
   Award,
   ClipboardList,
-  Car
+  Car,
+  Radio
 } from "lucide-react";
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
@@ -81,6 +82,7 @@ interface ExpandablePupilCardProps {
   hasSignedTerms?: boolean;
   instructorId?: string;
   instructorName?: string;
+  isTracking?: boolean;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -106,6 +108,7 @@ export function ExpandablePupilCard({
   hasSignedTerms,
   instructorId,
   instructorName,
+  isTracking = false,
 }: ExpandablePupilCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
@@ -297,6 +300,13 @@ export function ExpandablePupilCard({
               {pupil.name}
             </h3>
             <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+              {/* Currently Tracking Badge */}
+              {isTracking && (
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs gap-1 animate-pulse">
+                  <Radio className="h-3 w-3" />
+                  Live
+                </Badge>
+              )}
               {/* Payment Status Badges */}
               {pupil.deposit_forfeited && (
                 <Badge variant="destructive" className="text-xs">

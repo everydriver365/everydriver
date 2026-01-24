@@ -53,6 +53,7 @@ import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutoc
 import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal";
 import { PupilPickerDialog } from "@/components/instructor/PupilPickerDialog";
 import { TestResultsHistory, DrivingTestReportForm } from "@/components/instructor/driving-test";
+import { useActiveTrackingPupils } from "@/hooks/useActiveTrackingPupils";
 
 interface Pupil {
   id: string;
@@ -127,6 +128,9 @@ export default function InstructorPupils() {
   const [isTestFormOpen, setIsTestFormOpen] = useState(false);
   const [isTestHistoryOpen, setIsTestHistoryOpen] = useState(false);
   const [testFormIsMock, setTestFormIsMock] = useState(false);
+  
+  // Active tracking state
+  const { isTracking } = useActiveTrackingPupils(instructorId || null);
 
   useEffect(() => {
     if (instructorId) {
@@ -502,6 +506,7 @@ export default function InstructorPupils() {
                 hasSignedTerms={pupilSignatures[pupil.id] || false}
                 instructorId={instructorId}
                 instructorName={instructor?.name}
+                isTracking={isTracking(pupil.id)}
               />
             ))}
           </div>
