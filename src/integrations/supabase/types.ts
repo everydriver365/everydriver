@@ -2821,6 +2821,76 @@ export type Database = {
           },
         ]
       }
+      live_pupil_positions: {
+        Row: {
+          accuracy: number | null
+          created_at: string
+          heading: number | null
+          id: string
+          instructor_id: string
+          is_active: boolean | null
+          latitude: number
+          longitude: number
+          pupil_id: string
+          speed_kmh: number | null
+          telematics_session_id: string | null
+          trip_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string
+          heading?: number | null
+          id?: string
+          instructor_id: string
+          is_active?: boolean | null
+          latitude: number
+          longitude: number
+          pupil_id: string
+          speed_kmh?: number | null
+          telematics_session_id?: string | null
+          trip_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string
+          heading?: number | null
+          id?: string
+          instructor_id?: string
+          is_active?: boolean | null
+          latitude?: number
+          longitude?: number
+          pupil_id?: string
+          speed_kmh?: number | null
+          telematics_session_id?: string | null
+          trip_status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_pupil_positions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_pupil_positions_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_pupil_positions_telematics_session_id_fkey"
+            columns: ["telematics_session_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           attachment_type: string | null
@@ -3213,6 +3283,47 @@ export type Database = {
         }
         Relationships: []
       }
+      pupil_achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string
+          coins_awarded: number | null
+          description: string | null
+          earned_at: string
+          icon_name: string | null
+          id: string
+          pupil_id: string
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type: string
+          coins_awarded?: number | null
+          description?: string | null
+          earned_at?: string
+          icon_name?: string | null
+          id?: string
+          pupil_id: string
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string
+          coins_awarded?: number | null
+          description?: string | null
+          earned_at?: string
+          icon_name?: string | null
+          id?: string
+          pupil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_achievements_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_badges: {
         Row: {
           id: string
@@ -3245,6 +3356,54 @@ export type Database = {
             columns: ["tier_id"]
             isOneToOne: false
             referencedRelation: "reward_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pupil_coaching_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message_type: string | null
+          pupil_id: string
+          title: string
+          trip_reference: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          pupil_id: string
+          title: string
+          trip_reference?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          pupil_id?: string
+          title?: string
+          trip_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_coaching_messages_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_coaching_messages_trip_reference_fkey"
+            columns: ["trip_reference"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
             referencedColumns: ["id"]
           },
         ]
@@ -3613,6 +3772,7 @@ export type Database = {
           account_balance: number | null
           address: string
           balance_due_date: string | null
+          best_driving_score: number | null
           course_type: string | null
           created_at: string
           current_streak: number | null
@@ -3625,10 +3785,13 @@ export type Database = {
           enquiry_id: string | null
           free_lessons_earned: number | null
           free_lessons_used: number | null
+          harsh_brake_events_total: number | null
           id: string
           instructor_id: string
+          last_trip_at: string | null
           lessons_completed: number | null
           longest_streak: number | null
+          monthly_driving_score: number | null
           name: string
           next_lesson: string | null
           notes: string | null
@@ -3648,21 +3811,26 @@ export type Database = {
           referred_by_pupil_id: string | null
           reward_points: number | null
           scheduling_status: string | null
+          speeding_events_total: number | null
           test_attempts: number | null
           test_centre_id: string | null
           test_date: string | null
           test_passed: boolean | null
           test_result_date: string | null
           test_time: string | null
+          total_distance_km: number | null
+          total_driving_minutes: number | null
           total_lessons_for_rewards: number | null
           total_trips: number | null
           updated_at: string
+          weekly_driving_score: number | null
           what3words: string | null
         }
         Insert: {
           account_balance?: number | null
           address: string
           balance_due_date?: string | null
+          best_driving_score?: number | null
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
@@ -3675,10 +3843,13 @@ export type Database = {
           enquiry_id?: string | null
           free_lessons_earned?: number | null
           free_lessons_used?: number | null
+          harsh_brake_events_total?: number | null
           id?: string
           instructor_id: string
+          last_trip_at?: string | null
           lessons_completed?: number | null
           longest_streak?: number | null
+          monthly_driving_score?: number | null
           name: string
           next_lesson?: string | null
           notes?: string | null
@@ -3698,21 +3869,26 @@ export type Database = {
           referred_by_pupil_id?: string | null
           reward_points?: number | null
           scheduling_status?: string | null
+          speeding_events_total?: number | null
           test_attempts?: number | null
           test_centre_id?: string | null
           test_date?: string | null
           test_passed?: boolean | null
           test_result_date?: string | null
           test_time?: string | null
+          total_distance_km?: number | null
+          total_driving_minutes?: number | null
           total_lessons_for_rewards?: number | null
           total_trips?: number | null
           updated_at?: string
+          weekly_driving_score?: number | null
           what3words?: string | null
         }
         Update: {
           account_balance?: number | null
           address?: string
           balance_due_date?: string | null
+          best_driving_score?: number | null
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
@@ -3725,10 +3901,13 @@ export type Database = {
           enquiry_id?: string | null
           free_lessons_earned?: number | null
           free_lessons_used?: number | null
+          harsh_brake_events_total?: number | null
           id?: string
           instructor_id?: string
+          last_trip_at?: string | null
           lessons_completed?: number | null
           longest_streak?: number | null
+          monthly_driving_score?: number | null
           name?: string
           next_lesson?: string | null
           notes?: string | null
@@ -3748,15 +3927,19 @@ export type Database = {
           referred_by_pupil_id?: string | null
           reward_points?: number | null
           scheduling_status?: string | null
+          speeding_events_total?: number | null
           test_attempts?: number | null
           test_centre_id?: string | null
           test_date?: string | null
           test_passed?: boolean | null
           test_result_date?: string | null
           test_time?: string | null
+          total_distance_km?: number | null
+          total_driving_minutes?: number | null
           total_lessons_for_rewards?: number | null
           total_trips?: number | null
           updated_at?: string
+          weekly_driving_score?: number | null
           what3words?: string | null
         }
         Relationships: [
@@ -4733,6 +4916,19 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      update_live_position: {
+        Args: {
+          p_accuracy?: number
+          p_heading?: number
+          p_latitude: number
+          p_longitude: number
+          p_pupil_id: string
+          p_session_id?: string
+          p_speed_kmh?: number
+          p_trip_status?: string
+        }
+        Returns: string
       }
     }
     Enums: {
