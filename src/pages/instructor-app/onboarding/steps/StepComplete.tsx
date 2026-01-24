@@ -48,12 +48,6 @@ export function StepComplete({ data }: StepCompleteProps) {
       desc: "Get started with teaching",
       action: () => navigate("/instructor/pupils"),
     },
-    {
-      icon: Globe,
-      label: "View Your Website",
-      desc: `${data.slug}.everydriver.co.uk`,
-      action: () => window.open(`/i/${data.slug}`, "_blank"),
-    },
   ];
 
   return (
@@ -86,7 +80,7 @@ export function StepComplete({ data }: StepCompleteProps) {
             You're All Set, {data.name?.split(" ")[0]}! 🎉
           </h1>
           <p className="text-muted-foreground text-lg mb-8">
-            Your Drive365 account is ready. Start growing your business today.
+            Your EveryDriver account is ready. Start growing your business today.
           </p>
         </motion.div>
 
@@ -121,7 +115,7 @@ export function StepComplete({ data }: StepCompleteProps) {
           ))}
         </motion.div>
 
-        {/* Share CTA */}
+        {/* Pro Tip */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -130,17 +124,11 @@ export function StepComplete({ data }: StepCompleteProps) {
         >
           <div className="flex items-center justify-center gap-2 text-foreground mb-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <span className="font-medium">Pro Tip</span>
+            <span className="font-medium">What's Next?</span>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Share your new website with friends and family to get your first referrals!
+          <p className="text-sm text-muted-foreground">
+            Your personal website will be set up shortly. We'll notify you once it's live and ready to share!
           </p>
-          <Button variant="outline" size="sm" onClick={() => {
-            navigator.clipboard.writeText(`https://drive365.co.uk/i/${data.slug}`);
-          }}>
-            <Share2 className="h-4 w-4 mr-2" />
-            Copy Website Link
-          </Button>
         </motion.div>
       </div>
     </OnboardingLayout>
