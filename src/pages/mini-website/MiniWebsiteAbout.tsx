@@ -9,8 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Car, Award, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function MiniWebsiteAbout() {
-  const { slug } = useParams<{ slug: string }>();
+interface MiniWebsiteAboutProps {
+  subdomainSlug?: string | null;
+}
+
+export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProps = {}) {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = subdomainSlug || paramSlug;
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "about");
 
   if (loading) {

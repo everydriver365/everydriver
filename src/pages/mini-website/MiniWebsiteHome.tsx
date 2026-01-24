@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useWebsitePage } from "@/hooks/useInstructorWebsitePages";
+import { useMiniWebsiteLinks } from "@/hooks/useMiniWebsiteLinks";
 import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,16 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 
-export default function MiniWebsiteHome() {
-  const { slug } = useParams<{ slug: string }>();
+interface MiniWebsiteHomeProps {
+  subdomainSlug?: string | null;
+}
+
+export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps = {}) {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  // Use subdomain slug if provided, otherwise use URL param
+  const slug = subdomainSlug || paramSlug;
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "home");
+  const links = useMiniWebsiteLinks(slug);
   const [reviews, setReviews] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
 
@@ -178,45 +186,45 @@ export default function MiniWebsiteHome() {
 
         {/* Quick links to other pages */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
-          <Link to={`/i/${slug}/about`}>
+          <Link to={links.about}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   About Me
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">Learn more</p>
+                <p className="text-sm text-muted-foreground mt-1">Learn more</p>
               </CardContent>
             </Card>
           </Link>
-          <Link to={`/i/${slug}/services`}>
+          <Link to={links.services}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   Services
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">View courses</p>
+                <p className="text-sm text-muted-foreground mt-1">View courses</p>
               </CardContent>
             </Card>
           </Link>
-          <Link to={`/i/${slug}/reviews`}>
+          <Link to={links.reviews}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   Reviews
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   {reviews.length} reviews
                 </p>
               </CardContent>
             </Card>
           </Link>
-          <Link to={`/i/${slug}/contact`}>
+          <Link to={links.contact}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   Contact
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">Get in touch</p>
+                <p className="text-sm text-muted-foreground mt-1">Get in touch</p>
               </CardContent>
             </Card>
           </Link>

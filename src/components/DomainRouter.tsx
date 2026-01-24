@@ -1,10 +1,11 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Domain configurations
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
 const EVERYDRIVER_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk", "everydriver.lovable.app"];
 const EVERYDRIVER_REDIRECT_TARGET = "everydriver.co.uk";
+const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
 
 // Routes that belong to Drive365 (instructor platform)
 const INSTRUCTOR_ROUTE_PREFIXES = [
@@ -23,6 +24,26 @@ const SHARED_ROUTES = [
 ];
 
 /**
+ * Extracts instructor slug from subdomain if present
+ * e.g., "jane-smith.everydriver.co.uk" returns "jane-smith"
+ * Returns null if no subdomain or if it's www
+ */
+export function getInstructorSubdomain(): string | null {
+  const hostname = window.location.hostname.toLowerCase();
+  
+  // Check if it's an everydriver subdomain
+  if (hostname.endsWith(`.${EVERYDRIVER_BASE_DOMAIN}`)) {
+    const subdomain = hostname.replace(`.${EVERYDRIVER_BASE_DOMAIN}`, "");
+    // Ignore www subdomain
+    if (subdomain && subdomain !== "www") {
+      return subdomain;
+    }
+  }
+  
+  return null;
+}
+
+/**
  * Checks if the current hostname is a Drive365 domain
  */
 export function isDrive365Domain(): boolean {
@@ -31,11 +52,20 @@ export function isDrive365Domain(): boolean {
 }
 
 /**
- * Checks if the current hostname is an EveryDriver domain
+ * Checks if the current hostname is an EveryDriver domain (including subdomains)
  */
 export function isEveryDriverDomain(): boolean {
   const hostname = window.location.hostname.toLowerCase();
-  return EVERYDRIVER_DOMAINS.some(domain => hostname.includes(domain.replace("www.", ""))) || hostname.includes("lovable.app");
+  return EVERYDRIVER_DOMAINS.some(domain => hostname.includes(domain.replace("www.", ""))) || 
+         hostname.endsWith(`.${EVERYDRIVER_BASE_DOMAIN}`) ||
+         hostname.includes("lovable.app");
+}
+
+/**
+ * Checks if the current hostname is an instructor subdomain
+ */
+export function isInstructorSubdomain(): boolean {
+  return getInstructorSubdomain() !== null;
 }
 
 /**

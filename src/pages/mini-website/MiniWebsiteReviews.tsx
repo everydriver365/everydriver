@@ -21,8 +21,13 @@ interface Review {
   is_verified: boolean | null;
 }
 
-export default function MiniWebsiteReviews() {
-  const { slug } = useParams<{ slug: string }>();
+interface MiniWebsiteReviewsProps {
+  subdomainSlug?: string | null;
+}
+
+export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviewsProps = {}) {
+  const { slug: paramSlug } = useParams<{ slug: string }>();
+  const slug = subdomainSlug || paramSlug;
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "reviews");
   const [reviews, setReviews] = useState<Review[]>([]);
 
