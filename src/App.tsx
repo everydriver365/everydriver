@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import InstructorTrackLesson from "./pages/InstructorTrackLesson";
+import InstructorLiveTracking from "./pages/InstructorLiveTracking";
 import TrackerPage from "./pages/TrackerPage";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -155,6 +156,7 @@ const App = () => (
               <Route path="/instructor/gaps" element={<InstructorGaps />} />
               <Route path="/instructor/expenses" element={<InstructorExpenses />} />
               <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
+              <Route path="/instructor/live-tracking" element={<InstructorLiveTracking />} />
               <Route path="/instructor/tracker/:sessionId" element={<TrackerPage />} />
               <Route path="/instructor/satnav" element={<InstructorSatNav />} />
               <Route path="/instructor/accounts" element={<InstructorAccounts />} />
