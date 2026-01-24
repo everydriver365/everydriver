@@ -34,7 +34,7 @@ async function createSignature(
   return bytes.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-interface SaleRequest {
+interface DirectSaleRequest {
   orderRef: string;
   amount: number; // pounds
   paymentToken: string;
@@ -59,7 +59,7 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Cardstream not configured (missing env vars)",
+          error: "Missing NPI_MERCHANT_ID or NPI_MERCHANT_SECRET",
         }),
         {
           status: 500,
@@ -68,7 +68,7 @@ serve(async (req: Request) => {
       );
     }
 
-    const body: SaleRequest = await req.json();
+    const body: DirectSaleRequest = await req.json();
     if (!body.orderRef || !body.amount || !body.paymentToken) {
       return new Response(
         JSON.stringify({
