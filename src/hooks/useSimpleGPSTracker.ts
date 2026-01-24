@@ -29,11 +29,13 @@ interface UseSimpleGPSTrackerOptions {
   recordIntervalMs?: number; // How often to record to DB (ms)
   speedLimitToleranceKmh?: number; // Tolerance before flagging speeding
   onSpeedingDetected?: (speedKmh: number, limitKmh: number, location: { lat: number; lon: number }) => void;
+  pupilId?: string | null; // Pupil ID for live position broadcasting
 }
 
 const DEFAULT_OPTIONS: UseSimpleGPSTrackerOptions = {
   recordIntervalMs: 2000, // Record every 2 seconds
   speedLimitToleranceKmh: 8, // 8 km/h tolerance
+  pupilId: null,
 };
 
 // Haversine distance calculation
@@ -178,8 +180,28 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     }
   }, []);
 
+  // Broadcast live position for real-time map display
+  const updateLivePosition = useCallback(async (point: GPSPoint, pupilId: string) => {
+    if (!pupilId || !sessionIdRef.current) return;
+    
+    try {
+      await supabase.rpc('update_live_position', {
+        p_pupil_id: pupilId,
+        p_latitude: point.latitude,
+        p_longitude: point.longitude,
+        p_speed_kmh: point.speedKmh || 0,
+        p_heading: point.heading,
+        p_accuracy: point.accuracy,
+        p_trip_status: 'driving',
+        p_session_id: sessionIdRef.current
+      });
+    } catch (err) {
+      console.error('[GPS] Failed to update live position:', err);
+    }
+  }, []);
+
   // Record GPS point to database
-  const recordPoint = useCallback(async (point: GPSPoint) => {
+  const recordPoint = useCallback(async (point: GPSPoint, pupilId?: string | null) => {
     if (!sessionIdRef.current) return;
 
     try {
@@ -197,10 +219,15 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
       });
 
       setPointCount(prev => prev + 1);
+      
+      // Also broadcast to live position table
+      if (pupilId) {
+        await updateLivePosition(point, pupilId);
+      }
     } catch (err) {
       console.error('[GPS Tracker] Failed to record point:', err);
     }
-  }, []);
+  }, [updateLivePosition]);
 
   // Handle position update
   const handlePosition = useCallback(async (position: GeolocationPosition) => {
@@ -281,7 +308,7 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     // Record to database at interval (use moderate accuracy threshold)
     if (now - lastRecordTimeRef.current >= opts.recordIntervalMs! && coords.accuracy <= 50) {
       lastRecordTimeRef.current = now;
-      recordPoint(point);
+      recordPoint(point, opts.pupilId);
     }
   }, [maxSpeed, opts, fetchSpeedLimit, recordPoint]);
 
@@ -348,13 +375,25 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
   }, [checkPermission, requestWakeLock, handlePosition, handleError]);
 
   // Stop tracking
-  const stopTracking = useCallback(() => {
+  const stopTracking = useCallback(async (pupilId?: string | null) => {
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
 
     releaseWakeLock();
+
+    // Mark live position as inactive
+    if (pupilId) {
+      try {
+        await supabase
+          .from('live_pupil_positions')
+          .update({ is_active: false, trip_status: 'idle' })
+          .eq('pupil_id', pupilId);
+      } catch (err) {
+        console.error('[GPS] Failed to clear live position:', err);
+      }
+    }
 
     const result = {
       totalDistance,
