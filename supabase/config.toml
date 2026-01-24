@@ -128,3 +128,12 @@ verify_jwt = false
 
 [functions.square-booking-wallet-payment]
 verify_jwt = false
+
+[functions.payment-intent-create]
+verify_jwt = false
+
+[functions.payment-direct-sale]
+verify_jwt = false
+
+[functions.applepay-validate-merchant]
+verify_jwt = false
