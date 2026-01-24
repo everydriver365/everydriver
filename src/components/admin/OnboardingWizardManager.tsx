@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   ExternalLink, 
   Copy, 
@@ -22,7 +24,10 @@ import {
   Eye,
   Settings2,
   Loader2,
-  Save
+  Plus,
+  Trash2,
+  ShoppingCart,
+  HelpCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,7 +42,22 @@ const iconMap: Record<string, React.ElementType> = {
   CreditCard,
   Globe,
   PartyPopper,
+  ShoppingCart,
+  HelpCircle,
 };
+
+const availableIcons = [
+  { name: "User", icon: User },
+  { name: "MapPin", icon: MapPin },
+  { name: "Car", icon: Car },
+  { name: "GraduationCap", icon: GraduationCap },
+  { name: "Briefcase", icon: Briefcase },
+  { name: "CreditCard", icon: CreditCard },
+  { name: "Globe", icon: Globe },
+  { name: "PartyPopper", icon: PartyPopper },
+  { name: "ShoppingCart", icon: ShoppingCart },
+  { name: "HelpCircle", icon: HelpCircle },
+];
 
 interface OnboardingStep {
   id: number;
@@ -55,6 +75,13 @@ export function OnboardingWizardManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [newStep, setNewStep] = useState({
+    name: "",
+    description: "",
+    icon_name: "HelpCircle",
+    is_required: false,
+  });
   
   const signupUrl = `${window.location.origin}/instructor-app/signup`;
   const onboardingUrl = `${window.location.origin}/instructor-app/onboarding`;
@@ -125,12 +152,67 @@ export function OnboardingWizardManager() {
     if (error) {
       toast.error('Failed to save changes');
     } else {
-      setSteps(prev => prev.map(s => 
+      setSteps(prev => prev.map(s =>
         s.id === stepId ? { ...s, ...updates } : s
       ));
       toast.success('Changes saved');
     }
     setSaving(false);
+  };
+
+  const addNewStep = async () => {
+    if (!newStep.name.trim() || !newStep.description.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setSaving(true);
+    const nextStepNumber = Math.max(...steps.map(s => s.step_number), 0) + 1;
+    const nextDisplayOrder = Math.max(...steps.map(s => s.display_order), 0) + 1;
+
+    const { data, error } = await supabase
+      .from('onboarding_steps')
+      .insert({
+        step_number: nextStepNumber,
+        name: newStep.name,
+        description: newStep.description,
+        icon_name: newStep.icon_name,
+        is_enabled: true,
+        is_required: newStep.is_required,
+        display_order: nextDisplayOrder,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast.error('Failed to add step');
+    } else if (data) {
+      setSteps(prev => [...prev, data]);
+      setNewStep({ name: "", description: "", icon_name: "HelpCircle", is_required: false });
+      setAddDialogOpen(false);
+      toast.success('Step added successfully');
+    }
+    setSaving(false);
+  };
+
+  const deleteStep = async (stepId: number) => {
+    const step = steps.find(s => s.id === stepId);
+    if (!step || step.is_required) {
+      toast.error('Cannot delete required steps');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('onboarding_steps')
+      .delete()
+      .eq('id', stepId);
+
+    if (error) {
+      toast.error('Failed to delete step');
+    } else {
+      setSteps(prev => prev.filter(s => s.id !== stepId));
+      toast.success('Step deleted');
+    }
   };
 
   const enabledStepsCount = steps.filter(s => s.is_enabled).length;
@@ -230,9 +312,80 @@ export function OnboardingWizardManager() {
                 Configure which steps are shown in the onboarding wizard. Click on a step name or description to edit.
               </CardDescription>
             </div>
-            <Badge variant="secondary">
-              {enabledStepsCount} of {steps.length} active
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">
+                {enabledStepsCount} of {steps.length} active
+              </Badge>
+              <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Step
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Onboarding Step</DialogTitle>
+                    <DialogDescription>
+                      Create a custom step for your instructor onboarding flow.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Step Name *</Label>
+                      <Input
+                        value={newStep.name}
+                        onChange={(e) => setNewStep(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g. Domain Purchase"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description *</Label>
+                      <Input
+                        value={newStep.description}
+                        onChange={(e) => setNewStep(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="e.g. Purchase a custom domain for your website"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Icon</Label>
+                      <Select
+                        value={newStep.icon_name}
+                        onValueChange={(value) => setNewStep(prev => ({ ...prev, icon_name: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableIcons.map(({ name, icon: Icon }) => (
+                            <SelectItem key={name} value={name}>
+                              <div className="flex items-center gap-2">
+                                <Icon className="h-4 w-4" />
+                                {name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={newStep.is_required}
+                        onCheckedChange={(checked) => setNewStep(prev => ({ ...prev, is_required: checked }))}
+                      />
+                      <Label>Make this step required</Label>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={addNewStep} disabled={saving}>
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                      Add Step
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -277,7 +430,7 @@ export function OnboardingWizardManager() {
                     />
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {step.is_enabled ? (
                       <Badge variant="default" className="bg-success/10 text-success border-success/20">
                         <Eye className="h-3 w-3 mr-1" />
@@ -293,6 +446,16 @@ export function OnboardingWizardManager() {
                       onCheckedChange={() => toggleStep(step.id)}
                       disabled={step.is_required}
                     />
+                    {!step.is_required && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => deleteStep(step.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
