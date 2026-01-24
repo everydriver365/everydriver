@@ -214,6 +214,14 @@ export function InstructorMobileHome({
                 <User className="mr-2 h-4 w-4" />
                 Profile Settings
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/instructor/settings/traccar")}>
+                <Navigation className="mr-2 h-4 w-4" />
+                GPS Tracker Setup
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/instructor/traccar")}>
+                <Car className="mr-2 h-4 w-4" />
+                Traccar Session
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
                 <Bell className="mr-2 h-4 w-4" />
                 Notifications
