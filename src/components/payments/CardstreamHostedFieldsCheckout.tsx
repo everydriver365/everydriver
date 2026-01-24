@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+// Configurable gateway base URL - defaults to standard Cardstream gateway
+const DEFAULT_GATEWAY_BASE_URL = 
+  import.meta.env.VITE_CARDSTREAM_GATEWAY_BASE_URL || "https://gateway.cardstream.com";
+
 // Access hostedFields from window without conflicting with other type declarations
 const getHostedFieldsFormClass = (): (new (el: HTMLFormElement, options: any) => any) | null => {
   const hf = (window as any).hostedFields;
@@ -10,10 +14,19 @@ const getHostedFieldsFormClass = (): (new (el: HTMLFormElement, options: any) =>
 const getJQuery = (): any => (window as any).jQuery;
 const setJQuery = (jq: any) => { (window as any).$ = jq; };
 
+/**
+ * Strict script loader with timeout and detailed diagnostics
+ */
 function loadScript(src: string, timeoutMs = 15000): Promise<void> {
   return new Promise((resolve, reject) => {
+    // Check if already loaded
     const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
-    if (existing) return resolve();
+    if (existing) {
+      console.log(`[CardstreamLoader] Script already loaded: ${src}`);
+      return resolve();
+    }
+
+    console.log(`[CardstreamLoader] Loading script: ${src}`);
 
     const s = document.createElement("script");
     s.src = src;
@@ -21,18 +34,50 @@ function loadScript(src: string, timeoutMs = 15000): Promise<void> {
     s.defer = true;
     s.crossOrigin = "anonymous";
 
-    const t = window.setTimeout(() => reject(new Error(`Timed out loading script: ${src}`)), timeoutMs);
+    const t = window.setTimeout(() => {
+      console.error(`[CardstreamLoader] TIMEOUT loading script after ${timeoutMs}ms: ${src}`);
+      console.error(`[CardstreamLoader] Check: Network tab for status, CSP violations, ad-blockers`);
+      reject(new Error(`Timed out loading script: ${src}`));
+    }, timeoutMs);
+
     s.onload = () => {
       window.clearTimeout(t);
+      console.log(`[CardstreamLoader] Successfully loaded: ${src}`);
       resolve();
     };
-    s.onerror = () => {
+
+    s.onerror = (event) => {
       window.clearTimeout(t);
-      reject(new Error(`Failed to load script: ${src} (CSP/adblock/network)`));
+      console.error(`[CardstreamLoader] FAILED to load script: ${src}`);
+      console.error(`[CardstreamLoader] Possible causes:`);
+      console.error(`  1. CSP blocking the script - check Console for CSP violations`);
+      console.error(`  2. Ad-blocker blocking the request`);
+      console.error(`  3. Network error - check Network tab for HTTP status`);
+      console.error(`  4. Wrong gateway hostname - verify VITE_CARDSTREAM_GATEWAY_BASE_URL`);
+      console.error(`[CardstreamLoader] Event:`, event);
+      reject(new Error(
+        `Failed to load script: ${src}. Check DevTools Console/Network for CSP violations or blocked requests.`
+      ));
     };
 
     document.head.appendChild(s);
   });
+}
+
+/**
+ * Run diagnostics on SDK state and log to console
+ */
+function runDiagnostics(gatewayBaseUrl: string): void {
+  console.log(`[CardstreamLoader] ========== DIAGNOSTICS ==========`);
+  console.log(`[CardstreamLoader] Gateway Base URL: ${gatewayBaseUrl}`);
+  console.log(`[CardstreamLoader] SDK URL: ${gatewayBaseUrl}/sdk/web/v1/js/hostedfields.min.js`);
+  console.log(`[CardstreamLoader] jQuery loaded: ${!!getJQuery()}`);
+  console.log(`[CardstreamLoader] window.jQuery: ${!!(window as any).jQuery}`);
+  console.log(`[CardstreamLoader] window.$: ${!!(window as any).$}`);
+  console.log(`[CardstreamLoader] window.hostedFields: ${!!(window as any).hostedFields}`);
+  console.log(`[CardstreamLoader] window.hostedFields.classes: ${!!(window as any).hostedFields?.classes}`);
+  console.log(`[CardstreamLoader] window.hostedFields.classes.Form: ${!!getHostedFieldsFormClass()}`);
+  console.log(`[CardstreamLoader] ================================`);
 }
 
 type CardstreamHostedFieldsCheckoutProps = {
@@ -42,7 +87,7 @@ type CardstreamHostedFieldsCheckoutProps = {
   customerEmail?: string;
   pupilId?: string;
   instructorId?: string;
-  gatewayBaseUrl?: string;
+  gatewayBaseUrl?: string; // Override env var if needed
   onSuccess?: (data: any) => void;
   onError?: (msg: string) => void;
 };
@@ -54,10 +99,17 @@ export function CardstreamHostedFieldsCheckout({
   customerEmail,
   pupilId,
   instructorId,
-  gatewayBaseUrl = "https://gateway.cardstream.com",
+  gatewayBaseUrl,
   onSuccess,
   onError,
 }: CardstreamHostedFieldsCheckoutProps) {
+  // Use prop override, then env var, then default
+  const resolvedGatewayBaseUrl = useMemo(() => {
+    const url = (gatewayBaseUrl || DEFAULT_GATEWAY_BASE_URL).replace(/\/$/, "");
+    console.log(`[CardstreamLoader] Using gateway base URL: ${url}`);
+    return url;
+  }, [gatewayBaseUrl]);
+
   const [loading, setLoading] = useState(true);
   const [ready, setReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -67,9 +119,8 @@ export function CardstreamHostedFieldsCheckout({
   const hostedFormRef = useRef<any>(null);
 
   const hostedFieldsUrl = useMemo(() => {
-    const base = gatewayBaseUrl.replace(/\/$/, "");
-    return `${base}/sdk/web/v1/js/hostedfields.min.js`;
-  }, [gatewayBaseUrl]);
+    return `${resolvedGatewayBaseUrl}/sdk/web/v1/js/hostedfields.min.js`;
+  }, [resolvedGatewayBaseUrl]);
 
   const amountLabel = useMemo(() => `£${amount.toFixed(2)}`, [amount]);
 
@@ -81,31 +132,47 @@ export function CardstreamHostedFieldsCheckout({
         setLoading(true);
         setError(null);
 
-        // 1) Load jQuery FIRST (Hosted Fields needs it reliably in many integrations)
+        console.log(`[CardstreamLoader] Initializing Hosted Fields...`);
+        console.log(`[CardstreamLoader] Env VITE_CARDSTREAM_GATEWAY_BASE_URL: ${import.meta.env.VITE_CARDSTREAM_GATEWAY_BASE_URL || '(not set)'}`);
+
+        // 1) Load jQuery FIRST (Hosted Fields needs it)
+        console.log(`[CardstreamLoader] Step 1: Loading jQuery...`);
         await loadScript("https://code.jquery.com/jquery-3.7.1.min.js");
 
-        // force globals
+        // Force globals
         const jq = getJQuery();
-        if (!jq) throw new Error("jQuery loaded but window.jQuery is missing (blocked or overridden)");
+        if (!jq) {
+          console.error(`[CardstreamLoader] jQuery script loaded but window.jQuery is undefined!`);
+          console.error(`[CardstreamLoader] This can happen if another script overwrites jQuery or CSP blocks evaluation.`);
+          throw new Error("jQuery loaded but window.jQuery is missing (blocked or overridden)");
+        }
         setJQuery(jq);
+        console.log(`[CardstreamLoader] jQuery ready: v${jq.fn?.jquery || 'unknown'}`);
 
-        // 2) Load hosted fields SDK
+        // 2) Load hosted fields SDK from configurable gateway
+        console.log(`[CardstreamLoader] Step 2: Loading Hosted Fields SDK from ${hostedFieldsUrl}...`);
         await loadScript(hostedFieldsUrl);
 
-        // 3) DO NOT depend on $.fn.hostedForm (plugin may not exist).
-        // Instead, use the Hosted Fields namespace:
+        // 3) Verify SDK is available
+        console.log(`[CardstreamLoader] Step 3: Verifying SDK...`);
+        runDiagnostics(resolvedGatewayBaseUrl);
+
         const FormClass = getHostedFieldsFormClass();
         if (!FormClass) {
+          console.error(`[CardstreamLoader] SDK loaded but Form class not found!`);
+          console.error(`[CardstreamLoader] The script may have loaded an empty/error response.`);
+          console.error(`[CardstreamLoader] Check Network tab: is hostedfields.min.js returning valid JS?`);
           throw new Error(
             "Hosted Fields SDK loaded but window.hostedFields.classes.Form is missing. " +
-              "Check CSP/adblock + confirm gateway hostname is correct."
+            "Check CSP/adblock and verify gateway hostname is correct."
           );
         }
 
         const formEl = formRef.current;
         if (!formEl) throw new Error("Form element not mounted");
 
-        // 4) Create hosted fields form instance (autoSetup reads our field containers)
+        // 4) Create hosted fields form instance
+        console.log(`[CardstreamLoader] Step 4: Creating HostedFields Form instance...`);
         hostedFormRef.current = new FormClass(formEl, {
           autoSetup: true,
           autoSubmit: false,
@@ -113,12 +180,15 @@ export function CardstreamHostedFieldsCheckout({
         });
 
         if (!cancelled) {
+          console.log(`[CardstreamLoader] ✓ Hosted Fields ready!`);
           setReady(true);
           setLoading(false);
         }
       } catch (e: any) {
         if (!cancelled) {
           const msg = e?.message || "Failed to init Hosted Fields";
+          console.error(`[CardstreamLoader] Initialization failed:`, msg);
+          runDiagnostics(resolvedGatewayBaseUrl);
           setError(msg);
           setLoading(false);
           onError?.(msg);
@@ -134,7 +204,7 @@ export function CardstreamHostedFieldsCheckout({
         // ignore
       }
     };
-  }, [hostedFieldsUrl, onError]);
+  }, [hostedFieldsUrl, resolvedGatewayBaseUrl, onError]);
 
   async function payNow() {
     try {
@@ -167,6 +237,7 @@ export function CardstreamHostedFieldsCheckout({
       mid.value = initData.merchantID;
 
       // Tokenise card data -> get paymentToken
+      console.log(`[CardstreamLoader] Tokenising card data...`);
       const tokenResult = await hostedFormRef.current.getPaymentDetails({ orderRef }, true);
 
       if (!tokenResult?.success) {
@@ -174,6 +245,8 @@ export function CardstreamHostedFieldsCheckout({
       }
       const paymentToken = tokenResult.paymentToken as string;
       if (!paymentToken) throw new Error("No paymentToken returned from Hosted Fields");
+
+      console.log(`[CardstreamLoader] Token received, processing payment...`);
 
       // Server-to-server Direct SALE
       const { data: saleData, error: saleErr } = await supabase.functions.invoke(
@@ -194,9 +267,11 @@ export function CardstreamHostedFieldsCheckout({
       if (saleErr) throw new Error(saleErr.message);
       if (!saleData?.success) throw new Error(saleData?.responseMessage || saleData?.error || "Payment failed");
 
+      console.log(`[CardstreamLoader] ✓ Payment successful!`);
       onSuccess?.(saleData);
     } catch (e: any) {
       const msg = e?.message || "Payment failed";
+      console.error(`[CardstreamLoader] Payment error:`, msg);
       setError(msg);
       onError?.(msg);
     } finally {
@@ -216,7 +291,9 @@ export function CardstreamHostedFieldsCheckout({
 
         {error && (
           <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3 mb-4">
-            {error}
+            <p className="font-medium mb-1">Payment Error</p>
+            <p>{error}</p>
+            <p className="mt-2 text-xs opacity-75">Check browser DevTools Console for diagnostics.</p>
           </div>
         )}
 
