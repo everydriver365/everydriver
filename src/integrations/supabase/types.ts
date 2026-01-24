@@ -4907,6 +4907,79 @@ export type Database = {
         }
         Relationships: []
       }
+      traccar_devices: {
+        Row: {
+          created_at: string | null
+          current_pupil_id: string | null
+          current_session_id: string | null
+          device_identifier: string
+          device_name: string | null
+          id: string
+          instructor_id: string
+          is_active: boolean | null
+          last_heading: number | null
+          last_latitude: number | null
+          last_longitude: number | null
+          last_seen_at: string | null
+          last_speed_kmh: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_pupil_id?: string | null
+          current_session_id?: string | null
+          device_identifier: string
+          device_name?: string | null
+          id?: string
+          instructor_id: string
+          is_active?: boolean | null
+          last_heading?: number | null
+          last_latitude?: number | null
+          last_longitude?: number | null
+          last_seen_at?: string | null
+          last_speed_kmh?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_pupil_id?: string | null
+          current_session_id?: string | null
+          device_identifier?: string
+          device_name?: string | null
+          id?: string
+          instructor_id?: string
+          is_active?: boolean | null
+          last_heading?: number | null
+          last_latitude?: number | null
+          last_longitude?: number | null
+          last_seen_at?: string | null
+          last_speed_kmh?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traccar_devices_current_pupil_id_fkey"
+            columns: ["current_pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_devices_current_session_id_fkey"
+            columns: ["current_session_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_devices_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
