@@ -177,8 +177,8 @@ export default function AdminLogin() {
         >
           <Card>
             <CardHeader className="text-center">
-              <div className="bg-[#142040] rounded-xl p-4 mb-2 mx-auto inline-block">
-                <img src="/everydriver-logo-blue-bg.png" alt="EveryDriver" className="h-8 mx-auto" />
+              <div className="mb-2 mx-auto inline-block">
+                <img src="/everydriver-logo-white-bg.png" alt="EveryDriver" className="h-10 mx-auto" />
               </div>
               <CardTitle>{getTitle()}</CardTitle>
               <CardDescription>{getDescription()}</CardDescription>

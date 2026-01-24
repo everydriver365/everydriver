@@ -326,11 +326,11 @@ export default function InstructorPortalLogin() {
           transition={{ delay: 0.1 }}
           className="text-center mb-8"
         >
-          <div className="bg-[#142040] rounded-xl p-4 mb-6 mx-auto inline-block">
+          <div className="mb-6 mx-auto inline-block">
             <img 
-              src="/everydriver-logo-blue-bg.png" 
+              src="/everydriver-logo-white-bg.png" 
               alt="EveryDriver" 
-              className="h-10 mx-auto"
+              className="h-12 mx-auto"
             />
           </div>
           <h1 className="text-2xl font-bold text-foreground">

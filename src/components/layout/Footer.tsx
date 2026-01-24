@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
-import mainLogo from "@/assets/everydriver-logo-transparent.png";
+import mainLogo from "@/assets/everydriver-logo-new.png";
 
 export function Footer() {
   const logo = mainLogo;
