@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -9,8 +12,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Bookmark, MapPin, FileText, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import SessionRouteReport from '@/components/instructor/SessionRouteReport';
-import GoogleMapsTracker from '@/components/instructor/GoogleMapsTracker';
 import { toast } from 'sonner';
+
+// Leaflet marker icon
+const currentMarkerIcon = L.divIcon({
+  className: 'current-position-marker',
+  html: '<div style="width: 20px; height: 20px; background: #3b82f6; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+});
+
+// MapUpdater component to pan map when position changes
+function MapUpdater({ position }: { position: [number, number] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (position) {
+      map.setView(position, map.getZoom());
+    }
+  }, [position, map]);
+  return null;
+}
 
 import { useSimpleGPSTracker } from '@/hooks/useSimpleGPSTracker';
 import { useHarshBrakingDetector } from '@/hooks/useHarshBrakingDetector';
@@ -455,13 +476,30 @@ export default function TrackerPage() {
         </div>
       )}
 
-      {/* Google Maps */}
+      {/* Leaflet Map */}
       <div className="flex-1 relative">
-        <GoogleMapsTracker
-          currentPos={currentPos}
-          gpsPoints={gpsPoints}
-          isTracking={phase === 'tracking'}
-        />
+        <MapContainer
+          center={currentPos || [51.5074, -0.1278]}
+          zoom={16}
+          className="h-full w-full"
+          style={{ minHeight: '300px' }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {currentPos && (
+            <Marker position={currentPos} icon={currentMarkerIcon} />
+          )}
+          {gpsPoints.length > 1 && (
+            <Polyline
+              positions={gpsPoints.map(p => [p.lat, p.lng] as [number, number])}
+              color="#3b82f6"
+              weight={4}
+            />
+          )}
+          <MapUpdater position={currentPos} />
+        </MapContainer>
       </div>
 
       {/* Trip Report */}
