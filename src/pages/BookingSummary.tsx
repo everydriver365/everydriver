@@ -1048,8 +1048,6 @@ export default function BookingSummary() {
         onBookingSubmit={handleBookingSubmit}
         onNPICheckout={handleNPICheckout}
         onClearpayCheckout={handleClearpayCheckout}
-        onElavonCheckout={handleElavonCheckout}
-        isElavonLoading={isElavonLoading}
         onKlarnaSuccess={handleKlarnaSuccess}
         onKlarnaError={handleKlarnaError}
         onKlarnaCancel={handleKlarnaCancel}
@@ -1818,25 +1816,6 @@ export default function BookingSummary() {
               )}
             </div>
 
-            {/* Elavon - Card Payment */}
-            <button
-              onClick={handleElavonCheckout}
-              disabled={!canSubmit || isElavonLoading || !gatewayHealth.elavon.available}
-              className="w-full rounded-lg border-2 border-blue-400 p-4 bg-gradient-to-br from-blue-100/10 to-blue-200/20 hover:from-blue-200/20 hover:to-blue-300/30 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="rounded bg-blue-500 px-2 py-0.5 text-xs font-bold text-white">
-                  Elavon
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {isElavonLoading ? "Loading..." : "Secure Payment"}
-                </span>
-              </div>
-              <div className="font-semibold text-sm">
-                Pay £{paymentOption === 'deposit' && depositEnabled ? depositAmount : totalPrice + upsellTotal}
-              </div>
-              <div className="text-xs text-muted-foreground mt-auto pt-1">Visa, Mastercard, Amex accepted</div>
-            </button>
           </div>
 
 
