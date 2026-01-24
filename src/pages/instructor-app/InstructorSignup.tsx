@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
-import { Loader2, CheckCircle, Car, ArrowRight, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle, ArrowRight, AlertCircle, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
 
@@ -80,24 +80,51 @@ export default function InstructorSignup() {
     <InstructorSaaSLayout>
       <div className="container py-12 md:py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-          {/* Benefits Section */}
+          {/* Left Section - Video & Benefits */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             className="hidden lg:block"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <Car className="h-6 w-6" />
+            {/* Logo & Header */}
+            <div className="mb-6">
+              <img 
+                src="/everydriver-logo-white-bg.png" 
+                alt="EveryDriver" 
+                className="h-10 mb-4"
+              />
+              <h2 className="text-2xl font-bold text-foreground">
+                The smart platform for driving instructors
+              </h2>
+              <p className="text-muted-foreground mt-2">
+                Join thousands of ADIs who've grown their business with EveryDriver
+              </p>
+            </div>
+
+            {/* Explainer Video Placeholder */}
+            <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 border border-border mb-8 aspect-video">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <button className="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform">
+                  <Play className="h-6 w-6 ml-1" />
+                </button>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">Join Drive365</h2>
-                <p className="text-muted-foreground">The smart platform for driving instructors</p>
+              <div className="absolute bottom-4 left-4 right-4">
+                <p className="text-sm font-medium text-foreground">
+                  See how EveryDriver works
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  2 minute overview
+                </p>
+              </div>
+              {/* Placeholder background pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
               </div>
             </div>
 
-            <div className="space-y-4 mb-8">
+            {/* Benefits List */}
+            <div className="space-y-3 mb-6">
               {benefits.map((benefit, index) => (
                 <motion.div
                   key={benefit}
@@ -114,9 +141,10 @@ export default function InstructorSignup() {
               ))}
             </div>
 
+            {/* Testimonial */}
             <div className="rounded-xl bg-secondary p-6">
               <p className="text-lg font-medium text-foreground mb-2">
-                "Drive365 has transformed how I run my business. I've doubled my bookings!"
+                "EveryDriver has transformed how I run my business. I've doubled my bookings!"
               </p>
               <p className="text-sm text-muted-foreground">— Sarah M., ADI in Manchester</p>
             </div>

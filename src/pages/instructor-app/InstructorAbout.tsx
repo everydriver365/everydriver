@@ -97,7 +97,7 @@ export default function InstructorAbout() {
             Ready to Transform Your Business?
           </h2>
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Join thousands of instructors who have simplified their admin and grown their business with Drive365.
+            Join thousands of instructors who have simplified their admin and grown their business with EveryDriver.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button className="bg-emerald-500 text-white hover:bg-emerald-600" size="lg" asChild>
