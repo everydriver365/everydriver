@@ -632,90 +632,119 @@ export function ExpandablePupilCard({
                 )}
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              {/* Quick Actions - 4 columns */}
+              <div className="grid grid-cols-4 gap-1.5">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-col h-auto py-3 gap-1.5"
+                  className="flex-col h-auto py-2 gap-1 px-1"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleNavigate();
                   }}
                 >
-                  <Navigation className="h-5 w-5 text-blue-500" />
-                  <span className="text-xs">Navigate</span>
+                  <Navigation className="h-4 w-4 text-blue-500" />
+                  <span className="text-[10px]">Navigate</span>
                 </Button>
 
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-col h-auto py-3 gap-1.5"
+                  className="flex-col h-auto py-2 gap-1 px-1"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (pupil.phone) window.open(`tel:${pupil.phone}`);
                   }}
                   disabled={!pupil.phone}
                 >
-                  <Phone className="h-5 w-5 text-emerald-500" />
-                  <span className="text-xs">Call</span>
+                  <Phone className="h-4 w-4 text-emerald-500" />
+                  <span className="text-[10px]">Call</span>
                 </Button>
 
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-col h-auto py-3 gap-1.5"
+                  className="flex-col h-auto py-2 gap-1 px-1"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (pupil.phone) window.open(`sms:${pupil.phone}`);
                   }}
                   disabled={!pupil.phone}
                 >
-                  <Mail className="h-5 w-5 text-primary" />
-                  <span className="text-xs">Text</span>
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span className="text-[10px]">Text</span>
                 </Button>
 
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-col h-auto py-3 gap-1.5"
+                  className="flex-col h-auto py-2 gap-1 px-1"
                   onClick={(e) => {
                     e.stopPropagation();
                     onStartChat?.(pupil);
                   }}
                 >
-                  <MessageSquare className="h-5 w-5 text-purple-500" />
-                  <span className="text-xs">Chat</span>
+                  <MessageSquare className="h-4 w-4 text-purple-500" />
+                  <span className="text-[10px]">Chat</span>
                 </Button>
               </div>
 
-              {/* Test Results Actions */}
+              {/* History & Reports - 2 columns */}
+              <div className="grid grid-cols-2 gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-col h-auto py-2 gap-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewHistory(pupil);
+                  }}
+                >
+                  <History className="h-4 w-4 text-amber-500" />
+                  <span className="text-[10px]">Lessons</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-col h-auto py-2 gap-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewReport(pupil);
+                  }}
+                >
+                  <Car className="h-4 w-4 text-primary" />
+                  <span className="text-[10px]">Driving</span>
+                </Button>
+              </div>
+
+              {/* Test Actions - 3 columns */}
               {(onRecordTestResult || onViewTestHistory) && (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-1.5">
                   {onRecordTestResult && (
                     <>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-col h-auto py-3 gap-1.5"
+                        className="flex-col h-auto py-2 gap-1"
                         onClick={(e) => {
                           e.stopPropagation();
                           onRecordTestResult(pupil, false);
                         }}
                       >
-                        <Award className="h-5 w-5 text-primary" />
-                        <span className="text-xs">Record Test</span>
+                        <Award className="h-4 w-4 text-primary" />
+                        <span className="text-[10px]">Test</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-col h-auto py-3 gap-1.5"
+                        className="flex-col h-auto py-2 gap-1"
                         onClick={(e) => {
                           e.stopPropagation();
                           onRecordTestResult(pupil, true);
                         }}
                       >
-                        <ClipboardList className="h-5 w-5 text-blue-500" />
-                        <span className="text-xs">Mock Test</span>
+                        <ClipboardList className="h-4 w-4 text-blue-500" />
+                        <span className="text-[10px]">Mock</span>
                       </Button>
                     </>
                   )}
@@ -723,45 +752,18 @@ export function ExpandablePupilCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-col h-auto py-3 gap-1.5"
+                      className="flex-col h-auto py-2 gap-1"
                       onClick={(e) => {
                         e.stopPropagation();
                         onViewTestHistory(pupil);
                       }}
                     >
-                      <FileText className="h-5 w-5 text-amber-500" />
-                      <span className="text-xs">Test History</span>
+                      <FileText className="h-4 w-4 text-amber-500" />
+                      <span className="text-[10px]">History</span>
                     </Button>
                   )}
                 </div>
               )}
-
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-col h-auto py-3 gap-1.5"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onViewHistory(pupil);
-                  }}
-                >
-                  <History className="h-5 w-5 text-amber-500" />
-                  <span className="text-xs">Lesson History</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-col h-auto py-3 gap-1.5"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onViewReport(pupil);
-                  }}
-                >
-                  <Car className="h-5 w-5 text-primary" />
-                  <span className="text-xs">Driving Report</span>
-                </Button>
-              </div>
 
               {/* Secondary Actions */}
               <div className="flex gap-2 pt-2 border-t border-border flex-wrap">
