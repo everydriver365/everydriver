@@ -22,7 +22,8 @@ import {
   ShieldCheck,
   ClipboardList,
   Award,
-  ChevronRight
+  ChevronRight,
+  Radio
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ const sidebarLinks = [
   { href: "/instructor/visitor-chats", label: "Visitor Chats", icon: Headphones },
   { href: "/instructor/domains", label: "Domains", icon: Globe },
   { href: "/instructor/track-lesson", label: "Track Lesson", icon: Navigation },
+  { href: "/instructor/live-tracking", label: "Live Tracking", icon: Radio },
   { href: "/instructor/settings", label: "Settings", icon: Settings },
 ];
 
