@@ -3,13 +3,13 @@ import { StepNavigation } from "../components/StepNavigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { PoundSterling, Clock, Car } from "lucide-react";
+import { PoundSterling, Clock, Car, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StepServicesProps {
   data: {
     hourly_rate: number;
-    lesson_duration_default: number;
+    lesson_durations: number[];
     offers_intensive: boolean;
     offers_refresher: boolean;
     offers_motorway: boolean;
@@ -20,7 +20,16 @@ interface StepServicesProps {
   onBack: () => void;
 }
 
-const lessonDurations = [60, 90, 120];
+// Generate durations from 30 mins to 6 hours in 30 min increments
+const lessonDurations = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360];
+
+const formatDuration = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+};
 
 const specialServices = [
   { key: "offers_intensive", label: "Intensive Courses", desc: "Block bookings for fast-track learners" },
@@ -35,7 +44,22 @@ export function StepServices({
   onNext,
   onBack,
 }: StepServicesProps) {
-  const canProceed = data.hourly_rate > 0;
+  const canProceed = data.hourly_rate > 0 && data.lesson_durations.length > 0;
+
+  const toggleDuration = (duration: number) => {
+    const current = data.lesson_durations || [];
+    if (current.includes(duration)) {
+      // Remove if already selected
+      onUpdate({ lesson_durations: current.filter((d) => d !== duration) });
+    } else {
+      // Add if not selected
+      onUpdate({ lesson_durations: [...current, duration].sort((a, b) => a - b) });
+    }
+  };
+
+  const isSelected = (duration: number) => {
+    return (data.lesson_durations || []).includes(duration);
+  };
 
   return (
     <OnboardingLayout
@@ -44,7 +68,7 @@ export function StepServices({
       title="Your Services"
       description="Set your rates and what you offer"
     >
-      <div className="max-w-md mx-auto space-y-8">
+      <div className="max-w-lg mx-auto space-y-8">
         {/* Hourly Rate */}
         <div className="space-y-4">
           <Label className="flex items-center gap-2">
@@ -74,31 +98,48 @@ export function StepServices({
           </p>
         </div>
 
-        {/* Default Lesson Duration */}
+        {/* Lesson Durations - Multi-select */}
         <div className="space-y-4">
           <Label className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            Standard Lesson Length
+            Lesson Lengths You Offer *
           </Label>
+          <p className="text-sm text-muted-foreground">
+            Select all the lesson durations you want to offer pupils
+          </p>
           
-          <div className="grid grid-cols-3 gap-3">
-            {lessonDurations.map((duration) => (
-              <button
-                key={duration}
-                type="button"
-                onClick={() => onUpdate({ lesson_duration_default: duration })}
-                className={cn(
-                  "p-4 rounded-xl border-2 transition-all text-center",
-                  data.lesson_duration_default === duration
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50"
-                )}
-              >
-                <div className="text-2xl font-bold text-foreground">{duration}</div>
-                <div className="text-xs text-muted-foreground">minutes</div>
-              </button>
-            ))}
+          <div className="grid grid-cols-4 gap-2">
+            {lessonDurations.map((duration) => {
+              const selected = isSelected(duration);
+              return (
+                <button
+                  key={duration}
+                  type="button"
+                  onClick={() => toggleDuration(duration)}
+                  className={cn(
+                    "relative p-3 rounded-lg border-2 transition-all text-center",
+                    selected
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/50"
+                  )}
+                >
+                  {selected && (
+                    <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5">
+                      <Check className="h-3 w-3 text-primary-foreground" />
+                    </div>
+                  )}
+                  <div className="text-lg font-bold text-foreground">{formatDuration(duration)}</div>
+                  <div className="text-xs text-muted-foreground">{duration} min</div>
+                </button>
+              );
+            })}
           </div>
+
+          {data.lesson_durations.length > 0 && (
+            <p className="text-sm text-primary text-center">
+              {data.lesson_durations.length} duration{data.lesson_durations.length > 1 ? 's' : ''} selected
+            </p>
+          )}
         </div>
 
         {/* Special Services */}
