@@ -152,11 +152,10 @@ export function LessonScheduler({
       const endDate = o.override_end_date;
       
       if (endDate) {
+        // Date range override - check if date falls within range
         return dateStr >= startDate && dateStr <= endDate;
       }
-      if (!endDate && dateStr >= startDate) {
-        return true;
-      }
+      // Single date override - only match exact date
       return dateStr === startDate;
     });
 
@@ -243,12 +242,10 @@ export function LessonScheduler({
       const endDate = o.override_end_date;
       
       if (endDate) {
+        // Date range override - check if date falls within range
         return dateStr >= startDate && dateStr <= endDate;
       }
-      // If no end date, check if it's a forever override (applies from start date onwards)
-      if (!endDate && dateStr >= startDate) {
-        return true;
-      }
+      // Single date override - only match exact date
       return dateStr === startDate;
     });
 
