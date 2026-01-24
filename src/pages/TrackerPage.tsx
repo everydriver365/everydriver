@@ -6,12 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Bookmark, MapPin, FileText, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import SessionRouteReport from '@/components/instructor/SessionRouteReport';
+import GoogleMapsTracker from '@/components/instructor/GoogleMapsTracker';
 import { toast } from 'sonner';
 
 import { useSimpleGPSTracker } from '@/hooks/useSimpleGPSTracker';
@@ -36,23 +34,6 @@ interface Pupil {
   id: string;
   name: string;
 }
-
-// Map auto-pan helper
-const MapUpdater = ({ position }: { position: [number, number] | null }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (position) map.setView(position, map.getZoom());
-  }, [position, map]);
-  return null;
-};
-
-// Custom marker icon
-const currentMarkerIcon = L.divIcon({
-  className: 'current-location-marker',
-  html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
 
 type TrackerPhase = 'idle' | 'tracking' | 'stopped';
 
@@ -474,22 +455,13 @@ export default function TrackerPage() {
         </div>
       )}
 
-      {/* Map */}
+      {/* Google Maps */}
       <div className="flex-1 relative">
-        <MapContainer
-          center={currentPos || [51.5074, -0.1278]}
-          zoom={17}
-          className="h-full w-full"
-          zoomControl={false}
-          attributionControl={false}
-        >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {currentPos && <MapUpdater position={currentPos} />}
-          {currentPos && <Marker position={currentPos} icon={currentMarkerIcon} />}
-          {gpsPoints.length > 1 && (
-            <Polyline positions={gpsPoints.map(p => [p.lat, p.lng] as [number, number])} color="#3b82f6" />
-          )}
-        </MapContainer>
+        <GoogleMapsTracker
+          currentPos={currentPos}
+          gpsPoints={gpsPoints}
+          isTracking={phase === 'tracking'}
+        />
       </div>
 
       {/* Trip Report */}
