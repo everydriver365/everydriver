@@ -50,6 +50,7 @@ import { AdminSettingsGrid } from "@/components/admin/AdminSettingsGrid";
 import { SubscribersManager } from "@/components/admin/SubscribersManager";
 import { MiniWebsitesManager } from "@/components/admin/MiniWebsitesManager";
 import { DomainsManager } from "@/components/admin/DomainsManager";
+import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -83,6 +84,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
   subscribers: { title: "Subscribers", group: "People", icon: CreditCard },
+  plans: { title: "Subscription Plans", group: "People", icon: CreditCard },
   compliance: { title: "Compliance Dashboard", group: "People", icon: Shield },
   enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
   messages: { title: "Pupil Messages", group: "People", icon: MessageCircle },
@@ -257,6 +259,13 @@ export default function AdminPortal() {
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <SubscribersManager />
+          </motion.div>
+        );
+
+      case "plans":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <SubscriptionPlansManager />
           </motion.div>
         );
 
