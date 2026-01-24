@@ -117,7 +117,7 @@ export default function TrackerPage() {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   // Hooks
-  const gpsTracker = useSimpleGPSTracker({});
+  const gpsTracker = useSimpleGPSTracker({ pupilId: selectedPupil });
   const harshBraking = useHarshBrakingDetector({});
   const drivingBehavior = useDrivingBehavior({});
   const tripScore = useLocalTripScore();
@@ -251,7 +251,7 @@ export default function TrackerPage() {
     if (timerRef.current) clearInterval(timerRef.current);
 
     try {
-      const gpsResult = gpsTracker.stopTracking();
+      const gpsResult = await gpsTracker.stopTracking(selectedPupil);
       harshBraking.stopDetection();
       const behaviorStats = await drivingBehavior.stopTracking();
 
@@ -324,13 +324,13 @@ export default function TrackerPage() {
   /* ---------------- Cleanup ------------------------------- */
   useEffect(() => {
     return () => {
-      gpsTracker.stopTracking();
+      gpsTracker.stopTracking(selectedPupil);
       harshBraking.stopDetection();
       drivingBehavior.stopTracking();
       releaseWakeLock();
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []);
+  }, [selectedPupil]);
 
   /* ---------------- Derived Values ------------------------ */
   const lastPoint = gpsPoints[gpsPoints.length - 1];
