@@ -12,6 +12,7 @@ import { StepQualifications } from "./steps/StepQualifications";
 import { StepServices } from "./steps/StepServices";
 import { StepPlanSelection } from "./steps/StepPlanSelection";
 import { StepWebsite } from "./steps/StepWebsite";
+import { StepDomainHosting } from "./steps/StepDomainHosting";
 import { StepComplete } from "./steps/StepComplete";
 
 // Sample preview data
@@ -48,6 +49,9 @@ const previewData = {
   website_theme: "modern",
   primary_color: "#10b981",
   slug: "jane-smith",
+  wantsDomain: false,
+  wantsHosting: false,
+  selectedDomain: null,
 };
 
 const stepLabels = [
@@ -58,6 +62,7 @@ const stepLabels = [
   "Services",
   "Plan Selection",
   "Website",
+  "Domain & Hosting",
   "Complete",
 ];
 
@@ -71,7 +76,7 @@ export default function OnboardingPreview() {
   };
 
   const goToStep = (step: number) => {
-    if (step >= 1 && step <= 8) {
+    if (step >= 1 && step <= 9) {
       setSearchParams({ step: step.toString() });
     }
   };
@@ -88,7 +93,7 @@ export default function OnboardingPreview() {
           <Eye className="h-5 w-5" />
           <span className="font-medium">Preview Mode</span>
           <Badge variant="secondary" className="bg-amber-600/20 text-black border-amber-600/30">
-            Step {currentStep} of 8
+            Step {currentStep} of 9
           </Badge>
         </div>
         <div className="flex items-center gap-2">
@@ -106,7 +111,7 @@ export default function OnboardingPreview() {
             variant="ghost"
             size="sm"
             onClick={handleNext}
-            disabled={currentStep >= 8}
+            disabled={currentStep >= 9}
             className="text-black hover:bg-amber-400"
           >
             Next
@@ -230,6 +235,17 @@ export default function OnboardingPreview() {
           </div>
         );
       case 8:
+        return (
+          <div className={wrapperClass}>
+            <StepDomainHosting
+              data={data}
+              onUpdate={updateData}
+              onNext={handleNext}
+              onBack={handleBack}
+            />
+          </div>
+        );
+      case 9:
         return (
           <div className={wrapperClass}>
             <StepComplete data={data} />

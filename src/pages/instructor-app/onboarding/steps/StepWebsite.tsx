@@ -56,7 +56,7 @@ export function StepWebsite({
   return (
     <OnboardingLayout
       step={7}
-      totalSteps={8}
+      totalSteps={9}
       title="Your Mini-Website"
       description="Customize your professional online presence"
     >

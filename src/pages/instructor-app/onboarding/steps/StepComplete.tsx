@@ -51,15 +51,15 @@ export function StepComplete({ data }: StepCompleteProps) {
     {
       icon: Globe,
       label: "View Your Website",
-      desc: `drive365.co.uk/i/${data.slug}`,
+      desc: `${data.slug}.everydriver.co.uk`,
       action: () => window.open(`/i/${data.slug}`, "_blank"),
     },
   ];
 
   return (
     <OnboardingLayout
-      step={8}
-      totalSteps={8}
+      step={9}
+      totalSteps={9}
       title=""
       description=""
     >
