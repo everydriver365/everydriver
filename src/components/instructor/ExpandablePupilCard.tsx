@@ -27,6 +27,7 @@ import {
   Car
 } from "lucide-react";
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
+import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -641,6 +642,9 @@ export function ExpandablePupilCard({
                   pupilName={pupil.name}
                 />
               )}
+
+              {/* Tracking History - Shows GPS tracked routes for this pupil */}
+              <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
 
               {/* Quick Actions - 4 columns */}
               <div className="grid grid-cols-4 gap-1.5">
