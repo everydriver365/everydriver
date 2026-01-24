@@ -67,9 +67,9 @@ export function StepWebsite({
             <Globe className="h-4 w-4" />
             Your Website URL
           </Label>
-          <div className="flex items-center justify-center gap-2 text-lg">
-            <span className="text-muted-foreground">everydriver.co.uk/i/</span>
+          <div className="flex items-center justify-center gap-1 text-lg">
             <span className="font-bold text-foreground">{generatedSlug || "your-name"}</span>
+            <span className="text-muted-foreground">.everydriver.co.uk</span>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
             Pupils can find and book you at this address
