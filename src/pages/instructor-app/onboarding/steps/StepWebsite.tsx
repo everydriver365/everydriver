@@ -68,7 +68,7 @@ export function StepWebsite({
             Your Website URL
           </Label>
           <div className="flex items-center justify-center gap-2 text-lg">
-            <span className="text-muted-foreground">drive365.co.uk/i/</span>
+            <span className="text-muted-foreground">everydriver.co.uk/i/</span>
             <span className="font-bold text-foreground">{generatedSlug || "your-name"}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-2">

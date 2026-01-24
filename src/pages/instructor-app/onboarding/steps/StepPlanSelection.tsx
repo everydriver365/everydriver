@@ -130,34 +130,6 @@ export function StepPlanSelection({
       title="Choose Your Plan"
       description="Select the plan that best fits your needs. Start free or unlock more features."
     >
-      {/* Billing Toggle */}
-      <div className="flex items-center justify-center gap-4 mb-8">
-        <Label
-          className={cn(
-            "text-sm font-medium cursor-pointer",
-            billingCycle === "monthly" ? "text-foreground" : "text-muted-foreground"
-          )}
-        >
-          Monthly
-        </Label>
-        <Switch
-          checked={billingCycle === "yearly"}
-          onCheckedChange={(checked) =>
-            onUpdate({ billingCycle: checked ? "yearly" : "monthly" })
-          }
-        />
-        <Label
-          className={cn(
-            "text-sm font-medium cursor-pointer flex items-center gap-2",
-            billingCycle === "yearly" ? "text-foreground" : "text-muted-foreground"
-          )}
-        >
-          Yearly
-          <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-            Save up to 20%
-          </Badge>
-        </Label>
-      </div>
 
       {/* Plans Grid */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">

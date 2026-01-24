@@ -36,6 +36,7 @@ interface OnboardingData {
   // Services
   hourly_rate: number;
   lesson_durations: number[];
+  offers_weekly: boolean;
   offers_intensive: boolean;
   offers_refresher: boolean;
   offers_motorway: boolean;
@@ -65,6 +66,7 @@ const initialData: OnboardingData = {
   follows_code_of_practice: false,
   hourly_rate: 35,
   lesson_durations: [60, 120],
+  offers_weekly: true,
   offers_intensive: false,
   offers_refresher: false,
   offers_motorway: false,
