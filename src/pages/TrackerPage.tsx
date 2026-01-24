@@ -174,6 +174,14 @@ export default function TrackerPage() {
     if (!sessionId) return;
     
     try {
+      // Update session with selected pupil if one was chosen
+      if (selectedPupil) {
+        await supabase
+          .from('lesson_telematics')
+          .update({ pupil_id: selectedPupil })
+          .eq('id', sessionId);
+      }
+
       const started = await gpsTracker.startTracking(sessionId);
       if (!started) throw new Error('Failed to start GPS');
 
@@ -188,7 +196,7 @@ export default function TrackerPage() {
     } catch (err) {
       console.error('Failed to start tracking:', err);
     }
-  }, [sessionId, gpsTracker, harshBraking, drivingBehavior]);
+  }, [sessionId, selectedPupil, gpsTracker, harshBraking, drivingBehavior]);
 
   /* ---------------- Auto-Start removed - user must select pupil first -- */
 
