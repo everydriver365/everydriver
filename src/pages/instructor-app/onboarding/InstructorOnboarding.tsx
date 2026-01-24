@@ -13,6 +13,7 @@ import { StepQualifications } from "./steps/StepQualifications";
 import { StepServices } from "./steps/StepServices";
 import { StepPlanSelection } from "./steps/StepPlanSelection";
 import { StepWebsite } from "./steps/StepWebsite";
+import { StepDomainHosting } from "./steps/StepDomainHosting";
 import { StepComplete } from "./steps/StepComplete";
 
 interface OnboardingData {
@@ -48,6 +49,10 @@ interface OnboardingData {
   website_theme: string;
   primary_color: string;
   slug: string;
+  // Domain & Hosting
+  wantsDomain: boolean;
+  wantsHosting: boolean;
+  selectedDomain: string | null;
 }
 
 const initialData: OnboardingData = {
@@ -76,6 +81,9 @@ const initialData: OnboardingData = {
   website_theme: "modern",
   primary_color: "#10b981",
   slug: "",
+  wantsDomain: false,
+  wantsHosting: false,
+  selectedDomain: null,
 };
 
 export default function InstructorOnboarding() {
@@ -169,7 +177,7 @@ export default function InstructorOnboarding() {
   const handleNext = async () => {
     await saveProgress();
     
-    if (currentStep < 8) {
+    if (currentStep < 9) {
       goToStep(currentStep + 1);
     }
   };
@@ -289,11 +297,20 @@ export default function InstructorOnboarding() {
         <StepWebsite
           data={data}
           onUpdate={updateData}
-          onNext={handleComplete}
+          onNext={handleNext}
           onBack={handleBack}
         />
       );
     case 8:
+      return (
+        <StepDomainHosting
+          data={data}
+          onUpdate={updateData}
+          onNext={handleComplete}
+          onBack={handleBack}
+        />
+      );
+    case 9:
       return <StepComplete data={data} />;
     default:
       goToStep(1);

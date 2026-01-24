@@ -64,7 +64,7 @@ export function StepPersonalDetails({
   return (
     <OnboardingLayout
       step={1}
-      totalSteps={8}
+      totalSteps={9}
       title="Tell Us About Yourself"
       description="Let's start with your basic information"
     >

@@ -26,7 +26,7 @@ export function StepLocation({
   return (
     <OnboardingLayout
       step={2}
-      totalSteps={8}
+      totalSteps={9}
       title="Where Do You Teach?"
       description="Set your location and coverage area"
     >
