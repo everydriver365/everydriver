@@ -748,19 +748,18 @@ export function MobileBookingView({
             <button
               onClick={onClearpayCheckout}
               disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available || isWalletProcessing}
-              className="w-full rounded-lg border-2 border-[#b2fce4] p-3 bg-[#b2fce4]/10 hover:bg-[#b2fce4]/20 transition-colors text-left disabled:opacity-50"
+              className="w-full rounded-lg border-2 border-[#b2fce4] p-3 bg-gradient-to-br from-[#b2fce4]/10 to-[#b2fce4]/20 hover:from-[#b2fce4]/20 hover:to-[#b2fce4]/30 transition-colors text-left disabled:opacity-50"
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-[10px] font-bold text-black">clearpay</span>
-                  <p className="font-semibold text-sm mt-1">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</p>
-                </div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-[10px] font-bold text-black">clearpay</span>
                 <span className="text-xs text-muted-foreground">Interest-free</span>
               </div>
+              <p className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Pay in 4 instalments</p>
             </button>
 
             {/* Klarna */}
-            <div className="w-full rounded-lg border-2 border-[#ffb3c7] p-3 bg-[#ffb3c7]/10">
+            <div className="w-full rounded-lg border-2 border-[#ffb3c7] p-3 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20">
               <div className="flex items-center justify-between mb-2">
                 <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-[10px] font-bold text-black">Klarna.</span>
                 <span className="text-xs text-muted-foreground">Pay in 3</span>

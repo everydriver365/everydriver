@@ -1762,7 +1762,7 @@ export default function BookingSummary() {
             <button
               onClick={handleClearpayCheckout}
               disabled={!canSubmit || isClearpayLoading || !gatewayHealth.clearpay.available}
-              className="w-full rounded-lg border-2 border-[#b2fce4] p-4 bg-[#b2fce4]/10 hover:bg-[#b2fce4]/20 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-lg border-2 border-[#b2fce4] p-4 bg-gradient-to-br from-[#b2fce4]/10 to-[#b2fce4]/20 hover:from-[#b2fce4]/20 hover:to-[#b2fce4]/30 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed flex flex-col"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="rounded bg-[#b2fce4] px-2 py-0.5 text-xs font-bold text-black">
@@ -1773,11 +1773,11 @@ export default function BookingSummary() {
                 </span>
               </div>
               <div className="font-semibold text-sm">4 × £{((totalPrice + upsellTotal) / 4).toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground">Interest-free instalments</div>
+              <div className="text-xs text-muted-foreground mt-auto pt-1">Interest-free instalments</div>
             </button>
 
             {/* Klarna - Express Button (Client-side) */}
-            <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-[#ffb3c7]/10">
+            <div className="w-full rounded-lg border-2 border-[#FFB3C7] p-4 bg-gradient-to-br from-[#ffb3c7]/10 to-[#ffb3c7]/20 flex flex-col">
               <div className="flex items-center justify-between mb-3">
                 <span className="rounded bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">
                   Klarna.
