@@ -765,13 +765,13 @@ export function ExpandablePupilCard({
                 </div>
               )}
 
-              {/* Secondary Actions */}
-              <div className="flex gap-2 pt-2 border-t border-border flex-wrap">
+              {/* T&Cs and Signing Actions - full width stacked */}
+              <div className="grid grid-cols-1 gap-2 pt-2 border-t border-border">
                 {onViewTerms && (
                   <Button
                     variant={hasSignedTerms ? "outline" : "default"}
                     size="sm"
-                    className={`flex-1 min-w-[80px] ${hasSignedTerms ? "border-green-500 text-green-600" : ""}`}
+                    className={`w-full ${hasSignedTerms ? "border-green-500 text-green-600" : ""}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onViewTerms(pupil);
@@ -779,12 +779,12 @@ export function ExpandablePupilCard({
                   >
                     {hasSignedTerms ? (
                       <>
-                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
                         T&Cs Signed
                       </>
                     ) : (
                       <>
-                        <FileSignature className="h-4 w-4 mr-1" />
+                        <FileSignature className="h-4 w-4 mr-2" />
                         Sign T&Cs
                       </>
                     )}
@@ -798,25 +798,29 @@ export function ExpandablePupilCard({
                     instructorId={instructorId}
                     instructorName={instructorName}
                     disabled={hasSignedTerms}
-                    className="flex-1 min-w-[80px]"
+                    className="w-full"
                   />
                 )}
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="flex-1 min-w-[100px]"
+                  className="w-full"
                   onClick={(e) => {
                     e.stopPropagation();
                     onViewReport(pupil);
                   }}
                 >
-                  <Navigation className="h-4 w-4 mr-1" />
+                  <Navigation className="h-4 w-4 mr-2" />
                   Driving Report
                 </Button>
+              </div>
+
+              {/* Edit/Delete Actions */}
+              <div className="grid grid-cols-2 gap-2 pt-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex-1 min-w-[80px]"
+                  className="w-full"
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit(pupil);
@@ -828,13 +832,14 @@ export function ExpandablePupilCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete(pupil);
                   }}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete
                 </Button>
               </div>
             </div>
