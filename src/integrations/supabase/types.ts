@@ -2925,6 +2925,45 @@ export type Database = {
           },
         ]
       }
+      onboarding_steps: {
+        Row: {
+          created_at: string
+          description: string
+          display_order: number
+          icon_name: string
+          id: number
+          is_enabled: boolean
+          is_required: boolean
+          name: string
+          step_number: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          display_order: number
+          icon_name: string
+          id?: number
+          is_enabled?: boolean
+          is_required?: boolean
+          name: string
+          step_number: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          display_order?: number
+          icon_name?: string
+          id?: number
+          is_enabled?: boolean
+          is_required?: boolean
+          name?: string
+          step_number?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       parent_otp_codes: {
         Row: {
           code: string

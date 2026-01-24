@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,36 +20,65 @@ import {
   PartyPopper,
   GripVertical,
   Eye,
-  Settings2
+  Settings2,
+  Loader2,
+  Save
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+// Icon mapping for database values
+const iconMap: Record<string, React.ElementType> = {
+  User,
+  MapPin,
+  Car,
+  GraduationCap,
+  Briefcase,
+  CreditCard,
+  Globe,
+  PartyPopper,
+};
 
 interface OnboardingStep {
   id: number;
+  step_number: number;
   name: string;
   description: string;
-  icon: React.ElementType;
-  enabled: boolean;
-  required: boolean;
+  icon_name: string;
+  is_enabled: boolean;
+  is_required: boolean;
+  display_order: number;
 }
 
-const defaultSteps: OnboardingStep[] = [
-  { id: 1, name: "Personal Details", description: "Name, email, phone, bio, profile photo", icon: User, enabled: true, required: true },
-  { id: 2, name: "Location", description: "Home postcode and coverage radius", icon: MapPin, enabled: true, required: true },
-  { id: 3, name: "Vehicle", description: "Car type, make, and model", icon: Car, enabled: true, required: false },
-  { id: 4, name: "Qualifications", description: "ADI grade, CPD certification, code of practice", icon: GraduationCap, enabled: true, required: false },
-  { id: 5, name: "Services", description: "Hourly rate, lesson duration, service offerings", icon: Briefcase, enabled: true, required: false },
-  { id: 6, name: "Plan Selection", description: "Subscription plan and billing cycle", icon: CreditCard, enabled: true, required: true },
-  { id: 7, name: "Website Setup", description: "Theme, colors, and URL slug", icon: Globe, enabled: true, required: false },
-  { id: 8, name: "Complete", description: "Success confirmation and next steps", icon: PartyPopper, enabled: true, required: true },
-];
-
 export function OnboardingWizardManager() {
-  const [steps, setSteps] = useState<OnboardingStep[]>(defaultSteps);
+  const [steps, setSteps] = useState<OnboardingStep[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   
   const signupUrl = `${window.location.origin}/instructor-app/signup`;
   const onboardingUrl = `${window.location.origin}/instructor-app/onboarding`;
+
+  // Fetch steps from database
+  useEffect(() => {
+    fetchSteps();
+  }, []);
+
+  const fetchSteps = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('onboarding_steps')
+      .select('*')
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching onboarding steps:', error);
+      toast.error('Failed to load onboarding steps');
+    } else {
+      setSteps(data || []);
+    }
+    setLoading(false);
+  };
 
   const handleCopy = async (url: string) => {
     await navigator.clipboard.writeText(url);
@@ -58,16 +87,61 @@ export function OnboardingWizardManager() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const toggleStep = (stepId: number) => {
-    setSteps(prev => prev.map(step => 
-      step.id === stepId && !step.required 
-        ? { ...step, enabled: !step.enabled }
-        : step
+  const toggleStep = async (stepId: number) => {
+    const step = steps.find(s => s.id === stepId);
+    if (!step || step.is_required) return;
+
+    const newEnabledValue = !step.is_enabled;
+    
+    // Optimistic update
+    setSteps(prev => prev.map(s => 
+      s.id === stepId ? { ...s, is_enabled: newEnabledValue } : s
     ));
-    toast.success("Step visibility updated");
+
+    // Update database
+    const { error } = await supabase
+      .from('onboarding_steps')
+      .update({ is_enabled: newEnabledValue })
+      .eq('id', stepId);
+
+    if (error) {
+      // Revert on error
+      setSteps(prev => prev.map(s => 
+        s.id === stepId ? { ...s, is_enabled: !newEnabledValue } : s
+      ));
+      toast.error('Failed to update step');
+    } else {
+      toast.success("Step visibility updated");
+    }
   };
 
-  const enabledStepsCount = steps.filter(s => s.enabled).length;
+  const updateStepDetails = async (stepId: number, updates: Partial<Pick<OnboardingStep, 'name' | 'description'>>) => {
+    setSaving(true);
+    const { error } = await supabase
+      .from('onboarding_steps')
+      .update(updates)
+      .eq('id', stepId);
+
+    if (error) {
+      toast.error('Failed to save changes');
+    } else {
+      setSteps(prev => prev.map(s => 
+        s.id === stepId ? { ...s, ...updates } : s
+      ));
+      toast.success('Changes saved');
+    }
+    setSaving(false);
+  };
+
+  const enabledStepsCount = steps.filter(s => s.is_enabled).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -153,7 +227,7 @@ export function OnboardingWizardManager() {
                 Onboarding Steps
               </CardTitle>
               <CardDescription>
-                Configure which steps are shown in the onboarding wizard
+                Configure which steps are shown in the onboarding wizard. Click on a step name or description to edit.
               </CardDescription>
             </div>
             <Badge variant="secondary">
@@ -164,7 +238,7 @@ export function OnboardingWizardManager() {
         <CardContent>
           <div className="space-y-3">
             {steps.map((step, index) => {
-              const IconComponent = step.icon;
+              const IconComponent = iconMap[step.icon_name] || User;
               return (
                 <div 
                   key={step.id}
@@ -179,20 +253,32 @@ export function OnboardingWizardManager() {
                     <IconComponent className="h-5 w-5 text-primary" />
                   </div>
                   
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{step.name}</span>
-                      {step.required && (
-                        <Badge variant="outline" className="text-xs">Required</Badge>
+                      <Input
+                        value={step.name}
+                        onChange={(e) => setSteps(prev => prev.map(s => 
+                          s.id === step.id ? { ...s, name: e.target.value } : s
+                        ))}
+                        onBlur={(e) => updateStepDetails(step.id, { name: e.target.value })}
+                        className="font-medium h-7 text-sm border-transparent hover:border-input focus:border-input bg-transparent"
+                      />
+                      {step.is_required && (
+                        <Badge variant="outline" className="text-xs shrink-0">Required</Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {step.description}
-                    </p>
+                    <Input
+                      value={step.description}
+                      onChange={(e) => setSteps(prev => prev.map(s => 
+                        s.id === step.id ? { ...s, description: e.target.value } : s
+                      ))}
+                      onBlur={(e) => updateStepDetails(step.id, { description: e.target.value })}
+                      className="text-sm text-muted-foreground h-6 text-xs border-transparent hover:border-input focus:border-input bg-transparent"
+                    />
                   </div>
 
                   <div className="flex items-center gap-3">
-                    {step.enabled ? (
+                    {step.is_enabled ? (
                       <Badge variant="default" className="bg-success/10 text-success border-success/20">
                         <Eye className="h-3 w-3 mr-1" />
                         Visible
@@ -203,9 +289,9 @@ export function OnboardingWizardManager() {
                       </Badge>
                     )}
                     <Switch
-                      checked={step.enabled}
+                      checked={step.is_enabled}
                       onCheckedChange={() => toggleStep(step.id)}
-                      disabled={step.required}
+                      disabled={step.is_required}
                     />
                   </div>
                 </div>
@@ -241,7 +327,7 @@ export function OnboardingWizardManager() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-primary">
-                {steps.filter(s => s.required).length}
+                {steps.filter(s => s.is_required).length}
               </div>
               <p className="text-sm text-muted-foreground mt-1">Required Steps</p>
             </div>
@@ -251,7 +337,7 @@ export function OnboardingWizardManager() {
           <CardContent className="pt-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-primary">
-                {steps.filter(s => !s.required && s.enabled).length}
+                {steps.filter(s => !s.is_required && s.is_enabled).length}
               </div>
               <p className="text-sm text-muted-foreground mt-1">Optional Steps</p>
             </div>
