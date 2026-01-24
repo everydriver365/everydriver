@@ -4,7 +4,7 @@ import {
   CalendarDays, 
   Users, 
   Wallet, 
-  Navigation,
+  Radio,
   MessageCircle,
   LucideIcon
 } from "lucide-react";
@@ -33,9 +33,9 @@ const navItems: NavItem[] = [
     path: "/instructor/schedule"
   },
   { 
-    label: "Track", 
-    icon: Navigation, 
-    path: "/instructor/track-lesson"
+    label: "Live", 
+    icon: Radio, 
+    path: "/instructor/live-tracking"
   },
   { 
     label: "Pupils", 
