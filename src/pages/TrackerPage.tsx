@@ -330,6 +330,7 @@ export default function TrackerPage() {
         .insert({
           instructor_id: instructorId,
           telematics_id: sessionId,
+          pupil_id: selectedPupil || null,
           name: routeName.trim(),
           description: routeDescription.trim() || null,
           route_type: 'recorded',
