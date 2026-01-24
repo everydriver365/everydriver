@@ -4075,6 +4075,7 @@ export type Database = {
           instructor_id: string
           is_shared: boolean | null
           name: string
+          pupil_id: string | null
           route_type: string
           share_code: string | null
           shared_at: string | null
@@ -4091,6 +4092,7 @@ export type Database = {
           instructor_id: string
           is_shared?: boolean | null
           name: string
+          pupil_id?: string | null
           route_type?: string
           share_code?: string | null
           shared_at?: string | null
@@ -4107,6 +4109,7 @@ export type Database = {
           instructor_id?: string
           is_shared?: boolean | null
           name?: string
+          pupil_id?: string | null
           route_type?: string
           share_code?: string | null
           shared_at?: string | null
@@ -4119,6 +4122,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_routes_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
           {

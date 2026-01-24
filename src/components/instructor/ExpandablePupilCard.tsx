@@ -23,7 +23,8 @@ import {
   FileSignature,
   CheckCircle2,
   Award,
-  ClipboardList
+  ClipboardList,
+  Car
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,7 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
+import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -681,7 +683,7 @@ export function ExpandablePupilCard({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -695,6 +697,9 @@ export function ExpandablePupilCard({
                   <span className="text-xs">Lesson History</span>
                 </Button>
               </div>
+
+              {/* Tracking History */}
+              <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
 
               {/* Secondary Actions */}
               <div className="flex gap-2 pt-2 border-t border-border flex-wrap">
