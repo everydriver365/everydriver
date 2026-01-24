@@ -197,54 +197,59 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
     const coords = position.coords;
     const now = Date.now();
 
+    // Skip if accuracy is too poor for reliable tracking (> 30m is questionable)
+    if (coords.accuracy > 50) {
+      console.log(`[GPS] Skipping low accuracy point: ${coords.accuracy.toFixed(0)}m`);
+      return;
+    }
+
     const point: GPSPoint = {
       latitude: coords.latitude,
       longitude: coords.longitude,
       altitude: coords.altitude,
       accuracy: coords.accuracy,
       speed: coords.speed,
-      speedKmh: coords.speed !== null && coords.speed >= 0 ? coords.speed * 3.6 : 0,
+      speedKmh: coords.speed ? coords.speed * 3.6 : 0,
       heading: coords.heading,
-      timestamp: position.timestamp,
+      timestamp: now,
     };
 
-    // Always update current position for UI
     setCurrentPosition(point);
-
-    // Track max speed
-    if (point.speedKmh > maxSpeed) {
-      setMaxSpeed(point.speedKmh);
-    }
-
-    // Update route for map display
-    setRoutePoints(prev => [...prev, [point.latitude, point.longitude]]);
 
     // Calculate distance from last position
     const lastPos = lastPositionRef.current;
     if (lastPos) {
-      const dist = calculateDistance(lastPos.latitude, lastPos.longitude, point.latitude, point.longitude);
-      // Only count if reasonable (filter GPS jumps > 100m in 2 seconds)
-      if (dist < 100) {
-        setTotalDistance(prev => prev + dist);
+      const dist = calculateDistance(
+        lastPos.latitude, lastPos.longitude,
+        point.latitude, point.longitude
+      );
+      
+      // Only count distance if points are reasonably close (< 500m) to avoid GPS jumps
+      if (dist < 500 && dist > 1) {
+        setTotalDistance(prev => prev + (dist / 1000));
       }
     }
     lastPositionRef.current = point;
 
-    // Fetch speed limit - on first position OR when moving OR every 10 seconds when stationary
-    const shouldFetchLimit = !speedLimitCacheRef.current || // No cache yet
-      point.speedKmh > 3 || // Moving
-      (Date.now() - (speedLimitCacheRef.current?.time || 0) > 10000); // Cache stale
-    
-    if (shouldFetchLimit) {
-      fetchSpeedLimit(point.latitude, point.longitude);
+    // Add to route points (only good accuracy points for cleaner line)
+    if (coords.accuracy <= 25) {
+      setRoutePoints(prev => [...prev, [point.latitude, point.longitude]]);
     }
 
-    // Check for speeding
+    // Update max speed
+    if (point.speedKmh > maxSpeed) {
+      setMaxSpeed(point.speedKmh);
+    }
+
+    // Fetch speed limit (async, doesn't block)
+    fetchSpeedLimit(point.latitude, point.longitude);
+
+    // Check speeding
     const cache = speedLimitCacheRef.current;
-    if (cache?.limit && point.speedKmh > 0) {
-      const excess = point.speedKmh - cache.limit;
-      const isExceeding = excess > opts.speedLimitToleranceKmh!;
-      
+    if (cache?.limit && point.speedKmh > 5) { // Only check if moving
+      const excess = point.speedKmh - cache.limit - opts.speedLimitToleranceKmh!;
+      const isExceeding = excess > 0;
+
       setSpeedLimitInfo(prev => ({
         ...prev,
         isExceeding,
@@ -268,8 +273,8 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
       }
     }
 
-    // Record to database at interval (accept accuracy up to 100m for reliability)
-    if (now - lastRecordTimeRef.current >= opts.recordIntervalMs! && coords.accuracy <= 100) {
+    // Record to database at interval (use moderate accuracy threshold)
+    if (now - lastRecordTimeRef.current >= opts.recordIntervalMs! && coords.accuracy <= 50) {
       lastRecordTimeRef.current = now;
       recordPoint(point);
     }
@@ -322,14 +327,14 @@ export const useSimpleGPSTracker = (options: UseSimpleGPSTrackerOptions = {}) =>
 
     setState({ status: 'tracking', message: 'Tracking active', hasPermission: true });
 
-    // Start watching position
+    // Start watching position with high accuracy settings
     watchIdRef.current = navigator.geolocation.watchPosition(
       handlePosition,
       handleError,
       {
         enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 1000,
+        timeout: 10000,
+        maximumAge: 0, // Always get fresh position, no cached data
       }
     );
 
