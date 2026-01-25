@@ -84,6 +84,33 @@ export type Database = {
           },
         ]
       }
+      admin_todos: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_completed: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_completed?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_completed?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       booking_upsells: {
         Row: {
           badge_text: string | null
