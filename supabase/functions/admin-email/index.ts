@@ -113,12 +113,19 @@ class IMAPClient {
     for (const line of lines) {
       const match = line.match(/\* LIST \([^)]*\) "[^"]+" "?([^"\r\n]+)"?/);
       if (match) {
-        const folderName = match[1].replace(/"/g, "");
+        const folderPath = match[1].replace(/"/g, "");
         // Skip system folders
-        if (!folderName.startsWith("[")) {
+        if (!folderPath.startsWith("[")) {
+          // Clean display name: remove "INBOX." prefix and get last segment
+          let displayName = folderPath;
+          if (displayName.startsWith("INBOX.")) {
+            displayName = displayName.replace("INBOX.", "");
+          }
+          displayName = displayName.split("/").pop() || displayName;
+          
           folders.push({
-            name: folderName.split("/").pop() || folderName,
-            path: folderName,
+            name: displayName,
+            path: folderPath,
             count: 0,
             unseen: 0,
           });
