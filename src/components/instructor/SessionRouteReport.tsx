@@ -24,7 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
+import { getMapTileUrl, getMapAttribution } from '@/lib/mapConfig';
 import { generateDrivingReportPDF } from './DrivingReportPDF';
 import { EventReviewPanel } from './EventReviewPanel';
 
@@ -376,8 +376,8 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
               zoomControl={false}
             >
               <TileLayer
-                attribution={getTomTomAttribution()}
-                url={getTomTomTileUrl()}
+                attribution={getMapAttribution()}
+                url={getMapTileUrl()}
               />
               
               {routeCoordinates.length >= 2 && (

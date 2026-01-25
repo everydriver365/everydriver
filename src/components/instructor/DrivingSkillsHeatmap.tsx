@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
+import { getMapTileUrl, getMapAttribution } from '@/lib/mapConfig';
 
 // Extend Leaflet types for heat layer
 declare module 'leaflet' {
@@ -217,8 +217,8 @@ const DrivingSkillsHeatmap: React.FC<DrivingSkillsHeatmapProps> = ({
         scrollWheelZoom: false
       });
 
-      L.tileLayer(getTomTomTileUrl(), {
-        attribution: getTomTomAttribution()
+      L.tileLayer(getMapTileUrl(), {
+        attribution: getMapAttribution()
       }).addTo(mapRef.current);
 
       markersLayerRef.current = L.layerGroup().addTo(mapRef.current);

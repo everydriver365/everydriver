@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { getTomTomTileUrl, getTomTomAttribution } from "@/lib/tomtomConfig";
+import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TraccarLiveMapProps {
@@ -72,8 +72,8 @@ export default function TraccarLiveMap({
       attributionControl: false,
     });
 
-    L.tileLayer(getTomTomTileUrl(), {
-      attribution: getTomTomAttribution(),
+    L.tileLayer(getMapTileUrl(), {
+      attribution: getMapAttribution(),
       maxZoom: 19,
     }).addTo(map);
 
