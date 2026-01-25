@@ -296,6 +296,35 @@ class IMAPClient {
     return new RegExp(`^${tag}\\s+OK`, "m").test(res);
   }
 
+  async appendToSent(messageContent: string): Promise<boolean> {
+    const sentFolder = "INBOX.Sent";
+    const date = new Date().toUTCString().replace(/,/g, "");
+    const size = new TextEncoder().encode(messageContent).length;
+    
+    // APPEND command with message size
+    if (!this.conn) throw new Error("Not connected");
+    const tag = `A${this.tagCounter++}`;
+    await this.conn.write(this.encoder.encode(
+      `${tag} APPEND "${sentFolder}" (\\Seen) {${size}}\r\n`
+    ));
+    
+    // Wait for continuation response (+)
+    await new Promise(r => setTimeout(r, 200));
+    let response = await this.readResponse(undefined);
+    
+    if (!response.includes("+")) {
+      console.log("APPEND continuation failed:", response);
+      return false;
+    }
+    
+    // Send the actual message content
+    await this.conn.write(this.encoder.encode(messageContent + "\r\n"));
+    await new Promise(r => setTimeout(r, 200));
+    response = await this.readResponse(tag);
+    
+    return new RegExp(`^${tag}\\s+OK`, "m").test(response);
+  }
+
   getLastResponseSnippet(maxLen: number = 500): string {
     const trimmed = (this.lastResponse || "").trim();
     if (trimmed.length <= maxLen) return trimmed;
@@ -481,6 +510,32 @@ serve(async (req) => {
       await smtp.close();
       
       if (!sent) throw new Error("Failed to send email");
+      
+      // Save copy to Sent folder via IMAP
+      try {
+        const date = new Date().toUTCString();
+        const messageForSent = [
+          `From: ${EMAIL_USER}`,
+          `To: ${to}`,
+          cc ? `Cc: ${cc}` : "",
+          `Subject: ${subject}`,
+          `Date: ${date}`,
+          `MIME-Version: 1.0`,
+          `Content-Type: text/plain; charset=UTF-8`,
+          "",
+          emailBody,
+        ].filter(Boolean).join("\r\n");
+        
+        await imap.connect();
+        const loggedIn = await imap.login();
+        if (loggedIn) {
+          await imap.appendToSent(messageForSent);
+        }
+        await imap.close();
+      } catch (appendErr) {
+        console.log("Failed to save to Sent folder:", appendErr);
+        // Don't fail the request if append fails - email was still sent
+      }
       
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
