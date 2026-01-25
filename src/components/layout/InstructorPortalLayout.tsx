@@ -53,12 +53,12 @@ const sidebarLinks = [
   { href: "/instructor/accounts", label: "Accounts", icon: Wallet },
   { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
   { href: "/instructor/gaps", label: "Fill Gaps", icon: MapPin },
+  { href: "/instructor/routes", label: "Saved Routes", icon: Navigation },
   { href: "/instructor/messages", label: "Messages", icon: MessageCircle },
   { href: "/instructor/admin-chat", label: "Contact Admin", icon: ShieldCheck, highlight: true },
   { href: "/instructor/visitor-chats", label: "Visitor Chats", icon: Headphones },
   { href: "/instructor/domains", label: "Domains", icon: Globe },
-  { href: "/instructor/track-lesson", label: "Track Lesson", icon: Navigation },
-  { href: "/instructor/live-tracking", label: "Live Tracking", icon: Radio },
+  { href: "/instructor/traccar", label: "GPS Tracking", icon: Radio },
   { href: "/instructor/settings", label: "Settings", icon: Settings },
 ];
 
