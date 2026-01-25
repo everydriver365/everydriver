@@ -118,8 +118,10 @@ export type Database = {
           id: string
           is_completed: boolean
           notes: string | null
+          password: string | null
           title: string
           updated_at: string
+          username: string | null
         }
         Insert: {
           created_at?: string
@@ -127,8 +129,10 @@ export type Database = {
           id?: string
           is_completed?: boolean
           notes?: string | null
+          password?: string | null
           title: string
           updated_at?: string
+          username?: string | null
         }
         Update: {
           created_at?: string
@@ -136,8 +140,10 @@ export type Database = {
           id?: string
           is_completed?: boolean
           notes?: string | null
+          password?: string | null
           title?: string
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
