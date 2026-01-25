@@ -317,15 +317,16 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
       {/* Header */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2">
               <Route className="h-5 w-5 text-primary" />
               Route Report
             </CardTitle>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button 
                 size="sm" 
                 variant="default" 
+                className="flex-1 sm:flex-none min-w-[80px]"
                 onClick={async () => {
                   toast.loading('Generating PDF with map...');
                   await generateDrivingReportPDF(report);
@@ -336,12 +337,12 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
                 <Download className="h-4 w-4 mr-1" />
                 PDF
               </Button>
-              <Button size="sm" variant="outline" onClick={handleShare}>
+              <Button size="sm" variant="outline" className="flex-1 sm:flex-none min-w-[80px]" onClick={handleShare}>
                 <Share2 className="h-4 w-4 mr-1" />
                 Share
               </Button>
               {onClose && (
-                <Button size="sm" variant="ghost" onClick={onClose}>
+                <Button size="sm" variant="ghost" className="flex-1 sm:flex-none min-w-[80px]" onClick={onClose}>
                   Close
                 </Button>
               )}
