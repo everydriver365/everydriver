@@ -16,6 +16,7 @@ import tenHoursBadge from "@/assets/10-hours-badge.png";
 import twentyHoursBadge from "@/assets/20-hours-badge.png";
 import thirtyHoursBadge from "@/assets/30-hours-badge.png";
 import fortyHoursBadge from "@/assets/40-hours-badge.png";
+import testInAWeekBadge from "@/assets/test-in-a-week-badge.png";
 
 interface CourseInstructor {
   id: string;
@@ -84,9 +85,9 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
               {/* Course Image */}
               <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg">
                 <img
-                  src={hours === 10 ? tenHoursBadge : hours === 20 ? twentyHoursBadge : hours === 30 ? thirtyHoursBadge : hours === 40 ? fortyHoursBadge : (course.courseImageUrl || instructor.profile_image_url || "/placeholder.svg")}
+                  src={isIntensive ? testInAWeekBadge : hours === 10 ? tenHoursBadge : hours === 20 ? twentyHoursBadge : hours === 30 ? thirtyHoursBadge : hours === 40 ? fortyHoursBadge : (course.courseImageUrl || instructor.profile_image_url || "/placeholder.svg")}
                   alt={`${hours} Hour Course`}
-                  className={`h-full w-full ${[10, 20, 30, 40].includes(hours) ? 'object-contain bg-white p-1' : 'object-cover'}`}
+                  className={`h-full w-full ${isIntensive || [10, 20, 30, 40].includes(hours) ? 'object-contain bg-white p-1' : 'object-cover'}`}
                 />
                 {isPopular && (
                   <div className="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-md rounded-tr-lg">
