@@ -4315,55 +4315,70 @@ export type Database = {
       }
       saved_routes: {
         Row: {
+          avg_speed_kmh: number | null
           category: string | null
           created_at: string
           description: string | null
           distance_km: number | null
+          duration_minutes: number | null
           end_location: string | null
           id: string
           instructor_id: string
           is_shared: boolean | null
+          max_speed_kmh: number | null
           name: string
           pupil_id: string | null
+          route_path: Json | null
           route_type: string
           share_code: string | null
           shared_at: string | null
           start_location: string | null
           telematics_id: string | null
+          test_centre_id: string | null
         }
         Insert: {
+          avg_speed_kmh?: number | null
           category?: string | null
           created_at?: string
           description?: string | null
           distance_km?: number | null
+          duration_minutes?: number | null
           end_location?: string | null
           id?: string
           instructor_id: string
           is_shared?: boolean | null
+          max_speed_kmh?: number | null
           name: string
           pupil_id?: string | null
+          route_path?: Json | null
           route_type?: string
           share_code?: string | null
           shared_at?: string | null
           start_location?: string | null
           telematics_id?: string | null
+          test_centre_id?: string | null
         }
         Update: {
+          avg_speed_kmh?: number | null
           category?: string | null
           created_at?: string
           description?: string | null
           distance_km?: number | null
+          duration_minutes?: number | null
           end_location?: string | null
           id?: string
           instructor_id?: string
           is_shared?: boolean | null
+          max_speed_kmh?: number | null
           name?: string
           pupil_id?: string | null
+          route_path?: Json | null
           route_type?: string
           share_code?: string | null
           shared_at?: string | null
           start_location?: string | null
           telematics_id?: string | null
+          test_centre_id?: string | null
         }
         Relationships: [
           {
@@ -4385,6 +4400,13 @@ export type Database = {
             columns: ["telematics_id"]
             isOneToOne: false
             referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_routes_test_centre_id_fkey"
+            columns: ["test_centre_id"]
+            isOneToOne: false
+            referencedRelation: "test_centres"
             referencedColumns: ["id"]
           },
         ]
@@ -4967,6 +4989,7 @@ export type Database = {
           id: string
           instructor_id: string
           is_active: boolean | null
+          is_test_route_mode: boolean
           last_heading: number | null
           last_latitude: number | null
           last_longitude: number | null
@@ -4983,6 +5006,7 @@ export type Database = {
           id?: string
           instructor_id: string
           is_active?: boolean | null
+          is_test_route_mode?: boolean
           last_heading?: number | null
           last_latitude?: number | null
           last_longitude?: number | null
@@ -4999,6 +5023,7 @@ export type Database = {
           id?: string
           instructor_id?: string
           is_active?: boolean | null
+          is_test_route_mode?: boolean
           last_heading?: number | null
           last_latitude?: number | null
           last_longitude?: number | null

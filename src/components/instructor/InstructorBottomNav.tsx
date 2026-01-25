@@ -6,6 +6,7 @@ import {
   Wallet, 
   Navigation,
   MessageCircle,
+  Route,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -38,6 +39,11 @@ const navItems: NavItem[] = [
     path: "/instructor/traccar"
   },
   { 
+    label: "Routes", 
+    icon: Route, 
+    path: "/instructor/routes"
+  },
+  { 
     label: "Pupils", 
     icon: Users, 
     path: "/instructor/pupils"
@@ -47,11 +53,6 @@ const navItems: NavItem[] = [
     icon: MessageCircle, 
     path: "/instructor/messages",
     isMessages: true
-  },
-  { 
-    label: "Pay", 
-    icon: Wallet, 
-    path: "/instructor/pay"
   },
 ];
 

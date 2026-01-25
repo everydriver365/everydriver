@@ -4,6 +4,8 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, 
@@ -18,7 +20,8 @@ import {
   User,
   Settings,
   Navigation,
-  Zap
+  Zap,
+  Flag
 } from "lucide-react";
 import {
   Select,
@@ -43,6 +46,7 @@ interface TraccarDevice {
   last_heading: number | null;
   current_session_id: string | null;
   current_pupil_id: string | null;
+  is_test_route_mode?: boolean;
 }
 
 interface Pupil {
@@ -316,6 +320,74 @@ export default function InstructorTraccarSession() {
 
       if (sessionError) throw sessionError;
 
+      // Fetch session data for saving route
+      const { data: sessionData } = await supabase
+        .from("lesson_telematics")
+        .select("total_distance_km, avg_speed_kmh, max_speed_kmh, started_at, ended_at")
+        .eq("id", device.current_session_id)
+        .single();
+
+      // Fetch route points for the path
+      const { data: gpsPoints } = await supabase
+        .from("telematics_gps_points")
+        .select("latitude, longitude")
+        .eq("telematics_id", device.current_session_id)
+        .order("recorded_at", { ascending: true });
+
+      // Calculate duration
+      let durationMinutes = null;
+      if (sessionData?.started_at && sessionData?.ended_at) {
+        const start = new Date(sessionData.started_at).getTime();
+        const end = new Date(sessionData.ended_at).getTime();
+        durationMinutes = Math.round((end - start) / 1000 / 60);
+      }
+
+      // Sample route path (max 100 points for storage efficiency)
+      let routePath = null;
+      if (gpsPoints && gpsPoints.length >= 2) {
+        const step = Math.max(1, Math.floor(gpsPoints.length / 100));
+        routePath = gpsPoints
+          .filter((_, i) => i % step === 0 || i === gpsPoints.length - 1)
+          .map(p => ({ lat: p.latitude, lon: p.longitude }));
+      }
+
+      // Get pupil name for route naming
+      const selectedPupil = pupils.find(p => p.id === device.current_pupil_id);
+      const pupilName = selectedPupil?.name || "Unknown";
+      const routeDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+      
+      // Check if test route mode is enabled
+      const isTestRoute = device.is_test_route_mode || false;
+
+      // Get start/end locations from first/last GPS points
+      let startLocation = null;
+      let endLocation = null;
+      if (gpsPoints && gpsPoints.length >= 2) {
+        // Could use reverse geocoding here, but for now just use coordinates
+        startLocation = `${gpsPoints[0].latitude.toFixed(4)}, ${gpsPoints[0].longitude.toFixed(4)}`;
+        endLocation = `${gpsPoints[gpsPoints.length-1].latitude.toFixed(4)}, ${gpsPoints[gpsPoints.length-1].longitude.toFixed(4)}`;
+      }
+
+      // Auto-save the route
+      if (instructor?.id) {
+        await supabase
+          .from("saved_routes")
+          .insert({
+            instructor_id: instructor.id,
+            telematics_id: device.current_session_id,
+            name: `${pupilName} - ${routeDate}`,
+            route_type: isTestRoute ? "test" : "practice",
+            distance_km: sessionData?.total_distance_km,
+            duration_minutes: durationMinutes,
+            avg_speed_kmh: sessionData?.avg_speed_kmh,
+            max_speed_kmh: sessionData?.max_speed_kmh,
+            route_path: routePath,
+            start_location: startLocation,
+            end_location: endLocation,
+            pupil_id: device.current_pupil_id,
+          });
+      }
+
       // Clear live position
       if (device.current_pupil_id) {
         await supabase
@@ -327,12 +399,13 @@ export default function InstructorTraccarSession() {
       // Store session ID before clearing
       const sessionId = device.current_session_id;
 
-      // Clear device session
+      // Clear device session (also reset test route mode)
       const { error: deviceError } = await supabase
         .from("traccar_devices")
         .update({
           current_session_id: null,
           current_pupil_id: null,
+          is_test_route_mode: false,
         })
         .eq("id", device.id);
 
@@ -342,6 +415,7 @@ export default function InstructorTraccarSession() {
         ...device,
         current_session_id: null,
         current_pupil_id: null,
+        is_test_route_mode: false,
       });
       setSessionStartTime(null);
       setCompletedSessionId(sessionId);
@@ -349,7 +423,7 @@ export default function InstructorTraccarSession() {
 
       toast({
         title: "Session ended",
-        description: "Trip data has been saved",
+        description: isTestRoute ? "Test route saved" : "Route saved automatically",
       });
     } catch (err) {
       console.error("Error stopping session:", err);
@@ -580,6 +654,25 @@ export default function InstructorTraccarSession() {
                   </SelectContent>
                 </Select>
 
+                {/* Test Route Mode Toggle */}
+                <div className="flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Flag className="h-4 w-4 text-amber-600" />
+                    <Label className="text-sm font-medium">Test Route</Label>
+                  </div>
+                  <Switch 
+                    checked={device?.is_test_route_mode || false}
+                    onCheckedChange={async (checked) => {
+                      if (!device) return;
+                      await supabase
+                        .from("traccar_devices")
+                        .update({ is_test_route_mode: checked })
+                        .eq("id", device.id);
+                      setDevice({ ...device, is_test_route_mode: checked });
+                    }}
+                  />
+                </div>
+
                 <Button 
                   size="lg"
                   className="w-full h-14 text-lg font-semibold rounded-xl"
@@ -591,7 +684,7 @@ export default function InstructorTraccarSession() {
                   ) : (
                     <Play className="h-5 w-5 mr-2" />
                   )}
-                  Start Trip
+                  {device?.is_test_route_mode ? "Start Test Route" : "Start Trip"}
                 </Button>
 
                 {!isConnected && (
