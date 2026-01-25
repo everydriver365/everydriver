@@ -4850,6 +4850,56 @@ export type Database = {
           },
         ]
       }
+      telematics_realtime_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          id: string
+          is_acknowledged: boolean | null
+          latitude: number | null
+          longitude: number | null
+          road_name: string | null
+          severity: string
+          speed_kmh: number | null
+          speed_limit_kmh: number | null
+          telematics_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          is_acknowledged?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          road_name?: string | null
+          severity?: string
+          speed_kmh?: number | null
+          speed_limit_kmh?: number | null
+          telematics_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          is_acknowledged?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          road_name?: string | null
+          severity?: string
+          speed_kmh?: number | null
+          speed_limit_kmh?: number | null
+          telematics_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telematics_realtime_alerts_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_centres: {
         Row: {
           address: string | null

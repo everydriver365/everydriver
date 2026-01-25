@@ -6,21 +6,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Thresholds for calculated braking detection
+// Thresholds for calculated braking detection (m/s²)
 const BRAKING_THRESHOLDS = {
-  LOW: 3.5,    // m/s² - gentle braking
-  MEDIUM: 5.0, // m/s² - firm braking
-  HIGH: 7.0,   // m/s² - harsh braking
+  LOW: 3.5,    // gentle braking
+  MEDIUM: 5.0, // firm braking
+  HIGH: 7.0,   // harsh braking
 };
 
-// Speed limit tolerance before alert (km/h)
-const SPEED_TOLERANCE = 5;
-
-// Minimum time between speed limit lookups (ms)
-const SPEED_LIMIT_THROTTLE_MS = 5000;
-
-// Minimum distance between speed limit lookups (meters)
-const SPEED_LIMIT_THROTTLE_DISTANCE = 100;
+// Thresholds for acceleration detection (m/s²)
+const ACCELERATION_THRESHOLDS = {
+  LOW: 2.5,    // normal acceleration
+  MEDIUM: 4.0, // firm acceleration
+  HIGH: 6.0,   // harsh acceleration
+};
 
 interface TraccarDevice {
   id: string;
@@ -145,8 +143,21 @@ serve(async (req) => {
     const lastSeenAt = typedDevice.last_seen_at ? new Date(typedDevice.last_seen_at) : null;
     const timeDiffSeconds = lastSeenAt ? (now.getTime() - lastSeenAt.getTime()) / 1000 : null;
 
-    // Calculate braking if we have previous data
+    // Calculate distance from last point
+    let distanceMeters = 0;
+    if (typedDevice.last_latitude !== null && typedDevice.last_longitude !== null) {
+      distanceMeters = calculateDistance(
+        typedDevice.last_latitude,
+        typedDevice.last_longitude,
+        lat,
+        lon
+      );
+    }
+
+    // Calculate braking and acceleration if we have previous data
     let brakingAlert: { severity: string; deceleration: number } | null = null;
+    let accelerationAlert: { severity: string; acceleration: number } | null = null;
+
     if (
       typedDevice.last_speed_kmh !== null &&
       timeDiffSeconds !== null &&
@@ -154,81 +165,35 @@ serve(async (req) => {
       timeDiffSeconds < 30 // Only consider if within 30 seconds
     ) {
       const speedDiffKmh = typedDevice.last_speed_kmh - speedKmh;
-      if (speedDiffKmh > 0) {
-        // Converting to m/s for deceleration calculation
-        const speedDiffMs = speedDiffKmh / 3.6;
-        const deceleration = speedDiffMs / timeDiffSeconds;
+      const speedDiffMs = speedDiffKmh / 3.6;
+      const rateOfChange = Math.abs(speedDiffMs) / timeDiffSeconds;
 
-        if (deceleration >= BRAKING_THRESHOLDS.HIGH) {
-          brakingAlert = { severity: "high", deceleration };
-        } else if (deceleration >= BRAKING_THRESHOLDS.MEDIUM) {
-          brakingAlert = { severity: "medium", deceleration };
-        } else if (deceleration >= BRAKING_THRESHOLDS.LOW) {
-          brakingAlert = { severity: "low", deceleration };
+      if (speedDiffKmh > 0) {
+        // Speed decreased = braking
+        if (rateOfChange >= BRAKING_THRESHOLDS.HIGH) {
+          brakingAlert = { severity: "high", deceleration: rateOfChange };
+        } else if (rateOfChange >= BRAKING_THRESHOLDS.MEDIUM) {
+          brakingAlert = { severity: "medium", deceleration: rateOfChange };
+        } else if (rateOfChange >= BRAKING_THRESHOLDS.LOW) {
+          brakingAlert = { severity: "low", deceleration: rateOfChange };
         }
 
         if (brakingAlert) {
-          console.log(`[Traccar] Braking detected: ${brakingAlert.severity} (${deceleration.toFixed(2)} m/s²)`);
+          console.log(`[Traccar] Braking detected: ${brakingAlert.severity} (${rateOfChange.toFixed(2)} m/s²)`);
         }
-      }
-    }
-
-    // Check if we should look up speed limit (throttle by time and distance)
-    let shouldLookupSpeedLimit = true;
-    if (typedDevice.last_latitude !== null && typedDevice.last_longitude !== null && lastSeenAt) {
-      const distance = calculateDistance(
-        typedDevice.last_latitude,
-        typedDevice.last_longitude,
-        lat,
-        lon
-      );
-      const timeSinceLastLookup = now.getTime() - lastSeenAt.getTime();
-
-      if (timeSinceLastLookup < SPEED_LIMIT_THROTTLE_MS && distance < SPEED_LIMIT_THROTTLE_DISTANCE) {
-        shouldLookupSpeedLimit = false;
-      }
-    }
-
-    // Fetch speed limit if needed and session is active
-    let speedLimit: number | null = null;
-    let roadName: string | null = null;
-    let speedingAlert: { severity: string; overSpeed: number } | null = null;
-
-    if (typedDevice.current_session_id && shouldLookupSpeedLimit) {
-      try {
-        const speedLimitResponse = await fetch(
-          `${supabaseUrl}/functions/v1/google-speed-limits`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${supabaseServiceKey}`,
-            },
-            body: JSON.stringify({ lat, lon }),
-          }
-        );
-
-        if (speedLimitResponse.ok) {
-          const speedLimitData = await speedLimitResponse.json();
-          speedLimit = speedLimitData.speedLimit;
-          roadName = speedLimitData.roadName;
-          console.log(`[Traccar] Speed limit: ${speedLimit} km/h on ${roadName}`);
-
-          // Check for speeding
-          if (speedLimit !== null && speedKmh > speedLimit + SPEED_TOLERANCE) {
-            const overSpeed = speedKmh - speedLimit;
-            if (overSpeed > 20) {
-              speedingAlert = { severity: "high", overSpeed };
-            } else if (overSpeed > 10) {
-              speedingAlert = { severity: "medium", overSpeed };
-            } else {
-              speedingAlert = { severity: "low", overSpeed };
-            }
-            console.log(`[Traccar] Speeding detected: ${overSpeed.toFixed(1)} km/h over (${speedingAlert.severity})`);
-          }
+      } else if (speedDiffKmh < 0) {
+        // Speed increased = acceleration
+        if (rateOfChange >= ACCELERATION_THRESHOLDS.HIGH) {
+          accelerationAlert = { severity: "high", acceleration: rateOfChange };
+        } else if (rateOfChange >= ACCELERATION_THRESHOLDS.MEDIUM) {
+          accelerationAlert = { severity: "medium", acceleration: rateOfChange };
+        } else if (rateOfChange >= ACCELERATION_THRESHOLDS.LOW) {
+          accelerationAlert = { severity: "low", acceleration: rateOfChange };
         }
-      } catch (err) {
-        console.error("[Traccar] Speed limit lookup error:", err);
+
+        if (accelerationAlert) {
+          console.log(`[Traccar] Acceleration detected: ${accelerationAlert.severity} (${rateOfChange.toFixed(2)} m/s²)`);
+        }
       }
     }
 
@@ -261,13 +226,30 @@ serve(async (req) => {
           heading: bearing,
           altitude,
           accuracy,
-          speed_limit: speedLimit,
-          road_name: roadName,
           recorded_at: now.toISOString(),
         });
 
       if (gpsError) {
         console.error("[Traccar] GPS point insert error:", gpsError);
+      }
+
+      // Update total distance in lesson_telematics
+      if (distanceMeters > 0 && distanceMeters < 5000) { // Ignore jumps > 5km (GPS errors)
+        const distanceKm = distanceMeters / 1000;
+        
+        // Get current distance and add to it
+        const { data: sessionData } = await supabase
+          .from("lesson_telematics")
+          .select("total_distance_km")
+          .eq("id", typedDevice.current_session_id)
+          .single();
+        
+        const currentDistance = sessionData?.total_distance_km || 0;
+        
+        await supabase
+          .from("lesson_telematics")
+          .update({ total_distance_km: currentDistance + distanceKm })
+          .eq("id", typedDevice.current_session_id);
       }
 
       // Update live position using RPC
@@ -300,10 +282,8 @@ serve(async (req) => {
             alert_type: "harsh_braking",
             severity: brakingAlert.severity,
             speed_kmh: speedKmh,
-            speed_limit_kmh: speedLimit,
             latitude: lat,
             longitude: lon,
-            road_name: roadName,
             is_acknowledged: false,
           });
 
@@ -312,28 +292,26 @@ serve(async (req) => {
         }
       }
 
-      // Create speeding alert if detected
-      if (speedingAlert) {
-        const { error: speedAlertError } = await supabase
+      // Create acceleration alert if detected
+      if (accelerationAlert) {
+        const { error: accelAlertError } = await supabase
           .from("telematics_realtime_alerts")
           .insert({
             telematics_id: typedDevice.current_session_id,
-            alert_type: "speeding",
-            severity: speedingAlert.severity,
+            alert_type: "harsh_acceleration",
+            severity: accelerationAlert.severity,
             speed_kmh: speedKmh,
-            speed_limit_kmh: speedLimit,
             latitude: lat,
             longitude: lon,
-            road_name: roadName,
             is_acknowledged: false,
           });
 
-        if (speedAlertError) {
-          console.error("[Traccar] Speeding alert insert error:", speedAlertError);
+        if (accelAlertError) {
+          console.error("[Traccar] Acceleration alert insert error:", accelAlertError);
         }
       }
 
-      console.log(`[Traccar] Session data recorded for pupil ${typedDevice.current_pupil_id}`);
+      console.log(`[Traccar] Session data recorded for pupil ${typedDevice.current_pupil_id}, distance: ${(distanceMeters / 1000).toFixed(3)}km`);
     }
 
     // Return success (Traccar expects 200 OK)
