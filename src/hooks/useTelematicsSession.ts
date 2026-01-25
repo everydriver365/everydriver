@@ -130,57 +130,8 @@ export const useTelematicsSession = (
         console.warn('[Telematics Session] Enrichment failed:', err);
       }
 
-      console.log('[Telematics Session] Submitting to Damoov...');
-
-      // Register with Damoov if pupil exists
-      let deviceToken: string | null = null;
-      
-      if (currentSession.pupil_id) {
-        try {
-          const { data: registerData } = await supabase.functions.invoke('damoov-register', {
-            body: { 
-              pupilId: currentSession.pupil_id,
-              instructorId: instructorId,
-            },
-          });
-          deviceToken = registerData?.deviceToken;
-        } catch (err) {
-          console.warn('[Telematics Session] Damoov registration failed:', err);
-        }
-      }
-
-      // Submit trip to Damoov
-      let scores: DamoovScores | null = null;
-      
-      if (deviceToken) {
-        try {
-          await supabase.functions.invoke('damoov-submit-trip', {
-            body: {
-              telematicsId: currentSession.id,
-              deviceToken,
-            },
-          });
-
-          // Wait a bit for Damoov to process, then fetch scores
-          await new Promise(resolve => setTimeout(resolve, 4000));
-
-          const { data: scoresData } = await supabase.functions.invoke('damoov-get-scores', {
-            body: {
-              telematicsId: currentSession.id,
-              deviceToken,
-              pupilId: currentSession.pupil_id,
-            },
-          });
-
-          if (scoresData?.scores) {
-            scores = scoresData.scores;
-            setDamoovScores(scores);
-            setCoinsEarned(scoresData.coinsEarned || 0);
-          }
-        } catch (err) {
-          console.warn('[Telematics Session] Damoov scoring failed:', err);
-        }
-      }
+      // Session processing complete (Damoov disabled)
+      const scores: DamoovScores | null = null;
 
       const finalSession: TelematicsSession = {
         ...currentSession,
