@@ -380,7 +380,7 @@ export default function InstructorTraccarSession() {
 
   const isSessionActive = !!device?.current_session_id;
   const currentPupil = pupils.find(p => p.id === device?.current_pupil_id);
-  const speedMph = device?.last_speed_kmh !== null ? Math.round(device.last_speed_kmh * 0.621371) : null;
+  const speedMph = device?.last_speed_kmh != null ? Math.round(device.last_speed_kmh * 0.621371) : null;
   const distanceMiles = totalDistance * 0.621371;
 
   if (loading || isLoading) {
