@@ -266,37 +266,27 @@ export default function TraccarLiveMap({
     <div className={`relative w-full h-full min-h-[300px] ${className}`}>
       <div ref={mapRef} className="absolute inset-0" />
 
-      {/* UK-style Speed Roundels */}
+      {/* UK-style Speed Roundel with limit ring */}
       {latitude !== null && longitude !== null && (
-        <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
-          {/* Current Speed Roundel */}
+        <div className="absolute top-4 right-4 z-20">
           <div className="flex flex-col items-center">
-            <div 
-              className={`
-                w-16 h-16 rounded-full flex items-center justify-center
-                bg-white shadow-lg border-4
-                ${speedMph > speedLimitMph ? 'border-red-500' : 'border-green-500'}
-              `}
-            >
-              <div className="text-center">
-                <span className={`text-2xl font-bold ${speedMph > speedLimitMph ? 'text-red-600' : 'text-foreground'}`}>
-                  {speedMph}
-                </span>
+            {/* Combined speed display with UK limit ring */}
+            <div className="relative">
+              {/* Outer red ring (speed limit indicator) */}
+              <div className="w-20 h-20 rounded-full bg-white shadow-lg border-[6px] border-red-600 flex items-center justify-center">
+                {/* Inner speed display */}
+                <div className="flex flex-col items-center">
+                  <span className={`text-3xl font-bold leading-none ${speedMph > speedLimitMph ? 'text-red-600' : 'text-foreground'}`}>
+                    {speedMph}
+                  </span>
+                  <span className="text-[10px] font-semibold text-muted-foreground">MPH</span>
+                </div>
+              </div>
+              {/* Speed limit badge */}
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">
+                {speedLimitMph}
               </div>
             </div>
-            <span className="text-xs text-white font-medium mt-1 bg-black/50 px-2 py-0.5 rounded">
-              MPH
-            </span>
-          </div>
-
-          {/* Speed Limit Roundel (UK style - red ring) */}
-          <div className="flex flex-col items-center">
-            <div className="w-14 h-14 rounded-full bg-white shadow-lg border-[5px] border-red-600 flex items-center justify-center">
-              <span className="text-xl font-bold text-foreground">{speedLimitMph}</span>
-            </div>
-            <span className="text-xs text-white font-medium mt-1 bg-black/50 px-2 py-0.5 rounded">
-              LIMIT
-            </span>
           </div>
         </div>
       )}
