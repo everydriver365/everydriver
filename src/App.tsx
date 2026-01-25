@@ -1,7 +1,4 @@
 import { Toaster } from "@/components/ui/toaster";
-import InstructorTrackLesson from "./pages/InstructorTrackLesson";
-import InstructorLiveTracking from "./pages/InstructorLiveTracking";
-import TrackerPage from "./pages/TrackerPage";
 import InstructorTraccarSetup from "./pages/InstructorTraccarSetup";
 import InstructorTraccarSession from "./pages/InstructorTraccarSession";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -157,9 +154,6 @@ const App = () => (
               <Route path="/instructor/availability" element={<InstructorQuickAvailability />} />
               <Route path="/instructor/gaps" element={<InstructorGaps />} />
               <Route path="/instructor/expenses" element={<InstructorExpenses />} />
-              <Route path="/instructor/track-lesson" element={<InstructorTrackLesson />} />
-              <Route path="/instructor/live-tracking" element={<InstructorLiveTracking />} />
-              <Route path="/instructor/tracker/:sessionId" element={<TrackerPage />} />
               <Route path="/instructor/traccar" element={<InstructorTraccarSession />} />
               <Route path="/instructor/settings/traccar" element={<InstructorTraccarSetup />} />
               <Route path="/instructor/satnav" element={<InstructorSatNav />} />

@@ -10,7 +10,7 @@ import {
   AlertTriangle, Circle, Navigation, Eye, EyeOff 
 } from 'lucide-react';
 import { useLivePupilPositions, LivePupilPosition } from '@/hooks/useLivePupilPositions';
-import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
+import { getMapTileUrl, getMapAttribution } from '@/lib/mapConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -62,8 +62,8 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
       scrollWheelZoom: true,
     });
 
-    L.tileLayer(getTomTomTileUrl(), {
-      attribution: getTomTomAttribution(),
+    L.tileLayer(getMapTileUrl(), {
+      attribution: getMapAttribution(),
     }).addTo(map);
 
     mapRef.current = map;

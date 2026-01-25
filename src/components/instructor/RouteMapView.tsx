@@ -3,7 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Navigation } from 'lucide-react';
-import { getTomTomTileUrl, getTomTomAttribution } from '@/lib/tomtomConfig';
+import { getMapTileUrl, getMapAttribution } from '@/lib/mapConfig';
 
 interface GPSPoint {
   latitude: number;
@@ -51,8 +51,8 @@ const RouteMapView: React.FC<RouteMapViewProps> = ({
     mapRef.current = map;
 
     // Add tile layer
-    L.tileLayer(getTomTomTileUrl(), {
-      attribution: getTomTomAttribution()
+    L.tileLayer(getMapTileUrl(), {
+      attribution: getMapAttribution()
     }).addTo(map);
 
     // Create route line with speed-based coloring
