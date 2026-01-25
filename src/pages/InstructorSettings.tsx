@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
@@ -548,6 +548,31 @@ const { data, error } = await supabase
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+        </SettingsTile>
+
+        {/* Saved Routes Section */}
+        <SettingsTile 
+          id="routes" 
+          icon={Route} 
+          title="Saved Routes" 
+          description="View and manage your recorded driving routes"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Access your saved lesson routes, test routes, and driving test recordings. 
+              View route analytics and manage your route library.
+            </p>
+            <Button 
+              onClick={() => navigate('/instructor/routes')}
+              className="w-full justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <Route className="h-4 w-4" />
+                Manage Routes
+              </span>
+              <ExternalLink className="h-4 w-4" />
+            </Button>
           </div>
         </SettingsTile>
 
