@@ -219,9 +219,15 @@ export function WebsitesNeededList() {
               {displayName}
             </span>
             {linkText && (
-              <span className="text-xs text-muted-foreground block truncate">
+              <a 
+                href={linkText.startsWith('http') ? linkText : `https://${linkText}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary hover:underline block truncate"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {linkText}
-              </span>
+              </a>
             )}
             {(item.username || item.password) && (
               <div className="flex items-center gap-2 mt-1">
