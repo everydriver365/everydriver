@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminTodoList } from "./AdminTodoList";
 import { WebsitesNeededList } from "./WebsitesNeededList";
 import { TraccarStatusPanel } from "./TraccarStatusPanel";
-import { AdminEmailPanel } from "./AdminEmailPanel";
+import { AdminEmailClient } from "./AdminEmailClient";
 interface SettingsLink {
   key: string;
   title: string;
@@ -325,12 +325,14 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       </div>
 
       {/* Quick Actions Row */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <AdminTodoList />
         <WebsitesNeededList />
         <TraccarStatusPanel />
-        <AdminEmailPanel />
       </div>
+
+      {/* Email Client - Full Width */}
+      <AdminEmailClient />
 
       {/* Settings Grid */}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
