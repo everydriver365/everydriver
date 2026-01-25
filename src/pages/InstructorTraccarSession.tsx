@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +13,10 @@ import {
   Wifi, 
   WifiOff,
   RefreshCw,
-  MapPin,
   Gauge,
   AlertTriangle,
   Clock,
   User,
-  Navigation,
   Settings
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -31,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import SessionRouteReport from "@/components/instructor/SessionRouteReport";
+import TraccarLiveMap from "@/components/instructor/TraccarLiveMap";
 
 interface TraccarDevice {
   id: string;
@@ -503,81 +502,76 @@ export default function InstructorTraccarSession() {
           </CardContent>
         </Card>
 
+        {/* Live Map */}
+        {isSessionActive && (
+          <Card className="overflow-hidden">
+            <CardContent className="p-0">
+              <TraccarLiveMap
+                latitude={device.last_latitude}
+                longitude={device.last_longitude}
+                heading={device.last_heading}
+                speedKmh={device.last_speed_kmh}
+                isConnected={isConnected}
+                sessionId={device.current_session_id}
+                className="h-[300px]"
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Live Stats */}
         {isSessionActive && (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              {/* Speed */}
-              <Card>
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Gauge className="h-4 w-4" />
-                    <span className="text-xs">Current Speed</span>
-                  </div>
-                  <p className="text-2xl font-bold">
-                    {device.last_speed_kmh !== null 
-                      ? `${Math.round(device.last_speed_kmh * 0.621371)} mph`
-                      : "-- mph"}
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Alerts */}
-              <Card>
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <AlertTriangle className="h-4 w-4" />
-                    <span className="text-xs">Alerts</span>
-                  </div>
-                  <p className="text-2xl font-bold">{alertCounts.total}</p>
-                  <div className="flex gap-2 mt-1">
-                    {alertCounts.speeding > 0 && (
-                      <Badge variant="destructive" className="text-xs">
-                        {alertCounts.speeding} speed
-                      </Badge>
-                    )}
-                    {alertCounts.braking > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {alertCounts.braking} brake
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Location */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Speed */}
             <Card>
               <CardContent className="py-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <MapPin className="h-4 w-4" />
-                  <span className="text-xs">Location</span>
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Gauge className="h-4 w-4" />
+                  <span className="text-xs">Current Speed</span>
                 </div>
-                {device.last_latitude && device.last_longitude ? (
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Navigation 
-                        className="h-5 w-5 text-primary" 
-                        style={{ transform: `rotate(${device.last_heading || 0}deg)` }}
-                      />
-                    </div>
-                    <div>
-                      <p className="text-sm font-mono">
-                        {device.last_latitude.toFixed(5)}, {device.last_longitude.toFixed(5)}
-                      </p>
-                      {device.last_seen_at && (
-                        <p className="text-xs text-muted-foreground">
-                          Updated {formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: true })}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Waiting for GPS data...</p>
-                )}
+                <p className="text-2xl font-bold">
+                  {device.last_speed_kmh !== null 
+                    ? `${Math.round(device.last_speed_kmh * 0.621371)} mph`
+                    : "-- mph"}
+                </p>
               </CardContent>
             </Card>
-          </>
+
+            {/* Alerts */}
+            <Card>
+              <CardContent className="py-4">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="text-xs">Alerts</span>
+                </div>
+                <p className="text-2xl font-bold">{alertCounts.total}</p>
+                <div className="flex gap-2 mt-1">
+                  {alertCounts.speeding > 0 && (
+                    <Badge variant="destructive" className="text-xs">
+                      {alertCounts.speeding} speed
+                    </Badge>
+                  )}
+                  {alertCounts.braking > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {alertCounts.braking} brake
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Location info when session active */}
+        {isSessionActive && device.last_latitude && device.last_longitude && (
+          <div className="text-center text-xs text-muted-foreground">
+            {device.last_latitude.toFixed(5)}, {device.last_longitude.toFixed(5)}
+            {device.last_seen_at && (
+              <span className="ml-2">
+                • Updated {formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: true })}
+              </span>
+            )}
+          </div>
         )}
 
         {/* Device Info */}
