@@ -6,3 +6,4 @@ export * from "./StandardsCheckTrigger";
 export * from "./TestResultsHistory";
 export * from "./FaultRow";
 export * from "./CompetencySection";
+export * from "./TestCentreAnalytics";
