@@ -183,7 +183,7 @@ export default function TraccarLiveMap({
       polylineRef.current = L.polyline(
         routePoints.map((p): L.LatLngExpression => [p.lat, p.lng]),
         {
-          color: "#3b82f6",
+          color: "#22c55e",
           weight: 4,
           opacity: 0.8,
           smoothFactor: 1,
