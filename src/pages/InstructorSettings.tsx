@@ -18,7 +18,7 @@ import { DepositSettingsEditor } from "@/components/instructor/DepositSettingsEd
 import { BookingModeSelector } from "@/components/instructor/BookingModeSelector";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorCoursesManager } from "@/components/instructor/InstructorCoursesManager";
-import { InstructorTestCentresManager } from "@/components/instructor/InstructorTestCentresManager";
+import { TestCentresAndExaminersManager } from "@/components/instructor/TestCentresAndExaminersManager";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -359,14 +359,14 @@ const { data, error } = await supabase
           <InstructorCoursesManager instructorId={instructorId} />
         </SettingsTile>
 
-        {/* Test Centres Section */}
+        {/* Test Centres & Examiners Section */}
         <SettingsTile 
           id="test-centres" 
           icon={MapPin} 
-          title="Test Centres" 
-          description="Test centres you cover"
+          title="Test Centres & Examiners" 
+          description="Manage test centres and examiners for routes & triggers"
         >
-          <InstructorTestCentresManager instructorId={instructorId} />
+          <TestCentresAndExaminersManager instructorId={instructorId} />
         </SettingsTile>
 
         {/* Vehicle & Details Section */}
