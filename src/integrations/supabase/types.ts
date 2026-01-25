@@ -4326,6 +4326,7 @@ export type Database = {
           instructor_id: string
           is_shared: boolean | null
           max_speed_kmh: number | null
+          metadata: Json | null
           name: string
           pupil_id: string | null
           route_path: Json | null
@@ -4348,6 +4349,7 @@ export type Database = {
           instructor_id: string
           is_shared?: boolean | null
           max_speed_kmh?: number | null
+          metadata?: Json | null
           name: string
           pupil_id?: string | null
           route_path?: Json | null
@@ -4370,6 +4372,7 @@ export type Database = {
           instructor_id?: string
           is_shared?: boolean | null
           max_speed_kmh?: number | null
+          metadata?: Json | null
           name?: string
           pupil_id?: string | null
           route_path?: Json | null

@@ -34,6 +34,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import SessionRouteReport from "@/components/instructor/SessionRouteReport";
 import TraccarLiveMap from "@/components/instructor/TraccarLiveMap";
+import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 
 interface TraccarDevice {
   id: string;
@@ -91,6 +92,14 @@ export default function InstructorTraccarSession() {
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [drivingEvents, setDrivingEvents] = useState<DrivingEvent[]>([]);
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
+  const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
+  const [drivingTestDetails, setDrivingTestDetails] = useState<{
+    testCentreId: string | null;
+    testTime: string;
+    pupilId: string | null;
+    customPupilName: string;
+    examinerId: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!loading && !instructor) {
@@ -246,7 +255,16 @@ export default function InstructorTraccarSession() {
     return () => clearInterval(interval);
   }, [sessionStartTime]);
 
-  const startSession = async (routeType: "practice" | "test" | "driving_test" = "practice") => {
+  const startSession = async (
+    routeType: "practice" | "test" | "driving_test" = "practice",
+    testDetails?: {
+      testCentreId: string | null;
+      testTime: string;
+      pupilId: string | null;
+      customPupilName: string;
+      examinerId: string | null;
+    }
+  ) => {
     if (!device || !instructor?.id) {
       toast({
         title: "Error",
@@ -256,11 +274,17 @@ export default function InstructorTraccarSession() {
       return;
     }
 
+    // For driving tests, use the pupil from dialog or selected pupil
+    const effectivePupilId = testDetails?.pupilId || selectedPupilId || null;
+
     // Determine test route mode based on route type and pupil selection
-    const isTestRouteMode = routeType === "test" || routeType === "driving_test" || !selectedPupilId || device.is_test_route_mode;
+    const isTestRouteMode = routeType === "test" || routeType === "driving_test" || !effectivePupilId || device.is_test_route_mode;
     
-    // Store the route type for when we save the route
+    // Store the route type and details for when we save the route
     setPendingRouteType(routeType);
+    if (testDetails) {
+      setDrivingTestDetails(testDetails);
+    }
 
     setIsStarting(true);
     try {
@@ -269,7 +293,7 @@ export default function InstructorTraccarSession() {
         .from("lesson_telematics")
         .insert({
           instructor_id: instructor.id,
-          pupil_id: selectedPupilId || null,
+          pupil_id: effectivePupilId,
           started_at: new Date().toISOString(),
           total_distance_km: 0,
         })
@@ -283,7 +307,7 @@ export default function InstructorTraccarSession() {
         .from("traccar_devices")
         .update({
           current_session_id: session.id,
-          current_pupil_id: selectedPupilId || null,
+          current_pupil_id: effectivePupilId,
           is_test_route_mode: isTestRouteMode,
         })
         .eq("id", device.id);
@@ -293,11 +317,14 @@ export default function InstructorTraccarSession() {
       setDevice({
         ...device,
         current_session_id: session.id,
-        current_pupil_id: selectedPupilId || null,
+        current_pupil_id: effectivePupilId,
         is_test_route_mode: isTestRouteMode,
       });
       setSessionStartTime(new Date());
       setTotalDistance(0);
+
+      // Close dialog if open
+      setShowDrivingTestDialog(false);
 
       const toastTitle = routeType === "driving_test" 
         ? "Driving test started" 
@@ -316,6 +343,16 @@ export default function InstructorTraccarSession() {
     } finally {
       setIsStarting(false);
     }
+  };
+
+  const handleDrivingTestStart = (details: {
+    testCentreId: string | null;
+    testTime: string;
+    pupilId: string | null;
+    customPupilName: string;
+    examinerId: string | null;
+  }) => {
+    startSession("driving_test", details);
   };
 
   const stopSession = async () => {
@@ -373,8 +410,10 @@ export default function InstructorTraccarSession() {
       // Determine route name based on route type
       let routeName: string;
       if (pendingRouteType === "driving_test") {
-        routeName = selectedPupil 
-          ? `Driving Test - ${selectedPupil.name} - ${routeDate}`
+        // Use custom pupil name if provided, otherwise use selected pupil
+        const pupilDisplayName = drivingTestDetails?.customPupilName || selectedPupil?.name;
+        routeName = pupilDisplayName 
+          ? `Driving Test - ${pupilDisplayName} - ${routeDate}`
           : `Driving Test - ${routeDate}`;
       } else if (pendingRouteType === "test" || !selectedPupil) {
         routeName = `Test Route - ${routeDate}`;
@@ -391,24 +430,36 @@ export default function InstructorTraccarSession() {
         endLocation = `${gpsPoints[gpsPoints.length-1].latitude.toFixed(4)}, ${gpsPoints[gpsPoints.length-1].longitude.toFixed(4)}`;
       }
 
-      // Auto-save the route with the correct route type
+      // Auto-save the route with the correct route type and driving test details
       if (instructor?.id) {
+        const routeData: Record<string, unknown> = {
+          instructor_id: instructor.id,
+          telematics_id: device.current_session_id,
+          name: routeName,
+          route_type: pendingRouteType,
+          distance_km: sessionData?.total_distance_km,
+          duration_minutes: durationMinutes,
+          avg_speed_kmh: sessionData?.avg_speed_kmh,
+          max_speed_kmh: sessionData?.max_speed_kmh,
+          route_path: routePath,
+          start_location: startLocation,
+          end_location: endLocation,
+          pupil_id: device.current_pupil_id || null,
+        };
+
+        // Add driving test specific data if available
+        if (pendingRouteType === "driving_test" && drivingTestDetails) {
+          routeData.test_centre_id = drivingTestDetails.testCentreId;
+          routeData.metadata = {
+            test_time: drivingTestDetails.testTime,
+            examiner_id: drivingTestDetails.examinerId,
+            custom_pupil_name: drivingTestDetails.customPupilName || null,
+          };
+        }
+
         await supabase
           .from("saved_routes")
-          .insert({
-            instructor_id: instructor.id,
-            telematics_id: device.current_session_id,
-            name: routeName,
-            route_type: pendingRouteType,
-            distance_km: sessionData?.total_distance_km,
-            duration_minutes: durationMinutes,
-            avg_speed_kmh: sessionData?.avg_speed_kmh,
-            max_speed_kmh: sessionData?.max_speed_kmh,
-            route_path: routePath,
-            start_location: startLocation,
-            end_location: endLocation,
-            pupil_id: device.current_pupil_id || null,
-          });
+          .insert(routeData as any);
       }
 
       // Clear live position
@@ -443,6 +494,7 @@ export default function InstructorTraccarSession() {
       setSessionStartTime(null);
       setCompletedSessionId(sessionId);
       setShowReport(true);
+      setDrivingTestDetails(null); // Clear driving test details
 
       const toastDescription = pendingRouteType === "driving_test" 
         ? "Driving test route saved" 
@@ -763,19 +815,15 @@ export default function InstructorTraccarSession() {
                     </Button>
                   )}
 
-                  {/* Driving Test button - always visible */}
+                  {/* Driving Test button - opens dialog */}
                   <Button 
                     size="lg"
                     variant="default"
                     className="w-full h-14 text-lg font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700"
-                    onClick={() => startSession("driving_test")}
+                    onClick={() => setShowDrivingTestDialog(true)}
                     disabled={isStarting || !isConnected}
                   >
-                    {isStarting ? (
-                      <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                    ) : (
-                      <CheckCircle className="h-5 w-5 mr-2" />
-                    )}
+                    <CheckCircle className="h-5 w-5 mr-2" />
                     Driving Test
                   </Button>
                 </div>
@@ -807,6 +855,16 @@ export default function InstructorTraccarSession() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Driving Test Start Dialog */}
+      <DrivingTestStartDialog
+        open={showDrivingTestDialog}
+        onOpenChange={setShowDrivingTestDialog}
+        instructorId={instructor?.id || ""}
+        pupils={pupils}
+        onStart={handleDrivingTestStart}
+        isStarting={isStarting}
+      />
     </div>
   );
 }
