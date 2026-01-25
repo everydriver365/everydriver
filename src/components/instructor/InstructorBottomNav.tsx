@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { 
   Home, 
   CalendarDays, 
@@ -13,6 +14,7 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { motion } from "framer-motion";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NavItem {
   label: string;
@@ -20,6 +22,7 @@ interface NavItem {
   path: string;
   showBadge?: boolean;
   isMessages?: boolean;
+  isTrack?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -36,7 +39,8 @@ const navItems: NavItem[] = [
   { 
     label: "Track", 
     icon: Navigation, 
-    path: "/instructor/traccar"
+    path: "/instructor/traccar",
+    isTrack: true
   },
   { 
     label: "Pay", 
@@ -61,6 +65,29 @@ export function InstructorBottomNav() {
   const navigate = useNavigate();
   const pendingJobsCount = usePendingJobsCount();
   const { instructor } = useInstructorAuth();
+  const [isTrackingActive, setIsTrackingActive] = useState(false);
+
+  // Check if there's an active tracking session
+  useEffect(() => {
+    if (!instructor?.id) return;
+
+    const checkActiveSession = async () => {
+      const { data } = await supabase
+        .from("traccar_devices")
+        .select("current_session_id")
+        .eq("instructor_id", instructor.id)
+        .not("current_session_id", "is", null)
+        .limit(1);
+
+      setIsTrackingActive((data?.length ?? 0) > 0);
+    };
+
+    checkActiveSession();
+
+    // Poll every 10 seconds
+    const interval = setInterval(checkActiveSession, 10000);
+    return () => clearInterval(interval);
+  }, [instructor?.id]);
 
   const handleNavClick = (path: string) => {
     navigate(path);
@@ -74,6 +101,7 @@ export function InstructorBottomNav() {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
           const isMessages = item.isMessages;
+          const isTrack = item.isTrack;
           
           return (
             <button
@@ -122,6 +150,9 @@ export function InstructorBottomNav() {
                     instructorId={instructor?.id} 
                     className="absolute -top-1.5 -right-2 text-[10px] px-1 min-w-[18px] h-[18px] flex items-center justify-center ring-2 ring-primary"
                   />
+                )}
+                {isTrack && isTrackingActive && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-primary animate-pulse" />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
