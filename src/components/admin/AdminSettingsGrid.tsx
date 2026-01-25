@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-
+import { AdminTodoList } from "./AdminTodoList";
+import { WebsitesNeededList } from "./WebsitesNeededList";
 interface SettingsLink {
   key: string;
   title: string;
@@ -319,6 +320,12 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
             </div>
           </button>
         ))}
+      </div>
+
+      {/* Quick Actions Row */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <AdminTodoList />
+        <WebsitesNeededList onNavigate={onNavigate} />
       </div>
 
       {/* Settings Grid */}
