@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { CompactPaymentBadges } from "@/components/payments/PaymentMessaging";
 import tenHoursBadge from "@/assets/10-hours-badge.png";
+import twentyHoursBadge from "@/assets/20-hours-badge.png";
 
 interface CourseInstructor {
   id: string;
@@ -81,9 +82,9 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
               {/* Course Image */}
               <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg">
                 <img
-                  src={hours === 10 ? tenHoursBadge : (course.courseImageUrl || instructor.profile_image_url || "/placeholder.svg")}
+                  src={hours === 10 ? tenHoursBadge : hours === 20 ? twentyHoursBadge : (course.courseImageUrl || instructor.profile_image_url || "/placeholder.svg")}
                   alt={`${hours} Hour Course`}
-                  className={`h-full w-full ${hours === 10 ? 'object-contain bg-white p-1' : 'object-cover'}`}
+                  className={`h-full w-full ${hours === 10 || hours === 20 ? 'object-contain bg-white p-1' : 'object-cover'}`}
                 />
                 {isPopular && (
                   <div className="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-md rounded-tr-lg">
