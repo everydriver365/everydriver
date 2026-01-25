@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Globe, Pencil, X, Check } from "lucide-react";
+import { Plus, Trash2, Globe, Pencil, X, Check, Eye, EyeOff, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface WebsiteItem {
   id: string;
   title: string;
   notes: string | null;
+  username: string | null;
+  password: string | null;
   is_completed: boolean;
   display_order: number;
 }
@@ -20,10 +22,16 @@ export function WebsitesNeededList() {
   const [items, setItems] = useState<WebsiteItem[]>([]);
   const [newItem, setNewItem] = useState("");
   const [newNotes, setNewNotes] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editNotes, setEditNotes] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [showAddFields, setShowAddFields] = useState(false);
 
   useEffect(() => {
     fetchItems();
@@ -58,15 +66,17 @@ export function WebsitesNeededList() {
   };
 
   const addItem = async () => {
-    if (!newItem.trim()) return;
+    if (!newNotes.trim() && !newItem.trim()) return;
 
     const maxOrder = items.length > 0 
       ? Math.max(...items.map(t => t.display_order)) + 1 
       : 0;
 
     const { error } = await supabase.from("admin_websites_needed").insert({
-      title: newItem.trim(),
+      title: newItem.trim() || null,
       notes: newNotes.trim() || null,
+      username: newUsername.trim() || null,
+      password: newPassword.trim() || null,
       display_order: maxOrder,
     });
 
@@ -75,6 +85,9 @@ export function WebsitesNeededList() {
     } else {
       setNewItem("");
       setNewNotes("");
+      setNewUsername("");
+      setNewPassword("");
+      setShowAddFields(false);
     }
   };
 
@@ -102,18 +115,22 @@ export function WebsitesNeededList() {
 
   const startEdit = (item: WebsiteItem) => {
     setEditingId(item.id);
-    setEditTitle(item.title);
+    setEditTitle(item.title || "");
     setEditNotes(item.notes || "");
+    setEditUsername(item.username || "");
+    setEditPassword(item.password || "");
   };
 
   const saveEdit = async () => {
-    if (!editingId || !editTitle.trim()) return;
+    if (!editingId) return;
 
     const { error } = await supabase
       .from("admin_websites_needed")
       .update({ 
-        title: editTitle.trim(),
-        notes: editNotes.trim() || null 
+        title: editTitle.trim() || null,
+        notes: editNotes.trim() || null,
+        username: editUsername.trim() || null,
+        password: editPassword.trim() || null,
       })
       .eq("id", editingId);
 
@@ -126,8 +143,15 @@ export function WebsitesNeededList() {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditTitle("");
-    setEditNotes("");
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied`);
+  };
+
+  const togglePasswordVisibility = (id: string) => {
+    setShowPasswords(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const incompleteItems = items.filter(t => !t.is_completed);
@@ -136,19 +160,34 @@ export function WebsitesNeededList() {
   const renderItem = (item: WebsiteItem, isCompleted: boolean) => {
     if (editingId === item.id) {
       return (
-        <div key={item.id} className="p-2 rounded-lg bg-muted/50 space-y-2">
-          <Input
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            placeholder="Website name"
-            className="h-8"
-          />
+        <div key={item.id} className="p-3 rounded-lg bg-muted/50 space-y-2">
           <Input
             value={editNotes}
             onChange={(e) => setEditNotes(e.target.value)}
-            placeholder="Friendly name / notes"
-            className="h-8"
+            placeholder="Friendly name"
+            className="h-8 font-medium"
           />
+          <Input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            placeholder="Website URL / link"
+            className="h-8 text-sm"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              value={editUsername}
+              onChange={(e) => setEditUsername(e.target.value)}
+              placeholder="Username"
+              className="h-8 text-sm"
+            />
+            <Input
+              value={editPassword}
+              onChange={(e) => setEditPassword(e.target.value)}
+              placeholder="Password"
+              type="password"
+              className="h-8 text-sm"
+            />
+          </div>
           <div className="flex gap-1 justify-end">
             <Button size="sm" variant="ghost" onClick={cancelEdit}>
               <X className="h-3.5 w-3.5" />
@@ -161,43 +200,81 @@ export function WebsitesNeededList() {
       );
     }
 
+    const displayName = item.notes || item.title || "Untitled";
+    const linkText = item.notes ? item.title : null;
+
     return (
       <div
         key={item.id}
-        className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 group"
+        className="p-2 rounded-lg hover:bg-muted/50 group"
       >
-        <Checkbox
-          checked={item.is_completed}
-          onCheckedChange={() => toggleItem(item.id, item.is_completed)}
-          className="mt-0.5"
-        />
-        <div className="flex-1 min-w-0">
-          <span className={cn("text-sm block", isCompleted && "line-through text-muted-foreground")}>
-            {item.title}
-          </span>
-          {item.notes && (
-            <span className="text-xs text-muted-foreground block truncate">
-              {item.notes}
+        <div className="flex items-start gap-3">
+          <Checkbox
+            checked={item.is_completed}
+            onCheckedChange={() => toggleItem(item.id, item.is_completed)}
+            className="mt-1"
+          />
+          <div className="flex-1 min-w-0">
+            <span className={cn("text-sm font-medium block", isCompleted && "line-through text-muted-foreground")}>
+              {displayName}
             </span>
-          )}
-        </div>
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => startEdit(item)}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => deleteItem(item.id)}
-          >
-            <Trash2 className="h-3.5 w-3.5 text-destructive" />
-          </Button>
+            {linkText && (
+              <span className="text-xs text-muted-foreground block truncate">
+                {linkText}
+              </span>
+            )}
+            {(item.username || item.password) && (
+              <div className="flex items-center gap-2 mt-1">
+                {item.username && (
+                  <button
+                    onClick={() => copyToClipboard(item.username!, "Username")}
+                    className="text-xs text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Copy className="h-3 w-3" />
+                    {item.username}
+                  </button>
+                )}
+                {item.password && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => togglePasswordVisibility(item.id)}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      {showPasswords[item.id] ? (
+                        <EyeOff className="h-3 w-3" />
+                      ) : (
+                        <Eye className="h-3 w-3" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => copyToClipboard(item.password!, "Password")}
+                      className="text-xs text-muted-foreground hover:text-primary"
+                    >
+                      {showPasswords[item.id] ? item.password : "••••••"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => startEdit(item)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => deleteItem(item.id)}
+            >
+              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -216,29 +293,48 @@ export function WebsitesNeededList() {
         <div className="space-y-2">
           <div className="flex gap-2">
             <Input
-              placeholder="Website name..."
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
+              placeholder="Friendly name..."
+              value={newNotes}
+              onChange={(e) => {
+                setNewNotes(e.target.value);
+                if (e.target.value.trim()) setShowAddFields(true);
+              }}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && addItem()}
               className="flex-1"
             />
-            <Button size="icon" onClick={addItem} disabled={!newItem.trim()}>
+            <Button size="icon" onClick={addItem} disabled={!newNotes.trim() && !newItem.trim()}>
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          {newItem.trim() && (
-            <Input
-              placeholder="Friendly name / notes (optional)"
-              value={newNotes}
-              onChange={(e) => setNewNotes(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addItem()}
-              className="text-sm"
-            />
+          {showAddFields && (
+            <>
+              <Input
+                placeholder="Website URL / link (optional)"
+                value={newItem}
+                onChange={(e) => setNewItem(e.target.value)}
+                className="text-sm"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder="Username (optional)"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  className="text-sm"
+                />
+                <Input
+                  placeholder="Password (optional)"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  type="password"
+                  className="text-sm"
+                />
+              </div>
+            </>
           )}
         </div>
 
         {/* List */}
-        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+        <div className="space-y-1 max-h-[300px] overflow-y-auto">
           {loading ? (
             <p className="text-sm text-muted-foreground text-center py-4">Loading...</p>
           ) : items.length === 0 ? (
