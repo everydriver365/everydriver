@@ -20,6 +20,7 @@ interface TraccarDevice {
   id: string;
   instructor_id: string;
   device_id: string;
+  device_name: string | null;
   last_seen_at: string | null;
   instructor_name?: string;
 }
@@ -66,16 +67,19 @@ export function TraccarStatusPanel() {
         `)
         .eq("is_active", true)
         .order("updated_at", { ascending: false }),
-      // Fetch traccar devices
+      // Fetch traccar devices - get all active devices
       supabase
         .from("traccar_devices")
         .select(`
           id,
           instructor_id,
-          device_id,
+          device_id:device_identifier,
+          device_name,
           last_seen_at,
+          is_active,
           instructors (name)
         `)
+        .eq("is_active", true)
         .order("last_seen_at", { ascending: false, nullsFirst: false })
         .limit(10),
     ]);
@@ -198,9 +202,18 @@ export function TraccarStatusPanel() {
                         key={device.id}
                         className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50"
                       >
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{device.instructor_name || "Unknown"}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="min-w-0">
+                            <span className="text-sm block truncate">
+                              {device.device_name || device.instructor_name || "Unknown"}
+                            </span>
+                            {device.device_name && device.instructor_name && (
+                              <span className="text-xs text-muted-foreground truncate block">
+                                {device.instructor_name}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className={status.color}>

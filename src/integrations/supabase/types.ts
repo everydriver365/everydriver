@@ -117,6 +117,7 @@ export type Database = {
           display_order: number
           id: string
           is_completed: boolean
+          notes: string | null
           title: string
           updated_at: string
         }
@@ -125,6 +126,7 @@ export type Database = {
           display_order?: number
           id?: string
           is_completed?: boolean
+          notes?: string | null
           title: string
           updated_at?: string
         }
@@ -133,6 +135,7 @@ export type Database = {
           display_order?: number
           id?: string
           is_completed?: boolean
+          notes?: string | null
           title?: string
           updated_at?: string
         }
