@@ -405,7 +405,7 @@ export function AdminEmailClient() {
                         className={cn(
                           "w-full text-left p-3 hover:bg-muted/50 transition-all",
                           !email.seen 
-                            ? "bg-primary/10 border-l-4 border-l-primary" 
+                            ? "bg-emerald-500/10 border-l-4 border-l-emerald-500" 
                             : "border-l-4 border-l-transparent"
                         )}
                       >
@@ -415,13 +415,15 @@ export function AdminEmailClient() {
                               <span
                                 className={cn(
                                   "text-sm truncate",
-                                  !email.seen && "font-bold text-primary"
+                                  !email.seen && "font-bold text-emerald-600"
                                 )}
                               >
-                                {email.from.split("<")[0].trim() || email.from}
+                                {selectedFolder.toLowerCase().includes("sent") 
+                                  ? `To: ${email.to || "Unknown"}`
+                                  : (email.from.split("<")[0].trim() || email.from)}
                               </span>
                               {!email.seen && (
-                                <div className="w-2 h-2 rounded-full bg-primary shrink-0 animate-pulse" />
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse" />
                               )}
                             </div>
                             <p
