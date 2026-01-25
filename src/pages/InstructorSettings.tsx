@@ -186,18 +186,22 @@ const { data, error } = await supabase
 
   const isOpen = (section: string) => openSections.includes(section);
 
-  // Settings tile component for uniform appearance
+  // Settings tile component for uniform appearance with colored icons
   const SettingsTile = ({ 
     id, 
     icon: Icon, 
     title, 
     description, 
+    iconColor = "text-primary",
+    iconBg = "bg-primary/10",
     children 
   }: { 
     id: string; 
     icon: React.ElementType; 
     title: string; 
     description: string; 
+    iconColor?: string;
+    iconBg?: string;
     children: React.ReactNode;
   }) => (
     <Card className="overflow-hidden">
@@ -206,8 +210,8 @@ const { data, error } = await supabase
           <CardContent className="p-0">
             <button className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Icon className="h-5 w-5 text-primary" />
+                <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center shrink-0", iconBg)}>
+                  <Icon className={cn("h-5 w-5", iconColor)} />
                 </div>
                 <div className="text-left">
                   <div className="font-medium">{title}</div>
@@ -257,6 +261,8 @@ const { data, error } = await supabase
           icon={User} 
           title="Profile" 
           description="Your public instructor profile"
+          iconColor="text-blue-600"
+          iconBg="bg-blue-100 dark:bg-blue-900/30"
         >
           {loading ? (
             <div className="flex justify-center py-8">
@@ -355,6 +361,8 @@ const { data, error } = await supabase
           icon={BookOpen} 
           title="My Courses" 
           description="Manage your course offerings & pricing"
+          iconColor="text-emerald-600"
+          iconBg="bg-emerald-100 dark:bg-emerald-900/30"
         >
           <InstructorCoursesManager instructorId={instructorId} />
         </SettingsTile>
@@ -365,6 +373,8 @@ const { data, error } = await supabase
           icon={MapPin} 
           title="Test Centres & Examiners" 
           description="Manage test centres and examiners for routes & triggers"
+          iconColor="text-red-600"
+          iconBg="bg-red-100 dark:bg-red-900/30"
         >
           <TestCentresAndExaminersManager instructorId={instructorId} />
         </SettingsTile>
@@ -375,6 +385,8 @@ const { data, error } = await supabase
           icon={Car} 
           title="Vehicle & Qualifications" 
           description="Car details, skills & social links"
+          iconColor="text-orange-600"
+          iconBg="bg-orange-100 dark:bg-orange-900/30"
         >
           <InstructorDetailsEditor instructorId={instructorId} />
         </SettingsTile>
@@ -385,6 +397,8 @@ const { data, error } = await supabase
           icon={Globe} 
           title="Mini-Website" 
           description="Share your instructor profile"
+          iconColor="text-cyan-600"
+          iconBg="bg-cyan-100 dark:bg-cyan-900/30"
         >
           <MiniWebsiteShare instructorId={instructorId} />
         </SettingsTile>
@@ -395,6 +409,8 @@ const { data, error } = await supabase
           icon={Layout} 
           title="Website Pages" 
           description="Edit your 5-page mini-website"
+          iconColor="text-indigo-600"
+          iconBg="bg-indigo-100 dark:bg-indigo-900/30"
         >
           {authInstructor?.app_slug ? (
             <MiniWebsiteCMS 
@@ -414,6 +430,8 @@ const { data, error } = await supabase
           icon={Sparkles} 
           title="Website Theme" 
           description="Colors, fonts & style presets"
+          iconColor="text-pink-600"
+          iconBg="bg-pink-100 dark:bg-pink-900/30"
         >
           <MiniWebsiteThemeEditor
             instructorId={instructorId}
@@ -439,6 +457,8 @@ const { data, error } = await supabase
           icon={Eye} 
           title="Visibility" 
           description="Control website listing"
+          iconColor="text-violet-600"
+          iconBg="bg-violet-100 dark:bg-violet-900/30"
         >
           <div className="space-y-4">
             <div className="flex items-center justify-between rounded-lg border p-4">
@@ -472,6 +492,8 @@ const { data, error } = await supabase
           icon={CalendarClock} 
           title="Booking Mode" 
           description="How pupils book lessons"
+          iconColor="text-teal-600"
+          iconBg="bg-teal-100 dark:bg-teal-900/30"
         >
           <BookingModeSelector 
             instructorId={instructorId} 
@@ -485,6 +507,8 @@ const { data, error } = await supabase
           icon={Banknote} 
           title="Deposit Payments" 
           description="Accept deposits on bookings"
+          iconColor="text-lime-600"
+          iconBg="bg-lime-100 dark:bg-lime-900/30"
         >
           <DepositSettingsEditor instructorId={instructorId} />
         </SettingsTile>
@@ -495,6 +519,8 @@ const { data, error } = await supabase
           icon={PoundSterling} 
           title="Payment Summary" 
           description="Monthly earnings & outstanding"
+          iconColor="text-green-600"
+          iconBg="bg-green-100 dark:bg-green-900/30"
         >
           <PaymentSummaryWidget 
             instructorId={instructorId} 
@@ -509,6 +535,8 @@ const { data, error } = await supabase
           icon={Calendar} 
           title="Calendar Sync" 
           description="Sync lessons to your calendar"
+          iconColor="text-sky-600"
+          iconBg="bg-sky-100 dark:bg-sky-900/30"
         >
           <CalendarConnect instructorId={instructorId} />
         </SettingsTile>
@@ -519,6 +547,8 @@ const { data, error } = await supabase
           icon={Navigation} 
           title="GPS Tracker Setup" 
           description="Configure Traccar for background tracking"
+          iconColor="text-amber-600"
+          iconBg="bg-amber-100 dark:bg-amber-900/30"
         >
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -557,6 +587,8 @@ const { data, error } = await supabase
           icon={Route} 
           title="Saved Routes" 
           description="View and manage your recorded driving routes"
+          iconColor="text-fuchsia-600"
+          iconBg="bg-fuchsia-100 dark:bg-fuchsia-900/30"
         >
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -582,6 +614,8 @@ const { data, error } = await supabase
           icon={Bell} 
           title="Push Notifications" 
           description="Manage notification preferences"
+          iconColor="text-yellow-600"
+          iconBg="bg-yellow-100 dark:bg-yellow-900/30"
         >
           <PushNotificationSettings instructorId={instructorId} />
         </SettingsTile>
@@ -592,6 +626,8 @@ const { data, error } = await supabase
           icon={FileText} 
           title="Cancellation Policy" 
           description="Set notice period & charges"
+          iconColor="text-slate-600"
+          iconBg="bg-slate-100 dark:bg-slate-900/30"
         >
           <CancellationPolicyEditor instructorId={instructorId} />
         </SettingsTile>
@@ -602,6 +638,8 @@ const { data, error } = await supabase
           icon={FileSignature} 
           title="Terms & Conditions" 
           description="Create terms for pupils to sign"
+          iconColor="text-stone-600"
+          iconBg="bg-stone-100 dark:bg-stone-900/30"
         >
           <TermsConditionsEditor instructorId={instructorId} />
         </SettingsTile>
@@ -612,6 +650,8 @@ const { data, error } = await supabase
           icon={Clock} 
           title="Working Hours" 
           description="Set your availability"
+          iconColor="text-blue-500"
+          iconBg="bg-blue-50 dark:bg-blue-900/20"
         >
           <WorkingHoursEditor instructorId={instructorId} />
         </SettingsTile>
@@ -622,6 +662,8 @@ const { data, error } = await supabase
           icon={Palette} 
           title="Pupil App Branding" 
           description="Customise your pupil portal"
+          iconColor="text-rose-600"
+          iconBg="bg-rose-100 dark:bg-rose-900/30"
         >
           <PupilAppBrandingEditor instructorId={instructorId} />
         </SettingsTile>
@@ -632,6 +674,8 @@ const { data, error } = await supabase
           icon={ImageIcon} 
           title="Images & Media" 
           description="Car photo, QR code & video"
+          iconColor="text-purple-600"
+          iconBg="bg-purple-100 dark:bg-purple-900/30"
         >
           <div className="space-y-6">
             {/* Hero/Banner Image */}
@@ -806,6 +850,8 @@ const { data, error } = await supabase
           icon={Bell} 
           title="Bulk Messaging" 
           description="Send SMS to all pupils"
+          iconColor="text-orange-500"
+          iconBg="bg-orange-50 dark:bg-orange-900/20"
         >
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -821,6 +867,8 @@ const { data, error } = await supabase
           icon={Database} 
           title="Data Export & Backup" 
           description="Download your data for backup"
+          iconColor="text-zinc-600"
+          iconBg="bg-zinc-100 dark:bg-zinc-900/30"
         >
           <DataExportManager 
             instructorId={instructorId} 
@@ -834,6 +882,8 @@ const { data, error } = await supabase
           icon={Shield} 
           title="Compliance & CPD" 
           description="Track ADI badge, insurance, MOT & CPD hours"
+          iconColor="text-emerald-500"
+          iconBg="bg-emerald-50 dark:bg-emerald-900/20"
         >
           <ComplianceTracker instructorId={instructorId} />
         </SettingsTile>
@@ -844,6 +894,8 @@ const { data, error } = await supabase
           icon={Trash2} 
           title="Reset Statistics" 
           description="Clear lesson history, payments, or progress"
+          iconColor="text-red-500"
+          iconBg="bg-red-50 dark:bg-red-900/20"
         >
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
