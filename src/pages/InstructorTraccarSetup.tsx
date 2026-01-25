@@ -72,6 +72,20 @@ export default function InstructorTraccarSetup() {
     }
   }, [instructor?.id]);
 
+  // Auto-poll for status updates every 5 seconds
+  useEffect(() => {
+    if (!instructor?.id) return;
+    
+    const pollInterval = setInterval(() => {
+      // Only poll if page is visible
+      if (!document.hidden) {
+        fetchDevices();
+      }
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [instructor?.id]);
+
   const fetchDevices = async () => {
     if (!instructor?.id) return;
     
@@ -188,12 +202,19 @@ export default function InstructorTraccarSetup() {
     }
   };
 
-  const isConnected = (device: TraccarDevice) => {
-    if (!device.last_seen_at) return false;
+  const getConnectionStatus = (device: TraccarDevice) => {
+    if (!device.last_seen_at) return 'offline';
     const lastSeen = new Date(device.last_seen_at);
     const now = new Date();
-    const diffMinutes = (now.getTime() - lastSeen.getTime()) / 1000 / 60;
-    return diffMinutes < 2; // Connected if seen within last 2 minutes
+    const diffSeconds = (now.getTime() - lastSeen.getTime()) / 1000;
+    
+    if (diffSeconds < 30) return 'active'; // Green pulsing - actively receiving
+    if (diffSeconds < 120) return 'recent'; // Yellow - recently active
+    return 'offline'; // Red - offline
+  };
+
+  const isConnected = (device: TraccarDevice) => {
+    return getConnectionStatus(device) !== 'offline';
   };
 
   if (loading || isLoading) {
@@ -208,14 +229,24 @@ export default function InstructorTraccarSetup() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background border-b px-4 py-3">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/instructor/settings")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-lg font-semibold">Traccar GPS Setup</h1>
-            <p className="text-sm text-muted-foreground">Configure external GPS tracking</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor/settings")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-lg font-semibold">Traccar GPS Setup</h1>
+              <p className="text-sm text-muted-foreground">Configure external GPS tracking</p>
+            </div>
           </div>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={fetchDevices}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </div>
 
@@ -233,8 +264,12 @@ export default function InstructorTraccarSetup() {
               <li>Download <strong>Traccar Client</strong> from your app store</li>
               <li>Create a device below to get your unique Device ID</li>
               <li>Configure Traccar Client with the Device ID and Server URL</li>
+              <li>Toggle <strong>"Service status"</strong> ON in the Traccar app to start sending GPS</li>
               <li>Start tracking from the Traccar Session page when teaching</li>
             </ol>
+            <p className="text-xs text-muted-foreground mt-3 p-2 bg-muted rounded">
+              💡 <strong>Tip:</strong> The "Service status" toggle is in the Traccar Client app on your phone — not on this page. Turn it ON to start transmitting GPS data.
+            </p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" asChild>
                 <a href="https://apps.apple.com/app/traccar-client/id843156974" target="_blank" rel="noopener noreferrer">
@@ -320,19 +355,36 @@ export default function InstructorTraccarSetup() {
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="font-medium">{device.device_name}</span>
-                        {isConnected(device) ? (
-                          <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-                            <Wifi className="h-3 w-3 mr-1" />
-                            Connected
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">
-                            <WifiOff className="h-3 w-3 mr-1" />
-                            Offline
-                          </Badge>
-                        )}
+                        {(() => {
+                          const status = getConnectionStatus(device);
+                          if (status === 'active') {
+                            return (
+                              <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                                <span className="relative flex h-2 w-2 mr-1.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                </span>
+                                Live
+                              </Badge>
+                            );
+                          } else if (status === 'recent') {
+                            return (
+                              <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+                                <Wifi className="h-3 w-3 mr-1" />
+                                Recently Active
+                              </Badge>
+                            );
+                          } else {
+                            return (
+                              <Badge variant="secondary">
+                                <WifiOff className="h-3 w-3 mr-1" />
+                                Offline
+                              </Badge>
+                            );
+                          }
+                        })()}
                         {device.current_session_id && (
                           <Badge className="bg-primary/10 text-primary border-primary/20">
                             Tracking
