@@ -256,9 +256,50 @@ export default function TraccarLiveMap({
     });
   }, [events]);
 
+  const speedMph = speedKmh !== null ? Math.round(speedKmh * 0.621371) : 0;
+  
+  // TODO: Speed limit would come from a speed limit API - for now show placeholder
+  // In a real implementation, you'd fetch this based on current lat/lon
+  const speedLimitMph = 30; // Placeholder - would come from road data API
+
   return (
     <div className={`relative w-full h-full min-h-[300px] ${className}`}>
       <div ref={mapRef} className="absolute inset-0" />
+
+      {/* UK-style Speed Roundels */}
+      {latitude !== null && longitude !== null && (
+        <div className="absolute top-4 right-4 z-20 flex flex-col gap-3">
+          {/* Current Speed Roundel */}
+          <div className="flex flex-col items-center">
+            <div 
+              className={`
+                w-16 h-16 rounded-full flex items-center justify-center
+                bg-white shadow-lg border-4
+                ${speedMph > speedLimitMph ? 'border-red-500' : 'border-green-500'}
+              `}
+            >
+              <div className="text-center">
+                <span className={`text-2xl font-bold ${speedMph > speedLimitMph ? 'text-red-600' : 'text-foreground'}`}>
+                  {speedMph}
+                </span>
+              </div>
+            </div>
+            <span className="text-xs text-white font-medium mt-1 bg-black/50 px-2 py-0.5 rounded">
+              MPH
+            </span>
+          </div>
+
+          {/* Speed Limit Roundel (UK style - red ring) */}
+          <div className="flex flex-col items-center">
+            <div className="w-14 h-14 rounded-full bg-white shadow-lg border-[5px] border-red-600 flex items-center justify-center">
+              <span className="text-xl font-bold text-foreground">{speedLimitMph}</span>
+            </div>
+            <span className="text-xs text-white font-medium mt-1 bg-black/50 px-2 py-0.5 rounded">
+              LIMIT
+            </span>
+          </div>
+        </div>
+      )}
 
       {(latitude === null || longitude === null) && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
