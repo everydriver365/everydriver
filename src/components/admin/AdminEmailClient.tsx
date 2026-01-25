@@ -403,8 +403,10 @@ export function AdminEmailClient() {
                         key={email.id}
                         onClick={() => openEmail(email)}
                         className={cn(
-                          "w-full text-left p-3 hover:bg-muted/50 transition-colors",
-                          !email.seen && "bg-primary/5"
+                          "w-full text-left p-3 hover:bg-muted/50 transition-all",
+                          !email.seen 
+                            ? "bg-primary/10 border-l-4 border-l-primary" 
+                            : "border-l-4 border-l-transparent"
                         )}
                       >
                         <div className="flex items-start gap-2">
@@ -413,13 +415,13 @@ export function AdminEmailClient() {
                               <span
                                 className={cn(
                                   "text-sm truncate",
-                                  !email.seen && "font-semibold"
+                                  !email.seen && "font-bold text-primary"
                                 )}
                               >
                                 {email.from.split("<")[0].trim() || email.from}
                               </span>
                               {!email.seen && (
-                                <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                                <div className="w-2 h-2 rounded-full bg-primary shrink-0 animate-pulse" />
                               )}
                             </div>
                             <p
