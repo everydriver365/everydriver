@@ -21,7 +21,9 @@ import {
   HelpCircle,
   Palette,
   Navigation,
-  Award
+  Award,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
+import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -85,6 +88,9 @@ export function InstructorMobileHome({
   // Use auth context for visibility status (gets refreshed properly)
   const instructorId = authInstructor?.id || instructor?.id;
   const isVisible = authInstructor?.is_active ?? instructor?.is_active;
+  
+  // Traccar device connection status
+  const { isConnected: isTraccarConnected, status: traccarStatus } = useTraccarConnectionStatus(instructorId || null);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -317,8 +323,30 @@ export function InstructorMobileHome({
           
           <div className="flex-1 relative z-10">
             <div className="flex items-center gap-2 mb-1">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              {/* Connection status indicator */}
+              {traccarStatus === "active" ? (
+                <div className="relative h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </div>
+              ) : traccarStatus === "recent" ? (
+                <div className="h-2 w-2 rounded-full bg-amber-500" />
+              ) : (
+                <div className="h-2 w-2 rounded-full bg-muted-foreground/40" />
+              )}
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Today</span>
+              {/* Online/Offline badge */}
+              {isTraccarConnected ? (
+                <span className="flex items-center gap-0.5 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-full">
+                  <Wifi className="h-2.5 w-2.5" />
+                  Online
+                </span>
+              ) : (
+                <span className="flex items-center gap-0.5 text-[9px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                  <WifiOff className="h-2.5 w-2.5" />
+                  Offline
+                </span>
+              )}
             </div>
             <h2 className="text-lg font-bold text-foreground">
               {content?.motivation_title || "READY TO TEACH?"}
