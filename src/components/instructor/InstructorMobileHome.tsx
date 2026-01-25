@@ -323,27 +323,19 @@ export function InstructorMobileHome({
           
           <div className="flex-1 relative z-10">
             <div className="flex items-center gap-2 mb-1">
-              {/* Connection status indicator */}
-              {traccarStatus === "active" ? (
-                <div className="relative h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                </div>
-              ) : traccarStatus === "recent" ? (
-                <div className="h-2 w-2 rounded-full bg-amber-500" />
-              ) : (
-                <div className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-              )}
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Today</span>
-              {/* Online/Offline badge */}
+              {/* Online/Offline badge with flashing dot */}
               {isTraccarConnected ? (
-                <span className="flex items-center gap-0.5 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-full">
-                  <Wifi className="h-2.5 w-2.5" />
+                <span className="flex items-center gap-1 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-full">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
                   Online
                 </span>
               ) : (
-                <span className="flex items-center gap-0.5 text-[9px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
-                  <WifiOff className="h-2.5 w-2.5" />
+                <span className="flex items-center gap-1 text-[9px] font-medium text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded-full">
+                  <span className="h-2 w-2 rounded-full bg-red-500" />
                   Offline
                 </span>
               )}
