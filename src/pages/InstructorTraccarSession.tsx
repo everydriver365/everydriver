@@ -21,7 +21,8 @@ import {
   Settings,
   Navigation,
   Zap,
-  Flag
+  Flag,
+  CheckCircle
 } from "lucide-react";
 import {
   Select,
@@ -89,6 +90,7 @@ export default function InstructorTraccarSession() {
   const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [drivingEvents, setDrivingEvents] = useState<DrivingEvent[]>([]);
+  const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
 
   useEffect(() => {
     if (!loading && !instructor) {
@@ -244,7 +246,7 @@ export default function InstructorTraccarSession() {
     return () => clearInterval(interval);
   }, [sessionStartTime]);
 
-  const startSession = async () => {
+  const startSession = async (routeType: "practice" | "test" | "driving_test" = "practice") => {
     if (!device || !instructor?.id) {
       toast({
         title: "Error",
@@ -254,8 +256,11 @@ export default function InstructorTraccarSession() {
       return;
     }
 
-    // If no pupil selected, automatically enable test route mode
-    const isTestRouteMode = !selectedPupilId || device.is_test_route_mode;
+    // Determine test route mode based on route type and pupil selection
+    const isTestRouteMode = routeType === "test" || routeType === "driving_test" || !selectedPupilId || device.is_test_route_mode;
+    
+    // Store the route type for when we save the route
+    setPendingRouteType(routeType);
 
     setIsStarting(true);
     try {
@@ -294,8 +299,11 @@ export default function InstructorTraccarSession() {
       setSessionStartTime(new Date());
       setTotalDistance(0);
 
+      const toastTitle = routeType === "driving_test" 
+        ? "Driving test started" 
+        : (isTestRouteMode ? "Test route started" : "Session started");
       toast({
-        title: isTestRouteMode ? "Test route started" : "Session started",
+        title: toastTitle,
         description: "GPS data is now being recorded",
       });
     } catch (err) {
@@ -356,17 +364,23 @@ export default function InstructorTraccarSession() {
           .map(p => ({ lat: p.latitude, lon: p.longitude }));
       }
 
-      // Get pupil name for route naming (or "Test Route" if no pupil)
+      // Get pupil name for route naming
       const selectedPupil = device.current_pupil_id 
         ? pupils.find(p => p.id === device.current_pupil_id)
         : null;
       const routeDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-      const routeName = selectedPupil 
-        ? `${selectedPupil.name} - ${routeDate}`
-        : `Test Route - ${routeDate}`;
       
-      // If no pupil was selected, it's always a test route
-      const isTestRoute = device.is_test_route_mode || !device.current_pupil_id;
+      // Determine route name based on route type
+      let routeName: string;
+      if (pendingRouteType === "driving_test") {
+        routeName = selectedPupil 
+          ? `Driving Test - ${selectedPupil.name} - ${routeDate}`
+          : `Driving Test - ${routeDate}`;
+      } else if (pendingRouteType === "test" || !selectedPupil) {
+        routeName = `Test Route - ${routeDate}`;
+      } else {
+        routeName = `${selectedPupil.name} - ${routeDate}`;
+      }
 
       // Get start/end locations from first/last GPS points
       let startLocation = null;
@@ -377,7 +391,7 @@ export default function InstructorTraccarSession() {
         endLocation = `${gpsPoints[gpsPoints.length-1].latitude.toFixed(4)}, ${gpsPoints[gpsPoints.length-1].longitude.toFixed(4)}`;
       }
 
-      // Auto-save the route
+      // Auto-save the route with the correct route type
       if (instructor?.id) {
         await supabase
           .from("saved_routes")
@@ -385,7 +399,7 @@ export default function InstructorTraccarSession() {
             instructor_id: instructor.id,
             telematics_id: device.current_session_id,
             name: routeName,
-            route_type: isTestRoute ? "test" : "practice",
+            route_type: pendingRouteType,
             distance_km: sessionData?.total_distance_km,
             duration_minutes: durationMinutes,
             avg_speed_kmh: sessionData?.avg_speed_kmh,
@@ -430,9 +444,12 @@ export default function InstructorTraccarSession() {
       setCompletedSessionId(sessionId);
       setShowReport(true);
 
+      const toastDescription = pendingRouteType === "driving_test" 
+        ? "Driving test route saved" 
+        : (pendingRouteType === "test" ? "Test route saved" : "Route saved automatically");
       toast({
         title: "Session ended",
-        description: isTestRoute ? "Test route saved" : "Route saved automatically",
+        description: toastDescription,
       });
     } catch (err) {
       console.error("Error stopping session:", err);
@@ -709,14 +726,14 @@ export default function InstructorTraccarSession() {
                   />
                 </div>
 
-                {/* Two-button layout for flexibility */}
+                {/* Action buttons */}
                 <div className="space-y-2">
                   {/* Start with pupil button */}
                   {selectedPupilId && (
                     <Button 
                       size="lg"
                       className="w-full h-14 text-lg font-semibold rounded-xl"
-                      onClick={startSession}
+                      onClick={() => startSession("practice")}
                       disabled={isStarting || !isConnected}
                     >
                       {isStarting ? (
@@ -734,7 +751,7 @@ export default function InstructorTraccarSession() {
                       size="lg"
                       variant="default"
                       className="w-full h-14 text-lg font-semibold rounded-xl bg-amber-600 hover:bg-amber-700"
-                      onClick={startSession}
+                      onClick={() => startSession("test")}
                       disabled={isStarting || !isConnected}
                     >
                       {isStarting ? (
@@ -745,6 +762,22 @@ export default function InstructorTraccarSession() {
                       Start Test Route
                     </Button>
                   )}
+
+                  {/* Driving Test button - always visible */}
+                  <Button 
+                    size="lg"
+                    variant="default"
+                    className="w-full h-14 text-lg font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => startSession("driving_test")}
+                    disabled={isStarting || !isConnected}
+                  >
+                    {isStarting ? (
+                      <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                    ) : (
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                    )}
+                    Driving Test
+                  </Button>
                 </div>
 
                 {!isConnected && (
