@@ -270,7 +270,8 @@ export default function InstructorRoutes() {
     
     if (activeTab === "all") return matchesSearch;
     if (activeTab === "test") return matchesSearch && route.route_type === "test";
-    if (activeTab === "practice") return matchesSearch && route.route_type !== "test";
+    if (activeTab === "driving_test") return matchesSearch && route.route_type === "driving_test";
+    if (activeTab === "practice") return matchesSearch && route.route_type === "practice";
     return matchesSearch;
   });
 
@@ -328,6 +329,12 @@ export default function InstructorRoutes() {
                     <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 text-xs">
                       <Flag className="h-3 w-3 mr-1" />
                       Test
+                    </Badge>
+                  )}
+                  {route.route_type === "driving_test" && (
+                    <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 text-xs">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Driving Test
                     </Badge>
                   )}
                 </div>
@@ -482,11 +489,15 @@ export default function InstructorRoutes() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="all">All Routes</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="driving_test" className="text-emerald-600">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Tests
+              </TabsTrigger>
               <TabsTrigger value="test">
                 <Flag className="h-3 w-3 mr-1" />
-                Test Routes
+                Routes
               </TabsTrigger>
               <TabsTrigger value="practice">Practice</TabsTrigger>
             </TabsList>
@@ -515,8 +526,10 @@ export default function InstructorRoutes() {
                     <Route className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                     <h3 className="font-medium mb-1">No routes found</h3>
                     <p className="text-sm text-muted-foreground">
-                      {activeTab === "test" 
-                        ? "Enable test route mode and complete a trip to save test routes"
+                      {activeTab === "driving_test" 
+                        ? "Use the 'Driving Test' button to record actual driving test routes"
+                        : activeTab === "test" 
+                        ? "Use the 'Test Route' option to save practice test routes"
                         : "Complete trips to save routes here"}
                     </p>
                   </CardContent>
