@@ -257,8 +257,8 @@ export default function TraccarLiveMap({
   }, [events]);
 
   return (
-    <div className={`relative ${className}`}>
-      <div ref={mapRef} className="w-full h-full" />
+    <div className={`relative w-full h-full min-h-[300px] ${className}`}>
+      <div ref={mapRef} className="absolute inset-0" />
 
       {(latitude === null || longitude === null) && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
