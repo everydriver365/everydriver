@@ -8,6 +8,7 @@ import {
   FileText,
   Filter,
   Loader2,
+  MapPin,
   Plus,
   Search,
   TrendingUp,
@@ -42,6 +43,7 @@ import {
   StandardsCheckTrigger,
   ExaminerManager,
   DrivingTestReportForm,
+  TestCentreAnalytics,
 } from "@/components/instructor/driving-test";
 
 interface TestResult {
@@ -244,6 +246,10 @@ export default function InstructorTestResults() {
               <FileText className="h-4 w-4 mr-2" />
               Results
             </TabsTrigger>
+            <TabsTrigger value="centres">
+              <MapPin className="h-4 w-4 mr-2" />
+              Test Centres
+            </TabsTrigger>
             <TabsTrigger value="triggers">
               <TrendingUp className="h-4 w-4 mr-2" />
               Standards Check
@@ -384,6 +390,11 @@ export default function InstructorTestResults() {
                 </Table>
               </Card>
             )}
+          </TabsContent>
+
+          {/* Test Centres Tab */}
+          <TabsContent value="centres">
+            <TestCentreAnalytics instructorId={instructor.id} />
           </TabsContent>
 
           {/* Standards Check Tab */}
