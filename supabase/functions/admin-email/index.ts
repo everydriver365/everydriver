@@ -37,10 +37,13 @@ class IMAPClient {
   private decoder = new TextDecoder();
   private buffer = new Uint8Array(65536);
   private tagCounter = 1;
+  private lastResponse: string = "";
 
   async connect(): Promise<void> {
     this.conn = await Deno.connectTls({ hostname: IMAP_HOST, port: IMAP_PORT });
-    await this.readResponse(); // Read greeting
+    // IMAP server greeting is untagged (no A1/A2... prefix). We should not wait
+    // for a tagged OK/NO/BAD here, otherwise the request can hang and time out.
+    await this.readResponse(undefined);
   }
 
   async close(): Promise<void> {
@@ -55,12 +58,15 @@ class IMAPClient {
     }
   }
 
-  private async readResponse(): Promise<string> {
+  private async readResponse(expectedTag?: string): Promise<string> {
     if (!this.conn) throw new Error("Not connected");
     
     let fullResponse = "";
     const startTime = Date.now();
-    const timeout = 10000; // 10 second timeout
+    const timeout = 8000; // 8 second timeout
+    const tagRegex = expectedTag
+      ? new RegExp(`^${expectedTag}\\s+(OK|NO|BAD)`, "m")
+      : null;
     
     while (Date.now() - startTime < timeout) {
       const n = await this.conn.read(this.buffer);
@@ -68,38 +74,39 @@ class IMAPClient {
       
       const chunk = this.decoder.decode(this.buffer.subarray(0, n));
       fullResponse += chunk;
-      
-      // Check if response is complete (ends with tagged response)
-      if (fullResponse.includes(`A${this.tagCounter - 1} OK`) || 
-          fullResponse.includes(`A${this.tagCounter - 1} NO`) ||
-          fullResponse.includes(`A${this.tagCounter - 1} BAD`)) {
-        break;
-      }
+
+      // Tagged response (most commands)
+      if (tagRegex && tagRegex.test(fullResponse)) break;
+
+      // Untagged response (greeting / partial responses)
+      if (!tagRegex && fullResponse.includes("\r\n")) break;
       
       // Small delay to accumulate more data
       await new Promise(r => setTimeout(r, 50));
     }
-    
+
+    this.lastResponse = fullResponse;
     return fullResponse;
   }
 
-  private async sendCommand(cmd: string): Promise<string> {
+  private async sendCommand(cmd: string): Promise<{ tag: string; response: string }> {
     if (!this.conn) throw new Error("Not connected");
     
     const tag = `A${this.tagCounter++}`;
     await this.conn.write(this.encoder.encode(`${tag} ${cmd}\r\n`));
     await new Promise(r => setTimeout(r, 100));
-    return await this.readResponse();
+    const response = await this.readResponse(tag);
+    return { tag, response };
   }
 
   async login(): Promise<boolean> {
     const pass = Deno.env.get("ADMIN_EMAIL_PASSWORD") || "";
-    const response = await this.sendCommand(`LOGIN "${EMAIL_USER}" "${pass}"`);
-    return response.includes("OK");
+    const { tag, response } = await this.sendCommand(`LOGIN "${EMAIL_USER}" "${pass}"`);
+    return new RegExp(`^${tag}\\s+OK`, "m").test(response);
   }
 
   async listFolders(): Promise<EmailFolder[]> {
-    const response = await this.sendCommand('LIST "" "*"');
+    const { response } = await this.sendCommand('LIST "" "*"');
     const folders: EmailFolder[] = [];
     
     const lines = response.split("\r\n");
@@ -122,7 +129,7 @@ class IMAPClient {
     // Get counts for each folder
     for (const folder of folders) {
       try {
-        const statusRes = await this.sendCommand(`STATUS "${folder.path}" (MESSAGES UNSEEN)`);
+        const { response: statusRes } = await this.sendCommand(`STATUS "${folder.path}" (MESSAGES UNSEEN)`);
         const messagesMatch = statusRes.match(/MESSAGES\s+(\d+)/);
         const unseenMatch = statusRes.match(/UNSEEN\s+(\d+)/);
         folder.count = messagesMatch ? parseInt(messagesMatch[1], 10) : 0;
@@ -136,7 +143,7 @@ class IMAPClient {
   }
 
   async selectFolder(folder: string): Promise<number> {
-    const response = await this.sendCommand(`SELECT "${folder}"`);
+    const { response } = await this.sendCommand(`SELECT "${folder}"`);
     const existsMatch = response.match(/(\d+) EXISTS/);
     return existsMatch ? parseInt(existsMatch[1], 10) : 0;
   }
@@ -149,7 +156,7 @@ class IMAPClient {
     }
     
     const start = Math.max(1, messageCount - limit + 1);
-    const response = await this.sendCommand(
+    const { response } = await this.sendCommand(
       `FETCH ${start}:${messageCount} (UID FLAGS ENVELOPE BODY.PEEK[TEXT]<0.500>)`
     );
     
@@ -159,7 +166,7 @@ class IMAPClient {
   async fetchEmail(folder: string, uid: number): Promise<EmailMessage | null> {
     await this.selectFolder(folder);
     
-    const response = await this.sendCommand(
+    const { response } = await this.sendCommand(
       `UID FETCH ${uid} (FLAGS ENVELOPE BODY[TEXT])`
     );
     
@@ -265,8 +272,8 @@ class IMAPClient {
     await this.selectFolder(fromFolder);
     
     // Copy to destination
-    const copyRes = await this.sendCommand(`UID COPY ${uid} "${toFolder}"`);
-    if (!copyRes.includes("OK")) return false;
+    const { tag: copyTag, response: copyRes } = await this.sendCommand(`UID COPY ${uid} "${toFolder}"`);
+    if (!new RegExp(`^${copyTag}\\s+OK`, "m").test(copyRes)) return false;
     
     // Delete from source
     await this.sendCommand(`UID STORE ${uid} +FLAGS (\\Deleted)`);
@@ -278,8 +285,14 @@ class IMAPClient {
   async deleteEmail(folder: string, uid: number): Promise<boolean> {
     await this.selectFolder(folder);
     await this.sendCommand(`UID STORE ${uid} +FLAGS (\\Deleted)`);
-    const res = await this.sendCommand("EXPUNGE");
-    return res.includes("OK");
+    const { tag, response: res } = await this.sendCommand("EXPUNGE");
+    return new RegExp(`^${tag}\\s+OK`, "m").test(res);
+  }
+
+  getLastResponseSnippet(maxLen: number = 500): string {
+    const trimmed = (this.lastResponse || "").trim();
+    if (trimmed.length <= maxLen) return trimmed;
+    return trimmed.slice(-maxLen);
   }
 }
 
@@ -397,7 +410,9 @@ serve(async (req) => {
     if (action === "folders") {
       await imap.connect();
       const loggedIn = await imap.login();
-      if (!loggedIn) throw new Error("Login failed");
+      if (!loggedIn) {
+        throw new Error(`Login failed. Server said: ${imap.getLastResponseSnippet(300)}`);
+      }
       
       const folders = await imap.listFolders();
       await imap.close();
@@ -413,7 +428,9 @@ serve(async (req) => {
       
       await imap.connect();
       const loggedIn = await imap.login();
-      if (!loggedIn) throw new Error("Login failed");
+      if (!loggedIn) {
+        throw new Error(`Login failed. Server said: ${imap.getLastResponseSnippet(300)}`);
+      }
       
       const emails = await imap.fetchEmails(folder, limit);
       await imap.close();
@@ -429,7 +446,9 @@ serve(async (req) => {
       
       await imap.connect();
       const loggedIn = await imap.login();
-      if (!loggedIn) throw new Error("Login failed");
+      if (!loggedIn) {
+        throw new Error(`Login failed. Server said: ${imap.getLastResponseSnippet(300)}`);
+      }
       
       const email = await imap.fetchEmail(folder, uid);
       await imap.close();
@@ -467,7 +486,9 @@ serve(async (req) => {
       
       await imap.connect();
       const loggedIn = await imap.login();
-      if (!loggedIn) throw new Error("Login failed");
+      if (!loggedIn) {
+        throw new Error(`Login failed. Server said: ${imap.getLastResponseSnippet(300)}`);
+      }
       
       const moved = await imap.moveEmail(uid, fromFolder, toFolder);
       await imap.close();
@@ -483,7 +504,9 @@ serve(async (req) => {
       
       await imap.connect();
       const loggedIn = await imap.login();
-      if (!loggedIn) throw new Error("Login failed");
+      if (!loggedIn) {
+        throw new Error(`Login failed. Server said: ${imap.getLastResponseSnippet(300)}`);
+      }
       
       const deleted = await imap.deleteEmail(folder, uid);
       await imap.close();
