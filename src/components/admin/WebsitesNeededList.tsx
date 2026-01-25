@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Globe } from "lucide-react";
+import { Plus, Trash2, Globe, Pencil, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface WebsiteItem {
   id: string;
   title: string;
+  notes: string | null;
   is_completed: boolean;
   display_order: number;
 }
@@ -18,7 +19,11 @@ interface WebsiteItem {
 export function WebsitesNeededList() {
   const [items, setItems] = useState<WebsiteItem[]>([]);
   const [newItem, setNewItem] = useState("");
+  const [newNotes, setNewNotes] = useState("");
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editNotes, setEditNotes] = useState("");
 
   useEffect(() => {
     fetchItems();
@@ -61,6 +66,7 @@ export function WebsitesNeededList() {
 
     const { error } = await supabase.from("admin_websites_needed").insert({
       title: newItem.trim(),
+      notes: newNotes.trim() || null,
       display_order: maxOrder,
     });
 
@@ -68,6 +74,7 @@ export function WebsitesNeededList() {
       toast.error("Failed to add website");
     } else {
       setNewItem("");
+      setNewNotes("");
     }
   };
 
@@ -93,8 +100,108 @@ export function WebsitesNeededList() {
     }
   };
 
+  const startEdit = (item: WebsiteItem) => {
+    setEditingId(item.id);
+    setEditTitle(item.title);
+    setEditNotes(item.notes || "");
+  };
+
+  const saveEdit = async () => {
+    if (!editingId || !editTitle.trim()) return;
+
+    const { error } = await supabase
+      .from("admin_websites_needed")
+      .update({ 
+        title: editTitle.trim(),
+        notes: editNotes.trim() || null 
+      })
+      .eq("id", editingId);
+
+    if (error) {
+      toast.error("Failed to update website");
+    } else {
+      setEditingId(null);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditTitle("");
+    setEditNotes("");
+  };
+
   const incompleteItems = items.filter(t => !t.is_completed);
   const completedItems = items.filter(t => t.is_completed);
+
+  const renderItem = (item: WebsiteItem, isCompleted: boolean) => {
+    if (editingId === item.id) {
+      return (
+        <div key={item.id} className="p-2 rounded-lg bg-muted/50 space-y-2">
+          <Input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            placeholder="Website name"
+            className="h-8"
+          />
+          <Input
+            value={editNotes}
+            onChange={(e) => setEditNotes(e.target.value)}
+            placeholder="Friendly name / notes"
+            className="h-8"
+          />
+          <div className="flex gap-1 justify-end">
+            <Button size="sm" variant="ghost" onClick={cancelEdit}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+            <Button size="sm" onClick={saveEdit}>
+              <Check className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={item.id}
+        className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 group"
+      >
+        <Checkbox
+          checked={item.is_completed}
+          onCheckedChange={() => toggleItem(item.id, item.is_completed)}
+          className="mt-0.5"
+        />
+        <div className="flex-1 min-w-0">
+          <span className={cn("text-sm block", isCompleted && "line-through text-muted-foreground")}>
+            {item.title}
+          </span>
+          {item.notes && (
+            <span className="text-xs text-muted-foreground block truncate">
+              {item.notes}
+            </span>
+          )}
+        </div>
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => startEdit(item)}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => deleteItem(item.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Card>
@@ -106,17 +213,28 @@ export function WebsitesNeededList() {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add new item */}
-        <div className="flex gap-2">
-          <Input
-            placeholder="Add a website..."
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addItem()}
-            className="flex-1"
-          />
-          <Button size="icon" onClick={addItem} disabled={!newItem.trim()}>
-            <Plus className="h-4 w-4" />
-          </Button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Website name..."
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && addItem()}
+              className="flex-1"
+            />
+            <Button size="icon" onClick={addItem} disabled={!newItem.trim()}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          {newItem.trim() && (
+            <Input
+              placeholder="Friendly name / notes (optional)"
+              value={newNotes}
+              onChange={(e) => setNewNotes(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addItem()}
+              className="text-sm"
+            />
+          )}
         </div>
 
         {/* List */}
@@ -127,54 +245,14 @@ export function WebsitesNeededList() {
             <p className="text-sm text-muted-foreground text-center py-4">No websites listed. Add one above!</p>
           ) : (
             <>
-              {incompleteItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 group"
-                >
-                  <Checkbox
-                    checked={item.is_completed}
-                    onCheckedChange={() => toggleItem(item.id, item.is_completed)}
-                  />
-                  <span className="flex-1 text-sm">{item.title}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => deleteItem(item.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                  </Button>
-                </div>
-              ))}
+              {incompleteItems.map((item) => renderItem(item, false))}
               
               {completedItems.length > 0 && (
                 <>
                   <div className="text-xs text-muted-foreground pt-2 border-t">
                     Completed ({completedItems.length})
                   </div>
-                  {completedItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 group"
-                    >
-                      <Checkbox
-                        checked={item.is_completed}
-                        onCheckedChange={() => toggleItem(item.id, item.is_completed)}
-                      />
-                      <span className={cn("flex-1 text-sm line-through text-muted-foreground")}>
-                        {item.title}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => deleteItem(item.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                      </Button>
-                    </div>
-                  ))}
+                  {completedItems.map((item) => renderItem(item, true))}
                 </>
               )}
             </>
