@@ -215,7 +215,7 @@ serve(async (req) => {
 
     // If session is active, record data and create alerts
     if (typedDevice.current_session_id && typedDevice.current_pupil_id) {
-      // Insert GPS point
+      // Insert GPS point (without accuracy column which doesn't exist)
       const { error: gpsError } = await supabase
         .from("telematics_gps_points")
         .insert({
@@ -225,7 +225,6 @@ serve(async (req) => {
           speed_kmh: speedKmh,
           heading: bearing,
           altitude,
-          accuracy,
           recorded_at: now.toISOString(),
         });
 
@@ -252,18 +251,17 @@ serve(async (req) => {
           .eq("id", typedDevice.current_session_id);
       }
 
-      // Update live position using RPC
+      // Update live position using RPC (match correct parameter names)
       try {
         const { error: liveError } = await supabase.rpc("update_live_position", {
           p_pupil_id: typedDevice.current_pupil_id,
-          p_instructor_id: typedDevice.instructor_id,
           p_latitude: lat,
           p_longitude: lon,
           p_speed_kmh: speedKmh,
           p_heading: bearing,
           p_accuracy: accuracy,
           p_trip_status: speedKmh > 5 ? "driving" : "stopped",
-          p_telematics_session_id: typedDevice.current_session_id,
+          p_session_id: typedDevice.current_session_id,
         });
 
         if (liveError) {
