@@ -215,7 +215,7 @@ serve(async (req) => {
 
     // If session is active, record data and create alerts
     if (typedDevice.current_session_id && typedDevice.current_pupil_id) {
-      // Insert GPS point (without accuracy column which doesn't exist)
+      // Insert GPS point (using correct column names from schema)
       const { error: gpsError } = await supabase
         .from("telematics_gps_points")
         .insert({
@@ -224,7 +224,8 @@ serve(async (req) => {
           longitude: lon,
           speed_kmh: speedKmh,
           heading: bearing,
-          altitude,
+          altitude_m: altitude,
+          accuracy_m: accuracy,
           recorded_at: now.toISOString(),
         });
 
