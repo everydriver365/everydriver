@@ -55,20 +55,64 @@ serve(async (req) => {
     const url = new URL(req.url);
     const params = url.searchParams;
 
-    // Parse OsmAnd protocol parameters
-    const deviceId = params.get("id");
-    const lat = parseFloat(params.get("lat") || "");
-    const lon = parseFloat(params.get("lon") || "");
-    // Speed comes in m/s from Traccar, convert to km/h
-    const speedMs = parseFloat(params.get("speed") || "0");
-    const speedKmh = speedMs * 3.6;
-    const bearing = parseFloat(params.get("bearing") || params.get("hdg") || "0");
-    const altitude = parseFloat(params.get("altitude") || params.get("alt") || "0");
-    const accuracy = parseFloat(params.get("accuracy") || params.get("acc") || "0");
-    const timestamp = params.get("timestamp") || new Date().toISOString();
-    const battery = parseFloat(params.get("batt") || "0");
+    let deviceId: string | null = null;
+    let lat: number = NaN;
+    let lon: number = NaN;
+    let speedMs: number = 0;
+    let bearing: number = 0;
+    let altitude: number = 0;
+    let accuracy: number = 0;
+    let timestamp: string = new Date().toISOString();
+    let battery: number = 0;
 
-    console.log(`[Traccar] Received: device=${deviceId}, lat=${lat}, lon=${lon}, speed=${speedKmh.toFixed(1)}km/h, bearing=${bearing}`);
+    // Check if this is a JSON POST request (modern iOS/Android clients)
+    const contentType = req.headers.get("content-type") || "";
+    
+    if (req.method === "POST" && contentType.includes("application/json")) {
+      // Parse JSON body format (iOS Traccar Client v9.0+)
+      const body = await req.json();
+      console.log(`[Traccar] Received JSON body:`, JSON.stringify(body));
+      
+      // Handle the nested structure from iOS client
+      if (body.location && body.location.coords) {
+        deviceId = body.device_id || body.deviceId || body.id;
+        lat = body.location.coords.latitude;
+        lon = body.location.coords.longitude;
+        speedMs = body.location.coords.speed || 0;
+        bearing = body.location.coords.heading || 0;
+        altitude = body.location.coords.altitude || 0;
+        accuracy = body.location.coords.accuracy || 0;
+        timestamp = body.location.timestamp || new Date().toISOString();
+        battery = (body.location.battery?.level || 0) * 100;
+      } else {
+        // Flat JSON structure
+        deviceId = body.id || body.device_id || body.deviceId;
+        lat = body.lat || body.latitude;
+        lon = body.lon || body.longitude;
+        speedMs = body.speed || 0;
+        bearing = body.bearing || body.heading || 0;
+        altitude = body.altitude || body.alt || 0;
+        accuracy = body.accuracy || body.acc || 0;
+        timestamp = body.timestamp || new Date().toISOString();
+        battery = body.batt || body.battery || 0;
+      }
+    } else {
+      // Parse OsmAnd protocol query parameters (legacy format)
+      deviceId = params.get("id");
+      lat = parseFloat(params.get("lat") || "");
+      lon = parseFloat(params.get("lon") || "");
+      speedMs = parseFloat(params.get("speed") || "0");
+      bearing = parseFloat(params.get("bearing") || params.get("hdg") || "0");
+      altitude = parseFloat(params.get("altitude") || params.get("alt") || "0");
+      accuracy = parseFloat(params.get("accuracy") || params.get("acc") || "0");
+      timestamp = params.get("timestamp") || new Date().toISOString();
+      battery = parseFloat(params.get("batt") || "0");
+    }
+
+    // Speed comes in m/s, convert to km/h
+    const speedKmh = speedMs * 3.6;
+
+    console.log(`[Traccar] Parsed: device=${deviceId}, lat=${lat}, lon=${lon}, speed=${speedKmh.toFixed(1)}km/h, bearing=${bearing}`);
 
     // Validate required parameters
     if (!deviceId) {
