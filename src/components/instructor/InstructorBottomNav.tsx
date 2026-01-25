@@ -6,7 +6,7 @@ import {
   Wallet, 
   Navigation,
   MessageCircle,
-  Route,
+  PoundSterling,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -39,9 +39,9 @@ const navItems: NavItem[] = [
     path: "/instructor/traccar"
   },
   { 
-    label: "Routes", 
-    icon: Route, 
-    path: "/instructor/routes"
+    label: "Pay", 
+    icon: PoundSterling, 
+    path: "/instructor/pay"
   },
   { 
     label: "Pupils", 
