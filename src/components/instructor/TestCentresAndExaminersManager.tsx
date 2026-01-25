@@ -515,14 +515,14 @@ export function TestCentresAndExaminersManager({ instructorId }: Props) {
                     <div className="space-y-2">
                       <Label>Primary Test Centre</Label>
                       <Select
-                        value={examinerTestCentreId}
-                        onValueChange={setExaminerTestCentreId}
+                        value={examinerTestCentreId || "none"}
+                        onValueChange={(value) => setExaminerTestCentreId(value === "none" ? "" : value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select test centre..." />
                         </SelectTrigger>
                         <SelectContent className="z-50 bg-popover">
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {selectedCentres.length > 0 ? (
                             selectedCentres.map((tc) => (
                               <SelectItem key={tc.id} value={tc.id}>
