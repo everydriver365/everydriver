@@ -428,8 +428,8 @@ export function InstructorMobileHome({
                     >
                       <Link to={action.route}>
                         <div className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex items-center gap-4 shadow-lg active:shadow-md transition-all">
-                          <div className="relative w-12 h-12 rounded-xl bg-muted dark:bg-white/10 flex items-center justify-center">
-                            <Icon className="h-6 w-6 text-muted-foreground dark:text-white/70" />
+                          <div className="relative w-12 h-12 rounded-xl bg-violet-500/15 dark:bg-violet-500/20 flex items-center justify-center">
+                            <Icon className="h-6 w-6 text-violet-600 dark:text-violet-400" />
                             {showBadge && (
                               <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
                                 {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
