@@ -35,6 +35,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import SessionRouteReport from "@/components/instructor/SessionRouteReport";
 import TraccarLiveMap from "@/components/instructor/TraccarLiveMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
+import { TraccarConnectionChecklist } from "@/components/instructor/TraccarConnectionChecklist";
 
 interface TraccarDevice {
   id: string;
@@ -713,26 +714,34 @@ export default function InstructorTraccarSession() {
           </>
         ) : (
           /* Pre-session: Pupil Selection Overlay */
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/30">
-            <div className="w-full max-w-sm space-y-6">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/30 overflow-y-auto">
+            <div className="w-full max-w-sm space-y-5 py-4">
+              {/* Header */}
               <div className="text-center">
-                <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="h-16 w-16 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
                   {device?.is_test_route_mode || !selectedPupilId ? (
-                    <Flag className="h-10 w-10 text-primary" />
+                    <Flag className="h-8 w-8 text-primary" />
                   ) : (
-                    <User className="h-10 w-10 text-primary" />
+                    <User className="h-8 w-8 text-primary" />
                   )}
                 </div>
                 <h2 className="text-xl font-semibold mb-1">Start Tracking</h2>
                 <p className="text-sm text-muted-foreground">
-                  Select a pupil or start a test route
+                  Connect your device and select a pupil
                 </p>
               </div>
 
+              {/* Connection Checklist */}
+              <TraccarConnectionChecklist
+                isConnected={isConnected}
+                lastSeenAt={device.last_seen_at}
+                deviceName={device.device_name || "Traccar Device"}
+              />
+
+              {/* Pupil Selection - only show when connected */}
               <div className="space-y-4">
                 <Select value={selectedPupilId} onValueChange={(value) => {
                   setSelectedPupilId(value);
-                  // If pupil selected, turn off test route mode unless manually enabled
                 }}>
                   <SelectTrigger className="h-14 text-base">
                     <SelectValue placeholder="Select pupil (optional)..." />
@@ -765,7 +774,6 @@ export default function InstructorTraccarSession() {
                     checked={device?.is_test_route_mode || !selectedPupilId}
                     onCheckedChange={async (checked) => {
                       if (!device) return;
-                      // Only allow toggle if pupil is selected
                       if (selectedPupilId) {
                         await supabase
                           .from("traccar_devices")
@@ -827,14 +835,6 @@ export default function InstructorTraccarSession() {
                     Driving Test
                   </Button>
                 </div>
-
-                {!isConnected && (
-                  <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <p className="text-sm text-amber-700 dark:text-amber-400 text-center">
-                      ⚠️ Device is offline. Start Traccar Client on your phone.
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           </div>
