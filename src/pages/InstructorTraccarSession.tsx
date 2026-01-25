@@ -511,11 +511,16 @@ export default function InstructorTraccarSession() {
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/instructor")}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <span className="font-medium text-sm">
-              {isSessionActive 
-                ? (currentPupil?.name || (device?.is_test_route_mode ? "Test Route" : "Tracking"))
-                : "Live Tracking"}
-            </span>
+            <div className="flex flex-col">
+              <span className="font-medium text-sm">
+                {isSessionActive 
+                  ? (device?.is_test_route_mode && !currentPupil ? "Test Route" : (currentPupil?.name || "Tracking"))
+                  : "Live Tracking"}
+              </span>
+              {isSessionActive && device?.is_test_route_mode && currentPupil && (
+                <span className="text-xs text-muted-foreground">Test Route Mode</span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {isConnected ? (
