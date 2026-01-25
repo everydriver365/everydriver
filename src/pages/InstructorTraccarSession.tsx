@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -17,9 +16,10 @@ import {
   AlertTriangle,
   Clock,
   User,
-  Settings
+  Settings,
+  Navigation,
+  Zap
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -54,6 +54,17 @@ interface AlertCounts {
   total: number;
   speeding: number;
   braking: number;
+  acceleration: number;
+}
+
+interface DrivingEvent {
+  id: string;
+  alert_type: string;
+  severity: string;
+  latitude: number | null;
+  longitude: number | null;
+  speed_kmh: number | null;
+  created_at: string;
 }
 
 export default function InstructorTraccarSession() {
@@ -68,10 +79,12 @@ export default function InstructorTraccarSession() {
   const [isStarting, setIsStarting] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [alertCounts, setAlertCounts] = useState<AlertCounts>({ total: 0, speeding: 0, braking: 0 });
+  const [alertCounts, setAlertCounts] = useState<AlertCounts>({ total: 0, speeding: 0, braking: 0, acceleration: 0 });
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [showReport, setShowReport] = useState(false);
   const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
+  const [totalDistance, setTotalDistance] = useState<number>(0);
+  const [drivingEvents, setDrivingEvents] = useState<DrivingEvent[]>([]);
 
   useEffect(() => {
     if (!loading && !instructor) {
@@ -103,26 +116,28 @@ export default function InstructorTraccarSession() {
       if (devices && devices.length > 0) {
         setDevice(devices[0] as TraccarDevice);
         
-        // If session is active, restore timer
+        // If session is active, restore timer and distance
         if (devices[0].current_session_id) {
           const { data: session } = await supabase
             .from("lesson_telematics")
-            .select("started_at")
+            .select("started_at, total_distance_km")
             .eq("id", devices[0].current_session_id)
             .single();
           
           if (session?.started_at) {
             setSessionStartTime(new Date(session.started_at));
           }
+          if (session?.total_distance_km) {
+            setTotalDistance(session.total_distance_km);
+          }
         }
       }
 
-      // Fetch pupils
-      const { data: pupilData, error: pupilError } = await (supabase as any)
+      // Fetch pupils (without is_active filter since column doesn't exist)
+      const { data: pupilData, error: pupilError } = await supabase
         .from("pupils")
         .select("id, name")
         .eq("instructor_id", instructor.id)
-        .eq("is_active", true)
         .order("name");
       
       if (pupilError) throw pupilError;
@@ -154,36 +169,51 @@ export default function InstructorTraccarSession() {
       if (data) {
         setDevice(data as TraccarDevice);
       }
+
+      // Also fetch distance if session active
+      if (device.current_session_id) {
+        const { data: session } = await supabase
+          .from("lesson_telematics")
+          .select("total_distance_km")
+          .eq("id", device.current_session_id)
+          .single();
+        
+        if (session?.total_distance_km) {
+          setTotalDistance(session.total_distance_km);
+        }
+      }
     };
 
     const interval = setInterval(pollDevice, 3000);
     return () => clearInterval(interval);
-  }, [device?.id]);
+  }, [device?.id, device?.current_session_id]);
 
-  // Fetch alert counts when session is active
+  // Fetch alert counts and events when session is active
   useEffect(() => {
     if (!device?.current_session_id) {
-      setAlertCounts({ total: 0, speeding: 0, braking: 0 });
+      setAlertCounts({ total: 0, speeding: 0, braking: 0, acceleration: 0 });
+      setDrivingEvents([]);
       return;
     }
 
     const fetchAlerts = async () => {
       const { data, error } = await supabase
-        .from("telematics_realtime_alerts" as any)
-        .select("alert_type")
-        .eq("telematics_id", device.current_session_id) as { 
-          data: { alert_type: string }[] | null; 
-          error: unknown 
-        };
+        .from("telematics_realtime_alerts")
+        .select("id, alert_type, severity, latitude, longitude, speed_kmh, created_at")
+        .eq("telematics_id", device.current_session_id)
+        .order("created_at", { ascending: false });
 
       if (!error && data) {
-        const speeding = data.filter((a: { alert_type: string }) => a.alert_type === "speeding").length;
-        const braking = data.filter((a: { alert_type: string }) => a.alert_type === "harsh_braking").length;
+        const speeding = data.filter((a) => a.alert_type === "speeding").length;
+        const braking = data.filter((a) => a.alert_type === "harsh_braking").length;
+        const acceleration = data.filter((a) => a.alert_type === "harsh_acceleration").length;
         setAlertCounts({
           total: data.length,
           speeding,
           braking,
+          acceleration,
         });
+        setDrivingEvents(data as DrivingEvent[]);
       }
     };
 
@@ -229,6 +259,7 @@ export default function InstructorTraccarSession() {
           instructor_id: instructor.id,
           pupil_id: selectedPupilId,
           started_at: new Date().toISOString(),
+          total_distance_km: 0,
         })
         .select()
         .single();
@@ -252,10 +283,11 @@ export default function InstructorTraccarSession() {
         current_pupil_id: selectedPupilId,
       });
       setSessionStartTime(new Date());
+      setTotalDistance(0);
 
       toast({
         title: "Session started",
-        description: "GPS data is now being recorded to the pupil's history",
+        description: "GPS data is now being recorded",
       });
     } catch (err) {
       console.error("Error starting session:", err);
@@ -348,10 +380,12 @@ export default function InstructorTraccarSession() {
 
   const isSessionActive = !!device?.current_session_id;
   const currentPupil = pupils.find(p => p.id === device?.current_pupil_id);
+  const speedMph = device?.last_speed_kmh !== null ? Math.round(device.last_speed_kmh * 0.621371) : null;
+  const distanceMiles = totalDistance * 0.621371;
 
   if (loading || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -359,255 +393,231 @@ export default function InstructorTraccarSession() {
 
   if (!device) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="sticky top-0 z-10 bg-background border-b px-4 py-3">
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-3">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/instructor")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-semibold">Traccar Session</h1>
+            <h1 className="text-lg font-semibold">Live Tracking</h1>
           </div>
         </div>
-        <div className="p-4">
-          <Card>
-            <CardContent className="py-8 text-center">
-              <WifiOff className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-              <h3 className="font-semibold mb-2">No Device Configured</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Set up a Traccar device before starting a session
-              </p>
-              <Button onClick={() => navigate("/instructor/settings/traccar")}>
-                <Settings className="h-4 w-4 mr-2" />
-                Setup Device
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center">
+            <WifiOff className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="font-semibold text-lg mb-2">No Device Configured</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Set up a Traccar device before starting a session
+            </p>
+            <Button size="lg" onClick={() => navigate("/instructor/settings/traccar")}>
+              <Settings className="h-5 w-5 mr-2" />
+              Setup Device
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Compact Header */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-4 py-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor")}>
-              <ArrowLeft className="h-5 w-5" />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/instructor")}>
+              <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div>
-              <h1 className="text-lg font-semibold">Traccar Session</h1>
-              <div className="flex items-center gap-2">
-                {isConnected ? (
-                  <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">
-                    <Wifi className="h-3 w-3 mr-1" />
-                    Connected
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="text-xs">
-                    <WifiOff className="h-3 w-3 mr-1" />
-                    Offline
-                  </Badge>
-                )}
-              </div>
-            </div>
+            <span className="font-medium text-sm">
+              {isSessionActive ? currentPupil?.name || "Tracking" : "Live Tracking"}
+            </span>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => navigate("/instructor/settings/traccar")}>
-            <Settings className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {isConnected ? (
+              <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-xs px-2 py-0.5">
+                <span className="relative flex h-2 w-2 mr-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                Live
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                <WifiOff className="h-3 w-3 mr-1" />
+                Offline
+              </Badge>
+            )}
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate("/instructor/settings/traccar")}>
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        {/* Session Controls */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">
-              {isSessionActive ? "Active Session" : "Start Session"}
-            </CardTitle>
-            {!isSessionActive && (
-              <CardDescription>Select a pupil and start tracking</CardDescription>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {isSessionActive ? (
-              <>
-                {/* Active session info */}
-                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary" />
-                  </div>
+      {/* Full Screen Map or Pupil Selection */}
+      <div className="flex-1 relative">
+        {isSessionActive ? (
+          <>
+            {/* Live Map - Full Screen */}
+            <TraccarLiveMap
+              latitude={device.last_latitude}
+              longitude={device.last_longitude}
+              heading={device.last_heading}
+              speedKmh={device.last_speed_kmh}
+              isConnected={isConnected}
+              sessionId={device.current_session_id}
+              events={drivingEvents}
+              className="absolute inset-0"
+            />
+
+            {/* Floating Stats Bar */}
+            <div className="absolute bottom-24 left-4 right-4 z-20">
+              <div className="bg-background/95 backdrop-blur rounded-2xl shadow-lg border p-3">
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  {/* Speed */}
                   <div>
-                    <p className="font-medium">{currentPupil?.name || "Unknown Pupil"}</p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {formatElapsedTime(elapsedTime)}
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-0.5">
+                      <Gauge className="h-3 w-3" />
+                    </div>
+                    <p className="text-lg font-bold">
+                      {speedMph !== null ? speedMph : "--"}
                     </p>
+                    <p className="text-[10px] text-muted-foreground">mph</p>
+                  </div>
+                  
+                  {/* Time */}
+                  <div>
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-0.5">
+                      <Clock className="h-3 w-3" />
+                    </div>
+                    <p className="text-lg font-bold">{formatElapsedTime(elapsedTime)}</p>
+                    <p className="text-[10px] text-muted-foreground">time</p>
+                  </div>
+                  
+                  {/* Distance */}
+                  <div>
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-0.5">
+                      <Navigation className="h-3 w-3" />
+                    </div>
+                    <p className="text-lg font-bold">{distanceMiles.toFixed(1)}</p>
+                    <p className="text-[10px] text-muted-foreground">miles</p>
+                  </div>
+                  
+                  {/* Alerts */}
+                  <div>
+                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-0.5">
+                      <AlertTriangle className="h-3 w-3" />
+                    </div>
+                    <p className={`text-lg font-bold ${alertCounts.total > 0 ? 'text-amber-500' : ''}`}>
+                      {alertCounts.total}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">alerts</p>
                   </div>
                 </div>
 
-                <Button 
-                  variant="destructive" 
-                  className="w-full"
-                  onClick={stopSession}
-                  disabled={isStopping}
-                >
-                  {isStopping ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Square className="h-4 w-4 mr-2" />
-                  )}
-                  End Session
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Select Pupil</label>
-                  <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a pupil..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {pupils.map((pupil) => (
-                        <SelectItem key={pupil.id} value={pupil.id}>
-                          {pupil.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Alert breakdown */}
+                {alertCounts.total > 0 && (
+                  <div className="flex justify-center gap-2 mt-2 pt-2 border-t">
+                    {alertCounts.braking > 0 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {alertCounts.braking} brake
+                      </Badge>
+                    )}
+                    {alertCounts.acceleration > 0 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        <Zap className="h-2.5 w-2.5 mr-0.5" />
+                        {alertCounts.acceleration} accel
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Floating Stop Button */}
+            <div className="absolute bottom-4 left-4 right-4 z-20">
+              <Button 
+                variant="destructive" 
+                size="lg"
+                className="w-full h-14 text-lg font-semibold rounded-xl shadow-lg"
+                onClick={stopSession}
+                disabled={isStopping}
+              >
+                {isStopping ? (
+                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <Square className="h-5 w-5 mr-2" />
+                )}
+                End Trip
+              </Button>
+            </div>
+          </>
+        ) : (
+          /* Pre-session: Pupil Selection Overlay */
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/30">
+            <div className="w-full max-w-sm space-y-6">
+              <div className="text-center">
+                <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="h-10 w-10 text-primary" />
                 </div>
+                <h2 className="text-xl font-semibold mb-1">Start Tracking</h2>
+                <p className="text-sm text-muted-foreground">
+                  Select a pupil to begin recording the trip
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+                  <SelectTrigger className="h-14 text-base">
+                    <SelectValue placeholder="Select pupil..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pupils.map((pupil) => (
+                      <SelectItem key={pupil.id} value={pupil.id} className="py-3">
+                        {pupil.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
                 <Button 
-                  className="w-full"
+                  size="lg"
+                  className="w-full h-14 text-lg font-semibold rounded-xl"
                   onClick={startSession}
                   disabled={isStarting || !selectedPupilId || !isConnected}
                 >
                   {isStarting ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
                   ) : (
-                    <Play className="h-4 w-4 mr-2" />
+                    <Play className="h-5 w-5 mr-2" />
                   )}
-                  Start Session
+                  Start Trip
                 </Button>
 
                 {!isConnected && (
-                  <p className="text-xs text-amber-600 text-center">
-                    ⚠️ Device is offline. Start Traccar Client on your phone.
-                  </p>
+                  <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <p className="text-sm text-amber-700 dark:text-amber-400 text-center">
+                      ⚠️ Device is offline. Start Traccar Client on your phone.
+                    </p>
+                  </div>
                 )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Live Map */}
-        {isSessionActive && (
-          <Card className="overflow-hidden">
-            <CardContent className="p-0">
-              <TraccarLiveMap
-                latitude={device.last_latitude}
-                longitude={device.last_longitude}
-                heading={device.last_heading}
-                speedKmh={device.last_speed_kmh}
-                isConnected={isConnected}
-                sessionId={device.current_session_id}
-                className="h-[300px]"
-              />
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Live Stats */}
-        {isSessionActive && (
-          <div className="grid grid-cols-2 gap-3">
-            {/* Speed */}
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Gauge className="h-4 w-4" />
-                  <span className="text-xs">Current Speed</span>
-                </div>
-                <p className="text-2xl font-bold">
-                  {device.last_speed_kmh !== null 
-                    ? `${Math.round(device.last_speed_kmh * 0.621371)} mph`
-                    : "-- mph"}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Alerts */}
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <AlertTriangle className="h-4 w-4" />
-                  <span className="text-xs">Alerts</span>
-                </div>
-                <p className="text-2xl font-bold">{alertCounts.total}</p>
-                <div className="flex gap-2 mt-1">
-                  {alertCounts.speeding > 0 && (
-                    <Badge variant="destructive" className="text-xs">
-                      {alertCounts.speeding} speed
-                    </Badge>
-                  )}
-                  {alertCounts.braking > 0 && (
-                    <Badge variant="secondary" className="text-xs">
-                      {alertCounts.braking} brake
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Location info when session active */}
-        {isSessionActive && device.last_latitude && device.last_longitude && (
-          <div className="text-center text-xs text-muted-foreground">
-            {device.last_latitude.toFixed(5)}, {device.last_longitude.toFixed(5)}
-            {device.last_seen_at && (
-              <span className="ml-2">
-                • Updated {formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: true })}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Device Info */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Device</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{device.device_name}</p>
-                <code className="text-xs text-muted-foreground">{device.device_identifier}</code>
               </div>
-              {device.last_seen_at && (
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: true })}
-                </span>
-              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </div>
 
-      {/* Session Report Sheet */}
+      {/* Trip Report Sheet */}
       <Sheet open={showReport} onOpenChange={setShowReport}>
-        <SheetContent side="bottom" className="h-[85vh]">
+        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Trip Report</SheetTitle>
           </SheetHeader>
           {completedSessionId && (
-            <div className="overflow-y-auto h-full pb-8">
-              <SessionRouteReport 
-                telematicsId={completedSessionId} 
-                onClose={() => setShowReport(false)}
-              />
-            </div>
+            <SessionRouteReport 
+              telematicsId={completedSessionId} 
+              onClose={() => setShowReport(false)}
+            />
           )}
         </SheetContent>
       </Sheet>
