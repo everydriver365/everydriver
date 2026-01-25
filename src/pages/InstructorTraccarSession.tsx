@@ -245,23 +245,26 @@ export default function InstructorTraccarSession() {
   }, [sessionStartTime]);
 
   const startSession = async () => {
-    if (!device || !selectedPupilId || !instructor?.id) {
+    if (!device || !instructor?.id) {
       toast({
-        title: "Select a pupil",
-        description: "Please select a pupil before starting the session",
+        title: "Error",
+        description: "Device not configured",
         variant: "destructive",
       });
       return;
     }
 
+    // If no pupil selected, automatically enable test route mode
+    const isTestRouteMode = !selectedPupilId || device.is_test_route_mode;
+
     setIsStarting(true);
     try {
-      // Create telematics session
+      // Create telematics session (pupil_id can be null for test routes)
       const { data: session, error: sessionError } = await supabase
         .from("lesson_telematics")
         .insert({
           instructor_id: instructor.id,
-          pupil_id: selectedPupilId,
+          pupil_id: selectedPupilId || null,
           started_at: new Date().toISOString(),
           total_distance_km: 0,
         })
@@ -270,12 +273,13 @@ export default function InstructorTraccarSession() {
 
       if (sessionError) throw sessionError;
 
-      // Update device with session and pupil
+      // Update device with session, pupil (if any), and test route mode
       const { error: deviceError } = await supabase
         .from("traccar_devices")
         .update({
           current_session_id: session.id,
-          current_pupil_id: selectedPupilId,
+          current_pupil_id: selectedPupilId || null,
+          is_test_route_mode: isTestRouteMode,
         })
         .eq("id", device.id);
 
@@ -284,13 +288,14 @@ export default function InstructorTraccarSession() {
       setDevice({
         ...device,
         current_session_id: session.id,
-        current_pupil_id: selectedPupilId,
+        current_pupil_id: selectedPupilId || null,
+        is_test_route_mode: isTestRouteMode,
       });
       setSessionStartTime(new Date());
       setTotalDistance(0);
 
       toast({
-        title: "Session started",
+        title: isTestRouteMode ? "Test route started" : "Session started",
         description: "GPS data is now being recorded",
       });
     } catch (err) {
@@ -351,13 +356,17 @@ export default function InstructorTraccarSession() {
           .map(p => ({ lat: p.latitude, lon: p.longitude }));
       }
 
-      // Get pupil name for route naming
-      const selectedPupil = pupils.find(p => p.id === device.current_pupil_id);
-      const pupilName = selectedPupil?.name || "Unknown";
+      // Get pupil name for route naming (or "Test Route" if no pupil)
+      const selectedPupil = device.current_pupil_id 
+        ? pupils.find(p => p.id === device.current_pupil_id)
+        : null;
       const routeDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+      const routeName = selectedPupil 
+        ? `${selectedPupil.name} - ${routeDate}`
+        : `Test Route - ${routeDate}`;
       
-      // Check if test route mode is enabled
-      const isTestRoute = device.is_test_route_mode || false;
+      // If no pupil was selected, it's always a test route
+      const isTestRoute = device.is_test_route_mode || !device.current_pupil_id;
 
       // Get start/end locations from first/last GPS points
       let startLocation = null;
@@ -375,7 +384,7 @@ export default function InstructorTraccarSession() {
           .insert({
             instructor_id: instructor.id,
             telematics_id: device.current_session_id,
-            name: `${pupilName} - ${routeDate}`,
+            name: routeName,
             route_type: isTestRoute ? "test" : "practice",
             distance_km: sessionData?.total_distance_km,
             duration_minutes: durationMinutes,
@@ -384,7 +393,7 @@ export default function InstructorTraccarSession() {
             route_path: routePath,
             start_location: startLocation,
             end_location: endLocation,
-            pupil_id: device.current_pupil_id,
+            pupil_id: device.current_pupil_id || null,
           });
       }
 
@@ -503,7 +512,9 @@ export default function InstructorTraccarSession() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <span className="font-medium text-sm">
-              {isSessionActive ? currentPupil?.name || "Tracking" : "Live Tracking"}
+              {isSessionActive 
+                ? (currentPupil?.name || (device?.is_test_route_mode ? "Test Route" : "Tracking"))
+                : "Live Tracking"}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -632,18 +643,25 @@ export default function InstructorTraccarSession() {
             <div className="w-full max-w-sm space-y-6">
               <div className="text-center">
                 <div className="h-20 w-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="h-10 w-10 text-primary" />
+                  {device?.is_test_route_mode || !selectedPupilId ? (
+                    <Flag className="h-10 w-10 text-primary" />
+                  ) : (
+                    <User className="h-10 w-10 text-primary" />
+                  )}
                 </div>
                 <h2 className="text-xl font-semibold mb-1">Start Tracking</h2>
                 <p className="text-sm text-muted-foreground">
-                  Select a pupil to begin recording the trip
+                  Select a pupil or start a test route
                 </p>
               </div>
 
               <div className="space-y-4">
-                <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+                <Select value={selectedPupilId} onValueChange={(value) => {
+                  setSelectedPupilId(value);
+                  // If pupil selected, turn off test route mode unless manually enabled
+                }}>
                   <SelectTrigger className="h-14 text-base">
-                    <SelectValue placeholder="Select pupil..." />
+                    <SelectValue placeholder="Select pupil (optional)..." />
                   </SelectTrigger>
                   <SelectContent>
                     {pupils.map((pupil) => (
@@ -654,38 +672,75 @@ export default function InstructorTraccarSession() {
                   </SelectContent>
                 </Select>
 
-                {/* Test Route Mode Toggle */}
-                <div className="flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                {/* Test Route Mode Toggle - always visible */}
+                <div className={`flex items-center justify-between p-3 rounded-xl border ${
+                  device?.is_test_route_mode || !selectedPupilId 
+                    ? "bg-amber-500/10 border-amber-500/30" 
+                    : "bg-muted/50 border-border"
+                }`}>
                   <div className="flex items-center gap-2">
-                    <Flag className="h-4 w-4 text-amber-600" />
-                    <Label className="text-sm font-medium">Test Route</Label>
+                    <Flag className={`h-4 w-4 ${device?.is_test_route_mode || !selectedPupilId ? "text-amber-600" : "text-muted-foreground"}`} />
+                    <div>
+                      <Label className="text-sm font-medium">Test Route</Label>
+                      {!selectedPupilId && (
+                        <p className="text-[10px] text-muted-foreground">Auto-enabled without pupil</p>
+                      )}
+                    </div>
                   </div>
                   <Switch 
-                    checked={device?.is_test_route_mode || false}
+                    checked={device?.is_test_route_mode || !selectedPupilId}
                     onCheckedChange={async (checked) => {
                       if (!device) return;
-                      await supabase
-                        .from("traccar_devices")
-                        .update({ is_test_route_mode: checked })
-                        .eq("id", device.id);
-                      setDevice({ ...device, is_test_route_mode: checked });
+                      // Only allow toggle if pupil is selected
+                      if (selectedPupilId) {
+                        await supabase
+                          .from("traccar_devices")
+                          .update({ is_test_route_mode: checked })
+                          .eq("id", device.id);
+                        setDevice({ ...device, is_test_route_mode: checked });
+                      }
                     }}
+                    disabled={!selectedPupilId}
                   />
                 </div>
 
-                <Button 
-                  size="lg"
-                  className="w-full h-14 text-lg font-semibold rounded-xl"
-                  onClick={startSession}
-                  disabled={isStarting || !selectedPupilId || !isConnected}
-                >
-                  {isStarting ? (
-                    <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                  ) : (
-                    <Play className="h-5 w-5 mr-2" />
+                {/* Two-button layout for flexibility */}
+                <div className="space-y-2">
+                  {/* Start with pupil button */}
+                  {selectedPupilId && (
+                    <Button 
+                      size="lg"
+                      className="w-full h-14 text-lg font-semibold rounded-xl"
+                      onClick={startSession}
+                      disabled={isStarting || !isConnected}
+                    >
+                      {isStarting ? (
+                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                      ) : (
+                        <Play className="h-5 w-5 mr-2" />
+                      )}
+                      {device?.is_test_route_mode ? "Start Test Route" : "Start Trip"}
+                    </Button>
                   )}
-                  {device?.is_test_route_mode ? "Start Test Route" : "Start Trip"}
-                </Button>
+
+                  {/* Quick start test route button */}
+                  {!selectedPupilId && (
+                    <Button 
+                      size="lg"
+                      variant="default"
+                      className="w-full h-14 text-lg font-semibold rounded-xl bg-amber-600 hover:bg-amber-700"
+                      onClick={startSession}
+                      disabled={isStarting || !isConnected}
+                    >
+                      {isStarting ? (
+                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                      ) : (
+                        <Flag className="h-5 w-5 mr-2" />
+                      )}
+                      Start Test Route
+                    </Button>
+                  )}
+                </div>
 
                 {!isConnected && (
                   <div className="p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
