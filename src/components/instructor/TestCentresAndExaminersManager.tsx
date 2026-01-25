@@ -270,9 +270,10 @@ export function TestCentresAndExaminersManager({ instructorId }: Props) {
       fetchExaminers();
       setShowExaminerDialog(false);
       resetExaminerForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving examiner:", error);
-      toast.error("Failed to save examiner");
+      const message = error?.message || error?.details || "Failed to save examiner";
+      toast.error(message);
     } finally {
       setExaminerSaving(false);
     }
