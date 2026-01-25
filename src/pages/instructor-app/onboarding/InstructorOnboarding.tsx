@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 
 // Step components
 import { StepPersonalDetails } from "./steps/StepPersonalDetails";
+import { StepListingPreference } from "./steps/StepListingPreference";
 import { StepLocation } from "./steps/StepLocation";
 import { StepVehicle } from "./steps/StepVehicle";
 import { StepQualifications } from "./steps/StepQualifications";
@@ -23,6 +24,8 @@ interface OnboardingData {
   phone: string;
   bio: string;
   profile_image_url: string | null;
+  // Listing Preference
+  wantsFeatured: boolean;
   // Location
   home_postcode: string;
   radius_miles: number;
@@ -63,6 +66,7 @@ const initialData: OnboardingData = {
   phone: "",
   bio: "",
   profile_image_url: null,
+  wantsFeatured: true,
   home_postcode: "",
   radius_miles: 10,
   car_type: "Manual",
@@ -178,17 +182,44 @@ export default function InstructorOnboarding() {
     }
   };
 
+  // Step order depends on whether user wants to be featured
+  // Featured: 1-Personal, 2-ListingPref, 3-Location, 4-Vehicle, 5-Quals, 6-Services, 7-Plan, 8-Website, 9-Domain, 10-Complete
+  // Diary only: 1-Personal, 2-ListingPref, 3-Vehicle, 4-Quals, 5-Services, 6-Plan, 7-Complete (skip Location, Website, Domain)
+
+  const getNextStep = (current: number): number => {
+    if (data.wantsFeatured) {
+      // Full flow - all 10 steps
+      return current + 1;
+    } else {
+      // Diary-only flow - skip location (3), website (8), domain (9)
+      if (current === 2) return 4; // Skip Location, go to Vehicle
+      if (current === 7) return 10; // Skip Website/Domain, go to Complete
+      return current + 1;
+    }
+  };
+
+  const getPrevStep = (current: number): number => {
+    if (data.wantsFeatured) {
+      return current - 1;
+    } else {
+      // Diary-only flow
+      if (current === 4) return 2; // From Vehicle back to ListingPref
+      if (current === 10) return 7; // From Complete back to Plan
+      return current - 1;
+    }
+  };
+
   const handleNext = async () => {
     await saveProgress();
-    
-    if (currentStep < 9) {
-      goToStep(currentStep + 1);
+    const nextStep = getNextStep(currentStep);
+    if (nextStep <= 10) {
+      goToStep(nextStep);
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
-      goToStep(currentStep - 1);
+      goToStep(getPrevStep(currentStep));
     }
   };
 
@@ -222,7 +253,8 @@ export default function InstructorOnboarding() {
 
       if (error) throw error;
       
-      goToStep(8);
+      // Go to complete step (10)
+      goToStep(10);
     } catch (err) {
       toast.error("Failed to complete setup");
     } finally {
@@ -239,6 +271,8 @@ export default function InstructorOnboarding() {
   }
 
   // Render current step
+  // Step order: 1-Personal, 2-ListingPref, 3-Location*, 4-Vehicle, 5-Quals, 6-Services, 7-Plan, 8-Website*, 9-Domain*, 10-Complete
+  // * = skipped if not wantsFeatured
   switch (currentStep) {
     case 1:
       return (
@@ -251,6 +285,15 @@ export default function InstructorOnboarding() {
       );
     case 2:
       return (
+        <StepListingPreference
+          wantsFeatured={data.wantsFeatured}
+          onUpdate={updateData}
+          onNext={handleNext}
+          onBack={handleBack}
+        />
+      );
+    case 3:
+      return (
         <StepLocation
           data={data}
           onUpdate={updateData}
@@ -258,7 +301,7 @@ export default function InstructorOnboarding() {
           onBack={handleBack}
         />
       );
-    case 3:
+    case 4:
       return (
         <StepVehicle
           data={data}
@@ -268,7 +311,7 @@ export default function InstructorOnboarding() {
           onBack={handleBack}
         />
       );
-    case 4:
+    case 5:
       return (
         <StepQualifications
           data={data}
@@ -278,7 +321,7 @@ export default function InstructorOnboarding() {
           onBack={handleBack}
         />
       );
-    case 5:
+    case 6:
       return (
         <StepServices
           data={data}
@@ -287,18 +330,18 @@ export default function InstructorOnboarding() {
           onBack={handleBack}
         />
       );
-    case 6:
+    case 7:
       return (
         <StepPlanSelection
           selectedPlanId={data.selectedPlanId}
           billingCycle={data.billingCycle}
           onUpdate={updateData}
-          onNext={handleComplete}
+          onNext={data.wantsFeatured ? handleNext : handleComplete}
           onBack={handleBack}
           onPaidPlanSelected={handlePaidPlanSelected}
         />
       );
-    case 7:
+    case 8:
       return (
         <StepWebsite
           data={data}
@@ -308,7 +351,7 @@ export default function InstructorOnboarding() {
           onBack={handleBack}
         />
       );
-    case 8:
+    case 9:
       return (
         <StepDomainHosting
           data={data}
@@ -317,7 +360,7 @@ export default function InstructorOnboarding() {
           onBack={handleBack}
         />
       );
-    case 9:
+    case 10:
       return <StepComplete data={data} />;
     default:
       goToStep(1);
