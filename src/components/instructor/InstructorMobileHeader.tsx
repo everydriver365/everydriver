@@ -43,7 +43,7 @@ export function InstructorMobileHeader({
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-[#142040] px-4 py-3 flex items-center justify-between border-b border-[#0f1a30]">
+    <div className="sticky top-0 z-40 bg-white px-4 py-3 flex items-center justify-between border-b border-border shadow-sm">
       {/* Left side: Back button + Logo */}
       <div className="flex items-center gap-2">
         {showBackButton && (
@@ -51,7 +51,7 @@ export function InstructorMobileHeader({
             variant="ghost" 
             size="icon" 
             onClick={handleBack}
-            className="text-white/80 hover:text-white hover:bg-white/10 -ml-2 h-8 w-8"
+            className="text-foreground/80 hover:text-foreground hover:bg-muted -ml-2 h-8 w-8"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -70,7 +70,7 @@ export function InstructorMobileHeader({
             variant="ghost"
             size="sm"
             onClick={() => setShowQRModal(true)}
-            className="text-white/80 hover:text-white hover:bg-white/10 h-8 px-2"
+            className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 px-2"
           >
             <span className="text-xs font-bold border border-current rounded px-1">QR</span>
           </Button>
@@ -79,7 +79,7 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={() => navigate("/instructor/availability")}
-          className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8"
+          className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
           title="Quick Availability"
         >
           <CalendarClock className="h-5 w-5" />
@@ -88,7 +88,7 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8"
+          className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
         >
           {resolvedTheme === 'dark' ? (
             <Moon className="h-5 w-5" />
@@ -100,7 +100,7 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={() => navigate("/instructor/settings")}
-          className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8"
+          className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
         >
           <Settings className="h-5 w-5" />
         </Button>
