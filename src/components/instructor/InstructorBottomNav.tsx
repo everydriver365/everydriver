@@ -95,7 +95,7 @@ export function InstructorBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary dark:bg-card/95 dark:backdrop-blur-md border-t border-primary-foreground/10 dark:border-white/10 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.15)] md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-card/95 dark:backdrop-blur-md border-t border-border shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden">
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -111,8 +111,8 @@ export function InstructorBottomNav() {
                 isActive
                   ? "text-emerald-500"
                   : isMessages
-                  ? "text-cyan-400"
-                  : "text-white dark:text-white/70 hover:text-emerald-300 dark:hover:text-white"
+                  ? "text-cyan-500"
+                  : "text-foreground/70 hover:text-foreground dark:text-white/70 dark:hover:text-white"
               }`}
             >
               {/* Active indicator pill */}
@@ -141,22 +141,22 @@ export function InstructorBottomNav() {
                   />
                 </motion.div>
                 {showNotification && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-primary">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-white">
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
                 )}
                 {isMessages && (
                   <MessageNotificationBadge 
                     instructorId={instructor?.id} 
-                    className="absolute -top-1.5 -right-2 text-[10px] px-1 min-w-[18px] h-[18px] flex items-center justify-center ring-2 ring-primary"
+                    className="absolute -top-1.5 -right-2 text-[10px] px-1 min-w-[18px] h-[18px] flex items-center justify-center ring-2 ring-white"
                   />
                 )}
                 {isTrack && isTrackingActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-primary animate-pulse" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                isActive ? "font-semibold" : isMessages ? "font-medium text-cyan-400" : "font-medium opacity-80"
+                isActive ? "font-semibold" : isMessages ? "font-medium text-cyan-500" : "font-medium opacity-80"
               }`}>
                 {item.label}
               </span>
@@ -165,7 +165,7 @@ export function InstructorBottomNav() {
         })}
       </div>
       {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom bg-primary dark:bg-card/95" />
+      <div className="h-safe-area-inset-bottom bg-white dark:bg-card/95" />
     </nav>
   );
 }
