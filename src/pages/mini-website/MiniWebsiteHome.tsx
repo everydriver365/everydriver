@@ -84,6 +84,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
   const secondaryColor = instructor.secondary_colour || "#d4a574";
   const headingColor = instructor.website_heading_color;
   const textColor = instructor.website_text_color;
+  // Use instructor's hero_image_url (from admin editor) or fallback to page's hero_image_url
+  const heroImageUrl = instructor.hero_image_url || page.hero_image_url;
 
   return (
     <MiniWebsiteLayout instructor={instructor}>
@@ -101,10 +103,10 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           />
         </div>
 
-        {page.hero_image_url && (
+        {heroImageUrl && (
           <div className="absolute inset-0">
             <img
-              src={page.hero_image_url}
+              src={heroImageUrl}
               alt="Hero"
               className="w-full h-full object-cover opacity-20"
             />
