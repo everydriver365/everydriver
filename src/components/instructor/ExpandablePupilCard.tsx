@@ -25,10 +25,16 @@ import {
   Award,
   ClipboardList,
   Car,
-  Radio
+  Radio,
+  PoundSterling,
+  QrCode
 } from "lucide-react";
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
+import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
+import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
+import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
+import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -99,6 +105,7 @@ interface ExpandablePupilCardProps {
   instructorId?: string;
   instructorName?: string;
   isTracking?: boolean;
+  paymentQrUrl?: string | null;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -125,6 +132,7 @@ export function ExpandablePupilCard({
   instructorId,
   instructorName,
   isTracking = false,
+  paymentQrUrl,
 }: ExpandablePupilCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
@@ -142,6 +150,11 @@ export function ExpandablePupilCard({
     lastResult: 'pass' | 'fail' | null;
     lastTestDate: string | null;
   }>({ realTests: 0, mockTests: 0, lastResult: null, lastTestDate: null });
+  
+  // Payment modal states
+  const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0);
 
   // Fetch test stats on mount
   useEffect(() => {
@@ -795,6 +808,59 @@ export function ExpandablePupilCard({
               {/* Tracking History - Shows GPS tracked routes for this pupil */}
               <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
 
+              {/* Payment Section */}
+              <div className="space-y-3">
+                {/* Payment Actions */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowRecordPaymentModal(true);
+                    }}
+                  >
+                    <PoundSterling className="h-4 w-4" />
+                    <span className="text-xs">Record Payment</span>
+                  </Button>
+                  
+                  {paymentQrUrl && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowQRModal(true);
+                      }}
+                    >
+                      <QrCode className="h-4 w-4" />
+                      <span className="text-xs">QR Code</span>
+                    </Button>
+                  )}
+                  
+                  {instructorId && instructorName && (pupil.account_balance || 0) < 0 && (
+                    <SendPaymentReminderButton
+                      pupilId={pupil.id}
+                      pupilName={pupil.name}
+                      pupilPhone={pupil.phone}
+                      pupilEmail={pupil.email}
+                      instructorId={instructorId}
+                      instructorName={instructorName}
+                      outstandingAmount={pupil.account_balance || 0}
+                    />
+                  )}
+                </div>
+
+                {/* Payment History */}
+                <PupilPaymentHistory
+                  pupilId={pupil.id}
+                  pupilName={pupil.name}
+                  refreshTrigger={paymentRefreshTrigger}
+                />
+              </div>
+
               {/* Quick Actions - 4 columns */}
               <div className="grid grid-cols-4 gap-1.5">
                 <Button
@@ -1009,6 +1075,26 @@ export function ExpandablePupilCard({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Payment Modals */}
+      {instructorId && (
+        <RecordPaymentModal
+          open={showRecordPaymentModal}
+          onOpenChange={setShowRecordPaymentModal}
+          pupilId={pupil.id}
+          pupilName={pupil.name}
+          instructorId={instructorId}
+          currentBalance={pupil.account_balance || 0}
+          onPaymentRecorded={() => setPaymentRefreshTrigger(prev => prev + 1)}
+        />
+      )}
+
+      <PaymentQRModal
+        open={showQRModal}
+        onOpenChange={setShowQRModal}
+        paymentQrUrl={paymentQrUrl}
+        instructorName={instructorName}
+      />
     </motion.div>
   );
 }
