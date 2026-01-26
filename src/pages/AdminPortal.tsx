@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -52,6 +52,7 @@ import { MiniWebsitesManager } from "@/components/admin/MiniWebsitesManager";
 import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
 import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
+import { AdminEmailPanel } from "@/components/admin/AdminEmailPanel";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -89,6 +90,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   compliance: { title: "Compliance Dashboard", group: "People", icon: Shield },
   enquiries: { title: "Enquiries & Callbacks", group: "People", icon: FileEdit },
   messages: { title: "Pupil Messages", group: "People", icon: MessageCircle },
+  email: { title: "Email Inbox", group: "Communications", icon: Mail },
   "instructor-messages": { title: "Instructor Support", group: "Live Chats", icon: MessageCircle },
   "live-chat": { title: "Visitor Chats", group: "Live Chats", icon: MessageCircle },
   // Mini Websites & Domains
@@ -297,6 +299,23 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <ComplianceDashboard />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "email":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-accent" />
+                  Email Inbox
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AdminEmailPanel />
               </CardContent>
             </Card>
           </motion.div>
