@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Calendar, MessageSquare, Percent, PoundSterling, Send, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Calendar, MessageSquare, Percent, PoundSterling, Send, Clock, CheckCircle2, AlertCircle, Radio } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,11 +32,70 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   const [discountValue, setDiscountValue] = useState<number>(10);
   const [pupilCount, setPupilCount] = useState(0);
 
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [isLive, setIsLive] = useState(false);
+
+  // Debounced refetch to prevent rapid updates
+  const debouncedRefetch = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchAvailableGaps();
+    }, 500);
+  }, []);
+
   useEffect(() => {
     fetchInstructorData();
     fetchAvailableGaps();
     fetchPupilCount();
-  }, [instructorId]);
+
+    // Subscribe to real-time changes for all gap-affecting tables
+    const channel = supabase
+      .channel(`gaps-${instructorId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'scheduled_lessons', filter: `instructor_id=eq.${instructorId}` },
+        () => debouncedRefetch()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'instructor_working_hours', filter: `instructor_id=eq.${instructorId}` },
+        () => debouncedRefetch()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'instructor_date_overrides', filter: `instructor_id=eq.${instructorId}` },
+        () => debouncedRefetch()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'instructor_manual_blocks', filter: `instructor_id=eq.${instructorId}` },
+        () => debouncedRefetch()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'instructor_calendar_events', filter: `instructor_id=eq.${instructorId}` },
+        () => debouncedRefetch()
+      )
+      .subscribe((status) => {
+        setIsLive(status === 'SUBSCRIBED');
+      });
+
+    // Subscribe to pupil changes
+    const pupilChannel = supabase
+      .channel(`pupils-${instructorId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'pupils', filter: `instructor_id=eq.${instructorId}` },
+        () => fetchPupilCount()
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      supabase.removeChannel(channel);
+      supabase.removeChannel(pupilChannel);
+    };
+  }, [instructorId, debouncedRefetch]);
 
   const fetchInstructorData = async () => {
     try {
@@ -289,10 +348,18 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
   return (
     <Card className="border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Calendar className="h-5 w-5 text-purple-500" />
-          Fill Your Gaps
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Calendar className="h-5 w-5 text-purple-500" />
+            Fill Your Gaps
+          </CardTitle>
+          {isLive && (
+            <Badge variant="outline" className="text-xs text-green-600 border-green-600 gap-1">
+              <Radio className="h-3 w-3 animate-pulse" />
+              Live
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground">
           Text all {pupilCount} pupils with phone numbers about available slots
         </p>

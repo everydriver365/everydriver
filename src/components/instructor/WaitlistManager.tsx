@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Clock, Calendar, User, Phone, Trash2, Bell, CheckCircle, XCircle } from "lucide-react";
+import { Clock, Calendar, User, Phone, Trash2, Bell, CheckCircle, XCircle, Radio } from "lucide-react";
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -78,13 +78,54 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
+  const debounceWaitlistRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceOffersRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced refetch functions
+  const debouncedFetchWaitlist = useCallback(() => {
+    if (debounceWaitlistRef.current) clearTimeout(debounceWaitlistRef.current);
+    debounceWaitlistRef.current = setTimeout(() => {
+      fetchWaitlist();
+    }, 500);
+  }, []);
+
+  const debouncedFetchOffers = useCallback(() => {
+    if (debounceOffersRef.current) clearTimeout(debounceOffersRef.current);
+    debounceOffersRef.current = setTimeout(() => {
+      fetchPendingOffers();
+    }, 500);
+  }, []);
 
   useEffect(() => {
     if (instructorId) {
       fetchWaitlist();
       fetchPendingOffers();
+
+      // Subscribe to real-time changes
+      const channel = supabase
+        .channel(`waitlist-${instructorId}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'lesson_waitlist', filter: `instructor_id=eq.${instructorId}` },
+          () => debouncedFetchWaitlist()
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'slot_offers', filter: `instructor_id=eq.${instructorId}` },
+          () => debouncedFetchOffers()
+        )
+        .subscribe((status) => {
+          setIsLive(status === 'SUBSCRIBED');
+        });
+
+      return () => {
+        if (debounceWaitlistRef.current) clearTimeout(debounceWaitlistRef.current);
+        if (debounceOffersRef.current) clearTimeout(debounceOffersRef.current);
+        supabase.removeChannel(channel);
+      };
     }
-  }, [instructorId]);
+  }, [instructorId, debouncedFetchWaitlist, debouncedFetchOffers]);
 
   const fetchWaitlist = async () => {
     try {
@@ -297,10 +338,18 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
       {/* Active Waitlist */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Clock className="h-5 w-5" />
-            Pupil Waitlist ({waitlist.length})
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Clock className="h-5 w-5" />
+              Pupil Waitlist ({waitlist.length})
+            </CardTitle>
+            {isLive && (
+              <Badge variant="outline" className="text-xs text-green-600 border-green-600 gap-1">
+                <Radio className="h-3 w-3 animate-pulse" />
+                Live
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {waitlist.length === 0 ? (
