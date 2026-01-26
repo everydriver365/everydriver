@@ -99,9 +99,9 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
   };
 
   const handleSaveComplete = async () => {
+    // Refresh data but keep editor open
     await fetchWebsite();
     await fetchDomains();
-    setIsEditorOpen(false);
   };
 
   if (isEditorOpen && website) {
