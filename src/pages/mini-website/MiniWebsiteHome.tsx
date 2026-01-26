@@ -124,7 +124,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
-            {instructor.logo_url && (
+            {instructor.logo_url && (instructor.hero_show_logo !== false) && (
               <img
                 src={instructor.logo_url}
                 alt={instructor.name}
