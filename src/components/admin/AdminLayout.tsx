@@ -12,6 +12,7 @@ import {
   Globe
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 
 interface AdminLayoutProps {
@@ -172,6 +173,9 @@ export function AdminLayout({
       <main className="flex-1 p-6">
         {children}
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
