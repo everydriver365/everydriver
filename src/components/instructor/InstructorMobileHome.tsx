@@ -159,7 +159,7 @@ export function InstructorMobileHome({
         <img 
           src={instructorLogo} 
           alt="EveryDriver" 
-          className="h-7 object-contain"
+          className="h-5 object-contain"
         />
         
         {/* Controls and Avatar on the right */}
