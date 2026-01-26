@@ -156,7 +156,7 @@ export default function InstructorPortalLogin() {
         const credential = new PasswordCredentialClass({
           id: emailToSave,
           password: passwordToSave,
-          name: 'Drive365 Instructor'
+          name: 'Every Driver Instructor'
         });
         await navigator.credentials.store(credential);
         localStorage.setItem('instructor-biometric-enabled', 'true');
@@ -328,8 +328,8 @@ export default function InstructorPortalLogin() {
         >
           <div className="mb-6 mx-auto inline-block">
             <img 
-              src="/everydriver-logo-main.png" 
-              alt="EveryDriver" 
+              src="/everydriver-logo-instructor.png" 
+              alt="Every Driver" 
               className="h-12 mx-auto"
             />
           </div>
@@ -522,7 +522,7 @@ export default function InstructorPortalLogin() {
           transition={{ delay: 0.4 }}
           className="text-center mt-8 text-xs text-muted-foreground"
         >
-          <p>© {new Date().getFullYear()} Drive365. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Every Driver. All rights reserved.</p>
           <div className="mt-2 space-x-3">
             <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
               Privacy
