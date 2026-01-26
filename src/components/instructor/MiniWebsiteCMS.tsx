@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { Globe, Edit2, Eye, EyeOff, ExternalLink, Save } from "lucide-react";
+import { useState, useRef } from "react";
+import { Globe, Edit2, Eye, EyeOff, ExternalLink, Save, Upload, Loader2, Palette, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useInstructorWebsitePages, WebsitePage } from "@/hooks/useInstructorWebsitePages";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface MiniWebsiteCMSProps {
@@ -23,6 +25,8 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug }: MiniWebsiteCMSP
   const { pages, loading, updatePage } = useInstructorWebsitePages(instructorId);
   const [editingPage, setEditingPage] = useState<WebsitePage | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const baseUrl = window.location.origin;
 
@@ -50,6 +54,53 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug }: MiniWebsiteCMSP
     e.preventDefault();
     e.stopPropagation();
     setEditingPage(page);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingPage) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${instructorId}/hero-${editingPage.page_type}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("instructor-images")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("instructor-images")
+        .getPublicUrl(fileName);
+
+      // Add cache buster
+      const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
+      setEditingPage({ ...editingPage, hero_image_url: urlWithCacheBuster });
+      toast.success("Image uploaded!");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   if (loading) {
@@ -117,77 +168,170 @@ export function MiniWebsiteCMS({ instructorId, instructorSlug }: MiniWebsiteCMSP
       </div>
 
       <Dialog open={!!editingPage} onOpenChange={(open) => !open && setEditingPage(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit {editingPage?.page_title} Page</DialogTitle>
           </DialogHeader>
           {editingPage && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Published</Label>
-                <Switch
-                  checked={editingPage.is_published}
-                  onCheckedChange={(checked) =>
-                    setEditingPage({ ...editingPage, is_published: checked })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Hero Heading</Label>
-                <Input
-                  value={editingPage.hero_heading || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, hero_heading: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Hero Subheading</Label>
-                <Textarea
-                  value={editingPage.hero_subheading || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, hero_subheading: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Hero Image URL</Label>
-                <Input
-                  value={editingPage.hero_image_url || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, hero_image_url: e.target.value })
-                  }
-                  placeholder="https://..."
-                />
-              </div>
-              <div>
-                <Label>Meta Title (SEO)</Label>
-                <Input
-                  value={editingPage.meta_title || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, meta_title: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Meta Description (SEO)</Label>
-                <Textarea
-                  value={editingPage.meta_description || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, meta_description: e.target.value })
-                  }
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
+            <Tabs defaultValue="content" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="content">Content</TabsTrigger>
+                <TabsTrigger value="seo">SEO</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="content" className="space-y-4">
+                {/* Published Toggle */}
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <Label className="font-medium">Published</Label>
+                  <Switch
+                    checked={editingPage.is_published}
+                    onCheckedChange={(checked) =>
+                      setEditingPage({ ...editingPage, is_published: checked })
+                    }
+                  />
+                </div>
+
+                {/* Hero Heading */}
+                <div>
+                  <Label>Hero Heading</Label>
+                  <Input
+                    value={editingPage.hero_heading || ""}
+                    onChange={(e) =>
+                      setEditingPage({ ...editingPage, hero_heading: e.target.value })
+                    }
+                    placeholder="Welcome to my driving school"
+                  />
+                </div>
+
+                {/* Hero Subheading */}
+                <div>
+                  <Label>Hero Subheading</Label>
+                  <Textarea
+                    value={editingPage.hero_subheading || ""}
+                    onChange={(e) =>
+                      setEditingPage({ ...editingPage, hero_subheading: e.target.value })
+                    }
+                    placeholder="Professional driving instruction tailored to your needs"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Hero Image Upload */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4" />
+                    Hero Image
+                  </Label>
+                  
+                  {/* Current Image Preview */}
+                  {editingPage.hero_image_url && (
+                    <div className="relative">
+                      <img
+                        src={editingPage.hero_image_url}
+                        alt="Hero preview"
+                        className="w-full h-40 object-cover rounded-lg border"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => setEditingPage({ ...editingPage, hero_image_url: null })}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="flex-1"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload Image
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Or enter URL manually */}
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or enter URL</span>
+                    </div>
+                  </div>
+                  <Input
+                    value={editingPage.hero_image_url || ""}
+                    onChange={(e) =>
+                      setEditingPage({ ...editingPage, hero_image_url: e.target.value })
+                    }
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="seo" className="space-y-4">
+                <div>
+                  <Label>Meta Title</Label>
+                  <Input
+                    value={editingPage.meta_title || ""}
+                    onChange={(e) =>
+                      setEditingPage({ ...editingPage, meta_title: e.target.value })
+                    }
+                    placeholder="Page title for search engines"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Recommended: 50-60 characters
+                  </p>
+                </div>
+                <div>
+                  <Label>Meta Description</Label>
+                  <Textarea
+                    value={editingPage.meta_description || ""}
+                    onChange={(e) =>
+                      setEditingPage({ ...editingPage, meta_description: e.target.value })
+                    }
+                    placeholder="Brief description for search results"
+                    rows={3}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Recommended: 150-160 characters
+                  </p>
+                </div>
+              </TabsContent>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-4 border-t">
                 <Button variant="outline" onClick={() => setEditingPage(null)} className="flex-1" type="button">
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={saving} className="flex-1" type="button">
+                <Button onClick={handleSave} disabled={saving || uploading} className="flex-1" type="button">
                   <Save className="h-4 w-4 mr-1" />
                   {saving ? "Saving..." : "Save"}
                 </Button>
               </div>
-            </div>
+            </Tabs>
           )}
         </DialogContent>
       </Dialog>
