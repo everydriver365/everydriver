@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArloPageLayout } from "@/components/ui/arlo-page-layout";
@@ -16,12 +16,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -29,28 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { 
   Globe, MoreHorizontal, Search, ExternalLink, CheckCircle, 
-  XCircle, Palette, Link2, Edit, Unlink, Loader2, RefreshCw,
-  Upload, ImageIcon
+  XCircle, Palette, Link2, Edit, RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { MiniWebsiteFullEditor } from "./MiniWebsiteFullEditor";
 
 interface MiniWebsite {
   id: string;
@@ -85,18 +67,8 @@ export function MiniWebsitesManager() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   
-  // Edit sheet state
+  // Full-screen editor state
   const [editingWebsite, setEditingWebsite] = useState<MiniWebsite | null>(null);
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const logoInputRef = useRef<HTMLInputElement>(null);
-  
-  // Domain assignment dialog state
-  const [domainDialogOpen, setDomainDialogOpen] = useState(false);
-  const [selectedWebsiteForDomain, setSelectedWebsiteForDomain] = useState<MiniWebsite | null>(null);
-  const [selectedDomainId, setSelectedDomainId] = useState<string>("");
-  const [isAssigningDomain, setIsAssigningDomain] = useState(false);
 
   useEffect(() => {
     fetchWebsites();
@@ -169,181 +141,30 @@ export function MiniWebsitesManager() {
   };
 
   const handleEditWebsite = (website: MiniWebsite) => {
-    setEditingWebsite({ ...website });
-    setIsEditSheetOpen(true);
+    setEditingWebsite(website);
   };
 
-  const handleSaveWebsite = async () => {
-    if (!editingWebsite) return;
-    
-    setIsSaving(true);
-    try {
-      const { error } = await supabase
-        .from("instructors")
-        .update({
-          app_slug: editingWebsite.app_slug,
-          website_theme: editingWebsite.website_theme,
-          brand_colour: editingWebsite.brand_colour,
-          secondary_colour: editingWebsite.secondary_colour,
-          website_button_color: editingWebsite.website_button_color,
-          website_footer_bg: editingWebsite.website_footer_bg,
-          logo_url: editingWebsite.logo_url,
-          bio: editingWebsite.bio,
-          is_active: editingWebsite.is_active,
-        })
-        .eq("id", editingWebsite.id);
-
-      if (error) throw error;
-
-      toast.success("Website updated successfully");
-      setIsEditSheetOpen(false);
-      setEditingWebsite(null);
-      fetchWebsites();
-    } catch (error) {
-      console.error("Error updating website:", error);
-      toast.error("Failed to update website");
-    } finally {
-      setIsSaving(false);
-    }
+  const handleCloseEditor = () => {
+    setEditingWebsite(null);
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !editingWebsite) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be less than 2MB");
-      return;
-    }
-
-    setIsUploadingLogo(true);
-    try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${editingWebsite.id}/logo-${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("instructor-images")
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("instructor-images")
-        .getPublicUrl(fileName);
-
-      const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
-      setEditingWebsite({ ...editingWebsite, logo_url: urlWithCacheBuster });
-      toast.success("Logo uploaded!");
-    } catch (error) {
-      console.error("Error uploading logo:", error);
-      toast.error("Failed to upload logo");
-    } finally {
-      setIsUploadingLogo(false);
-      if (logoInputRef.current) {
-        logoInputRef.current.value = "";
-      }
-    }
+  const handleSaveComplete = () => {
+    setEditingWebsite(null);
+    fetchWebsites();
+    fetchDomains();
   };
 
-  const handleOpenDomainDialog = (website: MiniWebsite) => {
-    setSelectedWebsiteForDomain(website);
-    setSelectedDomainId(website.mini_website_domain_id || "");
-    setDomainDialogOpen(true);
-  };
-
-  const handleAssignDomain = async () => {
-    if (!selectedWebsiteForDomain) return;
-    
-    setIsAssigningDomain(true);
-    try {
-      const selectedDomain = domains.find(d => d.id === selectedDomainId);
-      
-      // Update the instructor with the new domain
-      const { error: instructorError } = await supabase
-        .from("instructors")
-        .update({
-          custom_domain: selectedDomain?.domain_name || null,
-          custom_domain_verified: false,
-          mini_website_domain_id: selectedDomainId || null,
-        })
-        .eq("id", selectedWebsiteForDomain.id);
-
-      if (instructorError) throw instructorError;
-
-      // Update the domain_orders table
-      if (selectedDomainId) {
-        const { error: domainError } = await supabase
-          .from("domain_orders")
-          .update({ mini_website_linked: true })
-          .eq("id", selectedDomainId);
-
-        if (domainError) throw domainError;
-      }
-
-      // If there was a previous domain, unlink it
-      if (selectedWebsiteForDomain.mini_website_domain_id && 
-          selectedWebsiteForDomain.mini_website_domain_id !== selectedDomainId) {
-        await supabase
-          .from("domain_orders")
-          .update({ mini_website_linked: false })
-          .eq("id", selectedWebsiteForDomain.mini_website_domain_id);
-      }
-
-      toast.success(selectedDomainId ? "Domain assigned successfully" : "Domain unlinked successfully");
-      setDomainDialogOpen(false);
-      setSelectedWebsiteForDomain(null);
-      setSelectedDomainId("");
-      fetchWebsites();
-      fetchDomains();
-    } catch (error) {
-      console.error("Error assigning domain:", error);
-      toast.error("Failed to assign domain");
-    } finally {
-      setIsAssigningDomain(false);
-    }
-  };
-
-  const handleUnlinkDomain = async (website: MiniWebsite) => {
-    try {
-      // Update the instructor
-      const { error: instructorError } = await supabase
-        .from("instructors")
-        .update({
-          custom_domain: null,
-          custom_domain_verified: false,
-          mini_website_domain_id: null,
-        })
-        .eq("id", website.id);
-
-      if (instructorError) throw instructorError;
-
-      // Update the domain_orders table
-      if (website.mini_website_domain_id) {
-        await supabase
-          .from("domain_orders")
-          .update({ mini_website_linked: false })
-          .eq("id", website.mini_website_domain_id);
-      }
-
-      toast.success("Domain unlinked successfully");
-      fetchWebsites();
-      fetchDomains();
-    } catch (error) {
-      console.error("Error unlinking domain:", error);
-      toast.error("Failed to unlink domain");
-    }
-  };
-
-  // Available domains (not linked or linked to this website)
-  const availableDomains = domains.filter(
-    d => !d.mini_website_linked || 
-         (selectedWebsiteForDomain && d.id === selectedWebsiteForDomain.mini_website_domain_id)
-  );
+  // Show full-screen editor if editing
+  if (editingWebsite) {
+    return (
+      <MiniWebsiteFullEditor
+        website={editingWebsite}
+        domains={domains}
+        onClose={handleCloseEditor}
+        onSave={handleSaveComplete}
+      />
+    );
+  }
 
   return (
     <ArloPageLayout stats={stats}>
@@ -403,7 +224,11 @@ export function MiniWebsitesManager() {
               </TableRow>
             ) : (
               filteredWebsites.map((site) => (
-                <TableRow key={site.id} className="hover:bg-muted/50">
+                <TableRow 
+                  key={site.id} 
+                  className="hover:bg-muted/50 cursor-pointer"
+                  onClick={() => handleEditWebsite(site)}
+                >
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {site.brand_colour && (
@@ -426,6 +251,7 @@ export function MiniWebsitesManager() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-muted-foreground hover:text-foreground"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <ExternalLink className="h-3 w-3" />
                         </a>
@@ -438,14 +264,7 @@ export function MiniWebsitesManager() {
                     {site.custom_domain ? (
                       <div className="flex items-center gap-2">
                         <Globe className="h-4 w-4 text-muted-foreground" />
-                        <a
-                          href={`https://${site.custom_domain}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm hover:underline"
-                        >
-                          {site.custom_domain}
-                        </a>
+                        <span className="text-sm">{site.custom_domain}</span>
                         {site.custom_domain_verified ? (
                           <CheckCircle className="h-4 w-4 text-green-500" />
                         ) : (
@@ -453,15 +272,10 @@ export function MiniWebsitesManager() {
                         )}
                       </div>
                     ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-muted-foreground"
-                        onClick={() => handleOpenDomainDialog(site)}
-                      >
-                        <Link2 className="h-3 w-3 mr-1" />
-                        Assign Domain
-                      </Button>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Link2 className="h-3 w-3" />
+                        No domain
+                      </span>
                     )}
                   </TableCell>
                   <TableCell className="text-center">
@@ -492,36 +306,25 @@ export function MiniWebsitesManager() {
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEditWebsite(site)}>
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEditWebsite(site); }}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit Website
                         </DropdownMenuItem>
                         {site.app_slug && (
                           <DropdownMenuItem 
-                            onClick={() => window.open(getWebsiteUrl(site.app_slug, site.custom_domain), "_blank")}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              window.open(getWebsiteUrl(site.app_slug, site.custom_domain), "_blank"); 
+                            }}
                           >
                             <ExternalLink className="mr-2 h-4 w-4" />
                             View Website
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleOpenDomainDialog(site)}>
-                          <Link2 className="mr-2 h-4 w-4" />
-                          {site.custom_domain ? "Change Domain" : "Assign Domain"}
-                        </DropdownMenuItem>
-                        {site.custom_domain && (
-                          <DropdownMenuItem 
-                            onClick={() => handleUnlinkDomain(site)}
-                            className="text-destructive"
-                          >
-                            <Unlink className="mr-2 h-4 w-4" />
-                            Unlink Domain
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
@@ -533,319 +336,6 @@ export function MiniWebsitesManager() {
           </TableBody>
         </Table>
       </div>
-
-      {/* Edit Website Sheet */}
-      <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-        <SheetContent className="sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Edit Website</SheetTitle>
-            <SheetDescription>
-              Update the website settings for {editingWebsite?.name}
-            </SheetDescription>
-          </SheetHeader>
-          
-          {editingWebsite && (
-            <div className="space-y-6 py-6">
-              {/* Logo Upload */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4" />
-                  Logo
-                </Label>
-                {editingWebsite.logo_url && (
-                  <div className="relative inline-block">
-                    <img
-                      src={editingWebsite.logo_url}
-                      alt="Logo"
-                      className="h-20 w-auto object-contain rounded-lg border bg-muted p-2"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="absolute -top-2 -right-2 h-6 w-6 p-0"
-                      onClick={() => setEditingWebsite({ ...editingWebsite, logo_url: null })}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                )}
-                <div>
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => logoInputRef.current?.click()}
-                    disabled={isUploadingLogo}
-                  >
-                    {isUploadingLogo ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Uploading...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload Logo
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="app_slug">Website Slug</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">/i/</span>
-                  <Input
-                    id="app_slug"
-                    value={editingWebsite.app_slug || ""}
-                    onChange={(e) => setEditingWebsite({
-                      ...editingWebsite,
-                      app_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")
-                    })}
-                    placeholder="instructor-name"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  URL: everydriver.lovable.app/i/{editingWebsite.app_slug || "slug"}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="website_theme">Theme</Label>
-                <Select
-                  value={editingWebsite.website_theme || "default"}
-                  onValueChange={(value) => setEditingWebsite({
-                    ...editingWebsite,
-                    website_theme: value === "default" ? null : value
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select theme" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Default</SelectItem>
-                    <SelectItem value="modern">Modern</SelectItem>
-                    <SelectItem value="classic">Classic</SelectItem>
-                    <SelectItem value="minimal">Minimal</SelectItem>
-                    <SelectItem value="bold">Bold</SelectItem>
-                    <SelectItem value="elegant">Elegant</SelectItem>
-                    <SelectItem value="nature">Nature</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Color Settings */}
-              <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Palette className="h-4 w-4" />
-                  <Label className="font-medium">Color Settings</Label>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Brand Color */}
-                  <div className="space-y-2">
-                    <Label className="text-xs">Primary / Header</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="color"
-                        value={editingWebsite.brand_colour || "#1e3a5f"}
-                        onChange={(e) => setEditingWebsite({
-                          ...editingWebsite,
-                          brand_colour: e.target.value
-                        })}
-                        className="w-10 h-8 p-0.5 cursor-pointer"
-                      />
-                      <Input
-                        value={editingWebsite.brand_colour || "#1e3a5f"}
-                        onChange={(e) => setEditingWebsite({
-                          ...editingWebsite,
-                          brand_colour: e.target.value
-                        })}
-                        className="flex-1 text-xs h-8"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Secondary Color */}
-                  <div className="space-y-2">
-                    <Label className="text-xs">Secondary / Accent</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="color"
-                        value={editingWebsite.secondary_colour || "#d4a574"}
-                        onChange={(e) => setEditingWebsite({
-                          ...editingWebsite,
-                          secondary_colour: e.target.value
-                        })}
-                        className="w-10 h-8 p-0.5 cursor-pointer"
-                      />
-                      <Input
-                        value={editingWebsite.secondary_colour || "#d4a574"}
-                        onChange={(e) => setEditingWebsite({
-                          ...editingWebsite,
-                          secondary_colour: e.target.value
-                        })}
-                        className="flex-1 text-xs h-8"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Button Color */}
-                  <div className="space-y-2">
-                    <Label className="text-xs">Button Color</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="color"
-                        value={editingWebsite.website_button_color || "#3b82f6"}
-                        onChange={(e) => setEditingWebsite({
-                          ...editingWebsite,
-                          website_button_color: e.target.value
-                        })}
-                        className="w-10 h-8 p-0.5 cursor-pointer"
-                      />
-                      <Input
-                        value={editingWebsite.website_button_color || "#3b82f6"}
-                        onChange={(e) => setEditingWebsite({
-                          ...editingWebsite,
-                          website_button_color: e.target.value
-                        })}
-                        className="flex-1 text-xs h-8"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Footer Color */}
-                  <div className="space-y-2">
-                    <Label className="text-xs">Footer Background</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="color"
-                        value={editingWebsite.website_footer_bg || "#111827"}
-                        onChange={(e) => setEditingWebsite({
-                          ...editingWebsite,
-                          website_footer_bg: e.target.value
-                        })}
-                        className="w-10 h-8 p-0.5 cursor-pointer"
-                      />
-                      <Input
-                        value={editingWebsite.website_footer_bg || "#111827"}
-                        onChange={(e) => setEditingWebsite({
-                          ...editingWebsite,
-                          website_footer_bg: e.target.value
-                        })}
-                        className="flex-1 text-xs h-8"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio / Description</Label>
-                <Textarea
-                  id="bio"
-                  value={editingWebsite.bio || ""}
-                  onChange={(e) => setEditingWebsite({
-                    ...editingWebsite,
-                    bio: e.target.value
-                  })}
-                  placeholder="A short description for the website..."
-                  rows={4}
-                />
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <Label>Website Active</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Enable or disable this website
-                  </p>
-                </div>
-                <Button
-                  variant={editingWebsite.is_active ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setEditingWebsite({
-                    ...editingWebsite,
-                    is_active: !editingWebsite.is_active
-                  })}
-                >
-                  {editingWebsite.is_active ? "Active" : "Inactive"}
-                </Button>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setIsEditSheetOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleSaveWebsite}
-                  disabled={isSaving || isUploadingLogo}
-                >
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Changes
-                </Button>
-              </div>
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
-
-      {/* Domain Assignment Dialog */}
-      <Dialog open={domainDialogOpen} onOpenChange={setDomainDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Assign Custom Domain</DialogTitle>
-            <DialogDescription>
-              Select a domain to assign to {selectedWebsiteForDomain?.name}'s website
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            <Label htmlFor="domain-select">Select Domain</Label>
-            <Select value={selectedDomainId} onValueChange={setSelectedDomainId}>
-              <SelectTrigger className="mt-2">
-                <SelectValue placeholder="Choose a domain..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">No domain (unlink)</SelectItem>
-                {availableDomains.map((domain) => (
-                  <SelectItem key={domain.id} value={domain.id}>
-                    {domain.domain_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {availableDomains.length === 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                No available domains. All domains are already linked to other websites.
-              </p>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDomainDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAssignDomain} disabled={isAssigningDomain}>
-              {isAssigningDomain && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {selectedDomainId ? "Assign Domain" : "Unlink Domain"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </ArloPageLayout>
   );
 }
