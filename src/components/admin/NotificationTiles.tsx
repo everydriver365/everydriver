@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Mail, FileEdit, Phone, ShieldCheck, Headphones } from "lucide-react";
+import { Mail, FileEdit, Phone, ShieldCheck, Headphones } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -78,10 +78,12 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
     liveChats: 0,
     liveChatsUnread: 0,
     instructorMessages: 0,
-    emails: 0,
+    offlineMessages: 0,
+    unreadEmails: 0,
     bespokeRequests: 0,
     callbackRequests: 0,
   });
+  const [emailLoading, setEmailLoading] = useState(true);
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -136,21 +138,41 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
         }
       }
 
-      setCounts({
+      setCounts(prev => ({
+        ...prev,
         liveChats: activeSessionCount,
         liveChatsUnread: liveChatUnreadCount,
         instructorMessages: instructorUnreadRes.count || 0,
-        emails: offlineMessagesRes.count || 0,
+        offlineMessages: offlineMessagesRes.count || 0,
         bespokeRequests: bespokeRes.count || 0,
         callbackRequests: callbackRes.count || 0,
-      });
+      }));
     } catch (error) {
       console.error("Error fetching notification counts:", error);
     }
   }, []);
 
+  const fetchEmailCount = useCallback(async () => {
+    try {
+      setEmailLoading(true);
+      const { data, error } = await supabase.functions.invoke("admin-email", {
+        body: { action: "fetch", limit: 20 },
+      });
+
+      if (!error && data?.emails) {
+        const unreadCount = data.emails.filter((e: { seen: boolean }) => !e.seen).length;
+        setCounts(prev => ({ ...prev, unreadEmails: unreadCount }));
+      }
+    } catch (err) {
+      console.error("Error fetching email count:", err);
+    } finally {
+      setEmailLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCounts();
+    fetchEmailCount();
 
     const channel = supabase
       .channel("admin_notification_tiles")
@@ -199,6 +221,15 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
     },
   ];
 
+  const emailTile = {
+    icon: Mail,
+    label: "Inbox",
+    count: counts.unreadEmails,
+    hasNew: counts.unreadEmails > 0,
+    section: "email",
+    isLoading: emailLoading,
+  };
+
   const enquiryTiles = [
     {
       icon: FileEdit,
@@ -234,6 +265,18 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
         ))}
       </div>
 
+      {/* Email row */}
+      <div className="grid gap-4 sm:grid-cols-1">
+        <NotificationTile
+          icon={emailTile.icon}
+          label={emailTile.label}
+          count={emailTile.count}
+          hasNew={emailTile.hasNew}
+          onClick={() => onNavigate(emailTile.section)}
+          delay={primaryTiles.length * 0.05}
+        />
+      </div>
+
       {/* Second row: enquiries */}
       <div className="grid gap-4 sm:grid-cols-2">
         {enquiryTiles.map((tile, index) => (
@@ -244,7 +287,7 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
             count={tile.count}
             hasNew={tile.hasNew}
             onClick={() => onNavigate(tile.section)}
-            delay={(primaryTiles.length + index) * 0.05}
+            delay={(primaryTiles.length + 1 + index) * 0.05}
           />
         ))}
       </div>
