@@ -2555,6 +2555,7 @@ export type Database = {
           notes: string | null
           pupil_id: string
           rating: number | null
+          scheduled_lesson_id: string | null
           skills_practiced: string[] | null
           start_time: string | null
           updated_at: string
@@ -2569,6 +2570,7 @@ export type Database = {
           notes?: string | null
           pupil_id: string
           rating?: number | null
+          scheduled_lesson_id?: string | null
           skills_practiced?: string[] | null
           start_time?: string | null
           updated_at?: string
@@ -2583,6 +2585,7 @@ export type Database = {
           notes?: string | null
           pupil_id?: string
           rating?: number | null
+          scheduled_lesson_id?: string | null
           skills_practiced?: string[] | null
           start_time?: string | null
           updated_at?: string
@@ -2601,6 +2604,13 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_history_scheduled_lesson_id_fkey"
+            columns: ["scheduled_lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
             referencedColumns: ["id"]
           },
           {

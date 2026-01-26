@@ -33,11 +33,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
+
+interface ScheduledLesson {
+  id: string;
+  lesson_date: string;
+  start_time: string;
+  duration_minutes: number;
+}
 
 interface Pupil {
   id: string;
@@ -116,6 +124,8 @@ export function ExpandablePupilCard({
   const [newFeedback, setNewFeedback] = useState("");
   const [newRating, setNewRating] = useState(0);
   const [savingFeedback, setSavingFeedback] = useState(false);
+  const [availableLessons, setAvailableLessons] = useState<ScheduledLesson[]>([]);
+  const [selectedLessonId, setSelectedLessonId] = useState<string>("");
   const [testStats, setTestStats] = useState<{ 
     realTests: number; 
     mockTests: number; 
@@ -134,6 +144,40 @@ export function ExpandablePupilCard({
       fetchLatestFeedback();
     }
   }, [isExpanded, pupil.id]);
+
+  // Fetch available lessons when adding feedback
+  useEffect(() => {
+    if (isAddingFeedback) {
+      fetchAvailableLessons();
+    }
+  }, [isAddingFeedback, pupil.id]);
+
+  const fetchAvailableLessons = async () => {
+    try {
+      // Get past and recent scheduled lessons for this pupil
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes")
+        .eq("pupil_id", pupil.id)
+        .gte("lesson_date", format(thirtyDaysAgo, "yyyy-MM-dd"))
+        .lte("lesson_date", format(new Date(), "yyyy-MM-dd"))
+        .order("lesson_date", { ascending: false });
+
+      if (!error && data) {
+        setAvailableLessons(data);
+        // Auto-select the most recent lesson
+        if (data.length > 0 && !selectedLessonId) {
+          setSelectedLessonId(data[0].id);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+    }
+  };
+
 
   const fetchTestStats = async () => {
     try {
@@ -185,63 +229,62 @@ export function ExpandablePupilCard({
 
     setSavingFeedback(true);
     try {
-      // Get instructor_id from an existing lesson or context
-      const { data: existingLesson } = await supabase
-        .from("lesson_history")
-        .select("instructor_id")
-        .eq("pupil_id", pupil.id)
-        .limit(1)
-        .single();
+      // Get the selected lesson details
+      const selectedLesson = availableLessons.find(l => l.id === selectedLessonId);
+      const lessonDate = selectedLesson?.lesson_date || format(new Date(), "yyyy-MM-dd");
+      const lessonDuration = selectedLesson?.duration_minutes || 0;
 
-      const instructorId = existingLesson?.instructor_id;
+      // Get instructor_id from context or scheduled lesson
+      let instructorIdToUse = instructorId;
+      
+      if (!instructorIdToUse) {
+        const { data: existingLesson } = await supabase
+          .from("lesson_history")
+          .select("instructor_id")
+          .eq("pupil_id", pupil.id)
+          .limit(1)
+          .maybeSingle();
 
-      if (!instructorId) {
+        instructorIdToUse = existingLesson?.instructor_id;
+      }
+
+      if (!instructorIdToUse) {
         // Try to get from scheduled lessons
         const { data: scheduled } = await supabase
           .from("scheduled_lessons")
           .select("instructor_id")
           .eq("pupil_id", pupil.id)
           .limit(1)
-          .single();
+          .maybeSingle();
 
-        if (!scheduled?.instructor_id) {
-          toast.error("Unable to find instructor");
-          return;
-        }
-
-        // Create new lesson feedback
-        const { error } = await supabase
-          .from("lesson_history")
-          .insert({
-            pupil_id: pupil.id,
-            instructor_id: scheduled.instructor_id,
-            lesson_date: format(new Date(), "yyyy-MM-dd"),
-            duration_minutes: 0,
-            notes: newFeedback,
-            rating: newRating > 0 ? newRating : null,
-          });
-
-        if (error) throw error;
-      } else {
-        // Create new lesson feedback with existing instructor
-        const { error } = await supabase
-          .from("lesson_history")
-          .insert({
-            pupil_id: pupil.id,
-            instructor_id: instructorId,
-            lesson_date: format(new Date(), "yyyy-MM-dd"),
-            duration_minutes: 0,
-            notes: newFeedback,
-            rating: newRating > 0 ? newRating : null,
-          });
-
-        if (error) throw error;
+        instructorIdToUse = scheduled?.instructor_id;
       }
+
+      if (!instructorIdToUse) {
+        toast.error("Unable to find instructor");
+        return;
+      }
+
+      // Create lesson feedback linked to the selected lesson
+      const { error } = await supabase
+        .from("lesson_history")
+        .insert({
+          pupil_id: pupil.id,
+          instructor_id: instructorIdToUse,
+          lesson_date: lessonDate,
+          duration_minutes: lessonDuration,
+          notes: newFeedback,
+          rating: newRating > 0 ? newRating : null,
+          scheduled_lesson_id: selectedLessonId || null,
+        });
+
+      if (error) throw error;
 
       toast.success("Feedback saved! Visible to pupil & parents");
       setIsAddingFeedback(false);
       setNewFeedback("");
       setNewRating(0);
+      setSelectedLessonId("");
       fetchLatestFeedback();
     } catch (error) {
       console.error("Error saving feedback:", error);
@@ -576,6 +619,37 @@ export function ExpandablePupilCard({
                 {/* Add Feedback Form */}
                 {isAddingFeedback && (
                   <div className="space-y-3">
+                    {/* Lesson Selector */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-muted-foreground font-medium">
+                        Link to lesson:
+                      </label>
+                      <Select
+                        value={selectedLessonId}
+                        onValueChange={setSelectedLessonId}
+                      >
+                        <SelectTrigger 
+                          className="w-full text-sm h-9"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <SelectValue placeholder="Select a lesson..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border z-[1100]">
+                          {availableLessons.length === 0 ? (
+                            <SelectItem value="none" disabled>
+                              No recent lessons found
+                            </SelectItem>
+                          ) : (
+                            availableLessons.map((lesson) => (
+                              <SelectItem key={lesson.id} value={lesson.id}>
+                                {format(parseISO(lesson.lesson_date), 'EEE, d MMM')} at {lesson.start_time.slice(0, 5)} ({lesson.duration_minutes}min)
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div className="flex items-center justify-between">
                       <LessonNotesTemplates
                         onSelect={(template) => setNewFeedback(prev => prev ? `${prev} ${template}` : template)}
@@ -620,6 +694,7 @@ export function ExpandablePupilCard({
                           setIsAddingFeedback(false);
                           setNewFeedback("");
                           setNewRating(0);
+                          setSelectedLessonId("");
                         }}
                       >
                         <X className="h-4 w-4 mr-1" />
