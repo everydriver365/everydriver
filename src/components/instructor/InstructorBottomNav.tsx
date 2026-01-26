@@ -53,10 +53,9 @@ const navItems: NavItem[] = [
     path: "/instructor/pupils"
   },
   { 
-    label: "Messages", 
-    icon: MessageCircle, 
-    path: "/instructor/messages",
-    isMessages: true
+    label: "Menu", 
+    icon: Grid3X3, 
+    path: "/instructor/menu"
   },
 ];
 
@@ -100,7 +99,6 @@ export function InstructorBottomNav() {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
-          const isMessages = item.isMessages;
           const isTrack = item.isTrack;
           
           return (
@@ -110,8 +108,6 @@ export function InstructorBottomNav() {
               className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                 isActive
                   ? "text-primary"
-                  : isMessages
-                  ? "text-cyan-500"
                   : "text-foreground/70 hover:text-foreground dark:text-white/70 dark:hover:text-white"
               }`}
             >
@@ -145,32 +141,18 @@ export function InstructorBottomNav() {
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
                 )}
-                {isMessages && (
-                  <MessageNotificationBadge 
-                    instructorId={instructor?.id} 
-                    className="absolute -top-1.5 -right-2 text-[10px] px-1 min-w-[18px] h-[18px] flex items-center justify-center ring-2 ring-white"
-                  />
-                )}
                 {isTrack && isTrackingActive && (
                   <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-white animate-pulse" />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                isActive ? "font-semibold" : isMessages ? "font-medium text-cyan-500" : "font-medium opacity-80"
+                isActive ? "font-semibold" : "font-medium opacity-80"
               }`}>
                 {item.label}
               </span>
             </button>
           );
         })}
-        
-        {/* Menu launcher button - bottom right */}
-        <button
-          onClick={() => navigate("/instructor/menu")}
-          className="absolute bottom-20 right-4 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-all duration-200 active:scale-95"
-        >
-          <Grid3X3 className="h-6 w-6" strokeWidth={2} />
-        </button>
       </div>
       {/* Safe area for iOS */}
       <div className="h-safe-area-inset-bottom bg-white dark:bg-card/95" />
