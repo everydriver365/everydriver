@@ -218,7 +218,7 @@ export function InstructorMobileHome({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
                 <User className="mr-2 h-4 w-4" />
-                Profile Settings
+                Settings
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/instructor/settings/traccar")}>
                 <Navigation className="mr-2 h-4 w-4" />
