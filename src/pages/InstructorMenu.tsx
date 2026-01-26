@@ -170,7 +170,6 @@ export default function InstructorMenu() {
         {
           icon: Settings,
           label: "Settings",
-          description: "Profile, courses, website",
           path: "/instructor/settings",
           iconColor: "text-gray-600",
           iconBg: "bg-gray-100 dark:bg-gray-900/30",
