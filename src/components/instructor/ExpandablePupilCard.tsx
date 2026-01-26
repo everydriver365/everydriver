@@ -295,83 +295,84 @@ export function ExpandablePupilCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <h3 className="font-semibold text-foreground truncate">
-              {pupil.name}
-            </h3>
-            <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-              {/* Currently Tracking Badge */}
-              {isTracking && (
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs gap-1 animate-pulse">
-                  <Radio className="h-3 w-3" />
-                  Live
-                </Badge>
-              )}
-              {/* Payment Status Badges */}
-              {pupil.deposit_forfeited && (
-                <Badge variant="destructive" className="text-xs">
-                  Deposit Lost
-                </Badge>
-              )}
-              {!pupil.deposit_forfeited && pupil.payment_type === "deposit" && (pupil.account_balance || 0) < 0 && (
-                (() => {
-                  const daysUntilDue = pupil.balance_due_date 
-                    ? Math.ceil((new Date(pupil.balance_due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-                    : null;
-                  const isOverdue = daysUntilDue !== null && daysUntilDue < 0;
-                  const isUrgent = daysUntilDue !== null && daysUntilDue <= 7 && daysUntilDue >= 0;
-                  
-                  return (
-                    <Badge 
-                      variant={isOverdue ? "destructive" : isUrgent ? "default" : "secondary"}
-                      className={`text-xs ${isOverdue ? "" : isUrgent ? "bg-amber-500 hover:bg-amber-600" : "bg-amber-100 text-amber-700 border-0"}`}
-                    >
-                      {isOverdue ? "OVERDUE" : `£${Math.abs(pupil.account_balance || 0)} due`}
-                    </Badge>
-                  );
-                })()
-              )}
-              {pupil.payment_type === "full" && (
-                <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
-                  Paid
-                </Badge>
-              )}
-              {pupil.payment_type === "deposit" && (pupil.account_balance || 0) >= 0 && !pupil.deposit_forfeited && (
-                <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
-                  Paid
-                </Badge>
-              )}
-              {pupil.course_type && (
-                <Badge variant="secondary" className="text-xs">
-                  {courseTypeLabels[pupil.course_type] || pupil.course_type}
-                </Badge>
-              )}
-              {(pupil.progress || 0) >= 100 && (
-                <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
-                  <GraduationCap className="h-3 w-3 mr-1" />
-                  Passed
-                </Badge>
-              )}
-              {/* Test Stats Badges */}
-              {testStats.mockTests > 0 && (
-                <Badge variant="outline" className="text-xs gap-1">
-                  <ClipboardList className="h-3 w-3" />
-                  {testStats.mockTests} mock
-                </Badge>
-              )}
-              {testStats.realTests > 0 && (
-                <Badge 
-                  className={`text-xs gap-1 ${
-                    testStats.lastResult === 'pass' 
-                      ? 'bg-emerald-100 text-emerald-700 border-0' 
-                      : 'bg-destructive/10 text-destructive border-0'
-                  }`}
-                >
-                  <Award className="h-3 w-3" />
-                  {testStats.realTests} test{testStats.realTests > 1 ? 's' : ''}
-                </Badge>
-              )}
-            </div>
+          {/* Name row */}
+          <h3 className="font-semibold text-foreground truncate mb-1">
+            {pupil.name}
+          </h3>
+          
+          {/* Badges row - separate line */}
+          <div className="flex items-center gap-1.5 flex-wrap mb-2">
+            {/* Currently Tracking Badge */}
+            {isTracking && (
+              <Badge className="bg-primary/10 text-primary border-primary/20 text-xs gap-1 animate-pulse">
+                <Radio className="h-3 w-3" />
+                Live
+              </Badge>
+            )}
+            {/* Payment Status Badges */}
+            {pupil.deposit_forfeited && (
+              <Badge variant="destructive" className="text-xs">
+                Deposit Lost
+              </Badge>
+            )}
+            {!pupil.deposit_forfeited && pupil.payment_type === "deposit" && (pupil.account_balance || 0) < 0 && (
+              (() => {
+                const daysUntilDue = pupil.balance_due_date 
+                  ? Math.ceil((new Date(pupil.balance_due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                  : null;
+                const isOverdue = daysUntilDue !== null && daysUntilDue < 0;
+                const isUrgent = daysUntilDue !== null && daysUntilDue <= 7 && daysUntilDue >= 0;
+                
+                return (
+                  <Badge 
+                    variant={isOverdue ? "destructive" : isUrgent ? "default" : "secondary"}
+                    className={`text-xs ${isOverdue ? "" : isUrgent ? "bg-amber-500 hover:bg-amber-600" : "bg-amber-100 text-amber-700 border-0"}`}
+                  >
+                    {isOverdue ? "OVERDUE" : `£${Math.abs(pupil.account_balance || 0)} due`}
+                  </Badge>
+                );
+              })()
+            )}
+            {pupil.payment_type === "full" && (
+              <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
+                Paid
+              </Badge>
+            )}
+            {pupil.payment_type === "deposit" && (pupil.account_balance || 0) >= 0 && !pupil.deposit_forfeited && (
+              <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
+                Paid
+              </Badge>
+            )}
+            {pupil.course_type && (
+              <Badge variant="secondary" className="text-xs">
+                {courseTypeLabels[pupil.course_type] || pupil.course_type}
+              </Badge>
+            )}
+            {(pupil.progress || 0) >= 100 && (
+              <Badge className="bg-emerald-100 text-emerald-700 border-0 text-xs">
+                <GraduationCap className="h-3 w-3 mr-1" />
+                Passed
+              </Badge>
+            )}
+            {/* Test Stats Badges */}
+            {testStats.mockTests > 0 && (
+              <Badge variant="outline" className="text-xs gap-1">
+                <ClipboardList className="h-3 w-3" />
+                {testStats.mockTests} mock
+              </Badge>
+            )}
+            {testStats.realTests > 0 && (
+              <Badge 
+                className={`text-xs gap-1 ${
+                  testStats.lastResult === 'pass' 
+                    ? 'bg-emerald-100 text-emerald-700 border-0' 
+                    : 'bg-destructive/10 text-destructive border-0'
+                }`}
+              >
+                <Award className="h-3 w-3" />
+                {testStats.realTests} test{testStats.realTests > 1 ? 's' : ''}
+              </Badge>
+            )}
           </div>
           
           <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
