@@ -59,6 +59,8 @@ interface MiniWebsite {
   website_text_color?: string | null;
   website_heading_color?: string | null;
   website_menu_text_color?: string | null;
+  hero_overlay_color?: string | null;
+  hero_overlay_opacity?: number | null;
   logo_url: string | null;
   hero_image_url?: string | null;
   bio: string | null;
@@ -284,6 +286,8 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
         website_text_color: editData.website_text_color,
         website_heading_color: editData.website_heading_color,
         website_menu_text_color: editData.website_menu_text_color,
+        hero_overlay_color: editData.hero_overlay_color,
+        hero_overlay_opacity: editData.hero_overlay_opacity,
         logo_url: editData.logo_url,
         hero_image_url: editData.hero_image_url,
         bio: editData.bio,
@@ -575,6 +579,34 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                             className="flex-1"
                           />
                         </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Hero Overlay Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={editData.hero_overlay_color || "#000000"}
+                            onChange={(e) => setEditData({ ...editData, hero_overlay_color: e.target.value })}
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={editData.hero_overlay_color || "#000000"}
+                            onChange={(e) => setEditData({ ...editData, hero_overlay_color: e.target.value })}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2 col-span-2">
+                        <Label>Hero Overlay Opacity: {Math.round((editData.hero_overlay_opacity ?? 0.2) * 100)}%</Label>
+                        <Input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.05"
+                          value={editData.hero_overlay_opacity ?? 0.2}
+                          onChange={(e) => setEditData({ ...editData, hero_overlay_opacity: parseFloat(e.target.value) })}
+                          className="w-full"
+                        />
                       </div>
                     </div>
 

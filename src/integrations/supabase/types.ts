@@ -2500,6 +2500,8 @@ export type Database = {
           google_refresh_token: string | null
           google_token_expires_at: string | null
           hero_image_url: string | null
+          hero_overlay_color: string | null
+          hero_overlay_opacity: number | null
           home_address: string | null
           home_postcode: string
           hourly_rate: number | null
@@ -2593,6 +2595,8 @@ export type Database = {
           google_refresh_token?: string | null
           google_token_expires_at?: string | null
           hero_image_url?: string | null
+          hero_overlay_color?: string | null
+          hero_overlay_opacity?: number | null
           home_address?: string | null
           home_postcode: string
           hourly_rate?: number | null
@@ -2686,6 +2690,8 @@ export type Database = {
           google_refresh_token?: string | null
           google_token_expires_at?: string | null
           hero_image_url?: string | null
+          hero_overlay_color?: string | null
+          hero_overlay_opacity?: number | null
           home_address?: string | null
           home_postcode?: string
           hourly_rate?: number | null
