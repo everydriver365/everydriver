@@ -136,6 +136,10 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
   const [selectedDomainId, setSelectedDomainId] = useState<string>(website.mini_website_domain_id || "");
+  const [manualDomain, setManualDomain] = useState<string>(website.custom_domain || "");
+  const [domainMode, setDomainMode] = useState<"none" | "manual" | "purchased">(
+    website.mini_website_domain_id ? "purchased" : website.custom_domain ? "manual" : "none"
+  );
   const logoInputRef = useRef<HTMLInputElement>(null);
   const heroInputRef = useRef<HTMLInputElement>(null);
 
@@ -210,7 +214,22 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   const handleSave = async () => {
     setSaving(true);
     try {
-      const selectedDomain = domains.find(d => d.id === selectedDomainId);
+      // Determine custom domain based on mode
+      let finalCustomDomain: string | null = null;
+      let finalDomainId: string | null = null;
+
+      if (domainMode === "manual" && manualDomain.trim()) {
+        // Clean domain: remove protocol and trailing slashes
+        finalCustomDomain = manualDomain
+          .trim()
+          .replace(/^https?:\/\//, "")
+          .replace(/\/+$/, "")
+          .toLowerCase();
+      } else if (domainMode === "purchased" && selectedDomainId) {
+        const selectedDomain = domains.find(d => d.id === selectedDomainId);
+        finalCustomDomain = selectedDomain?.domain_name || null;
+        finalDomainId = selectedDomainId;
+      }
       
       const { error } = await supabase
         .from("instructors")
@@ -228,19 +247,19 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
           bio: editData.bio,
           phone: editData.phone,
           is_active: editData.is_active,
-          custom_domain: selectedDomain?.domain_name || null,
+          custom_domain: finalCustomDomain,
           custom_domain_verified: false,
-          mini_website_domain_id: selectedDomainId || null,
+          mini_website_domain_id: finalDomainId,
         })
         .eq("id", editData.id);
 
       if (error) throw error;
 
-      // Update domain_orders table
-      if (selectedDomainId && selectedDomainId !== website.mini_website_domain_id) {
-        await supabase.from("domain_orders").update({ mini_website_linked: true }).eq("id", selectedDomainId);
+      // Update domain_orders table for purchased domains
+      if (finalDomainId && finalDomainId !== website.mini_website_domain_id) {
+        await supabase.from("domain_orders").update({ mini_website_linked: true }).eq("id", finalDomainId);
       }
-      if (website.mini_website_domain_id && website.mini_website_domain_id !== selectedDomainId) {
+      if (website.mini_website_domain_id && website.mini_website_domain_id !== finalDomainId) {
         await supabase.from("domain_orders").update({ mini_website_linked: false }).eq("id", website.mini_website_domain_id);
       }
 
@@ -796,27 +815,82 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                     </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Custom Domain</Label>
-                    <Select value={selectedDomainId} onValueChange={setSelectedDomainId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="No custom domain" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="">No custom domain</SelectItem>
-                        {availableDomains.map((domain) => (
-                          <SelectItem key={domain.id} value={domain.id}>
-                            {domain.domain_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {availableDomains.length === 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        No available domains. Purchase domains in the Domains section.
-                      </p>
-                    )}
+                  <div className="space-y-4">
+                    <Label>Custom Domain Mode</Label>
+                    <RadioGroup
+                      value={domainMode}
+                      onValueChange={(value) => setDomainMode(value as "none" | "manual" | "purchased")}
+                      className="space-y-2"
+                    >
+                      <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                        <RadioGroupItem value="none" id="domain-none" />
+                        <Label htmlFor="domain-none" className="cursor-pointer flex-1">
+                          <span className="font-medium">No custom domain</span>
+                          <span className="block text-xs text-muted-foreground">Use default everydriver.lovable.app URL only</span>
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                        <RadioGroupItem value="manual" id="domain-manual" />
+                        <Label htmlFor="domain-manual" className="cursor-pointer flex-1">
+                          <span className="font-medium">Enter custom domain manually</span>
+                          <span className="block text-xs text-muted-foreground">For domains purchased elsewhere (DNS setup required)</span>
+                        </Label>
+                      </div>
+                      {availableDomains.length > 0 && (
+                        <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                          <RadioGroupItem value="purchased" id="domain-purchased" />
+                          <Label htmlFor="domain-purchased" className="cursor-pointer flex-1">
+                            <span className="font-medium">Use purchased domain</span>
+                            <span className="block text-xs text-muted-foreground">Select from domains purchased in EveryDriver</span>
+                          </Label>
+                        </div>
+                      )}
+                    </RadioGroup>
                   </div>
+
+                  {domainMode === "manual" && (
+                    <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
+                      <Label>Custom Domain</Label>
+                      <Input
+                        value={manualDomain}
+                        onChange={(e) => setManualDomain(e.target.value.toLowerCase().replace(/^https?:\/\//, ""))}
+                        placeholder="www.example.com"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the full domain (e.g., www.example.com or example.co.uk). DNS must be configured to point to EveryDriver.
+                      </p>
+                    </div>
+                  )}
+
+                  {domainMode === "purchased" && (
+                    <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
+                      <Label>Select Purchased Domain</Label>
+                      <Select value={selectedDomainId} onValueChange={setSelectedDomainId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a domain..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableDomains.map((domain) => (
+                            <SelectItem key={domain.id} value={domain.id}>
+                              {domain.domain_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Current domain display */}
+                  {(domainMode === "manual" && manualDomain) || (domainMode === "purchased" && selectedDomainId) ? (
+                    <div className="p-4 border rounded-lg bg-green-500/10 border-green-500/30">
+                      <p className="text-sm font-medium text-green-600">Custom domain will be set to:</p>
+                      <p className="text-lg font-bold">
+                        {domainMode === "manual" 
+                          ? manualDomain 
+                          : domains.find(d => d.id === selectedDomainId)?.domain_name}
+                      </p>
+                    </div>
+                  ) : null}
                 </CardContent>
               </Card>
             </TabsContent>
