@@ -2538,6 +2538,8 @@ export type Database = {
           website_font: string | null
           website_footer_bg: string | null
           website_header_style: string | null
+          website_heading_color: string | null
+          website_text_color: string | null
           website_theme: string | null
           welcome_video_url: string | null
           xero_connected: boolean | null
@@ -2628,6 +2630,8 @@ export type Database = {
           website_font?: string | null
           website_footer_bg?: string | null
           website_header_style?: string | null
+          website_heading_color?: string | null
+          website_text_color?: string | null
           website_theme?: string | null
           welcome_video_url?: string | null
           xero_connected?: boolean | null
@@ -2718,6 +2722,8 @@ export type Database = {
           website_font?: string | null
           website_footer_bg?: string | null
           website_header_style?: string | null
+          website_heading_color?: string | null
+          website_text_color?: string | null
           website_theme?: string | null
           welcome_video_url?: string | null
           xero_connected?: boolean | null
