@@ -490,10 +490,15 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
       {/* Road Segments */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Road Segments</CardTitle>
+          <CardTitle className="text-base flex items-center justify-between">
+            Road Segments
+            <Badge variant="outline" className="font-normal">
+              {report.segments.length} roads
+            </Badge>
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-64">
+          <ScrollArea className="h-80 max-h-[50vh]">
             <div className="divide-y">
               {report.segments.map((segment, index) => (
                 <div key={index} className="p-3 flex items-center gap-3">

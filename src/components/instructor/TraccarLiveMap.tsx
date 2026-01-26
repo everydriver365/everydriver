@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { supabase } from "@/integrations/supabase/client";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
+import { Button } from "@/components/ui/button";
+import { Crosshair, ZoomIn, ZoomOut } from "lucide-react";
 
 interface DrivingEvent {
   id: string;
@@ -46,7 +48,30 @@ export default function TraccarLiveMap({
   const polylineRef = useRef<L.Polyline | null>(null);
   const eventMarkersRef = useRef<L.Marker[]>([]);
   const [routePoints, setRoutePoints] = useState<RoutePoint[]>([]);
+  const [isAutoCenter, setIsAutoCenter] = useState(true);
 
+  // Map control functions
+  const centerOnVehicle = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (map && latitude !== null && longitude !== null) {
+      map.setView([latitude, longitude], map.getZoom(), { animate: true });
+      setIsAutoCenter(true);
+    }
+  }, [latitude, longitude]);
+
+  const handleZoomIn = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (map) {
+      map.zoomIn();
+    }
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (map) {
+      map.zoomOut();
+    }
+  }, []);
   // Fetch route points when session changes
   useEffect(() => {
     if (!sessionId) {
@@ -166,8 +191,11 @@ export default function TraccarLiveMap({
       markerRef.current.setIcon(icon);
     }
 
-    map.panTo([latitude, longitude], { animate: true, duration: 0.5 });
-  }, [latitude, longitude, heading, speedKmh, isConnected]);
+    // Only auto-pan if auto-center is enabled
+    if (isAutoCenter) {
+      map.panTo([latitude, longitude], { animate: true, duration: 0.5 });
+    }
+  }, [latitude, longitude, heading, speedKmh, isConnected, isAutoCenter]);
 
   // Update route polyline
   useEffect(() => {
@@ -264,7 +292,43 @@ export default function TraccarLiveMap({
 
   return (
     <div className={`relative w-full h-full min-h-[300px] ${className}`}>
-      <div ref={mapRef} className="absolute inset-0" />
+      <div 
+        ref={mapRef} 
+        className="absolute inset-0" 
+        onTouchStart={() => setIsAutoCenter(false)}
+        onMouseDown={() => setIsAutoCenter(false)}
+      />
+
+      {/* Map Control Buttons */}
+      <div className="absolute bottom-24 left-4 z-20 flex flex-col gap-2">
+        <Button
+          size="icon"
+          variant={isAutoCenter ? "default" : "secondary"}
+          className="h-11 w-11 rounded-full shadow-lg"
+          onClick={centerOnVehicle}
+          title="Center on vehicle"
+        >
+          <Crosshair className="h-5 w-5" />
+        </Button>
+        <Button
+          size="icon"
+          variant="secondary"
+          className="h-11 w-11 rounded-full shadow-lg"
+          onClick={handleZoomIn}
+          title="Zoom in"
+        >
+          <ZoomIn className="h-5 w-5" />
+        </Button>
+        <Button
+          size="icon"
+          variant="secondary"
+          className="h-11 w-11 rounded-full shadow-lg"
+          onClick={handleZoomOut}
+          title="Zoom out"
+        >
+          <ZoomOut className="h-5 w-5" />
+        </Button>
+      </div>
 
       {/* UK-style Speed Roundels */}
       {latitude !== null && longitude !== null && (
