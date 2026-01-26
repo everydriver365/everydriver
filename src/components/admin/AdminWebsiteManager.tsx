@@ -1,18 +1,39 @@
-import { useState } from "react";
-import { Globe, Edit2, Eye, EyeOff, ExternalLink, Save } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ExternalLink, Globe, Loader2, PencilRuler } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useInstructorWebsitePages, WebsitePage } from "@/hooks/useInstructorWebsitePages";
+import { MiniWebsiteFullEditor } from "./MiniWebsiteFullEditor";
 import { toast } from "sonner";
+
+interface MiniWebsite {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  app_slug: string | null;
+  website_theme: string | null;
+  website_font: string | null;
+  website_header_style: string | null;
+  custom_domain: string | null;
+  custom_domain_verified: boolean | null;
+  is_active: boolean;
+  created_at: string;
+  brand_colour: string | null;
+  secondary_colour: string | null;
+  website_button_color: string | null;
+  website_footer_bg: string | null;
+  logo_url: string | null;
+  hero_image_url: string | null;
+  bio: string | null;
+  mini_website_domain_id: string | null;
+}
+
+interface DomainOrder {
+  id: string;
+  domain_name: string;
+  status: string;
+  mini_website_linked: boolean;
+}
 
 interface AdminWebsiteManagerProps {
   instructorId: string;
@@ -21,40 +42,77 @@ interface AdminWebsiteManagerProps {
 }
 
 export function AdminWebsiteManager({ instructorId, instructorSlug, instructorName }: AdminWebsiteManagerProps) {
-  const { pages, loading, updatePage } = useInstructorWebsitePages(instructorId);
-  const [editingPage, setEditingPage] = useState<WebsitePage | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [website, setWebsite] = useState<MiniWebsite | null>(null);
+  const [domains, setDomains] = useState<DomainOrder[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const baseUrl = window.location.origin;
+  const baseUrl = useMemo(() => window.location.origin, []);
 
-  const handleSave = async () => {
-    if (!editingPage) return;
-    setSaving(true);
-    const result = await updatePage(editingPage.id, {
-      hero_heading: editingPage.hero_heading,
-      hero_subheading: editingPage.hero_subheading,
-      hero_image_url: editingPage.hero_image_url,
-      is_published: editingPage.is_published,
-      meta_title: editingPage.meta_title,
-      meta_description: editingPage.meta_description,
-    });
-    setSaving(false);
-    if (result.success) {
-      toast.success("Page saved");
-      setEditingPage(null);
-    } else {
-      toast.error("Failed to save");
+  const fetchWebsite = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("instructors")
+        .select(
+          "id, name, email, phone, app_slug, website_theme, website_font, website_header_style, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, secondary_colour, website_button_color, website_footer_bg, logo_url, hero_image_url, bio, mini_website_domain_id"
+        )
+        .eq("id", instructorId)
+        .single();
+
+      if (error) throw error;
+      setWebsite(data as MiniWebsite);
+    } catch (e) {
+      console.error("Failed to load instructor website:", e);
+      toast.error("Failed to load mini website details");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEditClick = (e: React.MouseEvent, page: WebsitePage) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setEditingPage(page);
+  const fetchDomains = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("domain_orders")
+        .select("id, domain_name, status, mini_website_linked")
+        .in("status", ["active", "completed"])
+        .order("domain_name");
+      if (error) throw error;
+      setDomains((data || []) as DomainOrder[]);
+    } catch (e) {
+      console.error("Failed to load domains:", e);
+    }
   };
 
-  if (loading) {
-    return <div className="animate-pulse h-32 bg-muted rounded-lg" />;
+  useEffect(() => {
+    // Preload data so opening is instant.
+    fetchWebsite();
+    fetchDomains();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instructorId]);
+
+  const handleOpenEditor = async () => {
+    if (!website) {
+      await fetchWebsite();
+    }
+    setIsEditorOpen(true);
+  };
+
+  const handleSaveComplete = async () => {
+    await fetchWebsite();
+    await fetchDomains();
+    setIsEditorOpen(false);
+  };
+
+  if (isEditorOpen && website) {
+    return (
+      <MiniWebsiteFullEditor
+        website={website}
+        domains={domains}
+        onClose={() => setIsEditorOpen(false)}
+        onSave={handleSaveComplete}
+      />
+    );
   }
 
   return (
@@ -74,103 +132,17 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
         </a>
       </div>
 
-      <div className="grid gap-2">
-        {pages.map((page) => (
-          <div key={page.id} className="flex items-center justify-between p-2 border rounded text-sm bg-background">
-            <div className="flex items-center gap-2">
-              {page.is_published ? (
-                <Eye className="h-3 w-3 text-green-500" />
-              ) : (
-                <EyeOff className="h-3 w-3 text-muted-foreground" />
-              )}
-              <span>{page.page_title}</span>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={(e) => handleEditClick(e, page)}
-              type="button"
-            >
-              <Edit2 className="h-3 w-3" />
-            </Button>
-          </div>
-        ))}
+      <div className="flex items-center gap-2">
+        <Button type="button" onClick={handleOpenEditor} disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <PencilRuler className="h-4 w-4 mr-2" />}
+          Open full-screen editor
+        </Button>
+        {!website && !loading && (
+          <Button type="button" variant="outline" onClick={fetchWebsite}>
+            Reload
+          </Button>
+        )}
       </div>
-
-      <Dialog open={!!editingPage} onOpenChange={(open) => !open && setEditingPage(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit {editingPage?.page_title}</DialogTitle>
-          </DialogHeader>
-          {editingPage && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Published</Label>
-                <Switch
-                  checked={editingPage.is_published}
-                  onCheckedChange={(checked) =>
-                    setEditingPage({ ...editingPage, is_published: checked })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Hero Heading</Label>
-                <Input
-                  value={editingPage.hero_heading || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, hero_heading: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Hero Subheading</Label>
-                <Textarea
-                  value={editingPage.hero_subheading || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, hero_subheading: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Hero Image URL</Label>
-                <Input
-                  value={editingPage.hero_image_url || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, hero_image_url: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Meta Title (SEO)</Label>
-                <Input
-                  value={editingPage.meta_title || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, meta_title: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Meta Description (SEO)</Label>
-                <Textarea
-                  value={editingPage.meta_description || ""}
-                  onChange={(e) =>
-                    setEditingPage({ ...editingPage, meta_description: e.target.value })
-                  }
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={() => setEditingPage(null)} className="flex-1" type="button">
-                  Cancel
-                </Button>
-                <Button onClick={handleSave} disabled={saving} className="flex-1" type="button">
-                  <Save className="h-4 w-4 mr-1" />
-                  {saving ? "Saving..." : "Save"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
