@@ -63,6 +63,9 @@ import InstructorPendingScheduling from "./pages/InstructorPendingScheduling";
 import InstructorTestResults from "./pages/InstructorTestResults";
 import InstructorRoutes from "./pages/InstructorRoutes";
 import InstructorMenu from "./pages/InstructorMenu";
+import InstructorIncome from "./pages/InstructorIncome";
+import InstructorInOut from "./pages/InstructorInOut";
+import InstructorTax from "./pages/InstructorTax";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
 import PublicAvailability from "./pages/PublicAvailability";
@@ -170,6 +173,9 @@ const App = () => (
               <Route path="/instructor/test-results" element={<InstructorTestResults />} />
               <Route path="/instructor/routes" element={<InstructorRoutes />} />
               <Route path="/instructor/menu" element={<InstructorMenu />} />
+              <Route path="/instructor/income" element={<InstructorIncome />} />
+              <Route path="/instructor/in-out" element={<InstructorInOut />} />
+              <Route path="/instructor/tax" element={<InstructorTax />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />
