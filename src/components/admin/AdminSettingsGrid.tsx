@@ -77,6 +77,7 @@ const settingsCategories: SettingsCategory[] = [
       { key: "testimonials", title: "Testimonials", description: "Customer reviews and quotes." },
       { key: "public-faqs", title: "FAQs", description: "Frequently asked questions." },
       { key: "images", title: "Site Images", description: "Upload and manage site imagery." },
+      { key: "demo-mini-site", title: "Demo Mini Site", description: "Edit the demo instructor website." },
     ],
   },
   {
