@@ -135,11 +135,6 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
-  const [selectedDomainId, setSelectedDomainId] = useState<string>(website.mini_website_domain_id || "");
-  const [manualDomain, setManualDomain] = useState<string>(website.custom_domain || "");
-  const [domainMode, setDomainMode] = useState<"none" | "manual" | "purchased">(
-    website.mini_website_domain_id ? "purchased" : website.custom_domain ? "manual" : "none"
-  );
   const logoInputRef = useRef<HTMLInputElement>(null);
   const heroInputRef = useRef<HTMLInputElement>(null);
 
@@ -149,9 +144,37 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   const [savingPage, setSavingPage] = useState(false);
 
   // Available domains (not linked or linked to this website)
-  const availableDomains = domains.filter(
-    d => !d.mini_website_linked || d.id === website.mini_website_domain_id
-  );
+  // Also include domains owned by this instructor that aren't linked elsewhere
+  const instructorDomains = domains.filter(d => !d.mini_website_linked || d.id === website.mini_website_domain_id);
+  
+  // Find if this instructor has any purchased domains (for auto-prefill)
+  const ownedDomain = domains.find(d => d.id === website.mini_website_domain_id);
+  const firstAvailableDomain = instructorDomains.find(d => !d.mini_website_linked);
+  
+  // Initialize domain state based on existing data or auto-prefill
+  const [selectedDomainId, setSelectedDomainId] = useState<string>(() => {
+    // If already linked to a purchased domain, use that
+    if (website.mini_website_domain_id) return website.mini_website_domain_id;
+    // Auto-prefill with first available purchased domain
+    if (firstAvailableDomain) return firstAvailableDomain.id;
+    return "";
+  });
+  
+  const [manualDomain, setManualDomain] = useState<string>(website.custom_domain || "");
+  
+  const [domainMode, setDomainMode] = useState<"none" | "manual" | "purchased" | "wildcard">(() => {
+    // If linked to purchased domain, show purchased mode
+    if (website.mini_website_domain_id) return "purchased";
+    // If custom domain set manually, show manual mode
+    if (website.custom_domain) return "manual";
+    // If there's a purchased domain available, auto-select it
+    if (firstAvailableDomain) return "purchased";
+    // Default to wildcard subdomain
+    return "wildcard";
+  });
+  
+  // Generate the wildcard subdomain URL
+  const wildcardSubdomain = editData.app_slug ? `${editData.app_slug}.everydriver.co.uk` : null;
 
   const handleApplyPreset = (preset: typeof presetThemes[0]) => {
     setEditData({
@@ -816,28 +839,32 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                   </div>
 
                   <div className="space-y-4">
-                    <Label>Custom Domain Mode</Label>
+                    <Label>Domain Configuration</Label>
                     <RadioGroup
                       value={domainMode}
-                      onValueChange={(value) => setDomainMode(value as "none" | "manual" | "purchased")}
+                      onValueChange={(value) => setDomainMode(value as "none" | "manual" | "purchased" | "wildcard")}
                       className="space-y-2"
                     >
-                      <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                        <RadioGroupItem value="none" id="domain-none" />
-                        <Label htmlFor="domain-none" className="cursor-pointer flex-1">
-                          <span className="font-medium">No custom domain</span>
-                          <span className="block text-xs text-muted-foreground">Use default everydriver.lovable.app URL only</span>
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                        <RadioGroupItem value="manual" id="domain-manual" />
-                        <Label htmlFor="domain-manual" className="cursor-pointer flex-1">
-                          <span className="font-medium">Enter custom domain manually</span>
-                          <span className="block text-xs text-muted-foreground">For domains purchased elsewhere (DNS setup required)</span>
-                        </Label>
-                      </div>
-                      {availableDomains.length > 0 && (
-                        <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                      {/* Wildcard subdomain option */}
+                      {wildcardSubdomain && (
+                        <div className={cn(
+                          "flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50",
+                          domainMode === "wildcard" && "border-primary bg-primary/5"
+                        )}>
+                          <RadioGroupItem value="wildcard" id="domain-wildcard" />
+                          <Label htmlFor="domain-wildcard" className="cursor-pointer flex-1">
+                            <span className="font-medium">Use free subdomain</span>
+                            <span className="block text-sm text-primary font-mono mt-1">{wildcardSubdomain}</span>
+                          </Label>
+                        </div>
+                      )}
+                      
+                      {/* Purchased domain option - show first if available */}
+                      {instructorDomains.length > 0 && (
+                        <div className={cn(
+                          "flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50",
+                          domainMode === "purchased" && "border-primary bg-primary/5"
+                        )}>
                           <RadioGroupItem value="purchased" id="domain-purchased" />
                           <Label htmlFor="domain-purchased" className="cursor-pointer flex-1">
                             <span className="font-medium">Use purchased domain</span>
@@ -845,6 +872,30 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                           </Label>
                         </div>
                       )}
+                      
+                      {/* Manual domain entry */}
+                      <div className={cn(
+                        "flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50",
+                        domainMode === "manual" && "border-primary bg-primary/5"
+                      )}>
+                        <RadioGroupItem value="manual" id="domain-manual" />
+                        <Label htmlFor="domain-manual" className="cursor-pointer flex-1">
+                          <span className="font-medium">Enter custom domain manually</span>
+                          <span className="block text-xs text-muted-foreground">For domains purchased elsewhere (DNS setup required)</span>
+                        </Label>
+                      </div>
+                      
+                      {/* No custom domain */}
+                      <div className={cn(
+                        "flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50",
+                        domainMode === "none" && "border-primary bg-primary/5"
+                      )}>
+                        <RadioGroupItem value="none" id="domain-none" />
+                        <Label htmlFor="domain-none" className="cursor-pointer flex-1">
+                          <span className="font-medium">No custom domain</span>
+                          <span className="block text-xs text-muted-foreground">Use default everydriver.lovable.app URL only</span>
+                        </Label>
+                      </div>
                     </RadioGroup>
                   </div>
 
@@ -870,7 +921,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                           <SelectValue placeholder="Select a domain..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {availableDomains.map((domain) => (
+                          {instructorDomains.map((domain) => (
                             <SelectItem key={domain.id} value={domain.id}>
                               {domain.domain_name}
                             </SelectItem>
@@ -881,7 +932,12 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                   )}
 
                   {/* Current domain display */}
-                  {(domainMode === "manual" && manualDomain) || (domainMode === "purchased" && selectedDomainId) ? (
+                  {domainMode === "wildcard" && wildcardSubdomain ? (
+                    <div className="p-4 border rounded-lg bg-primary/10 border-primary/30">
+                      <p className="text-sm font-medium text-primary">Your website will be available at:</p>
+                      <p className="text-lg font-bold font-mono">{wildcardSubdomain}</p>
+                    </div>
+                  ) : (domainMode === "manual" && manualDomain) || (domainMode === "purchased" && selectedDomainId) ? (
                     <div className="p-4 border rounded-lg bg-green-500/10 border-green-500/30">
                       <p className="text-sm font-medium text-green-600">Custom domain will be set to:</p>
                       <p className="text-lg font-bold">
