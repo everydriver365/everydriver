@@ -572,6 +572,54 @@ export type Database = {
           },
         ]
       }
+      demo_mini_website: {
+        Row: {
+          content_blocks: Json | null
+          created_at: string
+          display_order: number | null
+          hero_heading: string | null
+          hero_image_url: string | null
+          hero_subheading: string | null
+          id: string
+          is_published: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          page_title: string
+          page_type: string
+          updated_at: string
+        }
+        Insert: {
+          content_blocks?: Json | null
+          created_at?: string
+          display_order?: number | null
+          hero_heading?: string | null
+          hero_image_url?: string | null
+          hero_subheading?: string | null
+          id?: string
+          is_published?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          page_title: string
+          page_type: string
+          updated_at?: string
+        }
+        Update: {
+          content_blocks?: Json | null
+          created_at?: string
+          display_order?: number | null
+          hero_heading?: string | null
+          hero_image_url?: string | null
+          hero_subheading?: string | null
+          id?: string
+          is_published?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          page_title?: string
+          page_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       domain_orders: {
         Row: {
           auto_renew: boolean | null

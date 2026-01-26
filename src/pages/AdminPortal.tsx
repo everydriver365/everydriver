@@ -55,6 +55,7 @@ import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
 import { AdminEmailClient } from "@/components/admin/AdminEmailClient";
 import { AdminBackButton } from "@/components/admin/AdminBackButton";
 import { AdminSectionNotes } from "@/components/admin/AdminSectionNotes";
+import { DemoMiniSiteCMS } from "@/components/admin/DemoMiniSiteCMS";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -108,6 +109,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "public-faqs": { title: "FAQs", group: "Learner Website", icon: HelpCircle },
   images: { title: "Site Images", group: "Learner Website", icon: ImageIcon },
   videos: { title: "Site Videos", group: "Learner Website", icon: Video },
+  "demo-mini-site": { title: "Demo Mini Site", group: "Learner Website", icon: Globe },
   // Instructor Platform (Drive365)
   "instructor-home": { title: "App Homepage", group: "Instructor Platform", icon: Smartphone },
   "instructor-marketing": { title: "Marketing Page", group: "Instructor Platform", icon: Globe },
@@ -535,6 +537,25 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <SiteVideoManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "demo-mini-site":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="demo-mini-site" className="mb-4" />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-accent" />
+                  Demo Mini Site
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DemoMiniSiteCMS />
               </CardContent>
             </Card>
           </motion.div>
