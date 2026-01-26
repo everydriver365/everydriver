@@ -22,23 +22,33 @@ interface DemoPage {
   id: string;
   page_type: string;
   page_title: string;
-  hero_heading: string | null;
+  // Hero section fields
+  badge_text: string | null;
+  headline_line1: string | null;
+  headline_line2: string | null;
+  headline_highlight: string | null;
+  headline_line3: string | null;
   hero_subheading: string | null;
   hero_image_url: string | null;
+  search_placeholder: string | null;
+  search_button_text: string | null;
+  rating_value: string | null;
+  show_finance_badges: boolean | null;
+  // Instructor details
+  instructor_grade: string | null;
+  instructor_name: string | null;
+  instructor_phone: string | null;
+  instructor_postcode: string | null;
+  cpd_certified: boolean | null;
+  // CTA section
+  cta_heading: string | null;
+  cta_subtext: string | null;
+  cta_button_text: string | null;
+  cta_phone_text: string | null;
+  // Content
   content_blocks: ContentBlock[];
   is_published: boolean;
 }
-
-// Demo instructor data
-const demoInstructor = {
-  name: "Demo Driving School",
-  phone: "07700 900123",
-  home_postcode: "SW1A 1AA",
-  instructor_grade: "A",
-  cpd_certified: true,
-  brand_colour: "#1e3a5f",
-  secondary_colour: "#10b981",
-};
 
 export default function DemoMiniSite() {
   const [page, setPage] = useState<DemoPage | null>(null);
@@ -72,7 +82,6 @@ export default function DemoMiniSite() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Demo search - would navigate to courses in real implementation
     console.log("Searching for:", postcode);
   };
 
@@ -121,29 +130,32 @@ export default function DemoMiniSite() {
               <div className="mb-6">
                 <span className="inline-flex items-center rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-medium text-emerald-700">
                   <Award className="h-4 w-4 mr-1" />
-                  Grade {demoInstructor.instructor_grade} Instructor
+                  {page.badge_text || `Grade ${page.instructor_grade || 'A'} Instructor`}
                 </span>
               </div>
 
               {/* Main Headline - Split with highlight */}
               <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.1]">
                 <span className="text-primary">
-                  {page.hero_heading?.split(" ").slice(0, 2).join(" ") || "Welcome to"}
-                </span>
-                <br />
-                <span className="text-emerald-500">
-                  {page.hero_heading?.split(" ").slice(2, 4).join(" ") || "Demo"}
+                  {page.headline_line1 || "Your Driving"}
                 </span>
                 <br />
                 <span className="text-primary">
-                  {page.hero_heading?.split(" ").slice(4).join(" ") || "Driving School"}
+                  {page.headline_line2 || "Success"}{" "}
+                </span>
+                <span className="text-emerald-500">
+                  {page.headline_highlight || "Story"}
+                </span>
+                <br />
+                <span className="text-primary">
+                  {page.headline_line3 || "Starts Here"}
                 </span>
               </h1>
 
               {/* Subtext */}
               <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
                 {page.hero_subheading ||
-                  "Professional driving instruction tailored to your needs. Learn to drive with confidence."}
+                  "Join thousands who passed with Every Driver. Intensive courses designed to get you on the road faster."}
               </p>
 
               {/* Search Form */}
@@ -151,7 +163,7 @@ export default function DemoMiniSite() {
                 <PostcodeAutocomplete
                   value={postcode}
                   onChange={setPostcode}
-                  placeholder="Enter postcode..."
+                  placeholder={page.search_placeholder || "Enter postcode..."}
                   className="flex-1"
                   inputClassName="h-14 rounded-xl border-2 border-border bg-background text-base"
                 />
@@ -160,7 +172,7 @@ export default function DemoMiniSite() {
                   size="lg"
                   className="h-14 rounded-xl px-8 text-base font-semibold"
                 >
-                  Find Lessons
+                  {page.search_button_text || "Find Lessons"}
                 </Button>
               </form>
 
@@ -170,13 +182,29 @@ export default function DemoMiniSite() {
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
                   ))}
-                  <span className="ml-2 font-semibold text-foreground">4.9</span>
+                  <span className="ml-2 font-semibold text-foreground">
+                    {page.rating_value || "4.9"}
+                  </span>
                 </div>
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
-                  {demoInstructor.home_postcode}
-                </Badge>
-                {demoInstructor.cpd_certified && (
+                
+                {/* Finance badges */}
+                {page.show_finance_badges && (
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-md bg-[#ffb3c7] px-2 py-1 text-xs font-bold text-black">Klarna.</span>
+                    <span className="rounded-md bg-[#b2fce4] px-2 py-1 text-xs font-bold text-black">clearpay</span>
+                    <span className="rounded-md bg-[#ffd700] px-2 py-1 text-xs font-bold text-black">iDeal</span>
+                    <span className="text-sm text-muted-foreground">0% Finance</span>
+                  </div>
+                )}
+                
+                {page.instructor_postcode && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {page.instructor_postcode}
+                  </Badge>
+                )}
+                
+                {page.cpd_certified && (
                   <Badge variant="secondary" className="flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" />
                     CPD Certified
@@ -195,14 +223,16 @@ export default function DemoMiniSite() {
               {page.hero_image_url ? (
                 <img
                   src={page.hero_image_url}
-                  alt="Demo Driving School"
+                  alt={page.instructor_name || "Driving School"}
                   className="w-full h-[480px] object-cover rounded-2xl shadow-2xl"
                 />
               ) : (
                 <div className="w-full h-[480px] bg-gradient-to-br from-primary/20 to-emerald-500/20 rounded-2xl flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-8xl mb-4">🚗</div>
-                    <p className="text-lg text-muted-foreground">Demo Driving School</p>
+                    <p className="text-lg text-muted-foreground">
+                      {page.instructor_name || "Demo Driving School"}
+                    </p>
                   </div>
                 </div>
               )}
@@ -307,26 +337,28 @@ export default function DemoMiniSite() {
       <section className="bg-primary py-16">
         <div className="container text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Start Your Driving Journey?
+            {page.cta_heading || "Ready to Start Your Driving Journey?"}
           </h2>
           <p className="text-white/80 mb-8 max-w-2xl mx-auto">
-            Book your first lesson today and join thousands of successful drivers.
+            {page.cta_subtext || "Book your first lesson today and join thousands of successful drivers."}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white">
               <Calendar className="h-5 w-5 mr-2" />
-              Book a Lesson
+              {page.cta_button_text || "Book a Lesson"}
             </Button>
-            <a href={`tel:${demoInstructor.phone}`}>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-                <Phone className="h-5 w-5 mr-2" />
-                Call Now
-              </Button>
-            </a>
+            {page.instructor_phone && (
+              <a href={`tel:${page.instructor_phone}`}>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/30 text-white hover:bg-white/10"
+                >
+                  <Phone className="h-5 w-5 mr-2" />
+                  {page.cta_phone_text || "Call Now"}
+                </Button>
+              </a>
+            )}
           </div>
         </div>
       </section>

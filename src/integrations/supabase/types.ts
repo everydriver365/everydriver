@@ -574,48 +574,102 @@ export type Database = {
       }
       demo_mini_website: {
         Row: {
+          badge_text: string | null
           content_blocks: Json | null
+          cpd_certified: boolean | null
           created_at: string
+          cta_button_text: string | null
+          cta_heading: string | null
+          cta_phone_text: string | null
+          cta_subtext: string | null
           display_order: number | null
+          headline_highlight: string | null
+          headline_line1: string | null
+          headline_line2: string | null
+          headline_line3: string | null
           hero_heading: string | null
           hero_image_url: string | null
           hero_subheading: string | null
           id: string
+          instructor_grade: string | null
+          instructor_name: string | null
+          instructor_phone: string | null
+          instructor_postcode: string | null
           is_published: boolean | null
           meta_description: string | null
           meta_title: string | null
           page_title: string
           page_type: string
+          rating_value: string | null
+          search_button_text: string | null
+          search_placeholder: string | null
+          show_finance_badges: boolean | null
           updated_at: string
         }
         Insert: {
+          badge_text?: string | null
           content_blocks?: Json | null
+          cpd_certified?: boolean | null
           created_at?: string
+          cta_button_text?: string | null
+          cta_heading?: string | null
+          cta_phone_text?: string | null
+          cta_subtext?: string | null
           display_order?: number | null
+          headline_highlight?: string | null
+          headline_line1?: string | null
+          headline_line2?: string | null
+          headline_line3?: string | null
           hero_heading?: string | null
           hero_image_url?: string | null
           hero_subheading?: string | null
           id?: string
+          instructor_grade?: string | null
+          instructor_name?: string | null
+          instructor_phone?: string | null
+          instructor_postcode?: string | null
           is_published?: boolean | null
           meta_description?: string | null
           meta_title?: string | null
           page_title: string
           page_type: string
+          rating_value?: string | null
+          search_button_text?: string | null
+          search_placeholder?: string | null
+          show_finance_badges?: boolean | null
           updated_at?: string
         }
         Update: {
+          badge_text?: string | null
           content_blocks?: Json | null
+          cpd_certified?: boolean | null
           created_at?: string
+          cta_button_text?: string | null
+          cta_heading?: string | null
+          cta_phone_text?: string | null
+          cta_subtext?: string | null
           display_order?: number | null
+          headline_highlight?: string | null
+          headline_line1?: string | null
+          headline_line2?: string | null
+          headline_line3?: string | null
           hero_heading?: string | null
           hero_image_url?: string | null
           hero_subheading?: string | null
           id?: string
+          instructor_grade?: string | null
+          instructor_name?: string | null
+          instructor_phone?: string | null
+          instructor_postcode?: string | null
           is_published?: boolean | null
           meta_description?: string | null
           meta_title?: string | null
           page_title?: string
           page_type?: string
+          rating_value?: string | null
+          search_button_text?: string | null
+          search_placeholder?: string | null
+          show_finance_badges?: boolean | null
           updated_at?: string
         }
         Relationships: []

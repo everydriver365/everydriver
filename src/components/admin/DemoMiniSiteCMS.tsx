@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Globe, Edit2, Eye, EyeOff, Save, Plus, Trash2, GripVertical, Image as ImageIcon, ExternalLink } from "lucide-react";
+import { Globe, Edit2, Eye, EyeOff, Save, Plus, Trash2, GripVertical, Image as ImageIcon, ExternalLink, User, Phone, MapPin, Star, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +27,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -43,9 +44,31 @@ interface DemoPage {
   id: string;
   page_type: string;
   page_title: string;
+  // Hero section
+  badge_text: string | null;
+  headline_line1: string | null;
+  headline_line2: string | null;
+  headline_highlight: string | null;
+  headline_line3: string | null;
   hero_heading: string | null;
   hero_subheading: string | null;
   hero_image_url: string | null;
+  search_placeholder: string | null;
+  search_button_text: string | null;
+  rating_value: string | null;
+  show_finance_badges: boolean | null;
+  // Instructor details
+  instructor_grade: string | null;
+  instructor_name: string | null;
+  instructor_phone: string | null;
+  instructor_postcode: string | null;
+  cpd_certified: boolean | null;
+  // CTA section
+  cta_heading: string | null;
+  cta_subtext: string | null;
+  cta_button_text: string | null;
+  cta_phone_text: string | null;
+  // Content & SEO
   content_blocks: ContentBlock[];
   meta_title: string | null;
   meta_description: string | null;
@@ -95,9 +118,31 @@ export function DemoMiniSiteCMS() {
       const { error } = await supabase
         .from("demo_mini_website")
         .update({
+          // Hero section
+          badge_text: editingPage.badge_text,
+          headline_line1: editingPage.headline_line1,
+          headline_line2: editingPage.headline_line2,
+          headline_highlight: editingPage.headline_highlight,
+          headline_line3: editingPage.headline_line3,
           hero_heading: editingPage.hero_heading,
           hero_subheading: editingPage.hero_subheading,
           hero_image_url: editingPage.hero_image_url,
+          search_placeholder: editingPage.search_placeholder,
+          search_button_text: editingPage.search_button_text,
+          rating_value: editingPage.rating_value,
+          show_finance_badges: editingPage.show_finance_badges,
+          // Instructor details
+          instructor_grade: editingPage.instructor_grade,
+          instructor_name: editingPage.instructor_name,
+          instructor_phone: editingPage.instructor_phone,
+          instructor_postcode: editingPage.instructor_postcode,
+          cpd_certified: editingPage.cpd_certified,
+          // CTA section
+          cta_heading: editingPage.cta_heading,
+          cta_subtext: editingPage.cta_subtext,
+          cta_button_text: editingPage.cta_button_text,
+          cta_phone_text: editingPage.cta_phone_text,
+          // Content & SEO
           content_blocks: contentBlocksJson,
           is_published: editingPage.is_published,
           meta_title: editingPage.meta_title,
@@ -269,7 +314,7 @@ export function DemoMiniSiteCMS() {
                   <span className="font-medium">{getPageTypeLabel(page.page_type)}</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {page.hero_heading || "No heading set"}
+                  {page.headline_line1 || page.hero_heading || "No heading set"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -286,7 +331,7 @@ export function DemoMiniSiteCMS() {
       </div>
 
       <Dialog open={!!editingPage} onOpenChange={(open) => !open && setEditingPage(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               Edit {editingPage && getPageTypeLabel(editingPage.page_type)} Page
@@ -294,45 +339,101 @@ export function DemoMiniSiteCMS() {
           </DialogHeader>
 
           {editingPage && (
-            <div className="space-y-6">
-              {/* Published Toggle */}
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <Label className="font-medium">Published</Label>
-                <Switch
-                  checked={editingPage.is_published}
-                  onCheckedChange={(checked) =>
-                    setEditingPage({ ...editingPage, is_published: checked })
-                  }
-                />
-              </div>
+            <Tabs defaultValue="hero" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="hero">Hero</TabsTrigger>
+                <TabsTrigger value="instructor">Instructor</TabsTrigger>
+                <TabsTrigger value="content">Content</TabsTrigger>
+                <TabsTrigger value="cta">CTA</TabsTrigger>
+                <TabsTrigger value="seo">SEO</TabsTrigger>
+              </TabsList>
 
-              {/* Hero Section */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                  Hero Section
-                </h3>
+              {/* Hero Tab */}
+              <TabsContent value="hero" className="space-y-4">
+                {/* Published Toggle */}
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <Label className="font-medium">Published</Label>
+                  <Switch
+                    checked={editingPage.is_published}
+                    onCheckedChange={(checked) =>
+                      setEditingPage({ ...editingPage, is_published: checked })
+                    }
+                  />
+                </div>
+
                 <div className="grid gap-4">
                   <div>
-                    <Label>Hero Heading</Label>
+                    <Label className="flex items-center gap-2">
+                      <Award className="h-4 w-4" /> Badge Text
+                    </Label>
                     <Input
-                      value={editingPage.hero_heading || ""}
+                      value={editingPage.badge_text || ""}
                       onChange={(e) =>
-                        setEditingPage({ ...editingPage, hero_heading: e.target.value })
+                        setEditingPage({ ...editingPage, badge_text: e.target.value })
                       }
-                      placeholder="Main heading text"
+                      placeholder="e.g., DVSA Approved, Grade A Instructor"
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Headline Line 1</Label>
+                      <Input
+                        value={editingPage.headline_line1 || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, headline_line1: e.target.value })
+                        }
+                        placeholder="Your Driving"
+                      />
+                    </div>
+                    <div>
+                      <Label>Headline Line 2</Label>
+                      <Input
+                        value={editingPage.headline_line2 || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, headline_line2: e.target.value })
+                        }
+                        placeholder="Success"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-emerald-600">Highlight Word (Emerald)</Label>
+                      <Input
+                        value={editingPage.headline_highlight || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, headline_highlight: e.target.value })
+                        }
+                        placeholder="Story"
+                        className="border-emerald-300 focus:border-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <Label>Headline Line 3</Label>
+                      <Input
+                        value={editingPage.headline_line3 || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, headline_line3: e.target.value })
+                        }
+                        placeholder="Starts Here"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <Label>Hero Subheading</Label>
+                    <Label>Subheading</Label>
                     <Textarea
                       value={editingPage.hero_subheading || ""}
                       onChange={(e) =>
                         setEditingPage({ ...editingPage, hero_subheading: e.target.value })
                       }
-                      placeholder="Supporting text below the heading"
+                      placeholder="Supporting text below the headline"
                       rows={2}
                     />
                   </div>
+
                   <div>
                     <Label>Hero Image URL</Label>
                     <Input
@@ -346,15 +447,137 @@ export function DemoMiniSiteCMS() {
                       <img
                         src={editingPage.hero_image_url}
                         alt="Hero preview"
-                        className="mt-2 h-24 w-full object-cover rounded-lg border"
+                        className="mt-2 h-32 w-full object-cover rounded-lg border"
                       />
                     )}
                   </div>
-                </div>
-              </div>
 
-              {/* Content Blocks */}
-              <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Search Placeholder</Label>
+                      <Input
+                        value={editingPage.search_placeholder || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, search_placeholder: e.target.value })
+                        }
+                        placeholder="Enter postcode..."
+                      />
+                    </div>
+                    <div>
+                      <Label>Search Button Text</Label>
+                      <Input
+                        value={editingPage.search_button_text || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, search_button_text: e.target.value })
+                        }
+                        placeholder="Find Lessons"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="flex items-center gap-2">
+                        <Star className="h-4 w-4 text-amber-400" /> Rating Value
+                      </Label>
+                      <Input
+                        value={editingPage.rating_value || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, rating_value: e.target.value })
+                        }
+                        placeholder="4.9"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <Label>Show Finance Badges</Label>
+                      <Switch
+                        checked={editingPage.show_finance_badges ?? true}
+                        onCheckedChange={(checked) =>
+                          setEditingPage({ ...editingPage, show_finance_badges: checked })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Instructor Tab */}
+              <TabsContent value="instructor" className="space-y-4">
+                <div className="grid gap-4">
+                  <div>
+                    <Label className="flex items-center gap-2">
+                      <User className="h-4 w-4" /> Instructor/School Name
+                    </Label>
+                    <Input
+                      value={editingPage.instructor_name || ""}
+                      onChange={(e) =>
+                        setEditingPage({ ...editingPage, instructor_name: e.target.value })
+                      }
+                      placeholder="Demo Driving School"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="flex items-center gap-2">
+                        <Phone className="h-4 w-4" /> Phone Number
+                      </Label>
+                      <Input
+                        value={editingPage.instructor_phone || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, instructor_phone: e.target.value })
+                        }
+                        placeholder="07700 900123"
+                      />
+                    </div>
+                    <div>
+                      <Label className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" /> Postcode
+                      </Label>
+                      <Input
+                        value={editingPage.instructor_postcode || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, instructor_postcode: e.target.value })
+                        }
+                        placeholder="SW1A 1AA"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Instructor Grade</Label>
+                      <Select
+                        value={editingPage.instructor_grade || "A"}
+                        onValueChange={(value) =>
+                          setEditingPage({ ...editingPage, instructor_grade: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="A">Grade A</SelectItem>
+                          <SelectItem value="B">Grade B</SelectItem>
+                          <SelectItem value="Trainee">Trainee (Pink Badge)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <Label>CPD Certified</Label>
+                      <Switch
+                        checked={editingPage.cpd_certified ?? true}
+                        onCheckedChange={(checked) =>
+                          setEditingPage({ ...editingPage, cpd_certified: checked })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Content Tab */}
+              <TabsContent value="content" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
                     Content Blocks
@@ -391,7 +614,6 @@ export function DemoMiniSiteCMS() {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="space-y-4 pt-4">
-                        {/* Title field for all block types */}
                         <div>
                           <Label>Title</Label>
                           <Input
@@ -403,7 +625,6 @@ export function DemoMiniSiteCMS() {
                           />
                         </div>
 
-                        {/* Text block */}
                         {block.type === "text" && (
                           <div>
                             <Label>Content</Label>
@@ -418,7 +639,6 @@ export function DemoMiniSiteCMS() {
                           </div>
                         )}
 
-                        {/* Features block */}
                         {block.type === "features" && (
                           <div className="space-y-2">
                             <Label>Items</Label>
@@ -452,7 +672,6 @@ export function DemoMiniSiteCMS() {
                           </div>
                         )}
 
-                        {/* Image block */}
                         {block.type === "image" && (
                           <div>
                             <Label>Image URL</Label>
@@ -473,7 +692,6 @@ export function DemoMiniSiteCMS() {
                           </div>
                         )}
 
-                        {/* Gallery block */}
                         {block.type === "gallery" && (
                           <div className="space-y-2">
                             <Label>Images</Label>
@@ -507,7 +725,6 @@ export function DemoMiniSiteCMS() {
                           </div>
                         )}
 
-                        {/* Remove block button */}
                         <Button
                           variant="destructive"
                           size="sm"
@@ -526,13 +743,61 @@ export function DemoMiniSiteCMS() {
                     No content blocks yet. Add one using the dropdown above.
                   </div>
                 )}
-              </div>
+              </TabsContent>
 
-              {/* SEO Section */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                  SEO Settings
-                </h3>
+              {/* CTA Tab */}
+              <TabsContent value="cta" className="space-y-4">
+                <div className="grid gap-4">
+                  <div>
+                    <Label>CTA Heading</Label>
+                    <Input
+                      value={editingPage.cta_heading || ""}
+                      onChange={(e) =>
+                        setEditingPage({ ...editingPage, cta_heading: e.target.value })
+                      }
+                      placeholder="Ready to Start Your Driving Journey?"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>CTA Subtext</Label>
+                    <Textarea
+                      value={editingPage.cta_subtext || ""}
+                      onChange={(e) =>
+                        setEditingPage({ ...editingPage, cta_subtext: e.target.value })
+                      }
+                      placeholder="Book your first lesson today..."
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Primary Button Text</Label>
+                      <Input
+                        value={editingPage.cta_button_text || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, cta_button_text: e.target.value })
+                        }
+                        placeholder="Book a Lesson"
+                      />
+                    </div>
+                    <div>
+                      <Label>Phone Button Text</Label>
+                      <Input
+                        value={editingPage.cta_phone_text || ""}
+                        onChange={(e) =>
+                          setEditingPage({ ...editingPage, cta_phone_text: e.target.value })
+                        }
+                        placeholder="Call Now"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* SEO Tab */}
+              <TabsContent value="seo" className="space-y-4">
                 <div className="grid gap-4">
                   <div>
                     <Label>Meta Title</Label>
@@ -556,7 +821,7 @@ export function DemoMiniSiteCMS() {
                     />
                   </div>
                 </div>
-              </div>
+              </TabsContent>
 
               {/* Actions */}
               <div className="flex gap-2 pt-4 border-t">
@@ -572,7 +837,7 @@ export function DemoMiniSiteCMS() {
                   {saving ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
-            </div>
+            </Tabs>
           )}
         </DialogContent>
       </Dialog>
