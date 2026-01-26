@@ -32,6 +32,7 @@ import {
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
+import { PupilCreditBreakdown } from "@/components/instructor/PupilCreditBreakdown";
 import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
@@ -825,20 +826,18 @@ export function ExpandablePupilCard({
                     <span className="text-xs">Record Payment</span>
                   </Button>
                   
-                  {paymentQrUrl && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1.5"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowQRModal(true);
-                      }}
-                    >
-                      <QrCode className="h-4 w-4" />
-                      <span className="text-xs">QR Code</span>
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`gap-1.5 ${!paymentQrUrl ? 'text-muted-foreground' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowQRModal(true);
+                    }}
+                  >
+                    <QrCode className="h-4 w-4" />
+                    <span className="text-xs">QR Code</span>
+                  </Button>
                   
                   {instructorId && instructorName && (pupil.account_balance || 0) < 0 && (
                     <SendPaymentReminderButton
@@ -858,6 +857,14 @@ export function ExpandablePupilCard({
                   pupilId={pupil.id}
                   pupilName={pupil.name}
                   refreshTrigger={paymentRefreshTrigger}
+                />
+
+                {/* Credits from Course Booking */}
+                <PupilCreditBreakdown
+                  pupilId={pupil.id}
+                  prepaidHours={pupil.prepaid_hours || 0}
+                  depositPaid={pupil.deposit_paid || 0}
+                  paymentType={pupil.payment_type}
                 />
               </div>
 
