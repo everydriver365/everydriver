@@ -209,7 +209,8 @@ export default function InstructorMenu() {
         {
           icon: Globe,
           label: "Mini-Website",
-          path: "/instructor/settings",
+          description: "Edit your instructor website",
+          path: "/instructor/website",
           iconColor: "text-violet-600",
           iconBg: "bg-violet-100 dark:bg-violet-900/30",
         },

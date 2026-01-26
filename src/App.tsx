@@ -54,6 +54,7 @@ import TermsOfService from "./pages/TermsOfService";
 import Benefits from "./pages/Benefits";
 import NotFound from "./pages/NotFound";
 import InstructorMiniWebsite from "./pages/InstructorMiniWebsite";
+import InstructorMiniWebsiteSettings from "./pages/InstructorMiniWebsiteSettings";
 import MiniWebsiteHome from "./pages/mini-website/MiniWebsiteHome";
 import MiniWebsiteAbout from "./pages/mini-website/MiniWebsiteAbout";
 import MiniWebsiteServices from "./pages/mini-website/MiniWebsiteServices";
@@ -174,6 +175,7 @@ const App = () => (
               <Route path="/instructor/test-results" element={<InstructorTestResults />} />
               <Route path="/instructor/routes" element={<InstructorRoutes />} />
               <Route path="/instructor/menu" element={<InstructorMenu />} />
+              <Route path="/instructor/website" element={<InstructorMiniWebsiteSettings />} />
               <Route path="/instructor/income" element={<InstructorIncome />} />
               <Route path="/instructor/in-out" element={<InstructorInOut />} />
               <Route path="/instructor/tax" element={<InstructorTax />} />
