@@ -256,6 +256,43 @@ export default function InstructorTraccarSession() {
     return () => clearInterval(interval);
   }, [sessionStartTime]);
 
+  // Wake lock to keep screen on during tracking
+  useEffect(() => {
+    let wakeLock: WakeLockSentinel | null = null;
+
+    const requestWakeLock = async () => {
+      if (!device?.current_session_id) return;
+      
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('Wake lock acquired');
+        }
+      } catch (err) {
+        console.log('Wake lock error:', err);
+      }
+    };
+
+    requestWakeLock();
+
+    // Re-acquire wake lock when page becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && device?.current_session_id) {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (wakeLock) {
+        wakeLock.release();
+        console.log('Wake lock released');
+      }
+    };
+  }, [device?.current_session_id]);
+
   const startSession = async (
     routeType: "practice" | "test" | "driving_test" = "practice",
     testDetails?: {
