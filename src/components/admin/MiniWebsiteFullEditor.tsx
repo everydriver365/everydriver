@@ -58,6 +58,7 @@ interface MiniWebsite {
   website_footer_bg: string | null;
   website_text_color?: string | null;
   website_heading_color?: string | null;
+  website_menu_text_color?: string | null;
   logo_url: string | null;
   hero_image_url?: string | null;
   bio: string | null;
@@ -282,6 +283,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
         website_footer_bg: editData.website_footer_bg,
         website_text_color: editData.website_text_color,
         website_heading_color: editData.website_heading_color,
+        website_menu_text_color: editData.website_menu_text_color,
         logo_url: editData.logo_url,
         hero_image_url: editData.hero_image_url,
         bio: editData.bio,
@@ -554,6 +556,22 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                           <Input
                             value={editData.website_text_color || "#ffffff"}
                             onChange={(e) => setEditData({ ...editData, website_text_color: e.target.value })}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Menu Text Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={editData.website_menu_text_color || "#ffffff"}
+                            onChange={(e) => setEditData({ ...editData, website_menu_text_color: e.target.value })}
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={editData.website_menu_text_color || "#ffffff"}
+                            onChange={(e) => setEditData({ ...editData, website_menu_text_color: e.target.value })}
                             className="flex-1"
                           />
                         </div>

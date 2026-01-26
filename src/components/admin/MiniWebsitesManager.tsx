@@ -52,6 +52,7 @@ interface MiniWebsite {
   website_footer_bg: string | null;
   website_text_color?: string | null;
   website_heading_color?: string | null;
+  website_menu_text_color?: string | null;
   logo_url: string | null;
   hero_image_url?: string | null;
   bio: string | null;
@@ -86,7 +87,7 @@ export function MiniWebsitesManager() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, name, email, app_slug, website_theme, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, secondary_colour, website_button_color, website_footer_bg, website_text_color, website_heading_color, logo_url, bio, mini_website_domain_id, phone, hero_image_url, website_font, website_header_style")
+        .select("id, name, email, app_slug, website_theme, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, secondary_colour, website_button_color, website_footer_bg, website_text_color, website_heading_color, website_menu_text_color, logo_url, bio, mini_website_domain_id, phone, hero_image_url, website_font, website_header_style")
         .not("app_slug", "is", null)
         .order("created_at", { ascending: false });
 
