@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import mainLogo from "@/assets/everydriver-logo-main.png";
+import instructorLogo from "@/assets/everydriver-logo-instructor.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;
@@ -57,7 +57,7 @@ export function InstructorMobileHeader({
           </Button>
         )}
         <img 
-          src={mainLogo} 
+          src={instructorLogo} 
           alt="EveryDriver" 
           className="h-7 object-contain"
         />
