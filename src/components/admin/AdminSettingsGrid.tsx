@@ -9,7 +9,8 @@ import {
   LucideIcon,
   TrendingUp,
   Calendar,
-  CreditCard
+  CreditCard,
+  Mail
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +40,7 @@ const settingsCategories: SettingsCategory[] = [
     links: [
       { key: "instructors", title: "Instructors", description: "Manage instructor accounts and profiles." },
       { key: "compliance", title: "Compliance Dashboard", description: "Track ADI badge, DBS, and document expiry." },
+      { key: "email", title: "Email Inbox", description: "View and manage incoming emails.", badgeKey: "emails" },
       { key: "enquiries", title: "Enquiries & Callbacks", description: "Review bespoke course requests and callback requests.", badgeKey: "enquiries" },
       { key: "instructor-messages", title: "Instructor Support", description: "Handle support chats with instructors.", badgeKey: "instructorMessages" },
       { key: "live-chat", title: "Visitor Chats", description: "Manage live chat sessions with website visitors.", badgeKey: "liveChats" },
@@ -110,6 +112,7 @@ interface BadgeCounts {
   liveChats: number;
   instructorMessages: number;
   enquiries: number;
+  emails: number;
 }
 
 interface DashboardStats {
@@ -124,6 +127,7 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
     liveChats: 0,
     instructorMessages: 0,
     enquiries: 0,
+    emails: 0,
   });
   
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
@@ -217,19 +221,36 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
         liveChatUnreadCount = unreadCount || 0;
       }
 
-      setBadgeCounts({
+      setBadgeCounts(prev => ({
+        ...prev,
         liveChats: liveChatUnreadCount,
         instructorMessages: instructorUnreadRes.count || 0,
         enquiries: (bespokeRes.count || 0) + (callbackRes.count || 0),
-      });
+      }));
     } catch (error) {
       console.error("Error fetching notification counts:", error);
+    }
+  }, []);
+
+  const fetchEmailCount = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-email", {
+        body: { action: "fetch", limit: 20 },
+      });
+
+      if (!error && data?.emails) {
+        const unreadCount = data.emails.filter((e: { seen: boolean }) => !e.seen).length;
+        setBadgeCounts(prev => ({ ...prev, emails: unreadCount }));
+      }
+    } catch (err) {
+      console.error("Error fetching email count:", err);
     }
   }, []);
 
   useEffect(() => {
     fetchCounts();
     fetchDashboardStats();
+    fetchEmailCount();
 
     const channel = supabase
       .channel("admin_settings_grid_badges")
