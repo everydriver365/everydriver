@@ -56,6 +56,8 @@ interface MiniWebsite {
   secondary_colour: string | null;
   website_button_color: string | null;
   website_footer_bg: string | null;
+  website_text_color?: string | null;
+  website_heading_color?: string | null;
   logo_url: string | null;
   hero_image_url?: string | null;
   bio: string | null;
@@ -265,6 +267,8 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
           secondary_colour: editData.secondary_colour,
           website_button_color: editData.website_button_color,
           website_footer_bg: editData.website_footer_bg,
+          website_text_color: editData.website_text_color,
+          website_heading_color: editData.website_heading_color,
           logo_url: editData.logo_url,
           hero_image_url: editData.hero_image_url,
           bio: editData.bio,
@@ -287,7 +291,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
       }
 
       toast.success("Website saved successfully");
-      onSave();
+      // Stay on the editor page instead of closing
     } catch (error) {
       console.error("Error saving website:", error);
       toast.error("Failed to save website");
@@ -502,6 +506,38 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                           />
                         </div>
                       </div>
+                      <div className="space-y-2">
+                        <Label>Heading Text Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={editData.website_heading_color || "#ffffff"}
+                            onChange={(e) => setEditData({ ...editData, website_heading_color: e.target.value })}
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={editData.website_heading_color || "#ffffff"}
+                            onChange={(e) => setEditData({ ...editData, website_heading_color: e.target.value })}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Body Text Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={editData.website_text_color || "#ffffff"}
+                            onChange={(e) => setEditData({ ...editData, website_text_color: e.target.value })}
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={editData.website_text_color || "#ffffff"}
+                            onChange={(e) => setEditData({ ...editData, website_text_color: e.target.value })}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Live Preview */}
@@ -510,8 +546,16 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                         className="h-10 flex items-center justify-between px-4"
                         style={{ backgroundColor: editData.brand_colour || "#1e3a5f" }}
                       >
-                        <div className="text-white text-sm font-medium">{editData.name}</div>
-                        <div className="flex gap-3 text-white/70 text-xs">
+                        <div 
+                          className="text-sm font-medium"
+                          style={{ color: editData.website_heading_color || "#ffffff" }}
+                        >
+                          {editData.name}
+                        </div>
+                        <div 
+                          className="flex gap-3 text-xs"
+                          style={{ color: editData.website_text_color || "#ffffff", opacity: 0.7 }}
+                        >
                           <span>Home</span>
                           <span>About</span>
                           <span>Contact</span>

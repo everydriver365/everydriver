@@ -55,7 +55,7 @@ export function AdminWebsiteManager({ instructorId, instructorSlug, instructorNa
       const { data, error } = await supabase
         .from("instructors")
         .select(
-          "id, name, email, phone, app_slug, website_theme, website_font, website_header_style, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, secondary_colour, website_button_color, website_footer_bg, logo_url, hero_image_url, bio, mini_website_domain_id"
+          "id, name, email, phone, app_slug, website_theme, website_font, website_header_style, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, secondary_colour, website_button_color, website_footer_bg, website_text_color, website_heading_color, logo_url, hero_image_url, bio, mini_website_domain_id"
         )
         .eq("id", instructorId)
         .single();
