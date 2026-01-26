@@ -41,6 +41,8 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
 
   const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#d4a574";
+  const headingColor = instructor.website_heading_color;
+  const textColor = instructor.website_text_color;
 
   const socialLinks = [
     { url: instructor.facebook_url, icon: Facebook, label: "Facebook" },
@@ -200,6 +202,8 @@ export default function MiniWebsiteContact({ subdomainSlug }: MiniWebsiteContact
               blocks={page.content_blocks}
               primaryColor={primaryColor}
               secondaryColor={secondaryColor}
+              headingColor={headingColor}
+              textColor={textColor}
             />
           </div>
         </div>

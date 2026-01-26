@@ -82,6 +82,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
 
   const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#d4a574";
+  const headingColor = instructor.website_heading_color;
+  const textColor = instructor.website_text_color;
 
   return (
     <MiniWebsiteLayout instructor={instructor}>
@@ -182,6 +184,8 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           blocks={page.content_blocks}
           primaryColor={primaryColor}
           secondaryColor={secondaryColor}
+          headingColor={headingColor}
+          textColor={textColor}
         />
 
         {/* Quick links to other pages */}
