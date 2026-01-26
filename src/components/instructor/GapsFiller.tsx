@@ -34,12 +34,21 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [isLive, setIsLive] = useState(false);
+  const [highlightedIds, setHighlightedIds] = useState<Set<string>>(new Set());
+  const previousGapsRef = useRef<string[]>([]);
+
+  // Clear highlight after animation
+  const triggerHighlight = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    setHighlightedIds(new Set(ids));
+    setTimeout(() => setHighlightedIds(new Set()), 1500);
+  }, []);
 
   // Debounced refetch to prevent rapid updates
   const debouncedRefetch = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchAvailableGaps();
+      fetchAvailableGaps(true);
     }, 500);
   }, []);
 
@@ -125,8 +134,8 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     }
   };
 
-  const fetchAvailableGaps = async () => {
-    setLoading(true);
+  const fetchAvailableGaps = async (isRealtime = false) => {
+    if (!isRealtime) setLoading(true);
     try {
       // Get instructor's working hours
       const { data: workingHours } = await supabase
@@ -272,7 +281,17 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
         }
       }
 
-      setGaps(calculatedGaps.slice(0, 20)); // Limit to 20 slots
+      const newGaps = calculatedGaps.slice(0, 20);
+      const newGapIds = newGaps.map(g => g.id);
+      
+      // Find new slots that weren't in the previous list
+      if (isRealtime && previousGapsRef.current.length > 0) {
+        const addedIds = newGapIds.filter(id => !previousGapsRef.current.includes(id));
+        triggerHighlight(addedIds);
+      }
+      
+      previousGapsRef.current = newGapIds;
+      setGaps(newGaps);
     } catch (error) {
       console.error("Error fetching gaps:", error);
       toast.error("Failed to load available slots");
@@ -397,11 +416,11 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
                       e.preventDefault();
                       toggleSlot(slot.id);
                     }}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors min-h-[48px] touch-manipulation active:scale-[0.98] ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all min-h-[48px] touch-manipulation active:scale-[0.98] ${
                       slot.selected 
                         ? "border-purple-500 bg-purple-500/10" 
                         : "border-border hover:border-purple-500/50"
-                    }`}
+                    } ${highlightedIds.has(slot.id) ? "animate-highlight-pulse ring-2 ring-green-500/50 bg-green-500/10" : ""}`}
                   >
                     <Checkbox checked={slot.selected} className="pointer-events-none" />
                     <div className="flex-1 flex items-center gap-2">
