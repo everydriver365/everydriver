@@ -130,6 +130,8 @@ const navGroups: NavGroup[] = [
     icon: Car,
     color: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
     items: [
+      { id: "mini-websites", label: "Mini Websites", icon: Globe },
+      { id: "domains", label: "Purchased Domains", icon: Globe },
       { id: "instructor-home", label: "App Homepage", icon: Smartphone },
       { id: "instructor-marketing", label: "Marketing Page", icon: Globe },
       { id: "instructor-onboarding", label: "Signup Wizard", icon: Rocket },
