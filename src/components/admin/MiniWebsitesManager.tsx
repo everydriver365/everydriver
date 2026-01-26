@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArloPageLayout } from "@/components/ui/arlo-page-layout";
@@ -46,7 +46,8 @@ import {
 } from "@/components/ui/sheet";
 import { 
   Globe, MoreHorizontal, Search, ExternalLink, CheckCircle, 
-  XCircle, Palette, Link2, Edit, Unlink, Loader2, RefreshCw
+  XCircle, Palette, Link2, Edit, Unlink, Loader2, RefreshCw,
+  Upload, ImageIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -62,6 +63,10 @@ interface MiniWebsite {
   is_active: boolean;
   created_at: string;
   brand_colour: string | null;
+  secondary_colour: string | null;
+  website_button_color: string | null;
+  website_footer_bg: string | null;
+  logo_url: string | null;
   bio: string | null;
   mini_website_domain_id: string | null;
 }
@@ -84,6 +89,8 @@ export function MiniWebsitesManager() {
   const [editingWebsite, setEditingWebsite] = useState<MiniWebsite | null>(null);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   
   // Domain assignment dialog state
   const [domainDialogOpen, setDomainDialogOpen] = useState(false);
@@ -101,7 +108,7 @@ export function MiniWebsitesManager() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, name, email, app_slug, website_theme, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, bio, mini_website_domain_id")
+        .select("id, name, email, app_slug, website_theme, custom_domain, custom_domain_verified, is_active, created_at, brand_colour, secondary_colour, website_button_color, website_footer_bg, logo_url, bio, mini_website_domain_id")
         .not("app_slug", "is", null)
         .order("created_at", { ascending: false });
 
@@ -177,6 +184,10 @@ export function MiniWebsitesManager() {
           app_slug: editingWebsite.app_slug,
           website_theme: editingWebsite.website_theme,
           brand_colour: editingWebsite.brand_colour,
+          secondary_colour: editingWebsite.secondary_colour,
+          website_button_color: editingWebsite.website_button_color,
+          website_footer_bg: editingWebsite.website_footer_bg,
+          logo_url: editingWebsite.logo_url,
           bio: editingWebsite.bio,
           is_active: editingWebsite.is_active,
         })
@@ -193,6 +204,49 @@ export function MiniWebsitesManager() {
       toast.error("Failed to update website");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingWebsite) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be less than 2MB");
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${editingWebsite.id}/logo-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("instructor-images")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("instructor-images")
+        .getPublicUrl(fileName);
+
+      const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
+      setEditingWebsite({ ...editingWebsite, logo_url: urlWithCacheBuster });
+      toast.success("Logo uploaded!");
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      toast.error("Failed to upload logo");
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) {
+        logoInputRef.current.value = "";
+      }
     }
   };
 
@@ -492,6 +546,59 @@ export function MiniWebsitesManager() {
           
           {editingWebsite && (
             <div className="space-y-6 py-6">
+              {/* Logo Upload */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  Logo
+                </Label>
+                {editingWebsite.logo_url && (
+                  <div className="relative inline-block">
+                    <img
+                      src={editingWebsite.logo_url}
+                      alt="Logo"
+                      className="h-20 w-auto object-contain rounded-lg border bg-muted p-2"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                      onClick={() => setEditingWebsite({ ...editingWebsite, logo_url: null })}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                )}
+                <div>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={isUploadingLogo}
+                  >
+                    {isUploadingLogo ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Logo
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="app_slug">Website Slug</Label>
                 <div className="flex items-center gap-2">
@@ -529,32 +636,115 @@ export function MiniWebsitesManager() {
                     <SelectItem value="classic">Classic</SelectItem>
                     <SelectItem value="minimal">Minimal</SelectItem>
                     <SelectItem value="bold">Bold</SelectItem>
+                    <SelectItem value="elegant">Elegant</SelectItem>
+                    <SelectItem value="nature">Nature</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="brand_colour">Brand Color</Label>
-                <div className="flex items-center gap-3">
-                  <Input
-                    id="brand_colour"
-                    type="color"
-                    value={editingWebsite.brand_colour || "#1e3a5f"}
-                    onChange={(e) => setEditingWebsite({
-                      ...editingWebsite,
-                      brand_colour: e.target.value
-                    })}
-                    className="w-16 h-10 p-1 cursor-pointer"
-                  />
-                  <Input
-                    value={editingWebsite.brand_colour || "#1e3a5f"}
-                    onChange={(e) => setEditingWebsite({
-                      ...editingWebsite,
-                      brand_colour: e.target.value
-                    })}
-                    placeholder="#1e3a5f"
-                    className="flex-1"
-                  />
+              {/* Color Settings */}
+              <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <Palette className="h-4 w-4" />
+                  <Label className="font-medium">Color Settings</Label>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Brand Color */}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Primary / Header</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="color"
+                        value={editingWebsite.brand_colour || "#1e3a5f"}
+                        onChange={(e) => setEditingWebsite({
+                          ...editingWebsite,
+                          brand_colour: e.target.value
+                        })}
+                        className="w-10 h-8 p-0.5 cursor-pointer"
+                      />
+                      <Input
+                        value={editingWebsite.brand_colour || "#1e3a5f"}
+                        onChange={(e) => setEditingWebsite({
+                          ...editingWebsite,
+                          brand_colour: e.target.value
+                        })}
+                        className="flex-1 text-xs h-8"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Secondary Color */}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Secondary / Accent</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="color"
+                        value={editingWebsite.secondary_colour || "#d4a574"}
+                        onChange={(e) => setEditingWebsite({
+                          ...editingWebsite,
+                          secondary_colour: e.target.value
+                        })}
+                        className="w-10 h-8 p-0.5 cursor-pointer"
+                      />
+                      <Input
+                        value={editingWebsite.secondary_colour || "#d4a574"}
+                        onChange={(e) => setEditingWebsite({
+                          ...editingWebsite,
+                          secondary_colour: e.target.value
+                        })}
+                        className="flex-1 text-xs h-8"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Button Color */}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Button Color</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="color"
+                        value={editingWebsite.website_button_color || "#3b82f6"}
+                        onChange={(e) => setEditingWebsite({
+                          ...editingWebsite,
+                          website_button_color: e.target.value
+                        })}
+                        className="w-10 h-8 p-0.5 cursor-pointer"
+                      />
+                      <Input
+                        value={editingWebsite.website_button_color || "#3b82f6"}
+                        onChange={(e) => setEditingWebsite({
+                          ...editingWebsite,
+                          website_button_color: e.target.value
+                        })}
+                        className="flex-1 text-xs h-8"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Footer Color */}
+                  <div className="space-y-2">
+                    <Label className="text-xs">Footer Background</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="color"
+                        value={editingWebsite.website_footer_bg || "#111827"}
+                        onChange={(e) => setEditingWebsite({
+                          ...editingWebsite,
+                          website_footer_bg: e.target.value
+                        })}
+                        className="w-10 h-8 p-0.5 cursor-pointer"
+                      />
+                      <Input
+                        value={editingWebsite.website_footer_bg || "#111827"}
+                        onChange={(e) => setEditingWebsite({
+                          ...editingWebsite,
+                          website_footer_bg: e.target.value
+                        })}
+                        className="flex-1 text-xs h-8"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -602,7 +792,7 @@ export function MiniWebsitesManager() {
                 <Button
                   className="flex-1"
                   onClick={handleSaveWebsite}
-                  disabled={isSaving}
+                  disabled={isSaving || isUploadingLogo}
                 >
                   {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save Changes
