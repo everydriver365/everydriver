@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -56,6 +56,7 @@ import { AdminEmailClient } from "@/components/admin/AdminEmailClient";
 import { AdminBackButton } from "@/components/admin/AdminBackButton";
 import { AdminSectionNotes } from "@/components/admin/AdminSectionNotes";
 import { DemoMiniSiteCMS } from "@/components/admin/DemoMiniSiteCMS";
+import { DiscountCodesManager } from "@/components/admin/DiscountCodesManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -121,6 +122,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   upsells: { title: "Booking Upsells", group: "Products & Booking", icon: Zap },
   promotions: { title: "Promotional Banners", group: "Products & Booking", icon: Megaphone },
   // Engagement & Rewards
+  "discount-codes": { title: "Discount Codes", group: "Engagement & Rewards", icon: Tag },
   "rewards-config": { title: "Loyalty Settings", group: "Engagement & Rewards", icon: Coins },
   "reward-tiers": { title: "Badge Tiers & Perks", group: "Engagement & Rewards", icon: Award },
   bonuses: { title: "Instructor Bonuses", group: "Engagement & Rewards", icon: Gift },
@@ -594,6 +596,25 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <SiteSettingsManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "discount-codes":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="discount-codes" className="mb-4" />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Tag className="h-5 w-5 text-accent" />
+                  Discount Codes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DiscountCodesManager />
               </CardContent>
             </Card>
           </motion.div>

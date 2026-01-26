@@ -96,6 +96,7 @@ const settingsCategories: SettingsCategory[] = [
     icon: Gift,
     iconColor: "text-pink-500",
     links: [
+      { key: "discount-codes", title: "Discount Codes", description: "Create and manage promo codes." },
       { key: "rewards-config", title: "Loyalty Settings", description: "Points and rewards configuration." },
       { key: "reward-tiers", title: "Badge Tiers & Perks", description: "Membership levels and benefits." },
       { key: "bonuses", title: "Instructor Bonuses", description: "Performance incentive programs." },
