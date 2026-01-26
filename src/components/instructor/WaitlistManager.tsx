@@ -81,19 +81,38 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
   const [isLive, setIsLive] = useState(false);
   const debounceWaitlistRef = useRef<NodeJS.Timeout | null>(null);
   const debounceOffersRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Highlight state for real-time updates
+  const [highlightedWaitlistIds, setHighlightedWaitlistIds] = useState<Set<string>>(new Set());
+  const [highlightedOfferIds, setHighlightedOfferIds] = useState<Set<string>>(new Set());
+  const previousWaitlistRef = useRef<string[]>([]);
+  const previousOffersRef = useRef<string[]>([]);
+
+  // Clear highlight after animation
+  const triggerWaitlistHighlight = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    setHighlightedWaitlistIds(new Set(ids));
+    setTimeout(() => setHighlightedWaitlistIds(new Set()), 1500);
+  }, []);
+
+  const triggerOfferHighlight = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    setHighlightedOfferIds(new Set(ids));
+    setTimeout(() => setHighlightedOfferIds(new Set()), 1500);
+  }, []);
 
   // Debounced refetch functions
   const debouncedFetchWaitlist = useCallback(() => {
     if (debounceWaitlistRef.current) clearTimeout(debounceWaitlistRef.current);
     debounceWaitlistRef.current = setTimeout(() => {
-      fetchWaitlist();
+      fetchWaitlist(true);
     }, 500);
   }, []);
 
   const debouncedFetchOffers = useCallback(() => {
     if (debounceOffersRef.current) clearTimeout(debounceOffersRef.current);
     debounceOffersRef.current = setTimeout(() => {
-      fetchPendingOffers();
+      fetchPendingOffers(true);
     }, 500);
   }, []);
 
@@ -127,7 +146,7 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
     }
   }, [instructorId, debouncedFetchWaitlist, debouncedFetchOffers]);
 
-  const fetchWaitlist = async () => {
+  const fetchWaitlist = async (isRealtime = false) => {
     try {
       const { data, error } = await supabase
         .from("lesson_waitlist")
@@ -140,7 +159,18 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setWaitlist(data || []);
+      
+      const newData = data || [];
+      const newIds = newData.map(w => w.id);
+      
+      // Find new entries that weren't in the previous list
+      if (isRealtime && previousWaitlistRef.current.length > 0) {
+        const addedIds = newIds.filter(id => !previousWaitlistRef.current.includes(id));
+        triggerWaitlistHighlight(addedIds);
+      }
+      
+      previousWaitlistRef.current = newIds;
+      setWaitlist(newData);
     } catch (error) {
       console.error("Error fetching waitlist:", error);
     } finally {
@@ -148,7 +178,7 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
     }
   };
 
-  const fetchPendingOffers = async () => {
+  const fetchPendingOffers = async (isRealtime = false) => {
     try {
       const { data, error } = await supabase
         .from("slot_offers")
@@ -162,7 +192,18 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setPendingOffers(data || []);
+      
+      const newData = data || [];
+      const newIds = newData.map(o => o.id);
+      
+      // Find new offers that weren't in the previous list
+      if (isRealtime && previousOffersRef.current.length > 0) {
+        const addedIds = newIds.filter(id => !previousOffersRef.current.includes(id));
+        triggerOfferHighlight(addedIds);
+      }
+      
+      previousOffersRef.current = newIds;
+      setPendingOffers(newData);
     } catch (error) {
       console.error("Error fetching pending offers:", error);
     }
@@ -287,7 +328,9 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
             {pendingOffers.map((offer) => (
               <div
                 key={offer.id}
-                className="flex items-center justify-between rounded-lg bg-background p-3"
+                className={`flex items-center justify-between rounded-lg bg-background p-3 transition-all ${
+                  highlightedOfferIds.has(offer.id) ? "animate-highlight-pulse ring-2 ring-green-500/50 bg-green-500/10" : ""
+                }`}
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -361,7 +404,9 @@ export function WaitlistManager({ instructorId }: WaitlistManagerProps) {
               {waitlist.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-start justify-between rounded-lg border p-3"
+                  className={`flex items-start justify-between rounded-lg border p-3 transition-all ${
+                    highlightedWaitlistIds.has(entry.id) ? "animate-highlight-pulse ring-2 ring-green-500/50 bg-green-500/10" : ""
+                  }`}
                 >
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">

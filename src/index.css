@@ -157,6 +157,26 @@
     @apply bg-clip-text text-transparent;
     background-image: var(--gradient-accent);
   }
+
+  /* Real-time update highlight animation */
+  @keyframes highlight-pulse {
+    0% {
+      background-color: hsl(var(--success) / 0.2);
+      box-shadow: 0 0 0 0 hsl(var(--success) / 0.4);
+    }
+    50% {
+      background-color: hsl(var(--success) / 0.1);
+      box-shadow: 0 0 0 4px hsl(var(--success) / 0.2);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: 0 0 0 0 hsl(var(--success) / 0);
+    }
+  }
+
+  .animate-highlight-pulse {
+    animation: highlight-pulse 1.5s ease-out forwards;
+  }
 }
 
 /* Leaflet map z-index fix */
