@@ -4,10 +4,10 @@ import {
   Home, 
   CalendarDays, 
   Users, 
-  Wallet, 
   Navigation,
   MessageCircle,
   PoundSterling,
+  Grid3X3,
   LucideIcon
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -109,7 +109,7 @@ export function InstructorBottomNav() {
               onClick={() => handleNavClick(item.path)}
               className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                 isActive
-                  ? "text-emerald-500"
+                  ? "text-primary"
                   : isMessages
                   ? "text-cyan-500"
                   : "text-foreground/70 hover:text-foreground dark:text-white/70 dark:hover:text-white"
@@ -119,7 +119,7 @@ export function InstructorBottomNav() {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-emerald-500 rounded-full"
+                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-full"
                   initial={false}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
@@ -152,7 +152,7 @@ export function InstructorBottomNav() {
                   />
                 )}
                 {isTrack && isTrackingActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-white animate-pulse" />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
@@ -163,6 +163,14 @@ export function InstructorBottomNav() {
             </button>
           );
         })}
+        
+        {/* Menu launcher button - bottom right */}
+        <button
+          onClick={() => navigate("/instructor/menu")}
+          className="absolute bottom-20 right-4 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-all duration-200 active:scale-95"
+        >
+          <Grid3X3 className="h-6 w-6" strokeWidth={2} />
+        </button>
       </div>
       {/* Safe area for iOS */}
       <div className="h-safe-area-inset-bottom bg-white dark:bg-card/95" />
