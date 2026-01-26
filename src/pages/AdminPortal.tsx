@@ -52,7 +52,7 @@ import { MiniWebsitesManager } from "@/components/admin/MiniWebsitesManager";
 import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
 import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
-import { AdminEmailPanel } from "@/components/admin/AdminEmailPanel";
+import { AdminEmailClient } from "@/components/admin/AdminEmailClient";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -307,17 +307,7 @@ export default function AdminPortal() {
       case "email":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-accent" />
-                  Email Inbox
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AdminEmailPanel />
-              </CardContent>
-            </Card>
+            <AdminEmailClient />
           </motion.div>
         );
 
