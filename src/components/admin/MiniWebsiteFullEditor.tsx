@@ -592,7 +592,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                         </div>
                         <div 
                           className="flex gap-3 text-xs"
-                          style={{ color: editData.website_text_color || "#ffffff", opacity: 0.7 }}
+                          style={{ color: editData.website_menu_text_color || "#ffffff" }}
                         >
                           <span>Home</span>
                           <span>About</span>
