@@ -2502,6 +2502,7 @@ export type Database = {
           hero_image_url: string | null
           hero_overlay_color: string | null
           hero_overlay_opacity: number | null
+          hero_show_logo: boolean | null
           home_address: string | null
           home_postcode: string
           hourly_rate: number | null
@@ -2597,6 +2598,7 @@ export type Database = {
           hero_image_url?: string | null
           hero_overlay_color?: string | null
           hero_overlay_opacity?: number | null
+          hero_show_logo?: boolean | null
           home_address?: string | null
           home_postcode: string
           hourly_rate?: number | null
@@ -2692,6 +2694,7 @@ export type Database = {
           hero_image_url?: string | null
           hero_overlay_color?: string | null
           hero_overlay_opacity?: number | null
+          hero_show_logo?: boolean | null
           home_address?: string | null
           home_postcode?: string
           hourly_rate?: number | null

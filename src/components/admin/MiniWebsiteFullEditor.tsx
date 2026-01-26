@@ -61,6 +61,7 @@ interface MiniWebsite {
   website_menu_text_color?: string | null;
   hero_overlay_color?: string | null;
   hero_overlay_opacity?: number | null;
+  hero_show_logo?: boolean | null;
   logo_url: string | null;
   hero_image_url?: string | null;
   bio: string | null;
@@ -288,6 +289,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
         website_menu_text_color: editData.website_menu_text_color,
         hero_overlay_color: editData.hero_overlay_color,
         hero_overlay_opacity: editData.hero_overlay_opacity,
+        hero_show_logo: editData.hero_show_logo,
         logo_url: editData.logo_url,
         hero_image_url: editData.hero_image_url,
         bio: editData.bio,
@@ -606,6 +608,14 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                           value={editData.hero_overlay_opacity ?? 0.2}
                           onChange={(e) => setEditData({ ...editData, hero_overlay_opacity: parseFloat(e.target.value) })}
                           className="w-full"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between col-span-2">
+                        <Label htmlFor="hero-show-logo">Show Logo in Hero</Label>
+                        <Switch
+                          id="hero-show-logo"
+                          checked={editData.hero_show_logo ?? true}
+                          onCheckedChange={(checked) => setEditData({ ...editData, hero_show_logo: checked })}
                         />
                       </div>
                     </div>
