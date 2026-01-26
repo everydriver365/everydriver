@@ -2540,6 +2540,7 @@ export type Database = {
           website_button_color: string | null
           website_font: string | null
           website_footer_bg: string | null
+          website_header_bg: string | null
           website_header_style: string | null
           website_heading_color: string | null
           website_menu_text_color: string | null
@@ -2636,6 +2637,7 @@ export type Database = {
           website_button_color?: string | null
           website_font?: string | null
           website_footer_bg?: string | null
+          website_header_bg?: string | null
           website_header_style?: string | null
           website_heading_color?: string | null
           website_menu_text_color?: string | null
@@ -2732,6 +2734,7 @@ export type Database = {
           website_button_color?: string | null
           website_font?: string | null
           website_footer_bg?: string | null
+          website_header_bg?: string | null
           website_header_style?: string | null
           website_heading_color?: string | null
           website_menu_text_color?: string | null

@@ -49,6 +49,7 @@ interface MiniWebsite {
   website_theme: string | null;
   website_font?: string | null;
   website_header_style?: string | null;
+  website_header_bg?: string | null;
   custom_domain: string | null;
   custom_domain_verified: boolean | null;
   is_active: boolean;
@@ -280,6 +281,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
         website_theme: editData.website_theme,
         website_font: editData.website_font,
         website_header_style: editData.website_header_style,
+        website_header_bg: editData.website_header_bg,
         brand_colour: editData.brand_colour,
         secondary_colour: editData.secondary_colour,
         website_button_color: editData.website_button_color,
@@ -471,7 +473,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Primary / Header</Label>
+                        <Label>Primary Color</Label>
                         <div className="flex gap-2">
                           <Input
                             type="color"
@@ -482,6 +484,22 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                           <Input
                             value={editData.brand_colour || "#1e3a5f"}
                             onChange={(e) => setEditData({ ...editData, brand_colour: e.target.value })}
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Header / Nav Bar</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={editData.website_header_bg || editData.brand_colour || "#1e3a5f"}
+                            onChange={(e) => setEditData({ ...editData, website_header_bg: e.target.value })}
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={editData.website_header_bg || editData.brand_colour || "#1e3a5f"}
+                            onChange={(e) => setEditData({ ...editData, website_header_bg: e.target.value })}
                             className="flex-1"
                           />
                         </div>
@@ -624,7 +642,7 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
                     <div className="mt-4 rounded-lg overflow-hidden border">
                       <div
                         className="h-10 flex items-center justify-between px-4"
-                        style={{ backgroundColor: editData.brand_colour || "#1e3a5f" }}
+                        style={{ backgroundColor: editData.website_header_bg || editData.brand_colour || "#1e3a5f" }}
                       >
                         <div 
                           className="text-sm font-medium"
