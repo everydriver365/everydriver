@@ -44,7 +44,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import mainLogo from "@/assets/everydriver-logo-main.png";
+import instructorLogo from "@/assets/everydriver-logo-instructor.png";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -153,13 +153,13 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
-      {/* Header Bar - fixed at top with dark theme in dark mode */}
-      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-primary dark:bg-card/95 dark:backdrop-blur-md dark:border-b dark:border-white/10">
+      {/* Header Bar - fixed at top with white background */}
+      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-white border-b border-border shadow-sm">
         {/* Logo on the left */}
         <img 
-          src={mainLogo} 
+          src={instructorLogo} 
           alt="EveryDriver" 
-          className="h-6 object-contain"
+          className="h-7 object-contain"
         />
         
         {/* Controls and Avatar on the right */}
@@ -169,7 +169,7 @@ export function InstructorMobileHome({
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:bg-white/10 h-8 px-2"
+              className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 px-2"
               onClick={onPaymentClick}
             >
               <span className="text-xs font-bold border border-current rounded px-1">QR</span>
@@ -180,7 +180,7 @@ export function InstructorMobileHome({
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/10 h-8 w-8"
+            className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
             onClick={() => navigate("/instructor/availability")}
             title="Quick Availability"
           >
@@ -191,12 +191,12 @@ export function InstructorMobileHome({
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-white/10 h-8 w-8 relative"
+            className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8 relative"
             onClick={() => navigate("/instructor/jobs")}
           >
             <Bell className="h-5 w-5" />
             {pendingJobsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-primary">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
                 {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
               </span>
             )}
@@ -208,7 +208,7 @@ export function InstructorMobileHome({
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-white/10 h-8 w-8"
+                className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
               >
                 <Settings className="h-5 w-5" />
               </Button>
