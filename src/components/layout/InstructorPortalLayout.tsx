@@ -17,6 +17,7 @@ import {
   Sun,
   Wallet,
   Globe,
+  Globe2,
   MessageCircle,
   Headphones,
   ShieldCheck,
@@ -58,7 +59,8 @@ const sidebarLinks = [
   { href: "/instructor/messages", label: "Messages", icon: MessageCircle },
   { href: "/instructor/admin-chat", label: "Contact Admin", icon: ShieldCheck, highlight: true },
   { href: "/instructor/visitor-chats", label: "Visitor Chats", icon: Headphones },
-  { href: "/instructor/domains", label: "Domains", icon: Globe },
+  { href: "/instructor/website", label: "Mini Website", icon: Globe },
+  { href: "/instructor/domains", label: "Domains", icon: Globe2 },
   { href: "/instructor/traccar", label: "GPS Tracking", icon: Radio },
   { href: "/instructor/settings", label: "Settings", icon: Settings },
 ];

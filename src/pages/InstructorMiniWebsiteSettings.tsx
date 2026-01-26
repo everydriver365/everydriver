@@ -1,0 +1,276 @@
+import { useState } from "react";
+import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette } from "lucide-react";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
+import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
+import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+export default function InstructorMiniWebsiteSettings() {
+  const { instructor: authInstructor, refreshInstructor } = useInstructorAuth();
+  const instructorId = authInstructor?.id;
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
+
+  const handleVisibilityToggle = async (isVisible: boolean) => {
+    if (!instructorId) return;
+    setUpdatingVisibility(true);
+    try {
+      const { error } = await supabase
+        .from("instructors")
+        .update({ is_active: isVisible })
+        .eq("id", instructorId);
+
+      if (error) throw error;
+      await refreshInstructor();
+      toast.success(isVisible ? "Website is now visible" : "Website is now hidden");
+    } catch (error) {
+      console.error("Error updating visibility:", error);
+      toast.error("Failed to update visibility");
+    } finally {
+      setUpdatingVisibility(false);
+    }
+  };
+
+  const baseUrl = window.location.origin;
+
+  if (!instructorId) {
+    return (
+      <InstructorPortalLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      </InstructorPortalLayout>
+    );
+  }
+
+  return (
+    <InstructorPortalLayout>
+      <div className="space-y-6 pb-24">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <Globe className="h-6 w-6 text-primary" />
+              Mini Website
+            </h1>
+            <p className="text-muted-foreground">
+              Manage your personal instructor website
+            </p>
+          </div>
+          
+          {authInstructor?.app_slug && (
+            <a
+              href={`${baseUrl}/i/${authInstructor.app_slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" className="gap-2">
+                <ExternalLink className="h-4 w-4" />
+                View Live Site
+              </Button>
+            </a>
+          )}
+        </div>
+
+        {/* Quick Stats / Info Card */}
+        <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+          <CardContent className="py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Globe className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">Your Website URL</p>
+                  {authInstructor?.app_slug ? (
+                    <p className="text-sm text-muted-foreground">
+                      {baseUrl}/i/{authInstructor.app_slug}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Setting up...</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="website-visibility"
+                    checked={authInstructor?.is_active ?? false}
+                    onCheckedChange={handleVisibilityToggle}
+                    disabled={updatingVisibility}
+                  />
+                  <Label htmlFor="website-visibility" className="text-sm">
+                    {authInstructor?.is_active ? "Visible" : "Hidden"}
+                  </Label>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="pages" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="pages" className="gap-1.5 text-xs sm:text-sm">
+              <Layout className="h-4 w-4" />
+              <span className="hidden sm:inline">Pages</span>
+            </TabsTrigger>
+            <TabsTrigger value="design" className="gap-1.5 text-xs sm:text-sm">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Design</span>
+            </TabsTrigger>
+            <TabsTrigger value="share" className="gap-1.5 text-xs sm:text-sm">
+              <Share2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Share</span>
+            </TabsTrigger>
+            <TabsTrigger value="visibility" className="gap-1.5 text-xs sm:text-sm">
+              <Eye className="h-4 w-4" />
+              <span className="hidden sm:inline">Settings</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Pages Tab */}
+          <TabsContent value="pages">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Layout className="h-5 w-5 text-primary" />
+                  Website Pages
+                </CardTitle>
+                <CardDescription>
+                  Edit your 5-page mini-website content, headings, and images
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {authInstructor?.app_slug ? (
+                  <MiniWebsiteCMS 
+                    instructorId={instructorId} 
+                    instructorSlug={authInstructor.app_slug} 
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Your website URL is being set up. Please refresh in a moment.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Design Tab */}
+          <TabsContent value="design">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Website Design
+                </CardTitle>
+                <CardDescription>
+                  Customize colors, fonts, header styles, and branding for your website
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MiniWebsiteThemeEditor
+                  instructorId={instructorId}
+                  currentSettings={{
+                    website_theme: authInstructor?.website_theme,
+                    website_font: authInstructor?.website_font,
+                    website_header_style: authInstructor?.website_header_style,
+                    brand_colour: authInstructor?.brand_colour,
+                    secondary_colour: authInstructor?.secondary_colour,
+                    website_button_color: authInstructor?.website_button_color,
+                    website_footer_bg: authInstructor?.website_footer_bg,
+                    logo_url: authInstructor?.logo_url,
+                    phone: authInstructor?.phone,
+                    email: authInstructor?.email,
+                  }}
+                  onUpdate={refreshInstructor}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Share Tab */}
+          <TabsContent value="share">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Share2 className="h-5 w-5 text-primary" />
+                  Share Your Website
+                </CardTitle>
+                <CardDescription>
+                  Share your mini-website link with potential students
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <MiniWebsiteShare instructorId={instructorId} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Visibility/Settings Tab */}
+          <TabsContent value="visibility">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Eye className="h-5 w-5 text-primary" />
+                  Website Settings
+                </CardTitle>
+                <CardDescription>
+                  Control your website visibility and listing options
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-1">
+                    <Label className="font-medium">Listed on EveryDriver</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Your courses will appear in search results when enabled
+                    </p>
+                  </div>
+                  <Switch
+                    checked={authInstructor?.is_active ?? false}
+                    onCheckedChange={handleVisibilityToggle}
+                    disabled={updatingVisibility}
+                  />
+                </div>
+
+                <div className="rounded-lg border p-4 bg-muted/30">
+                  <h4 className="font-medium mb-2">Website URL</h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    This is your unique website address that you can share with students.
+                  </p>
+                  {authInstructor?.app_slug && (
+                    <code className="block bg-background p-2 rounded text-sm">
+                      {baseUrl}/i/{authInstructor.app_slug}
+                    </code>
+                  )}
+                </div>
+
+                <div className="rounded-lg border p-4 bg-accent/50 border-accent">
+                  <h4 className="font-medium mb-2">
+                    Custom Domain
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Want your own domain like <strong>www.yourname.co.uk</strong>? 
+                    Visit the Domains section to purchase and link a custom domain.
+                  </p>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="/instructor/domains">Manage Domains</a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </InstructorPortalLayout>
+  );
+}
