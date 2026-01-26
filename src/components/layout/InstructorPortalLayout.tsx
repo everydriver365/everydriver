@@ -101,8 +101,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         {/* iOS Install Banner */}
         <IOSInstallBanner />
         
-        {/* Mobile Header - Navy Blue to match brand */}
-        <header className="sticky top-0 z-40 bg-[#142040] border-b border-[#0f1a30]">
+        {/* Mobile Header - White with contrasting icons */}
+        <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm">
           <div className="flex items-center justify-between px-4 h-14">
             {/* Left: Back button + Logo */}
             <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   variant="ghost" 
                   size="icon" 
                   onClick={() => navigate("/instructor")}
-                  className="text-white/80 hover:text-white hover:bg-white/10 -ml-2 h-8 w-8"
+                  className="text-foreground/80 hover:text-foreground hover:bg-muted -ml-2 h-8 w-8"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -130,7 +130,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowQRModal(true)}
-                  className="text-white/80 hover:text-white hover:bg-white/10 h-8 px-2"
+                  className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 px-2"
                 >
                   <span className="text-xs font-bold border border-current rounded px-1">QR</span>
                 </Button>
@@ -139,7 +139,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/instructor/availability")}
-                className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8"
+                className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
                 title="Quick Availability"
               >
                 <CalendarClock className="h-5 w-5" />
@@ -148,11 +148,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/instructor/settings")}
-                className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8"
+                className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
               >
                 <Settings className="h-5 w-5" />
               </Button>
-              <Avatar className="h-9 w-9 border-2 border-white/30">
+              <Avatar className="h-9 w-9 border-2 border-border">
                 <AvatarImage src={instructor?.profile_image_url || undefined} />
                 <AvatarFallback className="bg-emerald-500 text-white text-xs font-semibold">
                   {instructor?.name?.charAt(0) || "I"}
