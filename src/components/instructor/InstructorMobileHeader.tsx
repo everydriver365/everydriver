@@ -104,7 +104,7 @@ export function InstructorMobileHeader({
         >
           <Settings className="h-5 w-5" />
         </Button>
-        <Avatar className="h-9 w-9 border-2 border-white/30">
+        <Avatar className="h-9 w-9 border-2 border-border">
           <AvatarImage src={profileImageUrl || undefined} alt={instructorName} />
           <AvatarFallback className="bg-emerald-500 text-white font-semibold text-sm">
             {getInitials(instructorName)}
