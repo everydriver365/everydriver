@@ -4,7 +4,6 @@ import {
   Users, Calendar, CreditCard, 
   UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail
 } from "lucide-react";
-import { ChevronLeft } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -54,6 +53,7 @@ import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
 import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
 import { AdminEmailClient } from "@/components/admin/AdminEmailClient";
+import { AdminBackButton } from "@/components/admin/AdminBackButton";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -256,6 +256,7 @@ export default function AdminPortal() {
       case "instructors":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <InstructorManager onEdit={handleEdit} />
           </motion.div>
         );
@@ -263,6 +264,7 @@ export default function AdminPortal() {
       case "subscribers":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <SubscribersManager />
           </motion.div>
         );
@@ -270,6 +272,7 @@ export default function AdminPortal() {
       case "plans":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <SubscriptionPlansManager />
           </motion.div>
         );
@@ -277,6 +280,7 @@ export default function AdminPortal() {
       case "mini-websites":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <MiniWebsitesManager />
           </motion.div>
         );
@@ -284,6 +288,7 @@ export default function AdminPortal() {
       case "domains":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <DomainsManager />
           </motion.div>
         );
@@ -291,6 +296,7 @@ export default function AdminPortal() {
       case "compliance":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -307,16 +313,8 @@ export default function AdminPortal() {
 
       case "email":
         return (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActiveSection("overview")}
-              className="flex items-center gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back to Admin
-            </Button>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminEmailClient />
           </motion.div>
         );
@@ -324,6 +322,7 @@ export default function AdminPortal() {
       case "enquiries":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -341,6 +340,7 @@ export default function AdminPortal() {
       case "messages":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -358,6 +358,7 @@ export default function AdminPortal() {
       case "instructor-messages":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminInstructorMessagesManager />
           </motion.div>
         );
@@ -365,6 +366,7 @@ export default function AdminPortal() {
       case "live-chat":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <LiveChatManager />
           </motion.div>
         );
@@ -372,6 +374,7 @@ export default function AdminPortal() {
       case "bookings":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminBookingsManager />
           </motion.div>
         );
@@ -379,6 +382,7 @@ export default function AdminPortal() {
       case "payments":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminPaymentsManager />
           </motion.div>
         );
@@ -386,6 +390,7 @@ export default function AdminPortal() {
       case "courses":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <CourseManager onNavigate={setActiveSection} />
           </motion.div>
         );
@@ -393,6 +398,7 @@ export default function AdminPortal() {
       case "booking-modes":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <BookingModeOverview />
           </motion.div>
         );
@@ -400,6 +406,7 @@ export default function AdminPortal() {
       case "pwa-apps":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -417,6 +424,7 @@ export default function AdminPortal() {
       case "instructor-home":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -434,6 +442,7 @@ export default function AdminPortal() {
       case "instructor-marketing":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -451,6 +460,7 @@ export default function AdminPortal() {
       case "instructor-onboarding":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <OnboardingStepEditor />
           </motion.div>
         );
@@ -463,6 +473,7 @@ export default function AdminPortal() {
       case "features":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <CMSManager 
               onNavigate={setActiveSection} 
               initialSection={activeSection as "features" | "testimonials" | "stats" | "hero" | "sections" | "included"} 
@@ -473,6 +484,7 @@ export default function AdminPortal() {
       case "images":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -490,6 +502,7 @@ export default function AdminPortal() {
       case "videos":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -507,6 +520,7 @@ export default function AdminPortal() {
       case "promotions":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -524,6 +538,7 @@ export default function AdminPortal() {
       case "site-settings":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -541,6 +556,7 @@ export default function AdminPortal() {
       case "bonuses":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -558,6 +574,7 @@ export default function AdminPortal() {
       case "rewards-config":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -575,6 +592,7 @@ export default function AdminPortal() {
       case "reward-tiers":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -592,6 +610,7 @@ export default function AdminPortal() {
       case "public-faqs":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -609,6 +628,7 @@ export default function AdminPortal() {
       case "instructor-faqs":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -626,6 +646,7 @@ export default function AdminPortal() {
       case "upsells":
         return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
