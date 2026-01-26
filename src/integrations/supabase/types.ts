@@ -84,6 +84,42 @@ export type Database = {
           },
         ]
       }
+      admin_section_notes: {
+        Row: {
+          content: string
+          created_at: string
+          display_order: number
+          id: string
+          is_visible: boolean
+          note_type: string
+          section_key: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          note_type?: string
+          section_key: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          note_type?: string
+          section_key?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_todos: {
         Row: {
           created_at: string
