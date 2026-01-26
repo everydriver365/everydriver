@@ -47,6 +47,14 @@ interface ScheduledLesson {
   duration_minutes: number;
 }
 
+interface TrackingSession {
+  id: string;
+  started_at: string;
+  ended_at: string | null;
+  total_distance_km: number | null;
+  avg_speed_kmh: number | null;
+}
+
 interface Pupil {
   id: string;
   name: string;
@@ -126,6 +134,8 @@ export function ExpandablePupilCard({
   const [savingFeedback, setSavingFeedback] = useState(false);
   const [availableLessons, setAvailableLessons] = useState<ScheduledLesson[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>("");
+  const [availableTrackingSessions, setAvailableTrackingSessions] = useState<TrackingSession[]>([]);
+  const [selectedTrackingSessionId, setSelectedTrackingSessionId] = useState<string>("");
   const [testStats, setTestStats] = useState<{ 
     realTests: number; 
     mockTests: number; 
@@ -145,10 +155,11 @@ export function ExpandablePupilCard({
     }
   }, [isExpanded, pupil.id]);
 
-  // Fetch available lessons when adding feedback
+  // Fetch available lessons and tracking sessions when adding feedback
   useEffect(() => {
     if (isAddingFeedback) {
       fetchAvailableLessons();
+      fetchAvailableTrackingSessions();
     }
   }, [isAddingFeedback, pupil.id]);
 
@@ -175,6 +186,28 @@ export function ExpandablePupilCard({
       }
     } catch (error) {
       console.error("Error fetching lessons:", error);
+    }
+  };
+
+  const fetchAvailableTrackingSessions = async () => {
+    try {
+      // Get tracking sessions for this pupil from the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data, error } = await supabase
+        .from("lesson_telematics")
+        .select("id, started_at, ended_at, total_distance_km, avg_speed_kmh")
+        .eq("pupil_id", pupil.id)
+        .not("ended_at", "is", null)
+        .gte("started_at", thirtyDaysAgo.toISOString())
+        .order("started_at", { ascending: false });
+
+      if (!error && data) {
+        setAvailableTrackingSessions(data);
+      }
+    } catch (error) {
+      console.error("Error fetching tracking sessions:", error);
     }
   };
 
@@ -265,7 +298,7 @@ export function ExpandablePupilCard({
         return;
       }
 
-      // Create lesson feedback linked to the selected lesson
+      // Create lesson feedback linked to the selected lesson and tracking session
       const { error } = await supabase
         .from("lesson_history")
         .insert({
@@ -276,6 +309,7 @@ export function ExpandablePupilCard({
           notes: newFeedback,
           rating: newRating > 0 ? newRating : null,
           scheduled_lesson_id: selectedLessonId || null,
+          telematics_session_id: selectedTrackingSessionId || null,
         });
 
       if (error) throw error;
@@ -285,6 +319,7 @@ export function ExpandablePupilCard({
       setNewFeedback("");
       setNewRating(0);
       setSelectedLessonId("");
+      setSelectedTrackingSessionId("");
       fetchLatestFeedback();
     } catch (error) {
       console.error("Error saving feedback:", error);
@@ -650,6 +685,33 @@ export function ExpandablePupilCard({
                       </Select>
                     </div>
 
+                    {/* Tracking Session Selector */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-muted-foreground font-medium">
+                        Link to tracking session (optional):
+                      </label>
+                      <Select
+                        value={selectedTrackingSessionId}
+                        onValueChange={setSelectedTrackingSessionId}
+                      >
+                        <SelectTrigger 
+                          className="w-full text-sm h-9"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <SelectValue placeholder="Select a GPS session..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border z-[1100]">
+                          <SelectItem value="">No tracking session</SelectItem>
+                          {availableTrackingSessions.map((session) => (
+                            <SelectItem key={session.id} value={session.id}>
+                              {format(new Date(session.started_at), 'EEE, d MMM')} at {format(new Date(session.started_at), 'HH:mm')}
+                              {session.total_distance_km ? ` • ${session.total_distance_km.toFixed(1)}km` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div className="flex items-center justify-between">
                       <LessonNotesTemplates
                         onSelect={(template) => setNewFeedback(prev => prev ? `${prev} ${template}` : template)}
@@ -695,6 +757,7 @@ export function ExpandablePupilCard({
                           setNewFeedback("");
                           setNewRating(0);
                           setSelectedLessonId("");
+                          setSelectedTrackingSessionId("");
                         }}
                       >
                         <X className="h-4 w-4 mr-1" />

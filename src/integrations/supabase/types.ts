@@ -2558,6 +2558,7 @@ export type Database = {
           scheduled_lesson_id: string | null
           skills_practiced: string[] | null
           start_time: string | null
+          telematics_session_id: string | null
           updated_at: string
           vehicle_id: string | null
         }
@@ -2573,6 +2574,7 @@ export type Database = {
           scheduled_lesson_id?: string | null
           skills_practiced?: string[] | null
           start_time?: string | null
+          telematics_session_id?: string | null
           updated_at?: string
           vehicle_id?: string | null
         }
@@ -2588,6 +2590,7 @@ export type Database = {
           scheduled_lesson_id?: string | null
           skills_practiced?: string[] | null
           start_time?: string | null
+          telematics_session_id?: string | null
           updated_at?: string
           vehicle_id?: string | null
         }
@@ -2611,6 +2614,13 @@ export type Database = {
             columns: ["scheduled_lesson_id"]
             isOneToOne: false
             referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_history_telematics_session_id_fkey"
+            columns: ["telematics_session_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
             referencedColumns: ["id"]
           },
           {
