@@ -10,7 +10,8 @@ import {
   TrendingUp,
   Calendar,
   CreditCard,
-  Mail
+  Mail,
+  Headphones
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,15 +35,22 @@ interface SettingsCategory {
 
 const settingsCategories: SettingsCategory[] = [
   {
+    title: "Communications",
+    icon: Headphones,
+    iconColor: "text-emerald-500",
+    links: [
+      { key: "email", title: "Email Inbox", description: "View and manage incoming emails.", badgeKey: "emails" },
+      { key: "enquiries", title: "Enquiries & Callbacks", description: "Review bespoke course requests and callback requests.", badgeKey: "enquiries" },
+      { key: "instructor-messages", title: "Instructor Support", description: "Handle support chats with instructors.", badgeKey: "instructorMessages" },
+    ],
+  },
+  {
     title: "People & Support",
     icon: Users,
     iconColor: "text-blue-500",
     links: [
       { key: "instructors", title: "Instructors", description: "Manage instructor accounts and profiles." },
       { key: "compliance", title: "Compliance Dashboard", description: "Track ADI badge, DBS, and document expiry." },
-      { key: "email", title: "Email Inbox", description: "View and manage incoming emails.", badgeKey: "emails" },
-      { key: "enquiries", title: "Enquiries & Callbacks", description: "Review bespoke course requests and callback requests.", badgeKey: "enquiries" },
-      { key: "instructor-messages", title: "Instructor Support", description: "Handle support chats with instructors.", badgeKey: "instructorMessages" },
       { key: "live-chat", title: "Visitor Chats", description: "Manage live chat sessions with website visitors.", badgeKey: "liveChats" },
     ],
   },
