@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Globe, Edit2, Eye, EyeOff, Save, Plus, Trash2, GripVertical, Image as ImageIcon } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Globe, Edit2, Eye, EyeOff, Save, Plus, Trash2, GripVertical, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -238,10 +239,16 @@ export function DemoMiniSiteCMS() {
         <div className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Demo Mini Site Pages</h2>
+          <Badge variant="outline" className="text-xs">
+            {pages.length} pages
+          </Badge>
         </div>
-        <Badge variant="outline" className="text-xs">
-          {pages.length} pages
-        </Badge>
+        <Link to="/demo-mini-site" target="_blank">
+          <Button variant="outline" size="sm" className="gap-1">
+            <ExternalLink className="h-4 w-4" />
+            Preview Site
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-3">
