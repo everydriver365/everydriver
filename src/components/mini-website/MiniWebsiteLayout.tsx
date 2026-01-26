@@ -15,6 +15,8 @@ interface Instructor {
   website_header_style?: string | null;
   website_button_color?: string | null;
   website_footer_bg?: string | null;
+  website_text_color?: string | null;
+  website_heading_color?: string | null;
   phone?: string | null;
   email?: string | null;
   home_postcode?: string;

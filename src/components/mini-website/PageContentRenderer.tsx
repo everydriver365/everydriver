@@ -6,14 +6,23 @@ interface PageContentRendererProps {
   blocks: ContentBlock[];
   primaryColor: string;
   secondaryColor: string;
+  headingColor?: string;
+  textColor?: string;
 }
 
 export function PageContentRenderer({
   blocks,
   primaryColor,
   secondaryColor,
+  headingColor,
+  textColor,
 }: PageContentRendererProps) {
   if (!blocks || blocks.length === 0) return null;
+
+  // Use custom heading color if provided, otherwise fall back to primary
+  const headingStyle = headingColor || primaryColor;
+  // Use custom text color if provided, otherwise use default gray
+  const bodyTextClass = textColor ? "" : "text-gray-600";
 
   return (
     <div className="space-y-6">
@@ -26,13 +35,16 @@ export function PageContentRenderer({
                   {block.title && (
                     <h3
                       className="text-xl font-semibold mb-3"
-                      style={{ color: primaryColor }}
+                      style={{ color: headingStyle }}
                     >
                       {block.title}
                     </h3>
                   )}
                   {block.content && (
-                    <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                    <p 
+                      className={`leading-relaxed whitespace-pre-wrap ${bodyTextClass}`}
+                      style={textColor ? { color: textColor } : undefined}
+                    >
                       {block.content}
                     </p>
                   )}
@@ -47,7 +59,7 @@ export function PageContentRenderer({
                   {block.title && (
                     <h3
                       className="text-xl font-semibold mb-4"
-                      style={{ color: primaryColor }}
+                      style={{ color: headingStyle }}
                     >
                       {block.title}
                     </h3>
@@ -60,7 +72,12 @@ export function PageContentRenderer({
                             className="h-5 w-5 mt-0.5 flex-shrink-0"
                             style={{ color: secondaryColor }}
                           />
-                          <span className="text-gray-600">{item}</span>
+                          <span 
+                            className={bodyTextClass}
+                            style={textColor ? { color: textColor } : undefined}
+                          >
+                            {item}
+                          </span>
                         </li>
                       ))}
                     </ul>
@@ -79,7 +96,10 @@ export function PageContentRenderer({
                 />
                 {block.title && (
                   <CardContent className="p-4">
-                    <p className="text-center text-gray-600 text-sm">
+                    <p 
+                      className={`text-center text-sm ${bodyTextClass}`}
+                      style={textColor ? { color: textColor } : undefined}
+                    >
                       {block.title}
                     </p>
                   </CardContent>
@@ -93,7 +113,7 @@ export function PageContentRenderer({
                 {block.title && (
                   <h3
                     className="text-xl font-semibold mb-4"
-                    style={{ color: primaryColor }}
+                    style={{ color: headingStyle }}
                   >
                     {block.title}
                   </h3>
