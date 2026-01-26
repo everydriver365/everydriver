@@ -352,9 +352,6 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
         <TraccarStatusPanel />
       </div>
 
-      {/* Email Client - Full Width */}
-      <AdminEmailClient />
-
       {/* Settings Grid */}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {settingsCategories.map((category) => (
