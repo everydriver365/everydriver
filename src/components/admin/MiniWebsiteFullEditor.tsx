@@ -140,6 +140,21 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
   const logoInputRef = useRef<HTMLInputElement>(null);
   const heroInputRef = useRef<HTMLInputElement>(null);
 
+  // Sync editData when website prop changes (e.g., after parent refetch)
+  // Only update fields that weren't locally modified (i.e., from uploads)
+  useEffect(() => {
+    setEditData(prev => ({
+      ...website,
+      // Preserve locally uploaded images if they exist and differ from the website prop
+      logo_url: prev.logo_url !== website.logo_url && prev.logo_url?.includes('?t=') 
+        ? prev.logo_url 
+        : website.logo_url,
+      hero_image_url: prev.hero_image_url !== website.hero_image_url && prev.hero_image_url?.includes('?t=') 
+        ? prev.hero_image_url 
+        : website.hero_image_url,
+    }));
+  }, [website]);
+
   // Fetch website pages for this instructor
   const { pages, loading: pagesLoading, updatePage } = useInstructorWebsitePages(website.id);
   const [editingPage, setEditingPage] = useState<WebsitePage | null>(null);
@@ -256,28 +271,30 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
         finalDomainId = selectedDomainId;
       }
       
+      const updatePayload = {
+        app_slug: editData.app_slug,
+        website_theme: editData.website_theme,
+        website_font: editData.website_font,
+        website_header_style: editData.website_header_style,
+        brand_colour: editData.brand_colour,
+        secondary_colour: editData.secondary_colour,
+        website_button_color: editData.website_button_color,
+        website_footer_bg: editData.website_footer_bg,
+        website_text_color: editData.website_text_color,
+        website_heading_color: editData.website_heading_color,
+        logo_url: editData.logo_url,
+        hero_image_url: editData.hero_image_url,
+        bio: editData.bio,
+        phone: editData.phone,
+        is_active: editData.is_active,
+        custom_domain: finalCustomDomain,
+        custom_domain_verified: false,
+        mini_website_domain_id: finalDomainId,
+      };
+      
       const { error } = await supabase
         .from("instructors")
-        .update({
-          app_slug: editData.app_slug,
-          website_theme: editData.website_theme,
-          website_font: editData.website_font,
-          website_header_style: editData.website_header_style,
-          brand_colour: editData.brand_colour,
-          secondary_colour: editData.secondary_colour,
-          website_button_color: editData.website_button_color,
-          website_footer_bg: editData.website_footer_bg,
-          website_text_color: editData.website_text_color,
-          website_heading_color: editData.website_heading_color,
-          logo_url: editData.logo_url,
-          hero_image_url: editData.hero_image_url,
-          bio: editData.bio,
-          phone: editData.phone,
-          is_active: editData.is_active,
-          custom_domain: finalCustomDomain,
-          custom_domain_verified: false,
-          mini_website_domain_id: finalDomainId,
-        })
+        .update(updatePayload)
         .eq("id", editData.id);
 
       if (error) throw error;
@@ -291,7 +308,10 @@ export function MiniWebsiteFullEditor({ website, domains, onClose, onSave }: Min
       }
 
       toast.success("Website saved successfully");
-      // Stay on the editor page instead of closing
+      
+      // Refresh parent data silently so next open has latest data, but don't close editor
+      // We do this asynchronously to not block the UI
+      onSave();
     } catch (error) {
       console.error("Error saving website:", error);
       toast.error("Failed to save website");

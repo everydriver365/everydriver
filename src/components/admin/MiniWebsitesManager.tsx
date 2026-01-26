@@ -154,10 +154,9 @@ export function MiniWebsitesManager() {
     setEditingWebsite(null);
   };
 
-  const handleSaveComplete = () => {
-    setEditingWebsite(null);
-    fetchWebsites();
-    fetchDomains();
+  const handleSaveComplete = async () => {
+    // Refresh data but keep editor open - data will be updated via state
+    await Promise.all([fetchWebsites(), fetchDomains()]);
   };
 
   // Show full-screen editor if editing
