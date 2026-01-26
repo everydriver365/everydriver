@@ -36,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import mainLogo from "@/assets/everydriver-logo-main.png";
+import instructorMobileLogo from "@/assets/everydriver-logo-instructor.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
@@ -117,7 +118,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 </Button>
               )}
               <img 
-                src={mainLogo} 
+                src={instructorMobileLogo} 
                 alt="EveryDriver" 
                 className="h-7 object-contain"
               />
