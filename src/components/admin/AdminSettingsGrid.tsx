@@ -85,6 +85,8 @@ const settingsCategories: SettingsCategory[] = [
     icon: Smartphone,
     iconColor: "text-orange-500",
     links: [
+      { key: "mini-websites", title: "Mini Websites", description: "Edit instructor website themes, colors, and content." },
+      { key: "domains", title: "Purchased Domains", description: "Manage custom domain assignments." },
       { key: "instructor-onboarding", title: "Signup Wizard", description: "Manage instructor onboarding steps." },
       { key: "instructor-home", title: "App Homepage", description: "Configure instructor app home screen." },
       { key: "instructor-marketing", title: "Marketing Page", description: "EveryDriver landing page content." },
