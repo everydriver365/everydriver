@@ -17,6 +17,7 @@ interface Instructor {
   website_footer_bg?: string | null;
   website_text_color?: string | null;
   website_heading_color?: string | null;
+  website_menu_text_color?: string | null;
   phone?: string | null;
   email?: string | null;
   home_postcode?: string;
@@ -41,6 +42,7 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
   const footerBg = instructor.website_footer_bg || "#111827";
   const fontFamily = instructor.website_font || "Inter";
   const headerStyle = instructor.website_header_style || "solid";
+  const menuTextColor = instructor.website_menu_text_color || "#ffffff";
 
   const navLinks = [
     { path: `/i/${slug}`, label: "Home" },
@@ -106,7 +108,10 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
                   {instructor.name.charAt(0)}
                 </div>
               )}
-              <span className="text-white font-semibold text-lg hidden sm:block">
+              <span 
+                className="font-semibold text-lg hidden sm:block"
+                style={{ color: menuTextColor }}
+              >
                 {instructor.name}
               </span>
             </Link>
@@ -118,9 +123,13 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
                   to={link.path}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive(link.path)
-                      ? "bg-white/20 text-white"
-                      : "text-white/80 hover:text-white hover:bg-white/10"
+                      ? "bg-white/20"
+                      : "hover:bg-white/10"
                   }`}
+                  style={{ 
+                    color: menuTextColor,
+                    opacity: isActive(link.path) ? 1 : 0.8 
+                  }}
                 >
                   {link.label}
                 </Link>
