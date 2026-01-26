@@ -909,6 +909,72 @@ export type Database = {
           },
         ]
       }
+      gap_offers: {
+        Row: {
+          created_at: string
+          discount_type: string | null
+          discount_value: number | null
+          id: string
+          instructor_id: string
+          pupil_id: string
+          pupil_phone: string
+          responded_at: string | null
+          response_message: string | null
+          slot_date: string
+          slot_end_time: string
+          slot_start_time: string
+          status: string
+          twilio_message_sid: string | null
+        }
+        Insert: {
+          created_at?: string
+          discount_type?: string | null
+          discount_value?: number | null
+          id?: string
+          instructor_id: string
+          pupil_id: string
+          pupil_phone: string
+          responded_at?: string | null
+          response_message?: string | null
+          slot_date: string
+          slot_end_time: string
+          slot_start_time: string
+          status?: string
+          twilio_message_sid?: string | null
+        }
+        Update: {
+          created_at?: string
+          discount_type?: string | null
+          discount_value?: number | null
+          id?: string
+          instructor_id?: string
+          pupil_id?: string
+          pupil_phone?: string
+          responded_at?: string | null
+          response_message?: string | null
+          slot_date?: string
+          slot_end_time?: string
+          slot_start_time?: string
+          status?: string
+          twilio_message_sid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gap_offers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gap_offers_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homepage_features: {
         Row: {
           created_at: string

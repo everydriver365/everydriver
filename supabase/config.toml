@@ -146,3 +146,6 @@ verify_jwt = false
 
 [functions.traccar-webhook]
 verify_jwt = false
+
+[functions.twilio-webhook]
+verify_jwt = false
