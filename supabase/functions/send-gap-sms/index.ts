@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 interface GapSlot {
+  id: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -86,13 +87,37 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send SMS to each pupil
+    // Send SMS to each pupil and track offers
     const results = [];
     for (const pupil of pupils) {
       if (!pupil.phone) continue;
 
+      // For each slot, create a gap offer record
+      const slotOffers = [];
+      for (const slot of slots.slice(0, 5)) {
+        const { data: offerData, error: offerError } = await supabase
+          .from("gap_offers")
+          .insert({
+            instructor_id: instructorId,
+            pupil_id: pupil.id,
+            pupil_phone: pupil.phone,
+            slot_date: slot.date,
+            slot_start_time: slot.startTime,
+            slot_end_time: slot.endTime,
+            discount_type: discountType,
+            discount_value: discountValue,
+            status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (!offerError && offerData) {
+          slotOffers.push(offerData.id);
+        }
+      }
+
       const message = customMessage || 
-        `Hi ${pupil.name}! I have some lesson slots available:\n\n${slotsText}${discountText}\n\nReply to book! - ${instructorName}`;
+        `Hi ${pupil.name}! I have some lesson slots available:\n\n${slotsText}${discountText}\n\nReply YES to book or NO to pass! - ${instructorName}`;
 
       try {
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
@@ -115,7 +140,16 @@ const handler = async (req: Request): Promise<Response> => {
         
         if (response.ok) {
           console.log(`SMS sent to ${pupil.name}: ${result.sid}`);
-          results.push({ pupilId: pupil.id, name: pupil.name, success: true });
+          
+          // Update offers with Twilio message SID
+          if (slotOffers.length > 0) {
+            await supabase
+              .from("gap_offers")
+              .update({ twilio_message_sid: result.sid })
+              .in("id", slotOffers);
+          }
+          
+          results.push({ pupilId: pupil.id, name: pupil.name, success: true, offerIds: slotOffers });
         } else {
           console.error(`Failed to send SMS to ${pupil.name}:`, result);
           results.push({ pupilId: pupil.id, name: pupil.name, success: false, error: result.message });
