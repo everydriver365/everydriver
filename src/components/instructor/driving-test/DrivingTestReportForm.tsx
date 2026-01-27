@@ -356,7 +356,7 @@ export function DrivingTestReportForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl w-[calc(100vw-1rem)] max-h-[90vh] overflow-y-auto overflow-x-hidden p-3 sm:p-6">
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
