@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 
 export function Footer() {
-  const logo = "/everydriver-logo-main.png";
+  const logo = "/everydriver-logo-white.png";
   const logoAlt = "EveryDriver";
   const homeLink = "/";
 

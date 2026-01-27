@@ -97,7 +97,7 @@ export function AdminLayout({
           {/* Logo */}
           <div className="flex items-center gap-3">
             <img 
-              src="/everydriver-logo-main.png" 
+              src="/everydriver-logo-white.png" 
               alt="EveryDriver" 
               className="h-8"
             />
