@@ -92,8 +92,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build reply instructions based on number of slots
     const replyInstructions = slotsToSend.length > 1
-      ? `Reply with the number (1-${slotsToSend.length}) to book, or NO to pass!`
-      : `Reply YES to book or NO to pass!`;
+      ? `Reply with the number (1-${slotsToSend.length}) to book, or NO to pass! - EveryDriver`
+      : `Reply YES to book or NO to pass! - EveryDriver`;
 
     // Send SMS to each pupil and track offers
     const results = [];
