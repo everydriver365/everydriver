@@ -41,7 +41,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full overflow-x-hidden">
-      <div className="border-b border-nav/20 bg-[#142040] overflow-x-hidden">
+      <div className="border-b border-nav/20 bg-primary overflow-x-hidden">
       <nav className="container max-w-7xl flex h-16 items-center justify-between relative">
         <Link to="/" className="flex items-center">
           <img src="/everydriver-logo-main.png" alt="EveryDriver" className="h-8" />
