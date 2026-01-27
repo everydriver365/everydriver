@@ -257,14 +257,55 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send push notification to instructor
+    // Send branded confirmation SMS and push notification to instructor
     if (bookedSlots.length > 0 && pendingOffers.length > 0) {
       const firstOffer = pendingOffers[0];
       const pupilName = (firstOffer.pupils as any)?.name || "A pupil";
+      const instructorName = (firstOffer.instructors as any)?.name || "your instructor";
       
       const slotsText = bookedSlots.length === 1 
         ? bookedSlots[0]
         : `${bookedSlots.length} slots`;
+
+      // Send branded confirmation SMS from "EveryDriver"
+      const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+      const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+      const twilioMessagingServiceSid = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID");
+
+      if (twilioAccountSid && twilioAuthToken && twilioMessagingServiceSid) {
+        try {
+          const confirmationMessage = bookedSlots.length === 1
+            ? `✅ Booking Confirmed!\n\nHi ${pupilName.split(' ')[0]}, your lesson with ${instructorName} is booked for:\n\n📅 ${bookedSlots[0]}\n\nSee you then! - EveryDriver`
+            : `✅ Bookings Confirmed!\n\nHi ${pupilName.split(' ')[0]}, your ${bookedSlots.length} lessons with ${instructorName} are booked:\n\n${bookedSlots.map(s => `📅 ${s}`).join('\n')}\n\nSee you then! - EveryDriver`;
+
+          const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+          const credentials = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
+
+          const confirmSmsBody = new URLSearchParams({
+            To: normalizedPhone,
+            Body: confirmationMessage,
+            MessagingServiceSid: twilioMessagingServiceSid,
+          });
+
+          const smsResponse = await fetch(twilioUrl, {
+            method: "POST",
+            headers: {
+              "Authorization": `Basic ${credentials}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: confirmSmsBody,
+          });
+
+          const smsResult = await smsResponse.json();
+          if (smsResponse.ok) {
+            console.log(`Branded confirmation SMS sent to ${normalizedPhone}: ${smsResult.sid}`);
+          } else {
+            console.error("Failed to send confirmation SMS:", smsResult);
+          }
+        } catch (smsError) {
+          console.error("Error sending confirmation SMS:", smsError);
+        }
+      }
 
       const notification = {
         title: bookedSlots.length === 1 ? "🎉 Gap Filled!" : "🎉 Multiple Gaps Filled!",
