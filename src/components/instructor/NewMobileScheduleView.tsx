@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isToday } from "date-fns";
-import { Calendar, Loader2, AlertCircle } from "lucide-react";
+import { Calendar, Loader2, AlertCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,6 +17,7 @@ import { ScheduleDayTabs } from "./ScheduleDayTabs";
 import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
+import { AddLessonSheet } from "./AddLessonSheet";
 
 interface ScheduledLesson {
   id: string;
@@ -52,6 +53,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
+  const [addLessonOpen, setAddLessonOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
 
@@ -203,14 +205,24 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         onSelectDate={setSelectedDate} 
       />
 
-      {/* Lesson Count */}
+      {/* Header with Lesson Count + Add Button */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
-          {format(selectedDate, "EEEE")}
-        </h2>
-        <span className="text-sm text-muted-foreground">
-          {lessonCount} {lessonCount === 1 ? "lesson" : "lessons"}
-        </span>
+        <div>
+          <h2 className="text-lg font-semibold">
+            {format(selectedDate, "EEEE")}
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            {lessonCount} {lessonCount === 1 ? "lesson" : "lessons"}
+          </span>
+        </div>
+        <Button 
+          size="sm" 
+          onClick={() => setAddLessonOpen(true)}
+          className="gap-1.5"
+        >
+          <Plus className="h-4 w-4" />
+          Add Lesson
+        </Button>
       </div>
 
       {/* Lessons List */}
@@ -286,6 +298,15 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           onRescheduled={fetchLessons}
         />
       )}
+
+      {/* Add Lesson Sheet */}
+      <AddLessonSheet
+        open={addLessonOpen}
+        onOpenChange={setAddLessonOpen}
+        instructorId={instructorId}
+        defaultDate={selectedDate}
+        onSuccess={fetchLessons}
+      />
     </div>
   );
 }
