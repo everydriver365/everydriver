@@ -39,6 +39,7 @@ import {
 import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
+import { InstructorNotificationsDropdown } from "@/components/instructor/InstructorNotificationsDropdown";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -187,20 +188,11 @@ export function InstructorMobileHome({
             <CalendarClock className="h-5 w-5" />
           </Button>
 
-          {/* Notifications/Alerts Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8 relative"
-            onClick={() => navigate("/instructor/jobs")}
-          >
-            <Bell className="h-5 w-5" />
-            {pendingJobsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-primary">
-                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-              </span>
-            )}
-          </Button>
+          {/* Notifications/Alerts Dropdown */}
+          <InstructorNotificationsDropdown 
+            instructorId={instructorId} 
+            pendingJobsCount={pendingJobsCount}
+          />
 
           {/* Settings Dropdown - includes theme options */}
           <DropdownMenu>
