@@ -108,7 +108,7 @@ export function DynamicCourseCard({
         }`}
       >
         {/* Front of Card */}
-        <div className="overflow-hidden border border-border/50 shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15" style={{ backgroundColor: "#e9f4f9" }}>
+        <div className="overflow-hidden border border-border/50 bg-white shadow-lg shadow-black/10 [backface-visibility:hidden] transition-shadow duration-300 group-hover:shadow-xl group-hover:shadow-black/15">
           {/* Badges Row */}
           <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-1.5">
             {isPopular && (

@@ -79,7 +79,7 @@ export function MobileCourseCard({ course, index }: MobileCourseCardProps) {
       transition={{ delay: index * 0.05 }}
     >
       <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="course" className="border rounded-xl shadow-sm overflow-hidden" style={{ backgroundColor: "#e9f4f9" }}>
+        <AccordionItem value="course" className="border rounded-xl bg-white shadow-sm overflow-hidden">
           <AccordionTrigger className="px-3 py-3 hover:no-underline [&[data-state=open]>div>.chevron]:rotate-180">
             <div className="flex items-center gap-3 w-full">
               {/* Course Image */}
