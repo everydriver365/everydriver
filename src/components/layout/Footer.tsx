@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
-import mainLogo from "@/assets/everydriver-logo-main.png";
 
 export function Footer() {
-  const logo = mainLogo;
+  const logo = "/everydriver-logo-main.png";
   const logoAlt = "EveryDriver";
   const homeLink = "/";
 
