@@ -39,7 +39,7 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
   const slug = instructor.app_slug;
   const primaryColor = instructor.brand_colour || "#1e3a5f";
   const secondaryColor = instructor.secondary_colour || "#3b82f6";
-  const headerBg = instructor.website_header_bg || primaryColor;
+  const headerBg = instructor.website_header_bg || "#0b4089";
   const buttonColor = instructor.website_button_color || secondaryColor;
   const footerBg = instructor.website_footer_bg || "#111827";
   const fontFamily = instructor.website_font || "Inter";
