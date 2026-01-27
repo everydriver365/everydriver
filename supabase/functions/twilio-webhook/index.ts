@@ -6,6 +6,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Parse multiple slot numbers from response (e.g., "1 and 3", "1,3", "1 3", "1, 2, 3")
+function parseSlotNumbers(body: string): number[] {
+  // Remove common words and split by various separators
+  const cleaned = body
+    .replace(/\band\b/gi, " ")
+    .replace(/[,;]/g, " ");
+  
+  const numbers: number[] = [];
+  const matches = cleaned.match(/\d+/g);
+  
+  if (matches) {
+    for (const match of matches) {
+      const num = parseInt(match, 10);
+      if (num >= 1 && num <= 5 && !numbers.includes(num)) {
+        numbers.push(num);
+      }
+    }
+  }
+  
+  return numbers.sort((a, b) => a - b);
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -35,121 +57,27 @@ const handler = async (req: Request): Promise<Response> => {
     // Normalize phone number (remove spaces, ensure format)
     const normalizedPhone = from.replace(/\s+/g, "");
 
-    // Check if response is a number (slot selection)
-    const slotNumber = parseInt(body, 10);
-    const isNumericReply = !isNaN(slotNumber) && slotNumber >= 1 && slotNumber <= 5;
+    // Parse slot numbers from response (supports "1", "1,3", "1 and 3", etc.)
+    const slotNumbers = parseSlotNumbers(body);
+    const hasNumericReply = slotNumbers.length > 0;
 
     // Check for yes/no responses
-    const isAccepted = ["yes", "y", "book", "confirm", "ok", "sure", "please"].some(
+    const isAccepted = ["yes", "y", "book", "confirm", "ok", "sure", "please", "all"].some(
       keyword => body.includes(keyword)
     );
     const isDeclined = ["no", "n", "cancel", "decline", "pass", "skip"].some(
       keyword => body.includes(keyword)
     );
 
-    let selectedOffer = null;
-    let siblingOffers: any[] = [];
-
-    if (isNumericReply) {
-      // Find the specific slot by number for this phone
-      const { data: offers, error: offersError } = await supabase
+    // Handle decline
+    if (isDeclined && !hasNumericReply) {
+      const { data: offers } = await supabase
         .from("gap_offers")
-        .select(`
-          id,
-          instructor_id,
-          pupil_id,
-          slot_date,
-          slot_start_time,
-          slot_end_time,
-          discount_type,
-          discount_value,
-          slot_number,
-          batch_id,
-          instructors!inner(id, name, auth_user_id),
-          pupils!inner(id, name)
-        `)
-        .eq("pupil_phone", normalizedPhone)
-        .eq("status", "pending")
-        .eq("slot_number", slotNumber)
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (offersError) {
-        console.error("Error fetching offers:", offersError);
-        throw offersError;
-      }
-
-      if (offers && offers.length > 0) {
-        selectedOffer = offers[0];
-        
-        // Get sibling offers from same batch to mark as passed
-        if (selectedOffer.batch_id) {
-          const { data: siblings } = await supabase
-            .from("gap_offers")
-            .select("id")
-            .eq("batch_id", selectedOffer.batch_id)
-            .eq("status", "pending")
-            .neq("id", selectedOffer.id);
-          
-          siblingOffers = siblings || [];
-        }
-      } else {
-        console.log(`No pending offer found for slot ${slotNumber} from ${normalizedPhone}`);
-      }
-    } else if (isAccepted) {
-      // YES response - book the first available slot (slot_number = 1 or earliest)
-      const { data: offers, error: offersError } = await supabase
-        .from("gap_offers")
-        .select(`
-          id,
-          instructor_id,
-          pupil_id,
-          slot_date,
-          slot_start_time,
-          slot_end_time,
-          discount_type,
-          discount_value,
-          slot_number,
-          batch_id,
-          instructors!inner(id, name, auth_user_id),
-          pupils!inner(id, name)
-        `)
-        .eq("pupil_phone", normalizedPhone)
-        .eq("status", "pending")
-        .order("slot_number", { ascending: true })
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (offersError) {
-        console.error("Error fetching offers:", offersError);
-        throw offersError;
-      }
-
-      if (offers && offers.length > 0) {
-        selectedOffer = offers[0];
-        
-        // Get sibling offers from same batch
-        if (selectedOffer.batch_id) {
-          const { data: siblings } = await supabase
-            .from("gap_offers")
-            .select("id")
-            .eq("batch_id", selectedOffer.batch_id)
-            .eq("status", "pending")
-            .neq("id", selectedOffer.id);
-          
-          siblingOffers = siblings || [];
-        }
-      }
-    } else if (isDeclined) {
-      // NO response - decline all pending offers for this phone
-      const { data: offers, error: offersError } = await supabase
-        .from("gap_offers")
-        .select("id, batch_id")
+        .select("id")
         .eq("pupil_phone", normalizedPhone)
         .eq("status", "pending");
 
-      if (!offersError && offers && offers.length > 0) {
-        // Update all pending offers to declined
+      if (offers && offers.length > 0) {
         await supabase
           .from("gap_offers")
           .update({
@@ -169,109 +97,186 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // If no offer selected and not a decline, return empty response
-    if (!selectedOffer) {
-      if (!isDeclined) {
-        console.log(`No pending offers found or unrecognized response: "${body}" from ${normalizedPhone}`);
+    // Determine which slots to book
+    let slotsToBook: number[] = [];
+    
+    if (hasNumericReply) {
+      slotsToBook = slotNumbers;
+    } else if (isAccepted) {
+      // YES/ALL - book all available slots (or just first one for "yes")
+      if (body.includes("all")) {
+        slotsToBook = [1, 2, 3, 4, 5]; // Will filter to available ones
+      } else {
+        slotsToBook = [1]; // Just first slot for simple YES
       }
+    }
+
+    if (slotsToBook.length === 0) {
+      console.log(`Unrecognized response: "${body}" from ${normalizedPhone}`);
       return new Response(
         '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
         { headers: { ...corsHeaders, "Content-Type": "text/xml" } }
       );
     }
 
-    // Update the selected offer status to accepted
-    const { error: updateError } = await supabase
+    // Fetch pending offers for this phone number
+    const { data: pendingOffers, error: offersError } = await supabase
       .from("gap_offers")
-      .update({
-        status: "accepted",
-        responded_at: new Date().toISOString(),
-        response_message: body,
-      })
-      .eq("id", selectedOffer.id);
+      .select(`
+        id,
+        instructor_id,
+        pupil_id,
+        slot_date,
+        slot_start_time,
+        slot_end_time,
+        discount_type,
+        discount_value,
+        slot_number,
+        batch_id,
+        instructors!inner(id, name, auth_user_id),
+        pupils!inner(id, name)
+      `)
+      .eq("pupil_phone", normalizedPhone)
+      .eq("status", "pending")
+      .in("slot_number", slotsToBook)
+      .order("slot_number", { ascending: true });
 
-    if (updateError) {
-      console.error("Error updating offer:", updateError);
-      throw updateError;
+    if (offersError) {
+      console.error("Error fetching offers:", offersError);
+      throw offersError;
     }
 
-    console.log(`Offer ${selectedOffer.id} (slot ${selectedOffer.slot_number}) updated to accepted`);
+    if (!pendingOffers || pendingOffers.length === 0) {
+      console.log(`No pending offers found for slots ${slotsToBook.join(", ")} from ${normalizedPhone}`);
+      return new Response(
+        '<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+        { headers: { ...corsHeaders, "Content-Type": "text/xml" } }
+      );
+    }
 
-    // Mark sibling offers as passed (not selected)
-    if (siblingOffers.length > 0) {
-      const siblingIds = siblingOffers.map(s => s.id);
-      await supabase
+    // Book all selected slots
+    const bookedSlots: string[] = [];
+    const batchIds = new Set<string>();
+
+    for (const offer of pendingOffers) {
+      // Update offer status to accepted
+      const { error: updateError } = await supabase
         .from("gap_offers")
         .update({
-          status: "passed",
+          status: "accepted",
           responded_at: new Date().toISOString(),
-          response_message: `Pupil selected slot ${selectedOffer.slot_number}`,
+          response_message: body,
         })
-        .in("id", siblingIds);
+        .eq("id", offer.id);
 
-      console.log(`Marked ${siblingIds.length} sibling offers as passed`);
+      if (updateError) {
+        console.error(`Error updating offer ${offer.id}:`, updateError);
+        continue;
+      }
+
+      console.log(`Offer ${offer.id} (slot ${offer.slot_number}) updated to accepted`);
+
+      // Create the scheduled lesson
+      const { data: lessonData, error: lessonError } = await supabase
+        .from("scheduled_lessons")
+        .insert({
+          instructor_id: offer.instructor_id,
+          pupil_id: offer.pupil_id,
+          lesson_date: offer.slot_date,
+          start_time: offer.slot_start_time,
+          end_time: offer.slot_end_time,
+          status: "scheduled",
+          notes: `Booked via SMS gap offer${offer.discount_type ? ` (${offer.discount_type === 'percentage' ? offer.discount_value + '%' : '£' + offer.discount_value} discount applied)` : ''}`,
+        })
+        .select("id")
+        .single();
+
+      if (lessonError) {
+        console.error("Error creating lesson:", lessonError);
+      } else {
+        console.log(`Created lesson ${lessonData.id} from gap offer ${offer.id}`);
+        
+        const date = new Date(offer.slot_date);
+        const dayName = date.toLocaleDateString("en-GB", { weekday: "short" });
+        const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+        bookedSlots.push(`${dayName} ${dateStr} ${offer.slot_start_time}-${offer.slot_end_time}`);
+      }
+
+      if (offer.batch_id) {
+        batchIds.add(offer.batch_id);
+      }
     }
 
-    // Create the scheduled lesson
-    const pupilName = (selectedOffer.pupils as any)?.name || "A pupil";
-    const date = new Date(selectedOffer.slot_date);
-    const dayName = date.toLocaleDateString("en-GB", { weekday: "short" });
-    const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    // Mark remaining offers from the same batch(es) as passed
+    if (batchIds.size > 0) {
+      const bookedOfferIds = pendingOffers.map(o => o.id);
+      
+      for (const batchId of batchIds) {
+        const { data: siblings } = await supabase
+          .from("gap_offers")
+          .select("id")
+          .eq("batch_id", batchId)
+          .eq("status", "pending")
+          .not("id", "in", `(${bookedOfferIds.join(",")})`);
 
-    const { data: lessonData, error: lessonError } = await supabase
-      .from("scheduled_lessons")
-      .insert({
-        instructor_id: selectedOffer.instructor_id,
-        pupil_id: selectedOffer.pupil_id,
-        lesson_date: selectedOffer.slot_date,
-        start_time: selectedOffer.slot_start_time,
-        end_time: selectedOffer.slot_end_time,
-        status: "scheduled",
-        notes: `Booked via SMS gap offer${selectedOffer.discount_type ? ` (${selectedOffer.discount_type === 'percentage' ? selectedOffer.discount_value + '%' : '£' + selectedOffer.discount_value} discount applied)` : ''}`,
-      })
-      .select("id")
-      .single();
+        if (siblings && siblings.length > 0) {
+          await supabase
+            .from("gap_offers")
+            .update({
+              status: "passed",
+              responded_at: new Date().toISOString(),
+              response_message: `Pupil selected slot(s) ${slotsToBook.join(", ")}`,
+            })
+            .in("id", siblings.map(s => s.id));
 
-    if (lessonError) {
-      console.error("Error creating lesson:", lessonError);
-    } else {
-      console.log(`Created lesson ${lessonData.id} from gap offer ${selectedOffer.id}`);
+          console.log(`Marked ${siblings.length} sibling offers as passed`);
+        }
+      }
     }
 
     // Send push notification to instructor
-    const notification = {
-      title: "🎉 Gap Filled!",
-      body: `${pupilName} accepted your slot: ${dayName} ${dateStr} ${selectedOffer.slot_start_time}-${selectedOffer.slot_end_time}`,
-      tag: `gap-filled-${selectedOffer.id}`,
-      data: {
-        type: "gap_filled",
-        offerId: selectedOffer.id,
-        pupilId: selectedOffer.pupil_id,
-        slotDate: selectedOffer.slot_date,
-        slotTime: selectedOffer.slot_start_time,
-        url: "/instructor/calendar",
-      },
-      requireInteraction: true,
-    };
+    if (bookedSlots.length > 0 && pendingOffers.length > 0) {
+      const firstOffer = pendingOffers[0];
+      const pupilName = (firstOffer.pupils as any)?.name || "A pupil";
+      
+      const slotsText = bookedSlots.length === 1 
+        ? bookedSlots[0]
+        : `${bookedSlots.length} slots`;
 
-    // Call the push notification function
-    try {
-      const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${supabaseServiceKey}`,
+      const notification = {
+        title: bookedSlots.length === 1 ? "🎉 Gap Filled!" : "🎉 Multiple Gaps Filled!",
+        body: `${pupilName} booked ${slotsText}`,
+        tag: `gap-filled-${firstOffer.id}`,
+        data: {
+          type: "gap_filled",
+          offerId: firstOffer.id,
+          pupilId: firstOffer.pupil_id,
+          slotDate: firstOffer.slot_date,
+          slotTime: firstOffer.slot_start_time,
+          url: "/instructor/calendar",
+          bookedCount: bookedSlots.length,
         },
-        body: JSON.stringify({
-          instructorId: selectedOffer.instructor_id,
-          notification,
-        }),
-      });
+        requireInteraction: true,
+      };
 
-      const pushResult = await pushResponse.json();
-      console.log("Push notification result:", pushResult);
-    } catch (pushError) {
-      console.error("Error sending push notification:", pushError);
+      try {
+        const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            instructorId: firstOffer.instructor_id,
+            notification,
+          }),
+        });
+
+        const pushResult = await pushResponse.json();
+        console.log("Push notification result:", pushResult);
+      } catch (pushError) {
+        console.error("Error sending push notification:", pushError);
+      }
     }
 
     // Return TwiML response (empty, Twilio expects XML)
