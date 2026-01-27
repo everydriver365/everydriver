@@ -27,7 +27,12 @@ import {
   Car,
   Radio,
   PoundSterling,
-  QrCode
+  QrCode,
+  MoreVertical,
+  UserCheck,
+  UserX,
+  Pause,
+  XCircle
 } from "lucide-react";
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
@@ -41,6 +46,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { LessonNotesTemplates } from "@/components/instructor/LessonNotesTemplates";
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,7 +96,18 @@ interface Pupil {
   deposit_paid?: number | null;
   balance_due_date?: string | null;
   deposit_forfeited?: boolean | null;
+  status?: string;
 }
+
+type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
+
+const statusConfig: Record<PupilStatus, { label: string; color: string; icon: React.ComponentType<any> }> = {
+  active: { label: 'Active', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-200', icon: UserCheck },
+  passed: { label: 'Passed', color: 'bg-primary/10 text-primary border-primary/20', icon: GraduationCap },
+  inactive: { label: 'Inactive', color: 'bg-muted text-muted-foreground border-border', icon: UserX },
+  on_hold: { label: 'On Hold', color: 'bg-amber-500/10 text-amber-600 border-amber-200', icon: Pause },
+  cancelled: { label: 'Cancelled', color: 'bg-destructive/10 text-destructive border-destructive/20', icon: XCircle },
+};
 
 interface LatestFeedback {
   id: string;
@@ -102,6 +126,7 @@ interface ExpandablePupilCardProps {
   onStartChat?: (pupil: Pupil) => void;
   onRecordTestResult?: (pupil: Pupil, isMock: boolean) => void;
   onViewTestHistory?: (pupil: Pupil) => void;
+  onStatusChange?: (pupilId: string, newStatus: PupilStatus) => void;
   hasSignedTerms?: boolean;
   instructorId?: string;
   instructorName?: string;
@@ -129,12 +154,15 @@ export function ExpandablePupilCard({
   onStartChat,
   onRecordTestResult,
   onViewTestHistory,
+  onStatusChange,
   hasSignedTerms,
   instructorId,
   instructorName,
   isTracking = false,
   paymentQrUrl,
 }: ExpandablePupilCardProps) {
+  const [changingStatus, setChangingStatus] = useState(false);
+  const currentStatus = (pupil.status || 'active') as PupilStatus;
   const [isExpanded, setIsExpanded] = useState(false);
   const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
   const [isAddingFeedback, setIsAddingFeedback] = useState(false);
@@ -343,6 +371,28 @@ export function ExpandablePupilCard({
     }
   };
 
+  const handleStatusChange = async (newStatus: PupilStatus) => {
+    if (newStatus === currentStatus) return;
+    
+    setChangingStatus(true);
+    try {
+      const { error } = await supabase
+        .from('pupils')
+        .update({ status: newStatus })
+        .eq('id', pupil.id);
+
+      if (error) throw error;
+      
+      toast.success(`Status updated to ${statusConfig[newStatus].label}`);
+      onStatusChange?.(pupil.id, newStatus);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Failed to update status');
+    } finally {
+      setChangingStatus(false);
+    }
+  };
+
   const getInitials = (name: string) => {
     return name.split(" ").map((n) => n[0]).join("").toUpperCase();
   };
@@ -394,6 +444,47 @@ export function ExpandablePupilCard({
           
           {/* Badges row - separate line */}
           <div className="flex items-center gap-1.5 flex-wrap mb-2">
+            {/* Status Badge with Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <button className="focus:outline-none">
+                  <Badge 
+                    className={`${statusConfig[currentStatus].color} text-xs gap-1 cursor-pointer hover:opacity-80 transition-opacity`}
+                  >
+                    {(() => {
+                      const StatusIcon = statusConfig[currentStatus].icon;
+                      return <StatusIcon className="h-3 w-3" />;
+                    })()}
+                    {statusConfig[currentStatus].label}
+                    {changingStatus && <Clock className="h-3 w-3 animate-spin ml-0.5" />}
+                  </Badge>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-40 bg-background z-50" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuLabel className="text-xs">Change Status</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {(Object.keys(statusConfig) as PupilStatus[]).map((status) => {
+                  const config = statusConfig[status];
+                  const Icon = config.icon;
+                  return (
+                    <DropdownMenuItem
+                      key={status}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusChange(status);
+                      }}
+                      className={status === currentStatus ? "bg-muted" : ""}
+                      disabled={changingStatus}
+                    >
+                      <Icon className="h-4 w-4 mr-2" />
+                      {config.label}
+                      {status === currentStatus && <Check className="h-4 w-4 ml-auto" />}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Currently Tracking Badge */}
             {isTracking && (
               <Badge className="bg-primary/10 text-primary border-primary/20 text-xs gap-1 animate-pulse">

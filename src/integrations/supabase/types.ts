@@ -4237,6 +4237,7 @@ export type Database = {
           reward_points: number | null
           scheduling_status: string | null
           speeding_events_total: number | null
+          status: string
           test_attempts: number | null
           test_centre_id: string | null
           test_date: string | null
@@ -4295,6 +4296,7 @@ export type Database = {
           reward_points?: number | null
           scheduling_status?: string | null
           speeding_events_total?: number | null
+          status?: string
           test_attempts?: number | null
           test_centre_id?: string | null
           test_date?: string | null
@@ -4353,6 +4355,7 @@ export type Database = {
           reward_points?: number | null
           scheduling_status?: string | null
           speeding_events_total?: number | null
+          status?: string
           test_attempts?: number | null
           test_centre_id?: string | null
           test_date?: string | null
