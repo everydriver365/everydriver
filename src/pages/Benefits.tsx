@@ -59,45 +59,51 @@ export default function Benefits() {
         </div>
       )}
 
-      {/* Features Accordion */}
+      {/* Features List */}
       {!loading && (
-        <div className="px-4">
-          <Accordion type="single" collapsible className="space-y-3">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon || Star;
-              return (
-                <motion.div
-                  key={feature.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
+        <div className="px-4 space-y-3">
+          {features.map((feature, index) => {
+            const IconComponent = feature.icon || Star;
+            return (
+              <motion.div
+                key={feature.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Accordion type="single" collapsible>
                   <AccordionItem 
                     value={feature.id} 
-                    className="bg-card border rounded-xl overflow-hidden"
+                    className="bg-[#e9f4f9] border rounded-xl overflow-hidden"
                   >
-                    {/* Feature Image */}
-                    {feature.image_url && (
-                      <div className="h-28 w-full overflow-hidden">
-                        <img 
-                          src={feature.image_url} 
-                          alt={feature.title} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    {/* Text Content */}
-                    <div className="p-3 border-b">
-                      <h3 className="font-bold text-foreground text-sm">{feature.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">{feature.description}</p>
-                    </div>
-                    <AccordionTrigger className="hover:no-underline py-3 px-4">
-                      <div className="flex items-center gap-2 text-left w-full">
-                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="h-4 w-4 text-primary" />
+                    {/* Horizontal layout: Image left, content right */}
+                    <div className="flex">
+                      {/* Left: Image */}
+                      {feature.image_url && (
+                        <div className="w-24 h-24 flex-shrink-0">
+                          <img 
+                            src={feature.image_url} 
+                            alt={feature.title} 
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        <span className="text-xs text-muted-foreground">Tap to learn more</span>
+                      )}
+                      {/* Right: Text Content */}
+                      <div className="flex-1 p-3 flex flex-col justify-center">
+                        <div className="flex items-start gap-2">
+                          <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <IconComponent className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-foreground text-sm leading-tight">{feature.title}</h3>
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{feature.description}</p>
+                          </div>
+                        </div>
                       </div>
+                    </div>
+                    
+                    <AccordionTrigger className="hover:no-underline py-2 px-4 border-t border-border/30">
+                      <span className="text-xs text-muted-foreground">Tap to learn more</span>
                     </AccordionTrigger>
                     <AccordionContent className="pb-4 px-4 pt-0">
                       <div className="text-sm text-muted-foreground leading-relaxed space-y-3">
@@ -109,10 +115,10 @@ export default function Benefits() {
                       </div>
                     </AccordionContent>
                   </AccordionItem>
-                </motion.div>
-              );
-            })}
-          </Accordion>
+                </Accordion>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 
