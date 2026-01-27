@@ -585,7 +585,8 @@ export default function Index() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 + index * 0.05 }}
                   viewport={{ once: true }}
-                  className="group overflow-hidden rounded-2xl bg-white shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+                  className="group overflow-hidden rounded-2xl shadow-md transition-shadow hover:shadow-xl cursor-pointer"
+                  style={{ backgroundColor: "#e9f4f9" }}
                   onClick={() => openFeatureModal(feature)}
                 >
                   <div className="relative h-40 overflow-hidden">
