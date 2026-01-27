@@ -8,7 +8,7 @@ import { useBookingUpsells } from "@/hooks/useBookingUpsells";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import heroLearnerMobile from "@/assets/mobile-hero.png";
-import logo from "@/assets/everydriver-logo-main.png";
+
 import logoKlarna from "@/assets/logo-klarna.png";
 import logoClearpay from "@/assets/logo-clearpay.webp";
 import logoIdeal4Finance from "@/assets/logo-ideal4finance.png";
@@ -543,7 +543,7 @@ export function MobileHomepage() {
         <SheetContent side="left" className="w-[280px] p-0">
           <SheetHeader className="p-4 border-b bg-primary">
             <SheetTitle className="flex items-center gap-3">
-              <img src={logo} alt="EveryDriver" className="h-8" />
+              <img src="/everydriver-logo-main.png" alt="EveryDriver" className="h-7" />
             </SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col p-2">
