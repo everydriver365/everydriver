@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MainLayout } from '@/components/layout/MainLayout';
+
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
@@ -168,17 +168,17 @@ export default function AdminLogin() {
   };
 
   return (
-    <MainLayout>
-      <div className="container flex min-h-[60vh] items-center justify-center py-12">
+    <div className="min-h-screen w-full flex flex-col bg-primary">
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md"
         >
-          <Card>
+          <Card className="border-0 shadow-xl">
             <CardHeader className="text-center">
-              <div className="mb-2 mx-auto inline-block">
-                <img src="/everydriver-logo-admin.png" alt="Every Driver" className="h-10 mx-auto" />
+              <div className="mb-4 mx-auto inline-block">
+                <img src="/everydriver-logo-main.png" alt="EveryDriver" className="h-12 mx-auto" />
               </div>
               <CardTitle>{getTitle()}</CardTitle>
               <CardDescription>{getDescription()}</CardDescription>
@@ -328,6 +328,6 @@ export default function AdminLogin() {
           </Card>
         </motion.div>
       </div>
-    </MainLayout>
+    </div>
   );
 }
