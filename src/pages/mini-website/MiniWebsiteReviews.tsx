@@ -127,7 +127,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card>
+                <Card style={{ backgroundColor: "#e9f4f9" }}>
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -167,7 +167,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
             ))}
           </div>
         ) : (
-          <Card>
+          <Card style={{ backgroundColor: "#e9f4f9" }}>
             <CardContent className="p-8 text-center">
               <p className="text-gray-500">No reviews yet. Be the first to leave a review!</p>
             </CardContent>

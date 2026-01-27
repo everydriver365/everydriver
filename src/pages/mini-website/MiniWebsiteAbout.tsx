@@ -65,7 +65,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
       {/* Content */}
       <section className="max-w-4xl mx-auto px-4 py-12 space-y-8">
         {/* Profile Card */}
-        <Card>
+        <Card style={{ backgroundColor: "#e9f4f9" }}>
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-6">
               {instructor.profile_image_url ? (
@@ -109,7 +109,7 @@ export default function MiniWebsiteAbout({ subdomainSlug }: MiniWebsiteAboutProp
 
         {/* Vehicle Info */}
         {(instructor.car_make || instructor.car_model) && (
-          <Card>
+          <Card style={{ backgroundColor: "#e9f4f9" }}>
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold mb-4" style={{ color: primaryColor }}>
                 Training Vehicle

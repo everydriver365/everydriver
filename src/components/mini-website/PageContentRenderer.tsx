@@ -30,7 +30,7 @@ export function PageContentRenderer({
         switch (block.type) {
           case "text":
             return (
-              <Card key={index}>
+              <Card key={index} style={{ backgroundColor: "#e9f4f9" }}>
                 <CardContent className="p-6">
                   {block.title && (
                     <h3
@@ -54,7 +54,7 @@ export function PageContentRenderer({
 
           case "features":
             return (
-              <Card key={index}>
+              <Card key={index} style={{ backgroundColor: "#e9f4f9" }}>
                 <CardContent className="p-6">
                   {block.title && (
                     <h3
@@ -88,7 +88,7 @@ export function PageContentRenderer({
 
           case "image":
             return block.image_url ? (
-              <Card key={index} className="overflow-hidden">
+              <Card key={index} className="overflow-hidden" style={{ backgroundColor: "#e9f4f9" }}>
                 <img
                   src={block.image_url}
                   alt={block.title || "Image"}
