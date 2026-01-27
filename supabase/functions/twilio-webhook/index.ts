@@ -102,13 +102,35 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Offer ${offer.id} updated to ${newStatus}`);
 
-    // If accepted, send push notification to instructor
+    // If accepted, create the lesson and notify the instructor
     if (isAccepted) {
       const pupilName = (offer.pupils as any)?.name || "A pupil";
       const date = new Date(offer.slot_date);
       const dayName = date.toLocaleDateString("en-GB", { weekday: "short" });
       const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
+      // Create the scheduled lesson
+      const { data: lessonData, error: lessonError } = await supabase
+        .from("scheduled_lessons")
+        .insert({
+          instructor_id: offer.instructor_id,
+          pupil_id: offer.pupil_id,
+          lesson_date: offer.slot_date,
+          start_time: offer.slot_start_time,
+          end_time: offer.slot_end_time,
+          status: "scheduled",
+          notes: `Booked via SMS gap offer${offer.discount_type ? ` (${offer.discount_type === 'percentage' ? offer.discount_value + '%' : '£' + offer.discount_value} discount applied)` : ''}`,
+        })
+        .select("id")
+        .single();
+
+      if (lessonError) {
+        console.error("Error creating lesson:", lessonError);
+      } else {
+        console.log(`Created lesson ${lessonData.id} from gap offer ${offer.id}`);
+      }
+
+      // Send push notification to instructor
       const notification = {
         title: "🎉 Gap Filled!",
         body: `${pupilName} accepted your slot: ${dayName} ${dateStr} ${offer.slot_start_time}-${offer.slot_end_time}`,
@@ -142,11 +164,7 @@ const handler = async (req: Request): Promise<Response> => {
         console.log("Push notification result:", pushResult);
       } catch (pushError) {
         console.error("Error sending push notification:", pushError);
-        // Don't fail the webhook if push fails
       }
-
-      // Optionally create a scheduled lesson (if you want auto-booking)
-      // This could be enabled via instructor settings
     }
 
     // Return TwiML response (empty, Twilio expects XML)
