@@ -69,12 +69,15 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Format slots for message
-    const slotsText = slots.slice(0, 5).map(slot => {
+    // Limit to 5 slots max
+    const slotsToSend = slots.slice(0, 5);
+    
+    // Format slots for message with numbers
+    const slotsText = slotsToSend.map((slot, index) => {
       const date = new Date(slot.date);
       const dayName = date.toLocaleDateString("en-GB", { weekday: "short" });
       const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-      return `${dayName} ${dateStr} ${slot.startTime}-${slot.endTime}`;
+      return `${index + 1}. ${dayName} ${dateStr} ${slot.startTime}-${slot.endTime}`;
     }).join("\n");
 
     // Build discount text
@@ -87,14 +90,23 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Build reply instructions based on number of slots
+    const replyInstructions = slotsToSend.length > 1
+      ? `Reply with the number (1-${slotsToSend.length}) to book, or NO to pass!`
+      : `Reply YES to book or NO to pass!`;
+
     // Send SMS to each pupil and track offers
     const results = [];
     for (const pupil of pupils) {
       if (!pupil.phone) continue;
 
-      // For each slot, create a gap offer record
+      // Generate a batch ID to group offers for this pupil in this send
+      const batchId = crypto.randomUUID();
+
+      // For each slot, create a gap offer record with slot number
       const slotOffers = [];
-      for (const slot of slots.slice(0, 5)) {
+      for (let i = 0; i < slotsToSend.length; i++) {
+        const slot = slotsToSend[i];
         const { data: offerData, error: offerError } = await supabase
           .from("gap_offers")
           .insert({
@@ -107,6 +119,8 @@ const handler = async (req: Request): Promise<Response> => {
             discount_type: discountType,
             discount_value: discountValue,
             status: "pending",
+            slot_number: i + 1,
+            batch_id: batchId,
           })
           .select("id")
           .single();
@@ -117,7 +131,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const message = customMessage || 
-        `Hi ${pupil.name}! I have some lesson slots available:\n\n${slotsText}${discountText}\n\nReply YES to book or NO to pass! - ${instructorName}`;
+        `Hi ${pupil.name}! I have some short notice lesson slots available if you want one:\n\n${slotsText}${discountText}\n\n${replyInstructions} - ${instructorName}`;
 
       try {
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
