@@ -24,11 +24,14 @@ import {
   ClipboardList,
   Award,
   ChevronRight,
-  Radio
+  Radio,
+  Menu,
+  X
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -77,6 +80,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const isMobile = useIsMobile();
   const { resolvedTheme, setTheme } = useTheme();
   const [showQRModal, setShowQRModal] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -85,6 +89,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const handleSignOut = async () => {
     await signOut();
     navigate("/instructor-app/login");
+  };
+
+  const handleNavClick = (href: string) => {
+    navigate(href);
+    setIsMobileMenuOpen(false);
   };
 
   if (loading) {
@@ -105,21 +114,107 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         {/* iOS Install Banner */}
         <IOSInstallBanner />
         
-        {/* Mobile Header - White with contrasting icons */}
-        <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm">
+        {/* Mobile Header - White with hamburger menu on left */}
+        <header className="sticky top-0 z-40 bg-white dark:bg-card border-b border-border shadow-sm">
           <div className="flex items-center justify-between px-4 h-14">
-            {/* Left: Back button + Logo */}
-            <div className="flex items-center gap-2">
-              {showBackButton && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => navigate("/instructor")}
-                  className="text-foreground/80 hover:text-foreground hover:bg-muted -ml-2 h-8 w-8"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              )}
+            {/* Left: Hamburger Menu + Logo */}
+            <div className="flex items-center gap-3">
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-foreground/80 hover:text-foreground hover:bg-muted -ml-2 h-9 w-9"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[280px] p-0">
+                  <SheetHeader className="p-4 border-b">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={instructor?.profile_image_url || undefined} />
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {instructor?.name?.charAt(0) || "I"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
+                        <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+                      </div>
+                    </div>
+                  </SheetHeader>
+                  
+                  {/* Navigation Links */}
+                  <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
+                    {sidebarLinks.map((link) => {
+                      const isActive = location.pathname === link.href;
+                      const isMessages = link.href === "/instructor/messages";
+                      const isAdminChat = link.href === "/instructor/admin-chat";
+                      const isVisitorChats = link.href === "/instructor/visitor-chats";
+                      const isPendingScheduling = link.href === "/instructor/pending-scheduling";
+                      const isHighlighted = 'highlight' in link && link.highlight;
+                      return (
+                        <button
+                          key={link.href}
+                          onClick={() => handleNavClick(link.href)}
+                          className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
+                            isActive
+                              ? "bg-primary text-primary-foreground"
+                              : isHighlighted
+                              ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          )}
+                        >
+                          <span className="relative">
+                            <link.icon className={cn(
+                              "h-5 w-5",
+                              isHighlighted && !isActive && "text-emerald-500"
+                            )} />
+                            {isAdminChat && !isActive && <AdminMessageBadge />}
+                          </span>
+                          {link.label}
+                          {isVisitorChats && !isActive && (
+                            <VisitorChatBadge 
+                              instructorId={instructor?.id} 
+                              className="ml-auto"
+                            />
+                          )}
+                          {isMessages && !isActive && (
+                            <MessageNotificationBadge 
+                              instructorId={instructor?.id} 
+                              className="ml-auto"
+                            />
+                          )}
+                          {isPendingScheduling && !isActive && (
+                            <PendingSchedulingBadge 
+                              instructorId={instructor?.id} 
+                              className="ml-auto"
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </nav>
+                  
+                  {/* Menu Footer */}
+                  <div className="p-3 border-t mt-auto">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-5 w-5 mr-3" />
+                      Sign Out
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+              
               <img 
                 src={instructorMobileLogo} 
                 alt="EveryDriver" 
@@ -127,7 +222,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               />
             </div>
             
-            {/* Right: QR, Availability, Settings, Avatar */}
+            {/* Right: QR, Availability, Avatar */}
             <div className="flex items-center gap-1">
               {instructor?.payment_qr_url && (
                 <Button
@@ -148,15 +243,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               >
                 <CalendarClock className="h-5 w-5" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
+              <Avatar 
+                className="h-9 w-9 border-2 border-border cursor-pointer"
                 onClick={() => navigate("/instructor/settings")}
-                className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
               >
-                <Settings className="h-5 w-5" />
-              </Button>
-              <Avatar className="h-9 w-9 border-2 border-border">
                 <AvatarImage src={instructor?.profile_image_url || undefined} />
                 <AvatarFallback className="bg-emerald-500 text-white text-xs font-semibold">
                   {instructor?.name?.charAt(0) || "I"}
@@ -165,21 +255,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             </div>
           </div>
         </header>
-
-        {/* Breadcrumb - Mobile */}
-        {showBackButton && (
-          <div className="px-4 py-2 bg-muted/30 border-b">
-            <nav className="flex items-center text-sm text-muted-foreground">
-              <Link to="/instructor" className="hover:text-foreground transition-colors">
-                Dashboard
-              </Link>
-              <ChevronRight className="h-4 w-4 mx-2" />
-              <span className="text-foreground font-medium">
-                {sidebarLinks.find(l => l.href === location.pathname)?.label || "Page"}
-              </span>
-            </nav>
-          </div>
-        )}
 
         <main className="px-4 py-4 overflow-x-hidden">
           {children}
