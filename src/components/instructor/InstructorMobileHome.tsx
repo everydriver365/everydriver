@@ -153,8 +153,8 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
-      {/* Header Bar - fixed at top with white background */}
-      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-white border-b border-border shadow-sm">
+      {/* Header Bar - fixed at top matching bottom nav */}
+      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-primary border-b border-primary-foreground/10 shadow-sm">
         {/* Logo on the left */}
         <img 
           src={instructorLogo} 
@@ -169,7 +169,7 @@ export function InstructorMobileHome({
             <Button
               variant="ghost"
               size="sm"
-              className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 px-2"
+              className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
               onClick={onPaymentClick}
             >
               <span className="text-xs font-bold border border-current rounded px-1">QR</span>
@@ -180,7 +180,7 @@ export function InstructorMobileHome({
           <Button
             variant="ghost"
             size="icon"
-            className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
+            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
             onClick={() => navigate("/instructor/availability")}
             title="Quick Availability"
           >
@@ -191,12 +191,12 @@ export function InstructorMobileHome({
           <Button
             variant="ghost"
             size="icon"
-            className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8 relative"
+            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8 relative"
             onClick={() => navigate("/instructor/jobs")}
           >
             <Bell className="h-5 w-5" />
             {pendingJobsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-primary">
                 {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
               </span>
             )}
@@ -208,7 +208,7 @@ export function InstructorMobileHome({
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
+                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
               >
                 <Settings className="h-5 w-5" />
               </Button>
@@ -256,9 +256,9 @@ export function InstructorMobileHome({
           {/* Avatar Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Avatar className="h-9 w-9 border-2 border-white/30 cursor-pointer">
+              <Avatar className="h-9 w-9 border-2 border-primary-foreground/30 cursor-pointer">
                 <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-                <AvatarFallback className="bg-white/20 text-white font-semibold text-sm">
+                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground font-semibold text-sm">
                   {instructor?.name ? getInitials(instructor.name) : "?"}
                 </AvatarFallback>
               </Avatar>
