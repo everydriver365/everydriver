@@ -14,7 +14,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import logo from "@/assets/everydriver-logo-main.png";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
 
 export default function Benefits() {
@@ -34,7 +33,7 @@ export default function Benefits() {
     <div className="min-h-screen bg-background pb-20">
       {/* Header - Primary Blue to match brand */}
       <div className="px-4 py-3 flex items-center justify-center sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
-        <img src={logo} alt="EveryDriver" className="h-10" />
+        <img src="/everydriver-logo-main.png" alt="EveryDriver" className="h-7" />
       </div>
 
       {/* Hero Section */}
