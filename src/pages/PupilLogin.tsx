@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MainLayout } from "@/components/layout/MainLayout";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -160,17 +160,17 @@ export default function PupilLogin() {
   };
 
   return (
-    <MainLayout>
-      <div className="container flex min-h-[70vh] items-center justify-center py-12">
+    <div className="min-h-screen w-full flex flex-col bg-primary">
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md"
         >
-          <Card className="border-2">
+          <Card className="border-0 shadow-xl">
             <CardHeader className="text-center pb-2">
-              <div className="mb-2 mx-auto inline-block">
-                <img src="/everydriver-logo-main.png" alt="EveryDriver" className="h-10 mx-auto" />
+              <div className="mb-4 mx-auto inline-block">
+                <img src="/everydriver-logo-main.png" alt="EveryDriver" className="h-12 mx-auto" />
               </div>
               <CardTitle className="text-2xl">Pupil Login</CardTitle>
               <CardDescription>
@@ -321,6 +321,6 @@ export default function PupilLogin() {
           </Card>
         </motion.div>
       </div>
-    </MainLayout>
+    </div>
   );
 }

@@ -233,7 +233,7 @@ export default function InstructorPortalLogin() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4 py-8">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-primary px-4 py-8">
       {/* Install to Home Screen Banner */}
       <AnimatePresence>
         {showInstallPrompt && !isInstalled && (
@@ -309,8 +309,8 @@ export default function InstructorPortalLogin() {
 
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-emerald-500/10 to-transparent rounded-full blur-3xl" />
+        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-white/5 to-transparent rounded-full blur-3xl" />
+        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-3xl" />
       </div>
 
       <motion.div
@@ -328,15 +328,15 @@ export default function InstructorPortalLogin() {
         >
           <div className="mb-6 mx-auto inline-block">
             <img 
-              src="/everydriver-logo-instructor.png" 
-              alt="Every Driver" 
+              src="/everydriver-logo-main.png" 
+              alt="EveryDriver" 
               className="h-12 mx-auto"
             />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-white">
             {isForgotPassword ? "Reset Password" : "Instructor Portal"}
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-white/80 text-sm mt-1">
             {isForgotPassword 
               ? "Enter your email to receive a reset link"
               : "Sign in to manage your driving school"}
