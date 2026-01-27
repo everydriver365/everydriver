@@ -156,7 +156,7 @@ const handler = async (req: Request): Promise<Response> => {
         discount_value,
         slot_number,
         batch_id,
-        instructors!inner(id, name, auth_user_id),
+        instructors!inner(id, name, auth_user_id, phone),
         pupils!inner(id, name)
       `)
       .eq("pupil_phone", normalizedPhone)
@@ -305,6 +305,78 @@ const handler = async (req: Request): Promise<Response> => {
         } catch (smsError) {
           console.error("Error sending confirmation SMS:", smsError);
         }
+      }
+
+      // Send SMS to instructor about the booking
+      const instructorPhone = (firstOffer.instructors as any)?.phone;
+      if (instructorPhone && twilioAccountSid && twilioAuthToken && twilioMessagingServiceSid) {
+        try {
+          // Format instructor phone to E.164
+          let formattedInstructorPhone = instructorPhone.replace(/\s+/g, "");
+          if (formattedInstructorPhone.startsWith("07")) {
+            formattedInstructorPhone = "+44" + formattedInstructorPhone.substring(1);
+          } else if (!formattedInstructorPhone.startsWith("+")) {
+            formattedInstructorPhone = "+" + formattedInstructorPhone;
+          }
+
+          const instructorSmsMessage = bookedSlots.length === 1
+            ? `🎉 Gap Filled!\n\n${pupilName} just booked:\n📅 ${bookedSlots[0]}\n\nCheck your calendar for details. - EveryDriver`
+            : `🎉 ${bookedSlots.length} Gaps Filled!\n\n${pupilName} just booked:\n${bookedSlots.map(s => `📅 ${s}`).join('\n')}\n\nCheck your calendar for details. - EveryDriver`;
+
+          const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+          const credentials = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
+
+          const instructorSmsBody = new URLSearchParams({
+            To: formattedInstructorPhone,
+            Body: instructorSmsMessage,
+            MessagingServiceSid: twilioMessagingServiceSid,
+          });
+
+          const instructorSmsResponse = await fetch(twilioUrl, {
+            method: "POST",
+            headers: {
+              "Authorization": `Basic ${credentials}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: instructorSmsBody,
+          });
+
+          const instructorSmsResult = await instructorSmsResponse.json();
+          if (instructorSmsResponse.ok) {
+            console.log(`Instructor SMS sent to ${formattedInstructorPhone}: ${instructorSmsResult.sid}`);
+          } else {
+            console.error("Failed to send instructor SMS:", instructorSmsResult);
+          }
+        } catch (instructorSmsError) {
+          console.error("Error sending instructor SMS:", instructorSmsError);
+        }
+      }
+
+      // Create in-app notification for the instructor
+      try {
+        const notificationTitle = bookedSlots.length === 1 ? "🎉 Gap Filled!" : `🎉 ${bookedSlots.length} Gaps Filled!`;
+        const notificationMessage = bookedSlots.length === 1
+          ? `${pupilName} booked ${bookedSlots[0]}`
+          : `${pupilName} booked ${bookedSlots.length} slots: ${bookedSlots.join(", ")}`;
+
+        await supabase
+          .from("instructor_notifications")
+          .insert({
+            instructor_id: firstOffer.instructor_id,
+            title: notificationTitle,
+            message: notificationMessage,
+            type: "gap_filled",
+            action_url: "/instructor/calendar",
+            metadata: {
+              pupil_id: firstOffer.pupil_id,
+              pupil_name: pupilName,
+              booked_slots: bookedSlots,
+              offer_id: firstOffer.id,
+            },
+          });
+        console.log("In-app notification created for instructor");
+      } catch (notifError) {
+        console.error("Error creating in-app notification:", notifError);
       }
 
       const notification = {

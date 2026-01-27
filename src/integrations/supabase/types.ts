@@ -2088,6 +2088,50 @@ export type Database = {
           },
         ]
       }
+      instructor_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          title: string
+          type?: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_notifications_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_standards_check: {
         Row: {
           avg_minor_faults: number
