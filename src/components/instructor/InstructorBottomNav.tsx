@@ -43,7 +43,7 @@ const navItems: NavItem[] = [
     isTrack: true
   },
   { 
-    label: "Pay", 
+    label: "Money", 
     icon: PoundSterling, 
     path: "/instructor/pay"
   },
@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
     path: "/instructor/pupils"
   },
   { 
-    label: "Menu", 
+    label: "More", 
     icon: Grid3X3, 
     path: "/instructor/menu"
   },
