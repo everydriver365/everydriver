@@ -46,18 +46,18 @@ export function ScheduleDayTabs({ selectedDate, onSelectDate }: ScheduleDayTabsP
             whileTap={{ scale: 0.95 }}
             className={`
               flex-shrink-0 flex flex-col items-center justify-center
-              px-4 py-3 rounded-xl min-w-[80px] transition-all
+              px-2.5 py-1.5 rounded-lg min-w-[56px] transition-all
               ${selected 
-                ? "bg-primary text-primary-foreground shadow-lg" 
+                ? "bg-primary text-primary-foreground shadow-md" 
                 : "bg-card text-foreground hover:bg-muted border border-border"
               }
             `}
           >
-            <span className={`text-sm font-medium ${selected ? "text-primary-foreground" : "text-muted-foreground"}`}>
+            <span className={`text-[10px] font-medium ${selected ? "text-primary-foreground" : "text-muted-foreground"}`}>
               {getDateLabel(date)}
             </span>
-            <span className={`text-lg font-bold ${selected ? "" : ""}`}>
-              {format(date, "MMM d").toUpperCase()}
+            <span className={`text-xs font-bold ${selected ? "" : ""}`}>
+              {format(date, "d MMM").toUpperCase()}
             </span>
           </motion.button>
         );
