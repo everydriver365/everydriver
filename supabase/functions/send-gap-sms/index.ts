@@ -152,16 +152,18 @@ const handler = async (req: Request): Promise<Response> => {
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
         const credentials = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
 
-        // Build request body - prefer Messaging Service for alphanumeric sender ID
+        // Build request body - prioritize phone number for two-way SMS capability
         const smsBody: Record<string, string> = {
           To: formattedPhone,
           Body: message,
         };
         
-        if (twilioMessagingServiceSid) {
-          smsBody.MessagingServiceSid = twilioMessagingServiceSid;
-        } else if (twilioPhoneNumber) {
+        // Use phone number first (enables replies), fall back to Messaging Service
+        if (twilioPhoneNumber) {
           smsBody.From = twilioPhoneNumber;
+        } else if (twilioMessagingServiceSid) {
+          smsBody.MessagingServiceSid = twilioMessagingServiceSid;
+          console.warn("Using Messaging Service - replies may not work with alphanumeric sender ID");
         }
 
         const response = await fetch(twilioUrl, {
