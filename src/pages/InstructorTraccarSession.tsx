@@ -36,6 +36,7 @@ import SessionRouteReport from "@/components/instructor/SessionRouteReport";
 import TraccarLiveMap from "@/components/instructor/TraccarLiveMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { TraccarConnectionChecklist } from "@/components/instructor/TraccarConnectionChecklist";
+import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 
 interface TraccarDevice {
   id: string;
@@ -610,7 +611,7 @@ export default function InstructorTraccarSession() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-background overflow-hidden">
       {/* Not Connected Warning Banner */}
       {!isConnected && !isSessionActive && (
         <div className="bg-amber-500 text-white px-4 py-2.5 flex items-center justify-between gap-3">
@@ -922,6 +923,8 @@ export default function InstructorTraccarSession() {
         onStart={handleDrivingTestStart}
         isStarting={isStarting}
       />
+
+      <InstructorBottomNav />
     </div>
   );
 }
