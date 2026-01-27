@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -460,15 +461,19 @@ export default function InstructorPupils() {
               className="pl-10"
             />
           </div>
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | PupilStatus)} className="w-full">
-            <TabsList className="w-full grid grid-cols-5">
-              <TabsTrigger value="all" className="text-xs">All ({stats.total})</TabsTrigger>
-              <TabsTrigger value="active" className="text-xs">Active ({statusCounts.active})</TabsTrigger>
-              <TabsTrigger value="passed" className="text-xs">Passed ({statusCounts.passed})</TabsTrigger>
-              <TabsTrigger value="inactive" className="text-xs">Inactive ({statusCounts.inactive})</TabsTrigger>
-              <TabsTrigger value="on_hold" className="text-xs">On Hold ({statusCounts.on_hold})</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <Select value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | PupilStatus)}>
+            <SelectTrigger className="w-full bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-background z-50">
+              <SelectItem value="all">All Pupils ({stats.total})</SelectItem>
+              <SelectItem value="active">Active ({statusCounts.active})</SelectItem>
+              <SelectItem value="passed">Passed ({statusCounts.passed})</SelectItem>
+              <SelectItem value="inactive">Inactive ({statusCounts.inactive})</SelectItem>
+              <SelectItem value="on_hold">On Hold ({statusCounts.on_hold})</SelectItem>
+              <SelectItem value="cancelled">Cancelled ({statusCounts.cancelled})</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Pupils List */}
