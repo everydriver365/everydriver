@@ -39,11 +39,34 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Parse Twilio webhook data (form-urlencoded)
-    const formData = await req.formData();
-    const from = formData.get("From") as string;
-    const body = (formData.get("Body") as string)?.toLowerCase().trim();
-    const messageSid = formData.get("MessageSid") as string;
+    // Parse Twilio webhook data (application/x-www-form-urlencoded)
+    const contentType = req.headers.get("content-type") || "";
+    let from: string | null = null;
+    let body: string | null = null;
+    let messageSid: string | null = null;
+
+    if (contentType.includes("application/x-www-form-urlencoded")) {
+      const text = await req.text();
+      const params = new URLSearchParams(text);
+      from = params.get("From");
+      body = params.get("Body")?.toLowerCase().trim() || null;
+      messageSid = params.get("MessageSid");
+    } else if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      from = formData.get("From") as string;
+      body = (formData.get("Body") as string)?.toLowerCase().trim() || null;
+      messageSid = formData.get("MessageSid") as string;
+    } else {
+      // Try JSON as fallback
+      try {
+        const json = await req.json();
+        from = json.From;
+        body = json.Body?.toLowerCase().trim() || null;
+        messageSid = json.MessageSid;
+      } catch {
+        console.log("Could not parse request body");
+      }
+    }
 
     console.log(`Received SMS from ${from}: "${body}"`);
 
