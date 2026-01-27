@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
-import instructorLogo from "@/assets/everydriver-logo-instructor.png";
 
 interface InstructorMobileHeaderProps {
   instructorName?: string;
@@ -43,7 +42,7 @@ export function InstructorMobileHeader({
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-white px-4 py-3 flex items-center justify-between border-b border-border shadow-sm">
+    <div className="sticky top-0 z-40 bg-primary px-4 py-3 flex items-center justify-between border-b border-primary-foreground/10 shadow-sm">
       {/* Left side: Back button + Logo */}
       <div className="flex items-center gap-2">
         {showBackButton && (
@@ -51,13 +50,13 @@ export function InstructorMobileHeader({
             variant="ghost" 
             size="icon" 
             onClick={handleBack}
-            className="text-foreground/80 hover:text-foreground hover:bg-muted -ml-2 h-8 w-8"
+            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 -ml-2 h-8 w-8"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
         )}
         <img 
-          src={instructorLogo} 
+          src="/everydriver-logo-main.png" 
           alt="EveryDriver" 
           className="h-7 object-contain"
         />
@@ -70,7 +69,7 @@ export function InstructorMobileHeader({
             variant="ghost"
             size="sm"
             onClick={() => setShowQRModal(true)}
-            className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 px-2"
+            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
           >
             <span className="text-xs font-bold border border-current rounded px-1">QR</span>
           </Button>
@@ -79,7 +78,7 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={() => navigate("/instructor/availability")}
-          className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
           title="Quick Availability"
         >
           <CalendarClock className="h-5 w-5" />
@@ -88,7 +87,7 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
         >
           {resolvedTheme === 'dark' ? (
             <Moon className="h-5 w-5" />
@@ -100,13 +99,13 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={() => navigate("/instructor/settings")}
-          className="text-foreground/80 hover:text-foreground hover:bg-muted h-8 w-8"
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
         >
           <Settings className="h-5 w-5" />
         </Button>
-        <Avatar className="h-9 w-9 border-2 border-border">
+        <Avatar className="h-9 w-9 border-2 border-primary-foreground/20">
           <AvatarImage src={profileImageUrl || undefined} alt={instructorName} />
-          <AvatarFallback className="bg-emerald-500 text-white font-semibold text-sm">
+          <AvatarFallback className="bg-white text-primary font-semibold text-sm">
             {getInitials(instructorName)}
           </AvatarFallback>
         </Avatar>
