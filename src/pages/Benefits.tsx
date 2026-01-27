@@ -5,8 +5,7 @@ import {
   BookOpen as TheoryIcon,
   HelpCircle,
   MessageCircle,
-  Gift,
-  Star
+  Gift
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -62,9 +61,7 @@ export default function Benefits() {
       {/* Features List */}
       {!loading && (
         <div className="px-4 space-y-3">
-          {features.map((feature, index) => {
-            const IconComponent = feature.icon || Star;
-            return (
+          {features.map((feature, index) => (
               <motion.div
                 key={feature.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -90,15 +87,8 @@ export default function Benefits() {
                       )}
                       {/* Right: Text Content */}
                       <div className="flex-1 p-3 flex flex-col justify-center">
-                        <div className="flex items-start gap-2">
-                          <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <IconComponent className="h-4 w-4 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-bold text-foreground text-sm leading-tight">{feature.title}</h3>
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{feature.description}</p>
-                          </div>
-                        </div>
+                        <h3 className="font-bold text-foreground text-sm leading-tight">{feature.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{feature.description}</p>
                       </div>
                     </div>
                     
@@ -117,8 +107,7 @@ export default function Benefits() {
                   </AccordionItem>
                 </Accordion>
               </motion.div>
-            );
-          })}
+          ))}
         </div>
       )}
 
