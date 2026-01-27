@@ -82,7 +82,7 @@ export function Header() {
               >
                 <Search className="h-4 w-4 rotate-45" />
               </button>
-              <Button type="submit" variant="accent" size="sm" className="h-8 rounded-full px-4 ml-1">
+              <Button type="submit" size="sm" className="h-8 rounded-full px-4 ml-1">
                 Find Courses
               </Button>
             </div>
@@ -136,7 +136,7 @@ export function Header() {
                       onChange={(e) => setPostcode(e.target.value)}
                       className="h-8 flex-1 border-0 bg-transparent p-0 text-sm placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
-                    <Button type="submit" variant="accent" size="sm" className="h-8 rounded-full px-4 ml-2">
+                    <Button type="submit" size="sm" className="h-8 rounded-full px-4 ml-2">
                       <Search className="h-4 w-4 mr-1" />
                       Search
                     </Button>
