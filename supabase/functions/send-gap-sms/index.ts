@@ -138,9 +138,17 @@ const handler = async (req: Request): Promise<Response> => {
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
         const credentials = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
 
+        // Format phone number to E.164 (UK numbers starting with 07 become +44...)
+        let formattedPhone = pupil.phone.replace(/\s+/g, "");
+        if (formattedPhone.startsWith("07")) {
+          formattedPhone = "+44" + formattedPhone.substring(1);
+        } else if (!formattedPhone.startsWith("+")) {
+          formattedPhone = "+" + formattedPhone;
+        }
+
         // Build request body - prefer Messaging Service for alphanumeric sender ID
         const smsBody: Record<string, string> = {
-          To: pupil.phone,
+          To: formattedPhone,
           Body: message,
         };
         
