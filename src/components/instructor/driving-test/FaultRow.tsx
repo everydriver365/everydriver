@@ -38,17 +38,17 @@ export function FaultRow({
   return (
     <div
       className={cn(
-        "grid grid-cols-[1fr_50px_32px_32px] gap-1 items-center py-1.5 px-2 border-b border-slate-300 hover:bg-slate-100 transition-colors",
-        indent && "pl-6",
+        "grid grid-cols-[1fr_40px_28px_28px] gap-0.5 items-center py-1 px-1.5 border-b border-slate-300 hover:bg-slate-100 transition-colors",
+        indent && "pl-4",
         hasAnyFault && "bg-amber-50",
         value.serious && "bg-orange-100",
         value.dangerous && "bg-red-100"
       )}
     >
-      <div className="min-w-0">
-        <span className="text-xs font-medium text-slate-800 truncate block">{label}</span>
+      <div className="min-w-0 overflow-hidden">
+        <span className="text-[11px] font-medium text-slate-800 truncate block leading-tight">{label}</span>
         {subLabel && (
-          <span className="text-[10px] text-slate-500 truncate block">{subLabel}</span>
+          <span className="text-[9px] text-slate-500 truncate block leading-tight">{subLabel}</span>
         )}
       </div>
       <Input
@@ -58,7 +58,7 @@ export function FaultRow({
         value={value.total || ""}
         onChange={handleTotalChange}
         disabled={disabled}
-        className="h-7 w-12 text-center text-xs p-1 border-slate-400 bg-white"
+        className="h-6 w-10 text-center text-xs p-0.5 border-slate-400 bg-white"
         placeholder="0"
       />
       <Checkbox

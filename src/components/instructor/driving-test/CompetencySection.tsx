@@ -29,11 +29,11 @@ export function CompetencySection({
 
 export function SectionHeader() {
   return (
-    <div className="grid grid-cols-[1fr_50px_32px_32px] gap-1 items-center py-1 px-2 bg-slate-200 text-[10px] font-bold text-slate-700 uppercase tracking-wide border-b border-slate-300">
+    <div className="grid grid-cols-[1fr_40px_28px_28px] gap-0.5 items-center py-1 px-1.5 bg-slate-200 text-[10px] font-bold text-slate-700 uppercase tracking-wide border-b border-slate-300">
       <span></span>
-      <span className="text-center">Total</span>
-      <span className="text-center bg-[#E91E63] text-white rounded px-1">S</span>
-      <span className="text-center bg-[#E91E63] text-white rounded px-1">D</span>
+      <span className="text-center text-[9px]">Tot</span>
+      <span className="text-center bg-[#E91E63] text-white rounded text-[9px] py-0.5">S</span>
+      <span className="text-center bg-[#E91E63] text-white rounded text-[9px] py-0.5">D</span>
     </div>
   );
 }
