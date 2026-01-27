@@ -22,6 +22,17 @@ interface SendGapSmsRequest {
   customMessage?: string;
 }
 
+function formatPhoneToE164(rawPhone: string): string {
+  // Format phone number to E.164 (UK numbers starting with 07 become +44...)
+  let formatted = rawPhone.replace(/\s+/g, "");
+  if (formatted.startsWith("07")) {
+    formatted = "+44" + formatted.substring(1);
+  } else if (!formatted.startsWith("+")) {
+    formatted = "+" + formatted;
+  }
+  return formatted;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -101,6 +112,8 @@ const handler = async (req: Request): Promise<Response> => {
     for (const pupil of pupils) {
       if (!pupil.phone) continue;
 
+      const formattedPhone = formatPhoneToE164(pupil.phone);
+
       // Generate a batch ID to group offers for this pupil in this send
       const batchId = crypto.randomUUID();
 
@@ -113,7 +126,8 @@ const handler = async (req: Request): Promise<Response> => {
           .insert({
             instructor_id: instructorId,
             pupil_id: pupil.id,
-            pupil_phone: pupil.phone,
+            // Store normalized phone so inbound replies (From is E.164) can match offers
+            pupil_phone: formattedPhone,
             slot_date: slot.date,
             slot_start_time: slot.startTime,
             slot_end_time: slot.endTime,
@@ -137,14 +151,6 @@ const handler = async (req: Request): Promise<Response> => {
       try {
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
         const credentials = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
-
-        // Format phone number to E.164 (UK numbers starting with 07 become +44...)
-        let formattedPhone = pupil.phone.replace(/\s+/g, "");
-        if (formattedPhone.startsWith("07")) {
-          formattedPhone = "+44" + formattedPhone.substring(1);
-        } else if (!formattedPhone.startsWith("+")) {
-          formattedPhone = "+" + formattedPhone;
-        }
 
         // Build request body - prefer Messaging Service for alphanumeric sender ID
         const smsBody: Record<string, string> = {
