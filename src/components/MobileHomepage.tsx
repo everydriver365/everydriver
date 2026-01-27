@@ -166,7 +166,7 @@ export function MobileHomepage() {
           y: 0
         }} transition={{
           delay: 0.3
-        }} className="bg-white border border-border/50 rounded-2xl shadow-lg flex items-center overflow-hidden">
+        }} className="bg-[#e9f4f9] border border-border/50 rounded-2xl shadow-lg flex items-center overflow-hidden">
           <div className="w-24 h-24 flex-shrink-0 bg-primary/5">
               <img src={intensiveCoursesIcon} alt="Intensive Courses" className="w-full h-full object-cover" />
             </div>
@@ -189,7 +189,7 @@ export function MobileHomepage() {
             y: 0
           }} transition={{
             delay: 0.35
-          }} className="bg-white border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden">
+          }} className="bg-[#e9f4f9] border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden">
               <div className="h-20 w-full overflow-hidden">
                 <img src={semiIntensiveIcon} alt="Semi Intensive" className="w-full h-full object-cover" />
               </div>
@@ -209,7 +209,7 @@ export function MobileHomepage() {
             y: 0
           }} transition={{
             delay: 0.4
-          }} className="bg-white border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden">
+          }} className="bg-[#e9f4f9] border border-border/50 rounded-2xl shadow-lg h-full overflow-hidden">
               <div className="h-20 w-full overflow-hidden">
                 <img src={weeklyLessonsIcon} alt="Weekly Lessons" className="w-full h-full object-cover" />
               </div>
@@ -237,7 +237,7 @@ export function MobileHomepage() {
             y: 0
           }} transition={{
             delay: 0.45 + i * 0.05
-          }} onClick={() => setSelectedFeature(feature)} className="bg-white border border-border/50 rounded-2xl shadow-lg cursor-pointer active:scale-[0.98] transition-transform overflow-hidden">
+          }} onClick={() => setSelectedFeature(feature)} className="bg-[#e9f4f9] border border-border/50 rounded-2xl shadow-lg cursor-pointer active:scale-[0.98] transition-transform overflow-hidden">
                 {feature.image_url ? (
                   <div className="relative h-24 w-full">
                     <img 
