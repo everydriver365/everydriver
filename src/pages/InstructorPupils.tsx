@@ -75,7 +75,10 @@ interface Pupil {
   parent_phone?: string | null;
   parent_name?: string | null;
   date_of_birth?: string | null;
+  status?: string;
 }
+
+type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
 
 const courseTypeLabels: Record<string, string> = {
   intensive: "Intensive",
@@ -119,7 +122,7 @@ export default function InstructorPupils() {
     date_of_birth: "",
   });
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState<"all" | PupilStatus>("all");
   const [isLookingUpW3W, setIsLookingUpW3W] = useState(false);
   const [isPupilPickerOpen, setIsPupilPickerOpen] = useState(false);
   const [pendingPupilAction, setPendingPupilAction] = useState<"terms" | null>(null);
@@ -375,15 +378,23 @@ export default function InstructorPupils() {
       pupil.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (activeTab === "all") return matchesSearch;
-    if (activeTab === "active") return matchesSearch && (pupil.progress || 0) < 100;
-    if (activeTab === "completed") return matchesSearch && (pupil.progress || 0) >= 100;
-    return matchesSearch;
+    // Filter by the status field
+    const pupilStatus = pupil.status || 'active';
+    return matchesSearch && pupilStatus === activeTab;
   });
+
+  const statusCounts = {
+    active: pupils.filter((p) => (p.status || 'active') === 'active').length,
+    passed: pupils.filter((p) => (p.status || 'active') === 'passed').length,
+    inactive: pupils.filter((p) => (p.status || 'active') === 'inactive').length,
+    on_hold: pupils.filter((p) => (p.status || 'active') === 'on_hold').length,
+    cancelled: pupils.filter((p) => (p.status || 'active') === 'cancelled').length,
+  };
 
   const stats = {
     total: pupils.length,
-    active: pupils.filter((p) => (p.progress || 0) < 100).length,
-    completed: pupils.filter((p) => (p.progress || 0) >= 100).length,
+    active: statusCounts.active,
+    passed: statusCounts.passed,
     totalLessons: pupils.reduce((acc, p) => acc + (p.lessons_completed || 0), 0),
   };
 
@@ -429,7 +440,7 @@ export default function InstructorPupils() {
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Active</span>
           </div>
           <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
-            <span className="text-lg font-bold text-amber-600">{stats.completed}</span>
+            <span className="text-lg font-bold text-primary">{stats.passed}</span>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Passed</span>
           </div>
           <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
@@ -449,11 +460,13 @@ export default function InstructorPupils() {
               className="pl-10"
             />
           </div>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-3">
-              <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-              <TabsTrigger value="active" className="text-xs">Active</TabsTrigger>
-              <TabsTrigger value="completed" className="text-xs">Passed</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | PupilStatus)} className="w-full">
+            <TabsList className="w-full grid grid-cols-5">
+              <TabsTrigger value="all" className="text-xs">All ({stats.total})</TabsTrigger>
+              <TabsTrigger value="active" className="text-xs">Active ({statusCounts.active})</TabsTrigger>
+              <TabsTrigger value="passed" className="text-xs">Passed ({statusCounts.passed})</TabsTrigger>
+              <TabsTrigger value="inactive" className="text-xs">Inactive ({statusCounts.inactive})</TabsTrigger>
+              <TabsTrigger value="on_hold" className="text-xs">On Hold ({statusCounts.on_hold})</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -502,6 +515,14 @@ export default function InstructorPupils() {
                 onViewTestHistory={(p) => {
                   setSelectedPupil(p);
                   setIsTestHistoryOpen(true);
+                }}
+                onStatusChange={(pupilId, newStatus) => {
+                  // Update the local state to reflect the status change
+                  setPupils(prevPupils => 
+                    prevPupils.map(p => 
+                      p.id === pupilId ? { ...p, status: newStatus } : p
+                    )
+                  );
                 }}
                 hasSignedTerms={pupilSignatures[pupil.id] || false}
                 instructorId={instructorId}
