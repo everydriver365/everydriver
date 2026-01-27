@@ -1100,6 +1100,7 @@ export type Database = {
       }
       gap_offers: {
         Row: {
+          batch_id: string | null
           created_at: string
           discount_type: string | null
           discount_value: number | null
@@ -1111,11 +1112,13 @@ export type Database = {
           response_message: string | null
           slot_date: string
           slot_end_time: string
+          slot_number: number | null
           slot_start_time: string
           status: string
           twilio_message_sid: string | null
         }
         Insert: {
+          batch_id?: string | null
           created_at?: string
           discount_type?: string | null
           discount_value?: number | null
@@ -1127,11 +1130,13 @@ export type Database = {
           response_message?: string | null
           slot_date: string
           slot_end_time: string
+          slot_number?: number | null
           slot_start_time: string
           status?: string
           twilio_message_sid?: string | null
         }
         Update: {
+          batch_id?: string | null
           created_at?: string
           discount_type?: string | null
           discount_value?: number | null
@@ -1143,6 +1148,7 @@ export type Database = {
           response_message?: string | null
           slot_date?: string
           slot_end_time?: string
+          slot_number?: number | null
           slot_start_time?: string
           status?: string
           twilio_message_sid?: string | null
