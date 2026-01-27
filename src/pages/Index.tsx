@@ -1116,7 +1116,8 @@ export default function Index() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0 }}
               viewport={{ once: true }}
-              className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
+              className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
+              style={{ backgroundColor: "#e9f4f9" }}
             >
               <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
                 <User className="h-6 w-6" />
@@ -1133,7 +1134,8 @@ export default function Index() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
-              className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
+              className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg cursor-pointer h-full"
+              style={{ backgroundColor: "#e9f4f9" }}
             >
               <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
                 <Users className="h-6 w-6" />
@@ -1152,7 +1154,8 @@ export default function Index() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
-            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+            className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+            style={{ backgroundColor: "#e9f4f9" }}
           >
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
               <Calendar className="h-6 w-6" />
@@ -1167,7 +1170,8 @@ export default function Index() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             viewport={{ once: true }}
-            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+            className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+            style={{ backgroundColor: "#e9f4f9" }}
           >
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
               <MapPin className="h-6 w-6" />
@@ -1182,7 +1186,8 @@ export default function Index() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             viewport={{ once: true }}
-            className="group rounded-2xl border bg-card p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+            className="group rounded-2xl border p-6 transition-all hover:border-accent/50 hover:shadow-lg"
+            style={{ backgroundColor: "#e9f4f9" }}
           >
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
               <Award className="h-6 w-6" />
