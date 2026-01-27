@@ -77,10 +77,10 @@ export default function Benefits() {
                     className="bg-[#e9f4f9] border rounded-xl overflow-hidden"
                   >
                     {/* Horizontal layout: Image left, content right */}
-                    <div className="flex">
+                    <div className="flex items-stretch">
                       {/* Left: Image */}
                       {feature.image_url && (
-                        <div className="w-24 h-24 flex-shrink-0">
+                        <div className="w-20 flex-shrink-0 overflow-hidden">
                           <img 
                             src={feature.image_url} 
                             alt={feature.title} 
