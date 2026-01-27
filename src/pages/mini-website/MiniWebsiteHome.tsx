@@ -199,7 +199,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         {/* Quick links to other pages */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
           <Link to={links.about}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
               <CardContent className="p-4 text-center">
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   About Me
@@ -209,7 +209,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             </Card>
           </Link>
           <Link to={links.services}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
               <CardContent className="p-4 text-center">
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   Services
@@ -219,7 +219,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             </Card>
           </Link>
           <Link to={links.reviews}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
               <CardContent className="p-4 text-center">
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   Reviews
@@ -231,7 +231,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
             </Card>
           </Link>
           <Link to={links.contact}>
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
               <CardContent className="p-4 text-center">
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   Contact

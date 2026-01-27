@@ -109,7 +109,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                 >
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full" style={{ backgroundColor: "#e9f4f9" }}>
                     {course.course_image_url && (
                       <img
                         src={course.course_image_url}
@@ -160,7 +160,7 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
         )}
 
         {courses.length === 0 && (
-          <Card>
+          <Card style={{ backgroundColor: "#e9f4f9" }}>
             <CardContent className="p-8 text-center">
               <p className="text-gray-500 mb-4">
                 Contact me directly to discuss available courses and packages.
