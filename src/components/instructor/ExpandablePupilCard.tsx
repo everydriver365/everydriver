@@ -41,11 +41,13 @@ import { PupilCreditBreakdown } from "@/components/instructor/PupilCreditBreakdo
 import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
+import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -184,6 +186,9 @@ export function ExpandablePupilCard({
   const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0);
+  
+  // Syllabus sheet state
+  const [showSyllabusSheet, setShowSyllabusSheet] = useState(false);
 
   // Fetch test stats on mount
   useEffect(() => {
@@ -1016,8 +1021,8 @@ export function ExpandablePupilCard({
                 </Button>
               </div>
 
-              {/* History & Reports - 2 columns */}
-              <div className="grid grid-cols-2 gap-1.5">
+              {/* History & Reports - 3 columns */}
+              <div className="grid grid-cols-3 gap-1.5">
                 <Button
                   variant="outline"
                   size="sm"
@@ -1036,10 +1041,22 @@ export function ExpandablePupilCard({
                   className="flex-col h-auto py-2 gap-1"
                   onClick={(e) => {
                     e.stopPropagation();
+                    setShowSyllabusSheet(true);
+                  }}
+                >
+                  <GraduationCap className="h-4 w-4 text-primary" />
+                  <span className="text-[10px]">Syllabus</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-col h-auto py-2 gap-1"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onViewReport(pupil);
                   }}
                 >
-                  <Car className="h-4 w-4 text-primary" />
+                  <Car className="h-4 w-4 text-emerald-500" />
                   <span className="text-[10px]">Driving</span>
                 </Button>
               </div>
@@ -1193,6 +1210,20 @@ export function ExpandablePupilCard({
         paymentQrUrl={paymentQrUrl}
         instructorName={instructorName}
       />
+
+      {/* Syllabus Sheet */}
+      <Sheet open={showSyllabusSheet} onOpenChange={setShowSyllabusSheet}>
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl overflow-y-auto">
+          <SheetHeader className="pb-4">
+            <SheetTitle>Driving Syllabus - {pupil.name}</SheetTitle>
+          </SheetHeader>
+          <DrivingSyllabus 
+            pupilId={pupil.id} 
+            pupilName={pupil.name}
+            onClose={() => setShowSyllabusSheet(false)}
+          />
+        </SheetContent>
+      </Sheet>
     </motion.div>
   );
 }

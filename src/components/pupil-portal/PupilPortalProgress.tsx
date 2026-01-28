@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Car, CheckCircle2, Circle, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Car, TrendingUp } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
+import { DVSA_SYLLABUS, calculateSyllabusProgress } from "@/constants/dvsaSyllabus";
+import { PupilSyllabusView } from "@/components/pupil-portal/PupilSyllabusView";
 
 interface PupilPortalProgressProps {
   pupilId: string;
@@ -10,76 +12,62 @@ interface PupilPortalProgressProps {
   darkMode: boolean;
 }
 
-// Standard DVSA driving skills checklist
-const DRIVING_SKILLS = [
-  { id: 'cockpit_drill', name: 'Cockpit Drill', category: 'Basics' },
-  { id: 'moving_off', name: 'Moving Off', category: 'Basics' },
-  { id: 'stopping', name: 'Stopping', category: 'Basics' },
-  { id: 'gear_changing', name: 'Gear Changing', category: 'Basics' },
-  { id: 'steering', name: 'Steering', category: 'Basics' },
-  { id: 'junctions', name: 'Junctions', category: 'Road Skills' },
-  { id: 'roundabouts', name: 'Roundabouts', category: 'Road Skills' },
-  { id: 'crossroads', name: 'Crossroads', category: 'Road Skills' },
-  { id: 'pedestrian_crossings', name: 'Pedestrian Crossings', category: 'Road Skills' },
-  { id: 'traffic_lights', name: 'Traffic Lights', category: 'Road Skills' },
-  { id: 'mirrors', name: 'Use of Mirrors', category: 'Awareness' },
-  { id: 'signals', name: 'Signals', category: 'Awareness' },
-  { id: 'meeting_traffic', name: 'Meeting Traffic', category: 'Awareness' },
-  { id: 'overtaking', name: 'Overtaking', category: 'Awareness' },
-  { id: 'emergency_stop', name: 'Emergency Stop', category: 'Manoeuvres' },
-  { id: 'reverse_bay', name: 'Reverse Bay Park', category: 'Manoeuvres' },
-  { id: 'parallel_park', name: 'Parallel Park', category: 'Manoeuvres' },
-  { id: 'forward_bay', name: 'Forward Bay Park', category: 'Manoeuvres' },
-  { id: 'pull_up_right', name: 'Pull Up on Right', category: 'Manoeuvres' },
-  { id: 'independent_driving', name: 'Independent Driving', category: 'Test Ready' },
-];
-
 export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPortalProgressProps) {
-  const [masteredSkills, setMasteredSkills] = useState<string[]>([]);
+  const [progress, setProgress] = useState<{ competency_id: string; level: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasSyllabusProgress, setHasSyllabusProgress] = useState(false);
 
   useEffect(() => {
-    fetchSkills();
+    fetchProgress();
   }, [pupilId]);
 
-  const fetchSkills = async () => {
+  const fetchProgress = async () => {
     try {
-      // Get all skills practiced from lesson history
-      const { data, error } = await supabase
-        .from("lesson_history")
-        .select("skills_practiced")
+      // First check if pupil has syllabus progress
+      const { data: syllabusData, error: syllabusError } = await supabase
+        .from("pupil_syllabus_progress")
+        .select("competency_id, level")
         .eq("pupil_id", pupilId);
 
-      if (!error && data) {
-        // Count skill occurrences - consider mastered after 3+ practices
-        const skillCounts: Record<string, number> = {};
-        data.forEach(lesson => {
-          (lesson.skills_practiced || []).forEach((skill: string) => {
-            skillCounts[skill] = (skillCounts[skill] || 0) + 1;
-          });
-        });
+      if (!syllabusError && syllabusData && syllabusData.length > 0) {
+        setHasSyllabusProgress(true);
+        setProgress(syllabusData);
+      } else {
+        // Fallback: Check lesson history for skills practiced
+        const { data: lessonData, error: lessonError } = await supabase
+          .from("lesson_history")
+          .select("skills_practiced")
+          .eq("pupil_id", pupilId);
 
-        const mastered = Object.entries(skillCounts)
-          .filter(([_, count]) => count >= 3)
-          .map(([skill]) => skill);
-        
-        setMasteredSkills(mastered);
+        if (!lessonError && lessonData) {
+          // Count skill occurrences - consider level based on practices
+          const skillCounts: Record<string, number> = {};
+          lessonData.forEach(lesson => {
+            (lesson.skills_practiced || []).forEach((skill: string) => {
+              skillCounts[skill] = (skillCounts[skill] || 0) + 1;
+            });
+          });
+
+          // Convert to progress entries (1 practice = level 1, 3+ = level 5)
+          const derivedProgress = Object.entries(skillCounts).map(([skill, count]) => ({
+            competency_id: skill,
+            level: Math.min(5, Math.ceil(count / 0.6)) // Scale: 1, 2, 3, 4, 5+ practices → levels
+          }));
+
+          if (derivedProgress.length > 0) {
+            setProgress(derivedProgress);
+          }
+        }
       }
     } catch (error) {
-      console.error("Error fetching skills:", error);
+      console.error("Error fetching progress:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const progressPercent = (masteredSkills.length / DRIVING_SKILLS.length) * 100;
-
-  // Group skills by category
-  const skillsByCategory = DRIVING_SKILLS.reduce((acc, skill) => {
-    if (!acc[skill.category]) acc[skill.category] = [];
-    acc[skill.category].push(skill);
-    return acc;
-  }, {} as Record<string, typeof DRIVING_SKILLS>);
+  const progressPercent = calculateSyllabusProgress(progress);
+  const masteredCount = progress.filter(p => p.level >= 5).length;
 
   if (loading) {
     return (
@@ -101,6 +89,18 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
     );
   }
 
+  // If we have real syllabus progress, show the full view
+  if (hasSyllabusProgress) {
+    return (
+      <PupilSyllabusView 
+        pupilId={pupilId} 
+        brandColour={brandColour}
+        darkMode={darkMode}
+      />
+    );
+  }
+
+  // Fallback simple view for pupils without syllabus data yet
   return (
     <div className="px-4 space-y-6">
       {/* Overall Progress */}
@@ -118,10 +118,10 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
           
           <div className="text-center mb-4">
             <div className="text-4xl font-bold">
-              {Math.round(progressPercent)}%
+              {progressPercent}%
             </div>
             <div className="text-white/70 text-sm mt-1">
-              {masteredSkills.length} of {DRIVING_SKILLS.length} skills mastered
+              {masteredCount} of {DVSA_SYLLABUS.length} skills mastered
             </div>
           </div>
 
@@ -132,60 +132,12 @@ export function PupilPortalProgress({ pupilId, brandColour, darkMode }: PupilPor
         </CardContent>
       </Card>
 
-      {/* Skills by Category */}
-      {Object.entries(skillsByCategory).map(([category, skills]) => {
-        const categoryMastered = skills.filter(s => masteredSkills.includes(s.id)).length;
-        
-        return (
-          <Card 
-            key={category}
-            style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}
-          >
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base" style={{ color: 'var(--brand-text)' }}>
-                  {category}
-                </CardTitle>
-                <span className="text-sm" style={{ color: 'var(--brand-muted)' }}>
-                  {categoryMastered}/{skills.length}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-2">
-                {skills.map((skill) => {
-                  const isMastered = masteredSkills.includes(skill.id);
-                  return (
-                    <div 
-                      key={skill.id}
-                      className="flex items-center gap-3 py-1"
-                    >
-                      {isMastered ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
-                      ) : (
-                        <Circle className="h-5 w-5 flex-shrink-0" style={{ color: 'var(--brand-muted)' }} />
-                      )}
-                      <span 
-                        className={isMastered ? 'line-through opacity-60' : ''}
-                        style={{ color: 'var(--brand-text)' }}
-                      >
-                        {skill.name}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-
       {/* Encouragement */}
       <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
         <CardContent className="p-4 text-center">
           <Car className="h-8 w-8 mx-auto mb-2" style={{ color: brandColour || '#1e3a5f' }} />
           <p className="text-sm" style={{ color: 'var(--brand-muted)' }}>
-            {progressPercent < 25 && "You're just getting started! Keep practicing."}
+            {progressPercent < 25 && "Your instructor will start tracking your progress soon!"}
             {progressPercent >= 25 && progressPercent < 50 && "Great progress! You're building solid foundations."}
             {progressPercent >= 50 && progressPercent < 75 && "Halfway there! Keep up the excellent work."}
             {progressPercent >= 75 && progressPercent < 100 && "Almost test ready! Final push needed."}
