@@ -60,29 +60,28 @@ Based on my analysis of Total Drive's feature set and your current EveryDriver/D
 
 ## Priority Implementation Plan
 
-### Phase 1: Critical Missing Features (High Impact)
+### Phase 1: Critical Missing Features (High Impact) ✅ COMPLETE
 
-**1. Drag-and-Drop Lesson Management**
-Enhance the calendar view to allow:
-- Drag lessons to different days/times
-- Resize lessons by dragging edges
-- Auto-send notification on lesson change
+**1. Drag-and-Drop Lesson Management** ✅
+Enhanced calendar view with:
+- ✅ Drag lessons to different days/times
+- ✅ Resize lessons by dragging edges (change duration)
+- ✅ Visual feedback during drag/resize
+- ✅ Touch support for mobile
 
-Files to modify:
-- `src/components/instructor/InstructorCalendar.tsx` - Add react-dnd or @dnd-kit/core
-- `src/pages/InstructorSchedule.tsx` - Wire up drag handlers
-- Create `src/hooks/useLessonDragDrop.ts` - Centralized drag logic
+**2. Driving Syllabus Progress Tracking** ✅
+Created structured syllabus system matching DVSA standards:
+- ✅ 27 key competencies across 6 categories
+- ✅ 6-level rating per skill (Not Started → Independent)
+- ✅ Visual progress spider chart (Recharts)
+- ✅ Instructor management in pupil cards
+- ✅ Pupil portal read-only view
 
-**2. Driving Syllabus Progress Tracking**
-Create a structured syllabus system matching DVSA standards:
-- 24 key competencies (controls, junctions, manoeuvres, etc.)
-- 5-level rating per skill (introduced → independent)
-- Visual progress spider chart
-
-New files:
-- `src/components/instructor/DrivingSyllabus.tsx` - Main syllabus grid
-- `src/components/instructor/SyllabusProgressChart.tsx` - Spider/radar chart
-- `src/components/pupil-portal/PupilSyllabusView.tsx` - Read-only pupil view
+**3. Weekly Recurring Lessons** ✅
+Added repeating weekly lessons:
+- ✅ "Every [day] at [time]" pattern
+- ✅ Choose 2-12 weeks of recurrence
+- ✅ Creates all lessons in batch
 
 Database:
 ```sql

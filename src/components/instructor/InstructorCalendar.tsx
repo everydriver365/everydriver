@@ -38,6 +38,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
     refetch,
     deleteBlock,
     rescheduleLesson,
+    resizeLesson,
     rescheduleBlock,
     calendarColors,
     setCalendarColors,
@@ -51,6 +52,7 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
   const [showShareSettings, setShowShareSettings] = useState(false);
   const [draggedEvent, setDraggedEvent] = useState<CalendarEvent | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<{ day: Date; hour: number } | null>(null);
+  const [resizingEvent, setResizingEvent] = useState<{ event: CalendarEvent; startY: number; originalHeight: number } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('calendar-sidebar-open');
     return saved !== null ? saved === 'true' : !isMobile;
@@ -172,6 +174,64 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
     setDraggedEvent(null);
     setDragOverSlot(null);
   };
+
+  // Resize handlers
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, event: CalendarEvent, currentHeight: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setResizingEvent({ event, startY, originalHeight: currentHeight });
+  };
+
+  const handleResizeMove = (e: MouseEvent | TouchEvent) => {
+    if (!resizingEvent) return;
+    e.preventDefault();
+  };
+
+  const handleResizeEnd = async (e: MouseEvent | TouchEvent) => {
+    if (!resizingEvent) return;
+    
+    const endY = 'touches' in e ? e.changedTouches[0].clientY : e.clientY;
+    const deltaY = endY - resizingEvent.startY;
+    const deltaMinutes = Math.round((deltaY / HOUR_HEIGHT) * 60);
+    
+    const originalDuration = differenceInMinutes(resizingEvent.event.end, resizingEvent.event.start);
+    const newDuration = originalDuration + deltaMinutes;
+    
+    // Minimum 30 minutes
+    if (newDuration >= 30 && resizingEvent.event.type === 'lesson') {
+      try {
+        await resizeLesson(resizingEvent.event.id, newDuration);
+        toast.success(`Lesson duration updated to ${Math.floor(newDuration / 60)}h ${newDuration % 60}m`);
+      } catch (error) {
+        console.error('Error resizing lesson:', error);
+        toast.error('Failed to resize lesson');
+      }
+    }
+    
+    setResizingEvent(null);
+  };
+
+  useEffect(() => {
+    if (resizingEvent) {
+      const handleMouseMove = (e: MouseEvent) => handleResizeMove(e);
+      const handleMouseUp = (e: MouseEvent) => handleResizeEnd(e);
+      const handleTouchMove = (e: TouchEvent) => handleResizeMove(e);
+      const handleTouchEnd = (e: TouchEvent) => handleResizeEnd(e);
+      
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
+      
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [resizingEvent]);
 
   if (loading) {
     return (
@@ -312,6 +372,8 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
               onDragEnd={handleDragEnd}
               draggedEvent={draggedEvent}
               dragOverSlot={dragOverSlot}
+              onResizeStart={handleResizeStart}
+              resizingEvent={resizingEvent}
             />
           )}
 
@@ -331,6 +393,8 @@ export function InstructorCalendar({ instructorId }: InstructorCalendarProps) {
               onDragEnd={handleDragEnd}
               draggedEvent={draggedEvent}
               dragOverSlot={dragOverSlot}
+              onResizeStart={handleResizeStart}
+              resizingEvent={resizingEvent}
             />
           )}
 
@@ -568,6 +632,8 @@ interface WeekViewProps {
   onDragEnd: () => void;
   draggedEvent: CalendarEvent | null;
   dragOverSlot: { day: Date; hour: number } | null;
+  onResizeStart: (e: React.MouseEvent | React.TouchEvent, event: CalendarEvent, currentHeight: number) => void;
+  resizingEvent: { event: CalendarEvent; startY: number; originalHeight: number } | null;
 }
 
 function WeekView({
@@ -585,6 +651,8 @@ function WeekView({
   onDragEnd,
   draggedEvent,
   dragOverSlot,
+  onResizeStart,
+  resizingEvent,
 }: WeekViewProps) {
   return (
     <div className="min-w-[800px]">
@@ -658,6 +726,8 @@ function WeekView({
                   const style = getEventStyle(event, day);
                   const color = getEventColor(event, calendarColors);
                   const isDraggable = event.type !== 'external';
+                  const isResizable = event.type === 'lesson';
+                  const isBeingResized = resizingEvent?.event.id === event.id;
                   
                   return (
                     <motion.div
@@ -665,12 +735,12 @@ function WeekView({
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: draggedEvent?.id === event.id ? 0.5 : 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      draggable={isDraggable}
+                      draggable={isDraggable && !isBeingResized}
                       onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, event)}
                       onDragEnd={onDragEnd}
                       className={cn(
                         "absolute left-1 right-1 rounded-md px-2 py-1 text-xs cursor-pointer border-l-4 overflow-hidden text-white group",
-                        isDraggable && "cursor-grab active:cursor-grabbing",
+                        isDraggable && !isBeingResized && "cursor-grab active:cursor-grabbing",
                         event.type === 'external' && "text-muted-foreground"
                       )}
                       style={{
@@ -691,6 +761,22 @@ function WeekView({
                       {style.height > 40 && (
                         <div className="text-[10px] opacity-80">
                           {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
+                        </div>
+                      )}
+                      {/* Resize Handle */}
+                      {isResizable && style.height >= 30 && (
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-3 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-b-md"
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            onResizeStart(e, event, style.height);
+                          }}
+                          onTouchStart={(e) => {
+                            e.stopPropagation();
+                            onResizeStart(e, event, style.height);
+                          }}
+                        >
+                          <div className="w-8 h-1 bg-white/60 rounded-full" />
                         </div>
                       )}
                     </motion.div>
@@ -744,6 +830,8 @@ interface DayViewProps {
   onDragEnd: () => void;
   draggedEvent: CalendarEvent | null;
   dragOverSlot: { day: Date; hour: number } | null;
+  onResizeStart: (e: React.MouseEvent | React.TouchEvent, event: CalendarEvent, currentHeight: number) => void;
+  resizingEvent: { event: CalendarEvent; startY: number; originalHeight: number } | null;
 }
 
 function DayView({ 
@@ -761,6 +849,8 @@ function DayView({
   onDragEnd,
   draggedEvent,
   dragOverSlot,
+  onResizeStart,
+  resizingEvent,
 }: DayViewProps) {
   return (
     <div className="flex">
@@ -799,6 +889,8 @@ function DayView({
             const style = getEventStyle(event, date);
             const color = getEventColor(event, calendarColors);
             const isDraggable = event.type !== 'external';
+            const isResizable = event.type === 'lesson';
+            const isBeingResized = resizingEvent?.event.id === event.id;
             
             return (
               <motion.div
@@ -806,12 +898,12 @@ function DayView({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: draggedEvent?.id === event.id ? 0.5 : 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                draggable={isDraggable}
+                draggable={isDraggable && !isBeingResized}
                 onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, event)}
                 onDragEnd={onDragEnd}
                 className={cn(
                   "absolute left-1 right-1 rounded-md px-3 py-2 cursor-pointer border-l-4 overflow-hidden text-white group",
-                  isDraggable && "cursor-grab active:cursor-grabbing",
+                  isDraggable && !isBeingResized && "cursor-grab active:cursor-grabbing",
                   event.type === 'external' && "text-muted-foreground"
                 )}
                 style={{
@@ -832,6 +924,22 @@ function DayView({
                 <div className="text-sm opacity-80">
                   {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
                 </div>
+                {/* Resize Handle */}
+                {isResizable && style.height >= 30 && (
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-b-md"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      onResizeStart(e, event, style.height);
+                    }}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      onResizeStart(e, event, style.height);
+                    }}
+                  >
+                    <div className="w-10 h-1 bg-white/60 rounded-full" />
+                  </div>
+                )}
               </motion.div>
             );
           })}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { Calendar as CalendarIcon, UserPlus, Users, Loader2 } from 'lucide-react';
+import { format, addWeeks } from 'date-fns';
+import { Calendar as CalendarIcon, UserPlus, Users, Loader2, Repeat } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,10 @@ export function AddLessonSheet({
   const [lessonDuration, setLessonDuration] = useState('1');
   const [pickupAddress, setPickupAddress] = useState('');
 
+  // Recurring lesson options
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceWeeks, setRecurrenceWeeks] = useState('4');
+
   // New pupil form state
   const [newPupilName, setNewPupilName] = useState('');
   const [newPupilPhone, setNewPupilPhone] = useState('');
@@ -86,6 +91,8 @@ export function AddLessonSheet({
     setNewPupilPostcode('');
     setLessonStartTime('09:00');
     setLessonDuration('1');
+    setIsRecurring(false);
+    setRecurrenceWeeks('4');
   };
 
   // Auto-fill pickup address when selecting an existing pupil
@@ -109,23 +116,51 @@ export function AddLessonSheet({
     try {
       const durationHours = parseFloat(lessonDuration);
       const durationMinutes = durationHours * 60;
+      const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
+      const lessons = [];
+
+      // Create parent lesson first (or single lesson if not recurring)
+      const parentLesson = {
+        instructor_id: instructorId,
+        pupil_id: selectedPupil,
+        lesson_date: format(lessonDate, 'yyyy-MM-dd'),
+        start_time: lessonStartTime,
+        duration_minutes: durationMinutes,
+        pickup_location: pickupAddress || null,
+        status: 'scheduled',
+        payment_status: 'unpaid',
+        recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
+      };
+      lessons.push(parentLesson);
+
+      // Create additional recurring lessons
+      if (isRecurring) {
+        for (let i = 1; i < weeks; i++) {
+          const recurringDate = addWeeks(lessonDate, i);
+          lessons.push({
+            instructor_id: instructorId,
+            pupil_id: selectedPupil,
+            lesson_date: format(recurringDate, 'yyyy-MM-dd'),
+            start_time: lessonStartTime,
+            duration_minutes: durationMinutes,
+            pickup_location: pickupAddress || null,
+            status: 'scheduled',
+            payment_status: 'unpaid',
+            recurrence_rule: `WEEKLY;COUNT=${weeks}`,
+          });
+        }
+      }
 
       const { error } = await supabase
         .from('scheduled_lessons')
-        .insert({
-          instructor_id: instructorId,
-          pupil_id: selectedPupil,
-          lesson_date: format(lessonDate, 'yyyy-MM-dd'),
-          start_time: lessonStartTime,
-          duration_minutes: durationMinutes,
-          pickup_location: pickupAddress || null,
-          status: 'scheduled',
-          payment_status: 'unpaid',
-        });
+        .insert(lessons);
 
       if (error) throw error;
 
-      toast.success('Lesson scheduled');
+      const message = isRecurring 
+        ? `${weeks} lessons scheduled (weekly recurring)` 
+        : 'Lesson scheduled';
+      toast.success(message);
       resetForm();
       onOpenChange(false);
       onSuccess();
@@ -160,27 +195,38 @@ export function AddLessonSheet({
 
       if (pupilError) throw pupilError;
 
-      // Then create the lesson
+      // Then create the lesson(s)
       const durationHours = parseFloat(lessonDuration);
       const durationMinutes = durationHours * 60;
       const addr = [newPupilAddress, newPupilPostcode].filter(Boolean).join(', ');
+      const weeks = isRecurring ? parseInt(recurrenceWeeks) : 1;
+      const lessons = [];
 
-      const { error: lessonError } = await supabase
-        .from('scheduled_lessons')
-        .insert({
+      for (let i = 0; i < weeks; i++) {
+        const recurringDate = i === 0 ? lessonDate : addWeeks(lessonDate, i);
+        lessons.push({
           instructor_id: instructorId,
           pupil_id: newPupil.id,
-          lesson_date: format(lessonDate, 'yyyy-MM-dd'),
+          lesson_date: format(recurringDate, 'yyyy-MM-dd'),
           start_time: lessonStartTime,
           duration_minutes: durationMinutes,
           pickup_location: addr || null,
           status: 'scheduled',
           payment_status: 'unpaid',
+          recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
         });
+      }
+
+      const { error: lessonError } = await supabase
+        .from('scheduled_lessons')
+        .insert(lessons);
 
       if (lessonError) throw lessonError;
 
-      toast.success('Pupil created and lesson scheduled');
+      const message = isRecurring 
+        ? `Pupil created and ${weeks} lessons scheduled (weekly)` 
+        : 'Pupil created and lesson scheduled';
+      toast.success(message);
       resetForm();
       onOpenChange(false);
       onSuccess();
@@ -311,6 +357,44 @@ export function AddLessonSheet({
                   onChange={(e) => setPickupAddress(e.target.value)}
                 />
               </div>
+
+              {/* Recurring Lesson Options */}
+              <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="h-4 w-4 text-muted-foreground" />
+                    <Label htmlFor="recurring-existing" className="text-sm cursor-pointer">
+                      Weekly recurring lesson
+                    </Label>
+                  </div>
+                  <Switch
+                    id="recurring-existing"
+                    checked={isRecurring}
+                    onCheckedChange={setIsRecurring}
+                  />
+                </div>
+                {isRecurring && (
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Number of weeks</Label>
+                    <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 weeks</SelectItem>
+                        <SelectItem value="4">4 weeks</SelectItem>
+                        <SelectItem value="6">6 weeks</SelectItem>
+                        <SelectItem value="8">8 weeks</SelectItem>
+                        <SelectItem value="10">10 weeks</SelectItem>
+                        <SelectItem value="12">12 weeks</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
+                    </p>
+                  </div>
+                )}
+              </div>
             </TabsContent>
 
             {/* New Pupil Tab */}
@@ -405,6 +489,44 @@ export function AddLessonSheet({
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* Recurring Lesson Options */}
+              <div className="border rounded-lg p-3 bg-muted/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="h-4 w-4 text-muted-foreground" />
+                    <Label htmlFor="recurring-new" className="text-sm cursor-pointer">
+                      Weekly recurring lesson
+                    </Label>
+                  </div>
+                  <Switch
+                    id="recurring-new"
+                    checked={isRecurring}
+                    onCheckedChange={setIsRecurring}
+                  />
+                </div>
+                {isRecurring && (
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Number of weeks</Label>
+                    <Select value={recurrenceWeeks} onValueChange={setRecurrenceWeeks}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2 weeks</SelectItem>
+                        <SelectItem value="4">4 weeks</SelectItem>
+                        <SelectItem value="6">6 weeks</SelectItem>
+                        <SelectItem value="8">8 weeks</SelectItem>
+                        <SelectItem value="10">10 weeks</SelectItem>
+                        <SelectItem value="12">12 weeks</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Creates {recurrenceWeeks} lessons, same time every {lessonDate ? format(lessonDate, 'EEEE') : 'week'}
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>

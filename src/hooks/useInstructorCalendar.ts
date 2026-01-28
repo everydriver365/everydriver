@@ -273,6 +273,22 @@ export function useInstructorCalendar(instructorId: string) {
     await fetchEvents();
   }, [fetchEvents]);
 
+  // Resize a lesson (change duration by dragging edge)
+  const resizeLesson = useCallback(async (lessonId: string, newDurationMinutes: number) => {
+    // Minimum 30 minutes, maximum 6 hours
+    const duration = Math.max(30, Math.min(360, newDurationMinutes));
+    
+    const { error } = await supabase
+      .from('scheduled_lessons')
+      .update({
+        duration_minutes: duration,
+      })
+      .eq('id', lessonId);
+
+    if (error) throw error;
+    await fetchEvents();
+  }, [fetchEvents]);
+
   // Reschedule a block (drag and drop)
   const rescheduleBlock = useCallback(async (blockId: string, newStart: Date, newEnd: Date) => {
     const { error } = await supabase
@@ -305,6 +321,7 @@ export function useInstructorCalendar(instructorId: string) {
     updateBlock,
     deleteBlock,
     rescheduleLesson,
+    resizeLesson,
     rescheduleBlock,
     calendarColors,
     setCalendarColors,
