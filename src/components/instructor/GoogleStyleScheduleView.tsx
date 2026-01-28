@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, startOfWeek, endOfWeek, isToday } from 'date-fns';
-import { ChevronLeft, ChevronRight, Palette, MapPin, Clock, User } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, startOfWeek, endOfWeek, isToday, startOfDay, addHours } from 'date-fns';
+import { ChevronLeft, ChevronRight, Palette, MapPin, Clock, User, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ interface GoogleStyleScheduleViewProps {
   calendarColors: CalendarColors;
   onEventClick?: (event: CalendarEvent) => void;
   onColorSettingsClick?: () => void;
+  onAddEvent?: (date?: Date) => void;
   currentDate: Date;
   onNavigate: (direction: 'prev' | 'next' | 'today') => void;
   loading?: boolean;
@@ -100,11 +101,13 @@ function DayRow({
   dayEvents, 
   colors, 
   onEventClick,
+  onDayClick,
   isFirstInWeek 
 }: { 
   dayEvents: DayEvents; 
   colors: CalendarColors; 
   onEventClick?: (event: CalendarEvent) => void;
+  onDayClick?: (date: Date) => void;
   isFirstInWeek: boolean;
 }) {
   const dayName = format(dayEvents.date, 'EEE').toUpperCase();
@@ -135,11 +138,14 @@ function DayRow({
         </div>
       </div>
       
-      {/* Events column */}
-      <div className="flex-1 py-2 px-2 min-h-[60px]">
+      {/* Events column - clickable to add */}
+      <button
+        onClick={() => onDayClick?.(dayEvents.date)}
+        className="flex-1 py-2 px-2 min-h-[60px] text-left hover:bg-muted/50 transition-colors cursor-pointer"
+      >
         {dayEvents.events.length === 0 ? (
           <div className="h-full flex items-center">
-            <span className="text-xs text-muted-foreground italic">No events</span>
+            <span className="text-xs text-muted-foreground italic">Tap to add</span>
           </div>
         ) : (
           dayEvents.events.map(event => (
@@ -151,7 +157,7 @@ function DayRow({
             />
           ))
         )}
-      </div>
+      </button>
     </div>
   );
 }
@@ -194,6 +200,7 @@ export function GoogleStyleScheduleView({
   calendarColors,
   onEventClick,
   onColorSettingsClick,
+  onAddEvent,
   currentDate,
   onNavigate,
   loading
@@ -280,16 +287,28 @@ export function GoogleStyleScheduleView({
           {format(currentDate, 'MMMM yyyy')}
         </h2>
         
-        {onColorSettingsClick && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onColorSettingsClick}
-            className="h-8 w-8"
-          >
-            <Palette className="h-4 w-4" />
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {onColorSettingsClick && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onColorSettingsClick}
+              className="h-8 w-8"
+            >
+              <Palette className="h-4 w-4" />
+            </Button>
+          )}
+          {onAddEvent && (
+            <Button
+              size="sm"
+              onClick={() => onAddEvent()}
+              className="h-8"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add
+            </Button>
+          )}
+        </div>
       </div>
       
       {/* Scrollable content */}
@@ -313,6 +332,7 @@ export function GoogleStyleScheduleView({
                     dayEvents={dayEvents}
                     colors={calendarColors}
                     onEventClick={onEventClick}
+                    onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
                     isFirstInWeek={dayIndex === 0}
                   />
                 ))}
