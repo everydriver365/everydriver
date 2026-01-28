@@ -339,7 +339,7 @@ serve(async (req) => {
       }
     }
 
-    // Update device record
+    // Update device record with speed limit (always, even without pupil)
     const { error: updateError } = await supabase
       .from("traccar_devices")
       .update({
@@ -348,6 +348,7 @@ serve(async (req) => {
         last_longitude: lon,
         last_heading: bearing,
         last_seen_at: now.toISOString(),
+        last_speed_limit_kmh: speedLimitKmh, // Always store speed limit
       })
       .eq("id", typedDevice.id);
 
