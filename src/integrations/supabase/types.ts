@@ -4185,6 +4185,47 @@ export type Database = {
           },
         ]
       }
+      pupil_syllabus_progress: {
+        Row: {
+          competency_id: string
+          created_at: string | null
+          id: string
+          instructor_notes: string | null
+          last_practiced: string | null
+          level: number | null
+          pupil_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          competency_id: string
+          created_at?: string | null
+          id?: string
+          instructor_notes?: string | null
+          last_practiced?: string | null
+          level?: number | null
+          pupil_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          competency_id?: string
+          created_at?: string | null
+          id?: string
+          instructor_notes?: string | null
+          last_practiced?: string | null
+          level?: number | null
+          pupil_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_syllabus_progress_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pupil_upsells: {
         Row: {
           amount_paid: number
@@ -4590,6 +4631,57 @@ export type Database = {
           },
         ]
       }
+      reflective_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          improvements: string | null
+          instructor_response: string | null
+          lesson_history_id: string | null
+          next_goals: string | null
+          pupil_id: string
+          updated_at: string | null
+          what_went_well: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          improvements?: string | null
+          instructor_response?: string | null
+          lesson_history_id?: string | null
+          next_goals?: string | null
+          pupil_id: string
+          updated_at?: string | null
+          what_went_well?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          improvements?: string | null
+          instructor_response?: string | null
+          lesson_history_id?: string | null
+          next_goals?: string | null
+          pupil_id?: string
+          updated_at?: string | null
+          what_went_well?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflective_logs_lesson_history_id_fkey"
+            columns: ["lesson_history_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reflective_logs_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       remote_signing_tokens: {
         Row: {
           created_at: string
@@ -4848,6 +4940,8 @@ export type Database = {
           pickup_what3words: string | null
           prepaid_hours_used: number | null
           pupil_id: string
+          recurrence_parent_id: string | null
+          recurrence_rule: string | null
           start_time: string
           status: string
           updated_at: string
@@ -4871,6 +4965,8 @@ export type Database = {
           pickup_what3words?: string | null
           prepaid_hours_used?: number | null
           pupil_id: string
+          recurrence_parent_id?: string | null
+          recurrence_rule?: string | null
           start_time: string
           status?: string
           updated_at?: string
@@ -4894,6 +4990,8 @@ export type Database = {
           pickup_what3words?: string | null
           prepaid_hours_used?: number | null
           pupil_id?: string
+          recurrence_parent_id?: string | null
+          recurrence_rule?: string | null
           start_time?: string
           status?: string
           updated_at?: string
@@ -4912,6 +5010,13 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lessons_recurrence_parent_id_fkey"
+            columns: ["recurrence_parent_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
             referencedColumns: ["id"]
           },
           {
@@ -5133,6 +5238,44 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      syllabus_templates: {
+        Row: {
+          competencies: Json
+          created_at: string | null
+          id: string
+          instructor_id: string | null
+          is_default: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          competencies?: Json
+          created_at?: string | null
+          id?: string
+          instructor_id?: string | null
+          is_default?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          competencies?: Json
+          created_at?: string | null
+          id?: string
+          instructor_id?: string | null
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syllabus_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       telematics_alerts: {
         Row: {
