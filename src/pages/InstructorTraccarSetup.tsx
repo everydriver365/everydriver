@@ -227,23 +227,24 @@ export default function InstructorTraccarSetup() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background border-b px-4 py-3">
+      {/* Header - Primary color to match bottom nav */}
+      <div className="sticky top-0 z-10 bg-primary border-b border-primary-foreground/10 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor/settings")}>
+            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor/settings")} className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
+            <div className="text-primary-foreground">
               <h1 className="text-lg font-semibold">Traccar GPS Setup</h1>
-              <p className="text-sm text-muted-foreground">Configure external GPS tracking</p>
+              <p className="text-sm text-primary-foreground/70">Configure external GPS tracking</p>
             </div>
           </div>
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="icon" 
             onClick={fetchDevices}
             disabled={isLoading}
+            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
