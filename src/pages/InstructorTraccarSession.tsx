@@ -173,7 +173,7 @@ export default function InstructorTraccarSession() {
     }
   };
 
-  // Poll device status and speed limit
+  // Poll device status and speed limit with realtime subscription
   useEffect(() => {
     if (!device?.id) return;
 
@@ -188,8 +188,8 @@ export default function InstructorTraccarSession() {
         setDevice(data as TraccarDevice);
       }
 
-      // Also fetch distance and speed limit if session active
-      if (device.current_session_id && device.current_pupil_id) {
+      // Also fetch distance if session active
+      if (device.current_session_id) {
         const { data: session } = await supabase
           .from("lesson_telematics")
           .select("total_distance_km")
@@ -199,24 +199,64 @@ export default function InstructorTraccarSession() {
         if (session?.total_distance_km) {
           setTotalDistance(session.total_distance_km);
         }
-
-        // Fetch current speed limit from live position
-        const { data: livePos } = await supabase
-          .from("live_pupil_positions")
-          .select("speed_limit_kmh")
-          .eq("pupil_id", device.current_pupil_id)
-          .eq("is_active", true)
-          .maybeSingle();
-        
-        if (livePos?.speed_limit_kmh !== undefined) {
-          setSpeedLimitKmh(livePos.speed_limit_kmh);
-        }
       }
     };
 
-    const interval = setInterval(pollDevice, 3000);
+    // Initial fetch
+    pollDevice();
+    
+    // Fallback polling every 5s
+    const interval = setInterval(pollDevice, 5000);
+    
     return () => clearInterval(interval);
-  }, [device?.id, device?.current_session_id, device?.current_pupil_id]);
+  }, [device?.id, device?.current_session_id]);
+
+  // Realtime subscription for live position updates (speed + speed limit)
+  useEffect(() => {
+    if (!device?.current_pupil_id || !device?.current_session_id) return;
+
+    // Subscribe to live position changes for instant speed/limit updates
+    const channel = supabase
+      .channel(`live-pos-${device.current_pupil_id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "live_pupil_positions",
+          filter: `pupil_id=eq.${device.current_pupil_id}`,
+        },
+        (payload) => {
+          const newPos = payload.new as { 
+            speed_kmh?: number; 
+            speed_limit_kmh?: number | null;
+            latitude?: number;
+            longitude?: number;
+            heading?: number;
+          };
+          
+          if (newPos.speed_limit_kmh !== undefined) {
+            setSpeedLimitKmh(newPos.speed_limit_kmh);
+          }
+          
+          // Update device state with new position data
+          if (newPos.latitude !== undefined || newPos.speed_kmh !== undefined) {
+            setDevice((prev) => prev ? {
+              ...prev,
+              last_latitude: newPos.latitude ?? prev.last_latitude,
+              last_longitude: newPos.longitude ?? prev.last_longitude,
+              last_speed_kmh: newPos.speed_kmh ?? prev.last_speed_kmh,
+              last_heading: newPos.heading ?? prev.last_heading,
+            } : prev);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [device?.current_pupil_id, device?.current_session_id]);
 
   // Fetch alert counts and events when session is active
   useEffect(() => {
