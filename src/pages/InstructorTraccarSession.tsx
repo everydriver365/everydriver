@@ -48,6 +48,7 @@ interface TraccarDevice {
   last_latitude: number | null;
   last_longitude: number | null;
   last_heading: number | null;
+  last_speed_limit_kmh: number | null;
   current_session_id: string | null;
   current_pupil_id: string | null;
   is_test_route_mode?: boolean;
@@ -173,7 +174,7 @@ export default function InstructorTraccarSession() {
     }
   };
 
-  // Poll device status and speed limit with realtime subscription
+  // Realtime subscription to traccar_devices for instant updates
   useEffect(() => {
     if (!device?.id) return;
 
@@ -185,7 +186,12 @@ export default function InstructorTraccarSession() {
         .single();
       
       if (data) {
-        setDevice(data as TraccarDevice);
+        const typedDevice = data as TraccarDevice;
+        setDevice(typedDevice);
+        // Always read speed limit from device (works for test routes too)
+        if (typedDevice.last_speed_limit_kmh !== undefined) {
+          setSpeedLimitKmh(typedDevice.last_speed_limit_kmh);
+        }
       }
 
       // Also fetch distance if session active
@@ -205,17 +211,43 @@ export default function InstructorTraccarSession() {
     // Initial fetch
     pollDevice();
     
-    // Fallback polling every 5s
-    const interval = setInterval(pollDevice, 5000);
+    // Subscribe to device changes for instant updates (no pupil required)
+    const channel = supabase
+      .channel(`device-rt-${device.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "traccar_devices",
+          filter: `id=eq.${device.id}`,
+        },
+        (payload) => {
+          const newDevice = payload.new as TraccarDevice;
+          setDevice(newDevice);
+          // Update speed limit from device (works for all session types)
+          if (newDevice.last_speed_limit_kmh !== undefined) {
+            setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
+          }
+        }
+      )
+      .subscribe();
     
-    return () => clearInterval(interval);
+    // Fallback polling every 10s (reduced since we have realtime)
+    const interval = setInterval(pollDevice, 10000);
+    
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
   }, [device?.id, device?.current_session_id]);
 
-  // Realtime subscription for live position updates (speed + speed limit)
+  // Additional realtime subscription for pupil sessions (live_pupil_positions)
+  // This is supplementary - the main updates come from traccar_devices subscription above
   useEffect(() => {
     if (!device?.current_pupil_id || !device?.current_session_id) return;
 
-    // Subscribe to live position changes for instant speed/limit updates
+    // Subscribe to live position changes for pupil sessions (additional data source)
     const channel = supabase
       .channel(`live-pos-${device.current_pupil_id}`)
       .on(
@@ -235,19 +267,9 @@ export default function InstructorTraccarSession() {
             heading?: number;
           };
           
-          if (newPos.speed_limit_kmh !== undefined) {
+          // Use speed limit from live_pupil_positions if available
+          if (newPos.speed_limit_kmh !== undefined && newPos.speed_limit_kmh !== null) {
             setSpeedLimitKmh(newPos.speed_limit_kmh);
-          }
-          
-          // Update device state with new position data
-          if (newPos.latitude !== undefined || newPos.speed_kmh !== undefined) {
-            setDevice((prev) => prev ? {
-              ...prev,
-              last_latitude: newPos.latitude ?? prev.last_latitude,
-              last_longitude: newPos.longitude ?? prev.last_longitude,
-              last_speed_kmh: newPos.speed_kmh ?? prev.last_speed_kmh,
-              last_heading: newPos.heading ?? prev.last_heading,
-            } : prev);
           }
         }
       )

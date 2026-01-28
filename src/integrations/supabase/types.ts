@@ -5571,6 +5571,7 @@ export type Database = {
           last_longitude: number | null
           last_seen_at: string | null
           last_speed_kmh: number | null
+          last_speed_limit_kmh: number | null
           updated_at: string | null
         }
         Insert: {
@@ -5588,6 +5589,7 @@ export type Database = {
           last_longitude?: number | null
           last_seen_at?: string | null
           last_speed_kmh?: number | null
+          last_speed_limit_kmh?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -5605,6 +5607,7 @@ export type Database = {
           last_longitude?: number | null
           last_seen_at?: string | null
           last_speed_kmh?: number | null
+          last_speed_limit_kmh?: number | null
           updated_at?: string | null
         }
         Relationships: [
