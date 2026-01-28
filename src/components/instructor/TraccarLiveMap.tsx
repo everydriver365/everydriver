@@ -21,6 +21,7 @@ interface TraccarLiveMapProps {
   longitude: number | null;
   heading: number | null;
   speedKmh: number | null;
+  speedLimitKmh: number | null;
   isConnected: boolean;
   sessionId: string | null;
   events?: DrivingEvent[];
@@ -37,6 +38,7 @@ export default function TraccarLiveMap({
   longitude,
   heading,
   speedKmh,
+  speedLimitKmh,
   isConnected,
   sessionId,
   events = [],
@@ -286,9 +288,8 @@ export default function TraccarLiveMap({
 
   const speedMph = speedKmh !== null ? Math.round(speedKmh * 0.621371) : 0;
   
-  // TODO: Speed limit would come from a speed limit API - for now show placeholder
-  // In a real implementation, you'd fetch this based on current lat/lon
-  const speedLimitMph = 30; // Placeholder - would come from road data API
+  // Convert speed limit from km/h to mph
+  const speedLimitMph = speedLimitKmh !== null ? Math.round(speedLimitKmh * 0.621371) : null;
 
   return (
     <div className={`relative w-full h-full min-h-[300px] ${className}`}>
@@ -335,9 +336,9 @@ export default function TraccarLiveMap({
         <div className="absolute top-4 right-4 z-20 flex flex-col gap-3 items-center">
           {/* Current Speed Display */}
           <div className="flex flex-col items-center">
-            <div className={`w-18 h-18 min-w-[72px] min-h-[72px] rounded-full bg-white shadow-lg border-4 flex items-center justify-center ${speedMph > speedLimitMph ? 'border-red-500' : 'border-green-500'}`}>
+            <div className={`w-18 h-18 min-w-[72px] min-h-[72px] rounded-full bg-background shadow-lg border-4 flex items-center justify-center ${speedLimitMph !== null && speedMph > speedLimitMph ? 'border-destructive' : 'border-green-500'}`}>
               <div className="flex flex-col items-center">
-                <span className={`text-3xl font-bold leading-none ${speedMph > speedLimitMph ? 'text-red-600' : 'text-foreground'}`}>
+                <span className={`text-3xl font-bold leading-none ${speedLimitMph !== null && speedMph > speedLimitMph ? 'text-destructive' : 'text-foreground'}`}>
                   {speedMph}
                 </span>
                 <span className="text-[10px] font-semibold text-muted-foreground">MPH</span>
@@ -347,8 +348,10 @@ export default function TraccarLiveMap({
 
           {/* UK Speed Limit Roundel (red ring) */}
           <div className="flex flex-col items-center">
-            <div className="w-14 h-14 rounded-full bg-white shadow-lg border-[5px] border-red-600 flex items-center justify-center">
-              <span className="text-xl font-bold text-foreground">{speedLimitMph}</span>
+            <div className="w-14 h-14 rounded-full bg-background shadow-lg border-[5px] border-destructive flex items-center justify-center">
+              <span className="text-xl font-bold text-foreground">
+                {speedLimitMph !== null ? speedLimitMph : "—"}
+              </span>
             </div>
           </div>
         </div>

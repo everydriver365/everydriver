@@ -93,6 +93,7 @@ export default function InstructorTraccarSession() {
   const [completedSessionId, setCompletedSessionId] = useState<string | null>(null);
   const [totalDistance, setTotalDistance] = useState<number>(0);
   const [drivingEvents, setDrivingEvents] = useState<DrivingEvent[]>([]);
+  const [speedLimitKmh, setSpeedLimitKmh] = useState<number | null>(null);
   const [pendingRouteType, setPendingRouteType] = useState<"practice" | "test" | "driving_test">("practice");
   const [showDrivingTestDialog, setShowDrivingTestDialog] = useState(false);
   const [drivingTestDetails, setDrivingTestDetails] = useState<{
@@ -172,7 +173,7 @@ export default function InstructorTraccarSession() {
     }
   };
 
-  // Poll device status
+  // Poll device status and speed limit
   useEffect(() => {
     if (!device?.id) return;
 
@@ -187,8 +188,8 @@ export default function InstructorTraccarSession() {
         setDevice(data as TraccarDevice);
       }
 
-      // Also fetch distance if session active
-      if (device.current_session_id) {
+      // Also fetch distance and speed limit if session active
+      if (device.current_session_id && device.current_pupil_id) {
         const { data: session } = await supabase
           .from("lesson_telematics")
           .select("total_distance_km")
@@ -198,12 +199,24 @@ export default function InstructorTraccarSession() {
         if (session?.total_distance_km) {
           setTotalDistance(session.total_distance_km);
         }
+
+        // Fetch current speed limit from live position
+        const { data: livePos } = await supabase
+          .from("live_pupil_positions")
+          .select("speed_limit_kmh")
+          .eq("pupil_id", device.current_pupil_id)
+          .eq("is_active", true)
+          .maybeSingle();
+        
+        if (livePos?.speed_limit_kmh !== undefined) {
+          setSpeedLimitKmh(livePos.speed_limit_kmh);
+        }
       }
     };
 
     const interval = setInterval(pollDevice, 3000);
     return () => clearInterval(interval);
-  }, [device?.id, device?.current_session_id]);
+  }, [device?.id, device?.current_session_id, device?.current_pupil_id]);
 
   // Fetch alert counts and events when session is active
   useEffect(() => {
@@ -682,6 +695,7 @@ export default function InstructorTraccarSession() {
               longitude={device.last_longitude}
               heading={device.last_heading}
               speedKmh={device.last_speed_kmh}
+              speedLimitKmh={speedLimitKmh}
               isConnected={isConnected}
               sessionId={device.current_session_id}
               events={drivingEvents}
