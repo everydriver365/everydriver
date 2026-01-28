@@ -63,25 +63,46 @@ Based on my analysis of Total Drive's feature set and your current EveryDriver/D
 ### Phase 1: Critical Missing Features (High Impact) ✅ COMPLETE
 
 **1. Drag-and-Drop Lesson Management** ✅
-Enhanced calendar view with:
-- ✅ Drag lessons to different days/times
-- ✅ Resize lessons by dragging edges (change duration)
-- ✅ Visual feedback during drag/resize
-- ✅ Touch support for mobile
-
 **2. Driving Syllabus Progress Tracking** ✅
-Created structured syllabus system matching DVSA standards:
-- ✅ 27 key competencies across 6 categories
-- ✅ 6-level rating per skill (Not Started → Independent)
-- ✅ Visual progress spider chart (Recharts)
-- ✅ Instructor management in pupil cards
-- ✅ Pupil portal read-only view
-
 **3. Weekly Recurring Lessons** ✅
-Added repeating weekly lessons:
-- ✅ "Every [day] at [time]" pattern
-- ✅ Choose 2-12 weeks of recurrence
-- ✅ Creates all lessons in batch
+
+### Phase 2: Communication Enhancements ✅ COMPLETE
+
+**4. Broadcast Messaging** ✅
+- ✅ BulkSMSDialog component with pupil selection
+- ✅ Quick message templates (Holiday, Schedule Change, etc.)
+- ✅ Send to selected pupils via SMS
+
+**5. Reflective Learning Logs** ✅
+- ✅ ReflectiveLog component for pupils
+- ✅ PupilReflectiveLogs for instructors to review/respond
+- ✅ Database table with RLS policies
+
+### Phase 3: Enhanced Pupil Experience ✅ COMPLETE
+
+**6. Visual Progress Dashboard** ✅
+- ✅ ProgressDashboard with radar charts
+- ✅ Milestone badges system
+- ✅ Hours vs target tracking
+
+**7. Custom Syllabus Builder** ✅
+- ✅ SyllabusBuilder component
+- ✅ Create/edit/duplicate templates
+- ✅ Load DVSA standard or custom competencies
+
+### Phase 4: Quality of Life Improvements ✅ COMPLETE
+
+**8. Training Resources/Aids** ✅
+- ✅ TrainingResources component
+- ✅ Link videos, PDFs, notes to skills
+
+**9. Emergency Contact Field** ✅
+- ✅ EmergencyContactEditor component
+- ✅ Added to pupils table
+
+**10. Per-Pupil Lesson Rates** ✅
+- ✅ PupilRateEditor component
+- ✅ custom_hourly_rate field added
 
 Database:
 ```sql

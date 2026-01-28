@@ -4295,12 +4295,16 @@ export type Database = {
           course_type: string | null
           created_at: string
           current_streak: number | null
+          custom_hourly_rate: number | null
           damoov_device_token: string | null
           date_of_birth: string | null
           deposit_forfeited: boolean | null
           deposit_paid: number | null
           drive_coins: number | null
           email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relation: string | null
           enquiry_id: string | null
           free_lessons_earned: number | null
           free_lessons_used: number | null
@@ -4354,12 +4358,16 @@ export type Database = {
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
+          custom_hourly_rate?: number | null
           damoov_device_token?: string | null
           date_of_birth?: string | null
           deposit_forfeited?: boolean | null
           deposit_paid?: number | null
           drive_coins?: number | null
           email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
           enquiry_id?: string | null
           free_lessons_earned?: number | null
           free_lessons_used?: number | null
@@ -4413,12 +4421,16 @@ export type Database = {
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
+          custom_hourly_rate?: number | null
           damoov_device_token?: string | null
           date_of_birth?: string | null
           deposit_forfeited?: boolean | null
           deposit_paid?: number | null
           drive_coins?: number | null
           email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
           enquiry_id?: string | null
           free_lessons_earned?: number | null
           free_lessons_used?: number | null
@@ -5246,6 +5258,7 @@ export type Database = {
           id: string
           instructor_id: string | null
           is_default: boolean | null
+          is_shared: boolean | null
           name: string
           updated_at: string | null
         }
@@ -5255,6 +5268,7 @@ export type Database = {
           id?: string
           instructor_id?: string | null
           is_default?: boolean | null
+          is_shared?: boolean | null
           name: string
           updated_at?: string | null
         }
@@ -5264,6 +5278,7 @@ export type Database = {
           id?: string
           instructor_id?: string | null
           is_default?: boolean | null
+          is_shared?: boolean | null
           name?: string
           updated_at?: string | null
         }
