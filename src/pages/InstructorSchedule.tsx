@@ -5,6 +5,7 @@ import { NewMobileScheduleView } from "@/components/instructor/NewMobileSchedule
 import { InstructorCalendar } from "@/components/instructor/InstructorCalendar";
 import { GoogleStyleScheduleView } from "@/components/instructor/GoogleStyleScheduleView";
 import { CalendarColorSettings } from "@/components/instructor/CalendarColorSettings";
+import { AddCalendarEventDialog } from "@/components/instructor/AddCalendarEventDialog";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar } from "@/hooks/useInstructorCalendar";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,8 @@ export default function InstructorSchedule() {
   });
 
   const [colorSettingsOpen, setColorSettingsOpen] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
+  const [addEventDate, setAddEventDate] = useState<Date | null>(null);
 
   // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
@@ -32,6 +35,11 @@ export default function InstructorSchedule() {
   useEffect(() => {
     localStorage.setItem('instructor-schedule-view', viewMode);
   }, [viewMode]);
+
+  const handleAddEvent = (date?: Date) => {
+    setAddEventDate(date || null);
+    setAddEventOpen(true);
+  };
 
   if (!instructorId) {
     return (
@@ -94,6 +102,7 @@ export default function InstructorSchedule() {
               onNavigate={calendar.navigate}
               loading={calendar.loading}
               onColorSettingsClick={() => setColorSettingsOpen(true)}
+              onAddEvent={handleAddEvent}
               onEventClick={(event) => {
                 // TODO: Open event detail sheet
                 console.log('Event clicked:', event);
@@ -114,6 +123,18 @@ export default function InstructorSchedule() {
         instructorId={instructorId}
         colors={calendar.calendarColors}
         onColorsChange={calendar.setCalendarColors}
+      />
+
+      {/* Add Event Dialog - for Schedule view */}
+      <AddCalendarEventDialog
+        open={addEventOpen}
+        onOpenChange={setAddEventOpen}
+        instructorId={instructorId}
+        defaultDate={addEventDate}
+        onSuccess={() => {
+          setAddEventOpen(false);
+          calendar.refetch();
+        }}
       />
     </InstructorPortalLayout>
   );
