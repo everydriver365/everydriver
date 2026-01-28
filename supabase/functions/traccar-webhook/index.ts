@@ -86,13 +86,17 @@ async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
   // Check cache first
   const cached = speedLimitCache.get(gridKey);
   if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
+    console.log(`[Traccar] Speed limit from cache: ${cached.limit} km/h`);
     return cached.limit;
   }
   
+  console.log(`[Traccar] Speed limit lookup at ${lat.toFixed(6)},${lon.toFixed(6)}`);
+  
   try {
-    // Query Overpass API for roads with maxspeed within 20m radius
+    // Query Overpass API for roads with maxspeed within 50m radius
+    // Increased from 20m to account for GPS accuracy (typically 5-20m off road centerline)
     const query = `[out:json][timeout:5];
-      way(around:20,${lat},${lon})[highway][maxspeed];
+      way(around:50,${lat},${lon})[highway][maxspeed];
       out tags;`;
     
     const response = await fetch(
@@ -116,6 +120,8 @@ async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
         speedLimit = parseMaxSpeed(road.tags.maxspeed);
         console.log(`[Traccar] Speed limit found: ${road.tags.maxspeed} → ${speedLimit} km/h`);
       }
+    } else {
+      console.log(`[Traccar] No roads with maxspeed found within 50m`);
     }
     
     // Cache the result (even null to avoid repeated lookups)
