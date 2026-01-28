@@ -3,8 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { supabase } from "@/integrations/supabase/client";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
-import { Button } from "@/components/ui/button";
-import { Crosshair, ZoomIn, ZoomOut, Compass } from "lucide-react";
+import { Navigation, Locate } from "lucide-react";
 
 interface DrivingEvent {
   id: string;
@@ -24,6 +23,7 @@ interface TraccarLiveMapProps {
   speedLimitKmh: number | null;
   isConnected: boolean;
   sessionId: string | null;
+  roadName?: string | null;
   events?: DrivingEvent[];
   className?: string;
 }
@@ -41,6 +41,7 @@ export default function TraccarLiveMap({
   speedLimitKmh,
   isConnected,
   sessionId,
+  roadName,
   events = [],
   className = "",
 }: TraccarLiveMapProps) {
@@ -61,19 +62,6 @@ export default function TraccarLiveMap({
     }
   }, [latitude, longitude]);
 
-  const handleZoomIn = useCallback(() => {
-    const map = mapInstanceRef.current;
-    if (map) {
-      map.zoomIn();
-    }
-  }, []);
-
-  const handleZoomOut = useCallback(() => {
-    const map = mapInstanceRef.current;
-    if (map) {
-      map.zoomOut();
-    }
-  }, []);
   // Fetch route points when session changes + realtime subscription
   useEffect(() => {
     if (!sessionId) {
@@ -132,23 +120,24 @@ export default function TraccarLiveMap({
     };
   }, [sessionId]);
 
-  // Initialize map
+  // Initialize map with dark theme
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapRef.current, {
       center: [54.5, -3.5],
-      zoom: 14,
+      zoom: 17,
       zoomControl: false,
-      attributionControl: true,
+      attributionControl: false,
     });
 
-    L.tileLayer(getMapTileUrl(), {
-      attribution: getMapAttribution(),
+    L.tileLayer(getMapTileUrl('dark'), {
+      attribution: getMapAttribution('dark'),
       maxZoom: 19,
     }).addTo(map);
 
-    L.control.zoom({ position: "bottomright" }).addTo(map);
+    // Small attribution in corner
+    L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
 
     mapInstanceRef.current = map;
 
@@ -158,7 +147,7 @@ export default function TraccarLiveMap({
     };
   }, []);
 
-  // Update marker position and style
+  // Update marker position and style (Apple Maps navigation arrow style)
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -171,39 +160,47 @@ export default function TraccarLiveMap({
       return;
     }
 
-    const speedMph = speedKmh !== null ? Math.round(speedKmh * 0.621371) : 0;
     const rotation = heading ?? 0;
-    const markerColor = isConnected ? "#22c55e" : "#6b7280";
 
+    // Apple Maps style navigation arrow with pulse ring
     const iconHtml = `
-      <div style="position: relative; width: 60px; height: 60px; transform: translate(-30px, -30px);">
+      <div style="position: relative; width: 56px; height: 56px; transform: translate(-28px, -28px);">
+        <!-- Pulse ring -->
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 56px;
+          height: 56px;
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          background: rgba(59, 130, 246, 0.2);
+          animation: pulse-ring 2s ease-out infinite;
+        "></div>
+        <!-- White circle background -->
         <div style="
           position: absolute;
           top: 50%;
           left: 50%;
           width: 40px;
           height: 40px;
-          transform: translate(-50%, -50%) rotate(${rotation}deg);
-        ">
-          <svg viewBox="0 0 24 24" fill="${markerColor}" stroke="white" stroke-width="1.5">
-            <path d="M12 2L4 20h16L12 2z"/>
-          </svg>
-        </div>
+          transform: translate(-50%, -50%);
+          border-radius: 50%;
+          background: white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        "></div>
+        <!-- Navigation arrow -->
         <div style="
           position: absolute;
-          top: -24px;
+          top: 50%;
           left: 50%;
-          transform: translateX(-50%);
-          background: ${markerColor};
-          color: white;
-          padding: 2px 8px;
-          border-radius: 12px;
-          font-size: 12px;
-          font-weight: bold;
-          white-space: nowrap;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          width: 24px;
+          height: 24px;
+          transform: translate(-50%, -50%) rotate(${rotation}deg);
         ">
-          ${speedMph} mph
+          <svg viewBox="0 0 24 24" fill="#3b82f6" stroke="none">
+            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+          </svg>
         </div>
       </div>
     `;
@@ -211,8 +208,8 @@ export default function TraccarLiveMap({
     const icon = L.divIcon({
       html: iconHtml,
       className: "custom-vehicle-marker",
-      iconSize: [60, 60],
-      iconAnchor: [30, 30],
+      iconSize: [56, 56],
+      iconAnchor: [28, 28],
     });
 
     if (!markerRef.current) {
@@ -226,9 +223,9 @@ export default function TraccarLiveMap({
     if (isAutoCenter) {
       map.panTo([latitude, longitude], { animate: true, duration: 0.5 });
     }
-  }, [latitude, longitude, heading, speedKmh, isConnected, isAutoCenter]);
+  }, [latitude, longitude, heading, isAutoCenter]);
 
-  // Update route polyline
+  // Update route polyline with bright blue color
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -239,12 +236,23 @@ export default function TraccarLiveMap({
     }
 
     if (routePoints.length > 1) {
+      // Add a glow effect underneath
+      L.polyline(
+        routePoints.map((p): L.LatLngExpression => [p.lat, p.lng]),
+        {
+          color: "#3b82f6",
+          weight: 10,
+          opacity: 0.3,
+          smoothFactor: 1,
+        }
+      ).addTo(map);
+
       polylineRef.current = L.polyline(
         routePoints.map((p): L.LatLngExpression => [p.lat, p.lng]),
         {
-          color: "#22c55e",
-          weight: 4,
-          opacity: 0.8,
+          color: "#3b82f6",
+          weight: 5,
+          opacity: 1,
           smoothFactor: 1,
         }
       ).addTo(map);
@@ -271,8 +279,8 @@ export default function TraccarLiveMap({
 
       const iconHtml = `
         <div style="
-          width: 28px;
-          height: 28px;
+          width: 24px;
+          height: 24px;
           background: ${color};
           border: 2px solid white;
           border-radius: 50%;
@@ -280,11 +288,11 @@ export default function TraccarLiveMap({
           align-items: center;
           justify-content: center;
           box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-          transform: translate(-14px, -14px);
+          transform: translate(-12px, -12px);
         ">
           ${isAcceleration 
-            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'
-            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
+            ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>'
+            : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>'
           }
         </div>
       `;
@@ -292,20 +300,19 @@ export default function TraccarLiveMap({
       const icon = L.divIcon({
         html: iconHtml,
         className: "custom-event-marker",
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
       });
 
       const marker = L.marker([event.latitude, event.longitude], { icon })
         .bindPopup(`
-          <div style="text-align: center; min-width: 120px;">
+          <div style="text-align: center; min-width: 100px;">
             <strong style="color: ${color}; text-transform: capitalize;">
               ${event.alert_type.replace(/_/g, " ")}
             </strong>
             <br/>
-            <span style="font-size: 12px; color: #666;">
+            <span style="font-size: 11px; color: #666;">
               ${event.severity} severity
-              ${event.speed_kmh ? `<br/>${Math.round(event.speed_kmh * 0.621371)} mph` : ""}
             </span>
           </div>
         `)
@@ -316,9 +323,8 @@ export default function TraccarLiveMap({
   }, [events]);
 
   const speedMph = speedKmh !== null ? Math.round(speedKmh * 0.621371) : 0;
-  
-  // Convert speed limit from km/h to mph
   const speedLimitMph = speedLimitKmh !== null ? Math.round(speedLimitKmh * 0.621371) : null;
+  const isSpeeding = speedLimitMph !== null && speedMph > speedLimitMph;
 
   return (
     <div className={`relative w-full h-full min-h-[300px] ${className}`}>
@@ -329,97 +335,92 @@ export default function TraccarLiveMap({
         onMouseDown={() => setIsAutoCenter(false)}
       />
 
-      {/* Map Control Buttons */}
-      <div className="absolute bottom-24 left-4 z-20 flex flex-col gap-2">
-        <Button
-          size="icon"
-          variant={isAutoCenter ? "default" : "secondary"}
-          className="h-11 w-11 rounded-full shadow-lg"
-          onClick={centerOnVehicle}
-          title="Center on vehicle"
-        >
-          <Crosshair className="h-5 w-5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          className="h-11 w-11 rounded-full shadow-lg"
-          onClick={handleZoomIn}
-          title="Zoom in"
-        >
-          <ZoomIn className="h-5 w-5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          className="h-11 w-11 rounded-full shadow-lg"
-          onClick={handleZoomOut}
-          title="Zoom out"
-        >
-          <ZoomOut className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* UK-style Speed Roundels + Compass */}
+      {/* Road Name Banner - Apple Maps style */}
       {latitude !== null && longitude !== null && (
-        <div className="absolute top-4 right-4 z-20 flex flex-col gap-3 items-center">
-          {/* Compass / Orientation Indicator */}
-          <div className="flex flex-col items-center">
-            <div 
-              className="w-12 h-12 rounded-full bg-background/95 shadow-lg border-2 border-border flex items-center justify-center"
-              style={{ transform: `rotate(${-(heading ?? 0)}deg)` }}
-            >
-              <svg width="32" height="32" viewBox="0 0 32 32" className="text-foreground">
-                {/* North pointer (red) */}
-                <polygon 
-                  points="16,4 12,16 16,14 20,16" 
-                  fill="#ef4444" 
-                  stroke="#ef4444"
-                />
-                {/* South pointer (gray) */}
-                <polygon 
-                  points="16,28 12,16 16,18 20,16" 
-                  fill="currentColor" 
-                  opacity="0.4"
-                  stroke="currentColor"
-                />
-                {/* Center circle */}
-                <circle cx="16" cy="16" r="2" fill="currentColor" />
-              </svg>
-            </div>
-            <span className="text-[10px] font-semibold text-muted-foreground mt-1 bg-background/80 px-1.5 py-0.5 rounded">
-              {heading !== null ? `${Math.round(heading)}°` : "—"}
-            </span>
-          </div>
-
-          {/* Current Speed Display */}
-          <div className="flex flex-col items-center">
-            <div className={`w-18 h-18 min-w-[72px] min-h-[72px] rounded-full bg-background shadow-lg border-4 flex items-center justify-center ${speedLimitMph !== null && speedMph > speedLimitMph ? 'border-destructive' : 'border-green-500'}`}>
-              <div className="flex flex-col items-center">
-                <span className={`text-3xl font-bold leading-none ${speedLimitMph !== null && speedMph > speedLimitMph ? 'text-destructive' : 'text-foreground'}`}>
-                  {speedMph}
-                </span>
-                <span className="text-[10px] font-semibold text-muted-foreground">MPH</span>
+        <div className="absolute top-4 left-4 right-4 z-20">
+          <div className="bg-[#1c1c1e]/95 backdrop-blur-sm rounded-2xl px-5 py-4 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#2c2c2e] flex items-center justify-center">
+                <Navigation className="w-5 h-5 text-white" style={{ transform: `rotate(${(heading ?? 0) - 45}deg)` }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold text-lg truncate">
+                  {roadName || "Locating road..."}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  {heading !== null ? `Heading ${Math.round(heading)}°` : "—"}
+                </p>
               </div>
             </div>
           </div>
+        </div>
+      )}
 
-          {/* UK Speed Limit Roundel (red ring) */}
-          <div className="flex flex-col items-center">
-            <div className="w-14 h-14 rounded-full bg-background shadow-lg border-[5px] border-destructive flex items-center justify-center">
-              <span className="text-xl font-bold text-foreground">
-                {speedLimitMph !== null ? speedLimitMph : "—"}
-              </span>
+      {/* Recenter button - Apple Maps style */}
+      <button
+        onClick={centerOnVehicle}
+        className={`absolute bottom-36 left-4 z-20 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-colors ${
+          isAutoCenter 
+            ? 'bg-[#3b82f6]' 
+            : 'bg-[#1c1c1e]/95 backdrop-blur-sm'
+        }`}
+      >
+        <Locate className={`w-6 h-6 ${isAutoCenter ? 'text-white' : 'text-[#3b82f6]'}`} />
+      </button>
+
+      {/* Bottom Speed Panel - Apple Maps style */}
+      {latitude !== null && longitude !== null && (
+        <div className="absolute bottom-0 left-0 right-0 z-20">
+          {/* Drag handle */}
+          <div className="flex justify-center py-2">
+            <div className="w-10 h-1 rounded-full bg-gray-500/50"></div>
+          </div>
+          
+          <div className="bg-[#1c1c1e]/95 backdrop-blur-sm rounded-t-3xl px-6 py-5 shadow-lg">
+            <div className="flex items-center justify-around">
+              {/* Current Speed */}
+              <div className="flex flex-col items-center">
+                <span className={`text-4xl font-bold ${isSpeeding ? 'text-red-500' : 'text-white'}`}>
+                  {speedMph}
+                </span>
+                <span className="text-gray-400 text-sm">mph</span>
+              </div>
+
+              {/* Divider */}
+              <div className="h-12 w-px bg-gray-600"></div>
+
+              {/* Speed Limit */}
+              <div className="flex flex-col items-center">
+                <div className={`w-14 h-14 rounded-full border-4 flex items-center justify-center ${
+                  isSpeeding ? 'border-red-500 bg-red-500/10' : 'border-gray-500 bg-transparent'
+                }`}>
+                  <span className={`text-xl font-bold ${isSpeeding ? 'text-red-500' : 'text-white'}`}>
+                    {speedLimitMph ?? "—"}
+                  </span>
+                </div>
+                <span className="text-gray-400 text-xs mt-1">limit</span>
+              </div>
+
+              {/* Divider */}
+              <div className="h-12 w-px bg-gray-600"></div>
+
+              {/* Route Points / Distance indicator */}
+              <div className="flex flex-col items-center">
+                <span className="text-4xl font-bold text-white">
+                  {routePoints.length > 0 ? Math.round(routePoints.length / 10) / 10 : "0"}
+                </span>
+                <span className="text-gray-400 text-sm">km</span>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {(latitude === null || longitude === null) && (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-          <p className="text-muted-foreground font-medium">Waiting for GPS signal...</p>
-          <p className="text-xs text-muted-foreground mt-1">
+        <div className="absolute inset-0 bg-[#1c1c1e] flex flex-col items-center justify-center z-10">
+          <div className="w-12 h-12 border-4 border-[#3b82f6] border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-gray-300 font-medium">Waiting for GPS signal...</p>
+          <p className="text-xs text-gray-500 mt-1">
             Make sure Traccar Client is running
           </p>
         </div>
@@ -430,6 +431,24 @@ export default function TraccarLiveMap({
         .custom-event-marker {
           background: transparent !important;
           border: none !important;
+        }
+        @keyframes pulse-ring {
+          0% {
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0;
+          }
+        }
+        .leaflet-control-attribution {
+          background: transparent !important;
+          font-size: 8px !important;
+          color: rgba(255,255,255,0.3) !important;
+        }
+        .leaflet-control-attribution a {
+          color: rgba(255,255,255,0.4) !important;
         }
       `}</style>
     </div>

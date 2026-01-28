@@ -5569,6 +5569,7 @@ export type Database = {
           last_heading: number | null
           last_latitude: number | null
           last_longitude: number | null
+          last_road_name: string | null
           last_seen_at: string | null
           last_speed_kmh: number | null
           last_speed_limit_kmh: number | null
@@ -5587,6 +5588,7 @@ export type Database = {
           last_heading?: number | null
           last_latitude?: number | null
           last_longitude?: number | null
+          last_road_name?: string | null
           last_seen_at?: string | null
           last_speed_kmh?: number | null
           last_speed_limit_kmh?: number | null
@@ -5605,6 +5607,7 @@ export type Database = {
           last_heading?: number | null
           last_latitude?: number | null
           last_longitude?: number | null
+          last_road_name?: string | null
           last_seen_at?: string | null
           last_speed_kmh?: number | null
           last_speed_limit_kmh?: number | null
