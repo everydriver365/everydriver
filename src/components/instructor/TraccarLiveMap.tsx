@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { supabase } from "@/integrations/supabase/client";
 import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
 import { Button } from "@/components/ui/button";
-import { Crosshair, ZoomIn, ZoomOut } from "lucide-react";
+import { Crosshair, ZoomIn, ZoomOut, Compass } from "lucide-react";
 
 interface DrivingEvent {
   id: string;
@@ -331,9 +331,38 @@ export default function TraccarLiveMap({
         </Button>
       </div>
 
-      {/* UK-style Speed Roundels */}
+      {/* UK-style Speed Roundels + Compass */}
       {latitude !== null && longitude !== null && (
         <div className="absolute top-4 right-4 z-20 flex flex-col gap-3 items-center">
+          {/* Compass / Orientation Indicator */}
+          <div className="flex flex-col items-center">
+            <div 
+              className="w-12 h-12 rounded-full bg-background/95 shadow-lg border-2 border-border flex items-center justify-center"
+              style={{ transform: `rotate(${-(heading ?? 0)}deg)` }}
+            >
+              <svg width="32" height="32" viewBox="0 0 32 32" className="text-foreground">
+                {/* North pointer (red) */}
+                <polygon 
+                  points="16,4 12,16 16,14 20,16" 
+                  fill="#ef4444" 
+                  stroke="#ef4444"
+                />
+                {/* South pointer (gray) */}
+                <polygon 
+                  points="16,28 12,16 16,18 20,16" 
+                  fill="currentColor" 
+                  opacity="0.4"
+                  stroke="currentColor"
+                />
+                {/* Center circle */}
+                <circle cx="16" cy="16" r="2" fill="currentColor" />
+              </svg>
+            </div>
+            <span className="text-[10px] font-semibold text-muted-foreground mt-1 bg-background/80 px-1.5 py-0.5 rounded">
+              {heading !== null ? `${Math.round(heading)}°` : "—"}
+            </span>
+          </div>
+
           {/* Current Speed Display */}
           <div className="flex flex-col items-center">
             <div className={`w-18 h-18 min-w-[72px] min-h-[72px] rounded-full bg-background shadow-lg border-4 flex items-center justify-center ${speedLimitMph !== null && speedMph > speedLimitMph ? 'border-destructive' : 'border-green-500'}`}>
