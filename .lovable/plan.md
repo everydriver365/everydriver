@@ -1,249 +1,129 @@
 
-# Total Drive Feature Comparison & Implementation Plan
+# Fix: Live Tracking for Test Route Mode (No Pupil)
 
-## Feature Comparison Matrix
+## Problem Summary
 
-Based on my analysis of Total Drive's feature set and your current EveryDriver/Drive365 codebase, here's a comprehensive comparison:
+When starting a tracking session without selecting a pupil ("Start Test Route" mode), the following breaks:
 
-| Total Drive Feature | Your Current Status | Gap Level |
-|---------------------|---------------------|-----------|
-| **DIARY & SCHEDULING** |||
-| Multi-device sync diary | ✅ Have (Supabase realtime) | None |
-| Drag-n-drop lessons | ❌ Missing | High |
-| Resize lessons (drag edges) | ❌ Missing | High |
-| Weekly lesson repeats | ❌ Missing | Medium |
-| Intensive course booking | ✅ Have | None |
-| Google Calendar 2-way sync | ✅ Have | None |
-| Custom diary colors | ✅ Have (CalendarColorSettings) | None |
-| Lesson change notifications | ⚠️ Partial (SMS exists) | Low |
-| Grid-click quick input | ✅ Have (Schedule view) | None |
-| **PUPIL RECORDS** |||
-| Contact details | ✅ Have | None |
-| Emergency contact | ⚠️ Partial (parent_phone) | Low |
-| Lesson history | ✅ Have (LessonHistory) | None |
-| Payments tracking | ✅ Have (PupilPaymentHistory) | None |
-| Driving syllabus progress | ❌ Missing | High |
-| Mock tests recording | ✅ Have (DrivingTestReportForm) | None |
-| Practical test results | ✅ Have (TestResultsHistory) | None |
-| Reflective logs | ❌ Missing | Medium |
-| Private notes | ✅ Have (notes field) | None |
-| Lesson summaries | ✅ Have (lesson_history.notes) | None |
-| Terms signing | ✅ Have (TermsSignatureModal) | None |
-| Custom lesson rates per pupil | ⚠️ Partial | Low |
-| **COMMUNICATION** |||
-| In-app message centre | ✅ Have (ChatWindow) | None |
-| Broadcast to all pupils | ❌ Missing | Medium |
-| Broadcast to selected pupils | ❌ Missing | Medium |
-| SMS lesson reminders | ✅ Have (Twilio) | None |
-| **SMART GAPS** |||
-| Last-minute fill | ✅ Have (GapsFiller) | None |
-| Pupil self-booking gaps | ✅ Have (SMS replies) | None |
-| First-come-first-served | ✅ Have | None |
-| **FINANCES** |||
-| Payment tracking | ✅ Have | None |
-| Custom categories | ✅ Have (ExpenseTracker) | None |
-| Income/expense reports | ✅ Have | None |
-| Tax year reports | ✅ Have (TaxYearReport) | None |
-| **CUSTOMIZATION** |||
-| Multiple syllabuses | ❌ Missing | High |
-| Custom skill sets | ❌ Missing | Medium |
-| Pick-up/drop-off locations | ✅ Have (FavouriteLocations) | None |
-| Training aids/resources | ❌ Missing | Low |
-| Branded pupil app | ✅ Have (PupilAppBrandingEditor) | None |
-| **LEARNER APP** |||
-| View progress chart | ⚠️ Basic (progress %) | Medium |
-| See lessons scheduled | ✅ Have (PupilPortal) | None |
-| Lesson reminders | ✅ Have | None |
-| Book from gaps | ✅ Have (SMS) | None |
-| Theory support | ✅ Have (Theory page) | None |
-| Contact instructor | ✅ Have (chat) | None |
+1. **Speed limits not displayed** - The `update_live_position` RPC requires a `pupil_id`, so it fails for pupil-less sessions
+2. **Route line not updating in realtime** - Realtime subscription filters on `pupil_id` which is null
+3. **Speed updates delayed** - Without live position updates, the UI falls back to 5-second polling of `traccar_devices`
 
-## Priority Implementation Plan
+## Solution Architecture
 
-### Phase 1: Critical Missing Features (High Impact) ✅ COMPLETE
+Create a parallel data flow for "instructor-level" live tracking that doesn't depend on pupils:
 
-**1. Drag-and-Drop Lesson Management** ✅
-**2. Driving Syllabus Progress Tracking** ✅
-**3. Weekly Recurring Lessons** ✅
-
-### Phase 2: Communication Enhancements ✅ COMPLETE
-
-**4. Broadcast Messaging** ✅
-- ✅ BulkSMSDialog component with pupil selection
-- ✅ Quick message templates (Holiday, Schedule Change, etc.)
-- ✅ Send to selected pupils via SMS
-
-**5. Reflective Learning Logs** ✅
-- ✅ ReflectiveLog component for pupils
-- ✅ PupilReflectiveLogs for instructors to review/respond
-- ✅ Database table with RLS policies
-
-### Phase 3: Enhanced Pupil Experience ✅ COMPLETE
-
-**6. Visual Progress Dashboard** ✅
-- ✅ ProgressDashboard with radar charts
-- ✅ Milestone badges system
-- ✅ Hours vs target tracking
-
-**7. Custom Syllabus Builder** ✅
-- ✅ SyllabusBuilder component
-- ✅ Create/edit/duplicate templates
-- ✅ Load DVSA standard or custom competencies
-
-### Phase 4: Quality of Life Improvements ✅ COMPLETE
-
-**8. Training Resources/Aids** ✅
-- ✅ TrainingResources component
-- ✅ Link videos, PDFs, notes to skills
-
-**9. Emergency Contact Field** ✅
-- ✅ EmergencyContactEditor component
-- ✅ Added to pupils table
-
-**10. Per-Pupil Lesson Rates** ✅
-- ✅ PupilRateEditor component
-- ✅ custom_hourly_rate field added
-
-Database:
-```sql
-CREATE TABLE pupil_syllabus_progress (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  pupil_id UUID REFERENCES pupils(id) ON DELETE CASCADE,
-  competency_id TEXT NOT NULL,
-  level INTEGER DEFAULT 0 CHECK (level >= 0 AND level <= 5),
-  instructor_notes TEXT,
-  last_practiced DATE,
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
-CREATE TABLE syllabus_templates (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  instructor_id UUID REFERENCES instructors(id),
-  name TEXT NOT NULL,
-  competencies JSONB NOT NULL,
-  is_default BOOLEAN DEFAULT false
-);
+```text
++------------------+     +------------------+     +---------------------+
+| Traccar Webhook  | --> | traccar_devices  | --> | UI (polling + RT)   |
+|                  |     | (always updated) |     |                     |
+|                  |     +------------------+     +---------------------+
+|                  |                              
+|                  |     +----------------------+  +---------------------+
+|                  | --> | live_pupil_positions | --> | UI (RT sub)       |
+|                  |     | (only if pupil set)  |  | (pupil sessions)    |
++------------------+     +----------------------+  +---------------------+
 ```
 
-**3. Weekly Recurring Lessons**
-Allow instructors to set up repeating weekly lessons:
-- "Every Monday 4pm" pattern
-- End date or number of occurrences
-- Bulk delete/modify recurring series
+## Implementation Plan
 
-Files to modify:
-- `src/components/instructor/AddLessonSheet.tsx` - Add recurrence options
-- Create `src/hooks/useRecurringLessons.ts`
+### 1. Enhance `traccar_devices` table with speed limit
 
-Database:
+Add `last_speed_limit_kmh` column to `traccar_devices` so the webhook can always store the current speed limit regardless of pupil selection.
+
+Database change:
 ```sql
-ALTER TABLE scheduled_lessons 
-ADD COLUMN recurrence_rule TEXT,
-ADD COLUMN recurrence_parent_id UUID REFERENCES scheduled_lessons(id);
+ALTER TABLE traccar_devices ADD COLUMN last_speed_limit_kmh NUMERIC DEFAULT NULL;
 ```
 
-### Phase 2: Communication Enhancements
+### 2. Update `traccar-webhook` edge function
 
-**4. Broadcast Messaging**
-Allow instructors to message multiple pupils at once:
-- Select all or specific pupils
-- Send via SMS and/or in-app
-- Include links and formatted text
+Modify the webhook to:
+- Always update `traccar_devices.last_speed_limit_kmh` (not just when pupil is set)
+- Continue calling `update_live_position` only when a pupil is assigned
 
-New files:
-- `src/components/instructor/BroadcastMessageDialog.tsx`
-- Update Edge Function `send-sms` to handle bulk sends
+### 3. Update `InstructorTraccarSession.tsx` UI
 
-**5. Reflective Learning Logs**
-Post-lesson reflection for pupils to complete:
-- What went well?
-- What needs improvement?
-- Goals for next lesson
-- Instructor can review and respond
+Modify the page to:
+- Subscribe to `traccar_devices` Realtime changes (not just `live_pupil_positions`)
+- Use `device.last_speed_limit_kmh` for speed limit display
+- Remove dependency on `live_pupil_positions` for test route mode
 
-New files:
-- `src/components/pupil-portal/ReflectiveLog.tsx`
-- `src/components/instructor/PupilReflectiveLogs.tsx`
+### 4. Update `TraccarLiveMap.tsx` for route polyline
 
-Database:
+Modify the map to:
+- Subscribe to `telematics_gps_points` Realtime for route updates (already done, but verify it works for all sessions)
+- Use `traccar_devices` for vehicle marker position when no pupil
+
+### 5. Enable Realtime on `traccar_devices` table
+
+Ensure the table is added to `supabase_realtime` publication.
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `supabase/functions/traccar-webhook/index.ts` | Update device with `last_speed_limit_kmh` always |
+| `src/pages/InstructorTraccarSession.tsx` | Subscribe to `traccar_devices` Realtime; read speed limit from device |
+| `src/components/instructor/TraccarLiveMap.tsx` | Minor adjustment to use device data when no pupil |
+| Database migration | Add `last_speed_limit_kmh` column + enable Realtime |
+
+## Expected Result After Fix
+
+| Feature | Before Fix | After Fix |
+|---------|------------|-----------|
+| Speed limit (with pupil) | Works | Works |
+| Speed limit (test route) | Broken | Works |
+| Route line (with pupil) | Works | Works |
+| Route line (test route) | Delayed | Instant |
+| Speed updates | 5s polling | Realtime |
+
+## Technical Details
+
+### Database Migration
 ```sql
-CREATE TABLE reflective_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  pupil_id UUID REFERENCES pupils(id) ON DELETE CASCADE,
-  lesson_history_id UUID REFERENCES lesson_history(id),
-  what_went_well TEXT,
-  improvements TEXT,
-  next_goals TEXT,
-  instructor_response TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+-- Add speed limit column to traccar_devices
+ALTER TABLE public.traccar_devices 
+ADD COLUMN IF NOT EXISTS last_speed_limit_kmh NUMERIC DEFAULT NULL;
+
+-- Enable realtime for traccar_devices
+ALTER PUBLICATION supabase_realtime ADD TABLE public.traccar_devices;
 ```
 
-### Phase 3: Enhanced Pupil Experience
+### Webhook Change (Key Section)
+```typescript
+// Always update device with speed limit (not just when session active)
+const { error: updateError } = await supabase
+  .from("traccar_devices")
+  .update({
+    last_speed_kmh: speedKmh,
+    last_latitude: lat,
+    last_longitude: lon,
+    last_heading: bearing,
+    last_seen_at: now.toISOString(),
+    last_speed_limit_kmh: speedLimitKmh, // NEW: Always store speed limit
+  })
+  .eq("id", typedDevice.id);
+```
 
-**6. Visual Progress Chart**
-Replace basic percentage with interactive chart:
-- Hours completed vs target
-- Skills mastered radar chart
-- Milestones/badges earned
-- Comparison to average learner
-
-Files:
-- `src/components/pupil-portal/ProgressDashboard.tsx`
-- Update `src/pages/PupilPortal.tsx`
-
-**7. Custom Syllabus Builder**
-Let instructors create their own skill categories:
-- Import DVSA standard template
-- Add/remove/rename competencies
-- Share templates with other instructors
-
-Files:
-- `src/components/instructor/SyllabusBuilder.tsx`
-- `src/pages/InstructorSettings.tsx` - Add syllabus section
-
-### Phase 4: Quality of Life Improvements
-
-**8. Training Resources/Aids**
-- Add resource links per syllabus item
-- YouTube video embeds for techniques
-- PDF downloads for manoeuvres
-
-**9. Emergency Contact Field**
-- Add dedicated emergency contact fields to pupils table
-- Display prominently on pupil card
-
-**10. Per-Pupil Lesson Rates**
-- Allow custom hourly rate override per pupil
-- Automatic calculation in payment screens
-
-## Implementation Summary
-
-| Phase | Features | Est. Effort | Priority |
-|-------|----------|-------------|----------|
-| 1 | Drag-drop, Syllabus, Recurring | 3-4 days | Critical |
-| 2 | Broadcast, Reflective logs | 2 days | High |
-| 3 | Progress charts, Syllabus builder | 2 days | Medium |
-| 4 | Resources, Emergency contact, Rates | 1 day | Low |
-
-## What You Already Have That Total Drive Offers
-
-Your app already matches or exceeds Total Drive in several areas:
-- **Live GPS tracking** (Traccar) - Total Drive doesn't have this
-- **Speed limit monitoring** - Unique to your platform
-- **Gamification** (XP, badges) - Not in Total Drive
-- **Parent portal** - More comprehensive than Total Drive
-- **Mini websites** for instructors - Not in Total Drive
-- **Test result analysis** (DL25A style) - More detailed than Total Drive
-- **Gap filling via SMS** - Similar functionality
-- **Real-time sync** - Using Supabase Realtime
-
-## Recommended First Step
-
-Start with **Driving Syllabus Progress Tracking** as it:
-1. Is the most requested feature by ADIs
-2. Differentiates your platform
-3. Provides clear value to both instructors and pupils
-4. Enables future features (reflective logs, progress charts)
-
-Shall I proceed with implementing the syllabus system first, or would you prefer to start with drag-and-drop calendar functionality?
+### UI Realtime Subscription (Key Section)
+```typescript
+// Subscribe to device changes for instant updates
+const channel = supabase
+  .channel(`device-${device.id}`)
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "traccar_devices",
+      filter: `id=eq.${device.id}`,
+    },
+    (payload) => {
+      const newDevice = payload.new as TraccarDevice;
+      setDevice(newDevice);
+      setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
+    }
+  )
+  .subscribe();
+```
