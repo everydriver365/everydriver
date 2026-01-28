@@ -1,79 +1,107 @@
 
-# Fix Speed Limit Detection in Live Tracking
+# Why Speed Limit Shows "—" and How to Fix It
 
-## Problem Identified
+## Root Cause Identified
 
-Testing revealed that the OpenStreetMap Overpass API integration is working, but the **search radius is too small (20m)**. Real-world GPS accuracy can be 5-20m off the actual road centerline, causing the API to return no results.
+The speed limit detection is **working correctly** after the 50m radius fix, but the roundel shows "—" because:
 
-**Evidence:**
-- With 20m radius: Empty results (no roads found)
-- With 100m radius: Successfully returns `30 mph` speed limit for Maunsell Way
+1. **No Active Tracking Session**: The device is sending heartbeats but doesn't have a `current_session_id` set. Without an active session, the webhook doesn't save GPS points or update the `live_pupil_positions` table where the speed limit is displayed from.
 
-Additionally, all previous tracking sessions show `speed_limit_kmh: null` because this feature was deployed after those sessions.
+2. **Previous Sessions Used Old Code**: Today's earlier session data (recorded at `16:04`) was captured before the updated webhook was deployed, so all those GPS points have `speed_limit_kmh: null`.
+
+3. **Overpass API Intermittent Timeouts**: The OpenStreetMap Overpass API is returning 504 errors on some requests (seen at 17:08:10 and 17:09:10), causing some lookups to fail even with the larger radius.
+
+## Evidence from Logs
+
+**Speed limits ARE being found successfully:**
+```
+2026-01-28T17:07:11Z - Speed limit found: 30 mph → 48 km/h
+2026-01-28T17:07:10Z - Speed limit found: 30 mph → 48 km/h
+```
+
+**But some requests timeout:**
+```
+2026-01-28T17:09:10Z - Overpass API error: 504
+2026-01-28T17:08:10Z - Overpass API error: 504
+```
 
 ## Solution
 
-Increase the Overpass API search radius from 20m to 50m for more reliable speed limit detection while still maintaining reasonable specificity.
+### 1. Test With an Active Session
+Start a new tracking session with a pupil selected. The speed limit will then be recorded and displayed in the roundel.
 
-## Technical Changes
+### 2. Add Cache Fallback for API Failures (Recommended Enhancement)
 
-### 1. Update Edge Function Radius
+Modify the speed limit lookup to return the last known cached value when the API times out, rather than returning null:
 
 **File:** `supabase/functions/traccar-webhook/index.ts`
 
-Change line 94 from:
 ```typescript
-way(around:20,${lat},${lon})[highway][maxspeed];
+async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
+  const gridKey = getGridKey(lat, lon);
+  
+  // Check cache first
+  const cached = speedLimitCache.get(gridKey);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
+    console.log(`[Traccar] Speed limit from cache: ${cached.limit} km/h`);
+    return cached.limit;
+  }
+  
+  console.log(`[Traccar] Speed limit lookup at ${lat.toFixed(6)},${lon.toFixed(6)}`);
+  
+  try {
+    // ... existing API call ...
+    
+    // Cache the result
+    speedLimitCache.set(gridKey, { limit: speedLimit, timestamp: Date.now() });
+    return speedLimit;
+    
+  } catch (err) {
+    console.log(`[Traccar] Speed limit lookup failed:`, err);
+    
+    // NEW: Return stale cache if API fails (better than nothing)
+    if (cached) {
+      console.log(`[Traccar] Using stale cache due to API error: ${cached.limit} km/h`);
+      return cached.limit;
+    }
+    
+    return null;
+  }
+}
 ```
 
-To:
-```typescript
-way(around:50,${lat},${lon})[highway][maxspeed];
-```
+### 3. Add Nearby Grid Fallback (Optional Enhancement)
 
-This increases the search radius to 50 meters, which should:
-- Account for typical GPS accuracy (5-20m)
-- Still be specific enough to find the correct road
-- Work for most road types including narrow residential streets
-
-### 2. Add Fallback Logging
-
-Add more detailed logging to help diagnose any remaining issues:
+When no speed limit is found for the current grid cell, check adjacent cells for a recent cached value:
 
 ```typescript
-console.log(`[Traccar] Speed limit lookup at ${lat},${lon}`);
-
-// After API call
-if (data.elements.length === 0) {
-  console.log(`[Traccar] No roads with maxspeed found within 50m`);
+// Check adjacent grid cells for cached speed limits
+function getNearbySpeedLimit(lat: number, lon: number): number | null {
+  const offsets = [
+    [0, 0.0005], [0, -0.0005], [0.0005, 0], [-0.0005, 0]
+  ];
+  
+  for (const [dLat, dLon] of offsets) {
+    const key = getGridKey(lat + dLat, lon + dLon);
+    const cached = speedLimitCache.get(key);
+    if (cached && cached.limit !== null) {
+      return cached.limit;
+    }
+  }
+  return null;
 }
 ```
 
 ## Expected Outcome
 
-After this fix:
-1. Speed limits will be detected for roads that have them in OpenStreetMap
-2. The UK-style roundel on the live map will show actual speed limits instead of "—"
-3. Speeding alerts will be generated when exceeding the road's speed limit
-4. GPS points will be saved with speed limit data for post-session analysis
+After implementing these changes:
+1. **Active sessions will show speed limits** in the roundel (30 mph example)
+2. **API timeouts won't cause the display to go blank** - stale cache will be used
+3. **Smoother experience** as you drive between grid cells
 
-## Traccar Client Settings Reminder
+## Testing Steps
 
-To reduce the delay in speed detection (separate from speed limit lookup), update the Traccar Client app:
-
-1. **Location Accuracy:** High
-2. **Interval:** 5-10 seconds (currently appears to be ~60s)
-3. **Distance:** 10 meters
-4. **Angle:** 10 degrees
-5. **Service Status:** ON
-
-The current logs show the device is sending data approximately every 2 minutes in heartbeat mode, which is too infrequent for responsive speed tracking.
-
-## Testing Plan
-
-After deployment:
-1. Start a new tracking session with a selected pupil
-2. Drive on roads known to have speed limits in OpenStreetMap
-3. Verify the speed limit roundel updates as you travel
-4. Check that `telematics_gps_points` records have `speed_limit_kmh` populated
-5. Test speeding alerts by exceeding the speed limit by more than 5 km/h
+1. Start a new tracking session with a pupil
+2. Drive on a road with a known speed limit in OpenStreetMap
+3. Verify the speed limit roundel shows the correct number (e.g., "30")
+4. Speed limit should persist even if API has brief outages
