@@ -79,6 +79,24 @@ function parseMaxSpeed(maxspeed: string): number | null {
   return null;
 }
 
+// Check adjacent grid cells for cached speed limits (fallback when API fails)
+function getNearbySpeedLimit(lat: number, lon: number): number | null {
+  const offsets = [
+    [0, 0.0005], [0, -0.0005], [0.0005, 0], [-0.0005, 0],
+    [0.0005, 0.0005], [-0.0005, -0.0005], [0.0005, -0.0005], [-0.0005, 0.0005]
+  ];
+  
+  for (const [dLat, dLon] of offsets) {
+    const key = getGridKey(lat + dLat, lon + dLon);
+    const cached = speedLimitCache.get(key);
+    if (cached && cached.limit !== null) {
+      console.log(`[Traccar] Using nearby grid cache: ${cached.limit} km/h`);
+      return cached.limit;
+    }
+  }
+  return null;
+}
+
 // Fetch speed limit from OpenStreetMap Overpass API
 async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
   const gridKey = getGridKey(lat, lon);
@@ -106,6 +124,14 @@ async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
     
     if (!response.ok) {
       console.log(`[Traccar] Overpass API error: ${response.status}`);
+      // Return stale cache if available
+      if (cached) {
+        console.log(`[Traccar] Using stale cache due to API error: ${cached.limit} km/h`);
+        return cached.limit;
+      }
+      // Try nearby grid cells
+      const nearby = getNearbySpeedLimit(lat, lon);
+      if (nearby !== null) return nearby;
       return null;
     }
     
@@ -122,6 +148,11 @@ async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
       }
     } else {
       console.log(`[Traccar] No roads with maxspeed found within 50m`);
+      // Try nearby grid cells when no result
+      const nearby = getNearbySpeedLimit(lat, lon);
+      if (nearby !== null) {
+        return nearby;
+      }
     }
     
     // Cache the result (even null to avoid repeated lookups)
@@ -130,6 +161,14 @@ async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
     return speedLimit;
   } catch (err) {
     console.log(`[Traccar] Speed limit lookup failed:`, err);
+    // Return stale cache if API fails completely
+    if (cached) {
+      console.log(`[Traccar] Using stale cache due to API failure: ${cached.limit} km/h`);
+      return cached.limit;
+    }
+    // Try nearby grid cells as last resort
+    const nearby = getNearbySpeedLimit(lat, lon);
+    if (nearby !== null) return nearby;
     return null;
   }
 }
