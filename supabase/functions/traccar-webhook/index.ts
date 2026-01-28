@@ -20,6 +20,10 @@ const ACCELERATION_THRESHOLDS = {
   HIGH: 6.0,   // harsh acceleration
 };
 
+// Simple in-memory cache for speed limits (grid-based)
+const speedLimitCache = new Map<string, { limit: number | null; timestamp: number }>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache
+
 interface TraccarDevice {
   id: string;
   instructor_id: string;
@@ -41,6 +45,87 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+}
+
+// Generate grid key for caching (approximately 50m grid)
+function getGridKey(lat: number, lon: number): string {
+  // ~50m resolution at UK latitudes
+  const latGrid = Math.round(lat * 2000) / 2000;
+  const lonGrid = Math.round(lon * 3000) / 3000;
+  return `${latGrid},${lonGrid}`;
+}
+
+// Parse maxspeed value from OSM (handles "30 mph", "50", "national", etc.)
+function parseMaxSpeed(maxspeed: string): number | null {
+  if (!maxspeed) return null;
+  
+  // Handle "national" speed limit (UK: 60 mph single carriageway, 70 mph dual/motorway)
+  if (maxspeed.toLowerCase() === "national") {
+    return 97; // Default to 60 mph = 97 km/h for single carriageway
+  }
+  
+  // Check for mph suffix (common in UK)
+  const mphMatch = maxspeed.match(/^(\d+)\s*mph$/i);
+  if (mphMatch) {
+    return Math.round(parseInt(mphMatch[1]) * 1.60934);
+  }
+  
+  // Plain number (assumed km/h in OSM standard)
+  const numMatch = maxspeed.match(/^(\d+)$/);
+  if (numMatch) {
+    return parseInt(numMatch[1]);
+  }
+  
+  return null;
+}
+
+// Fetch speed limit from OpenStreetMap Overpass API
+async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
+  const gridKey = getGridKey(lat, lon);
+  
+  // Check cache first
+  const cached = speedLimitCache.get(gridKey);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
+    return cached.limit;
+  }
+  
+  try {
+    // Query Overpass API for roads with maxspeed within 20m radius
+    const query = `[out:json][timeout:5];
+      way(around:20,${lat},${lon})[highway][maxspeed];
+      out tags;`;
+    
+    const response = await fetch(
+      `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    
+    if (!response.ok) {
+      console.log(`[Traccar] Overpass API error: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    let speedLimit: number | null = null;
+    
+    if (data.elements && data.elements.length > 0) {
+      // Get the first road's maxspeed
+      const road = data.elements[0];
+      if (road.tags?.maxspeed) {
+        speedLimit = parseMaxSpeed(road.tags.maxspeed);
+        console.log(`[Traccar] Speed limit found: ${road.tags.maxspeed} → ${speedLimit} km/h`);
+      }
+    }
+    
+    // Cache the result (even null to avoid repeated lookups)
+    speedLimitCache.set(gridKey, { limit: speedLimit, timestamp: Date.now() });
+    
+    return speedLimit;
+  } catch (err) {
+    console.log(`[Traccar] Speed limit lookup failed:`, err);
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -107,6 +192,9 @@ serve(async (req) => {
       battery = parseFloat(params.get("batt") || "0");
     }
 
+    // Handle negative speed (Traccar sends -1 when stationary/unknown)
+    if (speedMs < 0) speedMs = 0;
+    
     // Speed comes in m/s, convert to km/h
     const speedKmh = speedMs * 3.6;
 
@@ -152,6 +240,14 @@ serve(async (req) => {
         lat,
         lon
       );
+    }
+
+    // Fetch speed limit asynchronously (don't block GPS processing)
+    let speedLimitKmh: number | null = null;
+    try {
+      speedLimitKmh = await getSpeedLimit(lat, lon);
+    } catch (err) {
+      console.log(`[Traccar] Speed limit lookup error:`, err);
     }
 
     // Calculate braking and acceleration if we have previous data
@@ -215,7 +311,7 @@ serve(async (req) => {
 
     // If session is active, record data and create alerts
     if (typedDevice.current_session_id && typedDevice.current_pupil_id) {
-      // Insert GPS point (using correct column names from schema)
+      // Insert GPS point with speed limit
       const { error: gpsError } = await supabase
         .from("telematics_gps_points")
         .insert({
@@ -226,6 +322,7 @@ serve(async (req) => {
           heading: bearing,
           altitude_m: altitude,
           accuracy_m: accuracy,
+          speed_limit_kmh: speedLimitKmh,
           recorded_at: now.toISOString(),
         });
 
@@ -252,7 +349,7 @@ serve(async (req) => {
           .eq("id", typedDevice.current_session_id);
       }
 
-      // Update live position using RPC (match correct parameter names)
+      // Update live position using RPC with speed limit
       try {
         const { error: liveError } = await supabase.rpc("update_live_position", {
           p_pupil_id: typedDevice.current_pupil_id,
@@ -263,6 +360,7 @@ serve(async (req) => {
           p_accuracy: accuracy,
           p_trip_status: speedKmh > 5 ? "driving" : "stopped",
           p_session_id: typedDevice.current_session_id,
+          p_speed_limit_kmh: speedLimitKmh,
         });
 
         if (liveError) {
@@ -310,7 +408,31 @@ serve(async (req) => {
         }
       }
 
-      console.log(`[Traccar] Session data recorded for pupil ${typedDevice.current_pupil_id}, distance: ${(distanceMeters / 1000).toFixed(3)}km`);
+      // Create speeding alert if detected
+      if (speedLimitKmh && speedKmh > speedLimitKmh + 5) { // 5 km/h buffer
+        const overSpeed = speedKmh - speedLimitKmh;
+        const severity = overSpeed > 20 ? "high" : overSpeed > 10 ? "medium" : "low";
+        
+        const { error: speedAlertError } = await supabase
+          .from("telematics_realtime_alerts")
+          .insert({
+            telematics_id: typedDevice.current_session_id,
+            alert_type: "speeding",
+            severity,
+            speed_kmh: speedKmh,
+            latitude: lat,
+            longitude: lon,
+            is_acknowledged: false,
+          });
+
+        if (speedAlertError) {
+          console.error("[Traccar] Speeding alert insert error:", speedAlertError);
+        } else {
+          console.log(`[Traccar] Speeding alert: ${speedKmh.toFixed(1)} km/h in ${speedLimitKmh} km/h zone (${severity})`);
+        }
+      }
+
+      console.log(`[Traccar] Session data recorded for pupil ${typedDevice.current_pupil_id}, distance: ${(distanceMeters / 1000).toFixed(3)}km, speed limit: ${speedLimitKmh || 'unknown'}`);
     }
 
     // Return success (Traccar expects 200 OK)

@@ -3242,6 +3242,7 @@ export type Database = {
           longitude: number
           pupil_id: string
           speed_kmh: number | null
+          speed_limit_kmh: number | null
           telematics_session_id: string | null
           trip_status: string | null
           updated_at: string
@@ -3257,6 +3258,7 @@ export type Database = {
           longitude: number
           pupil_id: string
           speed_kmh?: number | null
+          speed_limit_kmh?: number | null
           telematics_session_id?: string | null
           trip_status?: string | null
           updated_at?: string
@@ -3272,6 +3274,7 @@ export type Database = {
           longitude?: number
           pupil_id?: string
           speed_kmh?: number | null
+          speed_limit_kmh?: number | null
           telematics_session_id?: string | null
           trip_status?: string | null
           updated_at?: string
@@ -5546,19 +5549,34 @@ export type Database = {
         }
         Returns: boolean
       }
-      update_live_position: {
-        Args: {
-          p_accuracy?: number
-          p_heading?: number
-          p_latitude: number
-          p_longitude: number
-          p_pupil_id: string
-          p_session_id?: string
-          p_speed_kmh?: number
-          p_trip_status?: string
-        }
-        Returns: string
-      }
+      update_live_position:
+        | {
+            Args: {
+              p_accuracy?: number
+              p_heading?: number
+              p_latitude: number
+              p_longitude: number
+              p_pupil_id: string
+              p_session_id?: string
+              p_speed_kmh?: number
+              p_trip_status?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_accuracy?: number
+              p_heading?: number
+              p_latitude: number
+              p_longitude: number
+              p_pupil_id: string
+              p_session_id?: string
+              p_speed_kmh?: number
+              p_speed_limit_kmh?: number
+              p_trip_status?: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       app_role: "instructor" | "admin" | "pupil"
