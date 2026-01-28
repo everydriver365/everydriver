@@ -20,8 +20,8 @@ const ACCELERATION_THRESHOLDS = {
   HIGH: 6.0,   // harsh acceleration
 };
 
-// Simple in-memory cache for speed limits (grid-based)
-const speedLimitCache = new Map<string, { limit: number | null; timestamp: number }>();
+// Simple in-memory cache for speed limits and road names (grid-based)
+const speedLimitCache = new Map<string, { limit: number | null; roadName: string | null; timestamp: number }>();
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache
 
 interface TraccarDevice {
@@ -80,7 +80,7 @@ function parseMaxSpeed(maxspeed: string): number | null {
 }
 
 // Check adjacent grid cells for cached speed limits (fallback when API fails)
-function getNearbySpeedLimit(lat: number, lon: number): number | null {
+function getNearbyCache(lat: number, lon: number): { limit: number | null; roadName: string | null } | null {
   const offsets = [
     [0, 0.0005], [0, -0.0005], [0.0005, 0], [-0.0005, 0],
     [0.0005, 0.0005], [-0.0005, -0.0005], [0.0005, -0.0005], [-0.0005, 0.0005]
@@ -90,8 +90,8 @@ function getNearbySpeedLimit(lat: number, lon: number): number | null {
     const key = getGridKey(lat + dLat, lon + dLon);
     const cached = speedLimitCache.get(key);
     if (cached && cached.limit !== null) {
-      console.log(`[Traccar] Using nearby grid cache: ${cached.limit} km/h`);
-      return cached.limit;
+      console.log(`[Traccar] Using nearby grid cache: ${cached.limit} km/h, ${cached.roadName}`);
+      return { limit: cached.limit, roadName: cached.roadName };
     }
   }
   return null;
@@ -104,27 +104,27 @@ const OVERPASS_ENDPOINTS = [
   "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ];
 
-// Fetch speed limit from OpenStreetMap Overpass API with fallback endpoints
-async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
+// Fetch speed limit AND road name from OpenStreetMap Overpass API with fallback endpoints
+async function getRoadInfo(lat: number, lon: number): Promise<{ speedLimit: number | null; roadName: string | null }> {
   const gridKey = getGridKey(lat, lon);
   
   // Check cache first (extend TTL to reduce API calls)
   const cached = speedLimitCache.get(gridKey);
   if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
     // Don't log cache hits to reduce noise
-    return cached.limit;
+    return { speedLimit: cached.limit, roadName: cached.roadName };
   }
   
   // Try nearby grid cells first (faster than API)
-  const nearby = getNearbySpeedLimit(lat, lon);
+  const nearby = getNearbyCache(lat, lon);
   if (nearby !== null) {
-    return nearby;
+    return { speedLimit: nearby.limit, roadName: nearby.roadName };
   }
   
-  console.log(`[Traccar] Speed limit lookup at ${lat.toFixed(6)},${lon.toFixed(6)}`);
+  console.log(`[Traccar] Road info lookup at ${lat.toFixed(6)},${lon.toFixed(6)}`);
   
-  // Query Overpass API for roads with maxspeed within 50m radius
-  const query = `[out:json][timeout:3];way(around:50,${lat},${lon})[highway][maxspeed];out tags;`;
+  // Query Overpass API for roads with any tags within 50m radius (get name AND maxspeed)
+  const query = `[out:json][timeout:3];way(around:50,${lat},${lon})[highway];out tags;`;
   
   // Try each endpoint until one succeeds
   for (const endpoint of OVERPASS_ENDPOINTS) {
@@ -142,19 +142,32 @@ async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
       const data = await response.json();
       
       let speedLimit: number | null = null;
+      let roadName: string | null = null;
       
       if (data.elements && data.elements.length > 0) {
-        const road = data.elements[0];
-        if (road.tags?.maxspeed) {
-          speedLimit = parseMaxSpeed(road.tags.maxspeed);
-          console.log(`[Traccar] Speed limit found: ${road.tags.maxspeed} → ${speedLimit} km/h`);
+        // Find the best road (prioritize named roads with speed limits)
+        for (const road of data.elements) {
+          // Get road name (prefer name, fall back to ref like "A33")
+          if (!roadName && (road.tags?.name || road.tags?.ref)) {
+            roadName = road.tags.name || road.tags.ref;
+          }
+          // Get speed limit
+          if (!speedLimit && road.tags?.maxspeed) {
+            speedLimit = parseMaxSpeed(road.tags.maxspeed);
+          }
+          // If we have both, stop looking
+          if (roadName && speedLimit) break;
+        }
+        
+        if (speedLimit || roadName) {
+          console.log(`[Traccar] Road info found: ${roadName || 'unnamed'}, ${speedLimit} km/h`);
         }
       }
       
       // Cache the result (even null to avoid repeated lookups)
-      speedLimitCache.set(gridKey, { limit: speedLimit, timestamp: Date.now() });
+      speedLimitCache.set(gridKey, { limit: speedLimit, roadName, timestamp: Date.now() });
       
-      return speedLimit;
+      return { speedLimit, roadName };
     } catch (err) {
       console.log(`[Traccar] ${endpoint} failed, trying next...`);
       continue;
@@ -165,13 +178,13 @@ async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
   if (cached) {
     console.log(`[Traccar] All endpoints failed, using stale cache: ${cached.limit} km/h`);
     // Refresh stale cache timestamp to avoid hammering failed APIs
-    speedLimitCache.set(gridKey, { limit: cached.limit, timestamp: Date.now() - CACHE_TTL_MS / 2 });
-    return cached.limit;
+    speedLimitCache.set(gridKey, { limit: cached.limit, roadName: cached.roadName, timestamp: Date.now() - CACHE_TTL_MS / 2 });
+    return { speedLimit: cached.limit, roadName: cached.roadName };
   }
   
   // Last resort: cache null to prevent repeated failed lookups
-  speedLimitCache.set(gridKey, { limit: null, timestamp: Date.now() });
-  return null;
+  speedLimitCache.set(gridKey, { limit: null, roadName: null, timestamp: Date.now() });
+  return { speedLimit: null, roadName: null };
 }
 
 serve(async (req) => {
@@ -288,12 +301,15 @@ serve(async (req) => {
       );
     }
 
-    // Fetch speed limit asynchronously (don't block GPS processing)
+    // Fetch road info (speed limit + road name) asynchronously
     let speedLimitKmh: number | null = null;
+    let roadName: string | null = null;
     try {
-      speedLimitKmh = await getSpeedLimit(lat, lon);
+      const roadInfo = await getRoadInfo(lat, lon);
+      speedLimitKmh = roadInfo.speedLimit;
+      roadName = roadInfo.roadName;
     } catch (err) {
-      console.log(`[Traccar] Speed limit lookup error:`, err);
+      console.log(`[Traccar] Road info lookup error:`, err);
     }
 
     // Calculate braking and acceleration if we have previous data
@@ -339,7 +355,7 @@ serve(async (req) => {
       }
     }
 
-    // Update device record with speed limit (always, even without pupil)
+    // Update device record with speed limit and road name (always, even without pupil)
     const { error: updateError } = await supabase
       .from("traccar_devices")
       .update({
@@ -348,7 +364,8 @@ serve(async (req) => {
         last_longitude: lon,
         last_heading: bearing,
         last_seen_at: now.toISOString(),
-        last_speed_limit_kmh: speedLimitKmh, // Always store speed limit
+        last_speed_limit_kmh: speedLimitKmh,
+        last_road_name: roadName,
       })
       .eq("id", typedDevice.id);
 

@@ -49,6 +49,7 @@ interface TraccarDevice {
   last_longitude: number | null;
   last_heading: number | null;
   last_speed_limit_kmh: number | null;
+  last_road_name: string | null;
   current_session_id: string | null;
   current_pupil_id: string | null;
   is_test_route_mode?: boolean;
@@ -751,7 +752,7 @@ export default function InstructorTraccarSession() {
       <div className="flex-1 relative">
         {isSessionActive ? (
           <>
-            {/* Live Map - Full Screen */}
+            {/* Live Map - Full Screen (Apple Maps style) */}
             <TraccarLiveMap
               latitude={device.last_latitude}
               longitude={device.last_longitude}
@@ -760,80 +761,17 @@ export default function InstructorTraccarSession() {
               speedLimitKmh={speedLimitKmh}
               isConnected={isConnected}
               sessionId={device.current_session_id}
+              roadName={device.last_road_name}
               events={drivingEvents}
               className="absolute inset-0"
             />
 
-            {/* Floating Stats Bar */}
-            <div className="absolute bottom-24 left-4 right-4 z-20">
-              <div className="bg-background/95 backdrop-blur rounded-2xl shadow-lg border p-3">
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  {/* Speed */}
-                  <div>
-                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-0.5">
-                      <Gauge className="h-3 w-3" />
-                    </div>
-                    <p className="text-lg font-bold">
-                      {speedMph !== null ? speedMph : "--"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">mph</p>
-                  </div>
-                  
-                  {/* Time */}
-                  <div>
-                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-0.5">
-                      <Clock className="h-3 w-3" />
-                    </div>
-                    <p className="text-lg font-bold">{formatElapsedTime(elapsedTime)}</p>
-                    <p className="text-[10px] text-muted-foreground">time</p>
-                  </div>
-                  
-                  {/* Distance */}
-                  <div>
-                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-0.5">
-                      <Navigation className="h-3 w-3" />
-                    </div>
-                    <p className="text-lg font-bold">{distanceMiles.toFixed(1)}</p>
-                    <p className="text-[10px] text-muted-foreground">miles</p>
-                  </div>
-                  
-                  {/* Alerts */}
-                  <div>
-                    <div className="flex items-center justify-center gap-1 text-muted-foreground mb-0.5">
-                      <AlertTriangle className="h-3 w-3" />
-                    </div>
-                    <p className={`text-lg font-bold ${alertCounts.total > 0 ? 'text-amber-500' : ''}`}>
-                      {alertCounts.total}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">alerts</p>
-                  </div>
-                </div>
-
-                {/* Alert breakdown */}
-                {alertCounts.total > 0 && (
-                  <div className="flex justify-center gap-2 mt-2 pt-2 border-t">
-                    {alertCounts.braking > 0 && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                        {alertCounts.braking} brake
-                      </Badge>
-                    )}
-                    {alertCounts.acceleration > 0 && (
-                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                        <Zap className="h-2.5 w-2.5 mr-0.5" />
-                        {alertCounts.acceleration} accel
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Floating Stop Button */}
-            <div className="absolute bottom-4 left-4 right-4 z-20">
+            {/* Floating Stop Button - positioned above the map's bottom panel */}
+            <div className="absolute bottom-[140px] left-4 right-4 z-30">
               <Button 
                 variant="destructive" 
                 size="lg"
-                className="w-full h-14 text-lg font-semibold rounded-xl shadow-lg"
+                className="w-full h-12 text-base font-semibold rounded-xl shadow-lg"
                 onClick={stopSession}
                 disabled={isStopping}
               >
@@ -844,6 +782,24 @@ export default function InstructorTraccarSession() {
                 )}
                 End Trip
               </Button>
+            </div>
+
+            {/* Session info badge */}
+            {alertCounts.total > 0 && (
+              <div className="absolute top-24 left-4 z-30">
+                <Badge variant="destructive" className="text-xs px-2 py-1">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  {alertCounts.total} alert{alertCounts.total !== 1 ? 's' : ''}
+                </Badge>
+              </div>
+            )}
+
+            {/* Timer badge */}
+            <div className="absolute top-24 right-4 z-30">
+              <Badge variant="secondary" className="text-xs px-2 py-1 bg-[#1c1c1e]/90 text-white border-0">
+                <Clock className="h-3 w-3 mr-1" />
+                {formatElapsedTime(elapsedTime)}
+              </Badge>
             </div>
           </>
         ) : (
