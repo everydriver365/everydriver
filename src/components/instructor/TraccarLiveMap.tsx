@@ -74,7 +74,7 @@ export default function TraccarLiveMap({
       map.zoomOut();
     }
   }, []);
-  // Fetch route points when session changes
+  // Fetch route points when session changes + realtime subscription
   useEffect(() => {
     if (!sessionId) {
       setRoutePoints([]);
@@ -87,7 +87,7 @@ export default function TraccarLiveMap({
         .select("latitude, longitude")
         .eq("telematics_id", sessionId)
         .order("recorded_at", { ascending: true })
-        .limit(1000);
+        .limit(2000);
 
       if (data) {
         setRoutePoints(
@@ -99,8 +99,37 @@ export default function TraccarLiveMap({
     };
 
     fetchRoute();
-    const interval = setInterval(fetchRoute, 5000);
-    return () => clearInterval(interval);
+    
+    // Subscribe to realtime GPS point inserts for instant route updates
+    const channel = supabase
+      .channel(`route-${sessionId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "telematics_gps_points",
+          filter: `telematics_id=eq.${sessionId}`,
+        },
+        (payload) => {
+          const newPoint = payload.new as { latitude: number; longitude: number };
+          if (newPoint.latitude && newPoint.longitude) {
+            setRoutePoints((prev) => [
+              ...prev,
+              { lat: newPoint.latitude, lng: newPoint.longitude },
+            ]);
+          }
+        }
+      )
+      .subscribe();
+
+    // Fallback polling every 10s in case realtime misses anything
+    const interval = setInterval(fetchRoute, 10000);
+    
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
   }, [sessionId]);
 
   // Initialize map

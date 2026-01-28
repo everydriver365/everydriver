@@ -97,80 +97,81 @@ function getNearbySpeedLimit(lat: number, lon: number): number | null {
   return null;
 }
 
-// Fetch speed limit from OpenStreetMap Overpass API
+// Overpass API endpoints with fallbacks
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+];
+
+// Fetch speed limit from OpenStreetMap Overpass API with fallback endpoints
 async function getSpeedLimit(lat: number, lon: number): Promise<number | null> {
   const gridKey = getGridKey(lat, lon);
   
-  // Check cache first
+  // Check cache first (extend TTL to reduce API calls)
   const cached = speedLimitCache.get(gridKey);
   if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
-    console.log(`[Traccar] Speed limit from cache: ${cached.limit} km/h`);
+    // Don't log cache hits to reduce noise
     return cached.limit;
+  }
+  
+  // Try nearby grid cells first (faster than API)
+  const nearby = getNearbySpeedLimit(lat, lon);
+  if (nearby !== null) {
+    return nearby;
   }
   
   console.log(`[Traccar] Speed limit lookup at ${lat.toFixed(6)},${lon.toFixed(6)}`);
   
-  try {
-    // Query Overpass API for roads with maxspeed within 50m radius
-    // Increased from 20m to account for GPS accuracy (typically 5-20m off road centerline)
-    const query = `[out:json][timeout:5];
-      way(around:50,${lat},${lon})[highway][maxspeed];
-      out tags;`;
-    
-    const response = await fetch(
-      `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`,
-      { signal: AbortSignal.timeout(5000) }
-    );
-    
-    if (!response.ok) {
-      console.log(`[Traccar] Overpass API error: ${response.status}`);
-      // Return stale cache if available
-      if (cached) {
-        console.log(`[Traccar] Using stale cache due to API error: ${cached.limit} km/h`);
-        return cached.limit;
+  // Query Overpass API for roads with maxspeed within 50m radius
+  const query = `[out:json][timeout:3];way(around:50,${lat},${lon})[highway][maxspeed];out tags;`;
+  
+  // Try each endpoint until one succeeds
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const response = await fetch(
+        `${endpoint}?data=${encodeURIComponent(query)}`,
+        { signal: AbortSignal.timeout(2500) } // Reduced timeout for faster fallback
+      );
+      
+      if (!response.ok) {
+        console.log(`[Traccar] ${endpoint} returned ${response.status}, trying next...`);
+        continue;
       }
-      // Try nearby grid cells
-      const nearby = getNearbySpeedLimit(lat, lon);
-      if (nearby !== null) return nearby;
-      return null;
-    }
-    
-    const data = await response.json();
-    
-    let speedLimit: number | null = null;
-    
-    if (data.elements && data.elements.length > 0) {
-      // Get the first road's maxspeed
-      const road = data.elements[0];
-      if (road.tags?.maxspeed) {
-        speedLimit = parseMaxSpeed(road.tags.maxspeed);
-        console.log(`[Traccar] Speed limit found: ${road.tags.maxspeed} → ${speedLimit} km/h`);
+      
+      const data = await response.json();
+      
+      let speedLimit: number | null = null;
+      
+      if (data.elements && data.elements.length > 0) {
+        const road = data.elements[0];
+        if (road.tags?.maxspeed) {
+          speedLimit = parseMaxSpeed(road.tags.maxspeed);
+          console.log(`[Traccar] Speed limit found: ${road.tags.maxspeed} → ${speedLimit} km/h`);
+        }
       }
-    } else {
-      console.log(`[Traccar] No roads with maxspeed found within 50m`);
-      // Try nearby grid cells when no result
-      const nearby = getNearbySpeedLimit(lat, lon);
-      if (nearby !== null) {
-        return nearby;
-      }
+      
+      // Cache the result (even null to avoid repeated lookups)
+      speedLimitCache.set(gridKey, { limit: speedLimit, timestamp: Date.now() });
+      
+      return speedLimit;
+    } catch (err) {
+      console.log(`[Traccar] ${endpoint} failed, trying next...`);
+      continue;
     }
-    
-    // Cache the result (even null to avoid repeated lookups)
-    speedLimitCache.set(gridKey, { limit: speedLimit, timestamp: Date.now() });
-    
-    return speedLimit;
-  } catch (err) {
-    console.log(`[Traccar] Speed limit lookup failed:`, err);
-    // Return stale cache if API fails completely
-    if (cached) {
-      console.log(`[Traccar] Using stale cache due to API failure: ${cached.limit} km/h`);
-      return cached.limit;
-    }
-    // Try nearby grid cells as last resort
-    const nearby = getNearbySpeedLimit(lat, lon);
-    if (nearby !== null) return nearby;
-    return null;
   }
+  
+  // All endpoints failed - use stale cache if available
+  if (cached) {
+    console.log(`[Traccar] All endpoints failed, using stale cache: ${cached.limit} km/h`);
+    // Refresh stale cache timestamp to avoid hammering failed APIs
+    speedLimitCache.set(gridKey, { limit: cached.limit, timestamp: Date.now() - CACHE_TTL_MS / 2 });
+    return cached.limit;
+  }
+  
+  // Last resort: cache null to prevent repeated failed lookups
+  speedLimitCache.set(gridKey, { limit: null, timestamp: Date.now() });
+  return null;
 }
 
 serve(async (req) => {
