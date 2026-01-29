@@ -681,6 +681,18 @@ export default function InstructorTraccarSession() {
     ? (new Date().getTime() - new Date(device.last_seen_at).getTime()) / 1000 / 60 < 2
     : false;
 
+  const lastSeenAtDate = device?.last_seen_at ? new Date(device.last_seen_at) : null;
+  const secondsSinceLastSeen = lastSeenAtDate
+    ? Math.max(0, Math.floor((Date.now() - lastSeenAtDate.getTime()) / 1000))
+    : null;
+  const lastSeenLabel = (() => {
+    if (secondsSinceLastSeen === null) return "never";
+    if (secondsSinceLastSeen < 60) return `${secondsSinceLastSeen}s ago`;
+    const mins = Math.floor(secondsSinceLastSeen / 60);
+    const secs = secondsSinceLastSeen % 60;
+    return `${mins}m ${secs}s ago`;
+  })();
+
   const isSessionActive = !!device?.current_session_id;
   const currentPupil = pupils.find(p => p.id === device?.current_pupil_id);
   const speedMph = device?.last_speed_kmh != null ? Math.round(device.last_speed_kmh * 0.621371) : null;
@@ -781,13 +793,32 @@ export default function InstructorTraccarSession() {
 
       {/* Full Screen Map or Pupil Selection */}
       <div className="flex-1 relative">
+        {/* Stale data banner */}
+        {!isConnected && (
+          <div className="absolute top-24 left-4 right-4 z-30">
+            <div className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg">
+              <div className="flex items-start gap-2">
+                <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    No recent GPS updates
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Last update {lastSeenLabel}. Showing last known location.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Live Map - always visible so speed/road updates show instantly */}
         <TraccarLiveMap
           latitude={device.last_latitude}
           longitude={device.last_longitude}
           heading={device.last_heading}
-          speedKmh={device.last_speed_kmh}
-          speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
+          speedKmh={isConnected ? device.last_speed_kmh : null}
+          speedLimitKmh={isConnected ? (device.last_speed_limit_kmh ?? speedLimitKmh) : null}
           isConnected={isConnected}
           sessionId={isSessionActive ? device.current_session_id : null}
           roadName={device.last_road_name}
