@@ -54,39 +54,39 @@ export default function InstructorSchedule() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 h-full">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
             <h1 className="text-xl font-bold">Schedule</h1>
           </div>
           
-          <div className="flex rounded-lg border bg-muted p-1">
+          <div className="flex rounded-lg border bg-muted p-0.5 sm:p-1">
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
-              className="gap-1"
+              className="gap-1 px-2 sm:px-3 h-8"
             >
               <List className="h-4 w-4" />
-              <span className="hidden sm:inline">List</span>
+              <span className="text-xs sm:text-sm">List</span>
             </Button>
             <Button
               variant={viewMode === 'schedule' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('schedule')}
-              className="gap-1"
+              className="gap-1 px-2 sm:px-3 h-8"
             >
               <CalendarDays className="h-4 w-4" />
-              <span className="hidden sm:inline">Schedule</span>
+              <span className="text-xs sm:text-sm">Schedule</span>
             </Button>
             <Button
               variant={viewMode === 'calendar' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('calendar')}
-              className="gap-1"
+              className="gap-1 px-2 sm:px-3 h-8"
             >
               <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Calendar</span>
+              <span className="text-xs sm:text-sm">Calendar</span>
             </Button>
           </div>
         </div>
