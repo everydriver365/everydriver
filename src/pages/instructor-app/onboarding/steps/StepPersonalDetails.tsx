@@ -32,17 +32,32 @@ export function StepPersonalDetails({
   const [uploading, setUploading] = useState(false);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const input = e.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
+
+    // Always reset the input so selecting the same file again triggers onChange
+    const resetInput = () => {
+      input.value = "";
+    };
 
     if (!instructorId) {
       toast.error("Please wait, loading your profile...");
+      resetInput();
+      return;
+    }
+
+    // Validate file type
+    if (!file.type?.startsWith("image/")) {
+      toast.error("Please choose an image file");
+      resetInput();
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image must be less than 5MB");
+      resetInput();
       return;
     }
 
@@ -72,6 +87,7 @@ export function StepPersonalDetails({
       toast.error(err?.message || "Failed to upload photo");
     } finally {
       setUploading(false);
+      resetInput();
     }
   };
 
@@ -97,10 +113,10 @@ export function StepPersonalDetails({
             <label className="absolute -bottom-1 -right-1 cursor-pointer">
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/*"
                 className="hidden"
                 onChange={handleImageUpload}
-                disabled={uploading}
+                disabled={uploading || !instructorId}
               />
               <Button
                 type="button"
