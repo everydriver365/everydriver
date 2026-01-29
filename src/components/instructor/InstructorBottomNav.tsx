@@ -4,7 +4,7 @@ import {
   Home, 
   CalendarDays, 
   Users, 
-  Navigation,
+  Radio,
   MessageCircle,
   PoundSterling,
   Grid3X3,
@@ -37,8 +37,8 @@ const navItems: NavItem[] = [
     path: "/instructor/schedule"
   },
   { 
-    label: "Track", 
-    icon: Navigation, 
+    label: "Live", 
+    icon: Radio, 
     path: "/instructor/traccar",
     isTrack: true
   },
@@ -83,8 +83,8 @@ export function InstructorBottomNav() {
 
     checkActiveSession();
 
-    // Poll every 10 seconds
-    const interval = setInterval(checkActiveSession, 10000);
+    // Poll frequently for near-instant indicator updates
+    const interval = setInterval(checkActiveSession, 2000);
     return () => clearInterval(interval);
   }, [instructor?.id]);
 

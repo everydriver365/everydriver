@@ -748,22 +748,22 @@ export default function InstructorTraccarSession() {
 
       {/* Full Screen Map or Pupil Selection */}
       <div className="flex-1 relative">
+        {/* Live Map - always visible so speed/road updates show instantly */}
+        <TraccarLiveMap
+          latitude={device.last_latitude}
+          longitude={device.last_longitude}
+          heading={device.last_heading}
+          speedKmh={device.last_speed_kmh}
+          speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
+          isConnected={isConnected}
+          sessionId={isSessionActive ? device.current_session_id : null}
+          roadName={device.last_road_name}
+          events={isSessionActive ? drivingEvents : []}
+          className="absolute inset-0"
+        />
+
         {isSessionActive ? (
           <>
-            {/* Live Map - Full Screen (Apple Maps style) */}
-            <TraccarLiveMap
-              latitude={device.last_latitude}
-              longitude={device.last_longitude}
-              heading={device.last_heading}
-              speedKmh={device.last_speed_kmh}
-              speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
-              isConnected={isConnected}
-              sessionId={device.current_session_id}
-              roadName={device.last_road_name}
-              events={drivingEvents}
-              className="absolute inset-0"
-            />
-
             {/* Floating Stop Button - positioned above the map's bottom panel */}
             <div className="absolute bottom-[140px] left-4 right-4 z-30">
               <Button 
@@ -801,127 +801,131 @@ export default function InstructorTraccarSession() {
             </div>
           </>
         ) : (
-          /* Pre-session: Pupil Selection Overlay */
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background to-muted/30 overflow-y-auto">
-            <div className="w-full max-w-sm space-y-5 py-4">
-              {/* Header */}
-              <div className="text-center">
-                <div className="h-16 w-16 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
-                  {device?.is_test_route_mode || !selectedPupilId ? (
-                    <Flag className="h-8 w-8 text-primary" />
-                  ) : (
-                    <User className="h-8 w-8 text-primary" />
-                  )}
-                </div>
-                <h2 className="text-xl font-semibold mb-1">Start Tracking</h2>
-                <p className="text-sm text-muted-foreground">
-                  Connect your device and select a pupil
-                </p>
-              </div>
-
-              {/* Connection Checklist */}
-              <TraccarConnectionChecklist
-                isConnected={isConnected}
-                lastSeenAt={device.last_seen_at}
-                deviceName={device.device_name || "Traccar Device"}
-              />
-
-              {/* Pupil Selection - only show when connected */}
-              <div className="space-y-4">
-                <Select value={selectedPupilId} onValueChange={(value) => {
-                  setSelectedPupilId(value);
-                }}>
-                  <SelectTrigger className="h-14 text-base">
-                    <SelectValue placeholder="Select pupil (optional)..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pupils.map((pupil) => (
-                      <SelectItem key={pupil.id} value={pupil.id} className="py-3">
-                        {pupil.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {/* Test Route Mode Toggle - always visible */}
-                <div className={`flex items-center justify-between p-3 rounded-xl border ${
-                  device?.is_test_route_mode || !selectedPupilId 
-                    ? "bg-amber-500/10 border-amber-500/30" 
-                    : "bg-muted/50 border-border"
-                }`}>
-                  <div className="flex items-center gap-2">
-                    <Flag className={`h-4 w-4 ${device?.is_test_route_mode || !selectedPupilId ? "text-amber-600" : "text-muted-foreground"}`} />
-                    <div>
-                      <Label className="text-sm font-medium">Test Route</Label>
-                      {!selectedPupilId && (
-                        <p className="text-[10px] text-muted-foreground">Auto-enabled without pupil</p>
+          /* Pre-session: Start controls overlay (map stays visible behind) */
+          <div className="absolute inset-0 z-30 flex flex-col justify-end pointer-events-none">
+            <div className="pointer-events-auto px-4 pb-[calc(150px+env(safe-area-inset-bottom))]">
+              <div className="mx-auto w-full max-w-sm rounded-2xl border border-border bg-background/95 backdrop-blur shadow-lg max-h-[55vh] overflow-y-auto">
+                <div className="p-4 space-y-5">
+                  {/* Header */}
+                  <div className="text-center">
+                    <div className="h-16 w-16 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
+                      {device?.is_test_route_mode || !selectedPupilId ? (
+                        <Flag className="h-8 w-8 text-primary" />
+                      ) : (
+                        <User className="h-8 w-8 text-primary" />
                       )}
                     </div>
+                    <h2 className="text-xl font-semibold mb-1">Start Tracking</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Connect your device and select a pupil
+                    </p>
                   </div>
-                  <Switch 
-                    checked={device?.is_test_route_mode || !selectedPupilId}
-                    onCheckedChange={async (checked) => {
-                      if (!device) return;
-                      if (selectedPupilId) {
-                        await supabase
-                          .from("traccar_devices")
-                          .update({ is_test_route_mode: checked })
-                          .eq("id", device.id);
-                        setDevice({ ...device, is_test_route_mode: checked });
-                      }
-                    }}
-                    disabled={!selectedPupilId}
+
+                  {/* Connection Checklist */}
+                  <TraccarConnectionChecklist
+                    isConnected={isConnected}
+                    lastSeenAt={device.last_seen_at}
+                    deviceName={device.device_name || "Traccar Device"}
                   />
-                </div>
 
-                {/* Action buttons */}
-                <div className="space-y-2">
-                  {/* Start with pupil button */}
-                  {selectedPupilId && (
-                    <Button 
-                      size="lg"
-                      className="w-full h-14 text-lg font-semibold rounded-xl"
-                      onClick={() => startSession("practice")}
-                      disabled={isStarting || !isConnected}
-                    >
-                      {isStarting ? (
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                      ) : (
-                        <Play className="h-5 w-5 mr-2" />
+                  {/* Pupil Selection */}
+                  <div className="space-y-4">
+                    <Select value={selectedPupilId} onValueChange={(value) => {
+                      setSelectedPupilId(value);
+                    }}>
+                      <SelectTrigger className="h-14 text-base">
+                        <SelectValue placeholder="Select pupil (optional)..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {pupils.map((pupil) => (
+                          <SelectItem key={pupil.id} value={pupil.id} className="py-3">
+                            {pupil.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Test Route Mode Toggle - always visible */}
+                    <div className={`flex items-center justify-between p-3 rounded-xl border ${
+                      device?.is_test_route_mode || !selectedPupilId 
+                        ? "bg-amber-500/10 border-amber-500/30" 
+                        : "bg-muted/50 border-border"
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <Flag className={`h-4 w-4 ${device?.is_test_route_mode || !selectedPupilId ? "text-amber-600" : "text-muted-foreground"}`} />
+                        <div>
+                          <Label className="text-sm font-medium">Test Route</Label>
+                          {!selectedPupilId && (
+                            <p className="text-[10px] text-muted-foreground">Auto-enabled without pupil</p>
+                          )}
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={device?.is_test_route_mode || !selectedPupilId}
+                        onCheckedChange={async (checked) => {
+                          if (!device) return;
+                          if (selectedPupilId) {
+                            await supabase
+                              .from("traccar_devices")
+                              .update({ is_test_route_mode: checked })
+                              .eq("id", device.id);
+                            setDevice({ ...device, is_test_route_mode: checked });
+                          }
+                        }}
+                        disabled={!selectedPupilId}
+                      />
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="space-y-2">
+                      {/* Start with pupil button */}
+                      {selectedPupilId && (
+                        <Button 
+                          size="lg"
+                          className="w-full h-14 text-lg font-semibold rounded-xl"
+                          onClick={() => startSession("practice")}
+                          disabled={isStarting || !isConnected}
+                        >
+                          {isStarting ? (
+                            <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                          ) : (
+                            <Play className="h-5 w-5 mr-2" />
+                          )}
+                          {device?.is_test_route_mode ? "Start Test Route" : "Start Trip"}
+                        </Button>
                       )}
-                      {device?.is_test_route_mode ? "Start Test Route" : "Start Trip"}
-                    </Button>
-                  )}
 
-                  {/* Quick start test route button */}
-                  {!selectedPupilId && (
-                    <Button 
-                      size="lg"
-                      variant="default"
-                      className="w-full h-14 text-lg font-semibold rounded-xl bg-amber-600 hover:bg-amber-700"
-                      onClick={() => startSession("test")}
-                      disabled={isStarting || !isConnected}
-                    >
-                      {isStarting ? (
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                      ) : (
-                        <Flag className="h-5 w-5 mr-2" />
+                      {/* Quick start test route button */}
+                      {!selectedPupilId && (
+                        <Button 
+                          size="lg"
+                          variant="default"
+                          className="w-full h-14 text-lg font-semibold rounded-xl bg-amber-600 hover:bg-amber-700"
+                          onClick={() => startSession("test")}
+                          disabled={isStarting || !isConnected}
+                        >
+                          {isStarting ? (
+                            <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                          ) : (
+                            <Flag className="h-5 w-5 mr-2" />
+                          )}
+                          Start Test Route
+                        </Button>
                       )}
-                      Start Test Route
-                    </Button>
-                  )}
 
-                  {/* Driving Test button - opens dialog */}
-                  <Button 
-                    size="lg"
-                    variant="default"
-                    className="w-full h-14 text-lg font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700"
-                    onClick={() => setShowDrivingTestDialog(true)}
-                    disabled={isStarting || !isConnected}
-                  >
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Driving Test
-                  </Button>
+                      {/* Driving Test button - opens dialog */}
+                      <Button 
+                        size="lg"
+                        variant="default"
+                        className="w-full h-14 text-lg font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700"
+                        onClick={() => setShowDrivingTestDialog(true)}
+                        disabled={isStarting || !isConnected}
+                      >
+                        <CheckCircle className="h-5 w-5 mr-2" />
+                        Driving Test
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
