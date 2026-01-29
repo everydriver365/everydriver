@@ -27,7 +27,7 @@ export interface WaterLog {
 export interface HealthSettings {
   id: string;
   instructor_id: string;
-  weight_unit: "kg" | "lbs";
+  weight_unit: "kg" | "lbs" | "stone";
   daily_water_goal: number;
   break_reminder_enabled: boolean;
   reminder_interval_minutes: number;
@@ -47,6 +47,21 @@ export interface HealthTip {
 }
 
 const KG_TO_LBS = 2.20462;
+const KG_TO_STONE = 0.157473;
+
+// Helper to convert kg to stone/lbs format
+export function kgToStoneLbs(weightKg: number): { stone: number; lbs: number } {
+  const totalLbs = weightKg * KG_TO_LBS;
+  const stone = Math.floor(totalLbs / 14);
+  const lbs = Math.round((totalLbs % 14) * 10) / 10;
+  return { stone, lbs };
+}
+
+// Helper to convert stone/lbs to kg
+export function stoneLbsToKg(stone: number, lbs: number): number {
+  const totalLbs = (stone * 14) + lbs;
+  return totalLbs / KG_TO_LBS;
+}
 
 export function useInstructorHealth() {
   const { instructor } = useInstructorAuth();
@@ -129,11 +144,20 @@ export function useInstructorHealth() {
 
   // Mutation: Log weight
   const logWeightMutation = useMutation({
-    mutationFn: async ({ weight, notes, date }: { weight: number; notes?: string; date?: string }) => {
+    mutationFn: async ({ weight, notes, date, weightKgDirect }: { weight: number; notes?: string; date?: string; weightKgDirect?: number }) => {
       if (!instructorId) throw new Error("Not authenticated");
       
       const logDate = date || todayDate;
-      const weightKg = settings?.weight_unit === "lbs" ? weight / KG_TO_LBS : weight;
+      // If weightKgDirect is provided (for stone input), use it directly
+      // Otherwise convert based on unit setting
+      let weightKg: number;
+      if (weightKgDirect !== undefined) {
+        weightKg = weightKgDirect;
+      } else if (settings?.weight_unit === "lbs") {
+        weightKg = weight / KG_TO_LBS;
+      } else {
+        weightKg = weight; // kg or stone (stone handled by caller)
+      }
       
       const { data, error } = await supabase
         .from("instructor_health_logs")
@@ -261,8 +285,12 @@ export function useInstructorHealth() {
   }, [healthTips]);
 
   // Convert weight for display based on settings
-  const convertWeight = useCallback((weightKg: number) => {
+  const convertWeight = useCallback((weightKg: number): number => {
     if (settings?.weight_unit === "lbs") {
+      return Math.round(weightKg * KG_TO_LBS * 10) / 10;
+    }
+    if (settings?.weight_unit === "stone") {
+      // For chart/numeric display, convert to total lbs equivalent
       return Math.round(weightKg * KG_TO_LBS * 10) / 10;
     }
     return Math.round(weightKg * 10) / 10;
