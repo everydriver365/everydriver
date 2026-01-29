@@ -869,7 +869,7 @@ export default function InstructorTraccarSession() {
           /* Pre-session: Start controls overlay (map stays visible behind) */
           <div className="absolute inset-0 z-30 flex flex-col justify-end pointer-events-none">
             <div className="pointer-events-auto px-4 pb-[calc(150px+env(safe-area-inset-bottom))]">
-              <div className="mx-auto w-full max-w-sm rounded-2xl border border-border bg-background/95 backdrop-blur shadow-lg max-h-[55vh] overflow-y-auto">
+              <div className="mx-auto w-full max-w-sm rounded-2xl border border-border bg-background/95 backdrop-blur shadow-lg overflow-hidden">
                 <div className="p-4 space-y-5">
                   {/* Header */}
                   <div className="text-center">
