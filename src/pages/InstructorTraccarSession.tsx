@@ -225,6 +225,7 @@ export default function InstructorTraccarSession() {
         },
         (payload) => {
           const newDevice = payload.new as TraccarDevice;
+          console.log('[Traccar RT] Device update:', newDevice.last_speed_kmh, 'km/h');
           setDevice(newDevice);
           // Update speed limit from device (works for all session types)
           if (newDevice.last_speed_limit_kmh !== undefined) {
@@ -234,8 +235,8 @@ export default function InstructorTraccarSession() {
       )
       .subscribe();
     
-    // Fallback polling every 10s (reduced since we have realtime)
-    const interval = setInterval(pollDevice, 10000);
+    // Aggressive fallback polling every 3s to ensure speed updates are timely
+    const interval = setInterval(pollDevice, 3000);
     
     return () => {
       supabase.removeChannel(channel);
