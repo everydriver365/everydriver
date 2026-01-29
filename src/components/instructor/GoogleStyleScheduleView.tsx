@@ -124,7 +124,7 @@ function DayRow({
   return (
     <div 
       ref={isCurrentDay ? todayRef : undefined}
-      className="flex py-3"
+      className="flex py-3 overflow-hidden"
     >
       {/* Date column - Google style */}
       <div className="w-14 flex-shrink-0 text-center pt-1">
@@ -285,10 +285,10 @@ export function GoogleStyleScheduleView({
   }, [events, currentDate]);
 
   return (
-    <div className="h-full flex flex-col bg-background rounded-lg border">
+    <div className="h-full flex flex-col bg-background rounded-lg border overflow-hidden">
       {/* Header with navigation */}
-      <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-card gap-1 sm:gap-2">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-card gap-1 sm:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1 flex-shrink-0">
           <Button
             variant="outline"
             size="icon"
@@ -335,13 +335,13 @@ export function GoogleStyleScheduleView({
       </div>
       
       {/* Scrollable content */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : (
-          <div>
+          <div className="overflow-hidden">
             {/* Month banner */}
             <MonthBanner month={groupedData.month} />
             
@@ -368,21 +368,21 @@ export function GoogleStyleScheduleView({
       </ScrollArea>
       
       {/* Color legend */}
-      <div className="flex flex-wrap gap-3 p-3 border-t bg-card text-xs">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: calendarColors.lesson }} />
+      <div className="flex flex-wrap gap-2 p-2 border-t bg-card text-[10px] flex-shrink-0">
+        <div className="flex items-center gap-1">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.lesson }} />
           <span className="text-muted-foreground">Paid</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: calendarColors.lesson_unpaid }} />
+        <div className="flex items-center gap-1">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.lesson_unpaid }} />
           <span className="text-muted-foreground">Unpaid</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: calendarColors.block_personal }} />
-          <span className="text-muted-foreground">Personal</span>
+        <div className="flex items-center gap-1">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.block_personal }} />
+          <span className="text-muted-foreground">Block</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: calendarColors.external }} />
+        <div className="flex items-center gap-1">
+          <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: calendarColors.external }} />
           <span className="text-muted-foreground">External</span>
         </div>
       </div>

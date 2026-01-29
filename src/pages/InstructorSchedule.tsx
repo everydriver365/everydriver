@@ -133,7 +133,7 @@ export default function InstructorSchedule() {
         {viewMode === 'list' ? (
           <NewMobileScheduleView instructorId={instructorId} />
         ) : viewMode === 'schedule' ? (
-          <div className="h-[calc(100vh-12rem)]">
+          <div className="h-[calc(100vh-12rem)] overflow-hidden">
             <GoogleStyleScheduleView
               events={calendar.events}
               calendarColors={calendar.calendarColors}
