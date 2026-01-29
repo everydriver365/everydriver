@@ -218,7 +218,7 @@ export function InstructorMobileHome({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/instructor/traccar")}>
                 <Car className="mr-2 h-4 w-4" />
-                Traccar Session
+                Live Tracking
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
                 <Bell className="mr-2 h-4 w-4" />

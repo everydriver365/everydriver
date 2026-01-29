@@ -86,7 +86,7 @@ export default function InstructorMenu() {
         },
         {
           icon: Car,
-          label: "Track Lesson",
+          label: "Live Tracking",
           path: "/instructor/traccar",
           iconColor: "text-cyan-600",
           iconBg: "bg-cyan-100 dark:bg-cyan-900/30",
