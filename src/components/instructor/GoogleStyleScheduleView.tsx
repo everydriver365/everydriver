@@ -1,8 +1,9 @@
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek, isToday, startOfDay, addHours } from 'date-fns';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Palette, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/hooks/useInstructorCalendar';
 import { CalendarColors, DEFAULT_CALENDAR_COLORS } from './CalendarColorSettings';
@@ -58,10 +59,16 @@ function EventBar({
   event,
   color,
   onClick,
+  onDelete,
+  onColorChange,
+  presetColors,
 }: {
   event: CalendarEvent;
   color: string;
   onClick?: () => void;
+  onDelete?: () => void;
+  onColorChange?: (color: string) => void;
+  presetColors: string[];
 }) {
   const startTime = format(event.start, 'HH:mm');
   const endTime = format(event.end, 'HH:mm');
@@ -85,16 +92,70 @@ function EventBar({
       className="w-full rounded-md px-3 py-2 mb-1.5 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation"
       style={{ backgroundColor: color }}
     >
-      <div className="text-black/90 font-medium text-sm truncate">
-        {event.title}
+      <div className="flex items-start justify-between gap-2 min-w-0">
+        <div className="text-foreground font-medium text-sm truncate min-w-0">
+          {event.title}
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          {onColorChange && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="h-7 w-7 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors flex items-center justify-center"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label="Change color"
+                >
+                  <Palette className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                className="w-44 p-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="grid grid-cols-6 gap-1">
+                  {presetColors.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={cn(
+                        'h-6 w-6 rounded border',
+                        c === color ? 'border-primary ring-1 ring-primary' : 'border-transparent'
+                      )}
+                      style={{ backgroundColor: c }}
+                      onClick={() => onColorChange(c)}
+                      aria-label="Select color"
+                    />
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+
+          {onDelete && event.type !== 'external' && (
+            <button
+              type="button"
+              className="h-7 w-7 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors flex items-center justify-center"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              aria-label="Delete"
+            >
+              <Trash2 className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
+        </div>
       </div>
       {hasSecondLine && (
-        <div className="text-black/70 text-xs truncate mt-0.5">
+        <div className="text-muted-foreground text-xs truncate mt-0.5">
           {startTime} – {endTime} at {event.data.pickup_address}
         </div>
       )}
       {!hasSecondLine && (
-        <div className="text-black/70 text-xs truncate mt-0.5">
+        <div className="text-muted-foreground text-xs truncate mt-0.5">
           {startTime} – {endTime}
         </div>
       )}
@@ -107,6 +168,8 @@ function DayRow({
   colors, 
   onEventClick,
   onDayClick,
+  onDeleteEvent,
+  onEventColorChange,
   eventColorOverrides,
   todayRef
 }: { 
@@ -114,6 +177,8 @@ function DayRow({
   colors: CalendarColors; 
   onEventClick?: (event: CalendarEvent) => void;
   onDayClick?: (date: Date) => void;
+  onDeleteEvent?: (event: CalendarEvent) => void;
+  onEventColorChange?: (eventId: string, color: string) => void;
   eventColorOverrides: Record<string, string>;
   todayRef?: React.RefObject<HTMLDivElement>;
 }) {
@@ -166,12 +231,28 @@ function DayRow({
             const baseColor = getEventColor(event, colors);
             const displayColor = eventColorOverrides[event.id] || baseColor;
 
+            const presetColors = [
+              colors.lesson,
+              colors.lesson_unpaid,
+              colors.block_personal,
+              colors.block_break,
+              colors.block_meeting,
+              colors.external,
+              DEFAULT_CALENDAR_COLORS.lesson,
+              DEFAULT_CALENDAR_COLORS.lesson_unpaid,
+              DEFAULT_CALENDAR_COLORS.block_meeting,
+              DEFAULT_CALENDAR_COLORS.external,
+            ].filter(Boolean);
+
             return (
               <EventBar
                 key={event.id}
                 event={event}
                 color={displayColor}
                 onClick={() => onEventClick?.(event)}
+                onDelete={onDeleteEvent ? () => onDeleteEvent(event) : undefined}
+                onColorChange={onEventColorChange ? (c) => onEventColorChange(event.id, c) : undefined}
+                presetColors={Array.from(new Set(presetColors))}
               />
             );
           })
@@ -321,6 +402,16 @@ export function GoogleStyleScheduleView({
         </h2>
         
         <div className="flex items-center gap-0.5 sm:gap-1">
+          {onColorSettingsClick && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onColorSettingsClick}
+              className="h-7 w-7 sm:h-8 sm:w-8"
+            >
+              <Palette className="h-4 w-4" />
+            </Button>
+          )}
           {onAddEvent && (
             <Button
               size="sm"
@@ -353,6 +444,10 @@ export function GoogleStyleScheduleView({
                 colors={calendarColors}
                 onEventClick={onEventClick}
                 onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
+                onDeleteEvent={onDeleteEvent}
+                onEventColorChange={(eventId, color) =>
+                  setEventColorOverrides((prev) => ({ ...prev, [eventId]: color }))
+                }
                 eventColorOverrides={eventColorOverrides}
                 todayRef={todayRef}
               />
