@@ -2350,6 +2350,7 @@ export type Database = {
           created_at: string | null
           current_period_end: string | null
           current_period_start: string | null
+          gocardless_billing_request_id: string | null
           gocardless_customer_id: string | null
           gocardless_mandate_id: string | null
           gocardless_subscription_id: string | null
@@ -2366,6 +2367,7 @@ export type Database = {
           created_at?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          gocardless_billing_request_id?: string | null
           gocardless_customer_id?: string | null
           gocardless_mandate_id?: string | null
           gocardless_subscription_id?: string | null
@@ -2382,6 +2384,7 @@ export type Database = {
           created_at?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          gocardless_billing_request_id?: string | null
           gocardless_customer_id?: string | null
           gocardless_mandate_id?: string | null
           gocardless_subscription_id?: string | null

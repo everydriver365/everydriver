@@ -15,6 +15,7 @@ import { StepServices } from "./steps/StepServices";
 import { StepPlanSelection } from "./steps/StepPlanSelection";
 import { StepWebsite } from "./steps/StepWebsite";
 import { StepDomainHosting } from "./steps/StepDomainHosting";
+import { StepPayment } from "./steps/StepPayment";
 import { StepComplete } from "./steps/StepComplete";
 
 interface OnboardingData {
@@ -414,8 +415,7 @@ export default function InstructorOnboarding() {
   }
 
   // Render current step
-  // Step order: 1-Personal, 2-ListingPref, 3-Location*, 4-Vehicle, 5-Quals, 6-Services, 7-Plan, 8-Website*, 9-Domain*, 10-Complete
-  // * = skipped if not wantsFeatured
+  // Step order: 1-Personal, 2-ListingPref, 3-Location, 4-Vehicle, 5-Quals, 6-Services, 7-Plan, 8-Website (inc domain), 9-Payment, 10-Complete
   switch (currentStep) {
     case 1:
       return (
@@ -479,9 +479,13 @@ export default function InstructorOnboarding() {
           selectedPlanId={data.selectedPlanId}
           billingCycle={data.billingCycle}
           onUpdate={updateData}
-          onNext={data.wantsFeatured ? handleNext : handleComplete}
+          onNext={handleNext}
           onBack={handleBack}
-          onPaidPlanSelected={handlePaidPlanSelected}
+          onPaidPlanSelected={(plan) => {
+            // Store plan and continue to website step
+            updateData({ selectedPlanId: plan.id });
+            handleNext();
+          }}
         />
       );
     case 8:
@@ -496,11 +500,16 @@ export default function InstructorOnboarding() {
       );
     case 9:
       return (
-        <StepDomainHosting
-          data={data}
-          onUpdate={updateData}
+        <StepPayment
+          data={{
+            name: data.name,
+            selectedPlanId: data.selectedPlanId,
+            selectedDomain: data.selectedDomain,
+          }}
+          instructorId={instructorId || ""}
           onNext={handleComplete}
           onBack={handleBack}
+          onSkip={handleComplete}
         />
       );
     case 10:
