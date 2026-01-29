@@ -356,9 +356,9 @@ export function PupilRecordsManager() {
                       <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     )}
                     <span className="font-medium text-sm text-emerald-700 dark:text-emerald-500">{instructor.name}</span>
-                    <Badge variant="secondary" className="ml-auto text-xs">
+                    <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-sky-500 text-[10px] font-medium text-white">
                       {instructorPupils.length}
-                    </Badge>
+                    </span>
                   </button>
 
                   {isExpanded && (
