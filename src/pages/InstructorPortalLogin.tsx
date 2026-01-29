@@ -133,7 +133,7 @@ export default function InstructorPortalLogin() {
           if (signInError) {
             setError("Biometric login failed. Please use email and password.");
           } else {
-            toast.success("Welcome back!");
+            toast.success("Welcome back!", { duration: 2000 });
             navigate("/instructor");
           }
         }
@@ -222,7 +222,7 @@ export default function InstructorPortalLogin() {
         if (rememberMe) {
           await saveCredentialsForBiometric(email.trim(), password);
         }
-        toast.success("Welcome back!");
+        toast.success("Welcome back!", { duration: 2000 });
         navigate("/instructor");
       }
     } catch (err) {
