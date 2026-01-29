@@ -120,12 +120,16 @@ export default function TraccarLiveMap({
     };
   }, [sessionId]);
 
-  // Initialize map with light theme
+  // Initialize map with light theme - center on actual location if available
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    // Use real coordinates if available, otherwise default to UK center
+    const initialLat = latitude ?? 54.5;
+    const initialLng = longitude ?? -3.5;
+
     const map = L.map(mapRef.current, {
-      center: [54.5, -3.5],
+      center: [initialLat, initialLng],
       zoom: 17,
       zoomControl: false,
       attributionControl: false,
