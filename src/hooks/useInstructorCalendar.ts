@@ -191,7 +191,8 @@ export function useInstructorCalendar(instructorId: string) {
   }, [instructorId, currentDate, view, getDateRange]);
 
   useEffect(() => {
-    fetchEvents();
+    // Always fetch with extended range for schedule view support
+    fetchEvents(true);
   }, [fetchEvents]);
 
   const navigate = useCallback((direction: 'prev' | 'next' | 'today') => {
