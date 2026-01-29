@@ -1,129 +1,191 @@
 
-# Fix: Live Tracking for Test Route Mode (No Pupil)
+# Complete Tracking System Fix: Mapbox Speed Limits + Test Route Mode
 
-## Problem Summary
+## Overview
 
-When starting a tracking session without selecting a pupil ("Start Test Route" mode), the following breaks:
+This plan addresses two issues:
+1. **Replace OSM with Mapbox** for more accurate speed limit detection in the UK
+2. **Fix Test Route mode** so GPS points record correctly even without a pupil selected
 
-1. **Speed limits not displayed** - The `update_live_position` RPC requires a `pupil_id`, so it fails for pupil-less sessions
-2. **Route line not updating in realtime** - Realtime subscription filters on `pupil_id` which is null
-3. **Speed updates delayed** - Without live position updates, the UI falls back to 5-second polling of `traccar_devices`
+## Changes Summary
 
-## Solution Architecture
+| Component | Change |
+|-----------|--------|
+| Backend Secret | Add `MAPBOX_TOKEN` secret |
+| `traccar-webhook` | Replace OSM Overpass API with Mapbox Map Matching API |
+| `traccar-webhook` | Remove pupil requirement for GPS point recording (line 377) |
+| `TraccarLiveMap.tsx` | Keep existing code (no changes needed - already correct) |
+| `InstructorTraccarSession.tsx` | No changes needed (already reads from device table) |
 
-Create a parallel data flow for "instructor-level" live tracking that doesn't depend on pupils:
+## Technical Implementation
+
+### 1. Add Mapbox Secret
+
+Before deployment, you'll need to provide your Mapbox access token. This will be stored securely in the backend and never exposed to the frontend.
+
+### 2. Update traccar-webhook Edge Function
+
+**Replace OSM speed limit lookup with Mapbox Map Matching API:**
+
+The current OSM Overpass API (lines 100-188) will be replaced with Mapbox's Map Matching API which provides:
+- More accurate road matching
+- Reliable speed limit data in the UK
+- Faster response times (dedicated commercial API)
+
+**Mapbox Map Matching endpoint:**
+```text
+POST https://api.mapbox.com/matching/v5/mapbox/driving/{coordinates}
+  ?access_token=YOUR_TOKEN
+  &annotations=maxspeed
+```
+
+**Response structure:**
+```json
+{
+  "matchings": [{
+    "legs": [{
+      "annotation": {
+        "maxspeed": [{ "speed": 48, "unit": "km/h" }]
+      }
+    }]
+  }]
+}
+```
+
+**Key changes in the webhook:**
+
+```typescript
+// Replace getRoadInfo() function with Mapbox version
+async function getRoadInfo(lat: number, lon: number): Promise<{ speedLimit: number | null; roadName: string | null }> {
+  const MAPBOX_TOKEN = Deno.env.get("MAPBOX_TOKEN");
+  if (!MAPBOX_TOKEN) {
+    console.log("[Traccar] MAPBOX_TOKEN not configured, skipping speed limit lookup");
+    return { speedLimit: null, roadName: null };
+  }
+
+  // Create two points 10m apart for Map Matching API
+  const offset = 0.0001; // ~10m
+  const coords = `${lon},${lat};${lon + offset},${lat + offset}`;
+  
+  const response = await fetch(
+    `https://api.mapbox.com/matching/v5/mapbox/driving/${coords}?access_token=${MAPBOX_TOKEN}&annotations=maxspeed&geometries=geojson`,
+    { signal: AbortSignal.timeout(3000) }
+  );
+
+  const data = await response.json();
+  
+  // Extract speed limit from first leg annotation
+  const maxspeed = data.matchings?.[0]?.legs?.[0]?.annotation?.maxspeed?.[0];
+  let speedLimit = null;
+  
+  if (maxspeed && !maxspeed.unknown) {
+    speedLimit = maxspeed.unit === "km/h" 
+      ? maxspeed.speed 
+      : Math.round(maxspeed.speed * 1.60934); // Convert mph to km/h
+  }
+
+  // Get road name from tracepoint
+  const roadName = data.tracepoints?.[0]?.name || null;
+
+  return { speedLimit, roadName };
+}
+```
+
+### 3. Fix Test Route GPS Recording
+
+**Current code (line 377):**
+```typescript
+if (typedDevice.current_session_id && typedDevice.current_pupil_id) {
+```
+
+**Fixed code:**
+```typescript
+if (typedDevice.current_session_id) {
+```
+
+This single change enables:
+- GPS point recording for Test Routes (no pupil)
+- Driving Test mode recording
+- Route polyline display for all session types
+- Distance tracking for all sessions
+
+**Additional change for live position RPC:**
+The `update_live_position` RPC requires a pupil_id, so we wrap it conditionally:
+
+```typescript
+// Only update live_pupil_positions if a pupil is assigned
+if (typedDevice.current_pupil_id) {
+  const { error: liveError } = await supabase.rpc("update_live_position", {
+    p_pupil_id: typedDevice.current_pupil_id,
+    // ... rest of params
+  });
+}
+```
+
+## Data Flow After Fix
 
 ```text
-+------------------+     +------------------+     +---------------------+
-| Traccar Webhook  | --> | traccar_devices  | --> | UI (polling + RT)   |
-|                  |     | (always updated) |     |                     |
-|                  |     +------------------+     +---------------------+
-|                  |                              
-|                  |     +----------------------+  +---------------------+
-|                  | --> | live_pupil_positions | --> | UI (RT sub)       |
-|                  |     | (only if pupil set)  |  | (pupil sessions)    |
-+------------------+     +----------------------+  +---------------------+
+Traccar App sends GPS data
+        ↓
+traccar-webhook receives data
+        ↓
++--→ Mapbox Map Matching API (speed limit + road name)
+        ↓
+traccar_devices table updated (always)
+  - last_speed_kmh
+  - last_latitude/longitude
+  - last_speed_limit_kmh  ←── Mapbox data
+  - last_road_name        ←── Mapbox data
+        ↓
+telematics_gps_points recorded (if session active - pupil optional)
+        ↓
+live_pupil_positions updated (only if pupil assigned)
+        ↓
+Frontend reads from traccar_devices via Realtime subscription
+        ↓
+TraccarLiveMap displays speed + speed limit + route
 ```
 
-## Implementation Plan
+## Speed Conversion Chain (Unchanged)
 
-### 1. Enhance `traccar_devices` table with speed limit
+1. **Traccar Client** sends speed in m/s
+2. **Webhook** converts: `speedKmh = speedMs * 3.6`
+3. **Mapbox** returns speed limit in km/h or mph (converted)
+4. **Database** stores both in km/h
+5. **Frontend** filters stationary noise (3 km/h threshold)
+6. **Display** converts to mph: `speedMph = kmh * 0.621371`
 
-Add `last_speed_limit_kmh` column to `traccar_devices` so the webhook can always store the current speed limit regardless of pupil selection.
-
-Database change:
-```sql
-ALTER TABLE traccar_devices ADD COLUMN last_speed_limit_kmh NUMERIC DEFAULT NULL;
-```
-
-### 2. Update `traccar-webhook` edge function
-
-Modify the webhook to:
-- Always update `traccar_devices.last_speed_limit_kmh` (not just when pupil is set)
-- Continue calling `update_live_position` only when a pupil is assigned
-
-### 3. Update `InstructorTraccarSession.tsx` UI
-
-Modify the page to:
-- Subscribe to `traccar_devices` Realtime changes (not just `live_pupil_positions`)
-- Use `device.last_speed_limit_kmh` for speed limit display
-- Remove dependency on `live_pupil_positions` for test route mode
-
-### 4. Update `TraccarLiveMap.tsx` for route polyline
-
-Modify the map to:
-- Subscribe to `telematics_gps_points` Realtime for route updates (already done, but verify it works for all sessions)
-- Use `traccar_devices` for vehicle marker position when no pupil
-
-### 5. Enable Realtime on `traccar_devices` table
-
-Ensure the table is added to `supabase_realtime` publication.
-
-## Files to Modify
+## Files Modified
 
 | File | Changes |
 |------|---------|
-| `supabase/functions/traccar-webhook/index.ts` | Update device with `last_speed_limit_kmh` always |
-| `src/pages/InstructorTraccarSession.tsx` | Subscribe to `traccar_devices` Realtime; read speed limit from device |
-| `src/components/instructor/TraccarLiveMap.tsx` | Minor adjustment to use device data when no pupil |
-| Database migration | Add `last_speed_limit_kmh` column + enable Realtime |
+| `supabase/functions/traccar-webhook/index.ts` | Replace OSM with Mapbox API; Remove pupil requirement for GPS recording |
 
-## Expected Result After Fix
+## Frontend Files (No Changes)
 
-| Feature | Before Fix | After Fix |
-|---------|------------|-----------|
-| Speed limit (with pupil) | Works | Works |
-| Speed limit (test route) | Broken | Works |
-| Route line (with pupil) | Works | Works |
-| Route line (test route) | Delayed | Instant |
-| Speed updates | 5s polling | Realtime |
+The existing frontend code is already correct:
+- `TraccarLiveMap.tsx` - Already has 3 km/h filter, realtime subscriptions, route polyline
+- `InstructorTraccarSession.tsx` - Already reads speed limit from `device.last_speed_limit_kmh`
 
-## Technical Details
+## Caching Strategy
 
-### Database Migration
-```sql
--- Add speed limit column to traccar_devices
-ALTER TABLE public.traccar_devices 
-ADD COLUMN IF NOT EXISTS last_speed_limit_kmh NUMERIC DEFAULT NULL;
+The grid-based cache (50m resolution, 5-minute TTL) will be retained for Mapbox to:
+- Reduce API costs
+- Improve response times
+- Handle API rate limits gracefully
 
--- Enable realtime for traccar_devices
-ALTER PUBLICATION supabase_realtime ADD TABLE public.traccar_devices;
-```
+## Fallback Behavior
 
-### Webhook Change (Key Section)
-```typescript
-// Always update device with speed limit (not just when session active)
-const { error: updateError } = await supabase
-  .from("traccar_devices")
-  .update({
-    last_speed_kmh: speedKmh,
-    last_latitude: lat,
-    last_longitude: lon,
-    last_heading: bearing,
-    last_seen_at: now.toISOString(),
-    last_speed_limit_kmh: speedLimitKmh, // NEW: Always store speed limit
-  })
-  .eq("id", typedDevice.id);
-```
+If Mapbox API fails:
+1. Check nearby grid cells for cached values
+2. Use stale cache if available
+3. Return null (speed limit displays as "—")
 
-### UI Realtime Subscription (Key Section)
-```typescript
-// Subscribe to device changes for instant updates
-const channel = supabase
-  .channel(`device-${device.id}`)
-  .on(
-    "postgres_changes",
-    {
-      event: "*",
-      schema: "public",
-      table: "traccar_devices",
-      filter: `id=eq.${device.id}`,
-    },
-    (payload) => {
-      const newDevice = payload.new as TraccarDevice;
-      setDevice(newDevice);
-      setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
-    }
-  )
-  .subscribe();
-```
+## After Implementation
+
+1. **Add your Mapbox token** when prompted
+2. **Publish** the app to deploy the updated webhook
+3. **Test** by starting a Test Route session and verifying:
+   - Speed limit displays correctly
+   - Route polyline draws on the map
+   - Speed shows 0 mph when stationary (3 km/h filter)
