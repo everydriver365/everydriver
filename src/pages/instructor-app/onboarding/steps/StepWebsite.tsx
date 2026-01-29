@@ -132,10 +132,15 @@ export function StepWebsite({
         },
       });
 
+      console.log("Domain search response:", { result, error });
+
       if (error) throw error;
 
-      if (Array.isArray(result) && result.length > 0) {
-        setSearchResults(result);
+      // Handle both direct array and wrapped response formats
+      const domains = Array.isArray(result) ? result : result?.results || result?.data || [];
+      
+      if (domains.length > 0) {
+        setSearchResults(domains);
       } else {
         setSearchError("No results found. Please try a different domain name.");
       }
