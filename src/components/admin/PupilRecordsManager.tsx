@@ -861,7 +861,7 @@ function DetailSection({ title, icon, count, onEdit, onAdd, children }: DetailSe
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-3 bg-muted/50 rounded-t hover:bg-muted transition-colors">
+      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-3 bg-sky-100 dark:bg-sky-900/30 rounded-t hover:bg-sky-200 dark:hover:bg-sky-800/40 transition-colors">
         <div className="flex items-center gap-2">
           {isOpen ? (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
