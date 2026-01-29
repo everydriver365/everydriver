@@ -1,12 +1,11 @@
-import { Droplets, Plus } from "lucide-react";
+import { Droplets, Plus, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useInstructorHealth } from "@/hooks/useInstructorHealth";
 import { cn } from "@/lib/utils";
 
 export function WaterIntakeTracker() {
-  const { todayWaterLog, addWater, isAddingWater, waterGoal } = useInstructorHealth();
-
+  const { todayWaterLog, addWater, removeWater, isAddingWater, isRemovingWater, waterGoal } = useInstructorHealth();
   const currentCount = todayWaterLog?.glasses_count || 0;
   const progress = Math.min((currentCount / waterGoal) * 100, 100);
   const isGoalReached = currentCount >= waterGoal;
@@ -86,8 +85,17 @@ export function WaterIntakeTracker() {
               ))}
             </div>
 
-            {/* Quick add buttons */}
+            {/* Quick add/remove buttons */}
             <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => removeWater(1)}
+                disabled={isRemovingWater || currentCount === 0}
+                className="border-sky-200 hover:bg-sky-50 dark:border-sky-800 dark:hover:bg-sky-900/30"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
               <Button
                 size="sm"
                 variant="outline"
