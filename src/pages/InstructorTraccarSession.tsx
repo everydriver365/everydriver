@@ -957,7 +957,7 @@ export default function InstructorTraccarSession() {
         isStarting={isStarting}
       />
 
-      <InstructorBottomNav />
+      {!device?.current_session_id && <InstructorBottomNav />}
     </div>
   );
 }

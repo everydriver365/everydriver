@@ -381,7 +381,7 @@ export default function TraccarLiveMap({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-gray-900 font-semibold text-lg truncate">
-                  {roadName || "Locating road..."}
+                  {roadName || (latitude && longitude ? `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` : "Locating road...")}
                 </p>
                 <p className="text-gray-500 text-sm">
                   {heading !== null ? `Heading ${Math.round(heading)}°` : "—"}

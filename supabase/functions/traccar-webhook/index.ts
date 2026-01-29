@@ -99,12 +99,12 @@ async function getRoadInfo(lat: number, lon: number): Promise<{ speedLimit: numb
   console.log(`[Traccar] Mapbox road info lookup at ${lat.toFixed(6)},${lon.toFixed(6)}`);
   
   try {
-    // Create two points ~10m apart for Map Matching API (requires at least 2 coordinates)
-    const offset = 0.0001; // ~10m
-    const coords = `${lon},${lat};${lon + offset},${lat + offset}`;
+    // Create two points ~50m apart for Map Matching API (requires at least 2 coordinates)
+    const offset = 0.0005; // ~50m - larger offset for better road matching
+    const coords = `${lon},${lat};${lon + offset},${lat}`;
     
     const response = await fetch(
-      `https://api.mapbox.com/matching/v5/mapbox/driving/${coords}?access_token=${MAPBOX_TOKEN}&annotations=maxspeed&geometries=geojson`,
+      `https://api.mapbox.com/matching/v5/mapbox/driving/${coords}?access_token=${MAPBOX_TOKEN}&annotations=maxspeed&geometries=geojson&tidy=true&radiuses=25;25`,
       { signal: AbortSignal.timeout(3000) }
     );
     
