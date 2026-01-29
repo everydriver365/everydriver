@@ -376,7 +376,7 @@ export default function TraccarLiveMap({
         <div className="absolute top-4 left-4 right-4 z-20">
           <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-5 py-4 shadow-lg border border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#06174C] flex items-center justify-center">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#142040] flex items-center justify-center">
                 <Navigation className="w-5 h-5 text-white" style={{ transform: `rotate(${(heading ?? 0) - 45}deg)` }} />
               </div>
               <div className="flex-1 min-w-0">
@@ -397,11 +397,11 @@ export default function TraccarLiveMap({
         onClick={centerOnVehicle}
         className={`absolute bottom-36 left-4 z-20 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-colors border ${
           isAutoCenter 
-            ? 'bg-[#06174C] border-[#06174C]' 
+            ? 'bg-[#142040] border-[#142040]' 
             : 'bg-white/95 backdrop-blur-sm border-gray-200'
         }`}
       >
-        <Locate className={`w-6 h-6 ${isAutoCenter ? 'text-white' : 'text-[#06174C]'}`} />
+        <Locate className={`w-6 h-6 ${isAutoCenter ? 'text-white' : 'text-[#142040]'}`} />
       </button>
 
       {/* Bottom Speed Panel - Light theme style */}
@@ -454,7 +454,7 @@ export default function TraccarLiveMap({
 
       {(latitude === null || longitude === null) && (
         <div className="absolute inset-0 bg-gray-100 flex flex-col items-center justify-center z-10">
-          <div className="w-12 h-12 border-4 border-[#06174C] border-t-transparent rounded-full animate-spin mb-4" />
+          <div className="w-12 h-12 border-4 border-[#142040] border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-gray-700 font-medium">Waiting for GPS signal...</p>
           <p className="text-xs text-gray-500 mt-1">
             Make sure Traccar Client is running
