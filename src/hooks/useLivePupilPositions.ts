@@ -61,13 +61,12 @@ export function useLivePupilPositions(
         trip_status: pos.trip_status || 'idle',
         updated_at: pos.updated_at,
         telematics_session_id: pos.telematics_session_id,
-        isStale: now - new Date(pos.updated_at).getTime() > staleThresholdMs,
+        // Mark as stale for UI indication only (30 seconds threshold for visual warning)
+        isStale: now - new Date(pos.updated_at).getTime() > 30000,
       }));
 
-      // Filter out very stale positions (> 5 minutes old)
-      const activePositions = formattedPositions.filter(p => !p.isStale);
-      
-      setPositions(activePositions);
+      // Trust the database is_active flag - show all active positions immediately
+      setPositions(formattedPositions);
       setLastUpdate(new Date());
       setError(null);
     } catch (err) {
