@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -175,57 +175,86 @@ export default function InstructorTraccarSession() {
     }
   };
 
+  // Store device ID in a ref to avoid re-creating subscriptions when device object updates
+  const deviceIdRef = React.useRef<string | null>(null);
+
   // Realtime subscription to traccar_devices for instant updates
+  // Uses deviceIdRef to prevent subscription churn when device data updates
   useEffect(() => {
-    if (!device?.id) return;
+    const currentDeviceId = device?.id;
+    if (!currentDeviceId) return;
+    
+    // Only set up subscription once per device ID
+    if (deviceIdRef.current === currentDeviceId) return;
+    deviceIdRef.current = currentDeviceId;
+
+    console.log('[Traccar] Setting up realtime for device:', currentDeviceId);
 
     const pollDevice = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("traccar_devices")
         .select("*")
-        .eq("id", device.id)
+        .eq("id", currentDeviceId)
         .single();
+      
+      if (error) {
+        console.error('[Traccar Poll] Error:', error.message);
+        return;
+      }
       
       if (data) {
         const typedDevice = data as TraccarDevice;
+        console.log('[Traccar Poll] Device update:', {
+          lat: typedDevice.last_latitude,
+          lng: typedDevice.last_longitude,
+          speed: typedDevice.last_speed_kmh,
+          road: typedDevice.last_road_name,
+          limit: typedDevice.last_speed_limit_kmh,
+        });
         setDevice(typedDevice);
         // Always read speed limit from device (works for test routes too)
         if (typedDevice.last_speed_limit_kmh !== undefined) {
           setSpeedLimitKmh(typedDevice.last_speed_limit_kmh);
         }
-      }
-
-      // Also fetch distance if session active
-      if (device.current_session_id) {
-        const { data: session } = await supabase
-          .from("lesson_telematics")
-          .select("total_distance_km")
-          .eq("id", device.current_session_id)
-          .single();
         
-        if (session?.total_distance_km) {
-          setTotalDistance(session.total_distance_km);
+        // Also fetch distance if session active
+        if (typedDevice.current_session_id) {
+          const { data: session } = await supabase
+            .from("lesson_telematics")
+            .select("total_distance_km")
+            .eq("id", typedDevice.current_session_id)
+            .single();
+          
+          if (session?.total_distance_km) {
+            setTotalDistance(session.total_distance_km);
+          }
         }
       }
     };
 
-    // Initial fetch
+    // Initial fetch immediately
     pollDevice();
     
-    // Subscribe to device changes for instant updates (no pupil required)
+    // Subscribe to device changes for instant updates
     const channel = supabase
-      .channel(`device-rt-${device.id}`)
+      .channel(`device-rt-${currentDeviceId}`)
       .on(
         "postgres_changes",
         {
           event: "UPDATE",
           schema: "public",
           table: "traccar_devices",
-          filter: `id=eq.${device.id}`,
+          filter: `id=eq.${currentDeviceId}`,
         },
         (payload) => {
           const newDevice = payload.new as TraccarDevice;
-          console.log('[Traccar RT] Device update:', newDevice.last_speed_kmh, 'km/h');
+          console.log('[Traccar RT] Device update:', {
+            lat: newDevice.last_latitude,
+            lng: newDevice.last_longitude,
+            speed: newDevice.last_speed_kmh,
+            road: newDevice.last_road_name,
+            limit: newDevice.last_speed_limit_kmh,
+          });
           setDevice(newDevice);
           // Update speed limit from device (works for all session types)
           if (newDevice.last_speed_limit_kmh !== undefined) {
@@ -233,16 +262,20 @@ export default function InstructorTraccarSession() {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Traccar RT] Subscription status:', status);
+      });
     
-    // Aggressive fallback polling every 3s to ensure speed updates are timely
-    const interval = setInterval(pollDevice, 3000);
+    // Aggressive fallback polling every 2s to ensure updates are timely
+    const interval = setInterval(pollDevice, 2000);
     
     return () => {
+      console.log('[Traccar] Cleaning up realtime for device:', currentDeviceId);
+      deviceIdRef.current = null;
       supabase.removeChannel(channel);
       clearInterval(interval);
     };
-  }, [device?.id, device?.current_session_id]);
+  }, [device?.id]);
 
   // Additional realtime subscription for pupil sessions (live_pupil_positions)
   // This is supplementary - the main updates come from traccar_devices subscription above
