@@ -36,6 +36,14 @@ export default function InstructorSchedule() {
   // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
 
+  // When switching into the Schedule view, reset the underlying calendar anchor date to today
+  // so the fetched range (and month banners) are centered correctly.
+  useEffect(() => {
+    if (viewMode === 'schedule') {
+      calendar.goToDate(new Date());
+    }
+  }, [viewMode, calendar.goToDate]);
+
   useEffect(() => {
     localStorage.setItem('instructor-schedule-view', viewMode);
   }, [viewMode]);
