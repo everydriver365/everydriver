@@ -15,7 +15,7 @@ export function HealthSettingsPanel() {
   const { settings, updateSettings, isUpdatingSettings } = useInstructorHealth();
 
   const handleWeightUnitChange = (value: string) => {
-    updateSettings({ weight_unit: value as "kg" | "lbs" });
+    updateSettings({ weight_unit: value as "kg" | "lbs" | "stone" });
   };
 
   const handleWaterGoalChange = (value: string) => {
@@ -50,7 +50,7 @@ export function HealthSettingsPanel() {
                 Weight Unit
               </Label>
               <p className="text-xs text-muted-foreground">
-                Display weight in kg or lbs
+                Display weight in kg, lbs, or stone
               </p>
             </div>
           </div>
@@ -59,12 +59,13 @@ export function HealthSettingsPanel() {
             onValueChange={handleWeightUnitChange}
             disabled={isUpdatingSettings}
           >
-            <SelectTrigger className="w-24">
+            <SelectTrigger className="w-28">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="kg">kg</SelectItem>
               <SelectItem value="lbs">lbs</SelectItem>
+              <SelectItem value="stone">stone</SelectItem>
             </SelectContent>
           </Select>
         </div>
