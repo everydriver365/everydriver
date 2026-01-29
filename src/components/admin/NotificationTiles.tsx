@@ -174,6 +174,11 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
     fetchCounts();
     fetchEmailCount();
 
+    // Poll for new emails every 60 seconds since IMAP doesn't support realtime
+    const emailPollInterval = setInterval(() => {
+      fetchEmailCount();
+    }, 60000);
+
     const channel = supabase
       .channel("admin_notification_tiles")
       .on(
@@ -199,9 +204,10 @@ export function NotificationTiles({ onNavigate }: NotificationTilesProps) {
       .subscribe();
 
     return () => {
+      clearInterval(emailPollInterval);
       supabase.removeChannel(channel);
     };
-  }, [fetchCounts]);
+  }, [fetchCounts, fetchEmailCount]);
 
   const primaryTiles = [
     {
