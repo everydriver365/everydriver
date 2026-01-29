@@ -1,11 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { supabase } from "@/integrations/supabase/client";
+import { getMapTileUrl, getMapAttribution } from "@/lib/mapConfig";
+import { Button } from "@/components/ui/button";
+import { Crosshair } from "lucide-react";
 
+// ========== Types ==========
 interface GPSPoint {
   lat: number;
   lng: number;
+  speedKmh?: number;
+  accuracy?: number;
 }
 
 interface TraccarLiveMapProps {
@@ -20,6 +26,74 @@ interface TraccarLiveMapProps {
   className?: string;
 }
 
+// ========== Haversine Distance (meters) ==========
+function haversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371000; // Earth's radius in meters
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
+// ========== GPS Point Validator ==========
+interface ValidationResult {
+  isValid: boolean;
+  distance: number;
+}
+
+function validatePoint(
+  point: GPSPoint,
+  lastValidPoint: GPSPoint | null,
+  accuracyThreshold = 25,
+  distanceThreshold = 10
+): ValidationResult {
+  // 1. Check GPS accuracy (reject poor signals)
+  if (point.accuracy !== undefined && point.accuracy > accuracyThreshold) {
+    return { isValid: false, distance: 0 };
+  }
+
+  // 2. First point is always valid
+  if (!lastValidPoint) {
+    return { isValid: true, distance: 0 };
+  }
+
+  // 3. Calculate distance from last valid point
+  const distance = haversineDistance(
+    lastValidPoint.lat,
+    lastValidPoint.lng,
+    point.lat,
+    point.lng
+  );
+
+  // 4. Reject if distance is below threshold (GPS jitter)
+  return { isValid: distance >= distanceThreshold, distance };
+}
+
+// ========== Speed Processing ==========
+function processSpeed(speedKmh: number | null | undefined): number {
+  if (speedKmh === null || speedKmh === undefined) return 0;
+  
+  // Cap unrealistic speeds (> 160 km/h = ~100 mph)
+  if (speedKmh > 160) return 0;
+  
+  // Filter GPS noise (speeds below 3 km/h are likely stationary)
+  if (speedKmh < 3) return 0;
+  
+  return speedKmh;
+}
+
+// ========== Component ==========
 export default function TraccarLiveMap({
   latitude,
   longitude,
@@ -36,9 +110,12 @@ export default function TraccarLiveMap({
   const markerRef = useRef<L.Marker | null>(null);
   const polylineRef = useRef<L.Polyline | null>(null);
 
-  const [points, setPoints] = useState<GPSPoint[]>([]);
+  const [filteredPoints, setFilteredPoints] = useState<GPSPoint[]>([]);
+  const [displaySpeed, setDisplaySpeed] = useState(0);
+  const [userDragged, setUserDragged] = useState(false);
+  const lastValidPointRef = useRef<GPSPoint | null>(null);
 
-  // Initialize map
+  // ========== Initialize Map ==========
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
 
@@ -52,20 +129,34 @@ export default function TraccarLiveMap({
       attributionControl: false,
     });
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer(getMapTileUrl(), {
       maxZoom: 19,
+      attribution: getMapAttribution(),
     }).addTo(mapInstance.current);
 
+    // Track user drag to disable auto-center
+    mapInstance.current.on("dragstart", () => {
+      setUserDragged(true);
+    });
+
+    // Handle resize
+    const resizeObserver = new ResizeObserver(() => {
+      mapInstance.current?.invalidateSize();
+    });
+    resizeObserver.observe(mapRef.current);
+
     return () => {
+      resizeObserver.disconnect();
       mapInstance.current?.remove();
       mapInstance.current = null;
     };
   }, []);
 
-  // Load route history when session changes
+  // ========== Load Route History ==========
   useEffect(() => {
     if (!sessionId) {
-      setPoints([]);
+      setFilteredPoints([]);
+      lastValidPointRef.current = null;
       polylineRef.current?.remove();
       polylineRef.current = null;
       return;
@@ -74,24 +165,41 @@ export default function TraccarLiveMap({
     const loadHistory = async () => {
       const { data } = await supabase
         .from("telematics_gps_points")
-        .select("latitude, longitude")
+        .select("latitude, longitude, speed_kmh, accuracy_m")
         .eq("telematics_id", sessionId)
         .order("recorded_at", { ascending: true })
         .limit(2000);
 
       if (data) {
-        setPoints(
-          data
-            .filter((p) => p.latitude && p.longitude)
-            .map((p) => ({ lat: p.latitude!, lng: p.longitude! }))
-        );
+        const validPoints: GPSPoint[] = [];
+        let lastValid: GPSPoint | null = null;
+
+        for (const row of data) {
+          if (!row.latitude || !row.longitude) continue;
+
+          const point: GPSPoint = {
+            lat: row.latitude,
+            lng: row.longitude,
+            speedKmh: row.speed_kmh ?? undefined,
+            accuracy: row.accuracy_m ?? undefined,
+          };
+
+          const { isValid } = validatePoint(point, lastValid);
+          if (isValid) {
+            validPoints.push(point);
+            lastValid = point;
+          }
+        }
+
+        setFilteredPoints(validPoints);
+        lastValidPointRef.current = lastValid;
       }
     };
 
     loadHistory();
   }, [sessionId]);
 
-  // Subscribe to realtime GPS updates
+  // ========== Realtime GPS Subscription ==========
   useEffect(() => {
     if (!sessionId) return;
 
@@ -106,9 +214,32 @@ export default function TraccarLiveMap({
           filter: `telematics_id=eq.${sessionId}`,
         },
         (payload) => {
-          const p = payload.new as { latitude: number; longitude: number };
-          if (p.latitude && p.longitude) {
-            setPoints((prev) => [...prev, { lat: p.latitude, lng: p.longitude }]);
+          const row = payload.new as {
+            latitude: number;
+            longitude: number;
+            speed_kmh?: number;
+            accuracy_m?: number;
+          };
+
+          if (!row.latitude || !row.longitude) return;
+
+          const point: GPSPoint = {
+            lat: row.latitude,
+            lng: row.longitude,
+            speedKmh: row.speed_kmh,
+            accuracy: row.accuracy_m,
+          };
+
+          const { isValid } = validatePoint(point, lastValidPointRef.current);
+
+          if (isValid) {
+            setFilteredPoints((prev) => [...prev, point]);
+            lastValidPointRef.current = point;
+            // Update speed from validated point
+            setDisplaySpeed(processSpeed(point.speedKmh));
+          } else {
+            // Point rejected - set speed to 0 (stationary)
+            setDisplaySpeed(0);
           }
         }
       )
@@ -119,7 +250,7 @@ export default function TraccarLiveMap({
     };
   }, [sessionId]);
 
-  // Update marker position from props (real-time device updates)
+  // ========== Update Marker from Props ==========
   useEffect(() => {
     const map = mapInstance.current;
     if (!map) return;
@@ -174,24 +305,46 @@ export default function TraccarLiveMap({
       markerRef.current.setIcon(icon);
     }
 
-    map.setView([latitude, longitude], map.getZoom(), { animate: true });
-  }, [latitude, longitude, heading]);
+    // Auto-center unless user dragged
+    if (!userDragged) {
+      map.setView([latitude, longitude], map.getZoom(), { animate: true });
+    }
+  }, [latitude, longitude, heading, userDragged]);
 
-  // Update polyline when points change
+  // ========== Update Polyline ==========
   useEffect(() => {
     const map = mapInstance.current;
-    if (!map || points.length < 2) return;
+    if (!map || filteredPoints.length < 2) return;
 
     polylineRef.current?.remove();
     polylineRef.current = L.polyline(
-      points.map((p) => [p.lat, p.lng] as L.LatLngExpression),
+      filteredPoints.map((p) => [p.lat, p.lng] as L.LatLngExpression),
       { color: "#3b82f6", weight: 5, opacity: 0.8 }
     ).addTo(map);
-  }, [points]);
+  }, [filteredPoints]);
 
-  // Filter low speeds (GPS noise)
-  const effectiveSpeedKmh = speedKmh !== null && speedKmh > 3 ? speedKmh : 0;
-  const speedMph = Math.round(effectiveSpeedKmh * 0.621371);
+  // ========== Update Display Speed from Props ==========
+  useEffect(() => {
+    // Only use prop speed when connected and not receiving realtime updates
+    if (isConnected && speedKmh !== null) {
+      setDisplaySpeed(processSpeed(speedKmh));
+    } else if (!isConnected) {
+      setDisplaySpeed(0);
+    }
+  }, [speedKmh, isConnected]);
+
+  // ========== Re-center Handler ==========
+  const handleRecenter = useCallback(() => {
+    setUserDragged(false);
+    if (mapInstance.current && latitude !== null && longitude !== null) {
+      mapInstance.current.setView([latitude, longitude], mapInstance.current.getZoom(), {
+        animate: true,
+      });
+    }
+  }, [latitude, longitude]);
+
+  // ========== Speed Display Calculations ==========
+  const speedMph = Math.round(displaySpeed * 0.621371);
   const speedLimitMph = speedLimitKmh !== null ? Math.round(speedLimitKmh * 0.621371) : null;
   const isSpeeding = speedLimitMph !== null && speedMph > speedLimitMph;
 
@@ -199,14 +352,31 @@ export default function TraccarLiveMap({
     <div className={`relative w-full h-full ${className}`}>
       <div ref={mapRef} className="absolute inset-0" />
 
-      {/* Simple speed display */}
+      {/* Re-center button - shows when user has dragged */}
+      {userDragged && latitude !== null && longitude !== null && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="absolute top-4 right-4 z-20 shadow-lg"
+          onClick={handleRecenter}
+        >
+          <Crosshair className="h-4 w-4 mr-1" />
+          Center
+        </Button>
+      )}
+
+      {/* Speed display panel */}
       {latitude !== null && longitude !== null && (
         <div className="absolute bottom-4 left-4 right-4 z-20">
           <div className="bg-background/95 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg border">
             <div className="flex items-center justify-between">
               {/* Current Speed */}
               <div className="text-center">
-                <span className={`text-4xl font-bold ${isSpeeding ? 'text-destructive' : 'text-foreground'}`}>
+                <span
+                  className={`text-4xl font-bold ${
+                    isSpeeding ? "text-destructive" : "text-foreground"
+                  }`}
+                >
                   {speedMph}
                 </span>
                 <span className="text-muted-foreground text-sm ml-1">mph</span>
@@ -224,7 +394,11 @@ export default function TraccarLiveMap({
 
               {/* Speed Limit */}
               <div className="w-14 h-14 rounded-full bg-background border-4 border-destructive flex items-center justify-center">
-                <span className={`text-xl font-bold ${isSpeeding ? 'text-destructive' : 'text-foreground'}`}>
+                <span
+                  className={`text-xl font-bold ${
+                    isSpeeding ? "text-destructive" : "text-foreground"
+                  }`}
+                >
                   {speedLimitMph ?? "—"}
                 </span>
               </div>
