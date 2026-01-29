@@ -425,12 +425,10 @@ export default function TraccarLiveMap({
               {/* Divider */}
               <div className="h-12 w-px bg-gray-200"></div>
 
-              {/* Speed Limit */}
+              {/* Speed Limit - UK Style Red Roundel */}
               <div className="flex flex-col items-center">
-                <div className={`w-14 h-14 rounded-full border-4 flex items-center justify-center ${
-                  isSpeeding ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
-                }`}>
-                  <span className={`text-xl font-bold ${isSpeeding ? 'text-red-500' : 'text-gray-900'}`}>
+                <div className="relative w-16 h-16 rounded-full bg-white border-[5px] border-red-600 flex items-center justify-center shadow-md">
+                  <span className={`text-2xl font-bold ${isSpeeding ? 'text-red-600' : 'text-gray-900'}`}>
                     {speedLimitMph ?? "—"}
                   </span>
                 </div>
