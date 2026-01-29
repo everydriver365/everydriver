@@ -155,9 +155,31 @@ export default function TraccarLiveMap({
 
     mapInstanceRef.current = map;
 
+    // Ensure Leaflet recalculates layout after initial paint / layout shifts
+    const invalidate = () => map.invalidateSize();
+    const timeout = window.setTimeout(invalidate, 0);
+    window.addEventListener("resize", invalidate);
+
     return () => {
+      window.clearTimeout(timeout);
+      window.removeEventListener("resize", invalidate);
       map.remove();
       mapInstanceRef.current = null;
+    };
+  }, []);
+
+  // Disable auto-centering only when the user actually moves the map (drag/zoom)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    const disable = () => setIsAutoCenter(false);
+    map.on("dragstart", disable);
+    map.on("zoomstart", disable);
+
+    return () => {
+      map.off("dragstart", disable);
+      map.off("zoomstart", disable);
     };
   }, []);
 
@@ -347,8 +369,6 @@ export default function TraccarLiveMap({
       <div 
         ref={mapRef} 
         className="absolute inset-0" 
-        onTouchStart={() => setIsAutoCenter(false)}
-        onMouseDown={() => setIsAutoCenter(false)}
       />
 
       {/* Road Name Banner - Light theme style */}
