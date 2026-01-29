@@ -4533,6 +4533,8 @@ export type Database = {
           test_passed: boolean | null
           test_result_date: string | null
           test_time: string | null
+          theory_test_date: string | null
+          theory_test_passed: boolean | null
           total_distance_km: number | null
           total_driving_minutes: number | null
           total_lessons_for_rewards: number | null
@@ -4596,6 +4598,8 @@ export type Database = {
           test_passed?: boolean | null
           test_result_date?: string | null
           test_time?: string | null
+          theory_test_date?: string | null
+          theory_test_passed?: boolean | null
           total_distance_km?: number | null
           total_driving_minutes?: number | null
           total_lessons_for_rewards?: number | null
@@ -4659,6 +4663,8 @@ export type Database = {
           test_passed?: boolean | null
           test_result_date?: string | null
           test_time?: string | null
+          theory_test_date?: string | null
+          theory_test_passed?: boolean | null
           total_distance_km?: number | null
           total_driving_minutes?: number | null
           total_lessons_for_rewards?: number | null

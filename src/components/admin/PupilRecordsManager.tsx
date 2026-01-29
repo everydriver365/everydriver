@@ -1,11 +1,16 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, MapPin } from "lucide-react";
+import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface Instructor {
   id: string;
@@ -24,6 +29,8 @@ interface Pupil {
   lessons_completed: number;
   prepaid_hours: number | null;
   account_balance: number | null;
+  theory_test_date: string | null;
+  theory_test_passed: boolean | null;
 }
 
 interface LessonHistory {
@@ -76,13 +83,24 @@ export function PupilRecordsManager() {
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // Edit states
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState("");
+  const [addingPayment, setAddingPayment] = useState(false);
+  const [newPayment, setNewPayment] = useState({ amount: "", method: "cash", notes: "" });
+  const [editingTheory, setEditingTheory] = useState(false);
+  const [theoryData, setTheoryData] = useState({ date: "", passed: "" });
+  const [editingTest, setEditingTest] = useState(false);
+  const [testData, setTestData] = useState({ date: "", time: "" });
+  const [addingLesson, setAddingLesson] = useState(false);
+  const [newLesson, setNewLesson] = useState({ date: "", time: "09:00", duration: "60", type: "Standard" });
+
   useEffect(() => {
     fetchInstructorsAndPupils();
   }, []);
 
   const fetchInstructorsAndPupils = async () => {
     try {
-      // Fetch all instructors
       const { data: instructorData } = await supabase
         .from("instructors")
         .select("id, name")
@@ -91,19 +109,17 @@ export function PupilRecordsManager() {
 
       setInstructors(instructorData || []);
 
-      // Fetch all pupils grouped by instructor
       const { data: pupilData } = await supabase
         .from("pupils")
-        .select("id, name, instructor_id, phone, email, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance")
+        .select("id, name, instructor_id, phone, email, test_date, test_time, notes, lessons_completed, prepaid_hours, account_balance, theory_test_date, theory_test_passed")
         .order("name");
 
-      // Group pupils by instructor
       const grouped: Record<string, Pupil[]> = {};
       (pupilData || []).forEach((pupil) => {
         if (!grouped[pupil.instructor_id]) {
           grouped[pupil.instructor_id] = [];
         }
-        grouped[pupil.instructor_id].push(pupil);
+        grouped[pupil.instructor_id].push(pupil as Pupil);
       });
       setPupils(grouped);
     } catch (error) {
@@ -127,51 +143,183 @@ export function PupilRecordsManager() {
 
   const selectPupil = async (pupil: Pupil) => {
     setSelectedPupil(pupil);
+    setNotesValue(pupil.notes || "");
+    setEditingNotes(false);
+    setAddingPayment(false);
+    setEditingTheory(false);
+    setEditingTest(false);
+    setAddingLesson(false);
     setDetailLoading(true);
 
     try {
-      // Fetch lesson history
-      const { data: historyData } = await supabase
-        .from("lesson_history")
-        .select("id, lesson_date, start_time, duration_minutes, skills_practiced, notes, rating")
-        .eq("pupil_id", pupil.id)
-        .order("lesson_date", { ascending: false })
-        .limit(50);
+      const [historyRes, scheduledRes, paymentRes, testRes] = await Promise.all([
+        supabase
+          .from("lesson_history")
+          .select("id, lesson_date, start_time, duration_minutes, skills_practiced, notes, rating")
+          .eq("pupil_id", pupil.id)
+          .order("lesson_date", { ascending: false })
+          .limit(50),
+        supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time, duration_minutes, lesson_type, status, payment_status")
+          .eq("pupil_id", pupil.id)
+          .order("lesson_date", { ascending: false })
+          .limit(50),
+        supabase
+          .from("payment_history")
+          .select("id, amount, payment_method, notes, recorded_at")
+          .eq("pupil_id", pupil.id)
+          .order("recorded_at", { ascending: false })
+          .limit(50),
+        supabase
+          .from("driving_test_results")
+          .select("id, test_date, result, total_minor_faults, total_serious_faults, total_dangerous_faults, is_mock")
+          .eq("pupil_id", pupil.id)
+          .order("test_date", { ascending: false }),
+      ]);
 
-      setLessonHistory(historyData || []);
-
-      // Fetch scheduled lessons
-      const { data: scheduledData } = await supabase
-        .from("scheduled_lessons")
-        .select("id, lesson_date, start_time, duration_minutes, lesson_type, status, payment_status")
-        .eq("pupil_id", pupil.id)
-        .order("lesson_date", { ascending: false })
-        .limit(50);
-
-      setScheduledLessons(scheduledData || []);
-
-      // Fetch payment history
-      const { data: paymentData } = await supabase
-        .from("payment_history")
-        .select("id, amount, payment_method, notes, recorded_at")
-        .eq("pupil_id", pupil.id)
-        .order("recorded_at", { ascending: false })
-        .limit(50);
-
-      setPayments(paymentData || []);
-
-      // Fetch driving test results
-      const { data: testData } = await supabase
-        .from("driving_test_results")
-        .select("id, test_date, result, total_minor_faults, total_serious_faults, total_dangerous_faults, is_mock")
-        .eq("pupil_id", pupil.id)
-        .order("test_date", { ascending: false });
-
-      setTestResults(testData || []);
+      setLessonHistory(historyRes.data || []);
+      setScheduledLessons(scheduledRes.data || []);
+      setPayments(paymentRes.data || []);
+      setTestResults(testRes.data || []);
     } catch (error) {
       console.error("Error fetching pupil details:", error);
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  // Save notes
+  const saveNotes = async () => {
+    if (!selectedPupil) return;
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ notes: notesValue })
+        .eq("id", selectedPupil.id);
+
+      if (error) throw error;
+      setSelectedPupil({ ...selectedPupil, notes: notesValue });
+      setEditingNotes(false);
+      toast.success("Notes saved");
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      toast.error("Failed to save notes");
+    }
+  };
+
+  // Add payment
+  const addPayment = async () => {
+    if (!selectedPupil || !newPayment.amount) return;
+    try {
+      const { data, error } = await supabase
+        .from("payment_history")
+        .insert({
+          pupil_id: selectedPupil.id,
+          instructor_id: selectedPupil.instructor_id,
+          amount: parseFloat(newPayment.amount),
+          payment_method: newPayment.method,
+          notes: newPayment.notes || null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      setPayments([data, ...payments]);
+      setNewPayment({ amount: "", method: "cash", notes: "" });
+      setAddingPayment(false);
+      toast.success("Payment recorded");
+    } catch (error) {
+      console.error("Error adding payment:", error);
+      toast.error("Failed to add payment");
+    }
+  };
+
+  // Save driving test booking
+  const saveTestBooking = async () => {
+    if (!selectedPupil) return;
+    try {
+      const { error } = await supabase
+        .from("pupils")
+        .update({ 
+          test_date: testData.date || null, 
+          test_time: testData.time || null 
+        })
+        .eq("id", selectedPupil.id);
+
+      if (error) throw error;
+      setSelectedPupil({ ...selectedPupil, test_date: testData.date || null, test_time: testData.time || null });
+      setEditingTest(false);
+      toast.success("Test booking saved");
+    } catch (error) {
+      console.error("Error saving test:", error);
+      toast.error("Failed to save test booking");
+    }
+  };
+
+  // Add scheduled lesson
+  const addScheduledLesson = async () => {
+    if (!selectedPupil || !newLesson.date) return;
+    try {
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .insert({
+          pupil_id: selectedPupil.id,
+          instructor_id: selectedPupil.instructor_id,
+          lesson_date: newLesson.date,
+          start_time: newLesson.time,
+          duration_minutes: parseInt(newLesson.duration),
+          lesson_type: newLesson.type,
+          status: "scheduled",
+          payment_status: "not_paid",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      setScheduledLessons([data, ...scheduledLessons]);
+      setNewLesson({ date: "", time: "09:00", duration: "60", type: "Standard" });
+      setAddingLesson(false);
+      toast.success("Lesson scheduled");
+    } catch (error) {
+      console.error("Error adding lesson:", error);
+      toast.error("Failed to schedule lesson");
+    }
+  };
+
+  // Cancel scheduled lesson
+  const cancelLesson = async (lessonId: string) => {
+    try {
+      const { error } = await supabase
+        .from("scheduled_lessons")
+        .update({ status: "cancelled" })
+        .eq("id", lessonId);
+
+      if (error) throw error;
+      setScheduledLessons(scheduledLessons.map(l => 
+        l.id === lessonId ? { ...l, status: "cancelled" } : l
+      ));
+      toast.success("Lesson cancelled");
+    } catch (error) {
+      console.error("Error cancelling lesson:", error);
+      toast.error("Failed to cancel lesson");
+    }
+  };
+
+  // Delete payment
+  const deletePayment = async (paymentId: string) => {
+    try {
+      const { error } = await supabase
+        .from("payment_history")
+        .delete()
+        .eq("id", paymentId);
+
+      if (error) throw error;
+      setPayments(payments.filter(p => p.id !== paymentId));
+      toast.success("Payment deleted");
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+      toast.error("Failed to delete payment");
     }
   };
 
@@ -307,9 +455,86 @@ export function PupilRecordsManager() {
               <DetailSection
                 title="Theory Test"
                 icon={<GraduationCap className="h-4 w-4" />}
-                count={0}
+                onEdit={() => {
+                  setTheoryData({ 
+                    date: selectedPupil.theory_test_date || "", 
+                    passed: selectedPupil.theory_test_passed !== null ? String(selectedPupil.theory_test_passed) : "" 
+                  });
+                  setEditingTheory(true);
+                }}
               >
-                <p className="text-sm text-muted-foreground italic">No theory test data recorded</p>
+                {editingTheory ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Date</label>
+                        <Input
+                          type="date"
+                          value={theoryData.date}
+                          onChange={(e) => setTheoryData({ ...theoryData, date: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Result</label>
+                        <Select value={theoryData.passed} onValueChange={(v) => setTheoryData({ ...theoryData, passed: v })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Passed</SelectItem>
+                            <SelectItem value="false">Failed</SelectItem>
+                            <SelectItem value="">Not Taken</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from("pupils")
+                            .update({ 
+                              theory_test_date: theoryData.date || null,
+                              theory_test_passed: theoryData.passed === "" ? null : theoryData.passed === "true"
+                            })
+                            .eq("id", selectedPupil.id);
+                          if (error) throw error;
+                          setSelectedPupil({ 
+                            ...selectedPupil, 
+                            theory_test_date: theoryData.date || null,
+                            theory_test_passed: theoryData.passed === "" ? null : theoryData.passed === "true"
+                          });
+                          setEditingTheory(false);
+                          toast.success("Theory test saved");
+                        } catch (error) {
+                          toast.error("Failed to save");
+                        }
+                      }}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingTheory(false)}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {selectedPupil.theory_test_date ? (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <span>{format(new Date(selectedPupil.theory_test_date), "dd-MMM-yyyy")}</span>
+                        {selectedPupil.theory_test_passed !== null && (
+                          <Badge variant={selectedPupil.theory_test_passed ? "default" : "destructive"} 
+                                 className={selectedPupil.theory_test_passed ? "bg-emerald-600" : ""}>
+                            {selectedPupil.theory_test_passed ? "PASSED" : "FAILED"}
+                          </Badge>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No theory test data recorded</p>
+                    )}
+                  </div>
+                )}
               </DetailSection>
 
               {/* Driving Test Section */}
@@ -317,13 +542,45 @@ export function PupilRecordsManager() {
                 title="Driving Tests"
                 icon={<Car className="h-4 w-4" />}
                 count={testResults.length}
+                onEdit={() => {
+                  setTestData({ 
+                    date: selectedPupil.test_date || "", 
+                    time: selectedPupil.test_time || "" 
+                  });
+                  setEditingTest(true);
+                }}
               >
-                {testResults.length === 0 ? (
+                {editingTest ? (
+                  <div className="space-y-3">
+                    <p className="text-xs font-medium text-muted-foreground">Booked Test Date/Time</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="date"
+                        value={testData.date}
+                        onChange={(e) => setTestData({ ...testData, date: e.target.value })}
+                      />
+                      <Input
+                        type="time"
+                        value={testData.time}
+                        onChange={(e) => setTestData({ ...testData, time: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={saveTestBooking}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingTest(false)}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
                   <div className="space-y-2">
                     {selectedPupil.test_date ? (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        <span>Booked: {format(new Date(selectedPupil.test_date), "dd-MMM-yyyy")}</span>
+                      <div className="flex items-center gap-2 text-sm mb-2">
+                        <Calendar className="h-3 w-3 text-blue-500" />
+                        <span className="font-medium">Booked:</span>
+                        <span>{format(new Date(selectedPupil.test_date), "dd-MMM-yyyy")}</span>
                         {selectedPupil.test_time && (
                           <span className="text-muted-foreground">at {selectedPupil.test_time}</span>
                         )}
@@ -331,37 +588,31 @@ export function PupilRecordsManager() {
                     ) : (
                       <p className="text-sm text-muted-foreground italic">No test booked</p>
                     )}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {selectedPupil.test_date && (
-                      <div className="flex items-center gap-2 text-sm mb-2">
-                        <Calendar className="h-3 w-3 text-blue-500" />
-                        <span className="font-medium">Next Test:</span>
-                        <span>{format(new Date(selectedPupil.test_date), "dd-MMM-yyyy")}</span>
-                      </div>
+                    {testResults.length > 0 && (
+                      <>
+                        <Separator />
+                        <p className="text-xs font-medium text-muted-foreground">Previous Results:</p>
+                        {testResults.map((test) => (
+                          <div
+                            key={test.id}
+                            className="flex items-center justify-between text-sm border-b pb-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>{format(new Date(test.test_date), "dd-MMM-yyyy")}</span>
+                              {test.is_mock && (
+                                <Badge variant="outline" className="text-xs">Mock</Badge>
+                              )}
+                            </div>
+                            <Badge
+                              variant={test.result === "pass" ? "default" : "destructive"}
+                              className={test.result === "pass" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                            >
+                              {test.result.toUpperCase()}
+                            </Badge>
+                          </div>
+                        ))}
+                      </>
                     )}
-                    <Separator />
-                    <p className="text-xs font-medium text-muted-foreground">Previous Results:</p>
-                    {testResults.map((test) => (
-                      <div
-                        key={test.id}
-                        className="flex items-center justify-between text-sm border-b pb-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span>{format(new Date(test.test_date), "dd-MMM-yyyy")}</span>
-                          {test.is_mock && (
-                            <Badge variant="outline" className="text-xs">Mock</Badge>
-                          )}
-                        </div>
-                        <Badge
-                          variant={test.result === "pass" ? "default" : "destructive"}
-                          className={test.result === "pass" ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                        >
-                          {test.result.toUpperCase()}
-                        </Badge>
-                      </div>
-                    ))}
                   </div>
                 )}
               </DetailSection>
@@ -371,8 +622,46 @@ export function PupilRecordsManager() {
                 title="Payment History"
                 icon={<CreditCard className="h-4 w-4" />}
                 count={payments.length}
+                onAdd={() => setAddingPayment(true)}
               >
-                {payments.length === 0 ? (
+                {addingPayment && (
+                  <div className="space-y-3 mb-4 p-3 bg-muted/30 rounded">
+                    <p className="text-xs font-medium">Add Payment</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Amount (£)"
+                        value={newPayment.amount}
+                        onChange={(e) => setNewPayment({ ...newPayment, amount: e.target.value })}
+                      />
+                      <Select value={newPayment.method} onValueChange={(v) => setNewPayment({ ...newPayment, method: v })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cash">Cash</SelectItem>
+                          <SelectItem value="card">Card</SelectItem>
+                          <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Input
+                      placeholder="Notes (optional)"
+                      value={newPayment.notes}
+                      onChange={(e) => setNewPayment({ ...newPayment, notes: e.target.value })}
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={addPayment}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setAddingPayment(false)}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {payments.length === 0 && !addingPayment ? (
                   <p className="text-sm text-muted-foreground italic">No payment records</p>
                 ) : (
                   <div className="space-y-2">
@@ -390,7 +679,7 @@ export function PupilRecordsManager() {
                     {payments.slice(0, 10).map((payment) => (
                       <div
                         key={payment.id}
-                        className="flex items-center justify-between text-sm border-b pb-2"
+                        className="flex items-center justify-between text-sm border-b pb-2 group"
                       >
                         <div className="flex items-center gap-2">
                           <span>{format(new Date(payment.recorded_at), "dd-MMM-yyyy")}</span>
@@ -398,7 +687,17 @@ export function PupilRecordsManager() {
                             {payment.payment_method}
                           </Badge>
                         </div>
-                        <span className="font-medium text-green-600">£{payment.amount.toFixed(2)}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-emerald-600">£{payment.amount.toFixed(2)}</span>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive"
+                            onClick={() => deletePayment(payment.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                     {payments.length > 10 && (
@@ -415,8 +714,56 @@ export function PupilRecordsManager() {
                 title="Upcoming Lessons"
                 icon={<Clock className="h-4 w-4" />}
                 count={scheduledLessons.filter((l) => l.status !== "cancelled").length}
+                onAdd={() => setAddingLesson(true)}
               >
-                {scheduledLessons.filter((l) => l.status !== "cancelled").length === 0 ? (
+                {addingLesson && (
+                  <div className="space-y-3 mb-4 p-3 bg-muted/30 rounded">
+                    <p className="text-xs font-medium">Schedule Lesson</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        type="date"
+                        value={newLesson.date}
+                        onChange={(e) => setNewLesson({ ...newLesson, date: e.target.value })}
+                      />
+                      <Input
+                        type="time"
+                        value={newLesson.time}
+                        onChange={(e) => setNewLesson({ ...newLesson, time: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Select value={newLesson.duration} onValueChange={(v) => setNewLesson({ ...newLesson, duration: v })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="60">1 hour</SelectItem>
+                          <SelectItem value="90">1.5 hours</SelectItem>
+                          <SelectItem value="120">2 hours</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={newLesson.type} onValueChange={(v) => setNewLesson({ ...newLesson, type: v })}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Standard">Standard</SelectItem>
+                          <SelectItem value="Motorway">Motorway</SelectItem>
+                          <SelectItem value="Mock Test">Mock Test</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={addScheduledLesson}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setAddingLesson(false)}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {scheduledLessons.filter((l) => l.status !== "cancelled").length === 0 && !addingLesson ? (
                   <p className="text-sm text-muted-foreground italic">No scheduled lessons</p>
                 ) : (
                   <div className="space-y-2">
@@ -426,7 +773,7 @@ export function PupilRecordsManager() {
                       .map((lesson) => (
                         <div
                           key={lesson.id}
-                          className="flex items-center justify-between text-sm border-b pb-2"
+                          className="flex items-center justify-between text-sm border-b pb-2 group"
                         >
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -443,6 +790,14 @@ export function PupilRecordsManager() {
                             >
                               {lesson.payment_status}
                             </Badge>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive"
+                              onClick={() => cancelLesson(lesson.id)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -454,11 +809,34 @@ export function PupilRecordsManager() {
               <DetailSection
                 title="Notes"
                 icon={<FileText className="h-4 w-4" />}
+                onEdit={() => setEditingNotes(true)}
               >
-                {selectedPupil.notes ? (
-                  <p className="text-sm whitespace-pre-wrap">{selectedPupil.notes}</p>
+                {editingNotes ? (
+                  <div className="space-y-3">
+                    <Textarea
+                      value={notesValue}
+                      onChange={(e) => setNotesValue(e.target.value)}
+                      rows={4}
+                      placeholder="Add notes about this pupil..."
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={saveNotes}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => {
+                        setNotesValue(selectedPupil.notes || "");
+                        setEditingNotes(false);
+                      }}>
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">No notes recorded</p>
+                  selectedPupil.notes ? (
+                    <p className="text-sm whitespace-pre-wrap">{selectedPupil.notes}</p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No notes recorded</p>
+                  )
                 )}
               </DetailSection>
             </div>
@@ -473,10 +851,12 @@ interface DetailSectionProps {
   title: string;
   icon: React.ReactNode;
   count?: number;
+  onEdit?: () => void;
+  onAdd?: () => void;
   children: React.ReactNode;
 }
 
-function DetailSection({ title, icon, count, children }: DetailSectionProps) {
+function DetailSection({ title, icon, count, onEdit, onAdd, children }: DetailSectionProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -496,9 +876,31 @@ function DetailSection({ title, icon, count, children }: DetailSectionProps) {
             </Badge>
           )}
         </div>
-        <span className="text-xs text-primary hover:underline">
-          {isOpen ? "Collapse" : "Expand"}
-        </span>
+        <div className="flex items-center gap-2">
+          {onAdd && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={(e) => { e.stopPropagation(); onAdd(); }}
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+          )}
+          {onEdit && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          )}
+          <span className="text-xs text-primary hover:underline">
+            {isOpen ? "Collapse" : "Expand"}
+          </span>
+        </div>
       </CollapsibleTrigger>
       <CollapsibleContent className="border border-t-0 rounded-b px-3 py-3 bg-background">
         {children}
