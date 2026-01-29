@@ -15,6 +15,7 @@ import { PaymentSummaryWidget } from "@/components/instructor/PaymentSummaryWidg
 import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
+import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -197,6 +198,12 @@ export default function InstructorPortal() {
             Here's what's happening with your business today.
           </p>
         </motion.div>
+
+        {/* Setup Checklist for new instructors */}
+        <InstructorSetupChecklist 
+          instructorId={instructorId} 
+          variant="full"
+        />
 
         {/* Stats Grid - Professional Cards */}
         <motion.div 

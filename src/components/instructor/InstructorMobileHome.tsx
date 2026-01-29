@@ -41,6 +41,7 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
 import { InstructorNotificationsDropdown } from "@/components/instructor/InstructorNotificationsDropdown";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -377,6 +378,14 @@ export function InstructorMobileHome({
           )}
         </motion.div>
       </div>
+
+      {/* Setup Checklist for new instructors */}
+      {instructorId && (
+        <InstructorSetupChecklist 
+          instructorId={instructorId} 
+          variant="mobile"
+        />
+      )}
 
       {/* Quick Actions */}
       <div className="px-4 mt-6 space-y-3 relative z-10">
