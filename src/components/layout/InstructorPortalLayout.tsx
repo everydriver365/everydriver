@@ -255,11 +255,19 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </div>
         </header>
 
-        <main className="px-4 py-4 overflow-x-hidden">
-          {children}
-        </main>
-
-        <InstructorBottomNav />
+        {/* Check if on tracking page for full-screen mode */}
+        {location.pathname === "/instructor/traccar" ? (
+          <main className="overflow-x-hidden">
+            {children}
+          </main>
+        ) : (
+          <>
+            <main className="px-4 py-4 overflow-x-hidden">
+              {children}
+            </main>
+            <InstructorBottomNav />
+          </>
+        )}
 
         {/* QR Code Modal */}
         {instructor?.payment_qr_url && (
