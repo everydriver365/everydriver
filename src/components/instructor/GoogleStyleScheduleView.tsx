@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, startOfWeek, endOfWeek, isToday, startOfDay, addHours } from 'date-fns';
-import { ChevronLeft, ChevronRight, Palette, MapPin, Clock, User, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Palette, MapPin, Clock, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/hooks/useInstructorCalendar';
 import { CalendarColors, DEFAULT_CALENDAR_COLORS } from './CalendarColorSettings';
@@ -16,6 +17,7 @@ interface GoogleStyleScheduleViewProps {
   currentDate: Date;
   onNavigate: (direction: 'prev' | 'next' | 'today') => void;
   loading?: boolean;
+  onDeleteEvent?: (event: CalendarEvent) => void;
 }
 
 interface DayEvents {
@@ -53,47 +55,117 @@ function getEventColor(event: CalendarEvent, colors: CalendarColors): string {
   return colors.external;
 }
 
-function EventBar({ 
-  event, 
-  color, 
-  onClick 
-}: { 
-  event: CalendarEvent; 
-  color: string; 
+function EventBar({
+  event,
+  color,
+  onClick,
+  onDelete,
+  onColorChange,
+  presetColors,
+}: {
+  event: CalendarEvent;
+  color: string;
   onClick?: () => void;
+  onDelete?: () => void;
+  onColorChange?: (color: string) => void;
+  presetColors: string[];
 }) {
   const startTime = format(event.start, 'h:mm a');
   const endTime = format(event.end, 'h:mm a');
   
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left rounded-md px-3 py-2 mb-1 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation"
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick?.();
+        }
+      }}
+      className="w-full max-w-full text-left rounded-md px-2.5 py-2 mb-1 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation min-w-0"
       style={{ backgroundColor: color }}
     >
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-medium text-white text-sm truncate flex-1">
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <span className="font-medium text-white text-sm truncate flex-1 min-w-0">
           {event.title}
         </span>
-        {event.type === 'lesson' && event.data?.payment_status !== 'paid' && (
-          <span className="text-xs bg-white/20 text-white px-1.5 py-0.5 rounded">
-            Unpaid
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {event.type === 'lesson' && event.data?.payment_status !== 'paid' && (
+            <span className="text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded">
+              Unpaid
+            </span>
+          )}
+
+          {onColorChange && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="h-6 w-6 rounded bg-white/15 hover:bg-white/25 transition-colors flex items-center justify-center"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label="Change color"
+                >
+                  <Palette className="h-3.5 w-3.5 text-white" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                className="w-40 p-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="grid grid-cols-5 gap-1">
+                  {presetColors.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={cn(
+                        'h-6 w-6 rounded border',
+                        c === color ? 'border-primary ring-1 ring-primary' : 'border-transparent'
+                      )}
+                      style={{ backgroundColor: c }}
+                      onClick={() => onColorChange(c)}
+                      aria-label="Select color"
+                    />
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+
+          {onDelete && event.type !== 'external' && (
+            <button
+              type="button"
+              className="h-6 w-6 rounded bg-white/15 hover:bg-white/25 transition-colors flex items-center justify-center"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              aria-label="Delete"
+            >
+              <Trash2 className="h-3.5 w-3.5 text-white" />
+            </button>
+          )}
+        </div>
       </div>
-      <div className="flex items-center gap-3 mt-1 text-white/80 text-xs">
+      <div className="flex items-center gap-3 mt-1 text-white/80 text-xs min-w-0">
         <span className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
           {startTime} - {endTime}
         </span>
         {event.type === 'lesson' && event.data?.pickup_address && (
-          <span className="flex items-center gap-1 truncate">
+          <span className="flex items-center gap-1 min-w-0 truncate">
             <MapPin className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">{event.data.pickup_address}</span>
           </span>
         )}
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -102,6 +174,9 @@ function DayRow({
   colors, 
   onEventClick,
   onDayClick,
+  onDeleteEvent,
+  onEventColorChange,
+  eventColorOverrides,
   isFirstInWeek,
   todayRef
 }: { 
@@ -109,6 +184,9 @@ function DayRow({
   colors: CalendarColors; 
   onEventClick?: (event: CalendarEvent) => void;
   onDayClick?: (date: Date) => void;
+  onDeleteEvent?: (event: CalendarEvent) => void;
+  onEventColorChange?: (eventId: string, color: string) => void;
+  eventColorOverrides: Record<string, string>;
   isFirstInWeek: boolean;
   todayRef?: React.RefObject<HTMLDivElement>;
 }) {
@@ -143,26 +221,54 @@ function DayRow({
         </div>
       </div>
       
-      {/* Events column - clickable to add */}
-      <button
+      {/* Events column - clickable background to add */}
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => onDayClick?.(dayEvents.date)}
-        className="flex-1 py-2 px-2 min-h-[60px] text-left hover:bg-muted/50 transition-colors cursor-pointer"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onDayClick?.(dayEvents.date);
+          }
+        }}
+        className="flex-1 py-2 px-2 min-h-[60px] text-left hover:bg-muted/50 transition-colors cursor-pointer min-w-0 overflow-hidden"
       >
         {dayEvents.events.length === 0 ? (
           <div className="h-full flex items-center">
             <span className="text-xs text-muted-foreground italic">Tap to add</span>
           </div>
         ) : (
-          dayEvents.events.map(event => (
-            <EventBar
-              key={event.id}
-              event={event}
-              color={getEventColor(event, colors)}
-              onClick={() => onEventClick?.(event)}
-            />
-          ))
+          dayEvents.events.map((event) => {
+            const baseColor = getEventColor(event, colors);
+            const displayColor = eventColorOverrides[event.id] || baseColor;
+            const presetColors = [
+              colors.lesson,
+              colors.lesson_unpaid,
+              colors.block_personal,
+              colors.block_break,
+              colors.block_meeting,
+              colors.external,
+              DEFAULT_CALENDAR_COLORS.lesson,
+              DEFAULT_CALENDAR_COLORS.lesson_unpaid,
+              DEFAULT_CALENDAR_COLORS.block_meeting,
+              DEFAULT_CALENDAR_COLORS.external,
+            ].filter(Boolean);
+
+            return (
+              <EventBar
+                key={event.id}
+                event={event}
+                color={displayColor}
+                presetColors={Array.from(new Set(presetColors))}
+                onClick={() => onEventClick?.(event)}
+                onDelete={onDeleteEvent ? () => onDeleteEvent(event) : undefined}
+                onColorChange={onEventColorChange ? (c) => onEventColorChange(event.id, c) : undefined}
+              />
+            );
+          })
         )}
-      </button>
+      </div>
     </div>
   );
 }
@@ -208,10 +314,28 @@ export function GoogleStyleScheduleView({
   onAddEvent,
   currentDate,
   onNavigate,
-  loading
+  loading,
+  onDeleteEvent,
 }: GoogleStyleScheduleViewProps) {
   const todayRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
+
+  const [eventColorOverrides, setEventColorOverrides] = useState<Record<string, string>>(() => {
+    try {
+      const raw = localStorage.getItem('schedule-event-colors');
+      return raw ? (JSON.parse(raw) as Record<string, string>) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('schedule-event-colors', JSON.stringify(eventColorOverrides));
+    } catch {
+      // ignore
+    }
+  }, [eventColorOverrides]);
 
   // Scroll to today on initial load
   useEffect(() => {
@@ -358,6 +482,11 @@ export function GoogleStyleScheduleView({
                     colors={calendarColors}
                     onEventClick={onEventClick}
                     onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
+                    onDeleteEvent={onDeleteEvent}
+                    onEventColorChange={(eventId, color) =>
+                      setEventColorOverrides((prev) => ({ ...prev, [eventId]: color }))
+                    }
+                    eventColorOverrides={eventColorOverrides}
                     isFirstInWeek={dayIndex === 0}
                     todayRef={todayRef}
                   />

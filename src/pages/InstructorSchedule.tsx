@@ -6,10 +6,13 @@ import { InstructorCalendar } from "@/components/instructor/InstructorCalendar";
 import { GoogleStyleScheduleView } from "@/components/instructor/GoogleStyleScheduleView";
 import { CalendarColorSettings } from "@/components/instructor/CalendarColorSettings";
 import { AddCalendarEventDialog } from "@/components/instructor/AddCalendarEventDialog";
+import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { useInstructorCalendar } from "@/hooks/useInstructorCalendar";
+import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type ViewMode = 'list' | 'calendar' | 'schedule';
 
@@ -28,6 +31,7 @@ export default function InstructorSchedule() {
   const [colorSettingsOpen, setColorSettingsOpen] = useState(false);
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [addEventDate, setAddEventDate] = useState<Date | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
@@ -39,6 +43,41 @@ export default function InstructorSchedule() {
   const handleAddEvent = (date?: Date) => {
     setAddEventDate(date || null);
     setAddEventOpen(true);
+  };
+
+  const handleDeleteEvent = async (event: CalendarEvent) => {
+    if (event.type === 'external') {
+      toast.error('External events can’t be deleted here');
+      return;
+    }
+
+    const ok = window.confirm(
+      event.type === 'lesson'
+        ? 'Cancel this lesson?'
+        : 'Delete this time block?'
+    );
+    if (!ok) return;
+
+    try {
+      if (event.type === 'block') {
+        await calendar.deleteBlock(event.id);
+      } else if (event.type === 'lesson') {
+        const { error } = await supabase
+          .from('scheduled_lessons')
+          .update({ status: 'cancelled' })
+          .eq('id', event.id);
+
+        if (error) throw error;
+        await calendar.refetch();
+      }
+
+      // Close sheet if it was open for this event
+      setSelectedEvent((curr) => (curr?.id === event.id ? null : curr));
+      toast.success('Updated');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed');
+    }
   };
 
   if (!instructorId) {
@@ -103,10 +142,8 @@ export default function InstructorSchedule() {
               loading={calendar.loading}
               onColorSettingsClick={() => setColorSettingsOpen(true)}
               onAddEvent={handleAddEvent}
-              onEventClick={(event) => {
-                // TODO: Open event detail sheet
-                console.log('Event clicked:', event);
-              }}
+              onEventClick={(event) => setSelectedEvent(event)}
+              onDeleteEvent={handleDeleteEvent}
             />
           </div>
         ) : (
@@ -115,6 +152,15 @@ export default function InstructorSchedule() {
           </div>
         )}
       </div>
+
+      <CalendarEventSheet
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        onDelete={async () => {
+          if (selectedEvent) await handleDeleteEvent(selectedEvent);
+        }}
+        onRefetch={calendar.refetch}
+      />
 
       {/* Color Settings Dialog */}
       <CalendarColorSettings
