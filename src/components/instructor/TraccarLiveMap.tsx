@@ -63,9 +63,16 @@ export default function TraccarLiveMap({
   }, [latitude, longitude]);
 
   // Fetch route points when session changes + realtime subscription
+  // IMPORTANT: Only fetch/display route when there's an active session
   useEffect(() => {
+    // Clear route and polyline when no session
     if (!sessionId) {
       setRoutePoints([]);
+      // Also clear the polyline on the map
+      if (polylineRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.removeLayer(polylineRef.current);
+        polylineRef.current = null;
+      }
       return;
     }
 
@@ -83,6 +90,9 @@ export default function TraccarLiveMap({
             .filter((p) => p.latitude && p.longitude)
             .map((p) => ({ lat: p.latitude!, lng: p.longitude! }))
         );
+      } else {
+        // No data for this session - ensure route is clear
+        setRoutePoints([]);
       }
     };
 
