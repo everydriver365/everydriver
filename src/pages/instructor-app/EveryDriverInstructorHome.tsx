@@ -225,7 +225,7 @@ export default function Drive365Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[hsl(228,54%,12%)] text-white/60 py-12">
+      <footer className="bg-[#142040] text-white/60 py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <img
