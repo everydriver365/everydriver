@@ -41,6 +41,10 @@ export default function InstructorSchedule() {
   }, [viewMode]);
 
   const handleAddEvent = (date?: Date) => {
+    // Ensure the data fetch range includes the date the user is adding an event for
+    if (date) {
+      calendar.goToDate(date);
+    }
     setAddEventDate(date || null);
     setAddEventOpen(true);
   };
