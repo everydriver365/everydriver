@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, CreditCard, Globe, Users, Shield, Smartphone } from "lucide-react";
+import { Calendar, CreditCard, Globe, Users, Shield, Smartphone, Menu, X } from "lucide-react";
 const mainLogo = "/everydriver-logo-v2.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -42,6 +43,7 @@ const features = [
 
 export default function Drive365Home() {
   const isMobile = useIsMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   return (
     <div className="min-h-screen bg-background">
@@ -50,13 +52,15 @@ export default function Drive365Home() {
       
       {/* Header - Navy Blue to match brand */}
       <header className="sticky top-0 z-50 bg-[#142040] border-b border-[#0f1a30]">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img
             src={mainLogo}
             alt="EveryDriver"
             className="h-8 md:h-10"
           />
-          <div className="flex items-center gap-3">
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
             <Link to="/instructor-app/login">
               <Button variant="ghost" className="text-white hover:bg-white/10">
@@ -69,7 +73,45 @@ export default function Drive365Home() {
               </Button>
             </Link>
           </div>
+          
+          {/* Mobile Navigation */}
+          <div className="flex md:hidden items-center gap-2">
+            <ThemeToggle />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="text-white hover:bg-white/10"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
+        
+        {/* Mobile Menu Dropdown */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-[#0f1a30] border-t border-[#1a2744]"
+            >
+              <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+                <Link to="/instructor-app/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full text-white hover:bg-white/10 justify-center">
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/instructor-app/signup" onClick={() => setMobileMenuOpen(false)}>
+                  <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white justify-center">
+                    Get Started Free
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Hero Section */}
