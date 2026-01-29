@@ -128,7 +128,7 @@ export function AddLessonSheet({
         duration_minutes: durationMinutes,
         pickup_location: pickupAddress || null,
         status: 'scheduled',
-        payment_status: 'unpaid',
+        payment_status: 'not_paid',
         recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
       };
       lessons.push(parentLesson);
@@ -145,7 +145,7 @@ export function AddLessonSheet({
             duration_minutes: durationMinutes,
             pickup_location: pickupAddress || null,
             status: 'scheduled',
-            payment_status: 'unpaid',
+            payment_status: 'not_paid',
             recurrence_rule: `WEEKLY;COUNT=${weeks}`,
           });
         }
@@ -212,7 +212,7 @@ export function AddLessonSheet({
           duration_minutes: durationMinutes,
           pickup_location: addr || null,
           status: 'scheduled',
-          payment_status: 'unpaid',
+          payment_status: 'not_paid',
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
         });
       }
