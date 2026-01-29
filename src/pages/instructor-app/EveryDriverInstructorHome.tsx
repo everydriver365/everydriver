@@ -252,6 +252,9 @@ export default function Drive365Home() {
               <Link to="/terms-of-service" className="hover:text-white transition-colors">
                 Terms
               </Link>
+              <Link to="/admin/login" className="hover:text-white transition-colors text-white/40 text-xs">
+                Admin
+              </Link>
             </nav>
             <p className="text-sm">
               © {new Date().getFullYear()} EveryDriver. All rights reserved.
