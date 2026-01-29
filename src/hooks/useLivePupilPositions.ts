@@ -25,7 +25,7 @@ export function useLivePupilPositions(
   instructorId: string | null,
   options: UseLivePupilPositionsOptions = {}
 ) {
-  const { refreshIntervalMs = 5000, staleThresholdMs = 300000 } = options; // 5s refresh, 5min stale
+  const { refreshIntervalMs = 2000, staleThresholdMs = 30000 } = options; // 2s refresh for instant updates
   
   const [positions, setPositions] = useState<LivePupilPosition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
