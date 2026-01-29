@@ -689,7 +689,7 @@ export default function InstructorTraccarSession() {
 
   return (
     <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
-      {/* Not Connected Warning Banner */}
+      {/* Not Connected Warning Banner - only show when not in session */}
       {!isConnected && !isSessionActive && (
         <div className="bg-amber-500 text-white px-4 py-2.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
@@ -709,45 +709,40 @@ export default function InstructorTraccarSession() {
         </div>
       )}
 
-      {/* Compact Header - Primary color to match bottom nav */}
-      <div className="sticky top-0 z-50 bg-primary border-b border-primary-foreground/10 px-4 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/instructor")}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex flex-col">
-              <span className="font-medium text-sm text-primary-foreground">
-                {isSessionActive 
-                  ? (device?.is_test_route_mode && !currentPupil ? "Test Route" : (currentPupil?.name || "Tracking"))
-                  : "Live Tracking"}
-              </span>
-              {isSessionActive && device?.is_test_route_mode && currentPupil && (
-                <span className="text-xs text-primary-foreground/70">Test Route Mode</span>
+      {/* Compact Header - Hidden during active session for full-screen map */}
+      {!isSessionActive && (
+        <div className="sticky top-0 z-50 bg-primary border-b border-primary-foreground/10 px-4 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/instructor")}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex flex-col">
+                <span className="font-medium text-sm text-primary-foreground">Live Tracking</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {isConnected ? (
+                <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs px-2 py-0.5">
+                  <span className="relative flex h-2 w-2 mr-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                  </span>
+                  Live
+                </Badge>
+              ) : (
+                <Badge className="bg-primary-foreground/10 text-primary-foreground/70 border-primary-foreground/20 text-xs px-2 py-0.5">
+                  <WifiOff className="h-3 w-3 mr-1" />
+                  Offline
+                </Badge>
               )}
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/instructor/settings/traccar")}>
+                <Settings className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {isConnected ? (
-              <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs px-2 py-0.5">
-                <span className="relative flex h-2 w-2 mr-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
-                </span>
-                Live
-              </Badge>
-            ) : (
-              <Badge className="bg-primary-foreground/10 text-primary-foreground/70 border-primary-foreground/20 text-xs px-2 py-0.5">
-                <WifiOff className="h-3 w-3 mr-1" />
-                Offline
-              </Badge>
-            )}
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/instructor/settings/traccar")}>
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
-      </div>
+      )}
 
       {/* Full Screen Map or Pupil Selection */}
       <div className="flex-1 relative">
