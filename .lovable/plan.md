@@ -1,116 +1,80 @@
 
+Goal
+- Make the Step 1 (Personal Details) profile photo upload button reliably clickable and able to upload.
+- Remove the “camera button is disabled so nothing happens” dead-end by ensuring we always resolve an instructor profile ID (or show a clear retry error state).
 
-# Plan: Enforce Drive365.co.uk as Learner-Only Domain
+What we know (from your answers + current code)
+- On desktop, tapping/clicking the camera icon results in “No reaction”.
+- The camera icon appears Disabled.
+- In StepPersonalDetails, the file input + camera button are disabled when `!instructorId`:
+  - `disabled={uploading || !instructorId}`
+- Therefore the upload isn’t “failing”; it never starts because the UI is disabled.
+- The backend already has an instructor row for your logged-in user, so the remaining issue is: the onboarding page is not successfully resolving/setting `instructorId` at runtime.
 
-## Overview
-Configure `drive365.co.uk` to exclusively serve learner content by redirecting all non-learner routes (instructor routes and any other non-shared routes) to `everydriver.co.uk`.
+Likely cause
+- InstructorOnboarding maintains its own `instructorId` state and fetches the instructor record in a useEffect. If that fetch/creation path fails or returns null (even temporarily), Step 1 renders with `instructorId=""`, and the upload control is disabled.
+- Even if the instructor exists, any transient failure (timing, auth state race, query error, etc.) will keep the UI disabled with no visible explanation.
 
-## Current State
-The domain routing already handles:
-- **drive365.co.uk** → Redirects instructor routes (`/instructor`, `/instructor-app`, `/install-instructor`) to everydriver.co.uk
-- **everydriver.co.uk** → Redirects learner routes (`/courses`, `/pupil`, `/p/`, `/parent`, `/booking`, `/theory`) to drive365.co.uk
-- **Shared routes** (like `/privacy-policy`, `/about`, `/contact`) stay on their current domain
+Implementation approach (high confidence fix)
+A) Make instructorId resolution robust by using the already-fetched instructor profile from InstructorAuthContext as the primary source of truth, with the existing query as a fallback.
+- In `InstructorOnboarding.tsx`, compute a “resolved instructor id” like:
+  - `const resolvedInstructorId = instructor?.id ?? instructorId ?? null`
+- Add a small `useEffect` that, when `instructor?.id` becomes available, sets local `instructorId` too (so everything downstream stays consistent).
+- Ensure we do not render step components that require `instructorId` until `resolvedInstructorId` is available (or show a dedicated error/Retry UI).
 
-## Problem
-Currently, drive365.co.uk can still serve:
-1. Shared routes (marketing pages, policies)
-2. Admin routes (`/admin`)
-3. Demo routes
-4. Any routes not explicitly listed
+B) Add a clear “profile loading / couldn’t load your profile” state instead of silently disabling core actions.
+- If auth is ready but instructor id still isn’t resolved:
+  - Show a centered panel: “We’re loading your profile…” for a short period.
+  - If it still fails (or if the fetch throws), show: “We couldn’t load your instructor profile” with:
+    - Retry button (re-run loadInstructorData / refreshInstructor)
+    - Sign out button (optional)
+- This removes the “disabled button with no explanation” experience.
 
-## Proposed Solution
+C) Make the file picker trigger more robust (secondary improvement)
+Even once `instructorId` is fixed, file pickers can still be finicky depending on nesting/labels. To harden it:
+- In `StepPersonalDetails.tsx`:
+  - Replace the “label wrapping input + Button” pattern with:
+    - a hidden input controlled by a `useRef<HTMLInputElement>()`
+    - a camera Button with `onClick={() => inputRef.current?.click()}`
+  - Keep the existing `onChange={handleImageUpload}` logic.
+  - Keep the `resetInput()` to allow re-selecting the same file.
+This ensures that clicking the camera button always triggers the file dialog in a direct user gesture handler.
 
-### Changes to `src/components/DomainRouter.tsx`
+D) Small consistency fixes (optional but recommended while we’re there)
+- StepPersonalDetails currently uses `totalSteps={9}` while InstructorOnboarding uses up to 10 steps; align these so the header progress doesn’t confuse users.
+- Consider bumping max size to 10MB (desktop cameras/photos frequently exceed 5MB).
 
-**Strategy**: Invert the logic for drive365.co.uk - instead of listing what to redirect away, explicitly allow only learner routes and shared routes, redirecting everything else.
+Files to update
+1) `src/pages/instructor-app/onboarding/InstructorOnboarding.tsx`
+- Use `instructor?.id` from context to set/derive the instructor id.
+- Gate rendering of step components that depend on `instructorId` until resolved.
+- Add “Loading profile / Retry” UI state.
 
-```typescript
-// New learner-allowed routes (comprehensive list)
-const LEARNER_ALLOWED_ROUTES = [
-  "/courses",
-  "/pupil",
-  "/p/",
-  "/parent",
-  "/booking",
-  "/theory",
-  "/book/",           // Booking flow
-  "/booking-confirmation",
-  "/intensives",
-  "/semi-intensive",
-  "/availability/",   // Public availability calendar
-  "/sign/",           // Remote signing
-  "/i/",              // Mini-website path routes (public)
-];
+2) `src/pages/instructor-app/onboarding/steps/StepPersonalDetails.tsx`
+- Replace the label-wrapped file input with an inputRef + explicit button click.
+- Optional: increase max file size to 10MB.
+- Optional: align totalSteps to match actual flow.
 
-// Shared routes remain as-is for both domains
-const SHARED_ROUTES = [
-  "/",
-  "/.well-known",
-  "/calendar-callback",
-  "/privacy-policy",
-  "/terms-of-service",
-  "/about",
-  "/contact",
-  "/faqs",
-  "/faq",
-  "/help",
-  "/services",
-  "/reviews",
-  "/benefits",
-];
-```
+Testing plan (end-to-end)
+1) Log in as an instructor and open `/instructor-app/onboarding?step=1`.
+2) Confirm the camera button is enabled after profile load (or you see an explicit loading state).
+3) Click camera:
+   - File dialog opens.
+   - Pick a JPG/PNG and confirm an upload request is made.
+   - Verify success toast appears.
+   - Verify the avatar updates immediately (uses the returned public URL).
+4) Refresh the page:
+   - Avatar remains (because `profile_image_url` is saved when you proceed to next step; optionally we can also save immediately on successful upload).
+5) Try selecting the same image twice:
+   - Ensure it still triggers due to input reset.
 
-**Updated redirect logic for Drive365**:
-```typescript
-if (onDrive365) {
-  // Check if route is explicitly allowed for learners OR is a shared route
-  const isAllowedOnDrive365 = 
-    LEARNER_ALLOWED_ROUTES.some(prefix => pathname.startsWith(prefix)) ||
-    isSharedRoute(pathname);
-  
-  if (!isAllowedOnDrive365) {
-    // Redirect any non-learner route to everydriver.co.uk
-    window.location.href = `https://everydriver.co.uk${fullPath}`;
-    return;
-  }
-}
-```
+Edge cases to validate
+- Instructor row missing: confirm the onboarding shows “creating/loading profile” and then enables upload once created.
+- Slow network: confirm the UI communicates loading instead of silently disabling.
+- Cancel file picker: no errors; upload state resets cleanly.
 
-### Files to Modify
+Non-goals (for this pass)
+- Changing backend policies (they already allow instructors to upload to the correct bucket).
+- Storing images in the database (we will continue storing only URLs).
 
-| File | Change |
-|------|--------|
-| `src/components/DomainRouter.tsx` | Add `LEARNER_ALLOWED_ROUTES` array and update Drive365 redirect logic to use whitelist approach |
-
-## Technical Details
-
-### Routes Blocked on drive365.co.uk (will redirect to everydriver.co.uk)
-- `/instructor/*` - All instructor portal routes
-- `/instructor-app/*` - Instructor SaaS marketing pages
-- `/install-instructor` - Instructor PWA install
-- `/admin/*` - Admin portal
-- `/hero-demo`, `/collage-demo`, etc. - Demo routes
-- Any future routes not explicitly in the learner whitelist
-
-### Routes Allowed on drive365.co.uk
-- `/courses` - Course search and listing
-- `/book/:instructorId` - Booking flow
-- `/booking-confirmation` - Booking confirmation
-- `/pupil/*` - Pupil portal
-- `/p/:slug` - Branded pupil portal
-- `/parent` - Parent portal
-- `/theory` - Theory test prep
-- `/intensives`, `/semi-intensive` - Course info pages
-- `/availability/:token` - Public availability
-- `/sign/:token` - Remote signing
-- `/i/:slug/*` - Mini-website public pages
-- All shared routes (privacy, terms, about, contact, FAQs, help)
-
-## Testing Recommendations
-After implementation, verify on drive365.co.uk:
-1. Home page shows learner content (Index page, not instructor marketing)
-2. `/courses` works correctly
-3. `/instructor` redirects to everydriver.co.uk
-4. `/admin` redirects to everydriver.co.uk
-5. `/privacy-policy` and other shared routes work
-
+If you approve this plan, I’ll implement it by (1) making instructorId resolution depend on the auth context instructor profile + better error UI, and (2) updating the upload trigger to a ref-based click so the file picker reliably opens.
