@@ -1553,9 +1553,11 @@ export type Database = {
         Row: {
           created_at: string
           description: string
+          detailed_content: string | null
           display_order: number
           icon_name: string
           id: string
+          image_url: string | null
           is_active: boolean | null
           title: string
           updated_at: string
@@ -1563,9 +1565,11 @@ export type Database = {
         Insert: {
           created_at?: string
           description: string
+          detailed_content?: string | null
           display_order?: number
           icon_name?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           title: string
           updated_at?: string
@@ -1573,9 +1577,11 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string
+          detailed_content?: string | null
           display_order?: number
           icon_name?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           title?: string
           updated_at?: string
