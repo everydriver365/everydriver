@@ -208,37 +208,35 @@ export function ExpandableLessonCard({
           </Popover>
         )}
 
-        {/* Main Card - Compact Layout */}
+        {/* Main Card - Ultra Compact Layout */}
         <button
           onClick={() => !isDragging && setIsExpanded(!isExpanded)}
-          className="w-full text-left p-3 flex gap-3"
+          className="w-full text-left p-2 flex gap-2 items-center"
         >
-          {/* Time Column - More Compact */}
-          <div className="flex flex-col items-center justify-center min-w-[50px] border-r border-border/50 pr-3">
-            <span className="text-lg font-bold text-foreground leading-tight">{formatTime(lesson.start_time)}</span>
-            <span className="text-[10px] text-muted-foreground">{lesson.duration_minutes}m</span>
+          {/* Time Column - Minimal */}
+          <div className="flex flex-col items-center justify-center min-w-[44px] text-center">
+            <span className="text-base font-bold text-foreground leading-none">{formatTime(lesson.start_time)}</span>
+            <span className="text-[9px] text-muted-foreground">{lesson.duration_minutes}m</span>
           </div>
 
-          {/* Content Column - Tighter Spacing */}
-          <div className="flex-1 min-w-0 pr-6">
-            <div className="flex items-center gap-2 mb-0.5">
-              <h3 className="font-semibold text-sm text-foreground truncate">
+          {/* Divider */}
+          <div className="w-px h-8 bg-border/50 shrink-0" />
+
+          {/* Content Column - Minimal */}
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-medium text-sm text-foreground truncate flex-1">
                 {lesson.pupil?.name || "Unknown"}
               </h3>
               {getPaymentBadge()}
             </div>
-            
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
-              {lesson.lesson_type}
-            </p>
-            
-            <p className="text-xs text-muted-foreground truncate mt-0.5">
-              {pickupAddress.length > 35 ? pickupAddress.substring(0, 35) + "..." : pickupAddress}
+            <p className="text-[10px] text-muted-foreground truncate">
+              {pickupAddress.length > 28 ? pickupAddress.substring(0, 28) + "..." : pickupAddress}
             </p>
           </div>
 
           {/* Expand Indicator */}
-          <div className="flex items-center self-center">
+          <div className="shrink-0">
             {isExpanded ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" />
             ) : (
