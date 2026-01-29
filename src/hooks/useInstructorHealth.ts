@@ -239,6 +239,41 @@ export function useInstructorHealth() {
     },
   });
 
+  // Mutation: Remove water glass
+  const removeWaterMutation = useMutation({
+    mutationFn: async (glasses: number = 1) => {
+      if (!instructorId) throw new Error("Not authenticated");
+      
+      const currentCount = todayWaterLog?.glasses_count || 0;
+      const newCount = Math.max(0, currentCount - glasses);
+      const goal = settings?.daily_water_goal || 8;
+      
+      const { data, error } = await supabase
+        .from("instructor_water_logs")
+        .upsert({
+          instructor_id: instructorId,
+          log_date: todayDate,
+          glasses_count: newCount,
+          daily_goal: goal,
+        }, {
+          onConflict: "instructor_id,log_date"
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["water-log", instructorId, todayDate] });
+      toast.success(`💧 Water updated! ${data.glasses_count}/${data.daily_goal} glasses`);
+    },
+    onError: (error) => {
+      console.error("Error removing water:", error);
+      toast.error("Failed to update water");
+    },
+  });
+
   // Mutation: Update settings
   const updateSettingsMutation = useMutation({
     mutationFn: async (newSettings: Partial<HealthSettings>) => {
@@ -341,11 +376,13 @@ export function useInstructorHealth() {
     // Actions
     logWeight: logWeightMutation.mutate,
     addWater: addWaterMutation.mutate,
+    removeWater: removeWaterMutation.mutate,
     updateSettings: updateSettingsMutation.mutate,
     
     // Mutation states
     isLoggingWeight: logWeightMutation.isPending,
     isAddingWater: addWaterMutation.isPending,
+    isRemovingWater: removeWaterMutation.isPending,
     isUpdatingSettings: updateSettingsMutation.isPending,
     
     // Helpers
