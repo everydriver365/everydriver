@@ -15,14 +15,21 @@ const INSTRUCTOR_ROUTE_PREFIXES = [
   "/install-instructor",
 ];
 
-// Routes that belong to learners (hosted on drive365.co.uk)
-const LEARNER_ROUTE_PREFIXES = [
+// Routes explicitly allowed on drive365.co.uk (learner site)
+const LEARNER_ALLOWED_ROUTES = [
   "/courses",
   "/pupil",
   "/p/",
   "/parent",
   "/booking",
   "/theory",
+  "/book/",              // Booking flow
+  "/booking-confirmation",
+  "/intensives",
+  "/semi-intensive",
+  "/availability/",      // Public availability calendar
+  "/sign/",              // Remote signing
+  "/i/",                 // Mini-website path routes (public)
 ];
 
 // Routes that should stay on their current domain (shared routes)
@@ -37,6 +44,9 @@ const SHARED_ROUTES = [
   "/faqs",
   "/faq",
   "/help",
+  "/services",
+  "/reviews",
+  "/benefits",
 ];
 
 /**
@@ -100,17 +110,10 @@ function isInstructorRoute(pathname: string): boolean {
 }
 
 /**
- * Checks if a path is a learner route
+ * Checks if a path is allowed on Drive365 (learner route)
  */
-function isLearnerRoute(pathname: string): boolean {
-  return LEARNER_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
-}
-
-/**
- * Checks if a path is a shared route that shouldn't redirect
- */
-function isSharedRoute(pathname: string): boolean {
-  return SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
+function isLearnerAllowedRoute(pathname: string): boolean {
+  return LEARNER_ALLOWED_ROUTES.some(prefix => pathname.startsWith(prefix));
 }
 
 /**
@@ -134,12 +137,6 @@ export function DomainRouter() {
     const search = location.search;
     const fullPath = pathname + search;
 
-    // Don't redirect shared routes
-    if (isSharedRoute(pathname)) {
-      console.log('[DomainRouter] Shared route, no redirect:', pathname);
-      return;
-    }
-
     // Don't redirect from instructor subdomains (mini-websites)
     if (isInstructorSubdomain()) {
       console.log('[DomainRouter] Instructor subdomain, no redirect');
@@ -156,18 +153,21 @@ export function DomainRouter() {
       onEveryDriver 
     });
 
-    // SWAPPED LOGIC:
-    // Drive365 = Learner site - redirect instructor routes to EveryDriver
+    // Drive365 = Learner site - use WHITELIST approach
+    // Only allow explicitly listed learner routes and shared routes
     if (onDrive365) {
-      if (isInstructorRoute(pathname)) {
-        console.log('[DomainRouter] Redirecting instructor route from Drive365 to EveryDriver:', fullPath);
+      const isShared = SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
+      const isAllowedOnDrive365 = isLearnerAllowedRoute(pathname) || isShared;
+      
+      if (!isAllowedOnDrive365) {
+        console.log('[DomainRouter] Non-learner route on Drive365, redirecting to EveryDriver:', fullPath);
         window.location.href = `https://everydriver.co.uk${fullPath}`;
         return;
       }
     } 
     // EveryDriver = Instructor site - redirect learner routes to Drive365
     else if (onEveryDriver) {
-      if (isLearnerRoute(pathname)) {
+      if (isLearnerAllowedRoute(pathname)) {
         console.log('[DomainRouter] Redirecting learner route from EveryDriver to Drive365:', fullPath);
         window.location.href = `https://drive365.co.uk${fullPath}`;
         return;
