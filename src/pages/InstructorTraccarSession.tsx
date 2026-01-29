@@ -760,7 +760,7 @@ export default function InstructorTraccarSession() {
 
       {/* Compact Header - Hidden during active session for full-screen map */}
       {!isSessionActive && (
-        <div className="sticky top-0 z-50 bg-primary border-b border-primary-foreground/10 px-4 py-2">
+        <div className="flex-shrink-0 z-50 bg-primary border-b border-primary-foreground/10 px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/instructor")}>
@@ -797,7 +797,7 @@ export default function InstructorTraccarSession() {
       <div className="flex-1 relative">
         {/* Stale data banner */}
         {!isConnected && (
-          <div className="absolute top-24 left-4 right-4 z-30">
+          <div className="absolute top-4 left-4 right-4 z-30">
             <div className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg">
               <div className="flex items-start gap-2">
                 <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
