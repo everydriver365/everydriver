@@ -1,182 +1,81 @@
 
-# Domain Swap: Drive365 for Learners, EveryDriver for Instructors
 
-## Overview
+# Fix Live Tracking Display Issues
 
-This plan swaps the domain assignments so that:
-- **drive365.co.uk** becomes the learner-facing site (find instructors, book lessons, theory practice)
-- **everydriver.co.uk** becomes the exclusive instructor platform (diary, payments, pupils, etc.) and will be wrapped as an iOS app using Capacitor
+## Problem Identified
 
----
+The Live Tracking screen shows a map with a marker, but:
+- **Marker doesn't move** as the vehicle moves
+- **Road name is wrong** or stale
+- **Speed and speed limit are not displayed** in the bottom panel
 
-## What Will Change
+## Root Cause Analysis
 
-### For Learners (drive365.co.uk)
-- Homepage shows the full learner experience (postcode search, course listings, testimonials)
-- All booking flows, theory practice, and pupil portal accessible
-- Branding uses "Drive365" logo and styling
+After investigating the database and edge function logs:
 
-### For Instructors (everydriver.co.uk)
-- Homepage shows the instructor marketing page (features, pricing, signup)
-- All instructor portal routes (/instructor/*) hosted here
-- Branding uses "EveryDriver" logo
-- Optimized for iOS app wrapper via Capacitor
+**The backend is working correctly:**
+- GPS data is being received every 1-3 seconds from Traccar Client
+- Speed is being recorded (currently ~47 km/h / 29 mph)
+- Road name ("Tollbar Way") and speed limit (64 km/h / 40 mph) are being resolved
+- All data is stored in `traccar_devices` and `telematics_gps_points` tables
 
----
+**The frontend has a data display issue:**
+The `InstructorTraccarSession` page fetches the device once on load, then relies on Supabase Realtime subscriptions to receive updates. There are two potential failure points:
+
+1. **Realtime subscription not triggering** - The subscription filters on `id=eq.{device.id}` but if the initial fetch fails to get the device ID, updates won't flow
+2. **Props not updating the map component** - The `TraccarLiveMap` receives props but may not be re-rendering when state updates
+3. **Published app has stale code** - Recent fixes may not have been published yet
+
+## Implementation Plan
+
+### Step 1: Add Debug Logging (Diagnostic)
+Add console logs to trace whether device updates are being received in the component.
+
+### Step 2: Fix Polling Reliability
+Ensure the 3-second polling fallback is working and actively updating state with all device fields (speed, lat, lon, heading, road name, speed limit).
+
+### Step 3: Fix Realtime Subscription
+Ensure the Realtime subscription is correctly established after the device ID is available, and that it triggers state updates.
+
+### Step 4: Verify Data Flow to Map Component
+Confirm that when `device` state updates, the props passed to `TraccarLiveMap` also update and cause a re-render.
 
 ## Technical Details
 
-### Domain Router Updates
+### File: `src/pages/InstructorTraccarSession.tsx`
 
-The core routing logic in `DomainRouter.tsx` will be inverted:
-
-| Current | New |
-|---------|-----|
-| drive365.co.uk → Instructor routes | drive365.co.uk → Learner routes |
-| everydriver.co.uk → Learner routes | everydriver.co.uk → Instructor routes |
-
+**Current Flow (lines 178-245):**
 ```text
-New Route Mapping:
-+-----------------------+---------------------------+
-| Domain                | Serves                    |
-+-----------------------+---------------------------+
-| drive365.co.uk        | Learner homepage + routes |
-| everydriver.co.uk     | Instructor marketing + portal |
-| *.everydriver.co.uk   | Mini-websites (unchanged) |
-+-----------------------+---------------------------+
+1. Device is loaded once in fetchData()
+2. Realtime channel subscribes to device-rt-{device.id}
+3. pollDevice() runs every 3s as fallback
+4. Device state updates should flow to TraccarLiveMap props
 ```
 
-### Files to Modify
+**Issue:** The Realtime subscription is created in a `useEffect` that depends on `device?.id`, but if `device` is initially null, the subscription may not be set up correctly until after a re-render.
 
-| File | Changes |
-|------|---------|
-| `src/components/DomainRouter.tsx` | Swap DRIVE365_DOMAINS and EVERYDRIVER_DOMAINS logic; reverse redirect conditions |
-| `src/components/ConditionalHome.tsx` | Swap which homepage shows on each domain |
-| `src/components/layout/Header.tsx` | Add domain-aware logo/branding |
-| `src/components/layout/Footer.tsx` | Add domain-aware branding and links |
-| `src/components/instructor/InstructorMobileHeader.tsx` | Ensure EveryDriver branding for instructor app |
-| `src/pages/instructor-app/Drive365Home.tsx` | Rename to `EveryDriverHome.tsx`, update branding |
+**Fix:**
+1. Move the initial device fetch into the same effect that sets up realtime
+2. Ensure `pollDevice` is called immediately after subscription
+3. Add explicit state updates for all device fields
 
-### New Files to Create
+### File: `src/components/instructor/TraccarLiveMap.tsx`
 
-| File | Purpose |
-|------|---------|
-| `src/pages/Drive365LearnerHome.tsx` | New learner homepage with Drive365 branding (based on current Index.tsx) |
-| `public/drive365-logo.png` | Drive365 logo asset for learner site |
+**Current Flow (lines 36-47):**
+- Props: `latitude`, `longitude`, `heading`, `speedKmh`, `speedLimitKmh`, `roadName`
+- These should update the marker position and bottom panel
 
-### Branding Logic
+**Verify:** Ensure the component re-renders when props change (currently it does via standard React prop updates).
 
-```text
-Domain Detection Flow:
-┌─────────────────────┐
-│ User visits site    │
-└──────────┬──────────┘
-           │
-     ┌─────▼─────┐
-     │ Which     │
-     │ domain?   │
-     └─────┬─────┘
-           │
-    ┌──────┴──────┐
-    │             │
-┌───▼───┐   ┌─────▼─────┐
-│Drive365│   │EveryDriver│
-└───┬───┘   └─────┬─────┘
-    │             │
-┌───▼───────┐ ┌───▼───────────┐
-│Learner    │ │Instructor     │
-│Homepage   │ │Marketing +    │
-│+ Booking  │ │Portal         │
-└───────────┘ └───────────────┘
-```
+## Summary of Changes
 
-### Capacitor Preparation for iOS
+| File | Change |
+|------|--------|
+| `InstructorTraccarSession.tsx` | Fix device polling to ensure state updates trigger re-renders; ensure Realtime subscription is established correctly |
+| `TraccarLiveMap.tsx` | Already correct - no changes needed |
 
-The everydriver.co.uk instructor portal will be optimized for Capacitor wrapping:
+## After Implementation
 
-1. **Already installed**: The app has PWA capabilities
-2. **Route isolation**: All instructor routes are already under `/instructor/*`
-3. **Mobile-first UI**: InstructorMobileHeader and bottom nav already exist
-4. **Prepare config**: Will document Capacitor setup with correct appId
+1. Test the preview to verify live updates work
+2. **Publish the app** to make changes live on everydriver.lovable.app
 
----
-
-## Implementation Steps
-
-### Step 1: Update Domain Router Logic
-- Modify `DomainRouter.tsx` to swap domain-to-route mappings
-- DRIVE365 domains now serve learner routes
-- EVERYDRIVER domains now serve instructor routes
-
-### Step 2: Update Conditional Home Component
-- Modify `ConditionalHome.tsx` to show:
-  - Learner homepage on drive365.co.uk
-  - Instructor marketing page on everydriver.co.uk
-
-### Step 3: Create Domain-Aware Branding Hook
-- Create `useDomainBranding.ts` hook that returns:
-  - Logo path (drive365-logo.png vs everydriver-logo-v2.png)
-  - Brand name ("Drive365" vs "EveryDriver")
-  - Primary colors if different
-
-### Step 4: Update Header and Footer
-- Modify Header.tsx to use domain-aware branding
-- Modify Footer.tsx to show appropriate links and branding per domain
-- Update navigation links based on domain context
-
-### Step 5: Rename/Refactor Marketing Pages
-- Rename `Drive365Home.tsx` to `EveryDriverInstructorHome.tsx`
-- Update all internal references to use EveryDriver branding
-- Create new learner homepage variant for Drive365 if needed
-
-### Step 6: Update Secondary Components
-- Update `Drive365InstallBanner.tsx` references
-- Update any hardcoded domain references in PWA manifests
-- Update email templates or notification text if applicable
-
-### Step 7: Document Capacitor Setup
-- Provide Capacitor configuration for iOS app
-- App will wrap everydriver.co.uk/instructor routes
-- Enable hot-reload during development
-
----
-
-## Branding Assets Needed
-
-| Asset | Purpose |
-|-------|---------|
-| `drive365-logo.png` | Logo for learner site header/footer |
-| `drive365-logo-dark.png` | Dark mode variant (optional) |
-
-If you don't have a separate Drive365 logo, the current EveryDriver logo can be used with just text changes.
-
----
-
-## Testing Checklist
-
-After implementation, verify:
-- [ ] drive365.co.uk shows learner homepage with postcode search
-- [ ] drive365.co.uk/courses shows course listings
-- [ ] drive365.co.uk/instructor redirects to everydriver.co.uk/instructor
-- [ ] everydriver.co.uk shows instructor marketing page
-- [ ] everydriver.co.uk/instructor shows instructor portal
-- [ ] everydriver.co.uk/courses redirects to drive365.co.uk/courses
-- [ ] Instructor mini-websites (*.everydriver.co.uk) still work
-- [ ] PWA install prompts show correct branding per domain
-
----
-
-## Future Considerations
-
-### iOS App Wrapper (Capacitor)
-Once domain swap is complete:
-1. Export project to GitHub
-2. Run `npx cap init` with appId: `app.lovable.ca10d01ecc994c0b9186351c493398b9`
-3. Add iOS platform: `npx cap add ios`
-4. Configure server URL for hot-reload during development
-5. Build and deploy to App Store
-
-### Potential Enhancements
-- Separate PWA manifests per domain for distinct app icons
-- Domain-specific theme colors (e.g., different primary color for Drive365)
-- Analytics segmentation by domain
