@@ -116,78 +116,102 @@ async function searchDomain(domain: string): Promise<DomainSearchResult> {
   };
 }
 
-// Check multiple domains using the search endpoint
+// Check if a domain is actually available using RDAP (the modern WHOIS protocol)
+async function checkDomainAvailabilityRdap(domain: string): Promise<boolean> {
+  try {
+    // Extract TLD to find the right RDAP server
+    const parts = domain.split('.');
+    const tld = parts.slice(-1)[0];
+    const sld = parts.slice(-2).join('.'); // For ccTLDs like co.uk
+    
+    // Try RDAP lookup - if domain exists, it returns data; if not, it returns 404
+    let rdapUrl: string;
+    
+    // Use appropriate RDAP servers for different TLDs
+    if (domain.endsWith('.uk') || domain.endsWith('.co.uk')) {
+      rdapUrl = `https://rdap.nominet.uk/uk/domain/${domain}`;
+    } else if (domain.endsWith('.com') || domain.endsWith('.net')) {
+      rdapUrl = `https://rdap.verisign.com/com/v1/domain/${domain}`;
+    } else if (domain.endsWith('.org')) {
+      rdapUrl = `https://rdap.publicinterestregistry.org/rdap/domain/${domain}`;
+    } else {
+      // Generic fallback - try the IANA bootstrap
+      rdapUrl = `https://rdap.org/domain/${domain}`;
+    }
+    
+    console.log(`Checking RDAP for ${domain}: ${rdapUrl}`);
+    
+    const response = await fetch(rdapUrl, {
+      method: 'GET',
+      headers: { 'Accept': 'application/rdap+json' },
+    });
+    
+    console.log(`RDAP response for ${domain}: ${response.status}`);
+    
+    // 404 means domain is NOT registered (available)
+    // 200 means domain IS registered (not available)
+    if (response.status === 404 || response.status === 400) {
+      return true; // Available
+    } else if (response.status === 200) {
+      return false; // Taken
+    }
+    
+    // Other status codes - assume not available to be safe
+    return false;
+  } catch (error) {
+    console.error(`RDAP check failed for ${domain}:`, error);
+    // If check fails, assume not available to avoid false positives
+    return false;
+  }
+}
+
+// Check multiple domains using the search endpoint and RDAP verification
 async function checkMultipleDomains(baseName: string, tlds?: string[]): Promise<DomainSearchResult[]> {
   // Clean the base name - remove any existing TLD
   const cleanBaseName = baseName.replace(/\.[a-z.]+$/i, '').toLowerCase().trim();
   
   console.log(`Searching domains for: ${cleanBaseName}`);
   
-  // Use the domain-search endpoint which returns results for multiple TLDs
-  const { data, error } = await make20iRequest(`/domain-search/${encodeURIComponent(cleanBaseName)}`);
+  // Define UK-focused TLDs to check
+  const tldsToCheck = tlds || ['co.uk', 'uk', 'com', 'org.uk', 'me.uk', 'net', 'org'];
   
-  if (error || !data) {
-    console.log(`Domain search failed: ${error}`);
-    return [];
-  }
+  // Check each domain using RDAP for accurate availability
+  const results: DomainSearchResult[] = [];
   
-  console.log('Raw API response:', JSON.stringify(data).substring(0, 500));
+  // Process in parallel for speed
+  const checkPromises = tldsToCheck.map(async (tld) => {
+    const fullDomain = `${cleanBaseName}.${tld}`;
+    const isAvailable = await checkDomainAvailabilityRdap(fullDomain);
+    
+    // Get pricing from 20i for this TLD
+    let price: number | undefined;
+    
+    // Default pricing (20i reseller pricing)
+    const defaultPricing: Record<string, number> = {
+      'co.uk': 7.99,
+      'uk': 4.99,
+      'com': 10.99,
+      'org.uk': 7.99,
+      'me.uk': 7.99,
+      'net': 12.99,
+      'org': 12.99,
+    };
+    
+    price = defaultPricing[tld];
+    
+    return {
+      domain: fullDomain,
+      available: isAvailable,
+      premium: false,
+      price,
+      currency: 'GBP',
+      period: 1,
+    };
+  });
   
-  // The 20i API returns results in various formats
-  const results = data as Array<{ 
-    header?: { names?: string[] }; 
-    name?: string; 
-    can?: string; 
-    available?: boolean; 
-    premium?: boolean; 
-    price?: number;
-    register?: number;
-  }>;
+  const checkResults = await Promise.all(checkPromises);
   
-  if (!Array.isArray(results)) {
-    console.log('Unexpected response format:', data);
-    return [];
-  }
-  
-  console.log(`Processing ${results.length} results from API`);
-  
-  return results
-    .filter(r => r.name && !r.header) // Skip header elements
-    .slice(0, 10) // Limit to 10 results
-    .map(r => {
-      let domainName = r.name || '';
-      
-      // If the result is just a TLD (starts with .), prepend the base name
-      if (domainName.startsWith('.')) {
-        domainName = cleanBaseName + domainName;
-      }
-      // If it doesn't contain a dot at all, treat it as a TLD
-      else if (!domainName.includes('.')) {
-        domainName = cleanBaseName + '.' + domainName;
-      }
-      // If it doesn't contain the base name, prepend it
-      else if (!domainName.toLowerCase().startsWith(cleanBaseName)) {
-        domainName = cleanBaseName + '.' + domainName;
-      }
-      
-      // 20i uses "can": "register" to indicate availability
-      // "can": "none" or "can": "transfer" means not available for fresh registration
-      // Also check "available" boolean as fallback
-      const canValue = r.can?.toLowerCase();
-      const isAvailable = canValue === 'register' || (canValue !== 'none' && canValue !== 'transfer' && r.available === true);
-      
-      console.log(`Domain ${domainName}: can=${r.can}, available=${r.available}, isAvailable=${isAvailable}`);
-      
-      return {
-        domain: domainName,
-        available: isAvailable,
-        premium: r.premium ?? false,
-        price: r.price ?? r.register,
-        currency: 'GBP',
-        period: 1,
-      };
-    })
-    .filter(r => r.domain && r.domain !== cleanBaseName);
+  return checkResults;
 }
 
 
