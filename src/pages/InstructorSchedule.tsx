@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Calendar, List, CalendarDays } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
@@ -36,18 +36,24 @@ export default function InstructorSchedule() {
   // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
 
-  // When switching into the Schedule view, reset the underlying calendar anchor date to today
-  // so the fetched range (and month banners) are centered correctly.
+  const scheduleInitRef = useRef(false);
+
+  // When entering Schedule, anchor to today + load extended range exactly once.
+  // (Avoid depending on calendar.refetch here, since it changes when currentDate/view changes.)
   useEffect(() => {
     if (viewMode === 'schedule') {
-      calendar.goToDate(new Date());
-      // Schedule view expects an extended window (multi-month)
+      if (scheduleInitRef.current) return;
+      scheduleInitRef.current = true;
+
+      const today = new Date();
+      calendar.goToDate(today);
       calendar.refetch(true);
-    } else {
-      // Other views can keep the default (non-extended) range
-      calendar.refetch(false);
+      return;
     }
-  }, [viewMode, calendar.goToDate, calendar.refetch]);
+
+    // reset flag when leaving schedule so re-entering snaps to today again
+    scheduleInitRef.current = false;
+  }, [viewMode]);
 
   useEffect(() => {
     localStorage.setItem('instructor-schedule-view', viewMode);
