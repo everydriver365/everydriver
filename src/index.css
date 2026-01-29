@@ -177,6 +177,16 @@
   .animate-highlight-pulse {
     animation: highlight-pulse 1.5s ease-out forwards;
   }
+
+  /* Hide scrollbars but keep scroll (mobile-friendly) */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
 }
 
 /* Leaflet map z-index fix */
