@@ -2072,6 +2072,7 @@ export type Database = {
           break_reminder_enabled: boolean
           created_at: string
           daily_water_goal: number
+          height_cm: number | null
           id: string
           instructor_id: string
           reminder_interval_minutes: number
@@ -2082,6 +2083,7 @@ export type Database = {
           break_reminder_enabled?: boolean
           created_at?: string
           daily_water_goal?: number
+          height_cm?: number | null
           id?: string
           instructor_id: string
           reminder_interval_minutes?: number
@@ -2092,6 +2094,7 @@ export type Database = {
           break_reminder_enabled?: boolean
           created_at?: string
           daily_water_goal?: number
+          height_cm?: number | null
           id?: string
           instructor_id?: string
           reminder_interval_minutes?: number
