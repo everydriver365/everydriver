@@ -50,6 +50,7 @@ const settingsCategories: SettingsCategory[] = [
     iconColor: "text-blue-500",
     links: [
       { key: "instructors", title: "Instructors", description: "Manage instructor accounts and profiles." },
+      { key: "pupil-records", title: "Pupil Records", description: "EMIS-style view of all pupils and their data." },
       { key: "compliance", title: "Compliance Dashboard", description: "Track ADI badge, DBS, and document expiry." },
       { key: "live-chat", title: "Visitor Chats", description: "Manage live chat sessions with website visitors.", badgeKey: "liveChats" },
     ],
