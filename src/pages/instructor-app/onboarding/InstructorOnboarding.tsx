@@ -115,31 +115,73 @@ export default function InstructorOnboarding() {
     }
 
     const loadInstructorData = async () => {
-      const { data: instructorData, error } = await supabase
-        .from("instructors")
-        .select("*")
-        .eq("auth_user_id", user.id)
-        .single();
+      try {
+        // Use a safe query here (no `.single()`), because duplicate rows for an auth user
+        // would otherwise break onboarding and leave instructorId empty.
+        const { data: instructorData, error } = await supabase
+          .from("instructors")
+          .select("*")
+          .eq("auth_user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (!error && instructorData) {
-        setInstructorId(instructorData.id);
-        setData((prev) => ({
-          ...prev,
-          name: instructorData.name || "",
-          email: instructorData.email || user.email || "",
-          phone: instructorData.phone || "",
-          bio: instructorData.bio || "",
-          profile_image_url: instructorData.profile_image_url || null,
-          home_postcode: instructorData.home_postcode || "",
-          radius_miles: instructorData.radius_miles || 10,
-          car_type: (instructorData.car_type as "Manual" | "Automatic") || "Manual",
-          car_make: instructorData.car_make || "",
-          car_model: instructorData.car_model || "",
-          hourly_rate: instructorData.hourly_rate || 35,
-          slug: instructorData.app_slug || "",
-        }));
+        if (error) {
+          console.error("Error loading instructor:", error);
+        }
+
+        let resolvedInstructor = instructorData;
+
+        // If the instructor row is missing (e.g. interrupted signup), create a minimal one.
+        if (!resolvedInstructor) {
+          const email = user.email || "";
+          const fallbackName =
+            ((user.user_metadata as any)?.name as string | undefined) ||
+            (email ? email.split("@")[0] : "Instructor");
+          const fallbackSlug = `instructor-${user.id.slice(0, 8)}`;
+
+          const { data: created, error: createError } = await supabase
+            .from("instructors")
+            .insert({
+              auth_user_id: user.id,
+              name: fallbackName,
+              email: email || null,
+              app_slug: fallbackSlug,
+              home_postcode: "TBC",
+              car_type: "Manual",
+              is_active: false,
+            })
+            .select("*")
+            .single();
+
+          if (createError) throw createError;
+          resolvedInstructor = created;
+        }
+
+        if (resolvedInstructor) {
+          setInstructorId(resolvedInstructor.id);
+          setData((prev) => ({
+            ...prev,
+            name: resolvedInstructor.name || "",
+            email: resolvedInstructor.email || user.email || "",
+            phone: resolvedInstructor.phone || "",
+            bio: resolvedInstructor.bio || "",
+            profile_image_url: resolvedInstructor.profile_image_url || null,
+            home_postcode: resolvedInstructor.home_postcode || "",
+            radius_miles: resolvedInstructor.radius_miles || 10,
+            car_type:
+              (resolvedInstructor.car_type as "Manual" | "Automatic") || "Manual",
+            car_make: resolvedInstructor.car_make || "",
+            car_model: resolvedInstructor.car_model || "",
+            hourly_rate: resolvedInstructor.hourly_rate || 35,
+            slug: resolvedInstructor.app_slug || "",
+          }));
+        }
+      } catch (e) {
+        console.error("Failed to load/create instructor record:", e);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadInstructorData();
