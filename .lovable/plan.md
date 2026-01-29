@@ -1,81 +1,161 @@
 
+# Full-Screen Live Vehicle Tracking Map
 
-# Fix Live Tracking Display Issues
+## Overview
+This plan creates a single, robust `TraccarLiveMap` component that reliably tracks a vehicle in real-time using GPS data from Supabase, with intelligent filtering to prevent false movement and speed readings when stationary.
 
-## Problem Identified
+## Problem Analysis
+The current implementation shows false movement and speeds because:
+1. GPS jitter when stationary causes the marker to "jump around"
+2. Raw GPS speed values are displayed without validation
+3. Low accuracy readings (indoor/urban canyons) are accepted
+4. No distance-based movement validation
 
-The Live Tracking screen shows a map with a marker, but:
-- **Marker doesn't move** as the vehicle moves
-- **Road name is wrong** or stale
-- **Speed and speed limit are not displayed** in the bottom panel
+## Solution Architecture
 
-## Root Cause Analysis
-
-After investigating the database and edge function logs:
-
-**The backend is working correctly:**
-- GPS data is being received every 1-3 seconds from Traccar Client
-- Speed is being recorded (currently ~47 km/h / 29 mph)
-- Road name ("Tollbar Way") and speed limit (64 km/h / 40 mph) are being resolved
-- All data is stored in `traccar_devices` and `telematics_gps_points` tables
-
-**The frontend has a data display issue:**
-The `InstructorTraccarSession` page fetches the device once on load, then relies on Supabase Realtime subscriptions to receive updates. There are two potential failure points:
-
-1. **Realtime subscription not triggering** - The subscription filters on `id=eq.{device.id}` but if the initial fetch fails to get the device ID, updates won't flow
-2. **Props not updating the map component** - The `TraccarLiveMap` receives props but may not be re-rendering when state updates
-3. **Published app has stale code** - Recent fixes may not have been published yet
-
-## Implementation Plan
-
-### Step 1: Add Debug Logging (Diagnostic)
-Add console logs to trace whether device updates are being received in the component.
-
-### Step 2: Fix Polling Reliability
-Ensure the 3-second polling fallback is working and actively updating state with all device fields (speed, lat, lon, heading, road name, speed limit).
-
-### Step 3: Fix Realtime Subscription
-Ensure the Realtime subscription is correctly established after the device ID is available, and that it triggers state updates.
-
-### Step 4: Verify Data Flow to Map Component
-Confirm that when `device` state updates, the props passed to `TraccarLiveMap` also update and cause a re-render.
-
-## Technical Details
-
-### File: `src/pages/InstructorTraccarSession.tsx`
-
-**Current Flow (lines 178-245):**
 ```text
-1. Device is loaded once in fetchData()
-2. Realtime channel subscribes to device-rt-{device.id}
-3. pollDevice() runs every 3s as fallback
-4. Device state updates should flow to TraccarLiveMap props
++----------------------+     +------------------+     +-------------------+
+|  Supabase Realtime   | --> |  GPS Point       | --> |  Filtered Points  |
+|  telematics_gps_points|     |  Validator       |     |  (route + marker) |
++----------------------+     +------------------+     +-------------------+
+                                     |
+                             +--------------+
+                             |  Haversine   |
+                             |  Distance    |
+                             |  Check       |
+                             +--------------+
 ```
 
-**Issue:** The Realtime subscription is created in a `useEffect` that depends on `device?.id`, but if `device` is initially null, the subscription may not be set up correctly until after a re-render.
+## Filtering Logic (Key to Solving the Problem)
 
-**Fix:**
-1. Move the initial device fetch into the same effect that sets up realtime
-2. Ensure `pollDevice` is called immediately after subscription
-3. Add explicit state updates for all device fields
+**When a new GPS point arrives, apply these checks in order:**
 
-### File: `src/components/instructor/TraccarLiveMap.tsx`
+1. **Accuracy Filter**: Reject if `accuracy_m > 25` (poor GPS signal)
+2. **Distance Filter**: Calculate Haversine distance from last accepted point
+   - If distance < 10 meters → Ignore point (GPS jitter)
+   - If distance > 10 meters → Accept point as real movement
+3. **Speed Cap**: If `speed_kmh > 160` → Set to 0 (unrealistic)
+4. **Speed Zeroing**: If point was rejected by distance filter → Display speed as 0
 
-**Current Flow (lines 36-47):**
-- Props: `latitude`, `longitude`, `heading`, `speedKmh`, `speedLimitKmh`, `roadName`
-- These should update the marker position and bottom panel
+## Technical Implementation
 
-**Verify:** Ensure the component re-renders when props change (currently it does via standard React prop updates).
+### Component: `TraccarLiveMap.tsx`
 
-## Summary of Changes
+**Props:**
+- `telematicsId: string` - The session ID to track
+- `className?: string` - Optional styling
 
-| File | Change |
-|------|--------|
-| `InstructorTraccarSession.tsx` | Fix device polling to ensure state updates trigger re-renders; ensure Realtime subscription is established correctly |
-| `TraccarLiveMap.tsx` | Already correct - no changes needed |
+**State:**
+- `filteredPoints: GPSPoint[]` - Only validated movement points
+- `lastValidPoint: GPSPoint | null` - Last accepted position
+- `displaySpeed: number` - Filtered speed in mph
+- `userDragged: boolean` - Disable auto-center when user interacts
 
-## After Implementation
+**Core Functions:**
 
-1. Test the preview to verify live updates work
-2. **Publish the app** to make changes live on everydriver.lovable.app
+```typescript
+// Haversine formula for accurate distance calculation
+function haversineDistance(lat1, lon1, lat2, lon2): number {
+  const R = 6371000; // Earth's radius in meters
+  // ... calculate and return distance in meters
+}
 
+// Validate incoming GPS point
+function validatePoint(point, lastPoint): { 
+  isValid: boolean; 
+  distance: number;
+} {
+  // 1. Check accuracy
+  if (point.accuracy_m > 25) return { isValid: false, distance: 0 };
+  
+  // 2. Check distance from last point
+  if (!lastPoint) return { isValid: true, distance: 0 };
+  
+  const distance = haversineDistance(
+    lastPoint.lat, lastPoint.lng, 
+    point.lat, point.lng
+  );
+  
+  return { isValid: distance >= 10, distance };
+}
+```
+
+**Data Flow:**
+
+1. **On Mount**: Load historical points from `telematics_gps_points`, applying filters
+2. **Realtime**: Subscribe to `INSERT` events on the table
+3. **On New Point**: 
+   - Run through validator
+   - If valid: Add to route, update marker, auto-center (if not dragged)
+   - If invalid: Keep marker at last position, set speed to 0
+
+### UI Components
+
+**Speed Display (bottom overlay):**
+- Large speed number in mph
+- Turns red if speeding (when speed limit available)
+- Shows "0" when stationary/filtered
+
+**Map Interactions:**
+- Dragging disables auto-center
+- Button to re-enable auto-center ("Center on Vehicle")
+
+**Loading/Error States:**
+- Spinner when waiting for first valid GPS point
+- "Waiting for GPS..." message
+
+## Files to Create/Modify
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `src/components/instructor/TraccarLiveMap.tsx` | Replace | Complete rewrite with filtering logic |
+| `src/pages/InstructorTraccarSession.tsx` | Update | Pass `telematicsId` prop correctly |
+
+## Implementation Checklist
+
+1. **Haversine Distance Function**
+   - Implement accurate Earth-distance calculation
+   - Return distance in meters
+
+2. **GPS Point Validator**
+   - Check accuracy threshold (25m)
+   - Check movement threshold (10m)
+   - Cap unrealistic speeds (160 km/h)
+
+3. **Route History Loader**
+   - Fetch from `telematics_gps_points`
+   - Apply same filters to historical data
+   - Build initial polyline
+
+4. **Realtime Subscription**
+   - Listen for INSERT events
+   - Filter through validator
+   - Update UI only for valid points
+
+5. **Map Interactions**
+   - Track user drag state
+   - "Center on Vehicle" button
+   - Smooth marker animation
+
+6. **Speed Display**
+   - Convert km/h to mph
+   - Apply speed zeroing for filtered points
+   - Speeding indicator
+
+## Expected Behavior After Implementation
+
+| Scenario | Current Behavior | New Behavior |
+|----------|-----------------|--------------|
+| Stationary with GPS jitter | Marker jumps, shows 2-5 mph | Marker stays still, shows 0 mph |
+| Moving at 30 mph | Works correctly | Works correctly |
+| Indoors (poor GPS) | Shows erratic movement | Ignores low-accuracy points, shows 0 |
+| User drags map | Map snaps back to vehicle | Stays where user dragged |
+| Vehicle speeds unrealistically | Shows 999 mph | Capped/zeroed |
+
+## Technical Notes
+
+- Uses Leaflet for mapping (no Google Maps/Mapbox)
+- OpenStreetMap tiles via CartoDB Voyager
+- Supabase Realtime for instant updates
+- Component is fully self-contained
+- No external dependencies beyond existing stack
