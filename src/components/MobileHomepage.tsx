@@ -108,7 +108,7 @@ export function MobileHomepage() {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <img src="/everydriver-logo-white.png" alt="EveryDriver" className="h-7" />
+        <img src="/everydriver-logo.png" alt="EveryDriver" className="h-7" />
         <Button variant="secondary" size="sm" onClick={handleGetLocation} disabled={isLocating} className="h-8 px-3 rounded-full text-xs gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0 disabled:opacity-50">
           <MapPin className={`h-3.5 w-3.5 ${isLocating ? "animate-pulse" : ""}`} />
           <span>{isLocating ? "Finding..." : "Location"}</span>
@@ -543,7 +543,7 @@ export function MobileHomepage() {
         <SheetContent side="left" className="w-[280px] p-0">
           <SheetHeader className="p-4 border-b bg-primary">
             <SheetTitle className="flex items-center gap-3">
-              <img src="/everydriver-logo-white.png" alt="EveryDriver" className="h-7" />
+              <img src="/everydriver-logo.png" alt="EveryDriver" className="h-7" />
             </SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col p-2">

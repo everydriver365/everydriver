@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Calendar, CreditCard, Globe, Users, Shield, Smartphone } from "lucide-react";
-const mainLogo = "/everydriver-logo-white.png";
+const mainLogo = "/everydriver-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Drive365InstallBanner } from "@/components/pwa/Drive365InstallBanner";
