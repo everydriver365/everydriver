@@ -181,8 +181,21 @@ export default function InstructorAppHome() {
                 </Button>
               </div>
 
+              {/* FREE Forever Badge - Prominent */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-8"
+              >
+                <div className="inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30">
+                  <Sparkles className="h-6 w-6 text-white" />
+                  <span className="text-lg font-bold text-white">FREE Forever Options Available</span>
+                </div>
+              </motion.div>
+
               {/* Trust Indicators */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 mt-10 pt-6 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-6 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
@@ -196,10 +209,6 @@ export default function InstructorAppHome() {
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                   <CheckCircle className="h-4 w-4 text-emerald-500" />
                   {hero.trust_badge2}
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800">
-                  <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">FREE Forever Options</span>
                 </div>
               </div>
             </motion.div>
