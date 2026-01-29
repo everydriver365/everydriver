@@ -448,6 +448,7 @@ export default function InstructorTraccarSession() {
       toast({
         title: toastTitle,
         description: "GPS data is now being recorded",
+        duration: 2000,
       });
     } catch (err) {
       console.error("Error starting session:", err);
@@ -618,6 +619,7 @@ export default function InstructorTraccarSession() {
       toast({
         title: "Session ended",
         description: toastDescription,
+        duration: 2000,
       });
     } catch (err) {
       console.error("Error stopping session:", err);
