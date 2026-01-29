@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, startOfWeek, endOfWeek, isToday, startOfDay, addHours } from 'date-fns';
 import { ChevronLeft, ChevronRight, Palette, MapPin, Clock, User, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -102,23 +102,28 @@ function DayRow({
   colors, 
   onEventClick,
   onDayClick,
-  isFirstInWeek 
+  isFirstInWeek,
+  todayRef
 }: { 
   dayEvents: DayEvents; 
   colors: CalendarColors; 
   onEventClick?: (event: CalendarEvent) => void;
   onDayClick?: (date: Date) => void;
   isFirstInWeek: boolean;
+  todayRef?: React.RefObject<HTMLDivElement>;
 }) {
   const dayName = format(dayEvents.date, 'EEE').toUpperCase();
   const dayNumber = format(dayEvents.date, 'd');
   const isCurrentDay = isToday(dayEvents.date);
   
   return (
-    <div className={cn(
-      "flex border-b border-border/50",
-      isFirstInWeek && "border-t-2 border-t-border"
-    )}>
+    <div 
+      ref={isCurrentDay ? todayRef : undefined}
+      className={cn(
+        "flex border-b border-border/50",
+        isFirstInWeek && "border-t-2 border-t-border"
+      )}
+    >
       {/* Date column */}
       <div className={cn(
         "w-16 flex-shrink-0 py-3 px-2 text-center border-r border-border/30",
@@ -205,6 +210,25 @@ export function GoogleStyleScheduleView({
   onNavigate,
   loading
 }: GoogleStyleScheduleViewProps) {
+  const todayRef = useRef<HTMLDivElement>(null);
+  const hasScrolledRef = useRef(false);
+
+  // Scroll to today on initial load
+  useEffect(() => {
+    if (!loading && todayRef.current && !hasScrolledRef.current) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        hasScrolledRef.current = true;
+      }, 100);
+    }
+  }, [loading]);
+
+  // Reset scroll flag when month changes to allow re-scroll if today is in new month
+  useEffect(() => {
+    hasScrolledRef.current = false;
+  }, [currentDate]);
+
   // Group events by month, then by week, then by day
   const groupedData = useMemo(() => {
     const monthStart = startOfMonth(currentDate);
@@ -335,6 +359,7 @@ export function GoogleStyleScheduleView({
                     onEventClick={onEventClick}
                     onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
                     isFirstInWeek={dayIndex === 0}
+                    todayRef={todayRef}
                   />
                 ))}
               </div>
