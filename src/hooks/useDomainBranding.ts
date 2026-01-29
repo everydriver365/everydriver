@@ -46,7 +46,7 @@ export function useDomainBranding(): DomainBranding {
     if (onDrive365) {
       return {
         brandName: "Drive365",
-        logoPath: "/everydriver-logo-v2.png", // Can be updated to drive365-logo.png when available
+        logoPath: "/drive365-logo.png",
         isInstructorDomain: false,
         isLearnerDomain: true,
         homeLink: "/",
