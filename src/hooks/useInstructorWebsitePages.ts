@@ -100,12 +100,12 @@ export function useWebsitePage(slug: string | undefined, pageType: string) {
     const fetchData = async () => {
       try {
         // First get the instructor
+        // Don't require is_active for mini-website viewing - only for public directory listings
         const { data: instructorData, error: instructorError } = await supabase
           .from("instructors")
           .select("*")
           .eq("app_slug", slug)
-          .eq("is_active", true)
-          .single();
+          .maybeSingle();
 
         if (instructorError || !instructorData) {
           setNotFound(true);
