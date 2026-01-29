@@ -56,7 +56,7 @@ export function InstructorMobileHeader({
           </Button>
         )}
         <img 
-          src="/everydriver-logo.png" 
+          src="/everydriver-logo-v2.png" 
           alt="EveryDriver" 
           className="h-10 object-contain"
         />
