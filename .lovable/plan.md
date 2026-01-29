@@ -1,191 +1,163 @@
 
-# Complete Tracking System Fix: Mapbox Speed Limits + Test Route Mode
+# Fix Tracking System: Mapbox 422 Error, Full Screen, and Bottom Nav Overlap
 
-## Overview
+## Issues Identified
 
-This plan addresses two issues:
-1. **Replace OSM with Mapbox** for more accurate speed limit detection in the UK
-2. **Fix Test Route mode** so GPS points record correctly even without a pupil selected
-
-## Changes Summary
-
-| Component | Change |
-|-----------|--------|
-| Backend Secret | Add `MAPBOX_TOKEN` secret |
-| `traccar-webhook` | Replace OSM Overpass API with Mapbox Map Matching API |
-| `traccar-webhook` | Remove pupil requirement for GPS point recording (line 377) |
-| `TraccarLiveMap.tsx` | Keep existing code (no changes needed - already correct) |
-| `InstructorTraccarSession.tsx` | No changes needed (already reads from device table) |
-
-## Technical Implementation
-
-### 1. Add Mapbox Secret
-
-Before deployment, you'll need to provide your Mapbox access token. This will be stored securely in the backend and never exposed to the frontend.
-
-### 2. Update traccar-webhook Edge Function
-
-**Replace OSM speed limit lookup with Mapbox Map Matching API:**
-
-The current OSM Overpass API (lines 100-188) will be replaced with Mapbox's Map Matching API which provides:
-- More accurate road matching
-- Reliable speed limit data in the UK
-- Faster response times (dedicated commercial API)
-
-**Mapbox Map Matching endpoint:**
-```text
-POST https://api.mapbox.com/matching/v5/mapbox/driving/{coordinates}
-  ?access_token=YOUR_TOKEN
-  &annotations=maxspeed
+### 1. Mapbox API Returns 422 Error
+**Logs show:**
+```
+[Traccar] Mapbox API returned 422
+[Traccar] Mapbox road info lookup at 50.930739,-1.294842
 ```
 
-**Response structure:**
-```json
-{
-  "matchings": [{
-    "legs": [{
-      "annotation": {
-        "maxspeed": [{ "speed": 48, "unit": "km/h" }]
-      }
-    }]
-  }]
-}
+**Root Cause:** The Mapbox Map Matching API is failing because:
+- The 10m offset (0.0001 degrees) may be too small or causing invalid geometry
+- The coordinate format or request structure may not meet API requirements
+- The API may require timestamps or additional parameters
+
+**Fix:** Update the `getRoadInfo` function in `traccar-webhook` to use a larger offset (50m instead of 10m) and add `tidy=true` parameter to help with sparse coordinates.
+
+### 2. Road Name Not Displaying
+**Current State:** Shows "Locating road..." because Mapbox is returning 422 errors.
+
+**Fix:** Once Mapbox API is fixed, road names will flow through correctly. Add fallback to show coordinates when road lookup fails.
+
+### 3. Full Screen Not Working
+**Root Cause:** The `InstructorBottomNav` is rendered at the bottom of the page (line 960), which takes up space and prevents the map from being truly full-screen during active sessions.
+
+**Current Layout:**
+```
+- Warning Banner (if not connected)
+- Header (sticky)
+- Map Container (flex-1)
+- InstructorBottomNav (always visible - 64px + safe area)
 ```
 
-**Key changes in the webhook:**
+**Fix:** Hide `InstructorBottomNav` when a tracking session is active. The map should take the full viewport during tracking.
+
+### 4. Speeds Obscured by Bottom Nav Bar
+**Root Cause:** The `TraccarLiveMap` component has its speed panel positioned at `bottom-0`, but the `InstructorBottomNav` also sits at the bottom with a fixed height of 64px. This causes overlap.
+
+**Speed Panel in TraccarLiveMap.tsx (line 409):**
+```jsx
+<div className="absolute bottom-0 left-0 right-0 z-20">
+```
+
+**Fix:** Either:
+- Option A: Hide bottom nav during tracking (recommended - matches Apple Maps/Google Maps behavior)
+- Option B: Add padding-bottom to the map container to account for nav height
+
+---
+
+## Technical Plan
+
+### File 1: `supabase/functions/traccar-webhook/index.ts`
+
+**Fix Mapbox 422 Error (lines 101-107):**
+
+Change the coordinate generation to use a larger offset and add the `tidy=true` parameter:
 
 ```typescript
-// Replace getRoadInfo() function with Mapbox version
-async function getRoadInfo(lat: number, lon: number): Promise<{ speedLimit: number | null; roadName: string | null }> {
-  const MAPBOX_TOKEN = Deno.env.get("MAPBOX_TOKEN");
-  if (!MAPBOX_TOKEN) {
-    console.log("[Traccar] MAPBOX_TOKEN not configured, skipping speed limit lookup");
-    return { speedLimit: null, roadName: null };
-  }
+// Before:
+const offset = 0.0001; // ~10m
+const coords = `${lon},${lat};${lon + offset},${lat + offset}`;
 
-  // Create two points 10m apart for Map Matching API
-  const offset = 0.0001; // ~10m
-  const coords = `${lon},${lat};${lon + offset},${lat + offset}`;
-  
-  const response = await fetch(
-    `https://api.mapbox.com/matching/v5/mapbox/driving/${coords}?access_token=${MAPBOX_TOKEN}&annotations=maxspeed&geometries=geojson`,
-    { signal: AbortSignal.timeout(3000) }
-  );
+const response = await fetch(
+  `https://api.mapbox.com/matching/v5/mapbox/driving/${coords}?access_token=${MAPBOX_TOKEN}&annotations=maxspeed&geometries=geojson`,
+  { signal: AbortSignal.timeout(3000) }
+);
 
-  const data = await response.json();
-  
-  // Extract speed limit from first leg annotation
-  const maxspeed = data.matchings?.[0]?.legs?.[0]?.annotation?.maxspeed?.[0];
-  let speedLimit = null;
-  
-  if (maxspeed && !maxspeed.unknown) {
-    speedLimit = maxspeed.unit === "km/h" 
-      ? maxspeed.speed 
-      : Math.round(maxspeed.speed * 1.60934); // Convert mph to km/h
-  }
+// After:
+const offset = 0.0005; // ~50m - larger offset for better road matching
+const coords = `${lon},${lat};${lon + offset},${lat}`;
 
-  // Get road name from tracepoint
-  const roadName = data.tracepoints?.[0]?.name || null;
-
-  return { speedLimit, roadName };
-}
+const response = await fetch(
+  `https://api.mapbox.com/matching/v5/mapbox/driving/${coords}?access_token=${MAPBOX_TOKEN}&annotations=maxspeed&geometries=geojson&tidy=true&radiuses=25;25`,
+  { signal: AbortSignal.timeout(3000) }
+);
 ```
 
-### 3. Fix Test Route GPS Recording
+Key changes:
+- Increase offset from 10m to 50m for better road snapping
+- Add `tidy=true` to clean up sparse coordinates
+- Add `radiuses=25;25` to set GPS accuracy tolerance
+- Keep longitude-only offset (don't change both lat and lon)
 
-**Current code (line 377):**
-```typescript
-if (typedDevice.current_session_id && typedDevice.current_pupil_id) {
+### File 2: `src/pages/InstructorTraccarSession.tsx`
+
+**Hide Bottom Nav During Active Session (line 960):**
+
+```tsx
+// Before:
+<InstructorBottomNav />
+
+// After:
+{!isSessionActive && <InstructorBottomNav />}
 ```
 
-**Fixed code:**
-```typescript
-if (typedDevice.current_session_id) {
+This hides the bottom navigation bar when a tracking session is active, giving the map true full-screen behavior.
+
+### File 3: `src/components/instructor/TraccarLiveMap.tsx`
+
+**Add Fallback Road Name Display (lines 383-385):**
+
+```tsx
+// Before:
+<p className="text-gray-900 font-semibold text-lg truncate">
+  {roadName || "Locating road..."}
+</p>
+
+// After:
+<p className="text-gray-900 font-semibold text-lg truncate">
+  {roadName || (latitude && longitude ? `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` : "Locating road...")}
+</p>
 ```
 
-This single change enables:
-- GPS point recording for Test Routes (no pupil)
-- Driving Test mode recording
-- Route polyline display for all session types
-- Distance tracking for all sessions
+This shows coordinates as a fallback when road name is unavailable, which is more useful than "Locating road...".
 
-**Additional change for live position RPC:**
-The `update_live_position` RPC requires a pupil_id, so we wrap it conditionally:
-
-```typescript
-// Only update live_pupil_positions if a pupil is assigned
-if (typedDevice.current_pupil_id) {
-  const { error: liveError } = await supabase.rpc("update_live_position", {
-    p_pupil_id: typedDevice.current_pupil_id,
-    // ... rest of params
-  });
-}
-```
+---
 
 ## Data Flow After Fix
 
-```text
+```
 Traccar App sends GPS data
-        ↓
+        |
 traccar-webhook receives data
-        ↓
-+--→ Mapbox Map Matching API (speed limit + road name)
-        ↓
-traccar_devices table updated (always)
-  - last_speed_kmh
-  - last_latitude/longitude
-  - last_speed_limit_kmh  ←── Mapbox data
-  - last_road_name        ←── Mapbox data
-        ↓
-telematics_gps_points recorded (if session active - pupil optional)
-        ↓
-live_pupil_positions updated (only if pupil assigned)
-        ↓
-Frontend reads from traccar_devices via Realtime subscription
-        ↓
-TraccarLiveMap displays speed + speed limit + route
+        |
++---> Mapbox Map Matching API (fixed: 50m offset, tidy=true, radiuses)
+        |
+        +-- Road Name extracted from tracepoints
+        +-- Speed Limit extracted from annotations
+        |
+traccar_devices table updated
+        |
+Frontend reads via Realtime subscription
+        |
+TraccarLiveMap displays:
+  - Road name (or coordinates fallback)
+  - Speed limit in roundel
+  - Current speed
+  - Route polyline (full screen, no bottom nav overlap)
 ```
 
-## Speed Conversion Chain (Unchanged)
+---
 
-1. **Traccar Client** sends speed in m/s
-2. **Webhook** converts: `speedKmh = speedMs * 3.6`
-3. **Mapbox** returns speed limit in km/h or mph (converted)
-4. **Database** stores both in km/h
-5. **Frontend** filters stationary noise (3 km/h threshold)
-6. **Display** converts to mph: `speedMph = kmh * 0.621371`
+## Summary of Changes
 
-## Files Modified
+| File | Change | Impact |
+|------|--------|--------|
+| `traccar-webhook/index.ts` | Fix Mapbox API call (larger offset, tidy, radiuses) | Fixes 422 errors, enables road/speed limit detection |
+| `InstructorTraccarSession.tsx` | Hide bottom nav during active session | Enables true full-screen map |
+| `TraccarLiveMap.tsx` | Show coordinates as fallback for road name | Better UX when road lookup fails |
 
-| File | Changes |
-|------|---------|
-| `supabase/functions/traccar-webhook/index.ts` | Replace OSM with Mapbox API; Remove pupil requirement for GPS recording |
+---
 
-## Frontend Files (No Changes)
+## Testing Steps
 
-The existing frontend code is already correct:
-- `TraccarLiveMap.tsx` - Already has 3 km/h filter, realtime subscriptions, route polyline
-- `InstructorTraccarSession.tsx` - Already reads speed limit from `device.last_speed_limit_kmh`
-
-## Caching Strategy
-
-The grid-based cache (50m resolution, 5-minute TTL) will be retained for Mapbox to:
-- Reduce API costs
-- Improve response times
-- Handle API rate limits gracefully
-
-## Fallback Behavior
-
-If Mapbox API fails:
-1. Check nearby grid cells for cached values
-2. Use stale cache if available
-3. Return null (speed limit displays as "—")
-
-## After Implementation
-
-1. **Add your Mapbox token** when prompted
-2. **Publish** the app to deploy the updated webhook
-3. **Test** by starting a Test Route session and verifying:
-   - Speed limit displays correctly
-   - Route polyline draws on the map
-   - Speed shows 0 mph when stationary (3 km/h filter)
+After deployment:
+1. Start a tracking session (Test Route or with pupil)
+2. Verify the bottom navigation bar is hidden
+3. Verify the speed panel is fully visible at the bottom
+4. Check backend logs for `[Traccar] Mapbox road info:` instead of `422` errors
+5. Verify road names appear in the banner
+6. Verify speed limits display in the roundel
