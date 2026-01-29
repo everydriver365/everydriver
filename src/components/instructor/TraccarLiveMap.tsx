@@ -45,6 +45,7 @@ export default function TraccarLiveMap({
   events = [],
   className = "",
 }: TraccarLiveMapProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -167,6 +168,27 @@ export default function TraccarLiveMap({
       mapInstanceRef.current = null;
     };
   }, []);
+
+  // Keep Leaflet sized correctly when the container changes (e.g., header/nav hides, overlays open)
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const el = containerRef.current;
+    if (!map || !el) return;
+
+    const ro = new ResizeObserver(() => {
+      // Defer to next frame so CSS/layout is fully applied
+      window.requestAnimationFrame(() => map.invalidateSize());
+    });
+    ro.observe(el);
+
+    // Also trigger a one-off invalidate on session changes (common full-screen toggle)
+    const t = window.setTimeout(() => map.invalidateSize(), 0);
+
+    return () => {
+      window.clearTimeout(t);
+      ro.disconnect();
+    };
+  }, [sessionId]);
 
   // Disable auto-centering only when the user actually moves the map (drag/zoom)
   useEffect(() => {
@@ -365,7 +387,7 @@ export default function TraccarLiveMap({
   const isSpeeding = speedLimitMph !== null && speedMph > speedLimitMph;
 
   return (
-    <div className={`relative w-full h-full ${className}`} style={{ minHeight: '100dvh' }}>
+    <div ref={containerRef} className={`relative w-full h-full ${className}`}>
       <div 
         ref={mapRef} 
         className="absolute inset-0" 
