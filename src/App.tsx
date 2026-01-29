@@ -42,6 +42,7 @@ import HeroLayoutDemo from "./pages/HeroLayoutDemo";
 import CollageDemo from "./pages/CollageDemo";
 import HeroRedesignDemo from "./pages/HeroRedesignDemo";
 import MobileHomeDemo from "./pages/MobileHomeDemo";
+import DesignDemo from "./pages/DesignDemo";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -197,7 +198,7 @@ const App = () => (
               <Route path="/parent/install" element={<InstallParent />} />
 
               {/* Demo routes */}
-              
+              <Route path="/design-demo" element={<DesignDemo />} />
               <Route path="/hero-demo" element={<HeroLayoutDemo />} />
               <Route path="/collage-demo" element={<CollageDemo />} />
               <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
