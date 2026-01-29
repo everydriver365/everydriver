@@ -41,8 +41,13 @@ export default function InstructorSchedule() {
   useEffect(() => {
     if (viewMode === 'schedule') {
       calendar.goToDate(new Date());
+      // Schedule view expects an extended window (multi-month)
+      calendar.refetch(true);
+    } else {
+      // Other views can keep the default (non-extended) range
+      calendar.refetch(false);
     }
-  }, [viewMode, calendar.goToDate]);
+  }, [viewMode, calendar.goToDate, calendar.refetch]);
 
   useEffect(() => {
     localStorage.setItem('instructor-schedule-view', viewMode);
