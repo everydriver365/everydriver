@@ -302,7 +302,7 @@ export function GoogleStyleScheduleView({
   useEffect(() => {
     if (!loading && todayRef.current && !hasScrolledRef.current) {
       setTimeout(() => {
-        todayRef.current?.scrollIntoView({ behavior: 'instant', block: 'center' });
+        todayRef.current?.scrollIntoView({ behavior: 'auto', block: 'center' });
         hasScrolledRef.current = true;
       }, 50);
     }
