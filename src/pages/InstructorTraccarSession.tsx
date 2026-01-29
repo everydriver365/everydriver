@@ -677,9 +677,11 @@ export default function InstructorTraccarSession() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const isConnected = device?.last_seen_at 
-    ? (new Date().getTime() - new Date(device.last_seen_at).getTime()) / 1000 / 60 < 2
-    : false;
+  // Use a SHORT timeout (10s) to detect stale speed data - GPS should update every 1-3 seconds when active
+  const secondsSinceUpdate = device?.last_seen_at
+    ? Math.floor((Date.now() - new Date(device.last_seen_at).getTime()) / 1000)
+    : 9999;
+  const isConnected = secondsSinceUpdate < 10; // Only 10 seconds - speed zeros out quickly when GPS stops
 
   const lastSeenAtDate = device?.last_seen_at ? new Date(device.last_seen_at) : null;
   const secondsSinceLastSeen = lastSeenAtDate
