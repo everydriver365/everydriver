@@ -10,8 +10,8 @@ interface ScheduleDayTabsProps {
 export function ScheduleDayTabs({ selectedDate, onSelectDate }: ScheduleDayTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   
-  // Generate 60 days starting from today (covers ~2 months ahead)
-  const days = Array.from({ length: 60 }, (_, i) => addDays(new Date(), i));
+  // Generate 365 days starting from today (full year ahead)
+  const days = Array.from({ length: 365 }, (_, i) => addDays(new Date(), i));
   
   const getDateLabel = (date: Date) => {
     if (isToday(date)) return "Today";
