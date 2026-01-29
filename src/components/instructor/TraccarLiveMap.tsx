@@ -121,8 +121,8 @@ export default function TraccarLiveMap({
       )
       .subscribe();
 
-    // Fallback polling every 10s in case realtime misses anything
-    const interval = setInterval(fetchRoute, 10000);
+    // Fallback polling every 5s in case realtime misses anything
+    const interval = setInterval(fetchRoute, 5000);
     
     return () => {
       supabase.removeChannel(channel);
