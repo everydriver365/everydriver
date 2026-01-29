@@ -22,6 +22,7 @@ import {
   CreditCard,
   CalendarClock,
   Sparkles,
+  ClipboardCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
@@ -92,6 +93,14 @@ const extendedFeatures = [
     icon: CalendarClock,
     image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&h=250&fit=crop",
     color: "bg-teal-500",
+  },
+  {
+    id: "test-recording",
+    title: "Trigger & Test Recording",
+    description: "DL25A-style test logging with competency grids, DVSA standards check triggers, and rolling 12-month pass rate analytics.",
+    icon: ClipboardCheck,
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop",
+    color: "bg-orange-500",
   },
 ];
 
