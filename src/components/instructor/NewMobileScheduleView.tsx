@@ -32,6 +32,7 @@ interface ScheduledLesson {
   prepaid_hours_used: number;
   amount_due: number;
   notes: string | null;
+  card_color?: string;
   pupil: {
     id: string;
     name: string;
@@ -56,6 +57,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const [addLessonOpen, setAddLessonOpen] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
+  const [lessonColors, setLessonColors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetchLessons();
@@ -195,6 +197,32 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
     setRescheduleDialogOpen(true);
   };
 
+  const handleDeleteLesson = (lesson: ScheduledLesson) => {
+    // Use the cancel flow for deletion (same result)
+    setSelectedLesson(lesson);
+    setCancelDialogOpen(true);
+  };
+
+  const handleColorChange = (lessonId: string, color: string) => {
+    setLessonColors(prev => ({ ...prev, [lessonId]: color }));
+    // Optionally persist to localStorage
+    const stored = JSON.parse(localStorage.getItem('lessonColors') || '{}');
+    stored[lessonId] = color;
+    localStorage.setItem('lessonColors', JSON.stringify(stored));
+  };
+
+  // Load persisted colors on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('lessonColors');
+    if (stored) {
+      try {
+        setLessonColors(JSON.parse(stored));
+      } catch (e) {
+        console.error('Failed to parse lesson colors:', e);
+      }
+    }
+  }, []);
+
   const lessonCount = lessons.length;
 
   return (
@@ -241,7 +269,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           <AnimatePresence mode="popLayout">
             {lessons.map((lesson) => (
               <ExpandableLessonCard
@@ -254,6 +282,9 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
                 onCancel={handleCancelLesson}
                 onReschedule={handleRescheduleLesson}
                 sendingMessage={sendingMessage}
+                cardColor={lessonColors[lesson.id] || "bg-card"}
+                onColorChange={(color) => handleColorChange(lesson.id, color)}
+                onDelete={handleDeleteLesson}
               />
             ))}
           </AnimatePresence>
