@@ -308,13 +308,10 @@ export function GoogleStyleScheduleView({
     }
   }, [loading]);
 
-  // Generate 3 months of days centered around TODAY (not currentDate)
+  // Generate 365 days centered around TODAY (6 months before + 6 months after)
   const allDays = useMemo(() => {
-    const prevMonth = subMonths(today, 1);
-    const nextMonth = addMonths(today, 1);
-    
-    const start = startOfMonth(prevMonth);
-    const end = endOfMonth(nextMonth);
+    const start = startOfMonth(subMonths(today, 6));
+    const end = endOfMonth(addMonths(today, 6));
     
     return eachDayOfInterval({ start, end });
   }, [today]);
