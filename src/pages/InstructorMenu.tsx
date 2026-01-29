@@ -21,6 +21,7 @@ import {
   TrendingUp,
   ArrowUpDown,
   Calculator,
+  Heart,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -173,6 +174,19 @@ export default function InstructorMenu() {
           path: "/instructor/gaps",
           iconColor: "text-pink-600",
           iconBg: "bg-pink-100 dark:bg-pink-900/30",
+        },
+      ],
+    },
+    {
+      title: "Wellbeing",
+      items: [
+        {
+          icon: Heart,
+          label: "Health Hub",
+          description: "Weight, water, tips & break reminders",
+          path: "/instructor/health",
+          iconColor: "text-rose-600",
+          iconBg: "bg-rose-100 dark:bg-rose-900/30",
         },
       ],
     },
