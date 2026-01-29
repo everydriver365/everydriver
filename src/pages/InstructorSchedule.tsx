@@ -41,10 +41,14 @@ export default function InstructorSchedule() {
   // When entering Schedule, anchor to today + load extended range exactly once.
   // (Avoid depending on calendar.refetch here, since it changes when currentDate/view changes.)
   useEffect(() => {
+    // IMPORTANT: don't mark schedule as initialized until we actually have an instructorId.
+    // If the page loads directly into Schedule (from localStorage) while instructorId is still
+    // loading, we must run this again once instructorId becomes available.
     if (viewMode === 'schedule') {
+      if (!instructorId) return;
       if (scheduleInitRef.current) return;
-      scheduleInitRef.current = true;
 
+      scheduleInitRef.current = true;
       const today = new Date();
       calendar.goToDate(today);
       calendar.refetch(true);
@@ -53,7 +57,7 @@ export default function InstructorSchedule() {
 
     // reset flag when leaving schedule so re-entering snaps to today again
     scheduleInitRef.current = false;
-  }, [viewMode]);
+  }, [viewMode, instructorId]);
 
   useEffect(() => {
     localStorage.setItem('instructor-schedule-view', viewMode);
