@@ -252,27 +252,32 @@ export function StepWebsite({
           maxSizeMB={50}
         />
 
-        {/* Custom Domain Section */}
-        <div className="border-t pt-6 space-y-4">
+        {/* Custom Domain Section - Highlighted */}
+        <div className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6 space-y-4">
           <div className="flex items-center gap-2">
-            <Globe className="h-5 w-5 text-primary" />
-            <Label className="text-lg font-semibold">Want your own custom domain?</Label>
-            <Badge variant="outline">Optional</Badge>
+            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Globe className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <Label className="text-lg font-semibold text-foreground">Want your own custom domain?</Label>
+              <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary border-primary/20">
+                Stand Out
+              </Badge>
+            </div>
           </div>
           
           <p className="text-sm text-muted-foreground">
-            Stand out with a professional domain like <strong>yourname.co.uk</strong>
+            Look more professional with a custom domain like <strong className="text-foreground">yourname.co.uk</strong> instead of a subdomain.
           </p>
 
           {!wantsDomain ? (
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <Button 
-                variant="outline" 
                 onClick={() => setWantsDomain(true)}
                 className="flex-1"
               >
-                <Globe className="h-4 w-4 mr-2" />
-                Yes, search for a domain
+                <Search className="h-4 w-4 mr-2" />
+                Search for a domain
               </Button>
               <Button 
                 variant="ghost" 
@@ -338,11 +343,21 @@ export function StepWebsite({
                           <Badge variant="secondary" className="text-xs">Taken</Badge>
                         )}
                       </div>
-                      {result.available && (
+                      {result.available && result.price != null && (
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-foreground text-sm">
                             £{result.price.toFixed(2)}/yr
                           </span>
+                          {data.selectedDomain === result.domain ? (
+                            <Check className="h-4 w-4 text-primary" />
+                          ) : (
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      )}
+                      {result.available && result.price == null && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Price TBC</span>
                           {data.selectedDomain === result.domain ? (
                             <Check className="h-4 w-4 text-primary" />
                           ) : (
