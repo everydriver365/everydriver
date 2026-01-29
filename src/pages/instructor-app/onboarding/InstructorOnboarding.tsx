@@ -98,12 +98,23 @@ export default function InstructorOnboarding() {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentStep = parseInt(searchParams.get("step") || "1", 10);
   const navigate = useNavigate();
-  const { instructor, user, loading: authLoading } = useInstructorAuth();
+  const { instructor, user, loading: authLoading, refreshInstructor } = useInstructorAuth();
   
   const [data, setData] = useState<OnboardingData>(initialData);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [instructorId, setInstructorId] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState(false);
+
+  // Use instructor from context as primary source of truth
+  const resolvedInstructorId = instructor?.id ?? instructorId ?? null;
+
+  // Sync instructorId from context when available
+  useEffect(() => {
+    if (instructor?.id && !instructorId) {
+      setInstructorId(instructor.id);
+    }
+  }, [instructor?.id, instructorId]);
 
   // Load existing instructor data
   useEffect(() => {
@@ -114,8 +125,26 @@ export default function InstructorOnboarding() {
       return;
     }
 
+    // If we already have instructor from context, use it
+    if (instructor) {
+      setInstructorId(instructor.id);
+      setData((prev) => ({
+        ...prev,
+        name: instructor.name || "",
+        email: instructor.email || user.email || "",
+        phone: instructor.phone || "",
+        bio: "",
+        profile_image_url: instructor.profile_image_url || null,
+        slug: instructor.app_slug || "",
+      }));
+      setLoading(false);
+      setProfileError(false);
+      return;
+    }
+
     const loadInstructorData = async () => {
       try {
+        setProfileError(false);
         // Use a safe query here (no `.single()`), because duplicate rows for an auth user
         // would otherwise break onboarding and leave instructorId empty.
         const { data: instructorData, error } = await supabase
@@ -156,6 +185,9 @@ export default function InstructorOnboarding() {
 
           if (createError) throw createError;
           resolvedInstructor = created;
+          
+          // Refresh context so it picks up the new instructor
+          refreshInstructor();
         }
 
         if (resolvedInstructor) {
@@ -176,16 +208,19 @@ export default function InstructorOnboarding() {
             hourly_rate: resolvedInstructor.hourly_rate || 35,
             slug: resolvedInstructor.app_slug || "",
           }));
+        } else {
+          setProfileError(true);
         }
       } catch (e) {
         console.error("Failed to load/create instructor record:", e);
+        setProfileError(true);
       } finally {
         setLoading(false);
       }
     };
 
     loadInstructorData();
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, instructor, refreshInstructor]);
 
   const updateData = (updates: Partial<OnboardingData>) => {
     setData((prev) => ({ ...prev, ...updates }));
@@ -307,7 +342,46 @@ export default function InstructorOnboarding() {
   if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if profile couldn't be loaded
+  if (profileError || !resolvedInstructorId) {
+    const handleRetry = () => {
+      setLoading(true);
+      setProfileError(false);
+      refreshInstructor();
+      // The useEffect will re-run when instructor changes
+      setTimeout(() => {
+        if (!instructor?.id) {
+          setLoading(false);
+          setProfileError(true);
+        }
+      }, 3000);
+    };
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4 max-w-sm mx-auto p-6">
+          <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+            <span className="text-destructive text-xl">!</span>
+          </div>
+          <h2 className="text-lg font-semibold">Couldn't Load Your Profile</h2>
+          <p className="text-sm text-muted-foreground">
+            We had trouble loading your instructor profile. Please try again.
+          </p>
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -320,7 +394,7 @@ export default function InstructorOnboarding() {
       return (
         <StepPersonalDetails
           data={data}
-          instructorId={instructorId || ""}
+          instructorId={resolvedInstructorId}
           onUpdate={updateData}
           onNext={handleNext}
         />
