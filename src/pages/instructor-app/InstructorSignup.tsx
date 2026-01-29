@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Loader2, CheckCircle, ArrowRight, AlertCircle, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import { z } from "zod";
-const transparentLogo = "/everydriver-logo-white.png";
+const transparentLogo = "/everydriver-logo.png";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100),
