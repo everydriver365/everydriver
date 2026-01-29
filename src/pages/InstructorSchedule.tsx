@@ -148,6 +148,7 @@ export default function InstructorSchedule() {
               onAddEvent={handleAddEvent}
               onEventClick={(event) => setSelectedEvent(event)}
               onDeleteEvent={handleDeleteEvent}
+              onGoToDate={calendar.goToDate}
             />
           </div>
         ) : (

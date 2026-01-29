@@ -1,6 +1,6 @@
-import { useMemo, useEffect, useRef, useState } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek, isToday, startOfDay, addHours } from 'date-fns';
-import { ChevronLeft, ChevronRight, Palette, Plus, Trash2 } from 'lucide-react';
+import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import { format, eachDayOfInterval, isSameDay, isToday, startOfDay, addHours, addMonths, subMonths, startOfMonth, endOfMonth, getMonth } from 'date-fns';
+import { Palette, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -18,22 +18,12 @@ interface GoogleStyleScheduleViewProps {
   onNavigate: (direction: 'prev' | 'next' | 'today') => void;
   loading?: boolean;
   onDeleteEvent?: (event: CalendarEvent) => void;
+  onGoToDate?: (date: Date) => void;
 }
 
 interface DayEvents {
   date: Date;
   events: CalendarEvent[];
-}
-
-interface WeekGroup {
-  weekStart: Date;
-  weekEnd: Date;
-  days: DayEvents[];
-}
-
-interface MonthGroup {
-  month: Date;
-  weeks: WeekGroup[];
 }
 
 function getEventColor(event: CalendarEvent, colors: CalendarColors): string {
@@ -107,7 +97,7 @@ function EventBar({
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Change color"
                 >
-                  <Palette className="h-4 w-4 text-muted-foreground" />
+                  <Palette className="h-4 w-4 text-muted-foreground pointer-events-none" />
                 </button>
               </PopoverTrigger>
               <PopoverContent
@@ -144,7 +134,7 @@ function EventBar({
               }}
               aria-label="Delete"
             >
-              <Trash2 className="h-4 w-4 text-muted-foreground" />
+              <Trash2 className="h-4 w-4 text-muted-foreground pointer-events-none" />
             </button>
           )}
         </div>
@@ -266,8 +256,8 @@ function MonthBanner({ month }: { month: Date }) {
   const monthName = format(month, 'MMMM yyyy');
   
   return (
-    <div className="px-4 py-3 border-b border-border/30">
-      <h3 className="text-lg font-semibold text-foreground">{monthName}</h3>
+    <div className="sticky top-0 z-10 px-4 py-2 border-b border-border/30 bg-card/95 backdrop-blur-sm">
+      <h3 className="text-base font-semibold text-foreground">{monthName}</h3>
     </div>
   );
 }
@@ -282,8 +272,10 @@ export function GoogleStyleScheduleView({
   onNavigate,
   loading,
   onDeleteEvent,
+  onGoToDate,
 }: GoogleStyleScheduleViewProps) {
   const todayRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
 
   const [eventColorOverrides, setEventColorOverrides] = useState<Record<string, string>>(() => {
@@ -306,7 +298,6 @@ export function GoogleStyleScheduleView({
   // Scroll to today on initial load
   useEffect(() => {
     if (!loading && todayRef.current && !hasScrolledRef.current) {
-      // Small delay to ensure DOM is ready
       setTimeout(() => {
         todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         hasScrolledRef.current = true;
@@ -314,100 +305,93 @@ export function GoogleStyleScheduleView({
     }
   }, [loading]);
 
-  // Reset scroll flag when month changes to allow re-scroll if today is in new month
-  useEffect(() => {
-    hasScrolledRef.current = false;
+  // Generate 3 months of days: previous, current, next
+  const allDays = useMemo(() => {
+    const prevMonth = subMonths(currentDate, 1);
+    const nextMonth = addMonths(currentDate, 1);
+    
+    const start = startOfMonth(prevMonth);
+    const end = endOfMonth(nextMonth);
+    
+    return eachDayOfInterval({ start, end });
   }, [currentDate]);
 
-  // Group events by month, then by week, then by day
-  const groupedData = useMemo(() => {
-    const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(currentDate);
-    
-    // Get all days in the month
-    const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
-    
-    // Group by weeks
-    const weeks: WeekGroup[] = [];
-    let currentWeekStart = startOfWeek(monthStart, { weekStartsOn: 1 });
-    
-    while (currentWeekStart <= monthEnd) {
-      const currentWeekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+  // Group days by month for rendering with month banners
+  const groupedByMonth = useMemo(() => {
+    const groups: { month: Date; days: DayEvents[] }[] = [];
+    let currentMonth: number | null = null;
+    let currentGroup: DayEvents[] = [];
+    let currentMonthDate: Date | null = null;
+
+    allDays.forEach((date) => {
+      const month = getMonth(date);
       
-      // Get days in this week that are in the current month
-      const weekDays = eachDayOfInterval({ 
-        start: currentWeekStart > monthStart ? currentWeekStart : monthStart,
-        end: currentWeekEnd < monthEnd ? currentWeekEnd : monthEnd
-      });
-      
-      const days: DayEvents[] = weekDays.map(date => ({
-        date,
-        events: events
-          .filter(event => isSameDay(event.start, date))
-          .sort((a, b) => a.start.getTime() - b.start.getTime())
-      }));
-      
-      if (days.length > 0) {
-        weeks.push({
-          weekStart: weekDays[0],
-          weekEnd: weekDays[weekDays.length - 1],
-          days
-        });
+      if (currentMonth !== month) {
+        if (currentGroup.length > 0 && currentMonthDate) {
+          groups.push({ month: currentMonthDate, days: currentGroup });
+        }
+        currentMonth = month;
+        currentMonthDate = startOfMonth(date);
+        currentGroup = [];
       }
       
-      currentWeekStart = new Date(currentWeekEnd);
-      currentWeekStart.setDate(currentWeekStart.getDate() + 1);
+      const dayEvents = events
+        .filter(event => isSameDay(event.start, date))
+        .sort((a, b) => a.start.getTime() - b.start.getTime());
+      
+      currentGroup.push({ date, events: dayEvents });
+    });
+
+    // Push the last group
+    if (currentGroup.length > 0 && currentMonthDate) {
+      groups.push({ month: currentMonthDate, days: currentGroup });
+    }
+
+    return groups;
+  }, [allDays, events]);
+
+  // Handle scroll to load more months
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    
+    // Load next month when near bottom
+    if (scrollHeight - scrollTop - clientHeight < 200) {
+      const nextMonth = addMonths(currentDate, 1);
+      onGoToDate?.(nextMonth);
     }
     
-    return {
-      month: monthStart,
-      weeks
-    };
-  }, [events, currentDate]);
+    // Load previous month when near top
+    if (scrollTop < 200) {
+      const prevMonth = subMonths(currentDate, 1);
+      onGoToDate?.(prevMonth);
+    }
+  }, [currentDate, onGoToDate]);
+
+  const scrollToToday = useCallback(() => {
+    todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
 
   return (
     <div className="h-full flex flex-col bg-background rounded-lg border overflow-hidden">
-      {/* Header with navigation */}
-      <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-card gap-1 sm:gap-2 flex-shrink-0">
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onNavigate('prev')}
-            className="h-7 w-7 sm:h-8 sm:w-8"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigate('today')}
-            className="h-7 sm:h-8 px-2 sm:px-3 text-xs"
-          >
-            Today
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onNavigate('next')}
-            className="h-7 w-7 sm:h-8 sm:w-8"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+      {/* Minimal header */}
+      <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-card gap-2 flex-shrink-0">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={scrollToToday}
+          className="h-8 px-3 text-xs"
+        >
+          Today
+        </Button>
         
-        <h2 className="text-sm sm:text-lg font-semibold truncate px-1">
-          <span className="hidden sm:inline">{format(currentDate, 'MMMM yyyy')}</span>
-          <span className="sm:hidden">{format(currentDate, 'MMM yyyy')}</span>
-        </h2>
-        
-        <div className="flex items-center gap-0.5 sm:gap-1">
+        <div className="flex items-center gap-1">
           {onColorSettingsClick && (
             <Button
               variant="ghost"
               size="icon"
               onClick={onColorSettingsClick}
-              className="h-7 w-7 sm:h-8 sm:w-8"
+              className="h-8 w-8"
             >
               <Palette className="h-4 w-4" />
             </Button>
@@ -416,7 +400,7 @@ export function GoogleStyleScheduleView({
             <Button
               size="sm"
               onClick={() => onAddEvent()}
-              className="h-7 sm:h-8 px-2 sm:px-3"
+              className="h-8 px-3"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline ml-1">Add</span>
@@ -425,42 +409,47 @@ export function GoogleStyleScheduleView({
         </div>
       </div>
       
-      {/* Scrollable content */}
-      <ScrollArea className="flex-1 min-h-0">
+      {/* Infinite scroll content */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto overscroll-contain"
+        onScroll={handleScroll}
+      >
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : (
           <div className="overflow-hidden">
-            {/* Month banner */}
-            <MonthBanner month={groupedData.month} />
-            
-            {/* Days */}
-            {groupedData.weeks.flatMap((week) => week.days).map((dayEvents) => (
-              <DayRow
-                key={dayEvents.date.toISOString()}
-                dayEvents={dayEvents}
-                colors={calendarColors}
-                onEventClick={onEventClick}
-                onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
-                onDeleteEvent={onDeleteEvent}
-                onEventColorChange={(eventId, color) =>
-                  setEventColorOverrides((prev) => ({ ...prev, [eventId]: color }))
-                }
-                eventColorOverrides={eventColorOverrides}
-                todayRef={todayRef}
-              />
+            {groupedByMonth.map((group) => (
+              <div key={group.month.toISOString()}>
+                <MonthBanner month={group.month} />
+                {group.days.map((dayEvents) => (
+                  <DayRow
+                    key={dayEvents.date.toISOString()}
+                    dayEvents={dayEvents}
+                    colors={calendarColors}
+                    onEventClick={onEventClick}
+                    onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
+                    onDeleteEvent={onDeleteEvent}
+                    onEventColorChange={(eventId, color) =>
+                      setEventColorOverrides((prev) => ({ ...prev, [eventId]: color }))
+                    }
+                    eventColorOverrides={eventColorOverrides}
+                    todayRef={todayRef}
+                  />
+                ))}
+              </div>
             ))}
             
-            {groupedData.weeks.length === 0 && (
+            {groupedByMonth.length === 0 && (
               <div className="py-12 text-center text-muted-foreground">
-                No events this month
+                No events
               </div>
             )}
           </div>
         )}
-      </ScrollArea>
+      </div>
       
       {/* Color legend */}
       <div className="flex flex-wrap gap-2 p-2 border-t bg-card text-[10px] flex-shrink-0">

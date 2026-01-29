@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay, format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths } from 'date-fns';
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay, format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths, subMonths as dfSubMonths } from 'date-fns';
 import { CalendarColors, DEFAULT_CALENDAR_COLORS } from '@/components/instructor/CalendarColorSettings';
 
 export type CalendarView = 'day' | 'week' | 'month';
@@ -73,7 +73,13 @@ export function useInstructorCalendar(instructorId: string) {
     fetchColors();
   }, [instructorId]);
 
-  const getDateRange = useCallback((date: Date, viewType: CalendarView) => {
+  const getDateRange = useCallback((date: Date, viewType: CalendarView, extendedRange = false) => {
+    // For schedule view, load 3 months of data for smooth infinite scroll
+    if (extendedRange) {
+      const start = subMonths(startOfMonth(date), 1);
+      const end = addMonths(endOfMonth(date), 1);
+      return { start, end };
+    }
     switch (viewType) {
       case 'day':
         return { start: startOfDay(date), end: endOfDay(date) };
@@ -84,11 +90,11 @@ export function useInstructorCalendar(instructorId: string) {
     }
   }, []);
 
-  const fetchEvents = useCallback(async () => {
+  const fetchEvents = useCallback(async (extendedRange = false) => {
     if (!instructorId) return;
     
     setLoading(true);
-    const { start, end } = getDateRange(currentDate, view);
+    const { start, end } = getDateRange(currentDate, view, extendedRange);
     const startStr = format(start, 'yyyy-MM-dd');
     const endStr = format(end, 'yyyy-MM-dd');
 
