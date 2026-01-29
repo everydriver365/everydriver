@@ -15,11 +15,13 @@ import {
   PoundSterling,
   Users,
   MapPin,
-  FileText,
   Smartphone,
   Megaphone,
   Palette,
   Layout,
+  CreditCard,
+  CalendarClock,
+  Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
@@ -74,6 +76,22 @@ const extendedFeatures = [
     icon: Palette,
     image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop",
     color: "bg-cyan-500",
+  },
+  {
+    id: "take-payments",
+    title: "Take Pupil Payments",
+    description: "Accept card payments, track deposits, and manage prepaid lesson packages. Get paid faster with QR codes and payment links.",
+    icon: CreditCard,
+    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop",
+    color: "bg-indigo-500",
+  },
+  {
+    id: "fill-gaps",
+    title: "Fill Empty Gaps",
+    description: "Automated SMS system finds available pupils to fill last-minute cancellations. Maximise your earnings with smart scheduling.",
+    icon: CalendarClock,
+    image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&h=250&fit=crop",
+    color: "bg-teal-500",
   },
 ];
 
@@ -178,6 +196,10 @@ export default function InstructorAppHome() {
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                   <CheckCircle className="h-4 w-4 text-emerald-500" />
                   {hero.trust_badge2}
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-800">
+                  <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">FREE Forever Options</span>
                 </div>
               </div>
             </motion.div>
