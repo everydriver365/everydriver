@@ -33,7 +33,7 @@ export default function Benefits() {
     <div className="min-h-screen bg-background pb-20">
       {/* Header - Primary Blue to match brand */}
       <div className="px-4 py-3 flex items-center justify-center sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
-        <img src="/everydriver-logo.png" alt="EveryDriver" className="h-7" />
+        <img src="/everydriver-logo-v2.png" alt="EveryDriver" className="h-7" />
       </div>
 
       {/* Hero Section */}

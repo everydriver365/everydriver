@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import testimonialSarah from "@/assets/testimonial-sarah.jpg";
 import testimonialJames from "@/assets/testimonial-james.jpg";
 import testimonialEmma from "@/assets/testimonial-emma.jpg";
-const logo = "/everydriver-logo.png";
+const logo = "/everydriver-logo-v2.png";
 
 export default function HeroRedesignDemo() {
   return (

@@ -45,7 +45,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-const instructorLogo = "/everydriver-logo.png";
+const instructorLogo = "/everydriver-logo-v2.png";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {

@@ -170,7 +170,7 @@ export default function PupilLogin() {
           <Card className="border-0 shadow-xl">
             <CardHeader className="text-center pb-2">
               <div className="mb-4 mx-auto inline-block">
-                <img src="/everydriver-logo.png" alt="EveryDriver" className="h-12 mx-auto" />
+                <img src="/everydriver-logo-v2.png" alt="EveryDriver" className="h-12 mx-auto" />
               </div>
               <CardTitle className="text-2xl">Pupil Login</CardTitle>
               <CardDescription>
