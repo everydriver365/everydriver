@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
+import { cn } from "@/lib/utils";
 
 interface Pupil {
   id: string;
@@ -52,7 +53,6 @@ export default function InstructorPortal() {
   const isMobile = useIsMobile();
   const { hoursThisWeek, monthEarnings, loading: statsLoading } = useInstructorLiveStats(instructorId);
 
-  // Redirect to login if not authenticated (after loading completes)
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/instructor-app/login");
@@ -123,7 +123,13 @@ export default function InstructorPortal() {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  // Show loading while auth is being checked
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   if (authLoading) {
     return (
       <InstructorPortalLayout>
@@ -134,7 +140,6 @@ export default function InstructorPortal() {
     );
   }
 
-  // User is authenticated but has no instructor profile
   if (!instructorId && user) {
     return (
       <InstructorPortalLayout>
@@ -149,10 +154,10 @@ export default function InstructorPortal() {
   }
 
   if (!instructorId) {
-    return null; // Will redirect to login via useEffect
+    return null;
   }
 
-  // Mobile Layout - uses InstructorMobileHome component (no layout wrapper - has its own header)
+  // Mobile Layout
   if (isMobile) {
     return (
       <>
@@ -174,89 +179,85 @@ export default function InstructorPortal() {
     );
   }
 
-  // Desktop Layout - Clean, organized structure
+  // Desktop Layout - Professional & Trusted Design
   return (
     <InstructorPortalLayout>
       <div className="space-y-6">
         
-        {/* Header Section */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-4"
-          >
-            <Avatar className="h-12 w-12 border-2 border-primary">
-              <AvatarImage src={instructorData?.profile_image_url || undefined} alt={instructorData?.name} />
-              <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                {instructorData?.name ? getInitials(instructorData.name) : "?"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold">{instructorData?.name || "Dashboard"}</h1>
-                {instructorData && (
-                  <Badge 
-                    variant="secondary" 
-                    className={`gap-1 text-xs ${instructorData.is_active ? "bg-emerald-500/10 text-emerald-600 border-emerald-200" : "bg-amber-500/10 text-amber-600 border-amber-200"}`}
-                  >
-                    {instructorData.is_active ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                    {instructorData.is_active ? "Visible" : "Hidden"}
-                  </Badge>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">Welcome back</p>
-            </div>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="flex gap-2"
-          >
-            <Button size="sm" onClick={() => setPaymentModalOpen(true)}>
-              <CreditCard className="mr-1.5 h-4 w-4" />
-              Take Payment
-            </Button>
-            <Link to="/instructor/settings">
-              <Button variant="outline" size="sm">
-                <Settings className="mr-1.5 h-4 w-4" />
-                Settings
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
+        {/* Welcome Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-1"
+        >
+          <h1 className="text-2xl font-bold text-foreground">
+            {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
+          </h1>
+          <p className="text-muted-foreground">
+            Here's what's happening with your business today.
+          </p>
+        </motion.div>
 
-        {/* Job Alerts */}
-        <JobOfferAlert instructorId={instructorId} />
-
-        {/* Stats Row */}
+        {/* Stats Grid - Professional Cards */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid gap-3 grid-cols-2 lg:grid-cols-4"
+          className="grid gap-4 grid-cols-2 lg:grid-cols-4"
         >
           {[
-            { icon: Calendar, label: "Today's Lessons", value: String(todaysLessonCount), color: "text-blue-500" },
-            { icon: Users, label: "Active Pupils", value: String(pupils.length), color: "text-emerald-500" },
-            { icon: Clock, label: "Hours This Week", value: statsLoading ? "..." : String(hoursThisWeek), color: "text-amber-500" },
-            { icon: TrendingUp, label: "Month Earnings", value: statsLoading ? "..." : `£${monthEarnings.toLocaleString()}`, color: "text-purple-500" },
-          ].map((stat) => (
-            <Card key={stat.label} className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-muted ${stat.color}`}>
-                  <stat.icon className="h-4 w-4" />
+            { 
+              icon: Calendar, 
+              label: "Today's Lessons", 
+              value: String(todaysLessonCount), 
+              change: todaysLessonCount > 0 ? `${todaysLessonCount} scheduled` : "No lessons",
+              color: "text-blue-600", 
+              bgColor: "bg-blue-50 dark:bg-blue-950/50" 
+            },
+            { 
+              icon: TrendingUp, 
+              label: "This Week", 
+              value: statsLoading ? "..." : `£${monthEarnings.toLocaleString()}`, 
+              change: "Monthly earnings",
+              color: "text-emerald-600", 
+              bgColor: "bg-emerald-50 dark:bg-emerald-950/50" 
+            },
+            { 
+              icon: Users, 
+              label: "Active Pupils", 
+              value: String(pupils.length), 
+              change: pupils.length > 0 ? `${pupils.length} enrolled` : "Add pupils",
+              color: "text-violet-600", 
+              bgColor: "bg-violet-50 dark:bg-violet-950/50" 
+            },
+            { 
+              icon: Clock, 
+              label: "Hours This Week", 
+              value: statsLoading ? "..." : String(hoursThisWeek), 
+              change: "Teaching hours",
+              color: "text-amber-600", 
+              bgColor: "bg-amber-50 dark:bg-amber-950/50" 
+            },
+          ].map((stat, i) => (
+            <Card key={stat.label} className="border-border">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
+                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                  </div>
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", stat.bgColor)}>
+                    <stat.icon className={cn("w-5 h-5", stat.color)} />
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xl font-bold">{stat.value}</div>
-                  <div className="text-xs text-muted-foreground">{stat.label}</div>
-                </div>
-              </div>
+              </CardContent>
             </Card>
           ))}
         </motion.div>
+
+        {/* Job Alerts */}
+        <JobOfferAlert instructorId={instructorId} />
 
         {/* Main Content Grid */}
         <div className="grid gap-6 lg:grid-cols-3">
@@ -266,24 +267,38 @@ export default function InstructorPortal() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="lg:col-span-2 space-y-4"
+            className="lg:col-span-2"
           >
-            <Tabs defaultValue="today" className="w-full">
-              <TabsList className="w-full grid grid-cols-3">
-                <TabsTrigger value="today">Today</TabsTrigger>
-                <TabsTrigger value="tomorrow">Tomorrow</TabsTrigger>
-                <TabsTrigger value="gaps">Fill Gaps</TabsTrigger>
-              </TabsList>
-              <TabsContent value="today" className="mt-4">
-                <TodayScheduleView instructorId={instructorId} />
-              </TabsContent>
-              <TabsContent value="tomorrow" className="mt-4">
-                <TomorrowScheduleView instructorId={instructorId} />
-              </TabsContent>
-              <TabsContent value="gaps" className="mt-4">
-                <GapsFiller instructorId={instructorId} />
-              </TabsContent>
-            </Tabs>
+            <Card className="border-border">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Today's Schedule</CardTitle>
+                  <Link to="/instructor/schedule">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                      View Full Calendar <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="today" className="w-full">
+                  <TabsList className="w-full grid grid-cols-3 mb-4">
+                    <TabsTrigger value="today">Today</TabsTrigger>
+                    <TabsTrigger value="tomorrow">Tomorrow</TabsTrigger>
+                    <TabsTrigger value="gaps">Fill Gaps</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="today">
+                    <TodayScheduleView instructorId={instructorId} />
+                  </TabsContent>
+                  <TabsContent value="tomorrow">
+                    <TomorrowScheduleView instructorId={instructorId} />
+                  </TabsContent>
+                  <TabsContent value="gaps">
+                    <GapsFiller instructorId={instructorId} />
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
           </motion.div>
 
           {/* Right Column - Sidebar */}
@@ -293,15 +308,49 @@ export default function InstructorPortal() {
             transition={{ delay: 0.2 }}
             className="space-y-4"
           >
+            {/* Quick Actions */}
+            <Card className="border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-2">
+                {[
+                  { label: "Add Lesson", icon: Calendar, to: "/instructor/schedule" },
+                  { label: "Take Payment", icon: CreditCard, onClick: () => setPaymentModalOpen(true) },
+                  { label: "New Pupil", icon: Users, to: "/instructor/pupils" },
+                  { label: "Track Live", icon: Car, to: "/instructor/traccar" },
+                ].map((action, i) => (
+                  action.to ? (
+                    <Link key={i} to={action.to}>
+                      <Button variant="outline" className="h-auto py-3 flex-col gap-1 w-full">
+                        <action.icon className="w-5 h-5" />
+                        <span className="text-xs">{action.label}</span>
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button 
+                      key={i} 
+                      variant="outline" 
+                      className="h-auto py-3 flex-col gap-1"
+                      onClick={action.onClick}
+                    >
+                      <action.icon className="w-5 h-5" />
+                      <span className="text-xs">{action.label}</span>
+                    </Button>
+                  )
+                ))}
+              </CardContent>
+            </Card>
+
             {/* Payment Summary */}
-            <Card>
+            <Card className="border-border">
               <CardContent className="p-4">
                 <PaymentSummaryWidget instructorId={instructorId} instructorName={instructorData?.name} />
               </CardContent>
             </Card>
 
             {/* Active Pupils */}
-            <Card>
+            <Card className="border-border">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-base">
                   <span className="flex items-center gap-2">
@@ -337,38 +386,6 @@ export default function InstructorPortal() {
                     View All <ChevronRight className="h-3 w-3 ml-1" />
                   </Button>
                 </Link>
-              </CardContent>
-            </Card>
-
-            {/* Quick Links */}
-            <Card>
-              <CardContent className="p-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <Link to="/instructor/schedule">
-                    <Button variant="outline" size="sm" className="w-full text-xs h-9">
-                      <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                      Schedule
-                    </Button>
-                  </Link>
-                  <Link to="/instructor/jobs">
-                    <Button variant="outline" size="sm" className="w-full text-xs h-9">
-                      <Briefcase className="h-3.5 w-3.5 mr-1.5" />
-                      Jobs
-                    </Button>
-                  </Link>
-                  <Link to="/instructor/expenses">
-                    <Button variant="outline" size="sm" className="w-full text-xs h-9">
-                      <CreditCard className="h-3.5 w-3.5 mr-1.5" />
-                      Expenses
-                    </Button>
-                  </Link>
-                  <Link to="/instructor/traccar">
-                    <Button variant="outline" size="sm" className="w-full text-xs h-9">
-                      <Car className="h-3.5 w-3.5 mr-1.5" />
-                      Live
-                    </Button>
-                  </Link>
-                </div>
               </CardContent>
             </Card>
           </motion.div>

@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
-import { Loader2, AlertCircle, ArrowLeft, Eye, EyeOff, Share, Plus, Download, X, Fingerprint } from "lucide-react";
+import { Loader2, AlertCircle, Eye, EyeOff, Share, Plus, Download, X, Fingerprint, ArrowRight, Shield, Lock, Award, Car } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
-
 
 const loginSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address").max(255),
@@ -21,7 +21,6 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-// Extend Window interface for PasswordCredential
 declare global {
   interface Window {
     PasswordCredential: {
@@ -47,11 +46,6 @@ export default function InstructorPortalLogin() {
   const { signIn, resetPassword } = useInstructorAuth();
   const navigate = useNavigate();
 
-  // Detect dark mode
-  const isDark = document.documentElement.classList.contains('dark') || 
-                 window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-  // Check install state, platform, and biometric availability
   useEffect(() => {
     const checkInstallState = () => {
       const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -67,10 +61,8 @@ export default function InstructorPortalLogin() {
       }
     };
 
-    // Check if WebAuthn / Credential Management is available
     const checkBiometricAvailability = async () => {
       try {
-        // Check if credentials API is available and if there are stored credentials
         if ('credentials' in navigator && 'PublicKeyCredential' in window) {
           const hasSavedCredentials = localStorage.getItem('instructor-biometric-enabled');
           if (hasSavedCredentials) {
@@ -85,7 +77,6 @@ export default function InstructorPortalLogin() {
     checkInstallState();
     checkBiometricAvailability();
 
-    // Listen for install prompt (Android/Desktop)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -110,13 +101,11 @@ export default function InstructorPortalLogin() {
     }
   };
 
-  // Handle biometric login (Face ID / Touch ID)
   const handleBiometricLogin = async () => {
     setBiometricLoading(true);
     setError("");
     
     try {
-      // Try to get saved credentials using the Credential Management API
       const credential = await navigator.credentials.get({
         password: true,
         mediation: 'optional'
@@ -148,7 +137,6 @@ export default function InstructorPortalLogin() {
     }
   };
 
-  // Save credentials for future biometric login
   const saveCredentialsForBiometric = async (emailToSave: string, passwordToSave: string) => {
     try {
       if ('credentials' in navigator && 'PasswordCredential' in window) {
@@ -218,7 +206,6 @@ export default function InstructorPortalLogin() {
           setError(signInError.message);
         }
       } else {
-        // Save credentials for biometric login on success
         if (rememberMe) {
           await saveCredentialsForBiometric(email.trim(), password);
         }
@@ -233,7 +220,7 @@ export default function InstructorPortalLogin() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-primary px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
       {/* Install to Home Screen Banner */}
       <AnimatePresence>
         {showInstallPrompt && !isInstalled && (
@@ -307,233 +294,250 @@ export default function InstructorPortalLogin() {
         )}
       </AnimatePresence>
 
-      {/* Background decoration */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-white/5 to-transparent rounded-full blur-3xl" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-3xl" />
+      {/* Left Panel - Branding (hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-transparent" />
+        
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
+              <Car className="w-7 h-7 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-white">EveryDriver</span>
+          </div>
+          
+          <div className="max-w-md">
+            <h1 className="text-4xl font-bold text-white mb-6">
+              Welcome back to your business hub
+            </h1>
+            <p className="text-lg text-slate-300 mb-8">
+              Manage your driving school with confidence. Schedule lessons, 
+              track payments, and grow your business - all in one place.
+            </p>
+            
+            <div className="space-y-4">
+              {[
+                { icon: Shield, text: "Bank-level security" },
+                { icon: Lock, text: "GDPR compliant" },
+                { icon: Award, text: "Trusted by 500+ ADIs" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                    <item.icon className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <span className="text-slate-300">{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <p className="text-sm text-slate-500">
+            © 2025 EveryDriver. All rights reserved.
+          </p>
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-sm"
-      >
-        {/* Logo with blue background header */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="text-center mb-8"
-        >
-          <div className="mb-6 mx-auto inline-block">
-            <img 
-              src="/everydriver-logo-v2.png" 
-              alt="EveryDriver" 
-              className="h-12 mx-auto"
-            />
-          </div>
-          <h1 className="text-2xl font-bold text-white">
-            {isForgotPassword ? "Reset Password" : "Instructor Portal"}
-          </h1>
-          <p className="text-white/80 text-sm mt-1">
-            {isForgotPassword 
-              ? "Enter your email to receive a reset link"
-              : "Sign in to manage your driving school"}
-          </p>
-        </motion.div>
-
-        {/* Login Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-xl"
-        >
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <AnimatePresence mode="wait">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <Alert variant="destructive" className="py-2">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">{error}</AlertDescription>
-                  </Alert>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                className="h-12 bg-background/50 border-border/50 focus:border-primary"
-                autoComplete="email"
-                maxLength={255}
-              />
+      {/* Right Panel - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="lg:hidden flex items-center justify-center gap-3 mb-8"
+          >
+            <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <Car className="w-6 h-6 text-white" />
             </div>
-            
-            <AnimatePresence>
-              {!isForgotPassword && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="space-y-2"
-                >
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    Password
-                  </Label>
-                  <div className="relative">
+            <span className="text-xl font-bold text-white">EveryDriver</span>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="bg-white/5 backdrop-blur border-white/10">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl text-white">
+                  {isForgotPassword ? "Reset Password" : "Sign in to your account"}
+                </CardTitle>
+                <p className="text-slate-400 text-sm mt-1">
+                  {isForgotPassword 
+                    ? "Enter your email to receive a reset link"
+                    : "Enter your credentials to access your dashboard"}
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <AnimatePresence mode="wait">
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                      >
+                        <Alert variant="destructive" className="py-2 bg-red-500/10 border-red-500/20">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription className="text-sm">{error}</AlertDescription>
+                        </Alert>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-slate-300">
+                      Email
+                    </Label>
                     <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
                       disabled={loading}
-                      className="h-12 bg-background/50 border-border/50 focus:border-primary pr-12"
-                      autoComplete="current-password"
-                      maxLength={128}
+                      className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500"
+                      autoComplete="email"
+                      maxLength={255}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  
+                  <AnimatePresence>
+                    {!isForgotPassword && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="password" className="text-sm font-medium text-slate-300">
+                            Password
+                          </Label>
+                          <button
+                            type="button"
+                            onClick={() => setIsForgotPassword(true)}
+                            className="text-sm text-emerald-400 hover:text-emerald-300"
+                          >
+                            Forgot password?
+                          </button>
+                        </div>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            disabled={loading}
+                            className="h-12 bg-white/10 border-white/20 text-white placeholder:text-slate-500 pr-12"
+                            autoComplete="current-password"
+                            maxLength={128}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-            {!isForgotPassword && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-emerald-500 focus:ring-emerald-500"
-                />
-                <Label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer">
-                  Remember me
-                </Label>
-              </div>
-            )}
+                  {!isForgotPassword && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="rememberMe"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="h-4 w-4 rounded border-white/20 bg-white/10 text-emerald-500 focus:ring-emerald-500"
+                      />
+                      <Label htmlFor="rememberMe" className="text-sm text-slate-400 cursor-pointer">
+                        Remember me
+                      </Label>
+                    </div>
+                  )}
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-base shadow-lg shadow-emerald-500/20"
-              disabled={loading || biometricLoading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {isForgotPassword ? "Sending..." : "Signing in..."}
-                </>
-              ) : (
-                isForgotPassword ? "Send Reset Link" : "Sign In"
-              )}
-            </Button>
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    disabled={loading || biometricLoading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        {isForgotPassword ? "Sending..." : "Signing in..."}
+                      </>
+                    ) : (
+                      <>
+                        {isForgotPassword ? "Send Reset Link" : "Sign In"}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </form>
 
-            {/* Biometric Login Option */}
-            {!isForgotPassword && biometricAvailable && (
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border/50" />
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-card px-2 text-muted-foreground">or</span>
-                </div>
-              </div>
-            )}
-
-            {!isForgotPassword && biometricAvailable && (
-              <Button 
-                type="button"
-                variant="outline"
-                className="w-full h-12 border-border/50 font-medium text-base gap-2"
-                disabled={loading || biometricLoading}
-                onClick={handleBiometricLogin}
-              >
-                {biometricLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
+                {/* Biometric Login Option */}
+                {!isForgotPassword && biometricAvailable && (
                   <>
-                    <Fingerprint className="h-5 w-5" />
-                    Use Face ID / Touch ID
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-white/10" />
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-transparent text-slate-500">Or continue with</span>
+                      </div>
+                    </div>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-12 bg-white/5 border-white/20 text-white hover:bg-white/10"
+                      onClick={handleBiometricLogin}
+                      disabled={biometricLoading || loading}
+                    >
+                      {biometricLoading ? (
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      ) : (
+                        <Fingerprint className="mr-2 h-5 w-5" />
+                      )}
+                      Use Face ID / Touch ID
+                    </Button>
                   </>
                 )}
-              </Button>
-            )}
 
-            <div className="text-center text-sm text-muted-foreground space-y-3 pt-2">
-              {isForgotPassword ? (
-                <button
-                  type="button"
-                  onClick={() => { setIsForgotPassword(false); setError(""); }}
-                  className="inline-flex items-center text-primary hover:underline font-medium"
-                >
-                  <ArrowLeft className="mr-1 h-4 w-4" />
-                  Back to sign in
-                </button>
-              ) : (
-                <>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => { setIsForgotPassword(true); setError(""); }}
-                      className="text-primary hover:underline"
-                    >
-                      Forgot password?
-                    </button>
-                  </div>
-                  <div className="pt-2 border-t border-border/50">
+                {/* Back to login from forgot password */}
+                {isForgotPassword && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full text-slate-400 hover:text-white hover:bg-white/5"
+                    onClick={() => setIsForgotPassword(false)}
+                  >
+                    Back to sign in
+                  </Button>
+                )}
+
+                {/* Sign up link */}
+                {!isForgotPassword && (
+                  <p className="text-center text-sm text-slate-400">
                     Don't have an account?{" "}
-                    <Link to="/instructor-app/signup" className="text-primary hover:underline font-medium">
-                      Sign up free
+                    <Link to="/instructor-app/signup" className="text-emerald-400 hover:text-emerald-300 font-medium">
+                      Start free trial
                     </Link>
-                  </div>
-                </>
-              )}
-            </div>
-          </form>
-        </motion.div>
-
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-center mt-8 text-xs text-muted-foreground"
-        >
-          <p>© {new Date().getFullYear()} Every Driver. All rights reserved.</p>
-          <div className="mt-2 space-x-3">
-            <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
-              Privacy
-            </Link>
-            <span>•</span>
-            <Link to="/terms-of-service" className="hover:text-foreground transition-colors">
-              Terms
-            </Link>
-          </div>
-        </motion.div>
-      </motion.div>
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 }
