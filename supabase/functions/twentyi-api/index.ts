@@ -116,69 +116,108 @@ async function searchDomain(domain: string): Promise<DomainSearchResult> {
   };
 }
 
-// Check multiple domains using the search endpoint
+// Check multiple domains using individual domain checks for accuracy
 async function checkMultipleDomains(baseName: string, tlds?: string[]): Promise<DomainSearchResult[]> {
   // Clean the base name - remove any existing TLD
   const cleanBaseName = baseName.replace(/\.[a-z.]+$/i, '').toLowerCase().trim();
   
   console.log(`Searching domains for: ${cleanBaseName}`);
   
-  // Use the domain-search endpoint which returns results for multiple TLDs
-  const { data, error } = await make20iRequest(`/domain-search/${encodeURIComponent(cleanBaseName)}`);
+  // Define TLDs to check - prioritize UK TLDs
+  const tldsToCheck = tlds || ['co.uk', 'uk', 'com', 'org.uk', 'me.uk', 'net', 'org'];
   
-  if (error || !data) {
-    console.log(`Domain search failed: ${error}`);
-    return [];
-  }
+  // Check each domain individually using the single domain endpoint for accuracy
+  const results: DomainSearchResult[] = [];
   
-  // The 20i API returns an array where:
-  // - First element is a header with available TLDs
-  // - Subsequent elements have: { name: ".co.uk", can: "register" } or { name: ".com", can: "none" }
-  const results = data as Array<{ 
-    header?: { names?: string[] }; 
-    name?: string; 
-    can?: string; 
-    available?: boolean; 
-    premium?: boolean; 
-    price?: number;
-    register?: number;
-  }>;
-  
-  if (!Array.isArray(results)) {
-    console.log('Unexpected response format:', data);
-    return [];
-  }
-  
-  console.log(`Processing ${results.length} results from API`);
-  
-  return results
-    .filter(r => r.name && !r.header) // Skip header elements
-    .map(r => {
-      let domainName = r.name || '';
+  for (const tld of tldsToCheck) {
+    const fullDomain = `${cleanBaseName}.${tld}`;
+    
+    try {
+      // Use the specific domain check endpoint for more accurate results
+      const { data, error } = await make20iRequest(`/domain/${encodeURIComponent(fullDomain)}/availability`);
       
-      // If the result is just a TLD (starts with .), prepend the base name
-      if (domainName.startsWith('.')) {
-        domainName = cleanBaseName + domainName;
-      }
-      // If it doesn't contain the base name, prepend it
-      else if (domainName && !domainName.toLowerCase().includes(cleanBaseName)) {
-        domainName = cleanBaseName + '.' + domainName;
+      if (error) {
+        // Fall back to the search endpoint for this TLD
+        const searchResult = await searchDomain(fullDomain);
+        results.push(searchResult);
+        continue;
       }
       
-      // 20i uses "can": "register" to indicate availability
-      // or "can": "none" / "can": "transfer" for unavailable
-      const isAvailable = r.can === 'register' || r.available === true;
+      const availData = data as { 
+        available?: boolean; 
+        can?: string;
+        premium?: boolean; 
+        price?: number;
+        register?: number;
+      };
       
-      return {
-        domain: domainName,
+      // 20i uses multiple indicators for availability
+      const isAvailable = availData?.available === true || availData?.can === 'register';
+      
+      results.push({
+        domain: fullDomain,
         available: isAvailable,
-        premium: r.premium ?? false,
-        price: r.price ?? r.register, // 20i may use "register" for price
+        premium: availData?.premium ?? false,
+        price: availData?.price ?? availData?.register,
         currency: 'GBP',
         period: 1,
-      };
-    })
-    .filter(r => r.domain && r.domain !== cleanBaseName);
+      });
+    } catch (e) {
+      console.error(`Error checking ${fullDomain}:`, e);
+      // Add as unavailable if check fails
+      results.push({
+        domain: fullDomain,
+        available: false,
+        premium: false,
+        currency: 'GBP',
+        period: 1,
+      });
+    }
+  }
+  
+  // If individual checks all failed, fall back to bulk search endpoint
+  if (results.every(r => !r.available)) {
+    console.log('Individual checks returned no available domains, trying bulk search...');
+    const { data, error } = await make20iRequest(`/domain-search/${encodeURIComponent(cleanBaseName)}`);
+    
+    if (!error && data && Array.isArray(data)) {
+      const bulkResults = data as Array<{ 
+        name?: string; 
+        can?: string; 
+        available?: boolean; 
+        premium?: boolean; 
+        price?: number;
+        register?: number;
+      }>;
+      
+      return bulkResults
+        .filter(r => r.name && typeof r.name === 'string')
+        .slice(0, 10) // Limit to 10 results
+        .map(r => {
+          let domainName = r.name || '';
+          
+          // If the result is just a TLD (starts with .), prepend the base name
+          if (domainName.startsWith('.')) {
+            domainName = cleanBaseName + domainName;
+          } else if (!domainName.includes('.')) {
+            domainName = cleanBaseName + '.' + domainName;
+          }
+          
+          const isAvailable = r.can === 'register' || r.available === true;
+          
+          return {
+            domain: domainName,
+            available: isAvailable,
+            premium: r.premium ?? false,
+            price: r.price ?? r.register,
+            currency: 'GBP',
+            period: 1,
+          };
+        });
+    }
+  }
+  
+  return results;
 }
 
 
