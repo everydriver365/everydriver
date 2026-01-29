@@ -362,10 +362,10 @@ export default function InstructorPortal() {
                       Expenses
                     </Button>
                   </Link>
-                  <Link to="/instructor/track-lesson">
+                  <Link to="/instructor/traccar">
                     <Button variant="outline" size="sm" className="w-full text-xs h-9">
                       <Car className="h-3.5 w-3.5 mr-1.5" />
-                      Track
+                      Live
                     </Button>
                   </Link>
                 </div>
