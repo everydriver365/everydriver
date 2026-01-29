@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay, format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths, subMonths as dfSubMonths } from 'date-fns';
 import { CalendarColors, DEFAULT_CALENDAR_COLORS } from '@/components/instructor/CalendarColorSettings';
@@ -56,6 +56,10 @@ export function useInstructorCalendar(instructorId: string) {
   const [view, setView] = useState<CalendarView>('week');
   const [calendarColors, setCalendarColors] = useState<CalendarColors>(DEFAULT_CALENDAR_COLORS);
 
+  // Remembers whether the last successful fetch used the extended range.
+  // This prevents actions like delete/update from accidentally shrinking the dataset.
+  const lastExtendedRangeRef = useRef(false);
+
   // Fetch instructor's calendar color preferences
   useEffect(() => {
     const fetchColors = async () => {
@@ -90,11 +94,14 @@ export function useInstructorCalendar(instructorId: string) {
     }
   }, []);
 
-  const fetchEvents = useCallback(async (extendedRange = false) => {
+  const fetchEvents = useCallback(async (extendedRange?: boolean) => {
     if (!instructorId) return;
+
+    const useExtendedRange = extendedRange ?? lastExtendedRangeRef.current;
+    lastExtendedRangeRef.current = useExtendedRange;
     
     setLoading(true);
-    const { start, end } = getDateRange(currentDate, view, extendedRange);
+    const { start, end } = getDateRange(currentDate, view, useExtendedRange);
     const startStr = format(start, 'yyyy-MM-dd');
     const endStr = format(end, 'yyyy-MM-dd');
 
@@ -191,8 +198,7 @@ export function useInstructorCalendar(instructorId: string) {
   }, [instructorId, currentDate, view, getDateRange]);
 
   useEffect(() => {
-    // Always fetch with extended range for schedule view support
-    fetchEvents(true);
+    fetchEvents();
   }, [fetchEvents]);
 
   const navigate = useCallback((direction: 'prev' | 'next' | 'today') => {
