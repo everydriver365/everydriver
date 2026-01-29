@@ -197,7 +197,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
         />
 
         {/* Quick links to other pages */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-12">
           <Link to={links.about}>
             <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
               <CardContent className="p-4 text-center">
@@ -214,7 +214,17 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
                 <h3 className="font-semibold" style={{ color: primaryColor }}>
                   Services
                 </h3>
-                <p className="text-sm text-muted-foreground mt-1">View courses</p>
+                <p className="text-sm text-muted-foreground mt-1">View options</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link to={links.courses}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" style={{ backgroundColor: "#e9f4f9" }}>
+              <CardContent className="p-4 text-center">
+                <h3 className="font-semibold" style={{ color: primaryColor }}>
+                  Courses
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">Search & book</p>
               </CardContent>
             </Card>
           </Link>

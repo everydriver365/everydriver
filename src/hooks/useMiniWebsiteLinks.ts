@@ -22,6 +22,7 @@ export function useMiniWebsiteLinks(slug: string | undefined) {
     home: getPageLink("home"),
     about: getPageLink("about"),
     services: getPageLink("services"),
+    courses: getPageLink("courses"),
     reviews: getPageLink("reviews"),
     contact: getPageLink("contact"),
     getPageLink,

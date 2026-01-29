@@ -50,6 +50,7 @@ export function MiniWebsiteLayout({ instructor, children }: MiniWebsiteLayoutPro
     { path: `/i/${slug}`, label: "Home" },
     { path: `/i/${slug}/about`, label: "About" },
     { path: `/i/${slug}/services`, label: "Services" },
+    { path: `/i/${slug}/courses`, label: "Courses" },
     { path: `/i/${slug}/reviews`, label: "Reviews" },
     { path: `/i/${slug}/contact`, label: "Contact" },
   ];

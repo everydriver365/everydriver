@@ -59,6 +59,7 @@ import InstructorMiniWebsiteSettings from "./pages/InstructorMiniWebsiteSettings
 import MiniWebsiteHome from "./pages/mini-website/MiniWebsiteHome";
 import MiniWebsiteAbout from "./pages/mini-website/MiniWebsiteAbout";
 import MiniWebsiteServices from "./pages/mini-website/MiniWebsiteServices";
+import MiniWebsiteCourses from "./pages/mini-website/MiniWebsiteCourses";
 import MiniWebsiteReviews from "./pages/mini-website/MiniWebsiteReviews";
 import MiniWebsiteContact from "./pages/mini-website/MiniWebsiteContact";
 import InstallInstructor from "./pages/InstallInstructor";
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/i/:slug" element={<MiniWebsiteHome />} />
               <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
               <Route path="/i/:slug/services" element={<MiniWebsiteServices />} />
+              <Route path="/i/:slug/courses" element={<MiniWebsiteCourses />} />
               <Route path="/i/:slug/reviews" element={<MiniWebsiteReviews />} />
               <Route path="/i/:slug/contact" element={<MiniWebsiteContact />} />
               
