@@ -436,7 +436,11 @@ export function StepWebsite({
 
               {/* Summary */}
               {data.selectedDomain && (
-                <div className="bg-secondary rounded-xl p-4">
+                <div className="bg-success/10 border border-success/30 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Check className="h-5 w-5 text-success" />
+                    <span className="font-medium text-foreground">Domain Reserved</span>
+                  </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Selected:</span>
                     <div className="text-right">
@@ -448,9 +452,14 @@ export function StepWebsite({
                       )}
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    You'll be able to complete payment after setup
-                  </p>
+                  <div className="mt-3 pt-3 border-t border-success/20">
+                    <p className="text-sm text-foreground">
+                      ✓ Your domain will be registered after payment is set up
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Click Continue to proceed to payment setup via Direct Debit
+                    </p>
+                  </div>
                 </div>
               )}
 
