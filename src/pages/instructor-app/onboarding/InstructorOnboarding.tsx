@@ -329,6 +329,33 @@ export default function InstructorOnboarding() {
         .eq("id", instructorId);
 
       if (error) throw error;
+
+      // Save domain order if a domain was selected during onboarding
+      if (data.selectedDomain) {
+        // Parse domain into name and TLD
+        const domainParts = data.selectedDomain.match(/^(.+?)(\.co\.uk|\.uk|\.com|\.org|\.net|\.io)$/i);
+        const domainName = domainParts ? domainParts[1] : data.selectedDomain.split('.')[0];
+        const tld = domainParts ? domainParts[2] : '.' + data.selectedDomain.split('.').slice(1).join('.');
+
+        const { error: domainError } = await supabase
+          .from("domain_orders")
+          .insert({
+            instructor_id: instructorId,
+            domain_name: domainName,
+            tld: tld,
+            order_type: "registration",
+            status: "pending",
+            price_amount: 12.99, // Default price, will be updated after payment
+            currency: "GBP",
+            period_years: 1,
+            auto_renew: true,
+          });
+
+        if (domainError) {
+          console.error("Failed to save domain order:", domainError);
+          // Don't block completion, just log the error
+        }
+      }
       
       // Go to complete step (10)
       goToStep(10);
