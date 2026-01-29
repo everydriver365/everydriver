@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { OnboardingLayout } from "../components/OnboardingLayout";
 import { StepNavigation } from "../components/StepNavigation";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Camera, User } from "lucide-react";
+import { Camera, User, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -30,6 +30,15 @@ export function StepPersonalDetails({
   onNext,
 }: StepPersonalDetailsProps) {
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCameraClick = () => {
+    if (!instructorId) {
+      toast.error("Please wait, loading your profile...");
+      return;
+    }
+    fileInputRef.current?.click();
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.currentTarget;
@@ -38,7 +47,9 @@ export function StepPersonalDetails({
 
     // Always reset the input so selecting the same file again triggers onChange
     const resetInput = () => {
-      input.value = "";
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     };
 
     if (!instructorId) {
@@ -54,9 +65,9 @@ export function StepPersonalDetails({
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be less than 5MB");
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be less than 10MB");
       resetInput();
       return;
     }
@@ -96,11 +107,20 @@ export function StepPersonalDetails({
   return (
     <OnboardingLayout
       step={1}
-      totalSteps={9}
+      totalSteps={10}
       title="Tell Us About Yourself"
       description="Let's start with your basic information"
     >
       <div className="max-w-md mx-auto space-y-6">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
+        />
+
         {/* Profile Photo */}
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
@@ -110,24 +130,20 @@ export function StepPersonalDetails({
                 <User className="h-10 w-10 text-primary" />
               </AvatarFallback>
             </Avatar>
-            <label className="absolute -bottom-1 -right-1 cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-                disabled={uploading || !instructorId}
-              />
-              <Button
-                type="button"
-                size="icon"
-                variant="secondary"
-                className="h-8 w-8 rounded-full"
-                disabled={uploading || !instructorId}
-              >
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full"
+              onClick={handleCameraClick}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
                 <Camera className="h-4 w-4" />
-              </Button>
-            </label>
+              )}
+            </Button>
           </div>
           <p className="text-sm text-muted-foreground">
             Add a photo to help pupils recognise you
