@@ -33,7 +33,7 @@ export function TraccarStatusPanel() {
   useEffect(() => {
     fetchData();
 
-    const interval = setInterval(fetchData, 10000); // Refresh every 10 seconds
+    const interval = setInterval(fetchData, 2000); // Refresh every 2 seconds for instant updates
 
     const channel = supabase
       .channel("admin-traccar-status")
