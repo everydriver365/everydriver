@@ -255,13 +255,13 @@ export function GoogleStyleScheduleView({
   return (
     <div className="h-full flex flex-col bg-background rounded-lg border">
       {/* Header with navigation */}
-      <div className="flex items-center justify-between p-3 border-b bg-card">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-card gap-1 sm:gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="outline"
             size="icon"
             onClick={() => onNavigate('prev')}
-            className="h-8 w-8"
+            className="h-7 w-7 sm:h-8 sm:w-8"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -269,7 +269,7 @@ export function GoogleStyleScheduleView({
             variant="outline"
             size="sm"
             onClick={() => onNavigate('today')}
-            className="h-8 px-3 text-xs"
+            className="h-7 sm:h-8 px-2 sm:px-3 text-xs"
           >
             Today
           </Button>
@@ -277,23 +277,24 @@ export function GoogleStyleScheduleView({
             variant="outline"
             size="icon"
             onClick={() => onNavigate('next')}
-            className="h-8 w-8"
+            className="h-7 w-7 sm:h-8 sm:w-8"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
         
-        <h2 className="text-lg font-semibold">
-          {format(currentDate, 'MMMM yyyy')}
+        <h2 className="text-sm sm:text-lg font-semibold truncate px-1">
+          <span className="hidden sm:inline">{format(currentDate, 'MMMM yyyy')}</span>
+          <span className="sm:hidden">{format(currentDate, 'MMM yyyy')}</span>
         </h2>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1">
           {onColorSettingsClick && (
             <Button
               variant="ghost"
               size="icon"
               onClick={onColorSettingsClick}
-              className="h-8 w-8"
+              className="h-7 w-7 sm:h-8 sm:w-8"
             >
               <Palette className="h-4 w-4" />
             </Button>
@@ -302,10 +303,10 @@ export function GoogleStyleScheduleView({
             <Button
               size="sm"
               onClick={() => onAddEvent()}
-              className="h-8"
+              className="h-7 sm:h-8 px-2 sm:px-3"
             >
-              <Plus className="h-4 w-4 mr-1" />
-              Add
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Add</span>
             </Button>
           )}
         </div>
