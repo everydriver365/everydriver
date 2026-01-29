@@ -81,6 +81,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [showQRModal, setShowQRModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const isTrackingPage = location.pathname.startsWith("/instructor/traccar");
+
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
@@ -109,162 +111,155 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Mobile Layout
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-background pb-20 overflow-x-hidden">
-        {/* iOS Install Banner */}
-        <IOSInstallBanner />
-        
-        {/* Mobile Header - Primary color to match bottom nav */}
-        <header className="sticky top-0 z-40 bg-primary border-b border-primary-foreground/10 shadow-sm">
-          <div className="flex items-center justify-between px-4 h-14">
-            {/* Left: Hamburger Menu + Logo */}
-            <div className="flex items-center gap-3">
-              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 -ml-2 h-9 w-9"
-                  >
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-[280px] p-0">
-                  <SheetHeader className="p-4 border-b">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={instructor?.profile_image_url || undefined} />
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                          {instructor?.name?.charAt(0) || "I"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0 text-left">
-                        <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
-                        <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
-                      </div>
-                    </div>
-                  </SheetHeader>
-                  
-                  {/* Navigation Links */}
-                  <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
-                    {sidebarLinks.map((link) => {
-                      const isActive = location.pathname === link.href;
-                      const isMessages = link.href === "/instructor/messages";
-                      const isAdminChat = link.href === "/instructor/admin-chat";
-                      const isVisitorChats = link.href === "/instructor/visitor-chats";
-                      const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-                      const isHighlighted = 'highlight' in link && link.highlight;
-                      return (
-                        <button
-                          key={link.href}
-                          onClick={() => handleNavClick(link.href)}
-                          className={cn(
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
-                            isActive
-                              ? "bg-primary text-primary-foreground"
-                              : isHighlighted
-                              ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                          )}
-                        >
-                          <span className="relative">
-                            <link.icon className={cn(
-                              "h-5 w-5",
-                              isHighlighted && !isActive && "text-emerald-500"
-                            )} />
-                            {isAdminChat && !isActive && <AdminMessageBadge />}
-                          </span>
-                          {link.label}
-                          {isVisitorChats && !isActive && (
-                            <VisitorChatBadge 
-                              instructorId={instructor?.id} 
-                              className="ml-auto"
-                            />
-                          )}
-                          {isMessages && !isActive && (
-                            <MessageNotificationBadge 
-                              instructorId={instructor?.id} 
-                              className="ml-auto"
-                            />
-                          )}
-                          {isPendingScheduling && !isActive && (
-                            <PendingSchedulingBadge 
-                              instructorId={instructor?.id} 
-                              className="ml-auto"
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </nav>
-                  
-                  {/* Menu Footer */}
-                  <div className="p-3 border-t mt-auto">
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-muted-foreground hover:text-foreground"
-                      onClick={() => {
-                        handleSignOut();
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      <LogOut className="h-5 w-5 mr-3" />
-                      Sign Out
-                    </Button>
-                  </div>
-                </SheetContent>
-              </Sheet>
-              
-              <img 
-                src={whiteLogo} 
-                alt="EveryDriver" 
-                className="h-7 object-contain"
-              />
-            </div>
-            
-            {/* Right: QR, Availability, Avatar */}
-            <div className="flex items-center gap-1">
-              {instructor?.payment_qr_url && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowQRModal(true)}
-                  className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
-                >
-                  <span className="text-xs font-bold border border-current rounded px-1">QR</span>
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/instructor/availability")}
-                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
-                title="Quick Availability"
-              >
-                <CalendarClock className="h-5 w-5" />
-              </Button>
-              <Avatar 
-                className="h-9 w-9 border-2 border-primary-foreground/20 cursor-pointer"
-                onClick={() => navigate("/instructor/settings")}
-              >
-                <AvatarImage src={instructor?.profile_image_url || undefined} />
-                <AvatarFallback className="bg-white text-primary text-xs font-semibold">
-                  {instructor?.name?.charAt(0) || "I"}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-          </div>
-        </header>
+      <div
+        className={cn(
+          "min-h-screen bg-background overflow-x-hidden",
+          isTrackingPage ? "h-[100dvh] overflow-hidden" : "pb-20"
+        )}
+      >
+        {!isTrackingPage && (
+          <>
+            {/* iOS Install Banner */}
+            <IOSInstallBanner />
 
-        {/* Check if on tracking page for full-screen mode */}
-        {location.pathname === "/instructor/traccar" ? (
-          <main className="overflow-x-hidden">
-            {children}
-          </main>
+            {/* Mobile Header - Primary color to match bottom nav */}
+            <header className="sticky top-0 z-40 bg-primary border-b border-primary-foreground/10 shadow-sm">
+              <div className="flex items-center justify-between px-4 h-14">
+                {/* Left: Hamburger Menu + Logo */}
+                <div className="flex items-center gap-3">
+                  <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 -ml-2 h-9 w-9"
+                      >
+                        <Menu className="h-5 w-5" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-[280px] p-0">
+                      <SheetHeader className="p-4 border-b">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={instructor?.profile_image_url || undefined} />
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {instructor?.name?.charAt(0) || "I"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0 text-left">
+                            <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
+                            <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+                          </div>
+                        </div>
+                      </SheetHeader>
+
+                      {/* Navigation Links */}
+                      <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-180px)]">
+                        {sidebarLinks.map((link) => {
+                          const isActive = location.pathname === link.href;
+                          const isMessages = link.href === "/instructor/messages";
+                          const isAdminChat = link.href === "/instructor/admin-chat";
+                          const isVisitorChats = link.href === "/instructor/visitor-chats";
+                          const isPendingScheduling = link.href === "/instructor/pending-scheduling";
+                          const isHighlighted = "highlight" in link && link.highlight;
+                          return (
+                            <button
+                              key={link.href}
+                              onClick={() => handleNavClick(link.href)}
+                              className={cn(
+                                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left",
+                                isActive
+                                  ? "bg-primary text-primary-foreground"
+                                  : isHighlighted
+                                  ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                              )}
+                            >
+                              <span className="relative">
+                                <link.icon
+                                  className={cn(
+                                    "h-5 w-5",
+                                    isHighlighted && !isActive && "text-emerald-500"
+                                  )}
+                                />
+                                {isAdminChat && !isActive && <AdminMessageBadge />}
+                              </span>
+                              {link.label}
+                              {isVisitorChats && !isActive && (
+                                <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+                              )}
+                              {isMessages && !isActive && (
+                                <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+                              )}
+                              {isPendingScheduling && !isActive && (
+                                <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </nav>
+
+                      {/* Menu Footer */}
+                      <div className="p-3 border-t mt-auto">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            handleSignOut();
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <LogOut className="h-5 w-5 mr-3" />
+                          Sign Out
+                        </Button>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  <img src={whiteLogo} alt="EveryDriver" className="h-7 object-contain" />
+                </div>
+
+                {/* Right: QR, Availability, Avatar */}
+                <div className="flex items-center gap-1">
+                  {instructor?.payment_qr_url && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowQRModal(true)}
+                      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
+                    >
+                      <span className="text-xs font-bold border border-current rounded px-1">QR</span>
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate("/instructor/availability")}
+                    className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+                    title="Quick Availability"
+                  >
+                    <CalendarClock className="h-5 w-5" />
+                  </Button>
+                  <Avatar
+                    className="h-9 w-9 border-2 border-primary-foreground/20 cursor-pointer"
+                    onClick={() => navigate("/instructor/settings")}
+                  >
+                    <AvatarImage src={instructor?.profile_image_url || undefined} />
+                    <AvatarFallback className="bg-white text-primary text-xs font-semibold">
+                      {instructor?.name?.charAt(0) || "I"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              </div>
+            </header>
+          </>
+        )}
+
+        {isTrackingPage ? (
+          <main className="h-[100dvh] overflow-hidden">{children}</main>
         ) : (
           <>
-            <main className="px-4 py-4 overflow-x-hidden">
-              {children}
-            </main>
+            <main className="px-4 py-4 overflow-x-hidden">{children}</main>
             <InstructorBottomNav />
           </>
         )}
