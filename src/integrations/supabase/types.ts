@@ -1170,6 +1170,39 @@ export type Database = {
           },
         ]
       }
+      health_tips: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          display_order: number
+          icon: string
+          id: string
+          is_active: boolean
+          title: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          title: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+        }
+        Relationships: []
+      }
       homepage_features: {
         Row: {
           created_at: string
@@ -1999,6 +2032,82 @@ export type Database = {
           },
         ]
       }
+      instructor_health_logs: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          log_date: string
+          notes: string | null
+          weight_kg: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          log_date?: string
+          notes?: string | null
+          weight_kg: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          log_date?: string
+          notes?: string | null
+          weight_kg?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_health_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_health_settings: {
+        Row: {
+          break_reminder_enabled: boolean
+          created_at: string
+          daily_water_goal: number
+          id: string
+          instructor_id: string
+          reminder_interval_minutes: number
+          updated_at: string
+          weight_unit: string
+        }
+        Insert: {
+          break_reminder_enabled?: boolean
+          created_at?: string
+          daily_water_goal?: number
+          id?: string
+          instructor_id: string
+          reminder_interval_minutes?: number
+          updated_at?: string
+          weight_unit?: string
+        }
+        Update: {
+          break_reminder_enabled?: boolean
+          created_at?: string
+          daily_water_goal?: number
+          id?: string
+          instructor_id?: string
+          reminder_interval_minutes?: number
+          updated_at?: string
+          weight_unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_health_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_homepage_content: {
         Row: {
           created_at: string
@@ -2395,6 +2504,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "instructor_vehicles_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_water_logs: {
+        Row: {
+          created_at: string
+          daily_goal: number
+          glasses_count: number
+          id: string
+          instructor_id: string
+          log_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          daily_goal?: number
+          glasses_count?: number
+          id?: string
+          instructor_id: string
+          log_date?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          daily_goal?: number
+          glasses_count?: number
+          id?: string
+          instructor_id?: string
+          log_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_water_logs_instructor_id_fkey"
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"

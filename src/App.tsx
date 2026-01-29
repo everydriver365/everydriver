@@ -65,6 +65,7 @@ import InstructorPendingScheduling from "./pages/InstructorPendingScheduling";
 import InstructorTestResults from "./pages/InstructorTestResults";
 import InstructorRoutes from "./pages/InstructorRoutes";
 import InstructorMenu from "./pages/InstructorMenu";
+import InstructorHealth from "./pages/InstructorHealth";
 import InstructorIncome from "./pages/InstructorIncome";
 import InstructorInOut from "./pages/InstructorInOut";
 import InstructorTax from "./pages/InstructorTax";
@@ -179,6 +180,7 @@ const App = () => (
               <Route path="/instructor/income" element={<InstructorIncome />} />
               <Route path="/instructor/in-out" element={<InstructorInOut />} />
               <Route path="/instructor/tax" element={<InstructorTax />} />
+              <Route path="/instructor/health" element={<InstructorHealth />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />
