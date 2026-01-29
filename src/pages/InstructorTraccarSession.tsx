@@ -824,7 +824,6 @@ export default function InstructorTraccarSession() {
           isConnected={isConnected}
           sessionId={isSessionActive ? device.current_session_id : null}
           roadName={device.last_road_name}
-          events={isSessionActive ? drivingEvents : []}
           className="absolute inset-0"
         />
 
