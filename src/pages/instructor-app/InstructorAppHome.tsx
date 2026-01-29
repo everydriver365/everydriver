@@ -7,7 +7,6 @@ import {
   CheckCircle,
   ArrowRight,
   Star,
-  Eye,
   Loader2,
   Globe,
   Shield,
@@ -15,12 +14,68 @@ import {
   Calendar,
   PoundSterling,
   Users,
-  BarChart3,
+  MapPin,
+  FileText,
+  Smartphone,
+  Megaphone,
+  Palette,
+  Layout,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
-import defaultHeroImage from "@/assets/drive365-hero.jpg";
 import { cn } from "@/lib/utils";
+
+// Extended features with images
+const extendedFeatures = [
+  {
+    id: "route-tracing",
+    title: "Route Tracing & Driving Reports",
+    description: "GPS tracking with detailed analytics. Monitor progress, identify improvement areas, and share professional reports with pupils.",
+    icon: MapPin,
+    image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=250&fit=crop",
+    color: "bg-blue-500",
+  },
+  {
+    id: "apps",
+    title: "Instructor, Parent & Pupil Apps",
+    description: "Dedicated mobile apps for everyone. Pupils book lessons, parents track progress, and you manage everything on-the-go.",
+    icon: Smartphone,
+    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=250&fit=crop",
+    color: "bg-emerald-500",
+  },
+  {
+    id: "free-website",
+    title: "Free Professional Website",
+    description: "Get a stunning, mobile-optimised website included free. Showcase your services, reviews, and accept bookings 24/7.",
+    icon: Layout,
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop",
+    color: "bg-violet-500",
+  },
+  {
+    id: "free-advertising",
+    title: "Free Advertising",
+    description: "Get discovered by learners in your area. We promote your profile across our network at no extra cost to you.",
+    icon: Megaphone,
+    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=250&fit=crop",
+    color: "bg-amber-500",
+  },
+  {
+    id: "custom-domains",
+    title: "Custom Domains",
+    description: "Stand out with your own web address. Use yourname.co.uk or any domain to build your professional brand online.",
+    icon: Globe,
+    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=250&fit=crop",
+    color: "bg-rose-500",
+  },
+  {
+    id: "own-branding",
+    title: "Your Own Branding",
+    description: "Customise colours, logos, and styling to match your driving school. Create a consistent brand experience everywhere.",
+    icon: Palette,
+    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop",
+    color: "bg-cyan-500",
+  },
+];
 
 export default function InstructorAppHome() {
   const { hero, features, testimonials, getSection, isSectionVisible, loading } = useInstructorAppContent();
@@ -233,30 +288,67 @@ export default function InstructorAppHome() {
               </p>
             </div>
 
+            {/* Extended Features with Images */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, index) => (
+              {extendedFeatures.map((feature, index) => (
                 <motion.div
                   key={feature.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.08 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="h-full hover:shadow-lg transition-shadow border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <CardContent className="p-6">
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden group">
+                    {/* Image */}
+                    <div className="relative h-40 overflow-hidden">
+                      <img 
+                        src={feature.image} 
+                        alt={feature.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                       <div className={cn(
-                        "h-12 w-12 rounded-lg flex items-center justify-center mb-4",
-                        featureColors[index % featureColors.length]
+                        "absolute bottom-3 left-3 h-10 w-10 rounded-lg flex items-center justify-center shadow-lg",
+                        feature.color
                       )}>
-                        <feature.icon className="h-6 w-6 text-white" />
+                        <feature.icon className="h-5 w-5 text-white" />
                       </div>
+                    </div>
+                    <CardContent className="p-5">
                       <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
-                      <p className="text-slate-600 dark:text-slate-400">{feature.description}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
               ))}
             </div>
+
+            {/* Original DB Features - smaller cards below */}
+            {features.length > 0 && (
+              <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {features.map((feature, index) => (
+                  <motion.div
+                    key={feature.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    viewport={{ once: true }}
+                  >
+                    <Card className="h-full hover:shadow-md transition-shadow border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                      <CardContent className="p-4 text-center">
+                        <div className={cn(
+                          "h-10 w-10 rounded-lg flex items-center justify-center mb-3 mx-auto",
+                          featureColors[index % featureColors.length]
+                        )}>
+                          <feature.icon className="h-5 w-5 text-white" />
+                        </div>
+                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{feature.title}</h3>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
 
             {/* Domains Promo Card */}
             <motion.div
