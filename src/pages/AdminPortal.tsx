@@ -57,6 +57,7 @@ import { AdminBackButton } from "@/components/admin/AdminBackButton";
 import { AdminSectionNotes } from "@/components/admin/AdminSectionNotes";
 import { DemoMiniSiteCMS } from "@/components/admin/DemoMiniSiteCMS";
 import { DiscountCodesManager } from "@/components/admin/DiscountCodesManager";
+import { PupilRecordsManager } from "@/components/admin/PupilRecordsManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -89,6 +90,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   overview: { title: "Overview", group: "Dashboard", icon: LayoutDashboard },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
+  "pupil-records": { title: "Pupil Records", group: "People", icon: Users },
   subscribers: { title: "Subscribers", group: "People", icon: CreditCard },
   plans: { title: "Subscription Plans", group: "People", icon: CreditCard },
   compliance: { title: "Compliance Dashboard", group: "People", icon: Shield },
@@ -729,6 +731,25 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <BookingUpsellsManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "pupil-records":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="pupil-records" className="mb-4" />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-accent" />
+                  Pupil Records
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <PupilRecordsManager />
               </CardContent>
             </Card>
           </motion.div>
