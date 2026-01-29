@@ -78,10 +78,10 @@ export function useInstructorCalendar(instructorId: string) {
   }, [instructorId]);
 
   const getDateRange = useCallback((date: Date, viewType: CalendarView, extendedRange = false) => {
-    // For schedule view, load 3 months of data for smooth infinite scroll
+    // For schedule view, load 365 days of data (6 months before + 6 months after)
     if (extendedRange) {
-      const start = subMonths(startOfMonth(date), 1);
-      const end = addMonths(endOfMonth(date), 1);
+      const start = subMonths(startOfMonth(date), 6);
+      const end = addMonths(endOfMonth(date), 6);
       return { start, end };
     }
     switch (viewType) {
