@@ -120,7 +120,7 @@ export default function TraccarLiveMap({
     };
   }, [sessionId]);
 
-  // Initialize map with dark theme
+  // Initialize map with light theme
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -131,8 +131,8 @@ export default function TraccarLiveMap({
       attributionControl: false,
     });
 
-    L.tileLayer(getMapTileUrl('dark'), {
-      attribution: getMapAttribution('dark'),
+    L.tileLayer(getMapTileUrl(), {
+      attribution: getMapAttribution(),
       maxZoom: 19,
     }).addTo(map);
 
@@ -322,12 +322,14 @@ export default function TraccarLiveMap({
     });
   }, [events]);
 
-  const speedMph = speedKmh !== null ? Math.round(speedKmh * 0.621371) : 0;
+  // Filter out low speeds (GPS noise when stationary) - threshold of 3 km/h
+  const effectiveSpeedKmh = speedKmh !== null && speedKmh > 3 ? speedKmh : 0;
+  const speedMph = Math.round(effectiveSpeedKmh * 0.621371);
   const speedLimitMph = speedLimitKmh !== null ? Math.round(speedLimitKmh * 0.621371) : null;
   const isSpeeding = speedLimitMph !== null && speedMph > speedLimitMph;
 
   return (
-    <div className={`relative w-full h-full min-h-[300px] ${className}`}>
+    <div className={`relative w-full h-full ${className}`} style={{ minHeight: '100dvh' }}>
       <div 
         ref={mapRef} 
         className="absolute inset-0" 
@@ -335,19 +337,19 @@ export default function TraccarLiveMap({
         onMouseDown={() => setIsAutoCenter(false)}
       />
 
-      {/* Road Name Banner - Apple Maps style */}
+      {/* Road Name Banner - Light theme style */}
       {latitude !== null && longitude !== null && (
         <div className="absolute top-4 left-4 right-4 z-20">
-          <div className="bg-[#1c1c1e]/95 backdrop-blur-sm rounded-2xl px-5 py-4 shadow-lg">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl px-5 py-4 shadow-lg border border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#2c2c2e] flex items-center justify-center">
+              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#06174C] flex items-center justify-center">
                 <Navigation className="w-5 h-5 text-white" style={{ transform: `rotate(${(heading ?? 0) - 45}deg)` }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-lg truncate">
+                <p className="text-gray-900 font-semibold text-lg truncate">
                   {roadName || "Locating road..."}
                 </p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-500 text-sm">
                   {heading !== null ? `Heading ${Math.round(heading)}°` : "—"}
                 </p>
               </div>
@@ -356,60 +358,60 @@ export default function TraccarLiveMap({
         </div>
       )}
 
-      {/* Recenter button - Apple Maps style */}
+      {/* Recenter button - Light theme style */}
       <button
         onClick={centerOnVehicle}
-        className={`absolute bottom-36 left-4 z-20 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-colors ${
+        className={`absolute bottom-36 left-4 z-20 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-colors border ${
           isAutoCenter 
-            ? 'bg-[#3b82f6]' 
-            : 'bg-[#1c1c1e]/95 backdrop-blur-sm'
+            ? 'bg-[#06174C] border-[#06174C]' 
+            : 'bg-white/95 backdrop-blur-sm border-gray-200'
         }`}
       >
-        <Locate className={`w-6 h-6 ${isAutoCenter ? 'text-white' : 'text-[#3b82f6]'}`} />
+        <Locate className={`w-6 h-6 ${isAutoCenter ? 'text-white' : 'text-[#06174C]'}`} />
       </button>
 
-      {/* Bottom Speed Panel - Apple Maps style */}
+      {/* Bottom Speed Panel - Light theme style */}
       {latitude !== null && longitude !== null && (
         <div className="absolute bottom-0 left-0 right-0 z-20">
           {/* Drag handle */}
           <div className="flex justify-center py-2">
-            <div className="w-10 h-1 rounded-full bg-gray-500/50"></div>
+            <div className="w-10 h-1 rounded-full bg-gray-300"></div>
           </div>
           
-          <div className="bg-[#1c1c1e]/95 backdrop-blur-sm rounded-t-3xl px-6 py-5 shadow-lg">
+          <div className="bg-white/95 backdrop-blur-sm rounded-t-3xl px-6 py-5 shadow-lg border-t border-gray-200">
             <div className="flex items-center justify-around">
               {/* Current Speed */}
               <div className="flex flex-col items-center">
-                <span className={`text-4xl font-bold ${isSpeeding ? 'text-red-500' : 'text-white'}`}>
+                <span className={`text-4xl font-bold ${isSpeeding ? 'text-red-500' : 'text-gray-900'}`}>
                   {speedMph}
                 </span>
-                <span className="text-gray-400 text-sm">mph</span>
+                <span className="text-gray-500 text-sm">mph</span>
               </div>
 
               {/* Divider */}
-              <div className="h-12 w-px bg-gray-600"></div>
+              <div className="h-12 w-px bg-gray-200"></div>
 
               {/* Speed Limit */}
               <div className="flex flex-col items-center">
                 <div className={`w-14 h-14 rounded-full border-4 flex items-center justify-center ${
-                  isSpeeding ? 'border-red-500 bg-red-500/10' : 'border-gray-500 bg-transparent'
+                  isSpeeding ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
                 }`}>
-                  <span className={`text-xl font-bold ${isSpeeding ? 'text-red-500' : 'text-white'}`}>
+                  <span className={`text-xl font-bold ${isSpeeding ? 'text-red-500' : 'text-gray-900'}`}>
                     {speedLimitMph ?? "—"}
                   </span>
                 </div>
-                <span className="text-gray-400 text-xs mt-1">limit</span>
+                <span className="text-gray-500 text-xs mt-1">limit</span>
               </div>
 
               {/* Divider */}
-              <div className="h-12 w-px bg-gray-600"></div>
+              <div className="h-12 w-px bg-gray-200"></div>
 
               {/* Route Points / Distance indicator */}
               <div className="flex flex-col items-center">
-                <span className="text-4xl font-bold text-white">
+                <span className="text-4xl font-bold text-gray-900">
                   {routePoints.length > 0 ? Math.round(routePoints.length / 10) / 10 : "0"}
                 </span>
-                <span className="text-gray-400 text-sm">km</span>
+                <span className="text-gray-500 text-sm">km</span>
               </div>
             </div>
           </div>
@@ -417,9 +419,9 @@ export default function TraccarLiveMap({
       )}
 
       {(latitude === null || longitude === null) && (
-        <div className="absolute inset-0 bg-[#1c1c1e] flex flex-col items-center justify-center z-10">
-          <div className="w-12 h-12 border-4 border-[#3b82f6] border-t-transparent rounded-full animate-spin mb-4" />
-          <p className="text-gray-300 font-medium">Waiting for GPS signal...</p>
+        <div className="absolute inset-0 bg-gray-100 flex flex-col items-center justify-center z-10">
+          <div className="w-12 h-12 border-4 border-[#06174C] border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-gray-700 font-medium">Waiting for GPS signal...</p>
           <p className="text-xs text-gray-500 mt-1">
             Make sure Traccar Client is running
           </p>
@@ -443,12 +445,12 @@ export default function TraccarLiveMap({
           }
         }
         .leaflet-control-attribution {
-          background: transparent !important;
+          background: rgba(255,255,255,0.7) !important;
           font-size: 8px !important;
-          color: rgba(255,255,255,0.3) !important;
+          color: rgba(0,0,0,0.5) !important;
         }
         .leaflet-control-attribution a {
-          color: rgba(255,255,255,0.4) !important;
+          color: rgba(0,0,0,0.6) !important;
         }
       `}</style>
     </div>
