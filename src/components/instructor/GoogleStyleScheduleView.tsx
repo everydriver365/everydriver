@@ -277,6 +277,9 @@ export function GoogleStyleScheduleView({
   const todayRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const hasScrolledRef = useRef(false);
+  
+  // Always base the view around TODAY, not currentDate from props
+  const today = useMemo(() => new Date(), []);
 
   const [eventColorOverrides, setEventColorOverrides] = useState<Record<string, string>>(() => {
     try {
@@ -299,22 +302,22 @@ export function GoogleStyleScheduleView({
   useEffect(() => {
     if (!loading && todayRef.current && !hasScrolledRef.current) {
       setTimeout(() => {
-        todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        todayRef.current?.scrollIntoView({ behavior: 'instant', block: 'center' });
         hasScrolledRef.current = true;
-      }, 100);
+      }, 50);
     }
   }, [loading]);
 
-  // Generate 3 months of days: previous, current, next
+  // Generate 3 months of days centered around TODAY (not currentDate)
   const allDays = useMemo(() => {
-    const prevMonth = subMonths(currentDate, 1);
-    const nextMonth = addMonths(currentDate, 1);
+    const prevMonth = subMonths(today, 1);
+    const nextMonth = addMonths(today, 1);
     
     const start = startOfMonth(prevMonth);
     const end = endOfMonth(nextMonth);
     
     return eachDayOfInterval({ start, end });
-  }, [currentDate]);
+  }, [today]);
 
   // Group days by month for rendering with month banners
   const groupedByMonth = useMemo(() => {
@@ -350,23 +353,10 @@ export function GoogleStyleScheduleView({
     return groups;
   }, [allDays, events]);
 
-  // Handle scroll to load more months
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    const { scrollTop, scrollHeight, clientHeight } = target;
-    
-    // Load next month when near bottom
-    if (scrollHeight - scrollTop - clientHeight < 200) {
-      const nextMonth = addMonths(currentDate, 1);
-      onGoToDate?.(nextMonth);
-    }
-    
-    // Load previous month when near top
-    if (scrollTop < 200) {
-      const prevMonth = subMonths(currentDate, 1);
-      onGoToDate?.(prevMonth);
-    }
-  }, [currentDate, onGoToDate]);
+  // No-op scroll handler - we display a fixed 3-month window around today
+  const handleScroll = useCallback(() => {
+    // Infinite scroll removed - showing fixed 3 months around today
+  }, []);
 
   const scrollToToday = useCallback(() => {
     todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
