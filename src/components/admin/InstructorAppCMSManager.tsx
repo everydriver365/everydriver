@@ -45,7 +45,7 @@ export function InstructorAppCMSManager() {
   };
 
   const handleAddFeature = async () => {
-    await addFeature({ icon_name: 'Star', title: 'New Feature', description: 'Feature description' });
+    await addFeature({ icon_name: 'Star', title: 'New Feature', description: 'Feature description', image_url: null, detailed_content: null });
     toast({ title: 'Feature Added' });
   };
 
@@ -202,7 +202,12 @@ export function InstructorAppCMSManager() {
               <Card key={feature.id} className={!feature.is_active ? 'opacity-60' : ''}>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Feature {index + 1}</span>
+                    <div className="flex items-center gap-3">
+                      {feature.image_url && (
+                        <img src={feature.image_url} alt={feature.title} className="w-16 h-10 object-cover rounded" />
+                      )}
+                      <span className="text-sm font-medium">Feature {index + 1}</span>
+                    </div>
                     <div className="flex items-center gap-2">
                       <Switch checked={feature.is_active} onCheckedChange={(checked) => setEditedFeatures(prev => prev.map(f => f.id === feature.id ? { ...f, is_active: checked } : f))} />
                       <Button variant="ghost" size="icon" onClick={() => handleDeleteFeature(feature.id)}>
@@ -221,8 +226,16 @@ export function InstructorAppCMSManager() {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Description</Label>
+                    <Label className="text-xs">Short Description</Label>
                     <Textarea value={feature.description} onChange={(e) => setEditedFeatures(prev => prev.map(f => f.id === feature.id ? { ...f, description: e.target.value } : f))} rows={2} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Image URL</Label>
+                    <Input value={feature.image_url || ''} onChange={(e) => setEditedFeatures(prev => prev.map(f => f.id === feature.id ? { ...f, image_url: e.target.value } : f))} placeholder="https://..." />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Detailed Content (shown in modal)</Label>
+                    <Textarea value={feature.detailed_content || ''} onChange={(e) => setEditedFeatures(prev => prev.map(f => f.id === feature.id ? { ...f, detailed_content: e.target.value } : f))} rows={3} placeholder="Full description shown when user clicks the tile..." />
                   </div>
                 </CardContent>
               </Card>

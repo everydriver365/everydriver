@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   CheckCircle,
   ArrowRight,
@@ -24,88 +26,121 @@ import {
   Sparkles,
   ClipboardCheck,
 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { motion } from "framer-motion";
-import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
+import { useInstructorAppContent, InstructorAppFeature } from "@/hooks/useInstructorAppContent";
 import { cn } from "@/lib/utils";
 
-// Extended features with images
-const extendedFeatures = [
+// Default features (fallback if DB is empty)
+const defaultFeatures = [
   {
     id: "route-tracing",
     title: "Route Tracing & Driving Reports",
     description: "GPS tracking with detailed analytics. Monitor progress, identify improvement areas, and share professional reports with pupils.",
-    icon: MapPin,
-    image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=250&fit=crop",
+    detailed_content: "Our advanced GPS tracking system records every lesson in real-time. Get detailed driving reports including speed analysis, route coverage, and competency tracking. Share professional PDF reports with pupils and parents to demonstrate progress.",
+    icon_name: "MapPin",
+    image_url: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=250&fit=crop",
     color: "bg-blue-500",
   },
   {
     id: "apps",
     title: "Instructor, Parent & Pupil Apps",
     description: "Dedicated mobile apps for everyone. Pupils book lessons, parents track progress, and you manage everything on-the-go.",
-    icon: Smartphone,
-    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=250&fit=crop",
+    detailed_content: "Three dedicated apps work together seamlessly. Pupils can view their schedule, book lessons, and track their progress. Parents get visibility into their child's learning journey. You manage everything from a powerful instructor dashboard.",
+    icon_name: "Smartphone",
+    image_url: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=250&fit=crop",
     color: "bg-emerald-500",
   },
   {
     id: "free-website",
     title: "Free Professional Website",
     description: "Get a stunning, mobile-optimised website included free. Showcase your services, reviews, and accept bookings 24/7.",
-    icon: Layout,
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop",
+    detailed_content: "Every instructor gets a beautiful, professional website completely free. Customise your branding, showcase your services, display testimonials, and let new pupils book directly online. Mobile-optimised and SEO-friendly to help you get discovered.",
+    icon_name: "Layout",
+    image_url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop",
     color: "bg-violet-500",
   },
   {
     id: "free-advertising",
     title: "Free Advertising",
     description: "Get discovered by learners in your area. We promote your profile across our network at no extra cost to you.",
-    icon: Megaphone,
-    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=250&fit=crop",
+    detailed_content: "We actively promote your profile to learners searching in your area. Your instructor profile appears in our learner search results, helping you attract new pupils without spending on advertising.",
+    icon_name: "Megaphone",
+    image_url: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=250&fit=crop",
     color: "bg-amber-500",
   },
   {
     id: "custom-domains",
     title: "Custom Domains",
     description: "Stand out with your own web address. Use yourname.co.uk or any domain to build your professional brand online.",
-    icon: Globe,
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=250&fit=crop",
+    detailed_content: "Take your professional presence to the next level with a custom domain. Whether it's yourname.co.uk or yourdrivingschool.com, we'll help you set it up and manage SSL certificates automatically.",
+    icon_name: "Globe",
+    image_url: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=250&fit=crop",
     color: "bg-rose-500",
   },
   {
     id: "own-branding",
     title: "Your Own Branding",
     description: "Customise colours, logos, and styling to match your driving school. Create a consistent brand experience everywhere.",
-    icon: Palette,
-    image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop",
+    detailed_content: "Upload your logo, choose your brand colours, and create a cohesive look across your website, pupil portal, and all communications. Build a memorable brand that stands out from the competition.",
+    icon_name: "Palette",
+    image_url: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop",
     color: "bg-cyan-500",
   },
   {
     id: "take-payments",
     title: "Take Pupil Payments",
     description: "Accept card payments, track deposits, and manage prepaid lesson packages. Get paid faster with QR codes and payment links.",
-    icon: CreditCard,
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop",
+    detailed_content: "Accept card payments instantly with our secure payment system. Generate QR codes for quick in-car payments, send payment links via SMS, and manage prepaid lesson packages. Track all transactions and reconcile your income effortlessly.",
+    icon_name: "CreditCard",
+    image_url: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop",
     color: "bg-indigo-500",
   },
   {
     id: "fill-gaps",
     title: "Fill Empty Gaps",
     description: "Automated SMS system finds available pupils to fill last-minute cancellations. Maximise your earnings with smart scheduling.",
-    icon: CalendarClock,
-    image: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&h=250&fit=crop",
+    detailed_content: "When a pupil cancels, our automated system instantly messages suitable pupils to fill the gap. Pupils can accept with a simple reply, and the lesson is automatically added to both calendars. Never lose income to cancellations again.",
+    icon_name: "CalendarClock",
+    image_url: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&h=250&fit=crop",
     color: "bg-teal-500",
   },
   {
     id: "test-recording",
     title: "Trigger & Test Recording",
     description: "DL25A-style test logging with competency grids, DVSA standards check triggers, and rolling 12-month pass rate analytics.",
-    icon: ClipboardCheck,
-    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop",
+    detailed_content: "Record every driving test result with our comprehensive DL25A-style forms. Track faults by category, monitor your rolling pass rate, and get alerts when you're approaching DVSA standards check trigger points. Stay compliant and improve your teaching.",
+    icon_name: "ClipboardCheck",
+    image_url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=250&fit=crop",
     color: "bg-orange-500",
   },
 ];
 
+// Feature color mapping
+const featureColorMap: Record<string, string> = {
+  MapPin: "bg-blue-500",
+  Smartphone: "bg-emerald-500",
+  Layout: "bg-violet-500",
+  Megaphone: "bg-amber-500",
+  Globe: "bg-rose-500",
+  Palette: "bg-cyan-500",
+  CreditCard: "bg-indigo-500",
+  CalendarClock: "bg-teal-500",
+  ClipboardCheck: "bg-orange-500",
+};
+
+const getIconComponent = (iconName: string): React.ComponentType<{ className?: string }> => {
+  const icons = LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>;
+  return icons[iconName] || LucideIcons.Star;
+};
+
+interface FeatureWithIcon extends InstructorAppFeature {
+  icon: React.ComponentType<{ className?: string }>;
+}
+
 export default function InstructorAppHome() {
-  const { hero, features, testimonials, getSection, isSectionVisible, loading } = useInstructorAppContent();
+  const { hero, features: dbFeatures, testimonials, getSection, isSectionVisible, loading } = useInstructorAppContent();
+  const [selectedFeature, setSelectedFeature] = useState<FeatureWithIcon | null>(null);
 
   if (loading) {
     return (
@@ -120,6 +155,16 @@ export default function InstructorAppHome() {
   const featuresSection = getSection('features');
   const testimonialsSection = getSection('testimonials');
   const ctaSection = getSection('cta');
+
+  // Use DB features if available and have images, otherwise use defaults
+  const displayFeatures: FeatureWithIcon[] = dbFeatures.length > 0 && dbFeatures.some(f => f.image_url)
+    ? dbFeatures.map(f => ({ ...f, icon: getIconComponent(f.icon_name) }))
+    : defaultFeatures.map(f => ({ 
+        ...f, 
+        icon: getIconComponent(f.icon_name),
+        display_order: 0,
+        is_active: true,
+      } as FeatureWithIcon));
 
   // Feature color mapping for professional look
   const featureColors = [
@@ -328,67 +373,49 @@ export default function InstructorAppHome() {
               </p>
             </div>
 
-            {/* Extended Features with Images */}
+            {/* Features with Images and Modal */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {extendedFeatures.map((feature, index) => (
-                <motion.div
-                  key={feature.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.08 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden group">
-                    {/* Image */}
-                    <div className="relative h-40 overflow-hidden">
-                      <img 
-                        src={feature.image} 
-                        alt={feature.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                      <div className={cn(
-                        "absolute bottom-3 left-3 h-10 w-10 rounded-lg flex items-center justify-center shadow-lg",
-                        feature.color
-                      )}>
-                        <feature.icon className="h-5 w-5 text-white" />
-                      </div>
-                    </div>
-                    <CardContent className="p-5">
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{feature.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Original DB Features - smaller cards below */}
-            {features.length > 0 && (
-              <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {features.map((feature, index) => (
+              {displayFeatures.map((feature, index) => {
+                const IconComponent = feature.icon;
+                const colorClass = featureColorMap[feature.icon_name] || featureColors[index % featureColors.length];
+                
+                return (
                   <motion.div
                     key={feature.id}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * 0.08 }}
                     viewport={{ once: true }}
                   >
-                    <Card className="h-full hover:shadow-md transition-shadow border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                      <CardContent className="p-4 text-center">
+                    <Card 
+                      className="h-full hover:shadow-xl transition-all duration-300 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden group cursor-pointer"
+                      onClick={() => setSelectedFeature(feature)}
+                    >
+                      {/* Image */}
+                      <div className="relative h-40 overflow-hidden">
+                        <img 
+                          src={feature.image_url || "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=250&fit=crop"} 
+                          alt={feature.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                         <div className={cn(
-                          "h-10 w-10 rounded-lg flex items-center justify-center mb-3 mx-auto",
-                          featureColors[index % featureColors.length]
+                          "absolute bottom-3 left-3 h-10 w-10 rounded-lg flex items-center justify-center shadow-lg",
+                          colorClass
                         )}>
-                          <feature.icon className="h-5 w-5 text-white" />
+                          <IconComponent className="h-5 w-5 text-white" />
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{feature.title}</h3>
+                      </div>
+                      <CardContent className="p-5">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{feature.description}</p>
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-3 font-medium">Click to learn more →</p>
                       </CardContent>
                     </Card>
                   </motion.div>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
 
             {/* Domains Promo Card */}
             <motion.div
@@ -505,6 +532,55 @@ export default function InstructorAppHome() {
           </div>
         </section>
       )}
+
+      {/* Feature Detail Modal */}
+      <Dialog open={!!selectedFeature} onOpenChange={(open) => !open && setSelectedFeature(null)}>
+        <DialogContent className="max-w-2xl">
+          {selectedFeature && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3 text-xl">
+                  <div className={cn(
+                    "h-10 w-10 rounded-lg flex items-center justify-center",
+                    featureColorMap[selectedFeature.icon_name] || "bg-emerald-500"
+                  )}>
+                    <selectedFeature.icon className="h-5 w-5 text-white" />
+                  </div>
+                  {selectedFeature.title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              {selectedFeature.image_url && (
+                <div className="relative h-48 rounded-lg overflow-hidden -mx-2">
+                  <img 
+                    src={selectedFeature.image_url} 
+                    alt={selectedFeature.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <p className="text-muted-foreground leading-relaxed">
+                  {selectedFeature.detailed_content || selectedFeature.description}
+                </p>
+                
+                <div className="flex gap-3 pt-4">
+                  <Button asChild className="flex-1">
+                    <Link to="/instructor-app/signup">
+                      Get Started Free
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" onClick={() => setSelectedFeature(null)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </InstructorSaaSLayout>
   );
 }

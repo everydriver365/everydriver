@@ -26,6 +26,8 @@ export interface InstructorAppFeature {
   description: string;
   display_order: number;
   is_active: boolean;
+  image_url: string | null;
+  detailed_content: string | null;
 }
 
 export interface InstructorAppTestimonial {
