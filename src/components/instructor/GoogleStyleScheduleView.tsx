@@ -1,9 +1,8 @@
 import { useMemo, useEffect, useRef, useState } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, startOfWeek, endOfWeek, isToday, startOfDay, addHours } from 'date-fns';
-import { ChevronLeft, ChevronRight, Palette, MapPin, Clock, Plus, Trash2 } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, startOfWeek, endOfWeek, isToday, startOfDay, addHours } from 'date-fns';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/hooks/useInstructorCalendar';
 import { CalendarColors, DEFAULT_CALENDAR_COLORS } from './CalendarColorSettings';
@@ -59,19 +58,14 @@ function EventBar({
   event,
   color,
   onClick,
-  onDelete,
-  onColorChange,
-  presetColors,
 }: {
   event: CalendarEvent;
   color: string;
   onClick?: () => void;
-  onDelete?: () => void;
-  onColorChange?: (color: string) => void;
-  presetColors: string[];
 }) {
-  const startTime = format(event.start, 'h:mm a');
-  const endTime = format(event.end, 'h:mm a');
+  const startTime = format(event.start, 'HH:mm');
+  const endTime = format(event.end, 'HH:mm');
+  const hasSecondLine = event.type === 'lesson' && event.data?.pickup_address;
   
   return (
     <div
@@ -88,83 +82,22 @@ function EventBar({
           onClick?.();
         }
       }}
-      className="w-full max-w-full text-left rounded-md px-2.5 py-2 mb-1 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation min-w-0"
+      className="w-full rounded-md px-3 py-2 mb-1.5 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation"
       style={{ backgroundColor: color }}
     >
-      <div className="flex items-center justify-between gap-2 min-w-0">
-        <span className="font-medium text-white text-sm truncate flex-1 min-w-0">
-          {event.title}
-        </span>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {event.type === 'lesson' && event.data?.payment_status !== 'paid' && (
-            <span className="text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded">
-              Unpaid
-            </span>
-          )}
-
-          {onColorChange && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="h-6 w-6 rounded bg-white/15 hover:bg-white/25 transition-colors flex items-center justify-center"
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label="Change color"
-                >
-                  <Palette className="h-3.5 w-3.5 text-white" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="end"
-                className="w-40 p-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="grid grid-cols-5 gap-1">
-                  {presetColors.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      className={cn(
-                        'h-6 w-6 rounded border',
-                        c === color ? 'border-primary ring-1 ring-primary' : 'border-transparent'
-                      )}
-                      style={{ backgroundColor: c }}
-                      onClick={() => onColorChange(c)}
-                      aria-label="Select color"
-                    />
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-          )}
-
-          {onDelete && event.type !== 'external' && (
-            <button
-              type="button"
-              className="h-6 w-6 rounded bg-white/15 hover:bg-white/25 transition-colors flex items-center justify-center"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              aria-label="Delete"
-            >
-              <Trash2 className="h-3.5 w-3.5 text-white" />
-            </button>
-          )}
+      <div className="text-black/90 font-medium text-sm truncate">
+        {event.title}
+      </div>
+      {hasSecondLine && (
+        <div className="text-black/70 text-xs truncate mt-0.5">
+          {startTime} – {endTime} at {event.data.pickup_address}
         </div>
-      </div>
-      <div className="flex items-center gap-3 mt-1 text-white/80 text-xs min-w-0">
-        <span className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          {startTime} - {endTime}
-        </span>
-        {event.type === 'lesson' && event.data?.pickup_address && (
-          <span className="flex items-center gap-1 min-w-0 truncate">
-            <MapPin className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">{event.data.pickup_address}</span>
-          </span>
-        )}
-      </div>
+      )}
+      {!hasSecondLine && (
+        <div className="text-black/70 text-xs truncate mt-0.5">
+          {startTime} – {endTime}
+        </div>
+      )}
     </div>
   );
 }
@@ -174,20 +107,14 @@ function DayRow({
   colors, 
   onEventClick,
   onDayClick,
-  onDeleteEvent,
-  onEventColorChange,
   eventColorOverrides,
-  isFirstInWeek,
   todayRef
 }: { 
   dayEvents: DayEvents; 
   colors: CalendarColors; 
   onEventClick?: (event: CalendarEvent) => void;
   onDayClick?: (date: Date) => void;
-  onDeleteEvent?: (event: CalendarEvent) => void;
-  onEventColorChange?: (eventId: string, color: string) => void;
   eventColorOverrides: Record<string, string>;
-  isFirstInWeek: boolean;
   todayRef?: React.RefObject<HTMLDivElement>;
 }) {
   const dayName = format(dayEvents.date, 'EEE').toUpperCase();
@@ -197,31 +124,27 @@ function DayRow({
   return (
     <div 
       ref={isCurrentDay ? todayRef : undefined}
-      className={cn(
-        "flex border-b border-border/50",
-        isFirstInWeek && "border-t-2 border-t-border"
-      )}
+      className="flex py-3"
     >
-      {/* Date column */}
-      <div className={cn(
-        "w-16 flex-shrink-0 py-3 px-2 text-center border-r border-border/30",
-        isCurrentDay && "bg-primary/10"
-      )}>
+      {/* Date column - Google style */}
+      <div className="w-14 flex-shrink-0 text-center pt-1">
         <div className={cn(
-          "text-xs font-medium",
+          "text-[11px] font-medium tracking-wide",
           isCurrentDay ? "text-primary" : "text-muted-foreground"
         )}>
           {dayName}
         </div>
         <div className={cn(
-          "text-lg font-bold",
-          isCurrentDay ? "text-primary" : "text-foreground"
+          "text-2xl font-light",
+          isCurrentDay 
+            ? "w-10 h-10 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center" 
+            : "text-foreground"
         )}>
           {dayNumber}
         </div>
       </div>
       
-      {/* Events column - clickable background to add */}
+      {/* Events column */}
       <div
         role="button"
         tabIndex={0}
@@ -232,38 +155,23 @@ function DayRow({
             onDayClick?.(dayEvents.date);
           }
         }}
-        className="flex-1 py-2 px-2 min-h-[60px] text-left hover:bg-muted/50 transition-colors cursor-pointer min-w-0 overflow-hidden"
+        className="flex-1 min-w-0 pr-3"
       >
         {dayEvents.events.length === 0 ? (
-          <div className="h-full flex items-center">
-            <span className="text-xs text-muted-foreground italic">Tap to add</span>
+          <div className="h-10 flex items-center">
+            <span className="text-xs text-muted-foreground/50">Tap to add</span>
           </div>
         ) : (
           dayEvents.events.map((event) => {
             const baseColor = getEventColor(event, colors);
             const displayColor = eventColorOverrides[event.id] || baseColor;
-            const presetColors = [
-              colors.lesson,
-              colors.lesson_unpaid,
-              colors.block_personal,
-              colors.block_break,
-              colors.block_meeting,
-              colors.external,
-              DEFAULT_CALENDAR_COLORS.lesson,
-              DEFAULT_CALENDAR_COLORS.lesson_unpaid,
-              DEFAULT_CALENDAR_COLORS.block_meeting,
-              DEFAULT_CALENDAR_COLORS.external,
-            ].filter(Boolean);
 
             return (
               <EventBar
                 key={event.id}
                 event={event}
                 color={displayColor}
-                presetColors={Array.from(new Set(presetColors))}
                 onClick={() => onEventClick?.(event)}
-                onDelete={onDeleteEvent ? () => onDeleteEvent(event) : undefined}
-                onColorChange={onEventColorChange ? (c) => onEventColorChange(event.id, c) : undefined}
               />
             );
           })
@@ -273,35 +181,12 @@ function DayRow({
   );
 }
 
-function WeekHeader({ weekStart, weekEnd }: { weekStart: Date; weekEnd: Date }) {
-  const startMonth = format(weekStart, 'MMMM');
-  const endMonth = format(weekEnd, 'MMMM');
-  const sameMonth = startMonth === endMonth;
-  
-  const label = sameMonth
-    ? `${startMonth.toUpperCase()} ${format(weekStart, 'd')} - ${format(weekEnd, 'd')}`
-    : `${startMonth.toUpperCase()} ${format(weekStart, 'd')} - ${endMonth.toUpperCase()} ${format(weekEnd, 'd')}`;
-  
-  return (
-    <div className="px-4 py-2 bg-muted/50 text-xs font-semibold text-muted-foreground tracking-wide">
-      {label}
-    </div>
-  );
-}
-
 function MonthBanner({ month }: { month: Date }) {
-  const monthName = format(month, 'MMMM');
-  const year = format(month, 'yyyy');
+  const monthName = format(month, 'MMMM yyyy');
   
   return (
-    <div className="relative py-4 px-4 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent">
-      <div className="flex items-center gap-3">
-        <div className="w-1 h-8 bg-primary rounded-full" />
-        <div>
-          <h3 className="text-xl font-bold text-foreground">{monthName}</h3>
-          <p className="text-sm text-muted-foreground">{year}</p>
-        </div>
-      </div>
+    <div className="px-4 py-3 border-b border-border/30">
+      <h3 className="text-lg font-semibold text-foreground">{monthName}</h3>
     </div>
   );
 }
@@ -389,7 +274,6 @@ export function GoogleStyleScheduleView({
         });
       }
       
-      currentWeekStart = addMonths(currentWeekStart, 0);
       currentWeekStart = new Date(currentWeekEnd);
       currentWeekStart.setDate(currentWeekStart.getDate() + 1);
     }
@@ -437,16 +321,6 @@ export function GoogleStyleScheduleView({
         </h2>
         
         <div className="flex items-center gap-0.5 sm:gap-1">
-          {onColorSettingsClick && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onColorSettingsClick}
-              className="h-7 w-7 sm:h-8 sm:w-8"
-            >
-              <Palette className="h-4 w-4" />
-            </Button>
-          )}
           {onAddEvent && (
             <Button
               size="sm"
@@ -471,27 +345,17 @@ export function GoogleStyleScheduleView({
             {/* Month banner */}
             <MonthBanner month={groupedData.month} />
             
-            {/* Weeks */}
-            {groupedData.weeks.map((week, weekIndex) => (
-              <div key={weekIndex}>
-                <WeekHeader weekStart={week.weekStart} weekEnd={week.weekEnd} />
-                {week.days.map((dayEvents, dayIndex) => (
-                  <DayRow
-                    key={dayEvents.date.toISOString()}
-                    dayEvents={dayEvents}
-                    colors={calendarColors}
-                    onEventClick={onEventClick}
-                    onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
-                    onDeleteEvent={onDeleteEvent}
-                    onEventColorChange={(eventId, color) =>
-                      setEventColorOverrides((prev) => ({ ...prev, [eventId]: color }))
-                    }
-                    eventColorOverrides={eventColorOverrides}
-                    isFirstInWeek={dayIndex === 0}
-                    todayRef={todayRef}
-                  />
-                ))}
-              </div>
+            {/* Days */}
+            {groupedData.weeks.flatMap((week) => week.days).map((dayEvents) => (
+              <DayRow
+                key={dayEvents.date.toISOString()}
+                dayEvents={dayEvents}
+                colors={calendarColors}
+                onEventClick={onEventClick}
+                onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
+                eventColorOverrides={eventColorOverrides}
+                todayRef={todayRef}
+              />
             ))}
             
             {groupedData.weeks.length === 0 && (
