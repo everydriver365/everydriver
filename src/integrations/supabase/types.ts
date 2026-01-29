@@ -276,6 +276,44 @@ export type Database = {
           },
         ]
       }
+      calendar_sync_queue: {
+        Row: {
+          action: string
+          created_at: string
+          error: string | null
+          id: string
+          instructor_id: string
+          lesson_id: string
+          processed_at: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          instructor_id: string
+          lesson_id: string
+          processed_at?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          instructor_id?: string
+          lesson_id?: string
+          processed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_sync_queue_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       compliance_reminders: {
         Row: {
           days_before: number
