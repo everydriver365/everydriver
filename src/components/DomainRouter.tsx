@@ -1,17 +1,28 @@
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
-// Domain configurations
+// Domain configurations - SWAPPED
+// drive365.co.uk = Learner site
+// everydriver.co.uk = Instructor site
 const DRIVE365_DOMAINS = ["drive365.co.uk", "www.drive365.co.uk"];
 const EVERYDRIVER_DOMAINS = ["everydriver.co.uk", "www.everydriver.co.uk", "everydriver.lovable.app"];
-const EVERYDRIVER_REDIRECT_TARGET = "everydriver.co.uk";
 const EVERYDRIVER_BASE_DOMAIN = "everydriver.co.uk";
 
-// Routes that belong to Drive365 (instructor platform)
+// Routes that belong to instructors (hosted on everydriver.co.uk)
 const INSTRUCTOR_ROUTE_PREFIXES = [
   "/instructor",
   "/instructor-app",
   "/install-instructor",
+];
+
+// Routes that belong to learners (hosted on drive365.co.uk)
+const LEARNER_ROUTE_PREFIXES = [
+  "/courses",
+  "/pupil",
+  "/p/",
+  "/parent",
+  "/booking",
+  "/theory",
 ];
 
 // Routes that should stay on their current domain (shared routes)
@@ -21,6 +32,11 @@ const SHARED_ROUTES = [
   "/calendar-callback", // OAuth callback - must stay on originating domain
   "/privacy-policy",
   "/terms-of-service",
+  "/about",
+  "/contact",
+  "/faqs",
+  "/faq",
+  "/help",
 ];
 
 /**
@@ -44,7 +60,7 @@ export function getInstructorSubdomain(): string | null {
 }
 
 /**
- * Checks if the current hostname is a Drive365 domain
+ * Checks if the current hostname is a Drive365 domain (LEARNER site)
  */
 export function isDrive365Domain(): boolean {
   const hostname = window.location.hostname.toLowerCase();
@@ -52,7 +68,7 @@ export function isDrive365Domain(): boolean {
 }
 
 /**
- * Checks if the current hostname is an EveryDriver domain (including subdomains)
+ * Checks if the current hostname is an EveryDriver domain (INSTRUCTOR site)
  */
 export function isEveryDriverDomain(): boolean {
   const hostname = window.location.hostname.toLowerCase();
@@ -62,7 +78,7 @@ export function isEveryDriverDomain(): boolean {
 }
 
 /**
- * Checks if the current hostname is an instructor subdomain
+ * Checks if the current hostname is an instructor subdomain (mini-website)
  */
 export function isInstructorSubdomain(): boolean {
   return getInstructorSubdomain() !== null;
@@ -84,16 +100,25 @@ function isInstructorRoute(pathname: string): boolean {
 }
 
 /**
+ * Checks if a path is a learner route
+ */
+function isLearnerRoute(pathname: string): boolean {
+  return LEARNER_ROUTE_PREFIXES.some(prefix => pathname.startsWith(prefix));
+}
+
+/**
  * Checks if a path is a shared route that shouldn't redirect
  */
 function isSharedRoute(pathname: string): boolean {
-  return SHARED_ROUTES.some(route => pathname.startsWith(route));
+  return SHARED_ROUTES.some(route => pathname === route || pathname.startsWith(route + "/"));
 }
 
 /**
  * DomainRouter component handles cross-domain redirects
- * - drive365.co.uk serves instructor routes only
- * - everydriver.lovable.app serves learner routes only
+ * 
+ * SWAPPED CONFIGURATION:
+ * - drive365.co.uk serves LEARNER routes only
+ * - everydriver.co.uk serves INSTRUCTOR routes only
  * - localhost allows all routes (no redirects)
  */
 export function DomainRouter() {
@@ -115,6 +140,12 @@ export function DomainRouter() {
       return;
     }
 
+    // Don't redirect from instructor subdomains (mini-websites)
+    if (isInstructorSubdomain()) {
+      console.log('[DomainRouter] Instructor subdomain, no redirect');
+      return;
+    }
+
     const onDrive365 = isDrive365Domain();
     const onEveryDriver = isEveryDriverDomain();
     
@@ -125,18 +156,19 @@ export function DomainRouter() {
       onEveryDriver 
     });
 
-    // Use else-if to ensure mutual exclusivity
+    // SWAPPED LOGIC:
+    // Drive365 = Learner site - redirect instructor routes to EveryDriver
     if (onDrive365) {
-      // If NOT an instructor route, redirect to EveryDriver
-      if (!isInstructorRoute(pathname)) {
-        console.log('[DomainRouter] Redirecting from Drive365 to EveryDriver:', fullPath);
-        window.location.href = `https://${EVERYDRIVER_REDIRECT_TARGET}${fullPath}`;
+      if (isInstructorRoute(pathname)) {
+        console.log('[DomainRouter] Redirecting instructor route from Drive365 to EveryDriver:', fullPath);
+        window.location.href = `https://everydriver.co.uk${fullPath}`;
         return;
       }
-    } else if (onEveryDriver) {
-      // If it's an instructor route, redirect to Drive365
-      if (isInstructorRoute(pathname)) {
-        console.log('[DomainRouter] Redirecting from EveryDriver to Drive365:', fullPath);
+    } 
+    // EveryDriver = Instructor site - redirect learner routes to Drive365
+    else if (onEveryDriver) {
+      if (isLearnerRoute(pathname)) {
+        console.log('[DomainRouter] Redirecting learner route from EveryDriver to Drive365:', fullPath);
         window.location.href = `https://drive365.co.uk${fullPath}`;
         return;
       }

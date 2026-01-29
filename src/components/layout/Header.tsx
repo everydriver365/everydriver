@@ -10,6 +10,7 @@ import { SecondaryNav } from "./SecondaryNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTheme } from "@/context/ThemeContext";
+import { useDomainBranding } from "@/hooks/useDomainBranding";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -27,6 +28,7 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
+  const branding = useDomainBranding();
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -43,8 +45,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full overflow-x-hidden">
       <div className="border-b border-nav/20 bg-primary overflow-x-hidden">
       <nav className="container max-w-7xl flex h-16 items-center justify-between relative">
-        <Link to="/" className="flex items-center">
-          <img src="/everydriver-logo-v2.png" alt="EveryDriver" className="h-9" />
+        <Link to={branding.homeLink} className="flex items-center">
+          <img src={branding.logoPath} alt={branding.brandName} className="h-9" />
         </Link>
 
         {/* Desktop Navigation - Centered */}

@@ -41,13 +41,21 @@ const pwaConfigs: Record<string, PWAMetaConfig> = {
 };
 
 function getPortalType(pathname: string): string {
-  // Check hostname first - drive365.co.uk always gets instructor branding
+  // Check hostname first
   const hostname = window.location.hostname.toLowerCase();
-  if (hostname.includes("drive365")) {
+  
+  // SWAPPED: drive365.co.uk = learners, everydriver.co.uk = instructors
+  // everydriver.co.uk (instructor domain) gets instructor branding
+  if (hostname.includes("everydriver") && !hostname.includes("lovable.app")) {
     return "instructor";
   }
+  
+  // drive365.co.uk (learner domain) gets default/pupil branding
+  if (hostname.includes("drive365")) {
+    return "default";
+  }
 
-  // Fall back to path-based detection
+  // Fall back to path-based detection for localhost/lovable.app
   if (pathname.startsWith("/instructor") || pathname.startsWith("/instructor-app")) {
     return "instructor";
   }
