@@ -1,77 +1,116 @@
 
 
-## Plan: Fix Schedule Mobile App - Squashed Buttons and Entry Save Issues
+# Plan: Enforce Drive365.co.uk as Learner-Only Domain
 
-### Summary
-There are two distinct issues on the Schedule mobile page:
-1. The view toggle buttons (List/Schedule/Calendar) appear squashed on mobile screens
-2. Lessons added via the "Add Lesson" sheet are not saving to the database
+## Overview
+Configure `drive365.co.uk` to exclusively serve learner content by redirecting all non-learner routes (instructor routes and any other non-shared routes) to `everydriver.co.uk`.
 
----
+## Current State
+The domain routing already handles:
+- **drive365.co.uk** → Redirects instructor routes (`/instructor`, `/instructor-app`, `/install-instructor`) to everydriver.co.uk
+- **everydriver.co.uk** → Redirects learner routes (`/courses`, `/pupil`, `/p/`, `/parent`, `/booking`, `/theory`) to drive365.co.uk
+- **Shared routes** (like `/privacy-policy`, `/about`, `/contact`) stay on their current domain
 
-### Issue 1: Squashed View Toggle Buttons
+## Problem
+Currently, drive365.co.uk can still serve:
+1. Shared routes (marketing pages, policies)
+2. Admin routes (`/admin`)
+3. Demo routes
+4. Any routes not explicitly listed
 
-**Root Cause**: The header section has the page title and toggle buttons in a `flex items-center justify-between` layout. On narrow mobile screens, the three toggle buttons compete for space with the title section.
+## Proposed Solution
 
-**Solution**: Make the header layout more mobile-friendly by:
-- Stacking the title and buttons vertically on very small screens
-- Reducing button padding and size on mobile
-- Using a more compact button group design
+### Changes to `src/components/DomainRouter.tsx`
 
-**Changes**:
-- **File**: `src/pages/InstructorSchedule.tsx`
-  - Wrap header in responsive layout that stacks on narrow screens
-  - Reduce toggle button padding on mobile
-  - Use `flex-wrap` to allow buttons to flow naturally
+**Strategy**: Invert the logic for drive365.co.uk - instead of listing what to redirect away, explicitly allow only learner routes and shared routes, redirecting everything else.
 
----
+```typescript
+// New learner-allowed routes (comprehensive list)
+const LEARNER_ALLOWED_ROUTES = [
+  "/courses",
+  "/pupil",
+  "/p/",
+  "/parent",
+  "/booking",
+  "/theory",
+  "/book/",           // Booking flow
+  "/booking-confirmation",
+  "/intensives",
+  "/semi-intensive",
+  "/availability/",   // Public availability calendar
+  "/sign/",           // Remote signing
+  "/i/",              // Mini-website path routes (public)
+];
 
-### Issue 2: Entries Not Saving
-
-**Root Cause**: The `AddLessonSheet.tsx` component inserts lessons with `payment_status: 'unpaid'`, but the database only accepts these values:
-- `not_paid` (127 records)
-- `paid` (9 records)  
-- `pending` (7 records)
-
-The value `'unpaid'` is invalid and causes a database constraint error, which is caught but results in no data being saved.
-
-**Solution**: Change the payment_status value from `'unpaid'` to `'not_paid'` to match the valid database values.
-
-**Changes**:
-- **File**: `src/components/instructor/AddLessonSheet.tsx`
-  - Line 131: Change `payment_status: 'unpaid'` to `payment_status: 'not_paid'`
-  - Line 149: Change `payment_status: 'unpaid'` to `payment_status: 'not_paid'`
-  - Line 215: Change `payment_status: 'unpaid'` to `payment_status: 'not_paid'`
-
----
-
-### Technical Details
-
-#### Button Layout Fix (InstructorSchedule.tsx)
-```text
-Current structure:
-  <div className="flex items-center justify-between">
-    <title section>
-    <button group>  ← Gets squashed
-
-Proposed structure:
-  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-    <title section>
-    <button group with smaller size on mobile>
+// Shared routes remain as-is for both domains
+const SHARED_ROUTES = [
+  "/",
+  "/.well-known",
+  "/calendar-callback",
+  "/privacy-policy",
+  "/terms-of-service",
+  "/about",
+  "/contact",
+  "/faqs",
+  "/faq",
+  "/help",
+  "/services",
+  "/reviews",
+  "/benefits",
+];
 ```
 
-#### Payment Status Fix (AddLessonSheet.tsx)
-```text
-// Before (3 locations)
-payment_status: 'unpaid'
-
-// After (3 locations)
-payment_status: 'not_paid'
+**Updated redirect logic for Drive365**:
+```typescript
+if (onDrive365) {
+  // Check if route is explicitly allowed for learners OR is a shared route
+  const isAllowedOnDrive365 = 
+    LEARNER_ALLOWED_ROUTES.some(prefix => pathname.startsWith(prefix)) ||
+    isSharedRoute(pathname);
+  
+  if (!isAllowedOnDrive365) {
+    // Redirect any non-learner route to everydriver.co.uk
+    window.location.href = `https://everydriver.co.uk${fullPath}`;
+    return;
+  }
+}
 ```
-
----
 
 ### Files to Modify
-1. `src/pages/InstructorSchedule.tsx` - Header layout improvements
-2. `src/components/instructor/AddLessonSheet.tsx` - Fix payment_status values
+
+| File | Change |
+|------|--------|
+| `src/components/DomainRouter.tsx` | Add `LEARNER_ALLOWED_ROUTES` array and update Drive365 redirect logic to use whitelist approach |
+
+## Technical Details
+
+### Routes Blocked on drive365.co.uk (will redirect to everydriver.co.uk)
+- `/instructor/*` - All instructor portal routes
+- `/instructor-app/*` - Instructor SaaS marketing pages
+- `/install-instructor` - Instructor PWA install
+- `/admin/*` - Admin portal
+- `/hero-demo`, `/collage-demo`, etc. - Demo routes
+- Any future routes not explicitly in the learner whitelist
+
+### Routes Allowed on drive365.co.uk
+- `/courses` - Course search and listing
+- `/book/:instructorId` - Booking flow
+- `/booking-confirmation` - Booking confirmation
+- `/pupil/*` - Pupil portal
+- `/p/:slug` - Branded pupil portal
+- `/parent` - Parent portal
+- `/theory` - Theory test prep
+- `/intensives`, `/semi-intensive` - Course info pages
+- `/availability/:token` - Public availability
+- `/sign/:token` - Remote signing
+- `/i/:slug/*` - Mini-website public pages
+- All shared routes (privacy, terms, about, contact, FAQs, help)
+
+## Testing Recommendations
+After implementation, verify on drive365.co.uk:
+1. Home page shows learner content (Index page, not instructor marketing)
+2. `/courses` works correctly
+3. `/instructor` redirects to everydriver.co.uk
+4. `/admin` redirects to everydriver.co.uk
+5. `/privacy-policy` and other shared routes work
 
