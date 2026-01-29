@@ -1,13 +1,15 @@
 import { isDrive365Domain, isInstructorSubdomain, getInstructorSubdomain } from "./DomainRouter";
 import Index from "@/pages/Index";
-import Drive365Home from "@/pages/instructor-app/Drive365Home";
+import EveryDriverInstructorHome from "@/pages/instructor-app/EveryDriverInstructorHome";
 import MiniWebsiteHome from "@/pages/mini-website/MiniWebsiteHome";
 
 /**
  * Renders the appropriate homepage based on the current domain.
+ * 
+ * SWAPPED CONFIGURATION:
  * - Instructor subdomains (e.g., jane-smith.everydriver.co.uk) -> Mini website
- * - drive365.co.uk -> Instructor marketing page
- * - everydriver.co.uk -> Learner homepage
+ * - drive365.co.uk -> Learner homepage (find instructors, book lessons)
+ * - everydriver.co.uk -> Instructor marketing page
  */
 export function ConditionalHome() {
   // Check for instructor subdomain first (e.g., jane-smith.everydriver.co.uk)
@@ -16,10 +18,11 @@ export function ConditionalHome() {
     return <MiniWebsiteHome subdomainSlug={slug} />;
   }
   
-  // Check domain at render time
+  // SWAPPED: Drive365 = Learner site
   if (isDrive365Domain()) {
-    return <Drive365Home />;
+    return <Index />;
   }
   
-  return <Index />;
+  // SWAPPED: EveryDriver = Instructor site (default for localhost, lovable.app, etc.)
+  return <EveryDriverInstructorHome />;
 }

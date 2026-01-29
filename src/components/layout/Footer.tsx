@@ -1,10 +1,12 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { useDomainBranding } from "@/hooks/useDomainBranding";
 
 export function Footer() {
-  const logo = "/everydriver-logo-v2.png";
-  const logoAlt = "EveryDriver";
-  const homeLink = "/";
+  const branding = useDomainBranding();
+  const logo = branding.logoPath;
+  const logoAlt = branding.brandName;
+  const homeLink = branding.homeLink;
 
   return (
     <footer className="border-t bg-primary text-primary-foreground">
@@ -76,7 +78,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-primary-foreground/10 pt-8 text-center text-sm text-primary-foreground/50">
-          <p>© {new Date().getFullYear()} EveryDriver. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {branding.brandName}. All rights reserved.</p>
           <div className="mt-2 flex justify-center gap-4">
             <a href="/privacy-policy" className="hover:text-accent">Privacy Policy</a>
             <span>|</span>
