@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Scale, TrendingDown, TrendingUp, Minus, Plus, Target } from "lucide-react";
+import { Scale, TrendingDown, TrendingUp, Minus, Plus, Target, Ruler } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +23,20 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useInstructorHealth, kgToStoneLbs, stoneLbsToKg } from "@/hooks/useInstructorHealth";
+import { useInstructorHealth, kgToStoneLbs, stoneLbsToKg, calculateBMI, getBMICategory } from "@/hooks/useInstructorHealth";
 import { cn } from "@/lib/utils";
+
+// Height conversion helpers
+function cmToFeetInches(cm: number): { feet: number; inches: number } {
+  const totalInches = cm / 2.54;
+  const feet = Math.floor(totalInches / 12);
+  const inches = Math.round(totalInches % 12);
+  return { feet, inches };
+}
+
+function feetInchesToCm(feet: number, inches: number): number {
+  return (feet * 12 + inches) * 2.54;
+}
 
 export function WeightTracker() {
   const {
@@ -36,14 +48,21 @@ export function WeightTracker() {
     weightUnit,
     weeklyAverage,
     settings,
+    updateSettings,
+    isUpdatingSettings,
   } = useInstructorHealth();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isHeightDialogOpen, setIsHeightDialogOpen] = useState(false);
   const [inputUnit, setInputUnit] = useState<"kg" | "lbs" | "stone">(weightUnit || "kg");
   const [weightInput, setWeightInput] = useState("");
   const [stoneInput, setStoneInput] = useState("");
   const [lbsInput, setLbsInput] = useState("");
   const [notesInput, setNotesInput] = useState("");
+  const [heightCmInput, setHeightCmInput] = useState("");
+  const [heightFeetInput, setHeightFeetInput] = useState("");
+  const [heightInchesInput, setHeightInchesInput] = useState("");
+  const [heightInputUnit, setHeightInputUnit] = useState<"cm" | "ft">("cm");
 
   // Prepare chart data
   const chartData = (weightLogs || []).map((log) => {
@@ -164,6 +183,51 @@ export function WeightTracker() {
   const getUnitLabel = () => {
     if (weightUnit === "stone") return "stone/lbs";
     return weightUnit;
+  };
+
+  // Calculate BMI if we have height and weight
+  const currentBMI = weightLogs?.length && settings?.height_cm 
+    ? calculateBMI(weightLogs[weightLogs.length - 1].weight_kg, settings.height_cm)
+    : null;
+  
+  const bmiCategory = currentBMI ? getBMICategory(currentBMI) : null;
+
+  // Handle height save
+  const handleSaveHeight = () => {
+    let heightCm: number;
+    if (heightInputUnit === "ft") {
+      const feet = parseFloat(heightFeetInput) || 0;
+      const inches = parseFloat(heightInchesInput) || 0;
+      heightCm = feetInchesToCm(feet, inches);
+    } else {
+      heightCm = parseFloat(heightCmInput);
+    }
+    
+    if (!isNaN(heightCm) && heightCm > 0) {
+      updateSettings({ height_cm: heightCm });
+      setIsHeightDialogOpen(false);
+    }
+  };
+
+  // Initialize height inputs when dialog opens
+  const handleHeightDialogOpen = (open: boolean) => {
+    setIsHeightDialogOpen(open);
+    if (open && settings?.height_cm) {
+      setHeightCmInput(settings.height_cm.toString());
+      const { feet, inches } = cmToFeetInches(settings.height_cm);
+      setHeightFeetInput(feet.toString());
+      setHeightInchesInput(inches.toString());
+    }
+  };
+
+  // Format height display
+  const getHeightDisplay = () => {
+    if (!settings?.height_cm) return null;
+    if (weightUnit === "stone") {
+      const { feet, inches } = cmToFeetInches(settings.height_cm);
+      return `${feet}'${inches}"`;
+    }
+    return `${Math.round(settings.height_cm)} cm`;
   };
 
   return (
@@ -296,6 +360,129 @@ export function WeightTracker() {
         </div>
       </CardHeader>
       <CardContent>
+        {/* BMI Section */}
+        <div className="mb-4 p-3 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 rounded-lg border border-rose-100 dark:border-rose-900/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center">
+                <Ruler className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+              </div>
+              <div>
+                {currentBMI ? (
+                  <>
+                    <p className="text-xl font-bold">{currentBMI}</p>
+                    <p className={cn("text-xs font-medium", bmiCategory?.color)}>
+                      BMI · {bmiCategory?.label}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-muted-foreground">Set your height</p>
+                    <p className="text-xs text-muted-foreground">to calculate BMI</p>
+                  </>
+                )}
+              </div>
+            </div>
+            <Dialog open={isHeightDialogOpen} onOpenChange={handleHeightDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  {settings?.height_cm ? getHeightDisplay() : "Set Height"}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Set Your Height</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  {/* Height unit selector */}
+                  <div className="flex gap-1 p-1 bg-muted rounded-lg">
+                    <button
+                      type="button"
+                      onClick={() => setHeightInputUnit("cm")}
+                      className={cn(
+                        "flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors",
+                        heightInputUnit === "cm"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      cm
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHeightInputUnit("ft")}
+                      className={cn(
+                        "flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors",
+                        heightInputUnit === "ft"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      ft/in
+                    </button>
+                  </div>
+
+                  {heightInputUnit === "ft" ? (
+                    <div className="space-y-2">
+                      <Label>Height (feet and inches)</Label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <Input
+                            type="number"
+                            step="1"
+                            min="3"
+                            max="8"
+                            placeholder="5"
+                            value={heightFeetInput}
+                            onChange={(e) => setHeightFeetInput(e.target.value)}
+                            autoFocus
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">feet</p>
+                        </div>
+                        <div className="flex-1">
+                          <Input
+                            type="number"
+                            step="1"
+                            min="0"
+                            max="11"
+                            placeholder="10"
+                            value={heightInchesInput}
+                            onChange={(e) => setHeightInchesInput(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">inches</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="height">Height (cm)</Label>
+                      <Input
+                        id="height"
+                        type="number"
+                        step="1"
+                        min="100"
+                        max="250"
+                        placeholder="175"
+                        value={heightCmInput}
+                        onChange={(e) => setHeightCmInput(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                  
+                  <Button
+                    onClick={handleSaveHeight}
+                    disabled={isUpdatingSettings || (heightInputUnit === "ft" ? (!heightFeetInput) : !heightCmInput)}
+                    className="w-full bg-rose-600 hover:bg-rose-700"
+                  >
+                    {isUpdatingSettings ? "Saving..." : "Save Height"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
         {/* Stats Row */}
         <div className="flex items-center justify-between mb-4">
           <div>
