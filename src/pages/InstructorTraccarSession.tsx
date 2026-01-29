@@ -758,7 +758,7 @@ export default function InstructorTraccarSession() {
               longitude={device.last_longitude}
               heading={device.last_heading}
               speedKmh={device.last_speed_kmh}
-              speedLimitKmh={speedLimitKmh}
+              speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
               isConnected={isConnected}
               sessionId={device.current_session_id}
               roadName={device.last_road_name}
