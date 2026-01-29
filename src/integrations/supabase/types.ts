@@ -2197,6 +2197,7 @@ export type Database = {
       instructor_manual_blocks: {
         Row: {
           block_type: string
+          color: string | null
           created_at: string
           end_datetime: string
           id: string
@@ -2208,6 +2209,7 @@ export type Database = {
         }
         Insert: {
           block_type?: string
+          color?: string | null
           created_at?: string
           end_datetime: string
           id?: string
@@ -2219,6 +2221,7 @@ export type Database = {
         }
         Update: {
           block_type?: string
+          color?: string | null
           created_at?: string
           end_datetime?: string
           id?: string

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format, addHours } from 'date-fns';
-import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Palette } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+const BLOCK_COLOR_PRESETS = [
+  '#3b82f6', // blue
+  '#10b981', // emerald
+  '#f59e0b', // amber
+  '#8b5cf6', // violet
+  '#ef4444', // red
+  '#ec4899', // pink
+  '#06b6d4', // cyan
+  '#84cc16', // lime
+  '#f97316', // orange
+  '#6366f1', // indigo
+];
 
 interface AddCalendarEventDialogProps {
   open: boolean;
@@ -42,6 +55,7 @@ export function AddCalendarEventDialog({
   // Block form state
   const [blockTitle, setBlockTitle] = useState('');
   const [blockType, setBlockType] = useState('personal');
+  const [blockColor, setBlockColor] = useState(BLOCK_COLOR_PRESETS[0]);
   const [blockDate, setBlockDate] = useState<Date | undefined>(defaultDate || new Date());
   const [blockStartTime, setBlockStartTime] = useState('09:00');
   const [blockEndTime, setBlockEndTime] = useState('10:00');
@@ -84,6 +98,7 @@ export function AddCalendarEventDialog({
   const resetForm = () => {
     setBlockTitle('');
     setBlockType('personal');
+    setBlockColor(BLOCK_COLOR_PRESETS[0]);
     setBlockNotes('');
     setSelectedPupil('');
     setPickupAddress('');
@@ -113,6 +128,7 @@ export function AddCalendarEventDialog({
           start_datetime: startDateTime.toISOString(),
           end_datetime: endDateTime.toISOString(),
           block_type: blockType,
+          color: blockColor,
           notes: blockNotes || null,
         });
 
@@ -209,6 +225,39 @@ export function AddCalendarEventDialog({
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Color</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <div 
+                      className="w-4 h-4 rounded mr-2" 
+                      style={{ backgroundColor: blockColor }} 
+                    />
+                    Choose Color
+                    <Palette className="ml-auto h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-3 z-50 bg-popover" align="start">
+                  <div className="grid grid-cols-5 gap-2">
+                    {BLOCK_COLOR_PRESETS.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        className={cn(
+                          'h-8 w-8 rounded-md border-2 transition-all',
+                          blockColor === color ? 'border-primary ring-2 ring-primary/30' : 'border-transparent hover:scale-110'
+                        )}
+                        style={{ backgroundColor: color }}
+                        onClick={() => setBlockColor(color)}
+                        aria-label={`Select ${color}`}
+                      />
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
