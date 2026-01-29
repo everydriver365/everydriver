@@ -3,6 +3,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FaultEntry } from "./types";
 import { cn } from "@/lib/utils";
 
+interface FaultRowColors {
+  minorBg?: string;
+  seriousBg?: string;
+  dangerousBg?: string;
+  seriousCheckbox?: string;
+  dangerousCheckbox?: string;
+}
+
 interface FaultRowProps {
   label: string;
   subLabel?: string;
@@ -10,7 +18,16 @@ interface FaultRowProps {
   onChange: (value: FaultEntry) => void;
   indent?: boolean;
   disabled?: boolean;
+  colors?: FaultRowColors;
 }
+
+const defaultColors: FaultRowColors = {
+  minorBg: "bg-amber-50",
+  seriousBg: "bg-orange-100",
+  dangerousBg: "bg-red-100",
+  seriousCheckbox: "#E91E63",
+  dangerousCheckbox: "#C2185B",
+};
 
 export function FaultRow({
   label,
@@ -19,7 +36,10 @@ export function FaultRow({
   onChange,
   indent = false,
   disabled = false,
+  colors = {},
 }: FaultRowProps) {
+  const mergedColors = { ...defaultColors, ...colors };
+
   const handleTotalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const total = parseInt(e.target.value) || 0;
     onChange({ ...value, total: Math.max(0, Math.min(99, total)) });
@@ -40,9 +60,9 @@ export function FaultRow({
       className={cn(
         "grid grid-cols-[1fr_40px_28px_28px] gap-0.5 items-center py-1 px-1.5 border-b border-slate-300 hover:bg-slate-100 transition-colors",
         indent && "pl-4",
-        hasAnyFault && "bg-amber-50",
-        value.serious && "bg-orange-100",
-        value.dangerous && "bg-red-100"
+        hasAnyFault && mergedColors.minorBg,
+        value.serious && mergedColors.seriousBg,
+        value.dangerous && mergedColors.dangerousBg
       )}
     >
       <div className="min-w-0 overflow-hidden">
@@ -65,14 +85,16 @@ export function FaultRow({
         checked={value.serious}
         onCheckedChange={handleSeriousChange}
         disabled={disabled}
-        className="h-5 w-5 border-slate-400 data-[state=checked]:bg-[#E91E63] data-[state=checked]:border-[#E91E63]"
+        className="h-5 w-5 border-slate-400"
+        style={value.serious ? { backgroundColor: mergedColors.seriousCheckbox, borderColor: mergedColors.seriousCheckbox } : undefined}
         title="Serious"
       />
       <Checkbox
         checked={value.dangerous}
         onCheckedChange={handleDangerousChange}
         disabled={disabled}
-        className="h-5 w-5 border-slate-400 data-[state=checked]:bg-[#C2185B] data-[state=checked]:border-[#C2185B]"
+        className="h-5 w-5 border-slate-400"
+        style={value.dangerous ? { backgroundColor: mergedColors.dangerousCheckbox, borderColor: mergedColors.dangerousCheckbox } : undefined}
         title="Dangerous"
       />
     </div>
