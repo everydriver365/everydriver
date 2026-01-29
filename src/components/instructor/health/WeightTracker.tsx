@@ -39,6 +39,7 @@ export function WeightTracker() {
   } = useInstructorHealth();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [inputUnit, setInputUnit] = useState<"kg" | "lbs" | "stone">(weightUnit || "kg");
   const [weightInput, setWeightInput] = useState("");
   const [stoneInput, setStoneInput] = useState("");
   const [lbsInput, setLbsInput] = useState("");
@@ -128,21 +129,21 @@ export function WeightTracker() {
   const progress = getProgress();
 
   const handleLogWeight = () => {
-    if (weightUnit === "stone") {
+    if (inputUnit === "stone") {
       const stone = parseFloat(stoneInput) || 0;
       const lbs = parseFloat(lbsInput) || 0;
       if (stone <= 0 && lbs <= 0) return;
       const weightKg = stoneLbsToKg(stone, lbs);
-      // Pass the kg value directly using weightKgDirect
       logWeight({ weight: 0, weightKgDirect: weightKg, notes: notesInput || undefined });
-    } else if (weightUnit === "lbs") {
+    } else if (inputUnit === "lbs") {
       const lbsWeight = parseFloat(weightInput);
       if (isNaN(lbsWeight) || lbsWeight <= 0) return;
-      logWeight({ weight: lbsWeight, notes: notesInput || undefined });
+      const weightKg = lbsWeight / 2.20462;
+      logWeight({ weight: 0, weightKgDirect: weightKg, notes: notesInput || undefined });
     } else {
       const kgWeight = parseFloat(weightInput);
       if (isNaN(kgWeight) || kgWeight <= 0) return;
-      logWeight({ weight: kgWeight, notes: notesInput || undefined });
+      logWeight({ weight: 0, weightKgDirect: kgWeight, notes: notesInput || undefined });
     }
     
     setWeightInput("");
@@ -150,6 +151,14 @@ export function WeightTracker() {
     setLbsInput("");
     setNotesInput("");
     setIsDialogOpen(false);
+  };
+
+  const handleDialogOpen = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (open) {
+      // Reset to user's preferred unit when opening
+      setInputUnit(weightUnit || "kg");
+    }
   };
 
   const getUnitLabel = () => {
@@ -167,7 +176,7 @@ export function WeightTracker() {
             </div>
             Weight Tracker
           </CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={handleDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="bg-rose-600 hover:bg-rose-700">
                 <Plus className="h-4 w-4 mr-1" />
@@ -179,7 +188,48 @@ export function WeightTracker() {
                 <DialogTitle>Log Your Weight</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
-                {weightUnit === "stone" ? (
+                {/* Unit selector */}
+                <div className="flex gap-1 p-1 bg-muted rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setInputUnit("kg")}
+                    className={cn(
+                      "flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors",
+                      inputUnit === "kg"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    kg
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInputUnit("lbs")}
+                    className={cn(
+                      "flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors",
+                      inputUnit === "lbs"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    lbs
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInputUnit("stone")}
+                    className={cn(
+                      "flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors",
+                      inputUnit === "stone"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    st/lbs
+                  </button>
+                </div>
+
+                {/* Weight input based on selected unit */}
+                {inputUnit === "stone" ? (
                   <div className="space-y-2">
                     <Label>Weight (stones and pounds)</Label>
                     <div className="flex gap-2">
@@ -211,12 +261,12 @@ export function WeightTracker() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Label htmlFor="weight">Weight ({weightUnit})</Label>
+                    <Label htmlFor="weight">Weight ({inputUnit})</Label>
                     <Input
                       id="weight"
                       type="number"
                       step="0.1"
-                      placeholder={weightUnit === "kg" ? "70.5" : "155.0"}
+                      placeholder={inputUnit === "kg" ? "70.5" : "155.0"}
                       value={weightInput}
                       onChange={(e) => setWeightInput(e.target.value)}
                       autoFocus
@@ -235,7 +285,7 @@ export function WeightTracker() {
                 </div>
                 <Button
                   onClick={handleLogWeight}
-                  disabled={isLoggingWeight || (weightUnit === "stone" ? (!stoneInput && !lbsInput) : !weightInput)}
+                  disabled={isLoggingWeight || (inputUnit === "stone" ? (!stoneInput && !lbsInput) : !weightInput)}
                   className="w-full bg-rose-600 hover:bg-rose-700"
                 >
                   {isLoggingWeight ? "Saving..." : "Save Weight"}
