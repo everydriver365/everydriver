@@ -55,30 +55,6 @@ function getGridKey(lat: number, lon: number): string {
   return `${latGrid},${lonGrid}`;
 }
 
-// Parse maxspeed value from OSM (handles "30 mph", "50", "national", etc.)
-function parseMaxSpeed(maxspeed: string): number | null {
-  if (!maxspeed) return null;
-  
-  // Handle "national" speed limit (UK: 60 mph single carriageway, 70 mph dual/motorway)
-  if (maxspeed.toLowerCase() === "national") {
-    return 97; // Default to 60 mph = 97 km/h for single carriageway
-  }
-  
-  // Check for mph suffix (common in UK)
-  const mphMatch = maxspeed.match(/^(\d+)\s*mph$/i);
-  if (mphMatch) {
-    return Math.round(parseInt(mphMatch[1]) * 1.60934);
-  }
-  
-  // Plain number (assumed km/h in OSM standard)
-  const numMatch = maxspeed.match(/^(\d+)$/);
-  if (numMatch) {
-    return parseInt(numMatch[1]);
-  }
-  
-  return null;
-}
-
 // Check adjacent grid cells for cached speed limits (fallback when API fails)
 function getNearbyCache(lat: number, lon: number): { limit: number | null; roadName: string | null } | null {
   const offsets = [
@@ -97,21 +73,13 @@ function getNearbyCache(lat: number, lon: number): { limit: number | null; roadN
   return null;
 }
 
-// Overpass API endpoints with fallbacks
-const OVERPASS_ENDPOINTS = [
-  "https://overpass-api.de/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter",
-  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
-];
-
-// Fetch speed limit AND road name from OpenStreetMap Overpass API with fallback endpoints
+// Fetch speed limit AND road name from Mapbox Map Matching API
 async function getRoadInfo(lat: number, lon: number): Promise<{ speedLimit: number | null; roadName: string | null }> {
   const gridKey = getGridKey(lat, lon);
   
-  // Check cache first (extend TTL to reduce API calls)
+  // Check cache first
   const cached = speedLimitCache.get(gridKey);
   if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
-    // Don't log cache hits to reduce noise
     return { speedLimit: cached.limit, roadName: cached.roadName };
   }
   
@@ -121,70 +89,82 @@ async function getRoadInfo(lat: number, lon: number): Promise<{ speedLimit: numb
     return { speedLimit: nearby.limit, roadName: nearby.roadName };
   }
   
-  console.log(`[Traccar] Road info lookup at ${lat.toFixed(6)},${lon.toFixed(6)}`);
+  const MAPBOX_TOKEN = Deno.env.get("MAPBOX_TOKEN");
+  if (!MAPBOX_TOKEN) {
+    console.log("[Traccar] MAPBOX_TOKEN not configured, skipping speed limit lookup");
+    speedLimitCache.set(gridKey, { limit: null, roadName: null, timestamp: Date.now() });
+    return { speedLimit: null, roadName: null };
+  }
   
-  // Query Overpass API for roads with any tags within 50m radius (get name AND maxspeed)
-  const query = `[out:json][timeout:3];way(around:50,${lat},${lon})[highway];out tags;`;
+  console.log(`[Traccar] Mapbox road info lookup at ${lat.toFixed(6)},${lon.toFixed(6)}`);
   
-  // Try each endpoint until one succeeds
-  for (const endpoint of OVERPASS_ENDPOINTS) {
-    try {
-      const response = await fetch(
-        `${endpoint}?data=${encodeURIComponent(query)}`,
-        { signal: AbortSignal.timeout(2500) } // Reduced timeout for faster fallback
-      );
-      
-      if (!response.ok) {
-        console.log(`[Traccar] ${endpoint} returned ${response.status}, trying next...`);
-        continue;
+  try {
+    // Create two points ~10m apart for Map Matching API (requires at least 2 coordinates)
+    const offset = 0.0001; // ~10m
+    const coords = `${lon},${lat};${lon + offset},${lat + offset}`;
+    
+    const response = await fetch(
+      `https://api.mapbox.com/matching/v5/mapbox/driving/${coords}?access_token=${MAPBOX_TOKEN}&annotations=maxspeed&geometries=geojson`,
+      { signal: AbortSignal.timeout(3000) }
+    );
+    
+    if (!response.ok) {
+      console.log(`[Traccar] Mapbox API returned ${response.status}`);
+      // Use stale cache if available
+      if (cached) {
+        speedLimitCache.set(gridKey, { limit: cached.limit, roadName: cached.roadName, timestamp: Date.now() - CACHE_TTL_MS / 2 });
+        return { speedLimit: cached.limit, roadName: cached.roadName };
       }
-      
-      const data = await response.json();
-      
-      let speedLimit: number | null = null;
-      let roadName: string | null = null;
-      
-      if (data.elements && data.elements.length > 0) {
-        // Find the best road (prioritize named roads with speed limits)
-        for (const road of data.elements) {
-          // Get road name (prefer name, fall back to ref like "A33")
-          if (!roadName && (road.tags?.name || road.tags?.ref)) {
-            roadName = road.tags.name || road.tags.ref;
-          }
-          // Get speed limit
-          if (!speedLimit && road.tags?.maxspeed) {
-            speedLimit = parseMaxSpeed(road.tags.maxspeed);
-          }
-          // If we have both, stop looking
-          if (roadName && speedLimit) break;
-        }
-        
-        if (speedLimit || roadName) {
-          console.log(`[Traccar] Road info found: ${roadName || 'unnamed'}, ${speedLimit} km/h`);
-        }
-      }
-      
-      // Cache the result (even null to avoid repeated lookups)
-      speedLimitCache.set(gridKey, { limit: speedLimit, roadName, timestamp: Date.now() });
-      
-      return { speedLimit, roadName };
-    } catch (err) {
-      console.log(`[Traccar] ${endpoint} failed, trying next...`);
-      continue;
+      speedLimitCache.set(gridKey, { limit: null, roadName: null, timestamp: Date.now() });
+      return { speedLimit: null, roadName: null };
     }
+    
+    const data = await response.json();
+    
+    let speedLimit: number | null = null;
+    let roadName: string | null = null;
+    
+    // Extract speed limit from first leg annotation
+    const maxspeed = data.matchings?.[0]?.legs?.[0]?.annotation?.maxspeed?.[0];
+    
+    if (maxspeed && !maxspeed.unknown) {
+      // Mapbox returns speed in the local unit (mph for UK, km/h elsewhere)
+      // Convert to km/h if in mph
+      if (maxspeed.unit === "km/h") {
+        speedLimit = maxspeed.speed;
+      } else if (maxspeed.unit === "mph") {
+        speedLimit = Math.round(maxspeed.speed * 1.60934);
+      } else {
+        // Default assume km/h
+        speedLimit = maxspeed.speed;
+      }
+    }
+    
+    // Get road name from tracepoint
+    roadName = data.tracepoints?.[0]?.name || null;
+    
+    if (speedLimit || roadName) {
+      console.log(`[Traccar] Mapbox road info: ${roadName || 'unnamed'}, ${speedLimit} km/h`);
+    }
+    
+    // Cache the result
+    speedLimitCache.set(gridKey, { limit: speedLimit, roadName, timestamp: Date.now() });
+    
+    return { speedLimit, roadName };
+  } catch (err) {
+    console.log(`[Traccar] Mapbox API error:`, err);
+    
+    // Use stale cache if available
+    if (cached) {
+      console.log(`[Traccar] Using stale cache: ${cached.limit} km/h`);
+      speedLimitCache.set(gridKey, { limit: cached.limit, roadName: cached.roadName, timestamp: Date.now() - CACHE_TTL_MS / 2 });
+      return { speedLimit: cached.limit, roadName: cached.roadName };
+    }
+    
+    // Cache null to prevent repeated failed lookups
+    speedLimitCache.set(gridKey, { limit: null, roadName: null, timestamp: Date.now() });
+    return { speedLimit: null, roadName: null };
   }
-  
-  // All endpoints failed - use stale cache if available
-  if (cached) {
-    console.log(`[Traccar] All endpoints failed, using stale cache: ${cached.limit} km/h`);
-    // Refresh stale cache timestamp to avoid hammering failed APIs
-    speedLimitCache.set(gridKey, { limit: cached.limit, roadName: cached.roadName, timestamp: Date.now() - CACHE_TTL_MS / 2 });
-    return { speedLimit: cached.limit, roadName: cached.roadName };
-  }
-  
-  // Last resort: cache null to prevent repeated failed lookups
-  speedLimitCache.set(gridKey, { limit: null, roadName: null, timestamp: Date.now() });
-  return { speedLimit: null, roadName: null };
 }
 
 serve(async (req) => {
@@ -301,7 +281,7 @@ serve(async (req) => {
       );
     }
 
-    // Fetch road info (speed limit + road name) asynchronously
+    // Fetch road info (speed limit + road name) from Mapbox
     let speedLimitKmh: number | null = null;
     let roadName: string | null = null;
     try {
@@ -373,8 +353,8 @@ serve(async (req) => {
       console.error("[Traccar] Device update error:", updateError);
     }
 
-    // If session is active, record data and create alerts
-    if (typedDevice.current_session_id && typedDevice.current_pupil_id) {
+    // If session is active, record data and create alerts (pupil is optional for Test Routes)
+    if (typedDevice.current_session_id) {
       // Insert GPS point with speed limit
       const { error: gpsError } = await supabase
         .from("telematics_gps_points")
@@ -413,25 +393,27 @@ serve(async (req) => {
           .eq("id", typedDevice.current_session_id);
       }
 
-      // Update live position using RPC with speed limit
-      try {
-        const { error: liveError } = await supabase.rpc("update_live_position", {
-          p_pupil_id: typedDevice.current_pupil_id,
-          p_latitude: lat,
-          p_longitude: lon,
-          p_speed_kmh: speedKmh,
-          p_heading: bearing,
-          p_accuracy: accuracy,
-          p_trip_status: speedKmh > 5 ? "driving" : "stopped",
-          p_session_id: typedDevice.current_session_id,
-          p_speed_limit_kmh: speedLimitKmh,
-        });
+      // Only update live position if a pupil is assigned (RPC requires pupil_id)
+      if (typedDevice.current_pupil_id) {
+        try {
+          const { error: liveError } = await supabase.rpc("update_live_position", {
+            p_pupil_id: typedDevice.current_pupil_id,
+            p_latitude: lat,
+            p_longitude: lon,
+            p_speed_kmh: speedKmh,
+            p_heading: bearing,
+            p_accuracy: accuracy,
+            p_trip_status: speedKmh > 5 ? "driving" : "stopped",
+            p_session_id: typedDevice.current_session_id,
+            p_speed_limit_kmh: speedLimitKmh,
+          });
 
-        if (liveError) {
-          console.error("[Traccar] Live position update error:", liveError);
+          if (liveError) {
+            console.error("[Traccar] Live position update error:", liveError);
+          }
+        } catch (rpcErr) {
+          console.error("[Traccar] RPC error:", rpcErr);
         }
-      } catch (rpcErr) {
-        console.error("[Traccar] RPC error:", rpcErr);
       }
 
       // Create braking alert if detected
@@ -496,7 +478,7 @@ serve(async (req) => {
         }
       }
 
-      console.log(`[Traccar] Session data recorded for pupil ${typedDevice.current_pupil_id}, distance: ${(distanceMeters / 1000).toFixed(3)}km, speed limit: ${speedLimitKmh || 'unknown'}`);
+      console.log(`[Traccar] Session data recorded for session ${typedDevice.current_session_id}, pupil: ${typedDevice.current_pupil_id || 'none (test route)'}, distance: ${(distanceMeters / 1000).toFixed(3)}km, speed limit: ${speedLimitKmh || 'unknown'}`);
     }
 
     // Return success (Traccar expects 200 OK)
