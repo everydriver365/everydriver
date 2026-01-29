@@ -35,16 +35,31 @@ export function StepPersonalDetails({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!instructorId) {
+      toast.error("Please wait, loading your profile...");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
     setUploading(true);
     try {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${instructorId}/profile.${fileExt}`;
+      const timestamp = Date.now();
+      const fileName = `${instructorId}/profile-${timestamp}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("instructor-images")
         .upload(fileName, file, { upsert: true });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw uploadError;
+      }
 
       const { data: urlData } = supabase.storage
         .from("instructor-images")
@@ -52,8 +67,9 @@ export function StepPersonalDetails({
 
       onUpdate({ profile_image_url: urlData.publicUrl });
       toast.success("Photo uploaded!");
-    } catch (err) {
-      toast.error("Failed to upload photo");
+    } catch (err: any) {
+      console.error("Failed to upload photo:", err);
+      toast.error(err?.message || "Failed to upload photo");
     } finally {
       setUploading(false);
     }
@@ -81,7 +97,7 @@ export function StepPersonalDetails({
             <label className="absolute -bottom-1 -right-1 cursor-pointer">
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 className="hidden"
                 onChange={handleImageUpload}
                 disabled={uploading}
@@ -91,7 +107,7 @@ export function StepPersonalDetails({
                 size="icon"
                 variant="secondary"
                 className="h-8 w-8 rounded-full"
-                disabled={uploading}
+                disabled={uploading || !instructorId}
               >
                 <Camera className="h-4 w-4" />
               </Button>
