@@ -92,8 +92,8 @@ export function CommandPalette({ variant = "instructor" }: CommandPaletteProps) 
     { id: "expenses", label: "Expenses", icon: Receipt, action: () => navigate("/instructor/expenses"), group: "navigation", keywords: ["costs", "spending"] },
     { id: "gaps", label: "Find Gaps", icon: Search, action: () => navigate("/instructor/gaps"), group: "navigation", keywords: ["availability", "empty", "slots"] },
     { id: "jobs", label: "Job Offers", icon: BriefcaseBusiness, action: () => navigate("/instructor/jobs"), group: "navigation", keywords: ["work", "opportunities"] },
-    { id: "track", label: "Track Lesson", icon: Navigation, action: () => navigate("/instructor/track-lesson"), group: "navigation", keywords: ["gps", "driving", "route"] },
-    { id: "live-tracking", label: "Live Tracking", icon: Navigation, action: () => navigate("/instructor/live-tracking"), group: "navigation", keywords: ["pupils", "map", "realtime", "monitor"] },
+    { id: "track", label: "Track Lesson", icon: Navigation, action: () => navigate("/instructor/traccar"), group: "navigation", keywords: ["gps", "driving", "route", "traccar"] },
+    { id: "live-tracking", label: "Live Tracking", icon: Navigation, action: () => navigate("/instructor/traccar"), group: "navigation", keywords: ["pupils", "map", "realtime", "monitor"] },
     { id: "performance", label: "Performance", icon: BarChart3, action: () => navigate("/instructor/performance"), group: "navigation", keywords: ["stats", "analytics", "metrics"] },
     { id: "settings", label: "Settings", icon: Settings, action: () => navigate("/instructor/settings"), group: "navigation" },
     
