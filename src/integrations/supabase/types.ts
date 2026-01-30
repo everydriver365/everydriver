@@ -2357,6 +2357,9 @@ export type Database = {
           id: string
           instructor_id: string
           plan_id: string
+          square_card_id: string | null
+          square_customer_id: string | null
+          square_subscription_id: string | null
           status: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -2374,6 +2377,9 @@ export type Database = {
           id?: string
           instructor_id: string
           plan_id: string
+          square_card_id?: string | null
+          square_customer_id?: string | null
+          square_subscription_id?: string | null
           status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -2391,6 +2397,9 @@ export type Database = {
           id?: string
           instructor_id?: string
           plan_id?: string
+          square_card_id?: string | null
+          square_customer_id?: string | null
+          square_subscription_id?: string | null
           status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -5417,6 +5426,7 @@ export type Database = {
           price_yearly: number | null
           slug: string
           sms_credits_monthly: number | null
+          square_plan_variation_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -5435,6 +5445,7 @@ export type Database = {
           price_yearly?: number | null
           slug: string
           sms_credits_monthly?: number | null
+          square_plan_variation_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -5453,6 +5464,7 @@ export type Database = {
           price_yearly?: number | null
           slug?: string
           sms_credits_monthly?: number | null
+          square_plan_variation_id?: string | null
           updated_at?: string | null
         }
         Relationships: []
