@@ -103,19 +103,21 @@ export function MobileHomepage() {
   return <div className="min-h-screen bg-background">
       {/* Header - Primary Blue to match brand */}
       <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-10 w-10 text-white hover:bg-white/10"
-          onClick={() => setIsMenuOpen(true)}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-        <img src={branding.logoPath} alt={branding.brandName} className="h-7" />
-        <Button variant="secondary" size="sm" onClick={handleGetLocation} disabled={isLocating} className="h-8 px-3 rounded-full text-xs gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0 disabled:opacity-50">
-          <MapPin className={`h-3.5 w-3.5 ${isLocating ? "animate-pulse" : ""}`} />
-          <span>{isLocating ? "Finding..." : "Location"}</span>
-        </Button>
+        <img src={branding.logoPath} alt={branding.brandName} className="h-9" />
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={handleGetLocation} disabled={isLocating} className="h-8 px-3 rounded-full text-xs gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0 disabled:opacity-50">
+            <MapPin className={`h-3.5 w-3.5 ${isLocating ? "animate-pulse" : ""}`} />
+            <span>{isLocating ? "Finding..." : "Location"}</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-10 w-10 text-white hover:bg-white/10"
+            onClick={() => setIsMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
       
       {/* Hero Image with Overlapping Card */}
