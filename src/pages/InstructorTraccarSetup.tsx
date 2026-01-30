@@ -142,11 +142,14 @@ export default function InstructorTraccarSetup() {
         title: "Device registered",
         description: "Your ST-902L has been registered. Follow the SMS setup steps above.",
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error creating device:", err);
+      const isDuplicate = err?.code === '23505';
       toast({
-        title: "Error",
-        description: "Failed to create device",
+        title: isDuplicate ? "Device Already Registered" : "Error",
+        description: isDuplicate 
+          ? "This device ID is already registered. Check your devices list below."
+          : "Failed to create device",
         variant: "destructive",
       });
     } finally {
