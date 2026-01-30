@@ -18,6 +18,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import semiIntensiveIcon from "@/assets/semi-intensive-icon.jpg";
 import weeklyLessonsIcon from "@/assets/weekly-lessons-icon.jpg";
 import referFriendsImage from "@/assets/refer-friends.png";
+import { useDomainBranding } from "@/hooks/useDomainBranding";
+
 export function MobileHomepage() {
   const [postcode, setPostcode] = useState("");
   const [selectedFeature, setSelectedFeature] = useState<typeof includedFeatures[0] | null>(null);
@@ -33,6 +35,7 @@ export function MobileHomepage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const branding = useDomainBranding();
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (postcode.trim()) {
@@ -108,7 +111,7 @@ export function MobileHomepage() {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <img src="/everydriver-logo-v2.png" alt="EveryDriver" className="h-7" />
+        <img src={branding.logoPath} alt={branding.brandName} className="h-7" />
         <Button variant="secondary" size="sm" onClick={handleGetLocation} disabled={isLocating} className="h-8 px-3 rounded-full text-xs gap-1.5 bg-white/20 hover:bg-white/30 text-white border-0 disabled:opacity-50">
           <MapPin className={`h-3.5 w-3.5 ${isLocating ? "animate-pulse" : ""}`} />
           <span>{isLocating ? "Finding..." : "Location"}</span>
@@ -543,7 +546,7 @@ export function MobileHomepage() {
         <SheetContent side="left" className="w-[280px] p-0">
           <SheetHeader className="p-4 border-b bg-primary">
             <SheetTitle className="flex items-center gap-3">
-              <img src="/everydriver-logo-v2.png" alt="EveryDriver" className="h-7" />
+              <img src={branding.logoPath} alt={branding.brandName} className="h-7" />
             </SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col p-2">
