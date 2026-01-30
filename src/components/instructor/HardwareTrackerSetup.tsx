@@ -21,6 +21,12 @@ export default function HardwareTrackerSetup({ supabaseHost }: HardwareTrackerSe
 
   const smsCommands = [
     { 
+      id: "password", 
+      command: "123456", 
+      description: "Default password (send first)",
+      note: "The device password - send this as the first SMS to authenticate. If you changed the password, use that instead."
+    },
+    { 
       id: "server", 
       command: `804 ${supabaseHost} 443`, 
       description: "Set server domain and HTTPS port",
