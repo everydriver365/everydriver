@@ -10,14 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowLeft, 
-  Smartphone, 
+  Cpu, 
   Copy, 
   Check, 
   Wifi, 
   WifiOff,
   RefreshCw,
-  ExternalLink,
-  Settings,
   Trash2
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
@@ -53,16 +51,13 @@ export default function InstructorTraccarSetup() {
   
   const [devices, setDevices] = useState<TraccarDevice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [deviceName, setDeviceName] = useState("My Phone");
+  const [deviceName, setDeviceName] = useState("ST-902L");
   const [deviceId, setDeviceId] = useState("");
-  const [useCustomId, setUseCustomId] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [copiedUrl, setCopiedUrl] = useState(false);
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseHost = supabaseUrl?.replace('https://', '') || 'qyqeibovdhyohkfagujv.supabase.co';
-  const webhookUrl = `${supabaseUrl}/functions/v1/traccar-webhook`;
 
   useEffect(() => {
     if (!loading && !instructor) {
@@ -81,7 +76,6 @@ export default function InstructorTraccarSetup() {
     if (!instructor?.id) return;
     
     const pollInterval = setInterval(() => {
-      // Only poll if page is visible
       if (!document.hidden) {
         fetchDevices();
       }
@@ -114,20 +108,13 @@ export default function InstructorTraccarSetup() {
     }
   };
 
-  const generateDeviceId = () => {
-    const prefix = instructor?.id?.substring(0, 8) || "INS";
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `D365_${prefix}_${random}`;
-  };
-
   const createDevice = async () => {
     if (!instructor?.id) return;
     
-    // Validate custom ID if using one
-    if (useCustomId && !deviceId.trim()) {
+    if (!deviceId.trim()) {
       toast({
         title: "Device ID required",
-        description: "Please enter your hardware device ID",
+        description: "Please enter your ST-902L device ID",
         variant: "destructive",
       });
       return;
@@ -135,12 +122,10 @@ export default function InstructorTraccarSetup() {
     
     setIsCreating(true);
     try {
-      const deviceIdentifier = useCustomId ? deviceId.trim() : generateDeviceId();
-      
       const { data, error } = await supabase
         .from("traccar_devices")
         .insert({
-          device_identifier: deviceIdentifier,
+          device_identifier: deviceId.trim(),
           instructor_id: instructor.id,
           device_name: deviceName,
         })
@@ -150,15 +135,12 @@ export default function InstructorTraccarSetup() {
       if (error) throw error;
 
       setDevices([data, ...devices]);
-      setDeviceName("My Phone");
+      setDeviceName("ST-902L");
       setDeviceId("");
-      setUseCustomId(false);
       
       toast({
-        title: "Device created",
-        description: useCustomId 
-          ? "Your device has been registered. Send SMS 805 with this ID to your tracker."
-          : "Your device ID has been generated. Configure Traccar Client with these settings.",
+        title: "Device registered",
+        description: "Your ST-902L has been registered. Follow the SMS setup steps above.",
       });
     } catch (err) {
       console.error("Error creating device:", err);
@@ -197,19 +179,16 @@ export default function InstructorTraccarSetup() {
     }
   };
 
-  const copyToClipboard = async (text: string, type: "id" | "url", deviceId?: string) => {
+  const copyToClipboard = async (text: string, id?: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      if (type === "id" && deviceId) {
-        setCopiedId(deviceId);
+      if (id) {
+        setCopiedId(id);
         setTimeout(() => setCopiedId(null), 2000);
-      } else {
-        setCopiedUrl(true);
-        setTimeout(() => setCopiedUrl(false), 2000);
       }
       toast({
         title: "Copied",
-        description: `${type === "id" ? "Device ID" : "Server URL"} copied to clipboard`,
+        description: "Device ID copied to clipboard",
       });
     } catch (err) {
       toast({
@@ -226,13 +205,9 @@ export default function InstructorTraccarSetup() {
     const now = new Date();
     const diffSeconds = (now.getTime() - lastSeen.getTime()) / 1000;
     
-    if (diffSeconds < 30) return 'active'; // Green pulsing - actively receiving
-    if (diffSeconds < 120) return 'recent'; // Yellow - recently active
-    return 'offline'; // Red - offline
-  };
-
-  const isConnected = (device: TraccarDevice) => {
-    return getConnectionStatus(device) !== 'offline';
+    if (diffSeconds < 30) return 'active';
+    if (diffSeconds < 120) return 'recent';
+    return 'offline';
   };
 
   if (loading || isLoading) {
@@ -245,7 +220,7 @@ export default function InstructorTraccarSetup() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header - Primary color to match bottom nav */}
+      {/* Header */}
       <div className="sticky top-0 z-10 bg-primary border-b border-primary-foreground/10 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -253,8 +228,8 @@ export default function InstructorTraccarSetup() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="text-primary-foreground">
-              <h1 className="text-lg font-semibold">Traccar GPS Setup</h1>
-              <p className="text-sm text-primary-foreground/70">Configure external GPS tracking</p>
+              <h1 className="text-lg font-semibold">GPS Tracker Setup</h1>
+              <p className="text-sm text-primary-foreground/70">Configure your ST-902L hardware tracker</p>
             </div>
           </div>
           <Button 
@@ -270,73 +245,17 @@ export default function InstructorTraccarSetup() {
       </div>
 
       <div className="p-4 space-y-6 max-w-2xl mx-auto">
-        {/* Instructions Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Smartphone className="h-5 w-5" />
-              How It Works
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-              <li>Download <strong>Traccar Client</strong> from your app store</li>
-              <li>Create a device below to get your unique Device ID</li>
-              <li>Configure Traccar Client with the Device ID and Server URL</li>
-              <li>Toggle <strong>"Service status"</strong> ON in the Traccar app to start sending GPS</li>
-              <li>Start tracking from the Traccar Session page when teaching</li>
-            </ol>
-            <p className="text-xs text-muted-foreground mt-3 p-2 bg-muted rounded">
-              💡 <strong>Tip:</strong> The "Service status" toggle is in the Traccar Client app on your phone — not on this page. Turn it ON to start transmitting GPS data.
-            </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" asChild>
-                <a href="https://apps.apple.com/app/traccar-client/id843156974" target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  iOS App
-                </a>
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <a href="https://play.google.com/store/apps/details?id=org.traccar.client" target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Android App
-                </a>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Hardware Tracker Setup */}
+        {/* Hardware Tracker Setup - Primary focus */}
         <HardwareTrackerSetup supabaseHost={supabaseHost} />
 
-        {/* Server URL */}
+        {/* Register Device */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Server URL</CardTitle>
-            <CardDescription>Use this URL in Traccar Client settings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2">
-              <Input value={webhookUrl} readOnly className="font-mono text-sm" />
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={() => copyToClipboard(webhookUrl, "url")}
-              >
-                {copiedUrl ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Set frequency to <strong>5 seconds</strong> and distance to <strong>10 meters</strong>
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Create Device */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Add New Device</CardTitle>
-            <CardDescription>Register a device for tracking</CardDescription>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Cpu className="h-4 w-4" />
+              Register Your Tracker
+            </CardTitle>
+            <CardDescription>Enter your ST-902L device ID to register it</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -345,46 +264,30 @@ export default function InstructorTraccarSetup() {
                 id="deviceName"
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
-                placeholder="e.g., My iPhone, ST-902L"
+                placeholder="e.g., ST-902L, Car Tracker"
               />
             </div>
             
-            {/* Toggle between auto-generate and custom ID */}
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="useCustomId"
-                checked={useCustomId}
-                onChange={(e) => setUseCustomId(e.target.checked)}
-                className="h-4 w-4 rounded border-border accent-primary"
+            <div className="space-y-2">
+              <Label htmlFor="deviceId">Device ID</Label>
+              <Input
+                id="deviceId"
+                value={deviceId}
+                onChange={(e) => setDeviceId(e.target.value)}
+                placeholder="e.g., 7018524391"
               />
-              <Label htmlFor="useCustomId" className="text-sm font-normal cursor-pointer">
-                I have my own device ID (from hardware tracker)
-              </Label>
+              <p className="text-xs text-muted-foreground">
+                Find this on the sticker on your ST-902L device or in the documentation
+              </p>
             </div>
             
-            {useCustomId && (
-              <div className="space-y-2">
-                <Label htmlFor="deviceId">Device ID</Label>
-                <Input
-                  id="deviceId"
-                  value={deviceId}
-                  onChange={(e) => setDeviceId(e.target.value)}
-                  placeholder="e.g., 123456789012345"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Enter the ID from your hardware tracker (IMEI, serial number, or vendor-provided ID)
-                </p>
-              </div>
-            )}
-            
-            <Button onClick={createDevice} disabled={isCreating}>
+            <Button onClick={createDevice} disabled={isCreating || !deviceId.trim()}>
               {isCreating ? (
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
               ) : (
-                <Smartphone className="h-4 w-4 mr-2" />
+                <Cpu className="h-4 w-4 mr-2" />
               )}
-              {useCustomId ? "Register Device" : "Generate Device ID"}
+              Register Device
             </Button>
           </CardContent>
         </Card>
@@ -396,9 +299,9 @@ export default function InstructorTraccarSetup() {
           {devices.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
-                <Smartphone className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <Cpu className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No devices configured yet</p>
-                <p className="text-sm">Create a device above to get started</p>
+                <p className="text-sm">Register your ST-902L above to get started</p>
               </CardContent>
             </Card>
           ) : (
@@ -452,7 +355,7 @@ export default function InstructorTraccarSetup() {
                           variant="ghost" 
                           size="icon" 
                           className="h-7 w-7"
-                          onClick={() => copyToClipboard(device.device_identifier, "id", device.id)}
+                          onClick={() => copyToClipboard(device.device_identifier, device.id)}
                         >
                           {copiedId === device.id ? (
                             <Check className="h-3 w-3 text-green-500" />
@@ -499,44 +402,6 @@ export default function InstructorTraccarSetup() {
             ))
           )}
         </div>
-
-        {/* Traccar Settings Reference */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Settings className="h-4 w-4" />
-              Traccar Client Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="font-medium">Device identifier</p>
-                <p className="text-muted-foreground">Your Device ID from above</p>
-              </div>
-              <div>
-                <p className="font-medium">Server URL</p>
-                <p className="text-muted-foreground break-all">{webhookUrl}</p>
-              </div>
-              <div>
-                <p className="font-medium">Frequency</p>
-                <p className="text-muted-foreground">5 seconds</p>
-              </div>
-              <div>
-                <p className="font-medium">Distance</p>
-                <p className="text-muted-foreground">10 meters</p>
-              </div>
-              <div>
-                <p className="font-medium">Angle</p>
-                <p className="text-muted-foreground">10 degrees</p>
-              </div>
-              <div>
-                <p className="font-medium">Offline buffering</p>
-                <p className="text-muted-foreground">Enabled</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
