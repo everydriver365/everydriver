@@ -54,6 +54,8 @@ export default function InstructorTraccarSetup() {
   const [devices, setDevices] = useState<TraccarDevice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deviceName, setDeviceName] = useState("My Phone");
+  const [deviceId, setDeviceId] = useState("");
+  const [useCustomId, setUseCustomId] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
@@ -121,9 +123,19 @@ export default function InstructorTraccarSetup() {
   const createDevice = async () => {
     if (!instructor?.id) return;
     
+    // Validate custom ID if using one
+    if (useCustomId && !deviceId.trim()) {
+      toast({
+        title: "Device ID required",
+        description: "Please enter your hardware device ID",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsCreating(true);
     try {
-      const deviceIdentifier = generateDeviceId();
+      const deviceIdentifier = useCustomId ? deviceId.trim() : generateDeviceId();
       
       const { data, error } = await supabase
         .from("traccar_devices")
@@ -139,10 +151,14 @@ export default function InstructorTraccarSetup() {
 
       setDevices([data, ...devices]);
       setDeviceName("My Phone");
+      setDeviceId("");
+      setUseCustomId(false);
       
       toast({
         title: "Device created",
-        description: "Your device ID has been generated. Configure Traccar Client with these settings.",
+        description: useCustomId 
+          ? "Your device has been registered. Send SMS 805 with this ID to your tracker."
+          : "Your device ID has been generated. Configure Traccar Client with these settings.",
       });
     } catch (err) {
       console.error("Error creating device:", err);
@@ -320,7 +336,7 @@ export default function InstructorTraccarSetup() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Add New Device</CardTitle>
-            <CardDescription>Create a device ID for your phone</CardDescription>
+            <CardDescription>Register a device for tracking</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -329,16 +345,46 @@ export default function InstructorTraccarSetup() {
                 id="deviceName"
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
-                placeholder="e.g., My iPhone"
+                placeholder="e.g., My iPhone, ST-902L"
               />
             </div>
+            
+            {/* Toggle between auto-generate and custom ID */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="useCustomId"
+                checked={useCustomId}
+                onChange={(e) => setUseCustomId(e.target.checked)}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <Label htmlFor="useCustomId" className="text-sm font-normal cursor-pointer">
+                I have my own device ID (from hardware tracker)
+              </Label>
+            </div>
+            
+            {useCustomId && (
+              <div className="space-y-2">
+                <Label htmlFor="deviceId">Device ID</Label>
+                <Input
+                  id="deviceId"
+                  value={deviceId}
+                  onChange={(e) => setDeviceId(e.target.value)}
+                  placeholder="e.g., 123456789012345"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter the ID from your hardware tracker (IMEI, serial number, or vendor-provided ID)
+                </p>
+              </div>
+            )}
+            
             <Button onClick={createDevice} disabled={isCreating}>
               {isCreating ? (
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Smartphone className="h-4 w-4 mr-2" />
               )}
-              Generate Device ID
+              {useCustomId ? "Register Device" : "Generate Device ID"}
             </Button>
           </CardContent>
         </Card>
