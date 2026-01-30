@@ -20,6 +20,7 @@ import {
   Settings,
   Trash2
 } from "lucide-react";
+import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
 import { formatDistanceToNow } from "date-fns";
 import {
   AlertDialog,
@@ -58,6 +59,7 @@ export default function InstructorTraccarSetup() {
   const [copiedUrl, setCopiedUrl] = useState(false);
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseHost = supabaseUrl?.replace('https://', '') || 'qyqeibovdhyohkfagujv.supabase.co';
   const webhookUrl = `${supabaseUrl}/functions/v1/traccar-webhook`;
 
   useEffect(() => {
@@ -287,6 +289,9 @@ export default function InstructorTraccarSetup() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Hardware Tracker Setup */}
+        <HardwareTrackerSetup supabaseHost={supabaseHost} />
 
         {/* Server URL */}
         <Card>
