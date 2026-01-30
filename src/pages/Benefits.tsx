@@ -15,10 +15,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
+import { useDomainBranding } from "@/hooks/useDomainBranding";
 
 export default function Benefits() {
   const location = useLocation();
   const { features, loading } = useIncludedFeatures();
+  const branding = useDomainBranding();
 
   const navItems = [
     { label: "Home", icon: Home, path: "/" },
@@ -32,8 +34,8 @@ export default function Benefits() {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header - Primary Blue to match brand */}
-      <div className="px-4 py-3 flex items-center justify-center sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
-        <img src="/everydriver-logo-v2.png" alt="EveryDriver" className="h-7" />
+      <div className="px-4 py-3 flex items-center justify-start sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
+        <img src={branding.logoPath} alt={branding.brandName} className="h-9" />
       </div>
 
       {/* Hero Section */}
