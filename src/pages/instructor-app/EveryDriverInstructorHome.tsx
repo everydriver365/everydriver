@@ -114,8 +114,8 @@ export default function Drive365Home() {
         </AnimatePresence>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-[hsl(228,54%,17%)] to-[hsl(228,54%,12%)] text-white py-20 md:py-32">
+      {/* Hero Section - Lighter background for contrast with header */}
+      <section className="bg-gradient-to-b from-[hsl(228,45%,35%)] to-[hsl(228,50%,25%)] text-white py-20 md:py-32">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
