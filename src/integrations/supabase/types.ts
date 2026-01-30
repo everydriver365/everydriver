@@ -1723,6 +1723,91 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_blood_glucose_logs: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          log_date: string
+          log_time: string | null
+          notes: string | null
+          reading_mmol: number
+          reading_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          log_date?: string
+          log_time?: string | null
+          notes?: string | null
+          reading_mmol: number
+          reading_type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          log_date?: string
+          log_time?: string | null
+          notes?: string | null
+          reading_mmol?: number
+          reading_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_blood_glucose_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_blood_pressure_logs: {
+        Row: {
+          created_at: string
+          diastolic: number
+          id: string
+          instructor_id: string
+          log_date: string
+          log_time: string | null
+          notes: string | null
+          pulse: number | null
+          systolic: number
+        }
+        Insert: {
+          created_at?: string
+          diastolic: number
+          id?: string
+          instructor_id: string
+          log_date?: string
+          log_time?: string | null
+          notes?: string | null
+          pulse?: number | null
+          systolic: number
+        }
+        Update: {
+          created_at?: string
+          diastolic?: number
+          id?: string
+          instructor_id?: string
+          log_date?: string
+          log_time?: string | null
+          notes?: string | null
+          pulse?: number | null
+          systolic?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_blood_pressure_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_calendar_events: {
         Row: {
           end_time: string
@@ -2034,6 +2119,166 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      instructor_forum_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_read: boolean | null
+          reply_id: string | null
+          topic_id: string
+        }
+        Insert: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_read?: boolean | null
+          reply_id?: string | null
+          topic_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_read?: boolean | null
+          reply_id?: string | null
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_forum_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_forum_alerts_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_forum_replies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_forum_alerts_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_forum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_forum_replies: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_solution: boolean | null
+          topic_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_solution?: boolean | null
+          topic_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_solution?: boolean | null
+          topic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_forum_replies_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_forum_replies_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_forum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_forum_topics: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_locked: boolean | null
+          is_pinned: boolean | null
+          last_reply_at: string | null
+          last_reply_by: string | null
+          reply_count: number | null
+          title: string
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_reply_at?: string | null
+          last_reply_by?: string | null
+          reply_count?: number | null
+          title: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          last_reply_at?: string | null
+          last_reply_by?: string | null
+          reply_count?: number | null
+          title?: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_forum_topics_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_forum_topics_last_reply_by_fkey"
+            columns: ["last_reply_by"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       instructor_google_service_calendar: {
         Row: {
@@ -2421,6 +2666,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      instructor_support_resources: {
+        Row: {
+          category: string
+          content: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          external_url: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          resource_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          external_url?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          resource_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          external_url?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          resource_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       instructor_terms_conditions: {
         Row: {
