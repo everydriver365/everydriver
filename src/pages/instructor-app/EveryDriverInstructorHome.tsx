@@ -2,48 +2,15 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, CreditCard, Globe, Users, Shield, Smartphone, Menu, X } from "lucide-react";
+import { Shield, CreditCard, Menu, X } from "lucide-react";
 const mainLogo = "/everydriver-logo-v2.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Drive365InstallBanner } from "@/components/pwa/Drive365InstallBanner";
+import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
 
-const features = [
-  {
-    icon: Calendar,
-    title: "Smart Calendar",
-    description: "Manage your diary with drag-and-drop scheduling and Google Calendar sync",
-  },
-  {
-    icon: CreditCard,
-    title: "Get Paid Faster",
-    description: "Accept card payments, track earnings, and send payment reminders",
-  },
-  {
-    icon: Globe,
-    title: "Your Own Website",
-    description: "Professional mini-website with booking, reviews, and your branding",
-  },
-  {
-    icon: Users,
-    title: "Pupil Management",
-    description: "Track progress, send notes, and keep all pupil records organized",
-  },
-  {
-    icon: Smartphone,
-    title: "Mobile App",
-    description: "Full-featured PWA that works offline - install on any device",
-  },
-  {
-    icon: Shield,
-    title: "Compliance Tools",
-    description: "CPD logging, document tracking, and expiry reminders",
-  },
-];
-
-export default function Drive365Home() {
-  const isMobile = useIsMobile();
+export default function EveryDriverInstructorHome() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { hero, features, loading, isSectionVisible } = useInstructorAppContent();
   
   return (
     <div className="min-h-screen bg-background">
@@ -114,7 +81,7 @@ export default function Drive365Home() {
         </AnimatePresence>
       </header>
 
-      {/* Hero Section - Lighter background for contrast with header */}
+      {/* Hero Section - CMS Driven */}
       <section className="bg-gradient-to-b from-[hsl(228,45%,35%)] to-[hsl(228,50%,25%)] text-white py-20 md:py-32">
         <div className="container mx-auto px-4 text-center">
           <motion.div
@@ -123,83 +90,95 @@ export default function Drive365Home() {
             transition={{ duration: 0.6 }}
           >
             <span className="inline-block px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-medium mb-6">
-              Built for UK Driving Instructors
+              {hero.badge_text}
             </span>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              The Complete Platform for{" "}
-              <span className="text-emerald-400">Driving Instructors</span>
+              {hero.headline_part1}{" "}
+              <span className="text-emerald-400">{hero.headline_highlight}</span>
             </h1>
             <p className="text-xl text-white/80 max-w-2xl mx-auto mb-10">
-              Manage your diary, pupils, payments, and marketing all in one place.
-              Save hours every week and grow your business.
+              {hero.subtext}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/instructor-app/signup">
+              <Link to={hero.primary_cta_link}>
                 <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 text-lg">
-                  Get Started Free
+                  {hero.primary_cta_text}
                 </Button>
               </Link>
-              <Link to="/instructor-app/features">
+              <Link to={hero.secondary_cta_link}>
                 <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 px-8 py-6 text-lg">
-                  View Features
+                  {hero.secondary_cta_text}
                 </Button>
               </Link>
             </div>
             <div className="flex items-center justify-center gap-6 mt-8 text-sm text-white/60">
               <span className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-emerald-400" />
-                Free forever plan
+                {hero.trust_badge1}
               </span>
               <span className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-emerald-400" />
-                No card required
+                {hero.trust_badge2}
               </span>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need to Run Your Business
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Powerful tools designed specifically for independent driving instructors
-            </p>
-          </motion.div>
+      {/* Features Grid - CMS Driven */}
+      {isSectionVisible('features') && (
+        <section className="py-20 bg-background">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Everything You Need to Run Your Business
+              </h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Powerful tools designed specifically for independent driving instructors
+              </p>
+            </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-card border border-border rounded-xl p-6 hover:border-emerald-500/50 transition-colors"
-              >
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-emerald-500" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading ? (
+                // Loading skeleton
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="bg-card border border-border rounded-xl p-6 animate-pulse">
+                    <div className="w-12 h-12 bg-muted rounded-lg mb-4" />
+                    <div className="h-6 bg-muted rounded w-3/4 mb-2" />
+                    <div className="h-4 bg-muted rounded w-full" />
+                  </div>
+                ))
+              ) : (
+                features.map((feature, index) => (
+                  <motion.div
+                    key={feature.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-card border border-border rounded-xl p-6 hover:border-emerald-500/50 transition-colors"
+                  >
+                    <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4">
+                      <feature.icon className="w-6 h-6 text-emerald-500" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </motion.div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-20 bg-[hsl(228,54%,17%)]">
