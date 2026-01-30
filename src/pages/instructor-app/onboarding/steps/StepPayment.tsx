@@ -1,21 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { OnboardingLayout } from "../components/OnboardingLayout";
 import { StepNavigation } from "../components/StepNavigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
   CreditCard, 
   Shield, 
   CheckCircle2, 
   Loader2, 
-  ExternalLink,
-  Building2,
   Globe,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Lock
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -37,6 +34,30 @@ interface PlanDetails {
   price_monthly: number;
 }
 
+interface SquareConfig {
+  appId: string;
+  locationId: string;
+  environment: string;
+}
+
+interface SquareCardInstance {
+  attach: (selector: string) => Promise<void>;
+  tokenize: () => Promise<{ status: string; token?: string; errors?: Array<{ message: string }> }>;
+  destroy: () => void;
+}
+
+interface SquarePaymentsInstance {
+  card: () => Promise<SquareCardInstance>;
+}
+
+// Use type assertion for Square SDK access
+const getSquarePayments = async (appId: string, locationId: string): Promise<SquarePaymentsInstance> => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sq = (window as any).Square;
+  if (!sq) throw new Error("Square SDK not loaded");
+  return sq.payments(appId, locationId) as Promise<SquarePaymentsInstance>;
+};
+
 export function StepPayment({
   data,
   instructorId,
@@ -46,84 +67,140 @@ export function StepPayment({
 }: StepPaymentProps) {
   const [plan, setPlan] = useState<PlanDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initiating, setInitiating] = useState(false);
-  const [checkingStatus, setCheckingStatus] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [squareConfig, setSquareConfig] = useState<SquareConfig | null>(null);
+  const [cardReady, setCardReady] = useState(false);
+  const [cardError, setCardError] = useState<string | null>(null);
+  const cardRef = useRef<SquareCardInstance | null>(null);
+  const cardContainerRef = useRef<HTMLDivElement>(null);
 
+  // Fetch plan and Square config on mount
   useEffect(() => {
-    if (data.selectedPlanId) {
-      fetchPlanDetails();
-    } else {
-      setLoading(false);
-    }
+    const init = async () => {
+      try {
+        // Fetch plan details
+        if (data.selectedPlanId) {
+          const { data: planData, error } = await supabase
+            .from("subscription_plans")
+            .select("id, name, price_monthly")
+            .eq("id", data.selectedPlanId)
+            .single();
+
+          if (!error && planData) {
+            setPlan(planData);
+          }
+        }
+
+        // Fetch Square config
+        const { data: config, error: configError } = await supabase.functions.invoke(
+          "square-wallet-config"
+        );
+
+        if (!configError && config?.appId) {
+          setSquareConfig(config);
+        } else {
+          console.error("Failed to load Square config:", configError);
+          setCardError("Payment system not configured");
+        }
+      } catch (err) {
+        console.error("Init error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    init();
   }, [data.selectedPlanId]);
 
-  // Check for return from GoCardless
+  // Load Square SDK and initialize card
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const billingRequestFlowId = urlParams.get("billing_request_flow_id");
-    
-    if (billingRequestFlowId) {
-      handleGoCardlessReturn();
-    }
-  }, []);
+    if (!squareConfig || !plan || plan.price_monthly === 0) return;
 
-  const fetchPlanDetails = async () => {
+    const loadSquareSDK = async () => {
+      // Check if SDK already loaded
+      if (window.Square) {
+        await initializeCard();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = squareConfig.environment === "production"
+        ? "https://web.squarecdn.com/v1/square.js"
+        : "https://sandbox.web.squarecdn.com/v1/square.js";
+      script.async = true;
+      
+      script.onload = async () => {
+        await initializeCard();
+      };
+      
+      script.onerror = () => {
+        setCardError("Failed to load payment form");
+      };
+
+      document.body.appendChild(script);
+    };
+
+    const initializeCard = async () => {
+      try {
+        if (!cardContainerRef.current || !squareConfig) return;
+        
+        // Clear any existing card
+        if (cardRef.current) {
+          cardRef.current.destroy();
+          cardRef.current = null;
+        }
+
+        const payments = await getSquarePayments(
+          squareConfig.appId,
+          squareConfig.locationId
+        );
+        
+        const card = await payments.card();
+        await card.attach("#square-card-container");
+        
+        cardRef.current = card;
+        setCardReady(true);
+        setCardError(null);
+      } catch (err) {
+        console.error("Error initializing Square card:", err);
+        setCardError("Failed to initialize payment form");
+      }
+    };
+
+    loadSquareSDK();
+
+    return () => {
+      if (cardRef.current) {
+        cardRef.current.destroy();
+        cardRef.current = null;
+      }
+    };
+  }, [squareConfig, plan]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!cardRef.current || !plan) return;
+
+    setSubmitting(true);
+    setCardError(null);
+
     try {
-      const { data: planData, error } = await supabase
-        .from("subscription_plans")
-        .select("id, name, price_monthly")
-        .eq("id", data.selectedPlanId)
+      // Tokenize the card
+      const result = await cardRef.current.tokenize();
+      
+      if (result.status !== "OK" || !result.token) {
+        const errorMessage = result.errors?.[0]?.message || "Card validation failed";
+        setCardError(errorMessage);
+        setSubmitting(false);
+        return;
+      }
+
+      // Get instructor email
+      const { data: instructor } = await supabase
+        .from("instructors")
+        .select("email")
+        .eq("id", instructorId)
         .single();
 
-      if (error) throw error;
-      setPlan(planData);
-    } catch (error) {
-      console.error("Error fetching plan:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoCardlessReturn = async () => {
-    setCheckingStatus(true);
-    try {
-      // Check subscription status
-      const { data: subscription, error } = await supabase
-        .from("instructor_subscriptions")
-        .select("status, gocardless_mandate_id")
-        .eq("instructor_id", instructorId)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (subscription?.gocardless_mandate_id || subscription?.status === "active") {
-        toast.success("Payment method set up successfully!");
-        
-        // Clear URL params
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // Proceed to next step
-        onNext();
-      } else {
-        toast.info("Setting up your payment method...");
-        // Poll for a few seconds to wait for webhook
-        setTimeout(() => {
-          handleGoCardlessReturn();
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Error checking status:", error);
-      toast.error("Could not verify payment setup. Please try again.");
-    } finally {
-      setCheckingStatus(false);
-    }
-  };
-
-  const initiateGoCardlessSetup = async () => {
-    if (!plan) return;
-
-    setInitiating(true);
-    try {
       // Parse domain if selected
       let domainName: string | undefined;
       let domainTld: string | undefined;
@@ -131,20 +208,21 @@ export function StepPayment({
 
       if (data.selectedDomain) {
         const domainParts = data.selectedDomain.match(/^(.+?)(\.co\.uk|\.uk|\.com|\.org|\.net|\.io)$/i);
-        domainName = domainParts ? domainParts[1] : data.selectedDomain.split('.')[0];
-        domainTld = domainParts ? domainParts[2] : '.' + data.selectedDomain.split('.').slice(1).join('.');
-        domainPrice = 12.99; // Default domain price
+        domainName = domainParts ? domainParts[1] : data.selectedDomain.split(".")[0];
+        domainTld = domainParts ? domainParts[2] : "." + data.selectedDomain.split(".").slice(1).join(".");
+        domainPrice = 12.99;
       }
 
-      const redirectUrl = `${window.location.origin}${window.location.pathname}?step=9`;
-
-      const { data: result, error } = await supabase.functions.invoke(
-        "gocardless-create-billing-request",
+      // Call the subscription edge function
+      const { data: subResult, error: subError } = await supabase.functions.invoke(
+        "square-create-subscription",
         {
           body: {
             instructor_id: instructorId,
             plan_id: plan.id,
-            redirect_url: redirectUrl,
+            card_nonce: result.token,
+            instructor_name: data.name,
+            instructor_email: instructor?.email || "",
             domain_name: domainName,
             domain_tld: domainTld,
             domain_price: domainPrice,
@@ -152,20 +230,20 @@ export function StepPayment({
         }
       );
 
-      if (error) throw error;
-
-      if (result?.authorisation_url) {
-        // Redirect to GoCardless
-        window.location.href = result.authorisation_url;
-      } else {
-        throw new Error("No authorisation URL received");
+      if (subError || !subResult?.success) {
+        throw new Error(subResult?.error || subError?.message || "Subscription failed");
       }
-    } catch (error) {
-      console.error("Error initiating GoCardless:", error);
-      toast.error("Failed to start payment setup. Please try again.");
-      setInitiating(false);
+
+      toast.success("Payment set up successfully!");
+      onNext();
+    } catch (err) {
+      console.error("Payment error:", err);
+      setCardError(err instanceof Error ? err.message : "Payment failed");
+      toast.error("Failed to process payment");
+    } finally {
+      setSubmitting(false);
     }
-  };
+  }, [plan, instructorId, data, onNext]);
 
   // Calculate totals
   const monthlyAmount = plan?.price_monthly || 0;
@@ -174,29 +252,9 @@ export function StepPayment({
 
   if (loading) {
     return (
-      <OnboardingLayout
-        step={9}
-        totalSteps={10}
-        title="Loading..."
-      >
+      <OnboardingLayout step={9} totalSteps={10} title="Loading...">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </OnboardingLayout>
-    );
-  }
-
-  if (checkingStatus) {
-    return (
-      <OnboardingLayout
-        step={9}
-        totalSteps={10}
-        title="Verifying Payment Setup"
-        description="Please wait while we confirm your payment method"
-      >
-        <div className="flex flex-col items-center justify-center py-12 gap-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-muted-foreground">Confirming your Direct Debit setup...</p>
         </div>
       </OnboardingLayout>
     );
@@ -229,11 +287,11 @@ export function StepPayment({
           </Card>
 
           {data.selectedDomain && (
-            <Card className="border-amber-500/30 bg-amber-500/5">
+            <Card className="border-warning/30 bg-warning/5">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
-                    <Globe className="h-6 w-6 text-amber-600" />
+                  <div className="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center">
+                    <Globe className="h-6 w-6 text-warning" />
                   </div>
                   <div>
                     <h3 className="font-semibold">Domain Selected: {data.selectedDomain}</h3>
@@ -262,7 +320,7 @@ export function StepPayment({
       step={9}
       totalSteps={10}
       title="Set Up Payment"
-      description="Secure Direct Debit via GoCardless"
+      description="Enter your card details to activate your subscription"
     >
       <div className="space-y-6">
         {/* Order Summary */}
@@ -304,9 +362,32 @@ export function StepPayment({
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Then £{monthlyAmount.toFixed(2)}/month via Direct Debit
+                Then £{monthlyAmount.toFixed(2)}/month
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Card Input */}
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              Card Details
+            </h3>
+            
+            <div 
+              id="square-card-container" 
+              ref={cardContainerRef}
+              className="min-h-[50px] p-3 border rounded-md bg-background"
+            />
+            
+            {cardError && (
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                <span>{cardError}</span>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -316,37 +397,31 @@ export function StepPayment({
             <div className="flex items-start gap-3">
               <Shield className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-sm">Secure Direct Debit</p>
+                <p className="font-medium text-sm">Secure Payment</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Protected by the Direct Debit Guarantee. You can cancel anytime.
-                  Powered by GoCardless, trusted by over 75,000 businesses worldwide.
+                  Your payment is processed securely by Square. Your card details are encrypted
+                  and never stored on our servers. You can cancel your subscription anytime.
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Bank Info Preview */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Building2 className="h-4 w-4" />
-          <span>You'll be redirected to securely enter your bank details</span>
-        </div>
-
         {/* Action Button */}
         <Button
           size="lg"
           className="w-full gap-2"
-          onClick={initiateGoCardlessSetup}
-          disabled={initiating}
+          onClick={handleSubmit}
+          disabled={!cardReady || submitting}
         >
-          {initiating ? (
+          {submitting ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
-              Setting up...
+              Processing...
             </>
           ) : (
             <>
-              Set Up Direct Debit
+              Pay £{totalFirstPayment.toFixed(2)} & Continue
               <ArrowRight className="h-5 w-5" />
             </>
           )}
@@ -365,10 +440,7 @@ export function StepPayment({
         )}
       </div>
 
-      <StepNavigation
-        onBack={onBack}
-        canProceed={false}
-      />
+      <StepNavigation onBack={onBack} canProceed={false} />
     </OnboardingLayout>
   );
 }
