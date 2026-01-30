@@ -17,18 +17,25 @@ const pwaConfigs: Record<string, PWAMetaConfig> = {
     title: "EveryDriver",
     themeColor: "#141b43",
   },
-  pupil: {
-    icon: "/apple-touch-icon.png",
-    favicon: "/favicon.png",
+  learner: {
+    icon: "/favicon-365.png",
+    favicon: "/favicon-365.png",
     splash: "/splash-pupil.png",
-    title: "EveryDriver Learner",
+    title: "Drive365",
+    themeColor: "#141b43",
+  },
+  pupil: {
+    icon: "/favicon-365.png",
+    favicon: "/favicon-365.png",
+    splash: "/splash-pupil.png",
+    title: "Drive365",
     themeColor: "#141b43",
   },
   parent: {
-    icon: "/apple-touch-icon-365.png",
+    icon: "/favicon-365.png",
     favicon: "/favicon-365.png",
     splash: "/splash-parent.png",
-    title: "DL Parent",
+    title: "Drive365 Parent",
     themeColor: "#141b43",
   },
   default: {
@@ -50,9 +57,9 @@ function getPortalType(pathname: string): string {
     return "instructor";
   }
   
-  // drive365.co.uk (learner domain) gets default/pupil branding
+  // drive365.co.uk (learner domain) gets learner branding with Drive365 favicon
   if (hostname.includes("drive365")) {
-    return "default";
+    return "learner";
   }
 
   // Fall back to path-based detection for localhost/lovable.app
