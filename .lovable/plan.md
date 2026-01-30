@@ -1,155 +1,95 @@
 
-# Route Summary Display After Track Completion
+# Add Sinotrack ST-902L Setup Instructions
+
+This plan adds a dedicated collapsible section for configuring the Sinotrack ST-902L hardware GPS tracker with copyable SMS commands.
 
 ## Overview
-Create an enhanced post-route summary screen inspired by the fitness app workout summary UI. This will display an interactive map with the route, key statistics (duration, distance), and a detailed breakdown of roads travelled with speeds and speed limits shown in graphical format.
 
-## Current State Analysis
-- **Tracking ends** in `InstructorTraccarSession.tsx` via `stopSession()` function
-- After stopping, a `Sheet` opens with `SessionRouteReport` component
-- `SessionRouteReport` calls the `generate-route-report` edge function to get:
-  - Route GPS points with lat/lon/speed
-  - Road segments with names, speed limits, avg/max speeds, compliance status
-  - Overall stats (distance, duration, avg speed, max speed)
-  - Driving behavior events
+The ST-902L is an OBD-II hardware tracker that provides more reliable GPS tracking than phone apps by bypassing mobile OS background restrictions. Users configure it by sending SMS commands to the device's SIM card number.
 
-The existing `SessionRouteReport` already shows some of this data but lacks:
-1. A visual speed graph over time (like the reference image)
-2. A larger, more prominent route map
-3. Better visual hierarchy matching the workout summary aesthetic
+## What Will Be Added
 
-## Design Inspiration (from reference image)
-- **Dark themed modal** with prominent map at top
-- **Duration and distance** displayed prominently below the map
-- **Time-segmented graphs** showing metrics over the journey
-- **Clean stat cards** for key metrics
+A new **"Hardware Tracker Setup"** card with an accordion containing:
 
-## Implementation Plan
+1. **Device Overview** - What the ST-902L is and where to plug it in
+2. **Prerequisites Checklist** - SIM card requirements and device ID creation reminder
+3. **Step-by-Step SMS Commands** - Each with a copy button:
+   - `804 qyqeibovdhyohkfagujv.supabase.co 443` - Set server domain and HTTPS port
+   - `805 [DEVICE_ID]` - Set the device identifier (user substitutes their ID)
+   - `710 5` - Set update frequency to 5 seconds
+   - `711 10` - Set distance threshold to 10 meters
+   - `RESET#` - Restart device to apply settings
+4. **Verification Instructions** - How to confirm the device is connected
+5. **Troubleshooting Tips** - Common issues and solutions
 
-### 1. Fix Build Error (PWA File Size)
-Increase the PWA file size limit from 5MB to 6MB to accommodate the growing bundle:
+## UI Design
 
-**File:** `vite.config.ts`
-- Change `maximumFileSizeToCacheInBytes` from `5 * 1024 * 1024` to `6 * 1024 * 1024`
+- Uses the existing `Accordion` component for clean expandable sections
+- Each SMS command has a copy button using existing `copyToClipboard` pattern
+- New state variable `copiedSms` to track which command was copied
+- Styled consistently with existing cards using the project's Card components
+- Includes a `Cpu` icon from lucide-react to differentiate from phone setup
 
-### 2. Create New Route Summary Component
-Create a new `TripSummarySheet.tsx` component that displays:
+## Placement
 
-**File:** `src/components/instructor/TripSummarySheet.tsx`
+The new card will appear **after** the "How It Works" card and **before** the "Server URL" card, making it easy to find for hardware tracker users while keeping phone app instructions prominent.
 
-**Structure:**
-```text
-┌─────────────────────────────────────────────┐
-│  [X]                Trip Summary            │
-├─────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────┐    │
-│  │                                     │    │
-│  │         LARGE ROUTE MAP             │    │
-│  │    (with start/end markers)         │    │
-│  │                                     │    │
-│  └─────────────────────────────────────┘    │
-│                                             │
-│     ⏱️ 1:23:45           📍 8.5 mi         │
-│     Duration              Distance          │
-├─────────────────────────────────────────────┤
-│  [ Speed Over Time Graph - Recharts ]       │
-│  ▁▂▃▅▆▇█▇▅▃▂▁▃▅▆▇█▆▄▂                       │
-│  0:00                              1:23:45  │
-│  Avg: 28 mph    Max: 45 mph                 │
-├─────────────────────────────────────────────┤
-│  Roads Travelled                    12 roads│
-├─────────────────────────────────────────────┤
-│  🟢 High Street          30 mph limit       │
-│     Avg: 24 mph  Max: 28 mph      ✓ Under   │
-│  ─────────────────────────────────────────  │
-│  🟡 London Road          40 mph limit       │
-│     Avg: 38 mph  Max: 42 mph      ⚠️ At     │
-│  ─────────────────────────────────────────  │
-│  🔴 M1 Motorway          70 mph limit       │
-│     Avg: 65 mph  Max: 78 mph      ❌ Over   │
-├─────────────────────────────────────────────┤
-│  [ Download PDF ]   [ Share ]   [ Done ]    │
-└─────────────────────────────────────────────┘
-```
-
-### 3. Speed Over Time Graph
-Add a Recharts AreaChart showing speed over the duration of the trip:
-
-- X-axis: Time elapsed (formatted as mm:ss or h:mm:ss)
-- Y-axis: Speed in mph
-- Line color: Blue gradient
-- Show speed limit overlay as a dashed line where known
-- Highlight speeding sections in red/orange
-
-**Data transformation:**
-- Take the `route` array from the report (contains `{ lat, lon, speed }`)
-- Calculate elapsed time for each point based on GPS timestamps
-- Create chart data: `{ time: "5:30", speed: 32, speedLimit: 30 }`
-
-### 4. Enhanced Road List with Speed Bars
-Each road segment will show:
-- Road name with compliance indicator (green/yellow/red dot)
-- Speed limit in mph
-- Visual bar showing avg speed vs max speed vs limit
-- Compliance badge
-
-### 5. Update the Edge Function Response
-Enhance `generate-route-report` to include timestamps for the speed graph:
-
-**File:** `supabase/functions/generate-route-report/index.ts`
-- Add `recorded_at` to the route point response for time-based graphing
-- Include speed limit data per point for the speed limit overlay
-
-### 6. Replace Existing Sheet Implementation
-Update `InstructorTraccarSession.tsx` to use the new `TripSummarySheet` instead of the current `SessionRouteReport` in a basic sheet.
+---
 
 ## Technical Details
 
-### Speed Graph Data Structure
+### File Modified
+`src/pages/InstructorTraccarSetup.tsx`
+
+### New Imports
 ```typescript
-interface SpeedDataPoint {
-  elapsedMinutes: number;  // Time from start
-  elapsedLabel: string;    // "5:30" format
-  speed: number;           // Speed in mph
-  speedLimit: number | null; // Current road speed limit
-  roadName: string;        // For tooltips
-}
+import { Cpu, MessageSquare } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 ```
 
-### Road Segment Card Component
+### New State
 ```typescript
-interface RoadSegmentCardProps {
-  name: string;
-  speedLimitMph: number | null;
-  avgSpeedMph: number;
-  maxSpeedMph: number;
-  compliance: 'under' | 'at' | 'over';
-}
+const [copiedSms, setCopiedSms] = useState<string | null>(null);
 ```
 
-### Files to Create
-| File | Purpose |
-|------|---------|
-| `src/components/instructor/TripSummarySheet.tsx` | Main summary modal component |
-| `src/components/instructor/SpeedTimeGraph.tsx` | Recharts speed over time visualization |
-| `src/components/instructor/RoadSegmentCard.tsx` | Individual road segment display |
+### SMS Commands Configuration
+```typescript
+const smsCommands = [
+  { 
+    id: "server", 
+    command: "804 qyqeibovdhyohkfagujv.supabase.co 443", 
+    description: "Set server domain and HTTPS port" 
+  },
+  { 
+    id: "device", 
+    command: "805 [YOUR_DEVICE_ID]", 
+    description: "Set device identifier (replace with your Device ID)" 
+  },
+  { 
+    id: "frequency", 
+    command: "710 5", 
+    description: "Set update frequency to 5 seconds" 
+  },
+  { 
+    id: "distance", 
+    command: "711 10", 
+    description: "Set distance threshold to 10 meters" 
+  },
+  { 
+    id: "reset", 
+    command: "RESET#", 
+    description: "Restart device to apply settings" 
+  },
+];
+```
 
-### Files to Modify
-| File | Changes |
-|------|---------|
-| `vite.config.ts` | Increase PWA file size limit |
-| `supabase/functions/generate-route-report/index.ts` | Add timestamps to route response |
-| `src/pages/InstructorTraccarSession.tsx` | Use new TripSummarySheet component |
+### Copy Function Enhancement
+Extended to handle SMS commands with visual feedback.
 
-## Mobile Optimization
-- Full-screen sheet on mobile (`h-[100dvh]`)
-- Scrollable content with sticky header and footer
-- Touch-friendly buttons with 44px minimum height
-- Responsive stat cards (2 columns on mobile, 4 on desktop)
-- Compressed chart height on mobile (150px vs 200px)
-
-## Dependencies
-Uses existing dependencies:
-- `recharts` (already installed for health trackers)
-- `react-leaflet` (already used for maps)
-- Shadcn UI components (Card, Badge, Button, Sheet, ScrollArea)
+### New Card Component
+A Card with Accordion containing the full setup guide, placed between "How It Works" and "Server URL" cards.
