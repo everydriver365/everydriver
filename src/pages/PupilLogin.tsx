@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useDomainBranding } from "@/hooks/useDomainBranding";
 
 import {
   InputOTP,
@@ -28,6 +29,7 @@ export default function PupilLogin() {
   const [pupilData, setPupilData] = useState<{ name: string; slug: string } | null>(null);
   const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
+  const branding = useDomainBranding();
 
   // Check for remembered phone on mount
   useEffect(() => {
@@ -170,7 +172,7 @@ export default function PupilLogin() {
           <Card className="border-0 shadow-xl">
             <CardHeader className="text-center pb-2">
               <div className="mb-4 mx-auto inline-block">
-                <img src="/everydriver-logo-v2.png" alt="EveryDriver" className="h-12 mx-auto" />
+                <img src={branding.logoPath} alt={branding.brandName} className="h-12 mx-auto" />
               </div>
               <CardTitle className="text-2xl">Pupil Login</CardTitle>
               <CardDescription>
