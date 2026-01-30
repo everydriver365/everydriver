@@ -31,8 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import SessionRouteReport from "@/components/instructor/SessionRouteReport";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import TraccarLiveMap from "@/components/instructor/TraccarLiveMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { TraccarConnectionChecklist } from "@/components/instructor/TraccarConnectionChecklist";
@@ -998,20 +998,14 @@ export default function InstructorTraccarSession() {
         )}
       </div>
 
-      {/* Trip Report Sheet */}
-      <Sheet open={showReport} onOpenChange={setShowReport}>
-        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Trip Report</SheetTitle>
-          </SheetHeader>
-          {completedSessionId && (
-            <SessionRouteReport 
-              telematicsId={completedSessionId} 
-              onClose={() => setShowReport(false)}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+      {/* Trip Summary Sheet */}
+      {completedSessionId && (
+        <TripSummarySheet
+          open={showReport}
+          onOpenChange={setShowReport}
+          telematicsId={completedSessionId}
+        />
+      )}
 
       {/* Driving Test Start Dialog */}
       <DrivingTestStartDialog

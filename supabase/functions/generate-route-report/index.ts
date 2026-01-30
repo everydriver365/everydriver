@@ -416,7 +416,14 @@ serve(async (req) => {
           endPoint: s.endPoint
         })),
         events: enrichedEvents,
-        route: gpsPoints.map(p => ({ lat: p.latitude, lon: p.longitude, speed: p.speed_kmh }))
+        route: gpsPoints.map(p => ({ 
+          lat: p.latitude, 
+          lon: p.longitude, 
+          speed: p.speed_kmh,
+          recordedAt: p.recorded_at,
+          speedLimit: p.speed_limit_kmh,
+          roadName: p.road_name
+        }))
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
