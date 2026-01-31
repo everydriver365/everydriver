@@ -6077,7 +6077,9 @@ export type Database = {
           instructor_id: string
           is_active: boolean | null
           is_test_route_mode: boolean
+          last_battery_percent: number | null
           last_heading: number | null
+          last_ignition_status: boolean | null
           last_latitude: number | null
           last_longitude: number | null
           last_road_name: string | null
@@ -6087,6 +6089,7 @@ export type Database = {
           last_traccar_fix_time: string | null
           last_traccar_position_id: number | null
           updated_at: string | null
+          vehicle_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -6098,7 +6101,9 @@ export type Database = {
           instructor_id: string
           is_active?: boolean | null
           is_test_route_mode?: boolean
+          last_battery_percent?: number | null
           last_heading?: number | null
+          last_ignition_status?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
           last_road_name?: string | null
@@ -6108,6 +6113,7 @@ export type Database = {
           last_traccar_fix_time?: string | null
           last_traccar_position_id?: number | null
           updated_at?: string | null
+          vehicle_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -6119,7 +6125,9 @@ export type Database = {
           instructor_id?: string
           is_active?: boolean | null
           is_test_route_mode?: boolean
+          last_battery_percent?: number | null
           last_heading?: number | null
+          last_ignition_status?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
           last_road_name?: string | null
@@ -6129,6 +6137,7 @@ export type Database = {
           last_traccar_fix_time?: string | null
           last_traccar_position_id?: number | null
           updated_at?: string | null
+          vehicle_id?: string | null
         }
         Relationships: [
           {
@@ -6150,6 +6159,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_devices_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
             referencedColumns: ["id"]
           },
         ]
@@ -6232,6 +6248,10 @@ export type Database = {
       }
       increment_total_distance: {
         Args: { p_distance: number; p_id: string }
+        Returns: undefined
+      }
+      increment_vehicle_odometer: {
+        Args: { p_distance_km: number; p_vehicle_id: string }
         Returns: undefined
       }
       update_live_position:

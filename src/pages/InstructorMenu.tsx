@@ -156,6 +156,14 @@ export default function InstructorMenu() {
       title: "Tools",
       items: [
         {
+          icon: Car,
+          label: "Vehicle Health",
+          description: "Device telemetry & fleet compliance",
+          path: "/instructor/vehicle-health",
+          iconColor: "text-cyan-600",
+          iconBg: "bg-cyan-100 dark:bg-cyan-900/30",
+        },
+        {
           icon: Award,
           label: "Log Test Result",
           description: "Record faults, examiner & result",

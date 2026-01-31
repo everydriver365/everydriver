@@ -71,6 +71,7 @@ import InstructorHealth from "./pages/InstructorHealth";
 import InstructorIncome from "./pages/InstructorIncome";
 import InstructorInOut from "./pages/InstructorInOut";
 import InstructorTax from "./pages/InstructorTax";
+import InstructorVehicleHealth from "./pages/InstructorVehicleHealth";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
 import PublicAvailability from "./pages/PublicAvailability";
@@ -184,6 +185,7 @@ const App = () => (
               <Route path="/instructor/in-out" element={<InstructorInOut />} />
               <Route path="/instructor/tax" element={<InstructorTax />} />
               <Route path="/instructor/health" element={<InstructorHealth />} />
+              <Route path="/instructor/vehicle-health" element={<InstructorVehicleHealth />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />
