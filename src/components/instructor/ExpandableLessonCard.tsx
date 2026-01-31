@@ -154,7 +154,7 @@ export function ExpandableLessonCard({
   const isRecurring = !!lesson.recurrence_rule;
 
   return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div className="relative overflow-hidden rounded-lg">
       {/* Delete background */}
       {onDelete && (
         <motion.div 
@@ -176,7 +176,7 @@ export function ExpandableLessonCard({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className={cn(
-          "rounded-xl border overflow-hidden shadow-sm relative",
+          "rounded-lg border overflow-hidden relative",
           colorPreset.bg,
           colorPreset.border,
           isDragging && "cursor-grabbing"
@@ -216,44 +216,31 @@ export function ExpandableLessonCard({
           </Popover>
         )}
 
-        {/* Main Card - Ultra Compact Layout */}
+        {/* Main Card - Hyper Compact Layout */}
         <button
           onClick={() => !isDragging && setIsExpanded(!isExpanded)}
-          className="w-full text-left p-2 flex gap-2 items-center"
+          className="w-full text-left px-2 py-1.5 flex gap-2 items-center"
         >
-          {/* Time Column - Minimal */}
-          <div className="flex flex-col items-center justify-center min-w-[44px] text-center">
-            <span className="text-base font-bold text-foreground leading-none">{formatTime(lesson.start_time)}</span>
-            <span className="text-[9px] text-muted-foreground">{lesson.duration_minutes}m</span>
-          </div>
+          {/* Time - Inline compact */}
+          <span className="text-xs font-semibold text-foreground min-w-[36px]">{formatTime(lesson.start_time)}</span>
 
-          {/* Divider */}
-          <div className="w-px h-8 bg-border/50 shrink-0" />
-
-          {/* Content Column - Minimal */}
-          <div className="flex-1 min-w-0 overflow-hidden">
-            <div className="flex items-center gap-1.5">
-              <h3 className="font-medium text-sm text-foreground truncate flex-1">
-                {lesson.pupil?.name || "Unknown"}
-              </h3>
-              {isRecurring && (
-                <Repeat className="h-3 w-3 text-primary shrink-0" />
-              )}
-              {getPaymentBadge()}
-            </div>
-            <p className="text-[10px] text-muted-foreground truncate">
-              {pickupAddress.length > 28 ? pickupAddress.substring(0, 28) + "..." : pickupAddress}
-            </p>
+          {/* Content Column - Single line */}
+          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-hidden">
+            <h3 className="font-medium text-xs text-foreground truncate">
+              {lesson.pupil?.name || "Unknown"}
+            </h3>
+            {isRecurring && (
+              <Repeat className="h-2.5 w-2.5 text-primary shrink-0" />
+            )}
+            <span className="text-[9px] text-muted-foreground shrink-0">{lesson.duration_minutes}m</span>
+            {getPaymentBadge()}
           </div>
 
           {/* Expand Indicator */}
-          <div className="shrink-0">
-            {isExpanded ? (
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </div>
+          <ChevronDown className={cn(
+            "h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform",
+            isExpanded && "rotate-180"
+          )} />
         </button>
 
         {/* Expanded Content */}

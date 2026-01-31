@@ -62,7 +62,6 @@ function EventBar({
 }) {
   const startTime = format(event.start, 'HH:mm');
   const endTime = format(event.end, 'HH:mm');
-  const hasSecondLine = event.type === 'lesson' && event.data?.pickup_address;
   
   return (
     <div
@@ -79,76 +78,71 @@ function EventBar({
           onClick?.();
         }
       }}
-      className="w-full rounded-md px-3 py-2 mb-1.5 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation"
+      className="w-full rounded px-2 py-1 mb-1 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation flex items-center gap-2"
       style={{ backgroundColor: color }}
     >
-      <div className="flex items-start justify-between gap-2 min-w-0">
-        <div className="text-foreground font-medium text-sm truncate min-w-0">
-          {event.title}
-        </div>
+      {/* Time */}
+      <span className="text-[10px] text-muted-foreground font-medium shrink-0 min-w-[70px]">
+        {startTime}–{endTime}
+      </span>
+      
+      {/* Title */}
+      <span className="text-foreground font-medium text-xs truncate flex-1 min-w-0">
+        {event.title}
+      </span>
 
-        <div className="flex items-center gap-1 shrink-0">
-          {onColorChange && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="h-7 w-7 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors flex items-center justify-center"
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label="Change color"
-                >
-                  <Palette className="h-4 w-4 text-muted-foreground pointer-events-none" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="end"
-                className="w-44 p-2"
+      {/* Actions - only show on hover/focus for cleaner look */}
+      <div className="flex items-center gap-0.5 shrink-0 opacity-60 hover:opacity-100">
+        {onColorChange && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="h-5 w-5 rounded bg-muted/40 hover:bg-muted/60 transition-colors flex items-center justify-center"
                 onClick={(e) => e.stopPropagation()}
+                aria-label="Change color"
               >
-                <div className="grid grid-cols-6 gap-1">
-                  {presetColors.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      className={cn(
-                        'h-6 w-6 rounded border',
-                        c === color ? 'border-primary ring-1 ring-primary' : 'border-transparent'
-                      )}
-                      style={{ backgroundColor: c }}
-                      onClick={() => onColorChange(c)}
-                      aria-label="Select color"
-                    />
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-          )}
-
-          {onDelete && event.type !== 'external' && (
-            <button
-              type="button"
-              className="h-7 w-7 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors flex items-center justify-center"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              aria-label="Delete"
+                <Palette className="h-3 w-3 text-muted-foreground pointer-events-none" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="end"
+              className="w-40 p-2"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Trash2 className="h-4 w-4 text-muted-foreground pointer-events-none" />
-            </button>
-          )}
-        </div>
+              <div className="grid grid-cols-6 gap-1">
+                {presetColors.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className={cn(
+                      'h-5 w-5 rounded border',
+                      c === color ? 'border-primary ring-1 ring-primary' : 'border-transparent'
+                    )}
+                    style={{ backgroundColor: c }}
+                    onClick={() => onColorChange(c)}
+                    aria-label="Select color"
+                  />
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
+        {onDelete && event.type !== 'external' && (
+          <button
+            type="button"
+            className="h-5 w-5 rounded bg-muted/40 hover:bg-muted/60 transition-colors flex items-center justify-center"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            aria-label="Delete"
+          >
+            <Trash2 className="h-3 w-3 text-muted-foreground pointer-events-none" />
+          </button>
+        )}
       </div>
-      {hasSecondLine && (
-        <div className="text-muted-foreground text-xs truncate mt-0.5">
-          {startTime} – {endTime} at {event.data.pickup_address}
-        </div>
-      )}
-      {!hasSecondLine && (
-        <div className="text-muted-foreground text-xs truncate mt-0.5">
-          {startTime} – {endTime}
-        </div>
-      )}
     </div>
   );
 }
@@ -179,20 +173,20 @@ function DayRow({
   return (
     <div 
       ref={isCurrentDay ? todayRef : undefined}
-      className="flex py-3 overflow-hidden"
+      className="flex py-1.5 overflow-hidden border-b border-border/20"
     >
-      {/* Date column - Google style */}
-      <div className="w-14 flex-shrink-0 text-center pt-1">
+      {/* Date column - Compact */}
+      <div className="w-12 flex-shrink-0 text-center">
         <div className={cn(
-          "text-[11px] font-medium tracking-wide",
+          "text-[9px] font-medium tracking-wide",
           isCurrentDay ? "text-primary" : "text-muted-foreground"
         )}>
           {dayName}
         </div>
         <div className={cn(
-          "text-2xl font-light",
+          "text-lg font-medium leading-tight",
           isCurrentDay 
-            ? "w-10 h-10 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center" 
+            ? "w-7 h-7 mx-auto rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm" 
             : "text-foreground"
         )}>
           {dayNumber}
@@ -213,8 +207,8 @@ function DayRow({
         className="flex-1 min-w-0 pr-3"
       >
         {dayEvents.events.length === 0 ? (
-          <div className="h-10 flex items-center">
-            <span className="text-xs text-muted-foreground/50">Tap to add</span>
+          <div className="h-6 flex items-center">
+            <span className="text-[10px] text-muted-foreground/40">—</span>
           </div>
         ) : (
           dayEvents.events.map((event) => {
