@@ -48,7 +48,27 @@ Automatic GPS session mileage logging with business vs personal tagging for tax 
 
 ---
 
+## 4. Vehicle Service Reminders ✅
+Configurable service reminders with interval-based scheduling, notifications, and full service history logging.
+
+**Features:**
+- Set up reminders by time (e.g., every 6 months) and/or mileage (e.g., every 10,000 miles)
+- Service types: Oil change, Full service, MOT, Tire rotation, Brake check, Air filter, Coolant flush, Transmission, Other (custom)
+- Automatic "next due" calculation based on last service date/mileage + interval
+- Configurable reminder days (7, 14, or 30 days before due)
+- Visual badges for overdue/due-soon reminders
+- Toggle reminders on/off
+- Full service history log with cost tracking, provider, and notes
+
+**Files:**
+- `vehicle_service_reminders` / `vehicle_service_history` tables with RLS
+- `src/hooks/useVehicleService.ts` - Query and mutation hooks with status calculations
+- `src/components/instructor/vehicle-health/ServiceRemindersTab.tsx` - Main tabbed UI
+- `src/components/instructor/vehicle-health/AddServiceReminderDialog.tsx` - Create reminder dialog
+- `src/components/instructor/vehicle-health/LogServiceDialog.tsx` - Log completed service dialog
+
+---
+
 ## Remaining Features (Not Yet Implemented)
-- Vehicle Service Reminders
 - Geofencing Alerts
 
