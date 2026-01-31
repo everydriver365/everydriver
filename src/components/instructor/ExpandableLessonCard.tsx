@@ -216,29 +216,29 @@ export function ExpandableLessonCard({
           </Popover>
         )}
 
-        {/* Main Card - Hyper Compact Layout */}
+        {/* Main Card - Compact Layout */}
         <button
           onClick={() => !isDragging && setIsExpanded(!isExpanded)}
-          className="w-full text-left px-2 py-1.5 flex gap-2 items-center"
+          className="w-full text-left px-3 py-2 flex gap-3 items-center"
         >
-          {/* Time - Inline compact */}
-          <span className="text-xs font-semibold text-foreground min-w-[36px]">{formatTime(lesson.start_time)}</span>
+          {/* Time - Clear and readable */}
+          <span className="text-sm font-bold text-foreground min-w-[44px]">{formatTime(lesson.start_time)}</span>
 
-          {/* Content Column - Single line */}
-          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-hidden">
-            <h3 className="font-medium text-xs text-foreground truncate">
+          {/* Content Column */}
+          <div className="flex-1 min-w-0 flex items-center gap-2 overflow-hidden">
+            <h3 className="font-medium text-sm text-foreground truncate">
               {lesson.pupil?.name || "Unknown"}
             </h3>
             {isRecurring && (
-              <Repeat className="h-2.5 w-2.5 text-primary shrink-0" />
+              <Repeat className="h-3 w-3 text-primary shrink-0" />
             )}
-            <span className="text-[9px] text-muted-foreground shrink-0">{lesson.duration_minutes}m</span>
+            <span className="text-xs text-muted-foreground shrink-0">{lesson.duration_minutes}m</span>
             {getPaymentBadge()}
           </div>
 
           {/* Expand Indicator */}
           <ChevronDown className={cn(
-            "h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform",
+            "h-4 w-4 text-muted-foreground shrink-0 transition-transform",
             isExpanded && "rotate-180"
           )} />
         </button>
