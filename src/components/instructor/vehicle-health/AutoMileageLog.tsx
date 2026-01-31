@@ -105,71 +105,71 @@ export function AutoMileageLog() {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-3">
+      {/* Summary Cards - Compact grid */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <Card className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/30 dark:to-green-900/20 border-green-200 dark:border-green-800">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Briefcase className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="text-xs font-medium text-green-700 dark:text-green-300">Business</span>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
+              <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 dark:text-green-400" />
+              <span className="text-[10px] sm:text-xs font-medium text-green-700 dark:text-green-300">Business</span>
             </div>
-            <p className="text-2xl font-bold text-green-800 dark:text-green-200">
-              {summary.totalBusiness.toFixed(1)} mi
+            <p className="text-lg sm:text-2xl font-bold text-green-800 dark:text-green-200">
+              {summary.totalBusiness.toFixed(0)} mi
             </p>
-            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+            <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-400">
               {summary.businessPercentage.toFixed(0)}% of total
             </p>
           </CardContent>
         </Card>
 
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Home className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Personal</span>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
+              <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-[10px] sm:text-xs font-medium text-blue-700 dark:text-blue-300">Personal</span>
             </div>
-            <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">
-              {summary.totalPersonal.toFixed(1)} mi
+            <p className="text-lg sm:text-2xl font-bold text-blue-800 dark:text-blue-200">
+              {summary.totalPersonal.toFixed(0)} mi
             </p>
-            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+            <p className="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400">
               {(100 - summary.businessPercentage).toFixed(0)}% of total
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* HMRC Tax Deduction Card */}
+      {/* HMRC Tax Deduction Card - Compact */}
       <Card className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border-amber-200 dark:border-amber-800">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <PoundSterling className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                  HMRC Mileage Allowance
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <PoundSterling className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-[10px] sm:text-xs font-medium text-amber-700 dark:text-amber-300 truncate">
+                  HMRC Allowance
                 </span>
               </div>
-              <p className="text-2xl font-bold text-amber-800 dark:text-amber-200">
+              <p className="text-lg sm:text-2xl font-bold text-amber-800 dark:text-amber-200">
                 £{hmrcAllowance.toFixed(2)}
               </p>
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                Tax deductible for {summary.totalBusiness.toFixed(0)} business miles
+              <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400">
+                {summary.totalBusiness.toFixed(0)} business mi
               </p>
             </div>
-            <div className="text-right text-xs text-amber-600 dark:text-amber-400">
-              <p>45p/mi first 10k</p>
-              <p>25p/mi after</p>
+            <div className="text-right text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 shrink-0">
+              <p>45p first 10k</p>
+              <p>25p after</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Controls */}
+      {/* Controls - Compact */}
       <div className="flex items-center justify-between gap-2">
         <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
-          <SelectTrigger className="w-32">
-            <Calendar className="h-4 w-4 mr-2" />
+          <SelectTrigger className="w-28 sm:w-32 h-8 sm:h-9 text-xs sm:text-sm">
+            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 shrink-0" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -179,9 +179,9 @@ export function AutoMileageLog() {
           </SelectContent>
         </Select>
 
-        <Button size="sm" onClick={() => setShowAddDialog(true)}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Manual
+        <Button size="sm" className="h-8 sm:h-9 text-xs sm:text-sm" onClick={() => setShowAddDialog(true)}>
+          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+          <span className="hidden xs:inline">Add</span> Manual
         </Button>
       </div>
 

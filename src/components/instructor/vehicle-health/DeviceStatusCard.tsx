@@ -35,7 +35,7 @@ export function DeviceStatusCard({ device, onLinkClick }: DeviceStatusCardProps)
 
   return (
     <Card className="overflow-hidden">
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
         {/* Device header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -45,13 +45,13 @@ export function DeviceStatusCard({ device, onLinkClick }: DeviceStatusCardProps)
               </h3>
               <Badge
                 variant={isOnline ? "default" : "secondary"}
-                className="text-xs shrink-0"
+                className="text-[10px] sm:text-xs shrink-0"
               >
                 {isOnline ? "Online" : "Offline"}
               </Badge>
             </div>
             {device.vehicle ? (
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
                 <Car className="h-3 w-3 inline mr-1" />
                 {device.vehicle.registration} • {device.vehicle.make} {device.vehicle.model}
               </p>

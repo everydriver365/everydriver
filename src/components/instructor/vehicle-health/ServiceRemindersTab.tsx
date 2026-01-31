@@ -76,26 +76,35 @@ export function ServiceRemindersTab() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Wrench className="h-5 w-5" />
-            Service Reminders
+    <div className="space-y-4">
+      {/* Header - Compact on mobile */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+            <Wrench className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+            <span className="truncate">Service Reminders</span>
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
             Track maintenance schedules and service history
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowLogService(true)}>
-            <History className="h-4 w-4 mr-2" />
-            Log Service
+        <div className="flex gap-1 sm:gap-2 shrink-0">
+          <Button 
+            variant="outline" 
+            size="icon"
+            className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
+            onClick={() => setShowLogService(true)}
+          >
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline ml-2">Log Service</span>
           </Button>
-          <Button onClick={() => setShowAddReminder(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Reminder
+          <Button 
+            size="icon"
+            className="h-8 w-8 sm:h-9 sm:w-auto sm:px-3"
+            onClick={() => setShowAddReminder(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline ml-2">Add Reminder</span>
           </Button>
         </div>
       </div>
@@ -126,7 +135,7 @@ export function ServiceRemindersTab() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
               {reminders.map((reminder) => (
                 <ReminderCard
                   key={reminder.id}

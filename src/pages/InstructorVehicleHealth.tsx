@@ -41,87 +41,89 @@ export default function InstructorVehicleHealth() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 pb-24">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        {/* Header - Compact on mobile */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="h-9 w-9"
+              className="h-8 w-8 sm:h-9 sm:w-9 shrink-0"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <div>
-              <h1 className="text-xl font-bold">Vehicle Health</h1>
-              <p className="text-sm text-muted-foreground">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold truncate">Vehicle Health</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                 Compliance & mileage tracking
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={handleRefresh}
-              className="h-9 w-9"
+              className="h-8 w-8 sm:h-9 sm:w-9"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
             <Button
               size="icon"
               onClick={() => setShowAddVehicle(true)}
-              className="h-9 w-9"
+              className="h-8 w-8 sm:h-9 sm:w-9"
             >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="compliance" className="text-xs sm:text-sm">
-              <Shield className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
-              DVSA
-            </TabsTrigger>
-            <TabsTrigger value="fleet" className="text-xs sm:text-sm">
-              <Car className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
-              Fleet
-            </TabsTrigger>
-            <TabsTrigger value="service" className="text-xs sm:text-sm relative">
-              <Wrench className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
-              Service
-              {upcomingReminders.length > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
-                >
-                  {upcomingReminders.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="mileage" className="text-xs sm:text-sm">
-              <MapPin className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
-              Mileage
-            </TabsTrigger>
-            <TabsTrigger value="security" className="text-xs sm:text-sm relative">
-              <ShieldAlert className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
-              Security
-              {unacknowledgedCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
-                >
-                  {unacknowledgedCount}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="live" className="text-xs sm:text-sm">
-              <Radio className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
-              Live
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-6 gap-1">
+              <TabsTrigger value="compliance" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
+                <Shield className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">DVSA</span>
+              </TabsTrigger>
+              <TabsTrigger value="fleet" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
+                <Car className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Fleet</span>
+              </TabsTrigger>
+              <TabsTrigger value="service" className="text-xs px-2 sm:px-3 gap-1 relative whitespace-nowrap">
+                <Wrench className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Service</span>
+                {upcomingReminders.length > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                  >
+                    {upcomingReminders.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="mileage" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Mileage</span>
+              </TabsTrigger>
+              <TabsTrigger value="security" className="text-xs px-2 sm:px-3 gap-1 relative whitespace-nowrap">
+                <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Security</span>
+                {unacknowledgedCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                  >
+                    {unacknowledgedCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="live" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
+                <Radio className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Live</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Compliance Tab */}
           <TabsContent value="compliance" className="mt-4 space-y-4">

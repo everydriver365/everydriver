@@ -156,25 +156,27 @@ export function SecurityAlertsTab({ vehicles }: SecurityAlertsTabProps) {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                       {alert.latitude && alert.longitude && (
                         <Button
                           variant="outline"
                           size="sm"
+                          className="h-7 px-2 sm:px-3"
                           onClick={() => navigate("/instructor/find-car")}
                         >
-                          <MapPin className="h-3.5 w-3.5 mr-1" />
-                          Map
+                          <MapPin className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline ml-1">Map</span>
                         </Button>
                       )}
                       {!alert.acknowledged && (
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-7 px-2 sm:px-3"
                           onClick={() => handleAcknowledge(alert.id)}
                         >
-                          <Check className="h-3.5 w-3.5 mr-1" />
-                          OK
+                          <Check className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline ml-1">OK</span>
                         </Button>
                       )}
                     </div>

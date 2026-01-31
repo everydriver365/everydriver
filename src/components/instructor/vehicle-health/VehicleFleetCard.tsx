@@ -71,9 +71,9 @@ export function VehicleFleetCard({ vehicle }: VehicleFleetCardProps) {
 
   return (
     <Card className="overflow-hidden">
-      {/* Vehicle Image */}
+      {/* Vehicle Image - Compact on mobile */}
       {vehicle.image_url ? (
-        <div className="aspect-video bg-muted">
+        <div className="aspect-[16/9] sm:aspect-video bg-muted max-h-32 sm:max-h-none">
           <img
             src={vehicle.image_url}
             alt={vehicle.registration}
@@ -81,48 +81,48 @@ export function VehicleFleetCard({ vehicle }: VehicleFleetCardProps) {
           />
         </div>
       ) : (
-        <div className="aspect-video bg-muted/50 flex items-center justify-center">
-          <Camera className="h-10 w-10 text-muted-foreground/30" />
+        <div className="h-20 sm:aspect-video sm:h-auto bg-muted/50 flex items-center justify-center">
+          <Camera className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/30" />
         </div>
       )}
       
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-base font-mono tracking-wider">
+              <h3 className="font-semibold text-sm sm:text-base font-mono tracking-wider">
                 {vehicle.registration}
               </h3>
               {vehicle.is_primary && (
-                <Star className="h-4 w-4 text-primary fill-primary" />
+                <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary fill-primary shrink-0" />
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground truncate">
               {vehicle.make} {vehicle.model} {vehicle.year && `(${vehicle.year})`}
               {vehicle.transmission && ` • ${vehicle.transmission}`}
             </p>
           </div>
-          <Car className="h-5 w-5 text-muted-foreground shrink-0" />
+          <Car className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
         </div>
 
-        {/* Stats row */}
-        <div className="flex items-center gap-4 text-sm">
+        {/* Stats row - Stack on very small screens */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
           <div className="flex items-center gap-1.5">
-            <Gauge className="h-4 w-4 text-muted-foreground" />
+            <Gauge className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             <span className="font-medium">
               {vehicle.current_odometer_km?.toLocaleString() || "0"} km
             </span>
           </div>
           {kmUntilService !== null && (
             <div className="flex items-center gap-1.5">
-              <Wrench className="h-4 w-4 text-muted-foreground" />
+              <Wrench className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
               <span className={cn(
                 "font-medium",
                 kmUntilService <= 500 && "text-orange-600",
                 kmUntilService <= 0 && "text-destructive"
               )}>
-                Service: {kmUntilService > 0 ? `${kmUntilService.toLocaleString()} km` : "Due!"}
+                {kmUntilService > 0 ? `${kmUntilService.toLocaleString()} km` : "Service due!"}
               </span>
             </div>
           )}
