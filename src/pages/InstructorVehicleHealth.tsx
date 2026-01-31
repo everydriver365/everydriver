@@ -1,21 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus } from "lucide-react";
+import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { DeviceStatusCard } from "@/components/instructor/vehicle-health/DeviceStatusCard";
 import { VehicleFleetCard } from "@/components/instructor/vehicle-health/VehicleFleetCard";
 import { MileageLogList } from "@/components/instructor/vehicle-health/MileageLogList";
+import { MileageSummary } from "@/components/instructor/vehicle-health/MileageSummary";
 import { LinkDeviceDialog } from "@/components/instructor/vehicle-health/LinkDeviceDialog";
+import { AddVehicleDialog } from "@/components/instructor/vehicle-health/AddVehicleDialog";
+import { ComplianceOverview } from "@/components/instructor/vehicle-health/ComplianceOverview";
 import { useVehicleHealth, TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function InstructorVehicleHealth() {
   const navigate = useNavigate();
+  const { instructor } = useInstructorAuth();
   const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, refetch } = useVehicleHealth();
-  const [activeTab, setActiveTab] = useState("live");
+  const [activeTab, setActiveTab] = useState("compliance");
   const [linkingDevice, setLinkingDevice] = useState<TraccarDeviceHealth | null>(null);
+  const [showAddVehicle, setShowAddVehicle] = useState(false);
 
   const handleLinkDevice = async (deviceId: string, vehicleId: string | null) => {
     await linkDeviceToVehicle(deviceId, vehicleId);
@@ -38,26 +44,35 @@ export default function InstructorVehicleHealth() {
             <div>
               <h1 className="text-xl font-bold">Vehicle Health</h1>
               <p className="text-sm text-muted-foreground">
-                Monitor devices & fleet
+                Compliance & mileage tracking
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => refetch()}
-            className="h-9 w-9"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => refetch()}
+              className="h-9 w-9"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              onClick={() => setShowAddVehicle(true)}
+              className="h-9 w-9"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="live" className="text-xs sm:text-sm">
-              <Radio className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
-              Live Status
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="compliance" className="text-xs sm:text-sm">
+              <Shield className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
+              DVSA
             </TabsTrigger>
             <TabsTrigger value="fleet" className="text-xs sm:text-sm">
               <Car className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
@@ -67,7 +82,73 @@ export default function InstructorVehicleHealth() {
               <MapPin className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
               Mileage
             </TabsTrigger>
+            <TabsTrigger value="live" className="text-xs sm:text-sm">
+              <Radio className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
+              Live
+            </TabsTrigger>
           </TabsList>
+
+          {/* Compliance Tab */}
+          <TabsContent value="compliance" className="mt-4 space-y-4">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-48 w-full rounded-lg" />
+                <Skeleton className="h-24 w-full rounded-lg" />
+              </>
+            ) : (
+              <ComplianceOverview 
+                vehicles={vehicles}
+                adiExpiry={instructor?.adi_badge_expiry}
+                dbsExpiry={instructor?.dbs_certificate_expiry}
+              />
+            )}
+          </TabsContent>
+
+          {/* Fleet Tab */}
+          <TabsContent value="fleet" className="mt-4 space-y-3">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-48 w-full rounded-lg" />
+                <Skeleton className="h-48 w-full rounded-lg" />
+              </>
+            ) : vehicles.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Car className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                <p className="text-muted-foreground font-medium">No vehicles registered</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">
+                  Add your teaching car to track compliance
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => setShowAddVehicle(true)}
+                >
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Add Vehicle
+                </Button>
+              </div>
+            ) : (
+              vehicles.map(vehicle => (
+                <VehicleFleetCard key={vehicle.id} vehicle={vehicle} />
+              ))
+            )}
+          </TabsContent>
+
+          {/* Mileage Tab */}
+          <TabsContent value="mileage" className="mt-4 space-y-4">
+            {isLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-24 w-full rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-lg" />
+              </div>
+            ) : (
+              <>
+                <MileageSummary entries={mileageLog} vehicles={vehicles} />
+                <MileageLogList entries={mileageLog} />
+              </>
+            )}
+          </TabsContent>
 
           {/* Live Status Tab */}
           <TabsContent value="live" className="mt-4 space-y-3">
@@ -102,49 +183,6 @@ export default function InstructorVehicleHealth() {
               ))
             )}
           </TabsContent>
-
-          {/* Fleet Tab */}
-          <TabsContent value="fleet" className="mt-4 space-y-3">
-            {isLoading ? (
-              <>
-                <Skeleton className="h-36 w-full rounded-lg" />
-                <Skeleton className="h-36 w-full rounded-lg" />
-              </>
-            ) : vehicles.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Car className="h-12 w-12 text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground font-medium">No vehicles registered</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">
-                  Add your vehicles in Settings
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => navigate("/instructor/settings")}
-                >
-                  <Plus className="h-4 w-4 mr-1.5" />
-                  Add Vehicle
-                </Button>
-              </div>
-            ) : (
-              vehicles.map(vehicle => (
-                <VehicleFleetCard key={vehicle.id} vehicle={vehicle} />
-              ))
-            )}
-          </TabsContent>
-
-          {/* Mileage Tab */}
-          <TabsContent value="mileage" className="mt-4">
-            {isLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-20 w-full rounded-lg" />
-                <Skeleton className="h-20 w-full rounded-lg" />
-                <Skeleton className="h-20 w-full rounded-lg" />
-              </div>
-            ) : (
-              <MileageLogList entries={mileageLog} />
-            )}
-          </TabsContent>
         </Tabs>
       </div>
 
@@ -155,6 +193,13 @@ export default function InstructorVehicleHealth() {
         device={linkingDevice}
         vehicles={vehicles}
         onLink={handleLinkDevice}
+      />
+
+      {/* Add Vehicle Dialog */}
+      <AddVehicleDialog
+        open={showAddVehicle}
+        onOpenChange={setShowAddVehicle}
+        onSuccess={() => refetch()}
       />
     </InstructorPortalLayout>
   );

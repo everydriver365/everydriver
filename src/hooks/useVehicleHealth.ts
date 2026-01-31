@@ -44,6 +44,7 @@ export interface InstructorVehicle {
   last_service_date: string | null;
   is_primary: boolean;
   linked_device_id?: string | null;
+  image_url?: string | null;
 }
 
 export interface MileageLogEntry {
@@ -124,7 +125,7 @@ export function useVehicleHealth() {
 
       const { data: vehicles, error } = await supabase
         .from("instructor_vehicles")
-        .select("id, instructor_id, registration, make, model, year, transmission, current_odometer_km, mot_expiry, insurance_expiry, tax_expiry, next_service_due_km, last_service_date, is_primary")
+        .select("id, instructor_id, registration, make, model, year, transmission, current_odometer_km, mot_expiry, insurance_expiry, tax_expiry, next_service_due_km, last_service_date, is_primary, image_url")
         .eq("instructor_id", instructor.id)
         .order("is_primary", { ascending: false });
 
