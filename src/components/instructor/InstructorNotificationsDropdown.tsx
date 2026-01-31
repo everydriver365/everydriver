@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 interface InstructorNotificationsDropdownProps {
   instructorId: string | undefined;
   pendingJobsCount?: number;
+  variant?: 'dark' | 'light';
 }
 
 const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -28,7 +29,8 @@ const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export function InstructorNotificationsDropdown({ 
   instructorId, 
-  pendingJobsCount = 0 
+  pendingJobsCount = 0,
+  variant = 'dark'
 }: InstructorNotificationsDropdownProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -57,11 +59,19 @@ export function InstructorNotificationsDropdown({
         <Button
           variant="ghost"
           size="icon"
-          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8 relative"
+          className={cn(
+            "h-8 w-8 relative",
+            variant === 'light' 
+              ? "text-primary/80 hover:text-primary hover:bg-primary/10" 
+              : "text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+          )}
         >
           <Bell className="h-5 w-5" />
           {totalBadge > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-primary animate-pulse">
+            <span className={cn(
+              "absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse",
+              variant === 'light' ? "ring-2 ring-background" : "ring-2 ring-primary"
+            )}>
               {totalBadge > 9 ? "9+" : totalBadge}
             </span>
           )}

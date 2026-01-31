@@ -93,13 +93,29 @@ export function InstructorBottomNav() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Icon colors matching reference design
+  const getIconColor = (item: NavItem, isActive: boolean) => {
+    if (isActive) return "text-primary";
+    // Different colored icons for inactive state
+    switch (item.label) {
+      case "Home": return "text-muted-foreground";
+      case "Schedule": return "text-violet-500";
+      case "Live": return "text-cyan-500";
+      case "Money": return "text-rose-400";
+      case "Pupils": return "text-blue-500";
+      case "More": return "text-muted-foreground";
+      default: return "text-muted-foreground";
+    }
+  };
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-primary border-t border-primary-foreground/10 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden">
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
           const isTrack = item.isTrack;
+          const iconColor = getIconColor(item, isActive);
           
           return (
             <button
@@ -107,15 +123,15 @@ export function InstructorBottomNav() {
               onClick={() => handleNavClick(item.path)}
               className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                 isActive
-                  ? "text-white"
-                  : "text-primary-foreground/70 hover:text-primary-foreground"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {/* Active indicator pill */}
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-white rounded-full"
+                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-full"
                   initial={false}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
@@ -130,23 +146,23 @@ export function InstructorBottomNav() {
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
                   <item.icon
-                    className={`h-5 w-5 transition-all duration-200 ${
+                    className={`h-5 w-5 transition-all duration-200 ${iconColor} ${
                       isActive ? 'drop-shadow-sm' : ''
                     }`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
                 </motion.div>
                 {showNotification && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-primary">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-background">
                     {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                   </span>
                 )}
                 {isTrack && isTrackingActive && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-white ring-2 ring-primary animate-pulse" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                isActive ? "font-semibold" : "font-medium opacity-80"
+                isActive ? "font-semibold text-primary" : "font-medium text-muted-foreground"
               }`}>
                 {item.label}
               </span>
@@ -155,7 +171,7 @@ export function InstructorBottomNav() {
         })}
       </div>
       {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom bg-primary" />
+      <div className="h-safe-area-inset-bottom bg-background" />
     </nav>
   );
 }

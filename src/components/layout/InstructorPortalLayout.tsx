@@ -122,8 +122,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {/* iOS Install Banner */}
             <IOSInstallBanner />
 
-            {/* Mobile Header - Primary color to match bottom nav */}
-            <header className="sticky top-0 z-40 bg-primary border-b border-primary-foreground/10 shadow-sm">
+            {/* Mobile Header - White background with dark icons */}
+            <header className="sticky top-0 z-40 bg-background border-b border-border shadow-sm">
               <div className="flex items-center justify-between px-4 h-14">
                 {/* Left: Hamburger Menu + Logo */}
                 <div className="flex items-center gap-3">
@@ -132,7 +132,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 -ml-2 h-9 w-9"
+                        className="text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2 h-9 w-9"
                       >
                         <Menu className="h-5 w-5" />
                       </Button>
@@ -216,7 +216,11 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </SheetContent>
                   </Sheet>
 
-                  <img src={whiteLogo} alt="EveryDriver" className="h-7 object-contain" />
+                  {/* Text logo for white background */}
+                  <div className="flex flex-col">
+                    <span className="text-primary font-bold text-base tracking-tight">EVERY DRIVER<span className="text-[10px] font-normal">.CO.UK</span></span>
+                    <span className="text-[10px] text-muted-foreground -mt-0.5">Supporting Your Journey</span>
+                  </div>
                 </div>
 
                 {/* Right: QR, Availability, Avatar */}
@@ -226,7 +230,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowQRModal(true)}
-                      className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
+                      className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 px-2"
                     >
                       <span className="text-xs font-bold border border-current rounded px-1">QR</span>
                     </Button>
@@ -235,17 +239,17 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate("/instructor/availability")}
-                    className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+                    className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
                     title="Quick Availability"
                   >
                     <CalendarClock className="h-5 w-5" />
                   </Button>
                   <Avatar
-                    className="h-9 w-9 border-2 border-primary-foreground/20 cursor-pointer"
+                    className="h-9 w-9 border-2 border-border cursor-pointer"
                     onClick={() => navigate("/instructor/settings")}
                   >
                     <AvatarImage src={instructor?.profile_image_url || undefined} />
-                    <AvatarFallback className="bg-white text-primary text-xs font-semibold">
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                       {instructor?.name?.charAt(0) || "I"}
                     </AvatarFallback>
                   </Avatar>
