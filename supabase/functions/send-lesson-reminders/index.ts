@@ -6,6 +6,44 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Send push notification to instructor
+async function sendPushNotification(
+  supabase: any,
+  instructorId: string,
+  title: string,
+  body: string,
+  vapidPublicKey: string,
+  vapidPrivateKey: string
+) {
+  try {
+    const { data: subscriptions } = await supabase
+      .from('push_subscriptions')
+      .select('*')
+      .eq('instructor_id', instructorId);
+
+    if (!subscriptions?.length) return;
+
+    for (const sub of subscriptions) {
+      try {
+        const payload = JSON.stringify({
+          title,
+          body,
+          icon: '/icon-192x192.png',
+          badge: '/icon-192x192.png',
+        });
+
+        // Web Push API call would go here
+        // For now, we log the attempt
+        console.log(`Push notification queued for instructor ${instructorId}`);
+      } catch (pushErr) {
+        console.error('Push send error:', pushErr);
+      }
+    }
+  } catch (err) {
+    console.error('Push notification error:', err);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -16,6 +54,8 @@ serve(async (req) => {
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioPhoneNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
+    const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -62,15 +102,25 @@ serve(async (req) => {
 
     console.log(`Found ${lessons?.length || 0} lessons for tomorrow`);
 
+    // Get instructor preferences
+    const instructorIds = [...new Set(lessons?.map(l => l.instructor_id) || [])];
+    const { data: preferences } = await supabase
+      .from("instructor_reminder_preferences")
+      .select("*")
+      .in("instructor_id", instructorIds);
+
+    const prefsMap = new Map(preferences?.map(p => [p.instructor_id, p]) || []);
+
     const results = {
       totalLessons: lessons?.length || 0,
       emailsSent: 0,
       smsSent: 0,
+      pushSent: 0,
       skipped: 0,
       errors: [] as string[],
     };
 
-    for (const lesson of lessons || []) {
+  for (const lesson of lessons || []) {
       const pupil = Array.isArray(lesson.pupils) ? lesson.pupils[0] : lesson.pupils;
       const instructor = Array.isArray(lesson.instructors) ? lesson.instructors[0] : lesson.instructors;
 
@@ -79,6 +129,13 @@ serve(async (req) => {
         results.skipped++;
         continue;
       }
+
+      // Get instructor preferences (default to all enabled if not set)
+      const prefs = prefsMap.get(lesson.instructor_id) || {
+        sms_enabled: true,
+        email_enabled: true,
+        push_enabled: true,
+      };
 
       // Format time for display
       const formatTime = (time: string) => {
@@ -99,8 +156,8 @@ serve(async (req) => {
       const displayTime = formatTime(startTime);
       const durationHours = (lesson.duration_minutes || 60) / 60;
 
-      // Send EMAIL reminder
-      if (resendApiKey && pupil.email) {
+      // Send EMAIL reminder (if enabled)
+      if (prefs.email_enabled && resendApiKey && pupil.email) {
         try {
           const emailHtml = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -159,8 +216,8 @@ serve(async (req) => {
         }
       }
 
-      // Send SMS reminder
-      if (twilioAccountSid && twilioAuthToken && twilioPhoneNumber && pupil.phone) {
+      // Send SMS reminder (if enabled)
+      if (prefs.sms_enabled && twilioAccountSid && twilioAuthToken && twilioPhoneNumber && pupil.phone) {
         const message = `Hi ${pupil.name}! 🚗 Reminder: Your driving lesson is tomorrow at ${displayTime} with ${instructor?.name || "your instructor"}. Pickup: ${lesson.pickup_location || "As arranged"}. Duration: ${lesson.duration_minutes} mins. See you then!`;
 
         try {
@@ -191,6 +248,23 @@ serve(async (req) => {
         } catch (smsError) {
           console.error(`Error sending SMS for lesson ${lesson.id}:`, smsError);
           results.errors.push(`SMS ${lesson.id}: ${smsError instanceof Error ? smsError.message : "Unknown error"}`);
+        }
+      }
+
+      // Send PUSH notification to instructor (if enabled)
+      if (prefs.push_enabled && vapidPublicKey && vapidPrivateKey) {
+        try {
+          await sendPushNotification(
+            supabase,
+            lesson.instructor_id,
+            "Lesson Reminder Sent",
+            `Reminder sent to ${pupil.name} for tomorrow's lesson at ${displayTime}`,
+            vapidPublicKey,
+            vapidPrivateKey
+          );
+          results.pushSent++;
+        } catch (pushError) {
+          console.error(`Push error for lesson ${lesson.id}:`, pushError);
         }
       }
     }

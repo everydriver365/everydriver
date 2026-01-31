@@ -2546,6 +2546,47 @@ export type Database = {
           },
         ]
       }
+      instructor_reminder_preferences: {
+        Row: {
+          created_at: string | null
+          email_enabled: boolean | null
+          id: string
+          instructor_id: string
+          push_enabled: boolean | null
+          reminder_time: string | null
+          sms_enabled: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          instructor_id: string
+          push_enabled?: boolean | null
+          reminder_time?: string | null
+          sms_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          instructor_id?: string
+          push_enabled?: boolean | null
+          reminder_time?: string | null
+          sms_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_reminder_preferences_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_standards_check: {
         Row: {
           avg_minor_faults: number

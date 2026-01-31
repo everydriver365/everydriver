@@ -7,6 +7,9 @@ import { GoogleStyleScheduleView } from "@/components/instructor/GoogleStyleSche
 import { CalendarColorSettings } from "@/components/instructor/CalendarColorSettings";
 import { AddCalendarEventDialog } from "@/components/instructor/AddCalendarEventDialog";
 import { CalendarEventSheet } from "@/components/instructor/CalendarEventSheet";
+import { ScheduleFAB } from "@/components/instructor/ScheduleFAB";
+import { WeeklySummaryWidget } from "@/components/instructor/WeeklySummaryWidget";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useInstructorCalendar, type CalendarEvent } from "@/hooks/useInstructorCalendar";
 import { Button } from "@/components/ui/button";
@@ -31,6 +34,7 @@ export default function InstructorSchedule() {
   const [colorSettingsOpen, setColorSettingsOpen] = useState(false);
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [addEventDate, setAddEventDate] = useState<Date | null>(null);
+  const [fabLessonSheetOpen, setFabLessonSheetOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
   // Use the calendar hook for schedule view data
@@ -157,6 +161,9 @@ export default function InstructorSchedule() {
           </div>
         </div>
 
+        {/* Weekly Summary Widget */}
+        <WeeklySummaryWidget instructorId={instructorId} />
+
         {viewMode === 'list' ? (
           <NewMobileScheduleView instructorId={instructorId} />
         ) : viewMode === 'schedule' ? (
@@ -207,6 +214,20 @@ export default function InstructorSchedule() {
         defaultDate={addEventDate}
         onSuccess={() => {
           setAddEventOpen(false);
+          calendar.refetch();
+        }}
+      />
+
+      {/* Floating Action Button for mobile quick-add */}
+      <ScheduleFAB onClick={() => setFabLessonSheetOpen(true)} />
+
+      {/* FAB Add Lesson Sheet */}
+      <AddLessonSheet
+        open={fabLessonSheetOpen}
+        onOpenChange={setFabLessonSheetOpen}
+        instructorId={instructorId}
+        onSuccess={() => {
+          setFabLessonSheetOpen(false);
           calendar.refetch();
         }}
       />

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { X, MapPin, Clock, Phone, MessageSquare, Navigation, Trash2, Calendar, User } from 'lucide-react';
+import { X, MapPin, Clock, Phone, MessageSquare, Navigation, Trash2, Calendar, User, Repeat } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,23 @@ interface CalendarEventSheetProps {
   onClose: () => void;
   onDelete: (id: string) => Promise<void>;
   onRefetch: () => void;
+}
+
+// Helper to parse recurrence rule for display
+function parseRecurrenceRule(rule: string | null): string {
+  if (!rule) return '';
+  
+  // Parse rules like "WEEKLY;COUNT=4"
+  const parts = rule.split(';');
+  const frequency = parts[0];
+  const countPart = parts.find(p => p.startsWith('COUNT='));
+  const count = countPart ? parseInt(countPart.split('=')[1]) : null;
+  
+  if (frequency === 'WEEKLY' && count) {
+    return `Weekly series (${count} lessons)`;
+  }
+  
+  return 'Recurring';
 }
 
 export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: CalendarEventSheetProps) {
@@ -122,6 +139,19 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
           {/* Lesson-specific details */}
           {event.type === 'lesson' && event.data && (
             <>
+              {/* Recurring indicator */}
+              {event.data.recurrence_rule && (
+                <div className="flex items-start gap-3">
+                  <Repeat className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <div className="font-medium">Recurring Lesson</div>
+                    <div className="text-sm text-muted-foreground">
+                      {parseRecurrenceRule(event.data.recurrence_rule)}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Pupil */}
               {event.data.pupils && (
                 <div className="flex items-start gap-3">

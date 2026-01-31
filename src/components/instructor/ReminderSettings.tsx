@@ -1,0 +1,209 @@
+import { useEffect, useState } from "react";
+import { Bell, Mail, MessageSquare, Smartphone, Clock, Loader2, Save } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface ReminderSettingsProps {
+  instructorId: string;
+}
+
+interface ReminderPreferences {
+  sms_enabled: boolean;
+  email_enabled: boolean;
+  push_enabled: boolean;
+  reminder_time: string;
+}
+
+const timeOptions = [
+  { value: "10:00:00", label: "10:00 AM" },
+  { value: "12:00:00", label: "12:00 PM" },
+  { value: "14:00:00", label: "2:00 PM" },
+  { value: "16:00:00", label: "4:00 PM" },
+  { value: "18:00:00", label: "6:00 PM" },
+  { value: "20:00:00", label: "8:00 PM" },
+];
+
+export function ReminderSettings({ instructorId }: ReminderSettingsProps) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [preferences, setPreferences] = useState<ReminderPreferences>({
+    sms_enabled: true,
+    email_enabled: true,
+    push_enabled: true,
+    reminder_time: "18:00:00",
+  });
+
+  useEffect(() => {
+    if (!instructorId) return;
+    fetchPreferences();
+  }, [instructorId]);
+
+  const fetchPreferences = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('instructor_reminder_preferences')
+        .select('*')
+        .eq('instructor_id', instructorId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setPreferences({
+          sms_enabled: data.sms_enabled ?? true,
+          email_enabled: data.email_enabled ?? true,
+          push_enabled: data.push_enabled ?? true,
+          reminder_time: data.reminder_time ?? "18:00:00",
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching reminder preferences:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('instructor_reminder_preferences')
+        .upsert({
+          instructor_id: instructorId,
+          ...preferences,
+        }, {
+          onConflict: 'instructor_id',
+        });
+
+      if (error) throw error;
+      toast.success('Reminder settings saved');
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      toast.error('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Bell className="h-5 w-5" />
+          Lesson Reminders
+        </CardTitle>
+        <CardDescription>
+          Automatic reminders sent to pupils before their lessons
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Notification channels */}
+        <div className="space-y-4">
+          <p className="text-sm font-medium">Send reminders via:</p>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="email-toggle" className="cursor-pointer">
+                Email
+              </Label>
+            </div>
+            <Switch
+              id="email-toggle"
+              checked={preferences.email_enabled}
+              onCheckedChange={(checked) => 
+                setPreferences(p => ({ ...p, email_enabled: checked }))
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="sms-toggle" className="cursor-pointer">
+                SMS
+              </Label>
+            </div>
+            <Switch
+              id="sms-toggle"
+              checked={preferences.sms_enabled}
+              onCheckedChange={(checked) => 
+                setPreferences(p => ({ ...p, sms_enabled: checked }))
+              }
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Smartphone className="h-4 w-4 text-muted-foreground" />
+              <Label htmlFor="push-toggle" className="cursor-pointer">
+                Push notifications
+              </Label>
+            </div>
+            <Switch
+              id="push-toggle"
+              checked={preferences.push_enabled}
+              onCheckedChange={(checked) => 
+                setPreferences(p => ({ ...p, push_enabled: checked }))
+              }
+            />
+          </div>
+        </div>
+
+        {/* Reminder time */}
+        <div className="space-y-2 pt-2 border-t">
+          <div className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Label>Send reminders at:</Label>
+          </div>
+          <Select
+            value={preferences.reminder_time}
+            onValueChange={(value) => 
+              setPreferences(p => ({ ...p, reminder_time: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {timeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label} (day before lesson)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Reminders are sent the day before each scheduled lesson
+          </p>
+        </div>
+
+        {/* Save button */}
+        <Button onClick={handleSave} disabled={saving} className="w-full">
+          {saving ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
+          Save Settings
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
