@@ -155,14 +155,13 @@ export function InstructorMobileHome({
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
-      {/* Header Bar - fixed at top matching bottom nav */}
-      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-primary border-b border-primary-foreground/10 shadow-sm">
-        {/* Logo on the left */}
-        <img 
-          src={instructorLogo} 
-          alt="EveryDriver" 
-          className="h-5 object-contain"
-        />
+      {/* Header Bar - white background with dark icons */}
+      <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-background border-b border-border shadow-sm">
+        {/* Logo on the left - dark version for white background */}
+        <div className="flex flex-col">
+          <span className="text-primary font-bold text-lg tracking-tight">EVERY DRIVER<span className="text-xs font-normal">.CO.UK</span></span>
+          <span className="text-xs text-muted-foreground -mt-1">Supporting Your Journey</span>
+        </div>
         
         {/* Controls and Avatar on the right */}
         <div className="flex items-center gap-1">
@@ -171,7 +170,7 @@ export function InstructorMobileHome({
             <Button
               variant="ghost"
               size="sm"
-              className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
+              className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 px-2"
               onClick={onPaymentClick}
             >
               <span className="text-xs font-bold border border-current rounded px-1">QR</span>
@@ -182,7 +181,7 @@ export function InstructorMobileHome({
           <Button
             variant="ghost"
             size="icon"
-            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+            className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
             onClick={() => navigate("/instructor/availability")}
             title="Quick Availability"
           >
@@ -193,15 +192,16 @@ export function InstructorMobileHome({
           <InstructorNotificationsDropdown 
             instructorId={instructorId} 
             pendingJobsCount={pendingJobsCount}
+            variant="light"
           />
 
-          {/* Settings Dropdown - includes theme options */}
+          {/* Settings Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+                className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
               >
                 <Settings className="h-5 w-5" />
               </Button>
@@ -249,9 +249,9 @@ export function InstructorMobileHome({
           {/* Avatar Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Avatar className="h-9 w-9 border-2 border-primary-foreground/30 cursor-pointer">
+              <Avatar className="h-9 w-9 border-2 border-border cursor-pointer">
                 <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground font-semibold text-sm">
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
                   {instructor?.name ? getInitials(instructor.name) : "?"}
                 </AvatarFallback>
               </Avatar>
