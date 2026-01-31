@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { CalendarCheck, Clock, PoundSterling, MapPin } from "lucide-react";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
-import { format, parseISO } from "date-fns";
+import { format, parse } from "date-fns";
 
 interface TodayOverviewStripProps {
   instructorId: string | undefined;
@@ -16,8 +16,9 @@ export function TodayOverviewStrip({ instructorId }: TodayOverviewStripProps) {
     return null;
   }
 
+  // Parse TIME string (HH:mm:ss) from database - not ISO format
   const firstLessonTimeFormatted = overview.firstLessonTime 
-    ? format(parseISO(overview.firstLessonTime), "h:mm a")
+    ? format(parse(overview.firstLessonTime, "HH:mm:ss", new Date()), "h:mm a")
     : null;
 
   return (
