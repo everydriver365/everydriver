@@ -302,7 +302,7 @@ export default function LovableTracker() {
 
       {/* Pupil & Route selection overlay when idle */}
       {phase === 'idle' && (
-        <div className="absolute inset-0 z-[1000] bg-background/95 flex flex-col items-center justify-center p-6 gap-4 overflow-auto">
+        <div className="absolute inset-0 z-[1000] bg-background/95 flex flex-col items-center justify-center p-6 gap-4 overflow-hidden no-scrollbar">
           <p className="text-lg font-semibold">Select Pupil</p>
           <Select value={selectedPupil || ''} onValueChange={setSelectedPupil}>
             <SelectTrigger className="w-64">
