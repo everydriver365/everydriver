@@ -2843,6 +2843,38 @@ export type Database = {
           },
         ]
       }
+      instructor_tile_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          tile_order: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          tile_order?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          tile_order?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_tile_preferences_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_vehicles: {
         Row: {
           created_at: string | null
