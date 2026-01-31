@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Route, MapPin, Trash2, ChevronDown, ChevronUp, Calendar, Share2, Upload, FileUp, GraduationCap, FolderOpen } from "lucide-react";
+import { Route, MapPin, Trash2, ChevronDown, ChevronUp, Calendar, Share2, Upload, FileUp, GraduationCap, FolderOpen, Play } from "lucide-react";
 import { format } from "date-fns";
 import { SavedRoutePreview } from "./SavedRoutePreview";
 import { UploadedRoutePreview } from "./UploadedRoutePreview";
@@ -35,6 +36,7 @@ interface SavedRoutesListProps {
 type RouteCategory = 'test_routes' | 'all';
 
 export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListProps) {
+  const navigate = useNavigate();
   const [routes, setRoutes] = useState<SavedRoute[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedRouteId, setExpandedRouteId] = useState<string | null>(null);
@@ -339,6 +341,17 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
                     )}
 
                     <div className="flex gap-2">
+                      {route.telematics_id && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="gap-1"
+                          onClick={() => navigate(`/instructor/trip-replay/${route.id}`)}
+                        >
+                          <Play className="h-3.5 w-3.5" />
+                          Replay
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"
