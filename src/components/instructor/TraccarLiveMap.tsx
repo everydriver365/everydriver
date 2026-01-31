@@ -368,10 +368,10 @@ export default function TraccarLiveMap({
       {/* Speed display panel */}
       {latitude !== null && longitude !== null && (
         <div className="absolute bottom-4 left-4 right-4 z-20">
-          <div className="bg-background/95 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg border">
-            <div className="flex items-center justify-between">
+          <div className="bg-background/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg border">
+            <div className="flex items-center justify-between gap-3">
               {/* Current Speed */}
-              <div className="text-center">
+              <div className="flex items-baseline gap-1 shrink-0">
                 <span
                   className={`text-4xl font-bold ${
                     isSpeeding ? "text-destructive" : "text-foreground"
@@ -379,11 +379,11 @@ export default function TraccarLiveMap({
                 >
                   {speedMph}
                 </span>
-                <span className="text-muted-foreground text-sm ml-1">mph</span>
+                <span className="text-muted-foreground text-sm">mph</span>
               </div>
 
               {/* Road Name */}
-              <div className="flex-1 text-center px-4">
+              <div className="flex-1 min-w-0 text-center">
                 <p className="text-foreground font-medium truncate">
                   {roadName || "—"}
                 </p>
@@ -393,9 +393,9 @@ export default function TraccarLiveMap({
               </div>
 
               {/* Speed Limit */}
-              <div className="w-14 h-14 rounded-full bg-background border-4 border-destructive flex items-center justify-center">
+              <div className="w-12 h-12 shrink-0 rounded-full bg-background border-4 border-destructive flex items-center justify-center">
                 <span
-                  className={`text-xl font-bold ${
+                  className={`text-lg font-bold ${
                     isSpeeding ? "text-destructive" : "text-foreground"
                   }`}
                 >
