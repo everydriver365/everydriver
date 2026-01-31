@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useTraccarPoller } from "@/hooks/useTraccarPoller";
 import { 
   ArrowLeft, 
   Play, 
@@ -105,6 +106,15 @@ export default function InstructorTraccarSession() {
     customPupilName: string;
     examinerId: string | null;
   } | null>(null);
+
+  // Poll Traccar server when session is active
+  useTraccarPoller({
+    enabled: !!device?.current_session_id,
+    intervalMs: 10000, // Poll every 10 seconds
+    onError: (error) => {
+      console.error("[TraccarPoller] Error:", error);
+    },
+  });
 
   useEffect(() => {
     if (!loading && !instructor) {
