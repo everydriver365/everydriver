@@ -16,7 +16,9 @@ import {
   HelpCircle,
   Palette,
   Navigation,
-  Award
+  Award,
+  Play,
+  CalendarCheck
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -35,6 +37,8 @@ import { InstructorNotificationsDropdown } from "@/components/instructor/Instruc
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
+import { TodayOverviewStrip } from "@/components/instructor/TodayOverviewStrip";
+import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -277,75 +281,110 @@ export function InstructorMobileHome({
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl shadow-lg border border-border/50 dark:border-white/10 p-5 flex items-center justify-between"
+          className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl shadow-lg border border-border/50 dark:border-white/10 p-5"
         >
           {/* Subtle accent gradient in corner */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
           
-          <div className="flex-1 relative z-10">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Today</span>
-              {/* Online/Offline badge with flashing dot */}
-              {isTraccarConnected ? (
-                <span className="flex items-center gap-1 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-full">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          <div className="flex items-start justify-between">
+            <div className="flex-1 relative z-10">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Today</span>
+                {/* Online/Offline badge with flashing dot */}
+                {isTraccarConnected ? (
+                  <span className="flex items-center gap-1 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-full">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                    </span>
+                    Online
                   </span>
-                  Online
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-[9px] font-medium text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded-full">
-                  <span className="h-2 w-2 rounded-full bg-red-500" />
-                  Offline
-                </span>
-              )}
-            </div>
-            <h2 className="text-lg font-bold text-foreground">
-              {content?.motivation_title || "READY TO TEACH?"}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-              {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help! You are not alone."}
-            </p>
-          </div>
-          
-          {content?.show_progress_indicator !== false && (
-            <div className="flex flex-col items-center ml-4 relative z-10">
-              <div className="relative">
-                <svg className="w-16 h-16 transform -rotate-90">
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    className="text-muted/30 dark:text-white/10"
-                  />
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="28"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeDasharray={`${(todaysLessonCount / 6) * 175.9} 175.9`}
-                    strokeLinecap="round"
-                    className="text-primary dark:text-white/80"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-bold text-foreground">{todaysLessonCount}</span>
-                  <span className="text-[10px] text-muted-foreground">/6</span>
-                </div>
+                ) : (
+                  <span className="flex items-center gap-1 text-[9px] font-medium text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
+                    <span className="h-2 w-2 rounded-full bg-destructive" />
+                    Offline
+                  </span>
+                )}
               </div>
-              <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">
-                {content?.progress_label || "TODAY"}
-              </span>
+              <h2 className="text-lg font-bold text-foreground">
+                {content?.motivation_title || "READY TO TEACH?"}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help! You are not alone."}
+              </p>
+              
+              {/* CTA Button */}
+              <motion.div 
+                className="mt-3"
+                whileTap={{ scale: 0.98 }}
+              >
+                <Link to={todaysLessonCount > 0 ? "/instructor/schedule" : "/instructor/traccar"}>
+                  <Button size="sm" className="gap-2 font-medium">
+                    {todaysLessonCount > 0 ? (
+                      <>
+                        <CalendarCheck className="h-4 w-4" />
+                        Start Today's Lessons
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-4 w-4" />
+                        Go Live
+                      </>
+                    )}
+                  </Button>
+                </Link>
+              </motion.div>
             </div>
-          )}
+            
+            {content?.show_progress_indicator !== false && (
+              <Link to="/instructor/schedule">
+                <motion.div 
+                  className="flex flex-col items-center ml-4 relative z-10 cursor-pointer"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className="relative">
+                    <svg className="w-16 h-16 transform -rotate-90">
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        className="text-muted/30 dark:text-white/10"
+                      />
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        strokeDasharray={`${(todaysLessonCount / 6) * 175.9} 175.9`}
+                        strokeLinecap="round"
+                        className="text-primary dark:text-white/80"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-xl font-bold text-foreground">{todaysLessonCount}</span>
+                      <span className="text-[10px] text-muted-foreground">/6</span>
+                    </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">
+                    {content?.progress_label || "TODAY"}
+                  </span>
+                </motion.div>
+              </Link>
+            )}
+          </div>
         </motion.div>
       </div>
+
+      {/* Today Overview Strip */}
+      <TodayOverviewStrip instructorId={instructorId} />
+
+      {/* Smart Reminders */}
+      <SmartRemindersCard />
 
       {/* Setup Checklist for new instructors */}
       {instructorId && (

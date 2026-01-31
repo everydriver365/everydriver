@@ -19,8 +19,10 @@ import {
   FileText,
   Loader2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Timer
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CourseEnquiry {
   id: string;
@@ -61,6 +63,31 @@ const timingLabels: Record<string, string> = {
   "weekdays-evening": "Weekday evenings",
   "weekends": "Weekends only",
 };
+
+const EXPIRY_HOURS = 24; // Jobs expire after 24 hours
+
+function getExpiryInfo(createdAt: string) {
+  const created = new Date(createdAt);
+  const expiryTime = new Date(created.getTime() + EXPIRY_HOURS * 60 * 60 * 1000);
+  const now = new Date();
+  const diffMs = expiryTime.getTime() - now.getTime();
+  const diffHours = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60)));
+  const diffMinutes = Math.max(0, Math.floor(diffMs / (1000 * 60)));
+  
+  let urgencyLevel: "normal" | "warning" | "critical" = "normal";
+  if (diffHours < 1) {
+    urgencyLevel = "critical";
+  } else if (diffHours < 4) {
+    urgencyLevel = "warning";
+  }
+  
+  return {
+    hoursLeft: diffHours,
+    minutesLeft: diffMinutes,
+    urgencyLevel,
+    isExpired: diffMs <= 0,
+  };
+}
 
 interface JobOfferAlertProps {
   instructorId: string;
@@ -210,6 +237,7 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
           const hours = enquiry.requested_hours || 10;
           const payment = calculatePayment(hours);
           const isExpanded = expandedId === enquiry.id;
+          const expiry = getExpiryInfo(enquiry.created_at);
 
           return (
             <motion.div
@@ -240,6 +268,22 @@ export function JobOfferAlert({ instructorId }: JobOfferAlertProps) {
                               <Clock className="h-3 w-3" />
                               {hours}hrs
                             </span>
+                          </div>
+                          {/* Expiry timer */}
+                          <div className={cn(
+                            "flex items-center gap-1 text-xs mt-1 font-medium",
+                            expiry.urgencyLevel === "critical" ? "text-destructive" :
+                            expiry.urgencyLevel === "warning" ? "text-amber-600 dark:text-amber-400" :
+                            "text-muted-foreground"
+                          )}>
+                            <Timer className="h-3 w-3" />
+                            {expiry.isExpired ? (
+                              <span>Expired</span>
+                            ) : expiry.hoursLeft > 0 ? (
+                              <span>Expires in {expiry.hoursLeft}h</span>
+                            ) : (
+                              <span>Expires in {expiry.minutesLeft}m</span>
+                            )}
                           </div>
                         </div>
                       </div>

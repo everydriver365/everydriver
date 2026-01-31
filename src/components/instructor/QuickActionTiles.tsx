@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { motion, Reorder } from "framer-motion";
-import { Link } from "react-router-dom";
+import { motion, Reorder, useDragControls, PanInfo } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
   Users, 
@@ -15,11 +15,16 @@ import {
   ChevronRight,
   GripVertical,
   Pencil,
-  Check
+  Check,
+  MapPin,
+  MessageSquare,
+  Timer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuickAction } from "@/hooks/useInstructorHomepageContent";
 import { useInstructorTilePreferences } from "@/hooks/useInstructorTilePreferences";
+import { usePendingJobsPreview } from "@/hooks/usePendingJobsPreview";
+import { useQuickTileActions } from "@/hooks/useQuickTileActions";
 import { cn } from "@/lib/utils";
 
 // Icon mapping
@@ -49,8 +54,12 @@ export function QuickActionTiles({
   instructorId,
   loading = false
 }: QuickActionTilesProps) {
+  const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
+  const [swipedTileId, setSwipedTileId] = useState<string | null>(null);
   const { getOrderedTiles, saveTileOrder, saving } = useInstructorTilePreferences(instructorId);
+  const { data: jobPreview } = usePendingJobsPreview(instructorId);
+  const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
   
   // Get tiles in user's preferred order
   const orderedTiles = getOrderedTiles(quickActions);
@@ -74,6 +83,16 @@ export function QuickActionTiles({
            action.title.toLowerCase().includes("job");
   };
 
+  const isScheduleAction = (action: QuickAction) => {
+    return action.route === "/instructor/schedule" || 
+           action.title.toLowerCase().includes("schedule");
+  };
+
+  const isPupilsAction = (action: QuickAction) => {
+    return action.route === "/instructor/pupils" || 
+           action.title.toLowerCase().includes("pupil");
+  };
+
   const handleEditToggle = () => {
     if (isEditMode) {
       // Save changes
@@ -85,6 +104,37 @@ export function QuickActionTiles({
 
   const handleReorder = (newOrder: QuickAction[]) => {
     setLocalTiles(newOrder);
+  };
+
+  // Swipe action handlers
+  const handleSwipeAction = (action: QuickAction) => {
+    if (isScheduleAction(action) && nextPupil?.postcode) {
+      // Open maps with postcode
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nextPupil.postcode)}`;
+      window.open(mapsUrl, '_blank');
+    } else if (isPupilsAction(action) && lastContactedPupil) {
+      // Navigate to messages with pupil
+      navigate(`/instructor/messages?pupil=${lastContactedPupil.pupilId}`);
+    }
+    setSwipedTileId(null);
+  };
+
+  const handlePanEnd = (action: QuickAction, info: PanInfo) => {
+    if (info.offset.x > 80) {
+      handleSwipeAction(action);
+    }
+    setSwipedTileId(null);
+  };
+
+  // Get swipe hint for tile
+  const getSwipeHint = (action: QuickAction) => {
+    if (isScheduleAction(action) && nextPupil) {
+      return { icon: MapPin, text: `Navigate to ${nextPupil.pupilName}` };
+    }
+    if (isPupilsAction(action) && lastContactedPupil) {
+      return { icon: MessageSquare, text: `Message ${lastContactedPupil.pupilName}` };
+    }
+    return null;
   };
 
   // Loading skeleton
@@ -230,6 +280,9 @@ export function QuickActionTiles({
               const Icon = getIcon(action.icon);
               const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
               const style = tileStyles[(index + 1) % tileStyles.length];
+              const isJobTile = isJobOffersAction(action);
+              const swipeHint = getSwipeHint(action);
+              const isSwiped = swipedTileId === action.id;
               
               return (
                 <motion.div
@@ -237,23 +290,62 @@ export function QuickActionTiles({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 + index * 0.05 }}
-                  whileTap={{ scale: 0.97 }}
+                  className="relative overflow-hidden"
                 >
-                  <Link to={action.route}>
-                    <div className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex flex-col gap-3 shadow-lg hover:shadow-xl active:shadow-md transition-all min-h-[120px]`}>
-                      <div className={`relative w-12 h-12 rounded-xl ${style.iconBg} flex items-center justify-center`}>
-                        <Icon className={`h-5 w-5 ${style.iconColor}`} />
-                        {showBadge && (
-                          <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-md ring-2 ring-card">
-                            {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                          </span>
+                  {/* Swipe action indicator behind */}
+                  {swipeHint && (
+                    <div className="absolute inset-0 rounded-2xl bg-primary/20 flex items-center pl-3">
+                      <swipeHint.icon className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+
+                  <motion.div
+                    drag={swipeHint ? "x" : false}
+                    dragConstraints={{ left: 0, right: 100 }}
+                    dragElastic={0.1}
+                    onDragStart={() => setSwipedTileId(action.id)}
+                    onDragEnd={(_, info) => handlePanEnd(action, info)}
+                    whileTap={{ scale: 0.97 }}
+                    animate={{ x: 0 }}
+                  >
+                    <Link to={action.route}>
+                      <div className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex flex-col gap-2 shadow-lg hover:shadow-xl active:shadow-md transition-all min-h-[120px]`}>
+                        <div className={`relative w-12 h-12 rounded-xl ${style.iconBg} flex items-center justify-center`}>
+                          <Icon className={`h-5 w-5 ${style.iconColor}`} />
+                          {showBadge && (
+                            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-md ring-2 ring-card">
+                              {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-semibold text-foreground text-sm leading-tight relative mt-auto">
+                          {action.title}
+                        </span>
+                        
+                        {/* Job preview text */}
+                        {isJobTile && jobPreview && (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[10px] text-muted-foreground truncate">
+                              {jobPreview.courseTypeShort} • {jobPreview.hours}h • £{jobPreview.estimatedPayment}
+                            </span>
+                            {/* Expiry timer */}
+                            <span className={cn(
+                              "text-[9px] font-medium flex items-center gap-0.5",
+                              jobPreview.urgencyLevel === "critical" ? "text-destructive" :
+                              jobPreview.urgencyLevel === "warning" ? "text-amber-600 dark:text-amber-400" :
+                              "text-muted-foreground"
+                            )}>
+                              <Timer className="h-2.5 w-2.5" />
+                              {jobPreview.expiresInHours > 0 
+                                ? `Expires in ${jobPreview.expiresInHours}h`
+                                : `Expires in ${jobPreview.expiresInMinutes}m`
+                              }
+                            </span>
+                          </div>
                         )}
                       </div>
-                      <span className="font-semibold text-foreground text-sm leading-tight relative mt-auto">
-                        {action.title}
-                      </span>
-                    </div>
-                  </Link>
+                    </Link>
+                  </motion.div>
                 </motion.div>
               );
             })}
