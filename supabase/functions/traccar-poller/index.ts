@@ -282,6 +282,13 @@ serve(async (req) => {
       // Check if we've already processed this position
       if (device.last_traccar_position_id && pos.id <= device.last_traccar_position_id) {
         console.log(`[Traccar-Poller] Position ${pos.id} already processed for device ${uniqueId}`);
+        
+        // Still update last_seen_at to indicate device is communicating
+        await supabase
+          .from("traccar_devices")
+          .update({ last_seen_at: new Date().toISOString() })
+          .eq("id", device.id);
+        
         skipped++;
         continue;
       }
@@ -291,6 +298,12 @@ serve(async (req) => {
         const lastFixTime = new Date(device.last_traccar_fix_time).getTime();
         const currentFixTime = new Date(pos.fixTime).getTime();
         if (currentFixTime <= lastFixTime) {
+          // Still update last_seen_at to indicate device is communicating
+          await supabase
+            .from("traccar_devices")
+            .update({ last_seen_at: new Date().toISOString() })
+            .eq("id", device.id);
+          
           skipped++;
           continue;
         }
