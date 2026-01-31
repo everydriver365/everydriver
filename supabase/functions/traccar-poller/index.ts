@@ -621,27 +621,55 @@ serve(async (req) => {
 
       // If session is active, record data
       if (device.current_session_id) {
-        // Insert GPS point
-        const { error: gpsError } = await supabase
-          .from("telematics_gps_points")
-          .insert({
-            telematics_id: device.current_session_id,
-            latitude: lat,
-            longitude: lon,
-            speed_kmh: speedKmh,
-            heading: bearing,
-            altitude_m: altitude,
-            accuracy_m: accuracy,
-            speed_limit_kmh: speedLimitKmh,
-            recorded_at: pos.fixTime,
-          });
+        // GPS quality filters to prevent bad data and straight lines on map
+        const ACCURACY_THRESHOLD = 20; // Reject accuracy > 20m
+        const MIN_DISTANCE_M = 5; // Minimum movement to register
+        const MAX_DISTANCE_M = 500; // Max distance to prevent GPS jumps
+        
+        let shouldInsertPoint = true;
+        
+        // Filter 1: Accuracy check
+        if (accuracy > ACCURACY_THRESHOLD) {
+          console.log(`[Traccar-Poller] Skipping point: accuracy ${accuracy}m > ${ACCURACY_THRESHOLD}m`);
+          shouldInsertPoint = false;
+        }
+        
+        // Filter 2: Distance bounds check
+        if (shouldInsertPoint && device.last_latitude !== null && device.last_longitude !== null) {
+          if (distanceMeters < MIN_DISTANCE_M && speedKmh < 5) {
+            // Stationary - skip to avoid duplicate points
+            console.log(`[Traccar-Poller] Skipping point: stationary (${distanceMeters.toFixed(1)}m moved, ${speedKmh.toFixed(1)}km/h)`);
+            shouldInsertPoint = false;
+          } else if (distanceMeters > MAX_DISTANCE_M) {
+            // GPS jump detected - would create straight line on map
+            console.log(`[Traccar-Poller] Skipping point: GPS jump ${distanceMeters.toFixed(0)}m > ${MAX_DISTANCE_M}m (signal loss)`);
+            shouldInsertPoint = false;
+          }
+        }
+        
+        if (shouldInsertPoint) {
+          // Insert GPS point
+          const { error: gpsError } = await supabase
+            .from("telematics_gps_points")
+            .insert({
+              telematics_id: device.current_session_id,
+              latitude: lat,
+              longitude: lon,
+              speed_kmh: speedKmh,
+              heading: bearing,
+              altitude_m: altitude,
+              accuracy_m: accuracy,
+              speed_limit_kmh: speedLimitKmh,
+              recorded_at: pos.fixTime,
+            });
 
-        if (gpsError) {
-          console.error(`[Traccar-Poller] GPS point insert error:`, gpsError);
+          if (gpsError) {
+            console.error(`[Traccar-Poller] GPS point insert error:`, gpsError);
+          }
         }
 
-        // Update total distance atomically
-        if (distanceMeters > 0 && distanceMeters < 5000) {
+        // Update total distance atomically (only for valid points)
+        if (shouldInsertPoint && distanceMeters >= MIN_DISTANCE_M && distanceMeters <= MAX_DISTANCE_M) {
           const distanceKm = distanceMeters / 1000;
           
           await supabase.rpc("increment_total_distance", {
