@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Phone, 
   Mail, 
@@ -99,6 +100,7 @@ interface Pupil {
   balance_due_date?: string | null;
   deposit_forfeited?: boolean | null;
   status?: string;
+  profile_image_url?: string | null;
 }
 
 type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
@@ -436,9 +438,12 @@ export function ExpandablePupilCard({
         className="w-full text-left p-4 flex gap-4"
       >
         {/* Avatar */}
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground shrink-0">
-          {getInitials(pupil.name)}
-        </div>
+        <Avatar className="h-12 w-12 shrink-0 border-2 border-border">
+          <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
+          <AvatarFallback className="bg-primary text-lg font-semibold text-primary-foreground">
+            {getInitials(pupil.name)}
+          </AvatarFallback>
+        </Avatar>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
