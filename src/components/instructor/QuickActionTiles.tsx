@@ -372,27 +372,6 @@ export function QuickActionTiles({
                     <span className="font-semibold text-foreground text-sm leading-tight mt-auto">
                       {action.title}
                     </span>
-                    
-                    {/* Job preview text */}
-                    {isJobTile && jobPreview && (
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[10px] text-muted-foreground truncate">
-                          {jobPreview.courseTypeShort} • {jobPreview.hours}h • £{jobPreview.estimatedPayment}
-                        </span>
-                        <span className={cn(
-                          "text-[9px] font-medium flex items-center gap-0.5",
-                          jobPreview.urgencyLevel === "critical" ? "text-destructive" :
-                          jobPreview.urgencyLevel === "warning" ? "text-amber-600 dark:text-amber-400" :
-                          "text-muted-foreground"
-                        )}>
-                          <Timer className="h-2.5 w-2.5" />
-                          {jobPreview.expiresInHours > 0 
-                            ? `Expires in ${jobPreview.expiresInHours}h`
-                            : `Expires in ${jobPreview.expiresInMinutes}m`
-                          }
-                        </span>
-                      </div>
-                    )}
                   </motion.div>
                 </Link>
               );
