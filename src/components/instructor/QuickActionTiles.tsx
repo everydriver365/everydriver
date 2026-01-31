@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { motion, Reorder, useDragControls, PanInfo, AnimatePresence } from "framer-motion";
+import { motion, Reorder, PanInfo, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -19,7 +19,8 @@ import {
   MapPin,
   MessageSquare,
   Timer,
-  X
+  X,
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuickAction } from "@/hooks/useInstructorHomepageContent";
@@ -58,12 +59,13 @@ export function QuickActionTiles({
   const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
   const [swipedTileId, setSwipedTileId] = useState<string | null>(null);
-  const { getOrderedTiles, saveTileOrder, hideTile, saving } = useInstructorTilePreferences(instructorId);
+  const { getOrderedTiles, getHiddenTiles, saveTileOrder, hideTile, showTile, saving } = useInstructorTilePreferences(instructorId);
   const { data: jobPreview } = usePendingJobsPreview(instructorId);
   const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
   
   // Get tiles in user's preferred order
   const orderedTiles = getOrderedTiles(quickActions);
+  const hiddenTiles = getHiddenTiles(quickActions);
   const [localTiles, setLocalTiles] = useState<QuickAction[]>(orderedTiles);
 
   // Sync local tiles when ordered tiles change (on initial load)
@@ -114,6 +116,13 @@ export function QuickActionTiles({
     await hideTile(tileId);
   };
 
+  const handleRestoreTile = async (tile: QuickAction) => {
+    // Optimistically update local state - add to end
+    setLocalTiles(prev => [...prev, tile]);
+    // Persist to database
+    await showTile(tile.id);
+  };
+
   // Swipe action handlers
   const handleSwipeAction = (action: QuickAction) => {
     if (isScheduleAction(action) && nextPupil?.postcode) {
@@ -159,7 +168,7 @@ export function QuickActionTiles({
     );
   }
 
-  if (localTiles.length === 0) return null;
+  if (localTiles.length === 0 && hiddenTiles.length === 0) return null;
 
   // Different accent colors for visual variety
   const tileStyles = [
@@ -197,66 +206,101 @@ export function QuickActionTiles({
 
       {isEditMode ? (
         // Edit mode with drag-and-drop
-        <Reorder.Group 
-          axis="y" 
-          values={localTiles} 
-          onReorder={handleReorder}
-          className="space-y-2"
-        >
-          <AnimatePresence mode="popLayout">
-            {localTiles.map((action, index) => {
-              const Icon = getIcon(action.icon);
-              const style = tileStyles[index % tileStyles.length];
-              const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
+        <>
+          <Reorder.Group 
+            axis="y" 
+            values={localTiles} 
+            onReorder={handleReorder}
+            className="space-y-2"
+          >
+            <AnimatePresence mode="popLayout">
+              {localTiles.map((action, index) => {
+                const Icon = getIcon(action.icon);
+                const style = tileStyles[index % tileStyles.length];
+                const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
 
-              return (
-                <Reorder.Item
-                  key={action.id}
-                  value={action}
-                  className="touch-none"
-                  layout
-                >
-                  <motion.div
-                    className={cn(
-                      "relative overflow-hidden backdrop-blur-md rounded-2xl border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
-                      style.bg
-                    )}
-                    whileDrag={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
-                    animate={{ 
-                      rotate: [0, -0.5, 0.5, 0],
-                    }}
-                    transition={{ 
-                      rotate: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
-                    }}
-                    exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
+                return (
+                  <Reorder.Item
+                    key={action.id}
+                    value={action}
+                    className="touch-none"
+                    layout
                   >
-                    {/* Hide button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleHideTile(action.id);
-                      }}
-                      className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-md z-10 hover:bg-destructive/90 transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-
-                    <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className={`relative w-10 h-10 rounded-xl ${style.iconBg} flex items-center justify-center shrink-0`}>
-                      <Icon className={`h-5 w-5 ${style.iconColor}`} />
-                      {showBadge && (
-                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
-                          {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                        </span>
+                    <motion.div
+                      className={cn(
+                        "relative overflow-hidden backdrop-blur-md rounded-2xl border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
+                        style.bg
                       )}
-                    </div>
-                    <span className="font-medium text-foreground text-sm flex-1">{action.title}</span>
-                  </motion.div>
-                </Reorder.Item>
-              );
-            })}
-          </AnimatePresence>
-        </Reorder.Group>
+                      whileDrag={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
+                      exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
+                    >
+                      {/* Hide button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleHideTile(action.id);
+                        }}
+                        className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-md z-10 hover:bg-destructive/90 transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+
+                      <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
+                      <div className={`relative w-10 h-10 rounded-xl ${style.iconBg} flex items-center justify-center shrink-0`}>
+                        <Icon className={`h-5 w-5 ${style.iconColor}`} />
+                        {showBadge && (
+                          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                            {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-medium text-foreground text-sm flex-1">{action.title}</span>
+                    </motion.div>
+                  </Reorder.Item>
+                );
+              })}
+            </AnimatePresence>
+          </Reorder.Group>
+          
+          {/* Hidden tiles section - show in edit mode */}
+          {hiddenTiles.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
+                Hidden Tiles ({hiddenTiles.length})
+              </p>
+              <div className="space-y-2">
+                {hiddenTiles.map((tile) => {
+                  const Icon = getIcon(tile.icon);
+                  return (
+                    <motion.div
+                      key={tile.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-xl border border-dashed border-muted-foreground/20"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Icon className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="text-sm font-medium text-muted-foreground">{tile.title}</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2 gap-1 text-xs"
+                        onClick={() => handleRestoreTile(tile)}
+                        disabled={saving}
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add
+                      </Button>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         // Normal view mode
         <>
@@ -279,7 +323,7 @@ export function QuickActionTiles({
                         <>
                           <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />
                           {showBadge && (
-                            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
+                            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
                               {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                             </span>
                           )}
@@ -305,7 +349,6 @@ export function QuickActionTiles({
               const style = tileStyles[(index + 1) % tileStyles.length];
               const isJobTile = isJobOffersAction(action);
               const swipeHint = getSwipeHint(action);
-              const isSwiped = swipedTileId === action.id;
               
               return (
                 <motion.div
