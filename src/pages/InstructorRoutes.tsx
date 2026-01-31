@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,8 @@ import {
   CheckCircle,
   Download,
   Share2,
-  Building2
+  Building2,
+  Play
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -103,6 +105,7 @@ const generateRoutePath = (points: Array<{ lat: number; lon: number }> | null): 
 
 export default function InstructorRoutes() {
   const { instructor } = useInstructorAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [routes, setRoutes] = useState<SavedRoute[]>([]);
   const [testCentres, setTestCentres] = useState<TestCentre[]>([]);
@@ -367,13 +370,19 @@ export default function InstructorRoutes() {
                     </DropdownMenuItem>
                   )}
                   {route.telematics_id && (
-                    <DropdownMenuItem onClick={() => {
-                      setSelectedRoute(route);
-                      setShowReportSheet(true);
-                    }}>
-                      <Navigation className="h-4 w-4 mr-2" />
-                      View Report
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => navigate(`/instructor/trip-replay/${route.id}`)}>
+                        <Play className="h-4 w-4 mr-2" />
+                        Replay Trip
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        setSelectedRoute(route);
+                        setShowReportSheet(true);
+                      }}>
+                        <Navigation className="h-4 w-4 mr-2" />
+                        View Report
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuItem 
                     className="text-destructive focus:text-destructive"

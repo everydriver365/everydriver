@@ -74,6 +74,7 @@ import InstructorIncome from "./pages/InstructorIncome";
 import InstructorInOut from "./pages/InstructorInOut";
 import InstructorTax from "./pages/InstructorTax";
 import InstructorVehicleHealth from "./pages/InstructorVehicleHealth";
+import InstructorTripReplay from "./pages/InstructorTripReplay";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
 import PublicAvailability from "./pages/PublicAvailability";
@@ -183,6 +184,8 @@ const App = () => (
               <Route path="/instructor/pending-scheduling" element={<InstructorPendingScheduling />} />
               <Route path="/instructor/test-results" element={<InstructorTestResults />} />
               <Route path="/instructor/routes" element={<InstructorRoutes />} />
+              <Route path="/instructor/trip-replay/:routeId" element={<InstructorTripReplay />} />
+              <Route path="/instructor/trip-replay" element={<InstructorTripReplay />} />
               <Route path="/instructor/menu" element={<InstructorMenu />} />
               <Route path="/instructor/website" element={<InstructorMiniWebsiteSettings />} />
               <Route path="/instructor/income" element={<InstructorIncome />} />
