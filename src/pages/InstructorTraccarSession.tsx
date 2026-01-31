@@ -107,10 +107,12 @@ export default function InstructorTraccarSession() {
     examinerId: string | null;
   } | null>(null);
 
-  // Poll Traccar server when session is active
+  // Poll Traccar server while this page is open so we can keep `last_seen_at`
+  // fresh and accurately reflect connectivity even before a session starts.
+  const isSessionActive = !!device?.current_session_id;
   useTraccarPoller({
-    enabled: !!device?.current_session_id,
-    intervalMs: 10000, // Poll every 10 seconds
+    enabled: !!device?.id,
+    intervalMs: isSessionActive ? 10000 : 20000,
     onError: (error) => {
       console.error("[TraccarPoller] Error:", error);
     },
@@ -687,11 +689,12 @@ export default function InstructorTraccarSession() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Use a SHORT timeout (10s) to detect stale speed data - GPS should update every 1-3 seconds when active
+  // Use a SHORT timeout for active sessions (to quickly zero-out speed when GPS stops),
+  // but a more forgiving timeout when not recording (we just care if the device is reachable).
   const secondsSinceUpdate = device?.last_seen_at
     ? Math.floor((Date.now() - new Date(device.last_seen_at).getTime()) / 1000)
     : 9999;
-  const isConnected = secondsSinceUpdate < 10; // Only 10 seconds - speed zeros out quickly when GPS stops
+  const isConnected = secondsSinceUpdate < (isSessionActive ? 10 : 30);
 
   const lastSeenAtDate = device?.last_seen_at ? new Date(device.last_seen_at) : null;
   const secondsSinceLastSeen = lastSeenAtDate
@@ -705,7 +708,6 @@ export default function InstructorTraccarSession() {
     return `${mins}m ${secs}s ago`;
   })();
 
-  const isSessionActive = !!device?.current_session_id;
   const currentPupil = pupils.find(p => p.id === device?.current_pupil_id);
   const speedMph = device?.last_speed_kmh != null ? Math.round(device.last_speed_kmh * 0.621371) : null;
   const distanceMiles = totalDistance * 0.621371;
