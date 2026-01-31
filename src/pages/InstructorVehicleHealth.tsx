@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { DeviceStatusCard } from "@/components/instructor/vehicle-health/DeviceStatusCard";
 import { VehicleFleetCard } from "@/components/instructor/vehicle-health/VehicleFleetCard";
-import { MileageLogList } from "@/components/instructor/vehicle-health/MileageLogList";
-import { MileageSummary } from "@/components/instructor/vehicle-health/MileageSummary";
+import { AutoMileageLog } from "@/components/instructor/vehicle-health/AutoMileageLog";
 import { LinkDeviceDialog } from "@/components/instructor/vehicle-health/LinkDeviceDialog";
 import { AddVehicleDialog } from "@/components/instructor/vehicle-health/AddVehicleDialog";
 import { ComplianceOverview } from "@/components/instructor/vehicle-health/ComplianceOverview";
@@ -161,20 +160,9 @@ export default function InstructorVehicleHealth() {
             )}
           </TabsContent>
 
-          {/* Mileage Tab */}
-          <TabsContent value="mileage" className="mt-4 space-y-4">
-            {isLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-24 w-full rounded-lg" />
-                <Skeleton className="h-20 w-full rounded-lg" />
-                <Skeleton className="h-20 w-full rounded-lg" />
-              </div>
-            ) : (
-              <>
-                <MileageSummary entries={mileageLog} vehicles={vehicles} />
-                <MileageLogList entries={mileageLog} />
-              </>
-            )}
+          {/* Mileage Tab - Auto-logged with business/personal tagging */}
+          <TabsContent value="mileage" className="mt-4">
+            <AutoMileageLog />
           </TabsContent>
 
           {/* Live Status Tab */}

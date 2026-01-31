@@ -3919,6 +3919,92 @@ export type Database = {
           },
         ]
       }
+      mileage_logs: {
+        Row: {
+          created_at: string
+          distance_km: number
+          end_location: string | null
+          end_odometer_km: number | null
+          id: string
+          instructor_id: string
+          is_auto_logged: boolean
+          log_date: string
+          pupil_id: string | null
+          purpose: string | null
+          start_location: string | null
+          start_odometer_km: number | null
+          telematics_id: string | null
+          trip_type: string
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          distance_km?: number
+          end_location?: string | null
+          end_odometer_km?: number | null
+          id?: string
+          instructor_id: string
+          is_auto_logged?: boolean
+          log_date?: string
+          pupil_id?: string | null
+          purpose?: string | null
+          start_location?: string | null
+          start_odometer_km?: number | null
+          telematics_id?: string | null
+          trip_type?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          distance_km?: number
+          end_location?: string | null
+          end_odometer_km?: number | null
+          id?: string
+          instructor_id?: string
+          is_auto_logged?: boolean
+          log_date?: string
+          pupil_id?: string | null
+          purpose?: string | null
+          start_location?: string | null
+          start_odometer_km?: number | null
+          telematics_id?: string | null
+          trip_type?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mileage_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_logs_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_logs_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_logs_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_steps: {
         Row: {
           created_at: string
