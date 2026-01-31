@@ -55,8 +55,9 @@ interface ValidationResult {
 function validatePoint(
   point: GPSPoint,
   lastValidPoint: GPSPoint | null,
-  accuracyThreshold = 25,
-  distanceThreshold = 10
+  accuracyThreshold = 20, // Tighter accuracy filter (was 25)
+  minDistanceThreshold = 5, // Minimum movement (was 10)
+  maxDistanceThreshold = 500 // NEW: Max distance to prevent GPS jumps (500m)
 ): ValidationResult {
   // 1. Check GPS accuracy (reject poor signals)
   if (point.accuracy !== undefined && point.accuracy > accuracyThreshold) {
@@ -76,8 +77,19 @@ function validatePoint(
     point.lng
   );
 
-  // 4. Reject if distance is below threshold (GPS jitter)
-  return { isValid: distance >= distanceThreshold, distance };
+  // 4. Reject if distance is below minimum threshold (GPS jitter)
+  if (distance < minDistanceThreshold) {
+    return { isValid: false, distance };
+  }
+
+  // 5. NEW: Reject if distance is too large (GPS jump/signal loss)
+  // This prevents straight lines across the map when GPS signal is lost
+  if (distance > maxDistanceThreshold) {
+    console.log(`[GPS] Rejecting point: distance ${distance.toFixed(0)}m exceeds max ${maxDistanceThreshold}m`);
+    return { isValid: false, distance };
+  }
+
+  return { isValid: true, distance };
 }
 
 // ========== Speed Processing ==========
