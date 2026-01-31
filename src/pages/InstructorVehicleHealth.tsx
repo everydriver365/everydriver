@@ -100,6 +100,12 @@ export default function InstructorVehicleHealth() {
                 vehicles={vehicles}
                 adiExpiry={instructor?.adi_badge_expiry}
                 dbsExpiry={instructor?.dbs_certificate_expiry}
+                carInsuranceExpiry={instructor?.car_insurance_expiry}
+                carMotExpiry={instructor?.car_mot_expiry}
+                carTaxExpiry={instructor?.car_tax_expiry}
+                cpdHoursLogged={instructor?.cpd_hours_logged}
+                cpdYearTarget={instructor?.cpd_year_target}
+                cpdCertified={instructor?.cpd_certified}
               />
             )}
           </TabsContent>

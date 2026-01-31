@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle, Clock, Shield, Car, BadgeCheck } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Shield, Car, BadgeCheck, GraduationCap, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -10,13 +10,20 @@ interface ComplianceOverviewProps {
   vehicles: InstructorVehicle[];
   adiExpiry?: string | null;
   dbsExpiry?: string | null;
+  carInsuranceExpiry?: string | null;
+  carMotExpiry?: string | null;
+  carTaxExpiry?: string | null;
+  cpdHoursLogged?: number | null;
+  cpdYearTarget?: number | null;
+  cpdCertified?: boolean | null;
 }
 
 interface ComplianceItem {
   label: string;
   expiryDate: string | null;
-  type: "adi" | "dbs" | "mot" | "insurance" | "tax";
+  type: "adi" | "dbs" | "mot" | "insurance" | "tax" | "car_insurance" | "car_mot" | "car_tax";
   vehicleReg?: string;
+  icon?: "instructor" | "vehicle";
 }
 
 function getDaysUntil(dateStr: string | null): number | null {
@@ -37,24 +44,45 @@ function getStatusIcon(days: number | null) {
   if (days < 0) return <AlertTriangle className="h-4 w-4 text-destructive" />;
   if (days <= 14) return <AlertTriangle className="h-4 w-4 text-destructive" />;
   if (days <= 30) return <Clock className="h-4 w-4 text-orange-500" />;
-  return <CheckCircle className="h-4 w-4 text-green-500" />;
+  return <CheckCircle className="h-4 w-4 text-green-600" />;
 }
 
-export function ComplianceOverview({ vehicles, adiExpiry, dbsExpiry }: ComplianceOverviewProps) {
+export function ComplianceOverview({ 
+  vehicles, 
+  adiExpiry, 
+  dbsExpiry,
+  carInsuranceExpiry,
+  carMotExpiry,
+  carTaxExpiry,
+  cpdHoursLogged,
+  cpdYearTarget,
+  cpdCertified
+}: ComplianceOverviewProps) {
   // Build compliance items list
   const items: ComplianceItem[] = [];
   
   // ADI Badge
   if (adiExpiry) {
-    items.push({ label: "ADI Badge", expiryDate: adiExpiry, type: "adi" });
+    items.push({ label: "ADI Badge", expiryDate: adiExpiry, type: "adi", icon: "instructor" });
   }
   
   // DBS Check
   if (dbsExpiry) {
-    items.push({ label: "DBS Check", expiryDate: dbsExpiry, type: "dbs" });
+    items.push({ label: "DBS Certificate", expiryDate: dbsExpiry, type: "dbs", icon: "instructor" });
+  }
+
+  // Instructor's primary vehicle compliance (from instructor record)
+  if (carMotExpiry) {
+    items.push({ label: "Car MOT", expiryDate: carMotExpiry, type: "car_mot", icon: "vehicle" });
+  }
+  if (carInsuranceExpiry) {
+    items.push({ label: "Car Insurance", expiryDate: carInsuranceExpiry, type: "car_insurance", icon: "vehicle" });
+  }
+  if (carTaxExpiry) {
+    items.push({ label: "Car Tax", expiryDate: carTaxExpiry, type: "car_tax", icon: "vehicle" });
   }
   
-  // Vehicle compliance
+  // Additional vehicles from fleet
   vehicles.forEach(v => {
     if (v.mot_expiry) {
       items.push({ label: "MOT", expiryDate: v.mot_expiry, type: "mot", vehicleReg: v.registration });
@@ -89,84 +117,127 @@ export function ComplianceOverview({ vehicles, adiExpiry, dbsExpiry }: Complianc
 
   const allGood = expiredCount === 0 && warningCount === 0 && items.length > 0;
 
-  if (items.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <Shield className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-          <p className="text-muted-foreground">No compliance data yet</p>
-          <p className="text-sm text-muted-foreground/70">Add vehicles and set expiry dates</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // CPD Progress
+  const cpdTarget = cpdYearTarget || 7; // Default DVSA recommendation is 7 hours/year
+  const cpdLogged = cpdHoursLogged || 0;
+  const cpdProgress = Math.min((cpdLogged / cpdTarget) * 100, 100);
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between text-base">
-          <span className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            DVSA Compliance
-          </span>
-          {allGood ? (
-            <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
-              All Clear
-            </Badge>
-          ) : expiredCount > 0 ? (
-            <Badge variant="destructive">
-              {expiredCount} Expired
-            </Badge>
-          ) : warningCount > 0 ? (
-            <Badge className="bg-orange-500 text-white border-orange-500">
-              {warningCount} Due Soon
-            </Badge>
-          ) : null}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {items.slice(0, 5).map((item, index) => {
-          const days = getDaysUntil(item.expiryDate);
-          const status = getStatusColor(days);
-          
-          return (
-            <div key={index} className="flex items-center gap-3">
-              {getStatusIcon(days)}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{item.label}</span>
-                  {item.vehicleReg && (
-                    <Badge variant="outline" className="text-xs font-mono">
-                      {item.vehicleReg}
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {item.expiryDate ? format(new Date(item.expiryDate), "d MMM yyyy") : "Not set"}
-                </p>
-              </div>
-              <div className="text-right shrink-0">
-                {days !== null && (
-                  <span className={cn(
-                    "text-sm font-semibold",
-                    status === "destructive" && "text-destructive",
-                    status === "warning" && "text-orange-500",
-                    status === "success" && "text-green-600"
-                  )}>
-                    {days < 0 ? "Expired" : days === 0 ? "Today!" : `${days}d`}
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-        
-        {items.length > 5 && (
-          <p className="text-xs text-muted-foreground text-center pt-2">
-            +{items.length - 5} more items in Fleet tab
+    <div className="space-y-4">
+      {/* CPD Progress Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-between text-base">
+            <span className="flex items-center gap-2">
+              <GraduationCap className="h-4 w-4" />
+              CPD Progress
+            </span>
+            {cpdCertified && (
+              <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
+                <Award className="h-3 w-3 mr-1" />
+                Certified
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Hours this year</span>
+            <span className="font-semibold">{cpdLogged} / {cpdTarget} hrs</span>
+          </div>
+          <Progress value={cpdProgress} className="h-2" />
+          <p className="text-xs text-muted-foreground">
+            {cpdProgress >= 100 
+              ? "✓ Annual target met! Keep up the great work."
+              : `${(cpdTarget - cpdLogged).toFixed(1)} hours remaining to meet DVSA recommendation`
+            }
           </p>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Compliance Items Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-between text-base">
+            <span className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              DVSA Compliance
+            </span>
+            {allGood ? (
+              <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
+                All Clear
+              </Badge>
+            ) : expiredCount > 0 ? (
+              <Badge variant="destructive">
+                {expiredCount} Expired
+              </Badge>
+            ) : warningCount > 0 ? (
+              <Badge className="bg-orange-500 text-white border-orange-500">
+                {warningCount} Due Soon
+              </Badge>
+            ) : null}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {items.length === 0 ? (
+            <div className="py-4 text-center">
+              <Shield className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
+              <p className="text-sm text-muted-foreground">No compliance data yet</p>
+              <p className="text-xs text-muted-foreground/70">Add expiry dates in Settings</p>
+            </div>
+          ) : (
+            <>
+              {items.slice(0, 6).map((item, index) => {
+                const days = getDaysUntil(item.expiryDate);
+                const status = getStatusColor(days);
+                
+                return (
+                  <div key={index} className="flex items-center gap-3">
+                    {getStatusIcon(days)}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{item.label}</span>
+                        {item.vehicleReg && (
+                          <Badge variant="outline" className="text-xs font-mono">
+                            {item.vehicleReg}
+                          </Badge>
+                        )}
+                        {item.icon === "instructor" && (
+                          <Badge variant="outline" className="text-xs">
+                            <BadgeCheck className="h-3 w-3 mr-1" />
+                            You
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {item.expiryDate ? format(new Date(item.expiryDate), "d MMM yyyy") : "Not set"}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      {days !== null && (
+                        <span className={cn(
+                          "text-sm font-semibold",
+                          status === "destructive" && "text-destructive",
+                          status === "warning" && "text-orange-500",
+                          status === "success" && "text-green-600"
+                        )}>
+                          {days < 0 ? "Expired" : days === 0 ? "Today!" : `${days}d`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {items.length > 6 && (
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  +{items.length - 6} more items in Fleet tab
+                </p>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
