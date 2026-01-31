@@ -77,6 +77,7 @@ interface Pupil {
   parent_name?: string | null;
   date_of_birth?: string | null;
   status?: string;
+  profile_image_url?: string | null;
 }
 
 type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
