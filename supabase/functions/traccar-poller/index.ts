@@ -374,7 +374,15 @@ serve(async (req) => {
         }
       }
 
-      // Update device record
+      // Extract vehicle health telemetry from position attributes
+      const batteryPercent = typeof pos.attributes?.battery === 'number' 
+        ? Math.round(pos.attributes.battery) 
+        : null;
+      const ignitionStatus = typeof pos.attributes?.ignition === 'boolean' 
+        ? pos.attributes.ignition 
+        : null;
+
+      // Update device record with telemetry
       const { error: updateError } = await supabase
         .from("traccar_devices")
         .update({
@@ -387,6 +395,8 @@ serve(async (req) => {
           last_road_name: roadName,
           last_traccar_position_id: pos.id,
           last_traccar_fix_time: pos.fixTime,
+          last_battery_percent: batteryPercent,
+          last_ignition_status: ignitionStatus,
         })
         .eq("id", device.id);
 
