@@ -12,7 +12,7 @@ export default function TermsOfService() {
       
       <div className="container py-12 max-w-4xl">
         <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
-        <p className="text-muted-foreground mb-8">Last updated: {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <p className="text-muted-foreground mb-8">Last updated: 31 January 2026</p>
 
         <div className="prose prose-gray max-w-none space-y-8">
           <section>
@@ -78,21 +78,101 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">7. Third-Party Integrations</h2>
+            <h2 className="text-2xl font-semibold mb-4">7. Google Calendar Integration</h2>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              EveryDriver offers optional integration with Google Calendar to help instructors manage their lesson availability. This section explains how we access and use your Google account data.
+            </p>
+
+            <h3 className="text-xl font-semibold mb-3 mt-6">Data We Access</h3>
+            <p className="text-muted-foreground leading-relaxed mb-2">
+              When you connect your Google Calendar to EveryDriver, we request access to:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li><strong>Calendar events</strong>: Read and write access to create, update, and delete lesson bookings</li>
+              <li><strong>Email address</strong>: To identify your Google account and link it to your EveryDriver profile</li>
+            </ul>
+
+            <h3 className="text-xl font-semibold mb-3 mt-6">How We Use Your Data</h3>
+            <p className="text-muted-foreground leading-relaxed mb-2">
+              We use your Google Calendar data solely to:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li>Sync your lesson bookings between EveryDriver and Google Calendar</li>
+              <li>Display your existing calendar events to prevent double-booking</li>
+              <li>Create new calendar events when lessons are booked</li>
+              <li>Update or remove calendar events when lessons are modified or cancelled</li>
+            </ul>
+
+            <h3 className="text-xl font-semibold mb-3 mt-6">Data Storage and Security</h3>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li>Your Google account credentials (OAuth tokens) are encrypted and stored securely</li>
+              <li>We do not store the content of your personal calendar events on our servers</li>
+              <li>Calendar data is fetched in real-time when you use the scheduling features</li>
+              <li>Your data is transmitted using industry-standard HTTPS encryption</li>
+            </ul>
+
+            <h3 className="text-xl font-semibold mb-3 mt-6">What We Do NOT Do</h3>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li>We do <strong>not</strong> sell your Google data to third parties</li>
+              <li>We do <strong>not</strong> use your Google data for advertising purposes</li>
+              <li>We do <strong>not</strong> share your Google data with other users or external services</li>
+              <li>We do <strong>not</strong> access calendars or data beyond what is necessary for lesson scheduling</li>
+            </ul>
+
+            <h3 className="text-xl font-semibold mb-3 mt-6">Google API Services User Data Policy Compliance</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Our Service may integrate with third-party services such as Google Calendar. By connecting these services, you agree to their respective terms of service. We are not responsible for the availability or functionality of third-party services.
+              EveryDriver's use and transfer of information received from Google APIs adheres to the{" "}
+              <a 
+                href="https://developers.google.com/terms/api-services-user-data-policy" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Google API Services User Data Policy
+              </a>
+              , including the Limited Use requirements.
+            </p>
+
+            <h3 className="text-xl font-semibold mb-3 mt-6">Revoking Access</h3>
+            <p className="text-muted-foreground leading-relaxed mb-2">
+              You can disconnect your Google Calendar from EveryDriver at any time by:
+            </p>
+            <ol className="list-decimal pl-6 text-muted-foreground space-y-2">
+              <li>Going to <strong>Settings &gt; Integrations</strong> in your EveryDriver account and clicking "Disconnect"</li>
+              <li>
+                Visiting your{" "}
+                <a 
+                  href="https://myaccount.google.com/permissions" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Google Account permissions
+                </a>
+                {" "}and removing EveryDriver access
+              </li>
+            </ol>
+            <p className="text-muted-foreground leading-relaxed mt-4">
+              Upon disconnection, we will delete your stored OAuth tokens. Existing calendar events created by EveryDriver will remain in your Google Calendar unless you manually delete them.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">8. Intellectual Property</h2>
+            <h2 className="text-2xl font-semibold mb-4">8. Other Third-Party Integrations</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Our Service may integrate with additional third-party services. By connecting these services, you agree to their respective terms of service. We are not responsible for the availability or functionality of third-party services.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">9. Intellectual Property</h2>
             <p className="text-muted-foreground leading-relaxed">
               The Service and its original content, features, and functionality are owned by EveryDriver and are protected by international copyright, trademark, and other intellectual property laws.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">9. Limitation of Liability</h2>
+            <h2 className="text-2xl font-semibold mb-4">10. Limitation of Liability</h2>
             <p className="text-muted-foreground leading-relaxed">
               EveryDriver acts as a platform connecting instructors and learners. We are not liable for:
             </p>
@@ -105,28 +185,28 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">10. Termination</h2>
+            <h2 className="text-2xl font-semibold mb-4">11. Termination</h2>
             <p className="text-muted-foreground leading-relaxed">
               We may terminate or suspend your account at any time for violations of these terms. You may also close your account at any time by contacting us.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">11. Changes to Terms</h2>
+            <h2 className="text-2xl font-semibold mb-4">12. Changes to Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
               We reserve the right to modify these terms at any time. We will notify users of significant changes via email or through the Service. Continued use after changes constitutes acceptance of the new terms.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">12. Governing Law</h2>
+            <h2 className="text-2xl font-semibold mb-4">13. Governing Law</h2>
             <p className="text-muted-foreground leading-relaxed">
               These terms are governed by the laws of England and Wales. Any disputes shall be subject to the exclusive jurisdiction of the courts of England and Wales.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">13. Contact Us</h2>
+            <h2 className="text-2xl font-semibold mb-4">14. Contact Us</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you have questions about these Terms of Service, please contact us at:
             </p>
