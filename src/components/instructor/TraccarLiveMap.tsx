@@ -263,28 +263,32 @@ export default function TraccarLiveMap({
 
     const rotation = heading ?? 0;
 
+    // Car icon SVG - points up by default
     const iconHtml = `
-      <div style="position: relative; width: 40px; height: 40px; transform: translate(-20px, -20px);">
+      <div class="traccar-car-marker" style="
+        position: relative;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
         <div style="
           position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 40px;
-          height: 40px;
-          transform: translate(-50%, -50%);
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           background: white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          box-shadow: 0 3px 12px rgba(0,0,0,0.25);
         "></div>
         <div style="
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 20px;
-          height: 20px;
-          transform: translate(-50%, -50%) rotate(${rotation}deg);
+          position: relative;
+          width: 28px;
+          height: 28px;
+          transform: rotate(${rotation}deg);
+          z-index: 1;
         ">
-          <svg viewBox="0 0 24 24" fill="#3b82f6" stroke="none">
+          <svg viewBox="0 0 24 24" fill="#3b82f6" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
           </svg>
         </div>
@@ -293,9 +297,9 @@ export default function TraccarLiveMap({
 
     const icon = L.divIcon({
       html: iconHtml,
-      className: "custom-marker",
-      iconSize: [40, 40],
-      iconAnchor: [20, 20],
+      className: "traccar-marker-icon",
+      iconSize: [48, 48],
+      iconAnchor: [24, 24],
     });
 
     if (!markerRef.current) {
@@ -416,7 +420,14 @@ export default function TraccarLiveMap({
       )}
 
       <style>{`
-        .custom-marker {
+        .traccar-marker-icon {
+          background: transparent !important;
+          border: none !important;
+        }
+        .traccar-car-marker {
+          pointer-events: none;
+        }
+        .leaflet-marker-icon {
           background: transparent !important;
           border: none !important;
         }
