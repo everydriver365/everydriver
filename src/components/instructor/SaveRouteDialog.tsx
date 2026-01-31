@@ -23,6 +23,7 @@ interface SaveRouteDialogProps {
   onOpenChange: (open: boolean) => void;
   instructorId: string;
   telematicsId: string;
+  pupilId?: string | null;
   startLocation?: string;
   endLocation?: string;
   distanceKm?: number;
@@ -34,6 +35,7 @@ export function SaveRouteDialog({
   onOpenChange,
   instructorId,
   telematicsId,
+  pupilId,
   startLocation,
   endLocation,
   distanceKm,
@@ -57,6 +59,7 @@ export function SaveRouteDialog({
         .insert({
           instructor_id: instructorId,
           telematics_id: telematicsId,
+          pupil_id: pupilId || null,
           name: name.trim(),
           description: description.trim() || null,
           route_type: "recorded",
