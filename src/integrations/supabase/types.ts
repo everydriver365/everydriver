@@ -323,6 +323,7 @@ export type Database = {
           reminder_type: string
           sent_at: string
           sent_via: string
+          vehicle_id: string | null
         }
         Insert: {
           days_before: number
@@ -332,6 +333,7 @@ export type Database = {
           reminder_type: string
           sent_at?: string
           sent_via: string
+          vehicle_id?: string | null
         }
         Update: {
           days_before?: number
@@ -341,6 +343,7 @@ export type Database = {
           reminder_type?: string
           sent_at?: string
           sent_via?: string
+          vehicle_id?: string | null
         }
         Relationships: [
           {
@@ -348,6 +351,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_reminders_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
             referencedColumns: ["id"]
           },
         ]
