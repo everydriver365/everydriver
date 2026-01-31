@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { motion, Reorder, PanInfo, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -25,7 +25,9 @@ import { QuickAction } from "@/hooks/useInstructorHomepageContent";
 import { useInstructorTilePreferences } from "@/hooks/useInstructorTilePreferences";
 import { usePendingJobsPreview } from "@/hooks/usePendingJobsPreview";
 import { useQuickTileActions } from "@/hooks/useQuickTileActions";
+import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { cn } from "@/lib/utils";
+import { format, parse } from "date-fns";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -93,6 +95,7 @@ export function QuickActionTiles({
   const { getOrderedTiles, getHiddenTiles, saveTileOrder, hideTile, showTile, saving } = useInstructorTilePreferences(instructorId);
   const { data: jobPreview } = usePendingJobsPreview(instructorId);
   const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
+  const { data: todayOverview } = useTodayOverview(instructorId);
   
   // Get tiles in user's preferred order (only system tiles by default)
   const orderedTiles = getOrderedTiles(quickActions);
@@ -341,7 +344,7 @@ export function QuickActionTiles({
       ) : (
         // Normal view mode
         <>
-          {/* First tile - full width */}
+          {/* First tile - full width with enhanced info */}
           {localTiles[0] && (
             <motion.div
               key={localTiles[0].id}
@@ -351,28 +354,82 @@ export function QuickActionTiles({
               whileTap={{ scale: 0.98 }}
             >
               <Link to={localTiles[0].route}>
-                <div className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex items-center gap-4 shadow-lg active:shadow-md transition-all">
-                  <div className={`relative w-12 h-12 rounded-xl ${tileStyles[0].iconBg} flex items-center justify-center`}>
-                    {(() => {
-                      const Icon = getIcon(localTiles[0].icon);
-                      const showBadge = isJobOffersAction(localTiles[0]) && pendingJobsCount > 0;
-                      return (
-                        <>
-                          <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />
-                          {showBadge && (
-                            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                              {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                            </span>
+                <div className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 shadow-lg active:shadow-md transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className={`relative w-12 h-12 rounded-xl ${tileStyles[0].iconBg} flex items-center justify-center shrink-0`}>
+                      {(() => {
+                        const Icon = getIcon(localTiles[0].icon);
+                        const showBadge = isJobOffersAction(localTiles[0]) && pendingJobsCount > 0;
+                        const isSchedule = isScheduleAction(localTiles[0]);
+                        const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
+                        return (
+                          <>
+                            <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />
+                            {showBadge && (
+                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
+                                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                              </span>
+                            )}
+                            {showLessonBadge && !showBadge && (
+                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
+                                {todayOverview.lessonCount}
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                    <div className="relative flex-1 min-w-0">
+                      <span className="font-semibold text-foreground text-base">{localTiles[0].title}</span>
+                      {/* Enhanced subtitle for schedule tile */}
+                      {isScheduleAction(localTiles[0]) && todayOverview ? (
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {todayOverview.lessonCount > 0 ? (
+                            <>
+                              <span className="text-xs text-muted-foreground">
+                                {todayOverview.lessonCount} lesson{todayOverview.lessonCount !== 1 ? 's' : ''} today
+                              </span>
+                              {todayOverview.nextLessonTime && (
+                                <>
+                                  <span className="text-muted-foreground/50">•</span>
+                                  <span className="text-xs font-medium text-primary">
+                                    Next: {format(parse(todayOverview.nextLessonTime, 'HH:mm:ss', new Date()), 'h:mm a')}
+                                  </span>
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">No lessons today</span>
                           )}
-                        </>
-                      );
-                    })()}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-xs mt-0.5">Tap to view</p>
+                      )}
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground relative shrink-0" />
                   </div>
-                  <div className="relative flex-1">
-                    <span className="font-semibold text-foreground text-base">{localTiles[0].title}</span>
-                    <p className="text-muted-foreground text-xs mt-0.5">Tap to view</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground relative" />
+                  
+                  {/* Quick stats row for schedule tile */}
+                  {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0 && (
+                    <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border/30">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">{todayOverview.totalHours}h</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">£{todayOverview.expectedEarnings}</span>
+                      </div>
+                      {todayOverview.firstPickupPostcode && (
+                        <div className="flex items-center gap-1.5 ml-auto">
+                          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground truncate max-w-[80px]">
+                            {todayOverview.firstPickupPostcode}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </Link>
             </motion.div>

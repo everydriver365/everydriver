@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { format } from "date-fns";
 
 interface TodayOverview {
   lessonCount: number;
@@ -9,10 +9,13 @@ interface TodayOverview {
   firstPickupLocation: string | null;
   firstPickupPostcode: string | null;
   firstLessonTime: string | null;
+  nextLessonTime: string | null;
+  nextPupilName: string | null;
 }
 
 export function useTodayOverview(instructorId: string | undefined) {
   const today = format(new Date(), "yyyy-MM-dd");
+  const currentTime = format(new Date(), "HH:mm:ss");
 
   return useQuery({
     queryKey: ["today-overview", instructorId, today],
@@ -25,13 +28,12 @@ export function useTodayOverview(instructorId: string | undefined) {
           firstPickupLocation: null,
           firstPickupPostcode: null,
           firstLessonTime: null,
+          nextLessonTime: null,
+          nextPupilName: null,
         };
       }
 
-      const startOfToday = startOfDay(new Date()).toISOString();
-      const endOfToday = endOfDay(new Date()).toISOString();
-
-      // Fetch today's lessons with pupil info
+      // Fetch today's lessons with pupil info using lesson_date (DATE type)
       const { data: lessons, error: lessonsError } = await supabase
         .from("scheduled_lessons")
         .select(`
@@ -39,14 +41,17 @@ export function useTodayOverview(instructorId: string | undefined) {
           start_time,
           duration_minutes,
           pickup_location,
+          pickup_postcode,
+          status,
           pupils!inner (
+            name,
             postcode,
             address
           )
         `)
         .eq("instructor_id", instructorId)
-        .gte("start_time", startOfToday)
-        .lte("start_time", endOfToday)
+        .eq("lesson_date", today)
+        .neq("status", "cancelled")
         .order("start_time", { ascending: true });
 
       if (lessonsError) throw lessonsError;
@@ -66,20 +71,29 @@ export function useTodayOverview(instructorId: string | undefined) {
       const totalHours = totalMinutes / 60;
       const expectedEarnings = totalHours * hourlyRate;
 
-      // Get first lesson's pickup location
+      // Get first lesson's pickup info
       const firstLesson = lessons?.[0];
       const firstPickupLocation = firstLesson?.pickup_location || 
         (firstLesson?.pupils as any)?.address || null;
-      const firstPickupPostcode = (firstLesson?.pupils as any)?.postcode || null;
+      const firstPickupPostcode = firstLesson?.pickup_postcode || 
+        (firstLesson?.pupils as any)?.postcode || null;
       const firstLessonTime = firstLesson?.start_time || null;
+
+      // Find next upcoming lesson (after current time)
+      const upcomingLessons = lessons?.filter(l => l.start_time && l.start_time > currentTime) || [];
+      const nextLesson = upcomingLessons[0];
+      const nextLessonTime = nextLesson?.start_time || null;
+      const nextPupilName = (nextLesson?.pupils as any)?.name || null;
 
       return {
         lessonCount,
-        totalHours: Math.round(totalHours * 10) / 10, // Round to 1 decimal
+        totalHours: Math.round(totalHours * 10) / 10,
         expectedEarnings: Math.round(expectedEarnings),
         firstPickupLocation,
         firstPickupPostcode,
         firstLessonTime,
+        nextLessonTime,
+        nextPupilName,
       };
     },
     enabled: !!instructorId,
