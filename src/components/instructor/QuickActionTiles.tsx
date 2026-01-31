@@ -381,53 +381,31 @@ export function QuickActionTiles({
                     </div>
                     <div className="relative flex-1 min-w-0">
                       <span className="font-semibold text-foreground text-base">{localTiles[0].title}</span>
-                      {/* Enhanced subtitle for schedule tile */}
-                      {isScheduleAction(localTiles[0]) && todayOverview ? (
-                        <div className="space-y-0.5 mt-0.5">
-                          {todayOverview.lessonCount > 0 ? (
-                            <>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <Clock className="h-3 w-3" />
-                                <span>{todayOverview.totalHours} hours of lessons</span>
-                                <span className="text-muted-foreground/50">•</span>
-                                <span>£{todayOverview.expectedEarnings} expected</span>
-                              </div>
-                              {(todayOverview.nextLessonTime || todayOverview.firstPickupPostcode) && (
-                                <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                                  <MapPin className="h-3 w-3" />
-                                  <span>
-                                    Next lesson in {todayOverview.firstPickupPostcode || 'N/A'}
-                                  </span>
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">No lessons today</span>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground text-xs mt-0.5">Tap to view</p>
-                      )}
+                      {/* Simple subtitle */}
+                      <p className="text-muted-foreground text-xs mt-0.5">
+                        {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0
+                          ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount !== 1 ? 's' : ''} today`
+                          : 'Tap to view'
+                        }
+                      </p>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground relative shrink-0" />
                   </div>
                   
                   {/* Quick stats row for schedule tile */}
                   {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0 && (
-                    <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border/30">
-                      <div className="flex items-center gap-1.5">
+                    <div className="mt-3 pt-3 border-t border-border/30 space-y-1.5">
+                      <div className="flex items-center gap-2">
                         <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">{todayOverview.totalHours}h</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">£{todayOverview.expectedEarnings}</span>
+                        <span className="text-xs text-muted-foreground">{todayOverview.totalHours} hours of lessons</span>
+                        <span className="text-muted-foreground/40">•</span>
+                        <span className="text-xs text-muted-foreground">£{todayOverview.expectedEarnings} expected</span>
                       </div>
                       {todayOverview.firstPickupPostcode && (
-                        <div className="flex items-center gap-1.5 ml-auto">
-                          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-                            {todayOverview.firstPickupPostcode}
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-medium text-primary">
+                            Next lesson in {todayOverview.firstPickupPostcode}
                           </span>
                         </div>
                       )}
