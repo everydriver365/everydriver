@@ -36,6 +36,18 @@ interface TraccarDevice {
   last_seen_at: string | null;
   last_traccar_position_id: number | null;
   last_traccar_fix_time: string | null;
+  vehicle_id: string | null;
+  last_ignition_status: boolean | null;
+}
+
+interface VehicleSecuritySettings {
+  id: string;
+  vehicle_id: string;
+  instructor_id: string;
+  security_enabled: boolean;
+  movement_threshold_kmh: number;
+  alert_cooldown_minutes: number;
+  notify_on_ignition: boolean;
 }
 
 interface TraccarPosition {
@@ -175,6 +187,171 @@ async function getRoadInfo(lat: number, lon: number): Promise<{ speedLimit: numb
     }
     speedLimitCache.set(gridKey, { limit: null, roadName: null, timestamp: Date.now() });
     return { speedLimit: null, roadName: null };
+  }
+}
+
+// Check if instructor has any lessons scheduled NOW (with buffer)
+async function hasScheduledLessonNow(supabase: any, instructorId: string): Promise<boolean> {
+  const now = new Date();
+  const bufferMinutes = 15; // 15 min buffer before/after lessons
+
+  // Get lessons that might be in progress (started within last few hours)
+  const checkFrom = new Date(now.getTime() - 4 * 60 * 60 * 1000); // 4 hours ago
+  const checkTo = new Date(now.getTime() + bufferMinutes * 60 * 1000); // 15 min from now
+
+  const { data: lessons, error } = await supabase
+    .from("scheduled_lessons")
+    .select("id, start_time, duration_minutes, status")
+    .eq("instructor_id", instructorId)
+    .gte("start_time", checkFrom.toISOString())
+    .lte("start_time", checkTo.toISOString())
+    .in("status", ["scheduled", "confirmed"]);
+
+  if (error || !lessons) return false;
+
+  // Check if any lesson is currently in progress (with buffer)
+  for (const lesson of lessons) {
+    const lessonStart = new Date(lesson.start_time);
+    const lessonEnd = new Date(lessonStart.getTime() + (lesson.duration_minutes || 60) * 60 * 1000);
+
+    // Add buffer before and after
+    const bufferedStart = new Date(lessonStart.getTime() - bufferMinutes * 60 * 1000);
+    const bufferedEnd = new Date(lessonEnd.getTime() + bufferMinutes * 60 * 1000);
+
+    if (now >= bufferedStart && now <= bufferedEnd) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// Check if security alert should be triggered
+async function checkSecurityAlert(
+  supabase: any,
+  device: TraccarDevice,
+  speedKmh: number,
+  latitude: number,
+  longitude: number,
+  ignitionStatus: boolean | null
+): Promise<void> {
+  if (!device.vehicle_id) return;
+
+  // Get security settings for this vehicle
+  const { data: settings, error: settingsError } = await supabase
+    .from("vehicle_security_settings")
+    .select("*")
+    .eq("vehicle_id", device.vehicle_id)
+    .single();
+
+  if (settingsError || !settings || !settings.security_enabled) {
+    return; // Security not enabled for this vehicle
+  }
+
+  const securitySettings = settings as VehicleSecuritySettings;
+
+  // Check if instructor has a lesson scheduled now
+  const hasLesson = await hasScheduledLessonNow(supabase, device.instructor_id);
+  if (hasLesson) {
+    console.log(`[Security] Lesson in progress for instructor ${device.instructor_id}, skipping alert`);
+    return;
+  }
+
+  // Determine alert type
+  let alertType: "unexpected_movement" | "ignition_on" | null = null;
+
+  // Check for unexpected movement
+  if (speedKmh >= securitySettings.movement_threshold_kmh) {
+    alertType = "unexpected_movement";
+  }
+
+  // Check for ignition change (if enabled)
+  if (
+    securitySettings.notify_on_ignition &&
+    ignitionStatus === true &&
+    device.last_ignition_status === false
+  ) {
+    alertType = "ignition_on";
+  }
+
+  if (!alertType) return;
+
+  // Check cooldown - don't spam alerts
+  const cooldownTime = new Date(
+    Date.now() - securitySettings.alert_cooldown_minutes * 60 * 1000
+  );
+
+  const { data: recentAlerts, error: alertsError } = await supabase
+    .from("vehicle_security_alerts")
+    .select("id, triggered_at")
+    .eq("vehicle_id", device.vehicle_id)
+    .gte("triggered_at", cooldownTime.toISOString())
+    .order("triggered_at", { ascending: false })
+    .limit(1);
+
+  if (!alertsError && recentAlerts && recentAlerts.length > 0) {
+    console.log(`[Security] Alert cooldown active for vehicle ${device.vehicle_id}`);
+    return;
+  }
+
+  console.log(`[Security] Triggering ${alertType} alert for vehicle ${device.vehicle_id}`);
+
+  // Create security alert
+  const { error: insertError } = await supabase
+    .from("vehicle_security_alerts")
+    .insert({
+      vehicle_id: device.vehicle_id,
+      instructor_id: device.instructor_id,
+      device_id: device.id,
+      alert_type: alertType,
+      latitude,
+      longitude,
+      speed_kmh: speedKmh,
+      notification_sent: false,
+    });
+
+  if (insertError) {
+    console.error(`[Security] Failed to create alert:`, insertError);
+    return;
+  }
+
+  // Get vehicle registration for notification
+  const { data: vehicle } = await supabase
+    .from("instructor_vehicles")
+    .select("registration")
+    .eq("id", device.vehicle_id)
+    .single();
+
+  // Send push notification
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const response = await fetch(`${supabaseUrl}/functions/v1/notify-instructor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+      },
+      body: JSON.stringify({
+        instructorId: device.instructor_id,
+        type: "security_alert",
+        vehicleRegistration: vehicle?.registration || "Unknown",
+        alertType,
+        speedKmh: Math.round(speedKmh),
+        latitude,
+        longitude,
+      }),
+    });
+
+    if (response.ok) {
+      // Update alert to mark notification as sent
+      await supabase
+        .from("vehicle_security_alerts")
+        .update({ notification_sent: true })
+        .eq("vehicle_id", device.vehicle_id)
+        .eq("triggered_at", new Date().toISOString());
+    }
+  } catch (notifyError) {
+    console.error(`[Security] Failed to send notification:`, notifyError);
   }
 }
 
@@ -501,6 +678,18 @@ serve(async (req) => {
               longitude: lon,
               is_acknowledged: false,
             });
+        }
+      } else {
+        // No active session - check for security alerts
+        if (device.vehicle_id) {
+          await checkSecurityAlert(
+            supabase,
+            device,
+            speedKmh,
+            lat,
+            lon,
+            ignitionStatus
+          );
         }
       }
 

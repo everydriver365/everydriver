@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface NotifyRequest {
   instructorId: string;
-  type: "new_booking" | "cancellation" | "reschedule" | "admin_message" | "admin_direct_message" | "pupil_message";
+  type: "new_booking" | "cancellation" | "reschedule" | "admin_message" | "admin_direct_message" | "pupil_message" | "security_alert";
   pupilName?: string;
   lessonDate?: string;
   lessonTime?: string;
@@ -18,6 +18,12 @@ interface NotifyRequest {
   chargeApplied?: boolean;
   messagePreview?: string;
   hasAttachment?: boolean;
+  // Security alert fields
+  vehicleRegistration?: string;
+  alertType?: "unexpected_movement" | "ignition_on" | "geofence_exit";
+  speedKmh?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 interface PushNotification {
@@ -139,6 +145,28 @@ serve(async (req) => {
           tag: "pupil-message",
           icon: "/favicon.png",
           data: { type: "pupil_message", pupilName: data.pupilName, url: "/instructor/messages" }
+        };
+        break;
+
+      case "security_alert":
+        const alertLabel = data.alertType === "ignition_on" 
+          ? "Ignition turned on" 
+          : data.alertType === "geofence_exit"
+          ? "Left zone"
+          : "is moving";
+        smsMessage = `🚨 Vehicle Alert: ${data.vehicleRegistration} ${alertLabel}${data.speedKmh ? ` at ${data.speedKmh} km/h` : ""} - no lesson scheduled. Check your vehicle!`;
+        pushNotification = {
+          title: "🚨 Vehicle Alert",
+          body: `${data.vehicleRegistration} ${alertLabel}${data.speedKmh ? ` at ${data.speedKmh} km/h` : ""} - no lesson scheduled`,
+          tag: "security-alert",
+          icon: "/favicon.png",
+          data: { 
+            type: "security_alert", 
+            vehicleRegistration: data.vehicleRegistration,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            url: "/instructor/find-car"
+          }
         };
         break;
 

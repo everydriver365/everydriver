@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield } from "lucide-react";
+import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { DeviceStatusCard } from "@/components/instructor/vehicle-health/DeviceStatusCard";
 import { VehicleFleetCard } from "@/components/instructor/vehicle-health/VehicleFleetCard";
@@ -11,7 +12,9 @@ import { MileageSummary } from "@/components/instructor/vehicle-health/MileageSu
 import { LinkDeviceDialog } from "@/components/instructor/vehicle-health/LinkDeviceDialog";
 import { AddVehicleDialog } from "@/components/instructor/vehicle-health/AddVehicleDialog";
 import { ComplianceOverview } from "@/components/instructor/vehicle-health/ComplianceOverview";
+import { SecurityAlertsTab } from "@/components/instructor/vehicle-health/SecurityAlertsTab";
 import { useVehicleHealth, TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
+import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -19,9 +22,15 @@ export default function InstructorVehicleHealth() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
   const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, refetch } = useVehicleHealth();
+  const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const [activeTab, setActiveTab] = useState("compliance");
   const [linkingDevice, setLinkingDevice] = useState<TraccarDeviceHealth | null>(null);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
+
+  const handleRefresh = () => {
+    refetch();
+    refetchSecurity();
+  };
 
   const handleLinkDevice = async (deviceId: string, vehicleId: string | null) => {
     await linkDeviceToVehicle(deviceId, vehicleId);
@@ -52,7 +61,7 @@ export default function InstructorVehicleHealth() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => refetch()}
+              onClick={handleRefresh}
               className="h-9 w-9"
             >
               <RefreshCw className="h-4 w-4" />
@@ -69,7 +78,7 @@ export default function InstructorVehicleHealth() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="compliance" className="text-xs sm:text-sm">
               <Shield className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
               DVSA
@@ -81,6 +90,18 @@ export default function InstructorVehicleHealth() {
             <TabsTrigger value="mileage" className="text-xs sm:text-sm">
               <MapPin className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
               Mileage
+            </TabsTrigger>
+            <TabsTrigger value="security" className="text-xs sm:text-sm relative">
+              <ShieldAlert className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
+              Security
+              {unacknowledgedCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                >
+                  {unacknowledgedCount}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="live" className="text-xs sm:text-sm">
               <Radio className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
@@ -188,6 +209,11 @@ export default function InstructorVehicleHealth() {
                 />
               ))
             )}
+          </TabsContent>
+
+          {/* Security Tab */}
+          <TabsContent value="security" className="mt-4">
+            <SecurityAlertsTab vehicles={vehicles} />
           </TabsContent>
         </Tabs>
       </div>
