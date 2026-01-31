@@ -53,6 +53,7 @@ import Intensives from "./pages/Intensives";
 import SemiIntensive from "./pages/SemiIntensive";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import GoogleApiDisclosure from "./pages/GoogleApiDisclosure";
 import Benefits from "./pages/Benefits";
 import NotFound from "./pages/NotFound";
 import InstructorMiniWebsite from "./pages/InstructorMiniWebsite";
@@ -125,6 +126,7 @@ const App = () => (
               <Route path="/semi-intensive" element={<SemiIntensive />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/google-api-disclosure" element={<GoogleApiDisclosure />} />
               <Route path="/benefits" element={<Benefits />} />
               <Route path="/i/:slug" element={<MiniWebsiteHome />} />
               <Route path="/i/:slug/about" element={<MiniWebsiteAbout />} />
