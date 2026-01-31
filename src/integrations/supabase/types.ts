@@ -6447,6 +6447,145 @@ export type Database = {
           },
         ]
       }
+      vehicle_service_history: {
+        Row: {
+          cost_gbp: number | null
+          created_at: string | null
+          custom_name: string | null
+          id: string
+          instructor_id: string
+          notes: string | null
+          odometer_km: number | null
+          provider: string | null
+          receipt_url: string | null
+          reminder_id: string | null
+          service_date: string
+          service_type: Database["public"]["Enums"]["service_type"]
+          vehicle_id: string
+        }
+        Insert: {
+          cost_gbp?: number | null
+          created_at?: string | null
+          custom_name?: string | null
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          odometer_km?: number | null
+          provider?: string | null
+          receipt_url?: string | null
+          reminder_id?: string | null
+          service_date: string
+          service_type: Database["public"]["Enums"]["service_type"]
+          vehicle_id: string
+        }
+        Update: {
+          cost_gbp?: number | null
+          created_at?: string | null
+          custom_name?: string | null
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          odometer_km?: number | null
+          provider?: string | null
+          receipt_url?: string | null
+          reminder_id?: string | null
+          service_date?: string
+          service_type?: Database["public"]["Enums"]["service_type"]
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_service_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_service_history_reminder_id_fkey"
+            columns: ["reminder_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_service_reminders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_service_history_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicle_service_reminders: {
+        Row: {
+          created_at: string | null
+          custom_name: string | null
+          id: string
+          instructor_id: string
+          interval_km: number | null
+          interval_months: number | null
+          is_active: boolean | null
+          last_service_date: string | null
+          last_service_km: number | null
+          next_due_date: string | null
+          next_due_km: number | null
+          reminder_days_before: number | null
+          service_type: Database["public"]["Enums"]["service_type"]
+          updated_at: string | null
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          custom_name?: string | null
+          id?: string
+          instructor_id: string
+          interval_km?: number | null
+          interval_months?: number | null
+          is_active?: boolean | null
+          last_service_date?: string | null
+          last_service_km?: number | null
+          next_due_date?: string | null
+          next_due_km?: number | null
+          reminder_days_before?: number | null
+          service_type: Database["public"]["Enums"]["service_type"]
+          updated_at?: string | null
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string | null
+          custom_name?: string | null
+          id?: string
+          instructor_id?: string
+          interval_km?: number | null
+          interval_months?: number | null
+          is_active?: boolean | null
+          last_service_date?: string | null
+          last_service_km?: number | null
+          next_due_date?: string | null
+          next_due_km?: number | null
+          reminder_days_before?: number | null
+          service_type?: Database["public"]["Enums"]["service_type"]
+          updated_at?: string | null
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_service_reminders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_service_reminders_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -6502,6 +6641,16 @@ export type Database = {
     }
     Enums: {
       app_role: "instructor" | "admin" | "pupil"
+      service_type:
+        | "oil_change"
+        | "full_service"
+        | "mot"
+        | "tire_rotation"
+        | "brake_check"
+        | "air_filter"
+        | "coolant_flush"
+        | "transmission"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6630,6 +6779,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["instructor", "admin", "pupil"],
+      service_type: [
+        "oil_change",
+        "full_service",
+        "mot",
+        "tire_rotation",
+        "brake_check",
+        "air_filter",
+        "coolant_flush",
+        "transmission",
+        "other",
+      ],
     },
   },
 } as const

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +12,10 @@ import { LinkDeviceDialog } from "@/components/instructor/vehicle-health/LinkDev
 import { AddVehicleDialog } from "@/components/instructor/vehicle-health/AddVehicleDialog";
 import { ComplianceOverview } from "@/components/instructor/vehicle-health/ComplianceOverview";
 import { SecurityAlertsTab } from "@/components/instructor/vehicle-health/SecurityAlertsTab";
+import { ServiceRemindersTab } from "@/components/instructor/vehicle-health/ServiceRemindersTab";
 import { useVehicleHealth, TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
 import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
+import { useVehicleService } from "@/hooks/useVehicleService";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,6 +24,7 @@ export default function InstructorVehicleHealth() {
   const { instructor } = useInstructorAuth();
   const { devices, vehicles, mileageLog, isLoading, linkDeviceToVehicle, refetch } = useVehicleHealth();
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
+  const { upcomingReminders } = useVehicleService();
   const [activeTab, setActiveTab] = useState("compliance");
   const [linkingDevice, setLinkingDevice] = useState<TraccarDeviceHealth | null>(null);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
@@ -77,7 +80,7 @@ export default function InstructorVehicleHealth() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="compliance" className="text-xs sm:text-sm">
               <Shield className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
               DVSA
@@ -85,6 +88,18 @@ export default function InstructorVehicleHealth() {
             <TabsTrigger value="fleet" className="text-xs sm:text-sm">
               <Car className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
               Fleet
+            </TabsTrigger>
+            <TabsTrigger value="service" className="text-xs sm:text-sm relative">
+              <Wrench className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
+              Service
+              {upcomingReminders.length > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px]"
+                >
+                  {upcomingReminders.length}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="mileage" className="text-xs sm:text-sm">
               <MapPin className="h-3.5 w-3.5 mr-1.5 hidden sm:inline" />
@@ -158,6 +173,11 @@ export default function InstructorVehicleHealth() {
                 <VehicleFleetCard key={vehicle.id} vehicle={vehicle} />
               ))
             )}
+          </TabsContent>
+
+          {/* Service Reminders Tab */}
+          <TabsContent value="service" className="mt-4">
+            <ServiceRemindersTab />
           </TabsContent>
 
           {/* Mileage Tab - Auto-logged with business/personal tagging */}
