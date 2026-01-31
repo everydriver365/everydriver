@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, Car, Calendar, Upload, X } from "lucide-react";
+import { Camera, Car, Calendar, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,7 @@ export function AddVehicleDialog({ open, onOpenChange, onSuccess }: AddVehicleDi
     make: "",
     model: "",
     year: new Date().getFullYear(),
-    transmission: "Manual" as "Manual" | "Automatic",
+    transmission: "manual" as "manual" | "automatic",
     current_odometer_km: 0,
     mot_expiry: "",
     insurance_expiry: "",
@@ -109,7 +109,7 @@ export function AddVehicleDialog({ open, onOpenChange, onSuccess }: AddVehicleDi
         make: "",
         model: "",
         year: new Date().getFullYear(),
-        transmission: "Manual",
+        transmission: "manual",
         current_odometer_km: 0,
         mot_expiry: "",
         insurance_expiry: "",
@@ -120,7 +120,11 @@ export function AddVehicleDialog({ open, onOpenChange, onSuccess }: AddVehicleDi
       setImageFile(null);
     } catch (error) {
       console.error("Error adding vehicle:", error);
-      toast.error("Failed to add vehicle");
+      const message =
+        typeof error === "object" && error !== null && "message" in error
+          ? String((error as any).message)
+          : "Failed to add vehicle";
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -183,7 +187,7 @@ export function AddVehicleDialog({ open, onOpenChange, onSuccess }: AddVehicleDi
           </div>
 
           {/* Make & Model */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="make">Make</Label>
               <Input
@@ -205,7 +209,7 @@ export function AddVehicleDialog({ open, onOpenChange, onSuccess }: AddVehicleDi
           </div>
 
           {/* Year & Transmission */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="year">Year</Label>
               <Input
@@ -221,14 +225,16 @@ export function AddVehicleDialog({ open, onOpenChange, onSuccess }: AddVehicleDi
               <Label>Transmission</Label>
               <Select
                 value={formData.transmission}
-                onValueChange={(value) => setFormData({ ...formData, transmission: value as "Manual" | "Automatic" })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, transmission: value as "manual" | "automatic" })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Manual">Manual</SelectItem>
-                  <SelectItem value="Automatic">Automatic</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
+                  <SelectItem value="automatic">Automatic</SelectItem>
                 </SelectContent>
               </Select>
             </div>
