@@ -6084,6 +6084,8 @@ export type Database = {
           last_seen_at: string | null
           last_speed_kmh: number | null
           last_speed_limit_kmh: number | null
+          last_traccar_fix_time: string | null
+          last_traccar_position_id: number | null
           updated_at: string | null
         }
         Insert: {
@@ -6103,6 +6105,8 @@ export type Database = {
           last_seen_at?: string | null
           last_speed_kmh?: number | null
           last_speed_limit_kmh?: number | null
+          last_traccar_fix_time?: string | null
+          last_traccar_position_id?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -6122,6 +6126,8 @@ export type Database = {
           last_seen_at?: string | null
           last_speed_kmh?: number | null
           last_speed_limit_kmh?: number | null
+          last_traccar_fix_time?: string | null
+          last_traccar_position_id?: number | null
           updated_at?: string | null
         }
         Relationships: [
