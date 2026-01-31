@@ -40,8 +40,10 @@ import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetu
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { TodayOverviewStrip } from "@/components/instructor/TodayOverviewStrip";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
+import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 const instructorLogo = "/everydriver-logo-v2.png";
@@ -78,6 +80,9 @@ export function InstructorMobileHome({
   
   // Traccar device connection status
   const { isConnected: isTraccarConnected, status: traccarStatus } = useTraccarConnectionStatus(instructorId || null);
+  
+  // Driving alerts (weather + traffic)
+  const { alerts: drivingAlerts, dismissAlert } = useDrivingAlerts(instructorId);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -385,6 +390,9 @@ export function InstructorMobileHome({
           </div>
         </motion.div>
       </div>
+
+      {/* Driving Alerts (Weather + Traffic) */}
+      <DrivingAlertsStrip alerts={drivingAlerts} onDismiss={dismissAlert} />
 
       {/* Smart Reminders */}
       <SmartRemindersCard />
