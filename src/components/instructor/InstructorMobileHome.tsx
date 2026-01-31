@@ -386,9 +386,6 @@ export function InstructorMobileHome({
         </motion.div>
       </div>
 
-      {/* Today Overview Strip */}
-      <TodayOverviewStrip instructorId={instructorId} />
-
       {/* Smart Reminders */}
       <SmartRemindersCard />
 
