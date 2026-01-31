@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google API Disclosure - EveryDriver</title>
+  <meta name="description" content="How EveryDriver uses Google Calendar data. Our commitment to privacy and Limited Use compliance.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; line-height: 1.6; color: #333; background: #f9fafb; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    h1 { font-size: 2.25rem; margin-bottom: 1rem; color: #111; }
+    h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: #111; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+    h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; color: #111; }
+    p { margin-bottom: 1rem; color: #4b5563; }
+    ul, ol { margin: 1rem 0 1rem 1.5rem; color: #4b5563; }
+    li { margin-bottom: 0.5rem; }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .header { text-align: center; margin-bottom: 2rem; }
+    .badge { display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem; }
+    .subtitle { font-size: 1.125rem; color: #6b7280; max-width: 600px; margin: 0 auto; }
+    .compliance-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1.5rem; margin: 2rem 0; }
+    .compliance-box h2 { margin-top: 0; border: none; padding-bottom: 0; font-size: 1.125rem; color: #1e40af; }
+    .compliance-box p { color: #1e3a8a; margin-bottom: 0; }
+    .section { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+    .section h2 { margin-top: 0; border: none; padding-bottom: 0; }
+    .check-list li { list-style: none; margin-left: 0; padding-left: 1.5rem; position: relative; }
+    .check-list li::before { content: "✓"; position: absolute; left: 0; color: #22c55e; font-weight: bold; }
+    .cross-list li { list-style: none; margin-left: 0; padding-left: 1.5rem; position: relative; }
+    .cross-list li::before { content: "✗"; position: absolute; left: 0; color: #ef4444; font-weight: bold; }
+    .option-box { background: #f3f4f6; border-radius: 8px; padding: 1rem; margin: 0.75rem 0; }
+    .option-box strong { display: block; margin-bottom: 0.25rem; color: #111; }
+    .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; text-align: center; }
+    .footer a { margin: 0 1rem; }
+    .last-updated { text-align: center; color: #9ca3af; font-size: 0.875rem; margin-top: 2rem; }
+    strong { color: #111; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="badge">🛡️ Google API Services Disclosure</span>
+      <h1>How EveryDriver Uses Google Calendar</h1>
+      <p class="subtitle">Transparency about our use of Google API Services and our commitment to protecting your data</p>
+    </div>
+
+    <div class="compliance-box">
+      <h2>Google API Services User Data Policy Compliance</h2>
+      <p>EveryDriver's use and transfer to any other app of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+    </div>
+
+    <div class="section">
+      <h2>📅 What Data We Access</h2>
+      <p>When you connect your Google Calendar to EveryDriver, we request access to:</p>
+      <ul>
+        <li><strong>Google Calendar Events:</strong> Read and write access to create, update, and delete driving lesson bookings in your calendar</li>
+        <li><strong>Email Address:</strong> To identify your Google account and link it to your EveryDriver instructor profile</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>👁️ How We Use Your Data</h2>
+      <p>We use your Google Calendar data <strong>solely</strong> for the following purposes:</p>
+      <ul class="check-list">
+        <li>Sync your lesson bookings between EveryDriver and Google Calendar</li>
+        <li>Display your existing calendar events to prevent double-booking</li>
+        <li>Create new calendar events when lessons are booked by pupils</li>
+        <li>Update or remove calendar events when lessons are modified or cancelled</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>🔒 What We Do NOT Do</h2>
+      <p>In accordance with Google's Limited Use requirements, we commit to the following restrictions:</p>
+      <ul class="cross-list">
+        <li>We do <strong>not</strong> sell, rent, or lease your Google data to any third parties</li>
+        <li>We do <strong>not</strong> use your Google data for advertising or marketing purposes</li>
+        <li>We do <strong>not</strong> share your Google data with other users or external services</li>
+        <li>We do <strong>not</strong> use your Google data to train AI or machine learning models</li>
+        <li>We do <strong>not</strong> access calendars or data beyond what is necessary for lesson scheduling</li>
+        <li>We do <strong>not</strong> transfer your data to third parties except as necessary to provide the Service</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>🛡️ Data Storage and Security</h2>
+      <ul>
+        <li>Your Google OAuth tokens are encrypted at rest using industry-standard AES-256 encryption</li>
+        <li>All data transmission occurs over HTTPS with TLS 1.3 encryption</li>
+        <li>We do not store the content of your personal calendar events on our servers</li>
+        <li>Calendar data is fetched in real-time when you use the scheduling features</li>
+        <li>Access tokens are refreshed securely and expired tokens are automatically deleted</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>🗑️ Revoking Access</h2>
+      <p>You can disconnect your Google Calendar from EveryDriver at any time using either method:</p>
+      
+      <div class="option-box">
+        <strong>Option 1: Through EveryDriver</strong>
+        Navigate to <strong>Settings → Integrations</strong> in your EveryDriver instructor account and click "Disconnect Google Calendar"
+      </div>
+      
+      <div class="option-box">
+        <strong>Option 2: Through Google</strong>
+        Visit your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">Google Account permissions</a> and remove EveryDriver access
+      </div>
+      
+      <p style="margin-top: 1rem;">Upon disconnection, we will immediately delete your stored OAuth tokens. Existing calendar events created by EveryDriver will remain in your Google Calendar unless you manually delete them.</p>
+    </div>
+
+    <div class="section">
+      <h2>📧 Questions or Concerns?</h2>
+      <p>If you have any questions about how we use Google API data, please contact us:</p>
+      <p>
+        <strong>Email:</strong> privacy@everydriver.co.uk<br>
+        <strong>Phone:</strong> 0800 123 4567<br>
+        <strong>Address:</strong> EveryDriver Ltd, 123 Driving Lane, London, UK
+      </p>
+    </div>
+
+    <div class="footer">
+      <a href="/privacy-policy/">Privacy Policy</a>
+      <a href="/terms-of-service/">Terms of Service</a>
+    </div>
+
+    <p class="last-updated">Last updated: 31 January 2026</p>
+  </div>
+</body>
+</html>
