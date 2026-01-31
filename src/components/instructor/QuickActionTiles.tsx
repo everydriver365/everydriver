@@ -40,8 +40,22 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Car,
   Receipt,
   Navigation,
-  Award
+  Award,
+  MapPin,
+  MessageSquare
 };
+
+// Additional tiles available to add
+const additionalTiles: QuickAction[] = [
+  { id: "vehicle-health", title: "Vehicle Health", icon: "Car", route: "/instructor/vehicle-health", display_order: 100 },
+  { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages", display_order: 101 },
+  { id: "test-results", title: "Test Results", icon: "Award", route: "/instructor/test-results", display_order: 102 },
+  { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 103 },
+  { id: "locations", title: "Locations", icon: "MapPin", route: "/instructor/locations", display_order: 104 },
+  { id: "settings", title: "Settings", icon: "Settings", route: "/instructor/settings", display_order: 105 },
+  { id: "cpd-log", title: "CPD Log", icon: "Award", route: "/instructor/cpd", display_order: 106 },
+  { id: "calendar", title: "Calendar", icon: "Calendar", route: "/instructor/calendar", display_order: 107 },
+];
 
 interface QuickActionTilesProps {
   quickActions: QuickAction[];
@@ -63,10 +77,12 @@ export function QuickActionTiles({
   const { data: jobPreview } = usePendingJobsPreview(instructorId);
   const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
   
-  // Get tiles in user's preferred order
-  const orderedTiles = getOrderedTiles(quickActions);
-  // Get ALL tiles not currently visible (hidden + any not in ordered list)
-  const availableTilesToAdd = quickActions.filter(
+  // Get tiles in user's preferred order (includes both system and custom tiles)
+  const allPossibleTiles = [...quickActions, ...additionalTiles];
+  const orderedTiles = getOrderedTiles(allPossibleTiles);
+  
+  // Get ALL tiles not currently visible (hidden + additional tiles not yet added)
+  const availableTilesToAdd = allPossibleTiles.filter(
     tile => !orderedTiles.some(t => t.id === tile.id)
   );
   const [localTiles, setLocalTiles] = useState<QuickAction[]>(orderedTiles);
