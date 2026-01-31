@@ -28,6 +28,7 @@ import InstructorQuickAvailability from "./pages/InstructorQuickAvailability";
 import InstructorGaps from "./pages/InstructorGaps";
 import InstructorExpenses from "./pages/InstructorExpenses";
 import InstructorSatNav from "./pages/InstructorSatNav";
+import InstructorFindMyCar from "./pages/InstructorFindMyCar";
 import InstructorAccounts from "./pages/InstructorAccounts";
 import InstructorDomainsManagement from "./pages/InstructorDomainsManagement";
 import InstructorMessages from "./pages/InstructorMessages";
@@ -169,6 +170,7 @@ const App = () => (
               <Route path="/instructor/traccar" element={<InstructorTraccarSession />} />
               <Route path="/instructor/settings/traccar" element={<InstructorTraccarSetup />} />
               <Route path="/instructor/satnav" element={<InstructorSatNav />} />
+              <Route path="/instructor/find-my-car" element={<InstructorFindMyCar />} />
               <Route path="/instructor/accounts" element={<InstructorAccounts />} />
               <Route path="/instructor/domains" element={<InstructorDomainsManagement />} />
               <Route path="/instructor/messages" element={<InstructorMessages />} />

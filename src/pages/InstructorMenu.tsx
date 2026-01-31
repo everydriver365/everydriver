@@ -24,6 +24,7 @@ import {
   Heart,
   QrCode,
   CalendarPlus,
+  Navigation,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -90,6 +91,14 @@ export default function InstructorMenu() {
           path: "/instructor/traccar",
           iconColor: "text-cyan-600",
           iconBg: "bg-cyan-100 dark:bg-cyan-900/30",
+        },
+        {
+          icon: Navigation,
+          label: "Find My Car",
+          description: "Locate your vehicle",
+          path: "/instructor/find-my-car",
+          iconColor: "text-rose-600",
+          iconBg: "bg-rose-100 dark:bg-rose-900/30",
         },
         {
           icon: Receipt,
