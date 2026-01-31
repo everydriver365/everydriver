@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
-import { format, eachDayOfInterval, isSameDay, isToday, startOfDay, addHours, addMonths, subMonths, startOfMonth, endOfMonth, getMonth } from 'date-fns';
+import { format, eachDayOfInterval, isSameDay, isToday, startOfDay, addHours, addDays, startOfMonth, getMonth } from 'date-fns';
 import { Palette, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -302,10 +302,10 @@ export function GoogleStyleScheduleView({
     }
   }, [loading]);
 
-  // Generate 365 days centered around TODAY (6 months before + 6 months after)
+  // Generate 365 days starting from today
   const allDays = useMemo(() => {
-    const start = startOfMonth(subMonths(today, 6));
-    const end = endOfMonth(addMonths(today, 6));
+    const start = startOfDay(today);
+    const end = addDays(today, 364); // 365 days total including today
     
     return eachDayOfInterval({ start, end });
   }, [today]);
