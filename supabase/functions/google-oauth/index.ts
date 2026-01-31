@@ -316,10 +316,38 @@ async function handleAPIRequest(req: Request): Promise<Response> {
 
       const isExpired = new Date(tokenData.token_expiry) < new Date();
 
+      // If email is missing, fetch it from Google and update the record
+      let email = tokenData.email;
+      if (!email && tokenData.access_token) {
+        try {
+          const userInfoResponse = await fetch(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
+          );
+          
+          if (userInfoResponse.ok) {
+            const userInfo = await userInfoResponse.json();
+            email = userInfo.email;
+            
+            // Save the email for future requests
+            if (email) {
+              await supabase
+                .from("instructor_calendar_tokens")
+                .update({ email })
+                .eq("instructor_id", instructorId)
+                .eq("provider", "google");
+              console.log(`Auto-populated email for instructor ${instructorId}: ${email}`);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch email from Google:", e);
+        }
+      }
+
       return new Response(
         JSON.stringify({
           connected: true,
-          email: tokenData.email,
+          email,
           isExpired,
           lastSync: tokenData.updated_at,
         }),
