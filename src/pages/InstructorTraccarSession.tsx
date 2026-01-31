@@ -744,7 +744,7 @@ export default function InstructorTraccarSession() {
           <div className="flex items-center gap-2 min-w-0">
             <WifiOff className="h-4 w-4 flex-shrink-0" />
             <span className="text-sm font-medium truncate">
-              Device not connected – start Traccar Client on your phone
+              Device not connected – check your ST-902L tracker
             </span>
           </div>
           <Button 
