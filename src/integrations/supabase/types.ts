@@ -6230,6 +6230,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_total_distance: {
+        Args: { p_distance: number; p_id: string }
+        Returns: undefined
+      }
       update_live_position:
         | {
             Args: {

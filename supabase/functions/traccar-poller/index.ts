@@ -402,22 +402,14 @@ serve(async (req) => {
           console.error(`[Traccar-Poller] GPS point insert error:`, gpsError);
         }
 
-        // Update total distance
+        // Update total distance atomically
         if (distanceMeters > 0 && distanceMeters < 5000) {
           const distanceKm = distanceMeters / 1000;
           
-          const { data: sessionData } = await supabase
-            .from("lesson_telematics")
-            .select("total_distance_km")
-            .eq("id", device.current_session_id)
-            .single();
-          
-          const currentDistance = sessionData?.total_distance_km || 0;
-          
-          await supabase
-            .from("lesson_telematics")
-            .update({ total_distance_km: currentDistance + distanceKm })
-            .eq("id", device.current_session_id);
+          await supabase.rpc("increment_total_distance", {
+            p_id: device.current_session_id,
+            p_distance: distanceKm
+          });
         }
 
         // Update live position if pupil is assigned
