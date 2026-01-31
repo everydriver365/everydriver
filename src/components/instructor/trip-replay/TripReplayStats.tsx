@@ -2,6 +2,7 @@ import { Gauge, MapPin, Clock, Route, AlertTriangle, TrendingUp } from "lucide-r
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GpsPoint, RouteData } from "@/hooks/useTripReplay";
+import { kmToMiles, kmhToMph } from "@/lib/utils";
 
 interface TripReplayStatsProps {
   route: RouteData | null;
@@ -34,14 +35,14 @@ export function TripReplayStats({
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <div className={`text-3xl font-bold tabular-nums ${isSpeeding ? "text-destructive" : ""}`}>
-                  {Math.round(speedStats?.current || 0)}
+                  {Math.round(kmhToMph(speedStats?.current || 0))}
                 </div>
-                <div className="text-xs text-muted-foreground">km/h</div>
+                <div className="text-xs text-muted-foreground">mph</div>
               </div>
               {speedStats?.limit && (
                 <div className="text-center">
                   <div className="text-xl font-semibold text-muted-foreground tabular-nums">
-                    {speedStats.limit}
+                    {Math.round(kmhToMph(speedStats.limit))}
                   </div>
                   <div className="text-xs text-muted-foreground">limit</div>
                 </div>
@@ -72,7 +73,7 @@ export function TripReplayStats({
           <CardContent className="p-3 text-center">
             <Route className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
             <div className="text-sm font-semibold">
-              {route?.distance_km?.toFixed(1) || "—"} km
+              {route?.distance_km ? kmToMiles(route.distance_km).toFixed(1) : "—"} mi
             </div>
             <div className="text-[10px] text-muted-foreground">Distance</div>
           </CardContent>
@@ -90,7 +91,7 @@ export function TripReplayStats({
           <CardContent className="p-3 text-center">
             <Gauge className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
             <div className="text-sm font-semibold">
-              {Math.round(speedStats?.avg || 0)} km/h
+              {Math.round(kmhToMph(speedStats?.avg || 0))} mph
             </div>
             <div className="text-[10px] text-muted-foreground">Avg Speed</div>
           </CardContent>
@@ -99,7 +100,7 @@ export function TripReplayStats({
           <CardContent className="p-3 text-center">
             <TrendingUp className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
             <div className="text-sm font-semibold">
-              {Math.round(speedStats?.max || 0)} km/h
+              {Math.round(kmhToMph(speedStats?.max || 0))} mph
             </div>
             <div className="text-[10px] text-muted-foreground">Max Speed</div>
           </CardContent>

@@ -2,6 +2,7 @@ import { MapPin, User, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MileageLogEntry } from "@/hooks/useVehicleHealth";
 import { format } from "date-fns";
+import { kmToMiles } from "@/lib/utils";
 
 interface MileageLogListProps {
   entries: MileageLogEntry[];
@@ -43,7 +44,7 @@ export function MileageLogList({ entries }: MileageLogListProps) {
                 {format(new Date(dateKey), "EEE, d MMM yyyy")}
               </div>
               <span className="text-sm font-semibold text-primary">
-                {totalDistance.toFixed(1)} km
+                {kmToMiles(totalDistance).toFixed(1)} mi
               </span>
             </div>
             
@@ -73,7 +74,7 @@ export function MileageLogList({ entries }: MileageLogListProps) {
                     </div>
                     <div className="text-right shrink-0">
                       <span className="font-semibold text-sm">
-                        {entry.distance_km.toFixed(1)} km
+                        {kmToMiles(entry.distance_km).toFixed(1)} mi
                       </span>
                     </div>
                   </CardContent>

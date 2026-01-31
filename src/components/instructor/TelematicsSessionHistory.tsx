@@ -151,14 +151,14 @@ export function TelematicsSessionHistory({
                     {session.total_distance_km !== null && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
-                        {session.total_distance_km.toFixed(1)} km
+                        {(session.total_distance_km * 0.621371).toFixed(1)} mi
                       </div>
                     )}
                     
                     {session.avg_speed_kmh !== null && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Gauge className="h-3 w-3" />
-                        Avg {session.avg_speed_kmh.toFixed(0)} km/h
+                        Avg {Math.round(session.avg_speed_kmh * 0.621371)} mph
                       </div>
                     )}
                   </div>

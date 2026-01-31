@@ -324,7 +324,7 @@ export default function LovableTracker() {
               <SelectItem value="">Free Drive</SelectItem>
               {savedRoutes.map(r => (
                 <SelectItem key={r.id} value={r.id}>
-                  {r.name} ({r.distance_km?.toFixed(1) || '?'} km)
+                  {r.name} ({r.distance_km ? (r.distance_km * 0.621371).toFixed(1) : '?'} mi)
                 </SelectItem>
               ))}
             </SelectContent>

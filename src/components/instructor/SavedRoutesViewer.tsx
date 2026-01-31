@@ -388,7 +388,7 @@ export function SavedRoutesViewer({ instructorId }: SavedRoutesViewerProps) {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">Distance</p>
-                  <p className="font-semibold">{selectedRoute?.distance_km?.toFixed(1) || "?"} km</p>
+                  <p className="font-semibold">{selectedRoute?.distance_km ? (selectedRoute.distance_km * 0.621371).toFixed(1) : "?"} mi</p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">Waypoints</p>

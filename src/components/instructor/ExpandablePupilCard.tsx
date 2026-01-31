@@ -815,7 +815,7 @@ export function ExpandablePupilCard({
                           {availableTrackingSessions.map((session) => (
                             <SelectItem key={session.id} value={session.id}>
                               {format(new Date(session.started_at), 'EEE, d MMM')} at {format(new Date(session.started_at), 'HH:mm')}
-                              {session.total_distance_km ? ` • ${session.total_distance_km.toFixed(1)}km` : ''}
+                              {session.total_distance_km ? ` • ${(session.total_distance_km * 0.621371).toFixed(1)} mi` : ''}
                             </SelectItem>
                           ))}
                         </SelectContent>

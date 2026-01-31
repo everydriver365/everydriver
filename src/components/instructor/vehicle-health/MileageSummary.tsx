@@ -2,6 +2,7 @@ import { TrendingUp, Calendar, Fuel, Route } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MileageLogEntry, InstructorVehicle } from "@/hooks/useVehicleHealth";
 import { format, startOfWeek, startOfMonth, isWithinInterval, subDays } from "date-fns";
+import { kmToMiles } from "@/lib/utils";
 
 interface MileageSummaryProps {
   entries: MileageLogEntry[];
@@ -38,8 +39,8 @@ export function MileageSummary({ entries, vehicles }: MileageSummaryProps) {
             <span className="text-xs">Total Fleet</span>
           </div>
           <p className="text-xl font-bold">
-            {totalMileage.toLocaleString()}
-            <span className="text-sm font-normal text-muted-foreground ml-1">km</span>
+            {Math.round(kmToMiles(totalMileage)).toLocaleString()}
+            <span className="text-sm font-normal text-muted-foreground ml-1">mi</span>
           </p>
         </CardContent>
       </Card>
@@ -51,8 +52,8 @@ export function MileageSummary({ entries, vehicles }: MileageSummaryProps) {
             <span className="text-xs">This Week</span>
           </div>
           <p className="text-xl font-bold">
-            {weekMileage.toFixed(1)}
-            <span className="text-sm font-normal text-muted-foreground ml-1">km</span>
+            {kmToMiles(weekMileage).toFixed(1)}
+            <span className="text-sm font-normal text-muted-foreground ml-1">mi</span>
           </p>
         </CardContent>
       </Card>
@@ -64,8 +65,8 @@ export function MileageSummary({ entries, vehicles }: MileageSummaryProps) {
             <span className="text-xs">This Month</span>
           </div>
           <p className="text-xl font-bold">
-            {monthMileage.toFixed(1)}
-            <span className="text-sm font-normal text-muted-foreground ml-1">km</span>
+            {kmToMiles(monthMileage).toFixed(1)}
+            <span className="text-sm font-normal text-muted-foreground ml-1">mi</span>
           </p>
         </CardContent>
       </Card>
@@ -77,8 +78,8 @@ export function MileageSummary({ entries, vehicles }: MileageSummaryProps) {
             <span className="text-xs">Avg/Day</span>
           </div>
           <p className="text-xl font-bold">
-            {avgPerDay.toFixed(1)}
-            <span className="text-sm font-normal text-muted-foreground ml-1">km</span>
+            {kmToMiles(avgPerDay).toFixed(1)}
+            <span className="text-sm font-normal text-muted-foreground ml-1">mi</span>
           </p>
         </CardContent>
       </Card>

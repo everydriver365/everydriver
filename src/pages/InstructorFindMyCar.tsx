@@ -299,7 +299,7 @@ export default function InstructorFindMyCar() {
                     )}
                     {selectedDevice.last_speed_kmh !== null && selectedDevice.last_speed_kmh > 0 && (
                       <Badge variant="secondary">
-                        {Math.round(selectedDevice.last_speed_kmh)} km/h
+                        {Math.round(selectedDevice.last_speed_kmh * 0.621371)} mph
                       </Badge>
                     )}
                   </div>

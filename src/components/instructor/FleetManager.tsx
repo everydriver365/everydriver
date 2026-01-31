@@ -125,7 +125,7 @@ export function FleetManager({ instructorId }: FleetManagerProps) {
                 <p className="text-sm text-muted-foreground">{v.make} {v.model} {v.year && `(${v.year})`}</p>
                 <div className="flex gap-2 text-xs">
                   <Badge variant="outline">{v.transmission}</Badge>
-                  <Badge variant="outline"><Gauge className="h-3 w-3 mr-1" />{v.current_odometer_km.toLocaleString()} km</Badge>
+                  <Badge variant="outline"><Gauge className="h-3 w-3 mr-1" />{Math.round(v.current_odometer_km * 0.621371).toLocaleString()} mi</Badge>
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs">
                   {v.mot_expiry && getExpiryStatus(v.mot_expiry) && (

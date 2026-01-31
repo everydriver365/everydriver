@@ -300,12 +300,12 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                         <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {Number(session.total_distance_km).toFixed(1)} km
+                            {(Number(session.total_distance_km) * 0.621371).toFixed(1)} mi
                           </span>
                           {session.avg_speed_kmh && (
                             <span className="flex items-center gap-1">
                               <Gauge className="h-3 w-3" />
-                              {Number(session.avg_speed_kmh).toFixed(0)} km/h avg
+                              {Math.round(Number(session.avg_speed_kmh) * 0.621371)} mph avg
                             </span>
                           )}
                         </div>
@@ -331,15 +331,15 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                     <CardContent className="p-4">
                       <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
-                          <p className="text-lg font-bold">{Number(selectedSession.total_distance_km).toFixed(1)} km</p>
+                          <p className="text-lg font-bold">{(Number(selectedSession.total_distance_km) * 0.621371).toFixed(1)} mi</p>
                           <p className="text-xs text-muted-foreground">Distance</p>
                         </div>
                         <div>
-                          <p className="text-lg font-bold">{selectedSession.avg_speed_kmh ? Number(selectedSession.avg_speed_kmh).toFixed(0) : '--'} km/h</p>
+                          <p className="text-lg font-bold">{selectedSession.avg_speed_kmh ? Math.round(Number(selectedSession.avg_speed_kmh) * 0.621371) : '--'} mph</p>
                           <p className="text-xs text-muted-foreground">Avg Speed</p>
                         </div>
                         <div>
-                          <p className="text-lg font-bold">{selectedSession.max_speed_kmh ? Number(selectedSession.max_speed_kmh).toFixed(0) : '--'} km/h</p>
+                          <p className="text-lg font-bold">{selectedSession.max_speed_kmh ? Math.round(Number(selectedSession.max_speed_kmh) * 0.621371) : '--'} mph</p>
                           <p className="text-xs text-muted-foreground">Max Speed</p>
                         </div>
                       </div>
@@ -423,7 +423,7 @@ const PupilDrivingReport: React.FC<PupilDrivingReportProps> = ({
                           </Badge>
                           {event.speed_at_event && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              {Number(event.speed_at_event).toFixed(0)} km/h
+                              {Math.round(Number(event.speed_at_event) * 0.621371)} mph
                             </p>
                           )}
                         </div>

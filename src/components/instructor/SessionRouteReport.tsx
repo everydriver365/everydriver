@@ -200,16 +200,16 @@ Pupil: ${report.session.pupilName}
 Date: ${new Date(report.session.startedAt).toLocaleDateString()}
 
 Route: ${report.session.startLocation} → ${report.session.endLocation}
-Distance: ${Number(report.stats.distance).toFixed(1)} km
+Distance: ${(Number(report.stats.distance) * 0.621371).toFixed(1)} mi
 Duration: ${formatDuration(report.stats.duration)}
 
 Speed Summary:
-- Average: ${report.stats.avgSpeed?.toFixed(0) || 'N/A'} km/h
-- Maximum: ${report.stats.maxSpeed?.toFixed(0) || 'N/A'} km/h
+- Average: ${report.stats.avgSpeed ? Math.round(report.stats.avgSpeed * 0.621371) : 'N/A'} mph
+- Maximum: ${report.stats.maxSpeed ? Math.round(report.stats.maxSpeed * 0.621371) : 'N/A'} mph
 - Speeding incidents: ${report.stats.speedingIncidents}
 
 Roads Visited (${report.stats.roadsVisited}):
-${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h limit' : 'No limit data'}, max ${s.maxSpeed.toFixed(0)} km/h ${s.compliance === 'over' ? '⚠️' : '✓'}`).join('\n')}
+${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? Math.round(s.speedLimit * 0.621371) + ' mph limit' : 'No limit data'}, max ${Math.round(s.maxSpeed * 0.621371)} mph ${s.compliance === 'over' ? '⚠️' : '✓'}`).join('\n')}
     `.trim();
 
     if (navigator.share) {
@@ -420,8 +420,8 @@ ${report.segments.map(s => `- ${s.name}: ${s.speedLimit ? s.speedLimit + ' km/h 
                 >
                   <Popup>
                     ⚠️ {segment.name}<br />
-                    Limit: {segment.speedLimit} km/h<br />
-                    Max: {segment.maxSpeed.toFixed(0)} km/h
+                    Limit: {segment.speedLimit ? Math.round(segment.speedLimit * 0.621371) : '?'} mph<br />
+                    Max: {Math.round(segment.maxSpeed * 0.621371)} mph
                   </Popup>
                 </CircleMarker>
               ))}
