@@ -47,14 +47,28 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 // Additional tiles available to add
 const additionalTiles: QuickAction[] = [
+  // Tools
   { id: "vehicle-health", title: "Vehicle Health", icon: "Car", route: "/instructor/vehicle-health", display_order: 100 },
-  { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages", display_order: 101 },
-  { id: "test-results", title: "Test Results", icon: "Award", route: "/instructor/test-results", display_order: 102 },
-  { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 103 },
-  { id: "locations", title: "Locations", icon: "MapPin", route: "/instructor/locations", display_order: 104 },
-  { id: "settings", title: "Settings", icon: "Settings", route: "/instructor/settings", display_order: 105 },
-  { id: "cpd-log", title: "CPD Log", icon: "Award", route: "/instructor/cpd", display_order: 106 },
-  { id: "calendar", title: "Calendar", icon: "Calendar", route: "/instructor/calendar", display_order: 107 },
+  { id: "track-lesson", title: "Track Lesson", icon: "Navigation", route: "/instructor/track-lesson", display_order: 101 },
+  { id: "test-results", title: "Log Test Result", icon: "Award", route: "/instructor/test-results", display_order: 102 },
+  { id: "full-test-report", title: "Full Test Report", icon: "Award", route: "/instructor/test-report", display_order: 103 },
+  // Schedule & Pupils
+  { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages", display_order: 104 },
+  { id: "calendar", title: "Calendar", icon: "Calendar", route: "/instructor/calendar", display_order: 105 },
+  { id: "new-booking", title: "New Booking", icon: "Calendar", route: "/instructor/new-booking", display_order: 106 },
+  // Money & Reports
+  { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 107 },
+  { id: "take-payment", title: "Take Payment", icon: "CreditCard", route: "/instructor/take-payment", display_order: 108 },
+  { id: "earnings", title: "Earnings", icon: "CreditCard", route: "/instructor/earnings", display_order: 109 },
+  { id: "invoices", title: "Invoices", icon: "Receipt", route: "/instructor/invoices", display_order: 110 },
+  // Other
+  { id: "locations", title: "Locations", icon: "MapPin", route: "/instructor/locations", display_order: 111 },
+  { id: "cpd-log", title: "CPD Log", icon: "Award", route: "/instructor/cpd", display_order: 112 },
+  { id: "settings", title: "Settings", icon: "Settings", route: "/instructor/settings", display_order: 113 },
+  { id: "availability", title: "Availability", icon: "Clock", route: "/instructor/availability", display_order: 114 },
+  { id: "courses", title: "My Courses", icon: "Briefcase", route: "/instructor/courses", display_order: 115 },
+  { id: "reviews", title: "Reviews", icon: "Award", route: "/instructor/reviews", display_order: 116 },
+  { id: "mini-website", title: "Mini Website", icon: "Users", route: "/instructor/mini-website", display_order: 117 },
 ];
 
 interface QuickActionTilesProps {
