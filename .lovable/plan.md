@@ -1,101 +1,95 @@
 
+# Fix Device Connection Status for Stationary Vehicles
 
-# Add Atomic Distance Increment Function
+## Problem
+The "Device not connected" warning appears even when the GPS tracker is actively communicating, because `last_seen_at` only updates when processing NEW position data. When stationary, the Traccar server returns the same position repeatedly, which gets skipped, causing the timestamp to become stale.
 
-## Overview
-
-This plan adds the `increment_total_distance` database function you provided and updates the traccar-poller to use it, reducing two database calls to a single atomic operation.
-
-## Current Problem
-
-The existing code performs two separate queries to update distance:
-
-```typescript
-// Query 1: Fetch current distance
-const { data: sessionData } = await supabase
-  .from("lesson_telematics")
-  .select("total_distance_km")
-  .eq("id", device.current_session_id)
-  .single();
-
-// Query 2: Update with new total
-await supabase
-  .from("lesson_telematics")
-  .update({ total_distance_km: currentDistance + distanceKm })
-  .eq("id", device.current_session_id);
+## Current Behavior
+```text
+Traccar Server                traccar-poller                    Database
+     │                              │                               │
+     │ ──position(id=190)──────────▶│                               │
+     │                              │ Skip: already processed       │
+     │                              │ (last_seen_at NOT updated)    │
+     │ ──position(id=190)──────────▶│                               │
+     │                              │ Skip: already processed       │
+     │                              │ (last_seen_at NOT updated)    │
+     │                              │                               │
+     │                              │     After 10+ seconds:        │
+     │                              │     UI shows "Not Connected"  │
 ```
-
-This has race condition potential and is inefficient.
 
 ## Solution
+Update `last_seen_at` even when skipping duplicate positions. This indicates "device is communicating" separately from "device has new position data."
 
-### Step 1: Create Database Function
+## Files to Modify
 
-Add a migration with your function:
+### 1. supabase/functions/traccar-poller/index.ts
 
-```sql
-CREATE OR REPLACE FUNCTION increment_total_distance(p_id uuid, p_distance float8)
-RETURNS void 
-LANGUAGE plpgsql 
-SECURITY DEFINER
-SET search_path = 'public'
-AS $$
-BEGIN
-  UPDATE lesson_telematics
-  SET total_distance_km = COALESCE(total_distance_km, 0) + p_distance
-  WHERE id = p_id;
-END;
-$$;
-```
+Add logic to update `last_seen_at` when the device is found but position is skipped:
 
-*Note: Changed `p_id` from `bigint` to `uuid` since `lesson_telematics.id` is a UUID type.*
-
-### Step 2: Update traccar-poller
-
-Replace the two-query pattern with a single RPC call:
-
+**Before (lines 282-297):**
 ```typescript
-// Before (lines 318-328)
-if (distanceMeters > 0 && distanceMeters < 5000) {
-  const distanceKm = distanceMeters / 1000;
-  
-  const { data: sessionData } = await supabase
-    .from("lesson_telematics")
-    .select("total_distance_km")
-    .eq("id", device.current_session_id)
-    .single();
-  
-  const currentDistance = sessionData?.total_distance_km || 0;
-  
-  await supabase
-    .from("lesson_telematics")
-    .update({ total_distance_km: currentDistance + distanceKm })
-    .eq("id", device.current_session_id);
+// Check if we've already processed this position
+if (device.last_traccar_position_id && pos.id <= device.last_traccar_position_id) {
+  console.log(`[Traccar-Poller] Position ${pos.id} already processed for device ${uniqueId}`);
+  skipped++;
+  continue;
 }
 
-// After
-if (distanceMeters > 0 && distanceMeters < 5000) {
-  const distanceKm = distanceMeters / 1000;
-  
-  await supabase.rpc("increment_total_distance", {
-    p_id: device.current_session_id,
-    p_distance: distanceKm
-  });
+// Alternative: check by fixTime
+if (device.last_traccar_fix_time) {
+  const lastFixTime = new Date(device.last_traccar_fix_time).getTime();
+  const currentFixTime = new Date(pos.fixTime).getTime();
+  if (currentFixTime <= lastFixTime) {
+    skipped++;
+    continue;
+  }
 }
 ```
 
-## Benefits
+**After:**
+```typescript
+// Check if we've already processed this position
+if (device.last_traccar_position_id && pos.id <= device.last_traccar_position_id) {
+  console.log(`[Traccar-Poller] Position ${pos.id} already processed for device ${uniqueId}`);
+  
+  // Still update last_seen_at to indicate device is communicating
+  await supabase
+    .from("traccar_devices")
+    .update({ last_seen_at: new Date().toISOString() })
+    .eq("id", device.id);
+  
+  skipped++;
+  continue;
+}
 
-| Aspect | Before | After |
-|--------|--------|-------|
-| Database calls | 2 (SELECT + UPDATE) | 1 (RPC) |
-| Race conditions | Possible | Prevented |
-| Code complexity | 10 lines | 4 lines |
-| Atomicity | No | Yes |
+// Alternative: check by fixTime
+if (device.last_traccar_fix_time) {
+  const lastFixTime = new Date(device.last_traccar_fix_time).getTime();
+  const currentFixTime = new Date(pos.fixTime).getTime();
+  if (currentFixTime <= lastFixTime) {
+    // Still update last_seen_at to indicate device is communicating
+    await supabase
+      .from("traccar_devices")
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq("id", device.id);
+    
+    skipped++;
+    continue;
+  }
+}
+```
 
-## Technical Details
+## Result
 
-- The function uses `COALESCE` to handle NULL values safely
-- `SECURITY DEFINER` allows the function to run with elevated privileges
-- The function is idempotent and safe to call multiple times
+After this change:
+- `last_seen_at` updates every time the poller runs (every 10 seconds via frontend polling)
+- The 10-second timeout in the UI will correctly show "connected" as long as the poller is running
+- The device will only show "not connected" if the Traccar server stops returning positions entirely
 
+## Technical Notes
+
+- This is a minimal change that doesn't affect position processing logic
+- The device update is lightweight (single field update)
+- Maintains the distinction: `last_seen_at` = "when we last heard from device", `last_traccar_fix_time` = "when device last moved"
