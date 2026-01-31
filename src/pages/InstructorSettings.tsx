@@ -687,8 +687,8 @@ export default function InstructorSettings() {
               >
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Use the Traccar Client app on your phone for reliable background GPS tracking during lessons. 
-                    Works even when screen is off.
+                    Use the ST-902L OBD-II tracker for reliable GPS tracking during lessons. 
+                    Plugs directly into your vehicle's diagnostic port.
                   </p>
                   <div className="flex flex-col gap-2">
                     <Button 

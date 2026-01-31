@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, Smartphone, Wifi, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, Cpu, Wifi, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -46,7 +46,7 @@ export function TraccarConnectionChecklist({
             {isConnected ? (
               <Wifi className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             ) : (
-              <Smartphone className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <Cpu className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             )}
           </div>
           <div className="flex-1">
@@ -76,9 +76,9 @@ export function TraccarConnectionChecklist({
               To connect your device:
             </p>
             <ol className="text-sm text-amber-700 dark:text-amber-300 space-y-1.5 ml-4 list-decimal">
-              <li>Open the <strong>Traccar Client</strong> app on your phone</li>
-              <li>Toggle <strong>"Service status"</strong> to ON</li>
-              <li>Ensure GPS/Location is enabled</li>
+              <li>Ensure your <strong>ST-902L</strong> is plugged into the OBD-II port</li>
+              <li>Check the tracker <strong>LED is on</strong> (power from vehicle)</li>
+              <li>Verify <strong>SIM card</strong> has data enabled</li>
             </ol>
             <Button 
               variant="outline" 
