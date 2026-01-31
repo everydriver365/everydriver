@@ -383,19 +383,22 @@ export function QuickActionTiles({
                       <span className="font-semibold text-foreground text-base">{localTiles[0].title}</span>
                       {/* Enhanced subtitle for schedule tile */}
                       {isScheduleAction(localTiles[0]) && todayOverview ? (
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="space-y-0.5 mt-0.5">
                           {todayOverview.lessonCount > 0 ? (
                             <>
-                              <span className="text-xs text-muted-foreground">
-                                {todayOverview.lessonCount} lesson{todayOverview.lessonCount !== 1 ? 's' : ''} today
-                              </span>
-                              {todayOverview.nextLessonTime && (
-                                <>
-                                  <span className="text-muted-foreground/50">•</span>
-                                  <span className="text-xs font-medium text-primary">
-                                    Next: {format(parse(todayOverview.nextLessonTime, 'HH:mm:ss', new Date()), 'h:mm a')}
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                <span>{todayOverview.totalHours} hours of lessons</span>
+                                <span className="text-muted-foreground/50">•</span>
+                                <span>£{todayOverview.expectedEarnings} expected</span>
+                              </div>
+                              {(todayOverview.nextLessonTime || todayOverview.firstPickupPostcode) && (
+                                <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                                  <MapPin className="h-3 w-3" />
+                                  <span>
+                                    Next lesson in {todayOverview.firstPickupPostcode || 'N/A'}
                                   </span>
-                                </>
+                                </div>
                               )}
                             </>
                           ) : (
