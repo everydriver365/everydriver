@@ -6,13 +6,14 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Wrench, Plus, Calendar, Gauge, AlertTriangle, 
-  Clock, Trash2, CheckCircle2, History 
+  Clock, Trash2, CheckCircle2, History, Receipt
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { useVehicleService, SERVICE_TYPE_LABELS, ServiceReminder, ServiceHistoryEntry } from "@/hooks/useVehicleService";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { AddServiceReminderDialog } from "./AddServiceReminderDialog";
 import { LogServiceDialog } from "./LogServiceDialog";
+import { VehicleCostSummary } from "./VehicleCostSummary";
 import { kmToMiles } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -110,12 +111,16 @@ export function ServiceRemindersTab() {
       </div>
 
       <Tabs defaultValue="reminders" className="w-full">
-        <TabsList>
+        <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger value="reminders">
-            Active Reminders ({reminders.filter(r => r.is_active).length})
+            Reminders ({reminders.filter(r => r.is_active).length})
           </TabsTrigger>
           <TabsTrigger value="history">
-            Service History ({history.length})
+            History ({history.length})
+          </TabsTrigger>
+          <TabsTrigger value="costs">
+            <Receipt className="h-3.5 w-3.5 mr-1" />
+            Costs
           </TabsTrigger>
         </TabsList>
 
@@ -152,6 +157,10 @@ export function ServiceRemindersTab() {
 
         <TabsContent value="history" className="mt-4">
           <ServiceHistoryList history={history} />
+        </TabsContent>
+
+        <TabsContent value="costs" className="mt-4">
+          <VehicleCostSummary />
         </TabsContent>
       </Tabs>
 

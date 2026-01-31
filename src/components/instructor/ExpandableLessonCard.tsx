@@ -13,7 +13,9 @@ import {
   Check,
   Loader2,
   Trash2,
-  Palette
+  Palette,
+  Repeat,
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +31,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { QuickMessageSheet } from "./QuickMessageSheet";
 
 interface ScheduledLesson {
   id: string;
@@ -43,6 +46,7 @@ interface ScheduledLesson {
   prepaid_hours_used: number;
   amount_due: number;
   notes: string | null;
+  recurrence_rule?: string | null;
   pupil: {
     id: string;
     name: string;
@@ -94,6 +98,7 @@ export function ExpandableLessonCard({
 }: ExpandableLessonCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [quickMessageOpen, setQuickMessageOpen] = useState(false);
   const x = useMotionValue(0);
   const deleteOpacity = useTransform(x, [-120, -60], [1, 0]);
   const deleteScale = useTransform(x, [-120, -60], [1, 0.8]);
@@ -144,6 +149,9 @@ export function ExpandableLessonCard({
   
   // Get color preset or default
   const colorPreset = colorPresets.find(c => c.bg === cardColor) || colorPresets[0];
+  
+  // Check if this is a recurring lesson
+  const isRecurring = !!lesson.recurrence_rule;
 
   return (
     <div className="relative overflow-hidden rounded-xl">
@@ -228,6 +236,9 @@ export function ExpandableLessonCard({
               <h3 className="font-medium text-sm text-foreground truncate flex-1">
                 {lesson.pupil?.name || "Unknown"}
               </h3>
+              {isRecurring && (
+                <Repeat className="h-3 w-3 text-primary shrink-0" />
+              )}
               {getPaymentBadge()}
             </div>
             <p className="text-[10px] text-muted-foreground truncate">
@@ -265,8 +276,8 @@ export function ExpandableLessonCard({
                   </div>
                 </div>
 
-                {/* Action Buttons - Compact Grid */}
-                <div className="grid grid-cols-4 gap-1.5">
+                {/* Action Buttons - Compact Grid with Quick Message */}
+                <div className="grid grid-cols-5 gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
@@ -291,6 +302,19 @@ export function ExpandableLessonCard({
                   >
                     <Phone className="h-4 w-4 text-emerald-500" />
                     Call
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-col h-auto py-2 gap-1 text-[10px]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setQuickMessageOpen(true);
+                    }}
+                  >
+                    <Zap className="h-4 w-4 text-amber-500" />
+                    Quick
                   </Button>
 
                   <Button
@@ -376,6 +400,14 @@ export function ExpandableLessonCard({
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Quick Message Sheet */}
+      <QuickMessageSheet
+        open={quickMessageOpen}
+        onOpenChange={setQuickMessageOpen}
+        pupilName={lesson.pupil?.name || "Pupil"}
+        pupilPhone={lesson.pupil?.phone || null}
+      />
     </div>
   );
 }
