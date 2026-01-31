@@ -351,71 +351,50 @@ export function QuickActionTiles({
               const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
               const style = tileStyles[(index + 1) % tileStyles.length];
               const isJobTile = isJobOffersAction(action);
-              const swipeHint = getSwipeHint(action);
               
               return (
-                <motion.div
-                  key={action.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 + index * 0.05 }}
-                  className="relative overflow-hidden"
-                >
-                  {/* Swipe action indicator behind */}
-                  {swipeHint && (
-                    <div className="absolute inset-0 rounded-2xl bg-primary/20 flex items-center pl-3">
-                      <swipeHint.icon className="h-5 w-5 text-primary" />
-                    </div>
-                  )}
-
+                <Link key={action.id} to={action.route} className="block">
                   <motion.div
-                    drag={swipeHint ? "x" : false}
-                    dragConstraints={{ left: 0, right: 100 }}
-                    dragElastic={0.1}
-                    onDragStart={() => setSwipedTileId(action.id)}
-                    onDragEnd={(_, info) => handlePanEnd(action, info)}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 + index * 0.05 }}
                     whileTap={{ scale: 0.97 }}
-                    animate={{ x: 0 }}
+                    className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex flex-col gap-2 shadow-lg hover:shadow-xl active:shadow-md transition-shadow min-h-[120px]`}
                   >
-                    <Link to={action.route}>
-                      <div className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex flex-col gap-2 shadow-lg hover:shadow-xl active:shadow-md transition-all min-h-[120px]`}>
-                        <div className={`relative w-12 h-12 rounded-xl ${style.iconBg} flex items-center justify-center`}>
-                          <Icon className={`h-5 w-5 ${style.iconColor}`} />
-                          {showBadge && (
-                            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-md ring-2 ring-card">
-                              {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                            </span>
-                          )}
-                        </div>
-                        <span className="font-semibold text-foreground text-sm leading-tight relative mt-auto">
-                          {action.title}
+                    <div className={`relative w-12 h-12 rounded-xl ${style.iconBg} flex items-center justify-center`}>
+                      <Icon className={`h-5 w-5 ${style.iconColor}`} />
+                      {showBadge && (
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-md ring-2 ring-card">
+                          {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                         </span>
-                        
-                        {/* Job preview text */}
-                        {isJobTile && jobPreview && (
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-[10px] text-muted-foreground truncate">
-                              {jobPreview.courseTypeShort} • {jobPreview.hours}h • £{jobPreview.estimatedPayment}
-                            </span>
-                            {/* Expiry timer */}
-                            <span className={cn(
-                              "text-[9px] font-medium flex items-center gap-0.5",
-                              jobPreview.urgencyLevel === "critical" ? "text-destructive" :
-                              jobPreview.urgencyLevel === "warning" ? "text-amber-600 dark:text-amber-400" :
-                              "text-muted-foreground"
-                            )}>
-                              <Timer className="h-2.5 w-2.5" />
-                              {jobPreview.expiresInHours > 0 
-                                ? `Expires in ${jobPreview.expiresInHours}h`
-                                : `Expires in ${jobPreview.expiresInMinutes}m`
-                              }
-                            </span>
-                          </div>
-                        )}
+                      )}
+                    </div>
+                    <span className="font-semibold text-foreground text-sm leading-tight mt-auto">
+                      {action.title}
+                    </span>
+                    
+                    {/* Job preview text */}
+                    {isJobTile && jobPreview && (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] text-muted-foreground truncate">
+                          {jobPreview.courseTypeShort} • {jobPreview.hours}h • £{jobPreview.estimatedPayment}
+                        </span>
+                        <span className={cn(
+                          "text-[9px] font-medium flex items-center gap-0.5",
+                          jobPreview.urgencyLevel === "critical" ? "text-destructive" :
+                          jobPreview.urgencyLevel === "warning" ? "text-amber-600 dark:text-amber-400" :
+                          "text-muted-foreground"
+                        )}>
+                          <Timer className="h-2.5 w-2.5" />
+                          {jobPreview.expiresInHours > 0 
+                            ? `Expires in ${jobPreview.expiresInHours}h`
+                            : `Expires in ${jobPreview.expiresInMinutes}m`
+                          }
+                        </span>
                       </div>
-                    </Link>
+                    )}
                   </motion.div>
-                </motion.div>
+                </Link>
               );
             })}
           </div>
