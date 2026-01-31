@@ -65,7 +65,10 @@ export function QuickActionTiles({
   
   // Get tiles in user's preferred order
   const orderedTiles = getOrderedTiles(quickActions);
-  const hiddenTiles = getHiddenTiles(quickActions);
+  // Get ALL tiles not currently visible (hidden + any not in ordered list)
+  const availableTilesToAdd = quickActions.filter(
+    tile => !orderedTiles.some(t => t.id === tile.id)
+  );
   const [localTiles, setLocalTiles] = useState<QuickAction[]>(orderedTiles);
 
   // Sync local tiles when ordered tiles change (on initial load)
@@ -168,7 +171,7 @@ export function QuickActionTiles({
     );
   }
 
-  if (localTiles.length === 0 && hiddenTiles.length === 0) return null;
+  if (localTiles.length === 0 && availableTilesToAdd.length === 0) return null;
 
   // Different accent colors for visual variety
   const tileStyles = [
@@ -262,14 +265,14 @@ export function QuickActionTiles({
             </AnimatePresence>
           </Reorder.Group>
           
-          {/* Hidden tiles section - show in edit mode */}
-          {hiddenTiles.length > 0 && (
+          {/* Available tiles section - show in edit mode */}
+          {availableTilesToAdd.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border/50">
               <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
-                Hidden Tiles ({hiddenTiles.length})
+                Add Tiles ({availableTilesToAdd.length})
               </p>
               <div className="space-y-2">
-                {hiddenTiles.map((tile) => {
+                {availableTilesToAdd.map((tile) => {
                   const Icon = getIcon(tile.icon);
                   return (
                     <motion.div
