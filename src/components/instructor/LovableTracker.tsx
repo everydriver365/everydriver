@@ -302,10 +302,10 @@ export default function LovableTracker() {
 
       {/* Pupil & Route selection overlay when idle */}
       {phase === 'idle' && (
-        <div className="absolute inset-0 z-[1000] bg-background/95 flex flex-col items-center justify-center p-6 gap-4 overflow-hidden no-scrollbar">
-          <p className="text-lg font-semibold">Select Pupil</p>
+        <div className="absolute inset-0 z-[1000] bg-background/95 flex flex-col items-center justify-center p-4 gap-2 overflow-hidden no-scrollbar">
+          <p className="text-base font-semibold">Select Pupil</p>
           <Select value={selectedPupil || ''} onValueChange={setSelectedPupil}>
-            <SelectTrigger className="w-64">
+            <SelectTrigger className="w-56 h-9">
               <SelectValue placeholder="Select a pupil" />
             </SelectTrigger>
             <SelectContent>
@@ -315,9 +315,9 @@ export default function LovableTracker() {
             </SelectContent>
           </Select>
 
-          <p className="text-lg font-semibold mt-4">Select Training Route (Optional)</p>
+          <p className="text-base font-semibold mt-2">Route (Optional)</p>
           <Select value={selectedRoute || ''} onValueChange={setSelectedRoute}>
-            <SelectTrigger className="w-64">
+            <SelectTrigger className="w-56 h-9">
               <SelectValue placeholder="Free Drive" />
             </SelectTrigger>
             <SelectContent>
@@ -330,37 +330,40 @@ export default function LovableTracker() {
             </SelectContent>
           </Select>
 
-          {/* Saved Routes List */}
+          {/* Saved Routes List - compact */}
           {savedRoutes.length > 0 && (
-            <div className="w-full max-w-md mt-6">
-              <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                <Route className="h-4 w-4" />
+            <div className="w-full max-w-[240px] mt-2">
+              <p className="text-xs font-medium mb-1 flex items-center gap-1">
+                <Route className="h-3 w-3" />
                 Saved Routes
               </p>
-              <div className="space-y-2 max-h-48 overflow-auto">
-                {savedRoutes.map(route => (
-                  <div key={route.id} className="flex items-center justify-between p-2 bg-muted rounded-lg">
+              <div className="space-y-1 max-h-24 overflow-auto no-scrollbar">
+                {savedRoutes.slice(0, 3).map(route => (
+                  <div key={route.id} className="flex items-center justify-between p-1.5 bg-muted rounded text-xs">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{route.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {route.distance_km?.toFixed(1) || '?'} km • {new Date(route.created_at).toLocaleDateString()}
+                      <p className="font-medium truncate">{route.name}</p>
+                      <p className="text-muted-foreground text-[10px]">
+                        {route.distance_km?.toFixed(1) || '?'} km
                       </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="shrink-0 h-8 w-8 text-destructive hover:text-destructive"
+                      className="shrink-0 h-6 w-6 text-destructive hover:text-destructive"
                       onClick={() => deleteRoute(route.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 ))}
+                {savedRoutes.length > 3 && (
+                  <p className="text-[10px] text-muted-foreground text-center">+{savedRoutes.length - 3} more</p>
+                )}
               </div>
             </div>
           )}
 
-          <Button className="mt-4" onClick={startTracking} disabled={!selectedPupil}>
+          <Button className="mt-2 h-10 px-6" onClick={startTracking} disabled={!selectedPupil}>
             Start Tracking
           </Button>
         </div>
