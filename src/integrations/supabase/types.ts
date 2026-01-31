@@ -3152,7 +3152,9 @@ export type Database = {
           last_calendar_sync: string | null
           last_compliance_reminder_sent: string | null
           last_seen_at: string | null
+          lat: number | null
           linkedin_url: string | null
+          lng: number | null
           logo_url: string | null
           mini_website_domain_id: string | null
           name: string
@@ -3249,7 +3251,9 @@ export type Database = {
           last_calendar_sync?: string | null
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
+          lat?: number | null
           linkedin_url?: string | null
+          lng?: number | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
           name: string
@@ -3346,7 +3350,9 @@ export type Database = {
           last_calendar_sync?: string | null
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
+          lat?: number | null
           linkedin_url?: string | null
+          lng?: number | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
           name?: string
