@@ -6240,6 +6240,127 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_security_alerts: {
+        Row: {
+          acknowledged: boolean
+          acknowledged_at: string | null
+          alert_type: string
+          created_at: string
+          device_id: string | null
+          id: string
+          instructor_id: string
+          latitude: number | null
+          longitude: number | null
+          notification_sent: boolean
+          speed_kmh: number | null
+          triggered_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          alert_type: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          instructor_id: string
+          latitude?: number | null
+          longitude?: number | null
+          notification_sent?: boolean
+          speed_kmh?: number | null
+          triggered_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          alert_type?: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          instructor_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notification_sent?: boolean
+          speed_kmh?: number | null
+          triggered_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_security_alerts_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "traccar_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_security_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_security_alerts_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicle_security_settings: {
+        Row: {
+          alert_cooldown_minutes: number
+          created_at: string
+          id: string
+          instructor_id: string
+          movement_threshold_kmh: number
+          notify_on_ignition: boolean
+          security_enabled: boolean
+          updated_at: string
+          vehicle_id: string
+        }
+        Insert: {
+          alert_cooldown_minutes?: number
+          created_at?: string
+          id?: string
+          instructor_id: string
+          movement_threshold_kmh?: number
+          notify_on_ignition?: boolean
+          security_enabled?: boolean
+          updated_at?: string
+          vehicle_id: string
+        }
+        Update: {
+          alert_cooldown_minutes?: number
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          movement_threshold_kmh?: number
+          notify_on_ignition?: boolean
+          security_enabled?: boolean
+          updated_at?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_security_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_security_settings_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: true
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
