@@ -78,16 +78,16 @@ function EventBar({
           onClick?.();
         }
       }}
-      className="w-full rounded px-2 py-1 mb-1 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation flex items-center gap-2"
+      className="w-full rounded px-2.5 py-1.5 mb-1 transition-all hover:opacity-90 active:scale-[0.99] touch-manipulation flex items-center gap-2"
       style={{ backgroundColor: color }}
     >
-      {/* Time */}
-      <span className="text-[10px] text-muted-foreground font-medium shrink-0 min-w-[70px]">
+      {/* Time - Clear and readable */}
+      <span className="text-xs text-foreground/80 font-semibold shrink-0 min-w-[72px]">
         {startTime}–{endTime}
       </span>
       
       {/* Title */}
-      <span className="text-foreground font-medium text-xs truncate flex-1 min-w-0">
+      <span className="text-foreground font-medium text-sm truncate flex-1 min-w-0">
         {event.title}
       </span>
 
