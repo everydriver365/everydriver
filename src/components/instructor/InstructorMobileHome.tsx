@@ -18,7 +18,8 @@ import {
   Navigation,
   Award,
   Play,
-  CalendarCheck
+  CalendarCheck,
+  LayoutGrid
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,7 @@ export function InstructorMobileHome({
   const { resolvedTheme, setTheme } = useTheme();
   const { refreshInstructor, instructor: authInstructor } = useInstructorAuth();
   const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
+  const [isTileEditMode, setIsTileEditMode] = useState(false);
   // QR modal is now handled by parent via onPaymentClick
 
   // Use auth context for visibility status (gets refreshed properly)
@@ -200,6 +202,10 @@ export function InstructorMobileHome({
               <DropdownMenuItem onClick={() => navigate("/instructor/settings")}>
                 <HelpCircle className="mr-2 h-4 w-4" />
                 Help & Support
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsTileEditMode(true)}>
+                <LayoutGrid className="mr-2 h-4 w-4" />
+                Edit Home Tiles
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuLabel>Appearance</DropdownMenuLabel>
@@ -401,6 +407,8 @@ export function InstructorMobileHome({
           pendingJobsCount={pendingJobsCount}
           instructorId={instructorId}
           loading={loading}
+          isEditMode={isTileEditMode}
+          onEditModeChange={setIsTileEditMode}
         />
       </div>
 

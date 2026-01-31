@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { CalendarCheck, Clock, PoundSterling, MapPin, Loader2 } from "lucide-react";
+import { CalendarCheck, Clock, PoundSterling, MapPin } from "lucide-react";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { format, parseISO } from "date-fns";
 
@@ -11,18 +11,8 @@ interface TodayOverviewStripProps {
 export function TodayOverviewStrip({ instructorId }: TodayOverviewStripProps) {
   const { data: overview, isLoading } = useTodayOverview(instructorId);
 
-  if (isLoading) {
-    return (
-      <div className="px-4 mt-4">
-        <div className="bg-card/60 backdrop-blur-sm rounded-xl border border-border/50 p-3 flex items-center justify-center">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        </div>
-      </div>
-    );
-  }
-
-  // Don't show if no lessons today
-  if (!overview || overview.lessonCount === 0) {
+  // Don't show loading state - just hide until data is ready
+  if (isLoading || !overview || overview.lessonCount === 0) {
     return null;
   }
 

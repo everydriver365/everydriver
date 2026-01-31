@@ -14,11 +14,9 @@ import {
   Award,
   ChevronRight,
   GripVertical,
-  Pencil,
   Check,
   MapPin,
   MessageSquare,
-  Timer,
   X,
   Plus
 } from "lucide-react";
@@ -76,16 +74,21 @@ interface QuickActionTilesProps {
   pendingJobsCount: number;
   instructorId: string | undefined;
   loading?: boolean;
+  isEditMode?: boolean;
+  onEditModeChange?: (isEdit: boolean) => void;
 }
 
 export function QuickActionTiles({
   quickActions,
   pendingJobsCount,
   instructorId,
-  loading = false
+  loading = false,
+  isEditMode: externalEditMode,
+  onEditModeChange
 }: QuickActionTilesProps) {
   const navigate = useNavigate();
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [internalEditMode, setInternalEditMode] = useState(false);
+  const isEditMode = externalEditMode ?? internalEditMode;
   const [swipedTileId, setSwipedTileId] = useState<string | null>(null);
   const { getOrderedTiles, getHiddenTiles, saveTileOrder, hideTile, showTile, saving } = useInstructorTilePreferences(instructorId);
   const { data: jobPreview } = usePendingJobsPreview(instructorId);
@@ -129,13 +132,21 @@ export function QuickActionTiles({
            action.title.toLowerCase().includes("pupil");
   };
 
+  const setEditMode = (value: boolean) => {
+    if (onEditModeChange) {
+      onEditModeChange(value);
+    } else {
+      setInternalEditMode(value);
+    }
+  };
+
   const handleEditToggle = () => {
     if (isEditMode) {
       // Save changes
       const newOrder = localTiles.map(tile => tile.id);
       saveTileOrder(newOrder);
     }
-    setIsEditMode(!isEditMode);
+    setEditMode(!isEditMode);
   };
 
   const handleReorder = (newOrder: QuickAction[]) => {
@@ -213,28 +224,21 @@ export function QuickActionTiles({
 
   return (
     <div className="space-y-3">
-      {/* Header with Edit button */}
+      {/* Header with Done button only shown in edit mode */}
       <div className="flex items-center justify-between px-1">
         <span className="text-sm font-medium text-muted-foreground">Quick Actions</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2 text-xs gap-1"
-          onClick={handleEditToggle}
-          disabled={saving}
-        >
-          {isEditMode ? (
-            <>
-              <Check className="h-3.5 w-3.5" />
-              Done
-            </>
-          ) : (
-            <>
-              <Pencil className="h-3.5 w-3.5" />
-              Edit
-            </>
-          )}
-        </Button>
+        {isEditMode && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 text-xs gap-1"
+            onClick={handleEditToggle}
+            disabled={saving}
+          >
+            <Check className="h-3.5 w-3.5" />
+            Done
+          </Button>
+        )}
       </div>
 
       {isEditMode ? (
