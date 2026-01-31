@@ -61,61 +61,77 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">4. Google API Services</h2>
+            <h2 className="text-2xl font-semibold mb-4">4. Google API Services Disclosure</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
               EveryDriver offers optional integration with Google services to enhance functionality for instructors. This section describes our use of Google API Services and our commitment to protecting your Google data.
             </p>
 
-            <h3 className="text-xl font-medium mb-3 mt-6">Google Calendar Integration</h3>
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
+              <p className="text-sm font-medium text-foreground mb-2">Google API Services User Data Policy</p>
+              <p className="text-sm text-muted-foreground">
+                EveryDriver's use and transfer to any other app of information received from Google APIs will adhere to the{" "}
+                <a 
+                  href="https://developers.google.com/terms/api-services-user-data-policy" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Google API Services User Data Policy
+                </a>
+                , including the Limited Use requirements.
+              </p>
+            </div>
+
+            <h3 className="text-xl font-medium mb-3">What Data We Access</h3>
             <p className="text-muted-foreground leading-relaxed mb-2">
-              When you connect your Google Calendar to EveryDriver, we access:
+              When you connect your Google Calendar to EveryDriver, we request access to:
             </p>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Calendar events</strong>: To sync lesson bookings and prevent scheduling conflicts</li>
-              <li><strong>Email address</strong>: To identify your Google account</li>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-4">
+              <li><strong>Google Calendar (read/write)</strong>: To sync lesson bookings, view your availability, and prevent scheduling conflicts</li>
+              <li><strong>Email address</strong>: To identify your Google account and match it to your EveryDriver profile</li>
+              <li><strong>Basic profile information</strong>: Your name for display purposes</li>
             </ul>
 
             <h3 className="text-xl font-medium mb-3 mt-6">How We Use Google Data</h3>
             <p className="text-muted-foreground leading-relaxed mb-2">
-              We use your Google Calendar data exclusively to:
+              We use your Google Calendar data <strong>exclusively</strong> to:
             </p>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-4">
               <li>Synchronise your lesson schedule between EveryDriver and Google Calendar</li>
-              <li>Display your existing events to prevent double-booking</li>
-              <li>Create, update, and delete lesson events in your calendar</li>
+              <li>Display your existing calendar events to prevent double-booking</li>
+              <li>Create lesson events in your calendar when bookings are made</li>
+              <li>Update events when lesson details change</li>
+              <li>Remove events when lessons are cancelled</li>
             </ul>
 
-            <h3 className="text-xl font-medium mb-3 mt-6">Google Data Protection</h3>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>We do <strong>not</strong> sell, rent, or trade your Google data to any third party</li>
-              <li>We do <strong>not</strong> use your Google data for advertising or marketing purposes</li>
-              <li>We do <strong>not</strong> share your Google data with other users or external services</li>
-              <li>We do <strong>not</strong> store the content of your personal calendar events</li>
-              <li>We access only the minimum data necessary for lesson scheduling functionality</li>
-            </ul>
-
-            <h3 className="text-xl font-medium mb-3 mt-6">Google API Services User Data Policy Compliance</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              EveryDriver's use and transfer to any other app of information received from Google APIs will adhere to the{" "}
-              <a 
-                href="https://developers.google.com/terms/api-services-user-data-policy" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Google API Services User Data Policy
-              </a>
-              , including the Limited Use requirements.
-            </p>
-
-            <h3 className="text-xl font-medium mb-3 mt-6">Revoking Google Access</h3>
+            <h3 className="text-xl font-medium mb-3 mt-6">Limited Use Disclosure</h3>
             <p className="text-muted-foreground leading-relaxed mb-2">
-              You may disconnect your Google account from EveryDriver at any time:
+              In accordance with Google's Limited Use requirements:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-4">
+              <li>We <strong>only use</strong> Google data to provide the calendar sync feature you explicitly requested</li>
+              <li>We <strong>do not</strong> transfer Google data to any third parties except as necessary to provide or improve our service, or as required by law</li>
+              <li>We <strong>do not</strong> use Google data for advertising, marketing, or to serve you ads</li>
+              <li>We <strong>do not</strong> allow humans to read your Google data unless you provide affirmative consent, it's necessary for security purposes, or required by law</li>
+              <li>We <strong>do not</strong> use Google data to train AI or machine learning models</li>
+            </ul>
+
+            <h3 className="text-xl font-medium mb-3 mt-6">Data Storage and Security</h3>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-4">
+              <li>OAuth tokens are encrypted at rest and in transit</li>
+              <li>We do not store the content of your personal calendar events—only lesson-related events we create</li>
+              <li>Access tokens are refreshed automatically and securely</li>
+              <li>All data is stored on secure, encrypted servers</li>
+            </ul>
+
+            <h3 className="text-xl font-medium mb-3 mt-6">Revoking Access</h3>
+            <p className="text-muted-foreground leading-relaxed mb-2">
+              You may disconnect your Google account at any time using either method:
             </p>
             <ol className="list-decimal pl-6 text-muted-foreground space-y-2">
-              <li>In EveryDriver: Go to <strong>Settings &gt; Integrations</strong> and click "Disconnect"</li>
+              <li><strong>In EveryDriver</strong>: Go to Settings → Integrations → Google Calendar and click "Disconnect"</li>
               <li>
-                In Google: Visit{" "}
+                <strong>In Google</strong>: Visit your{" "}
                 <a 
                   href="https://myaccount.google.com/permissions" 
                   target="_blank" 
@@ -124,11 +140,11 @@ export default function PrivacyPolicy() {
                 >
                   Google Account Permissions
                 </a>
-                {" "}and remove EveryDriver
+                {" "}page and remove EveryDriver
               </li>
             </ol>
             <p className="text-muted-foreground leading-relaxed mt-4">
-              Upon disconnection, we immediately delete your stored Google OAuth tokens.
+              Upon disconnection, we immediately delete your stored OAuth tokens and cease all access to your Google data. Previously synced lesson events remain in your calendar but will no longer update automatically.
             </p>
           </section>
 
