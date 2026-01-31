@@ -581,6 +581,44 @@ serve(async (req) => {
         console.error(`[Traccar-Poller] Device update error:`, updateError);
       }
 
+      // Log battery history (sample every 5 minutes to avoid bloating the table)
+      if (batteryPercent !== null) {
+        const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+        const { data: recentBattery } = await supabase
+          .from("traccar_battery_history")
+          .select("id")
+          .eq("device_id", device.id)
+          .gte("recorded_at", fiveMinutesAgo.toISOString())
+          .limit(1);
+
+        if (!recentBattery || recentBattery.length === 0) {
+          await supabase
+            .from("traccar_battery_history")
+            .insert({
+              device_id: device.id,
+              instructor_id: device.instructor_id,
+              battery_percent: batteryPercent,
+            });
+          console.log(`[Traccar-Poller] Battery history logged: ${batteryPercent}% for device ${uniqueId}`);
+        }
+      }
+
+      // Log ignition state changes
+      if (ignitionStatus !== null && ignitionStatus !== device.last_ignition_status) {
+        await supabase
+          .from("traccar_ignition_events")
+          .insert({
+            device_id: device.id,
+            instructor_id: device.instructor_id,
+            vehicle_id: device.vehicle_id,
+            event_type: ignitionStatus ? "on" : "off",
+            latitude: lat,
+            longitude: lon,
+            road_name: roadName,
+          });
+        console.log(`[Traccar-Poller] Ignition ${ignitionStatus ? 'ON' : 'OFF'} for device ${uniqueId}`);
+      }
+
       // If session is active, record data
       if (device.current_session_id) {
         // Insert GPS point

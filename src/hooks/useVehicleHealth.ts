@@ -10,6 +10,9 @@ export interface TraccarDeviceHealth {
   last_battery_percent: number | null;
   last_ignition_status: boolean | null;
   last_speed_kmh: number | null;
+  last_speed_limit_kmh: number | null;
+  last_road_name: string | null;
+  last_heading: number | null;
   last_latitude: number | null;
   last_longitude: number | null;
   last_seen_at: string | null;
@@ -74,6 +77,9 @@ export function useVehicleHealth() {
           last_battery_percent,
           last_ignition_status,
           last_speed_kmh,
+          last_speed_limit_kmh,
+          last_road_name,
+          last_heading,
           last_latitude,
           last_longitude,
           last_seen_at

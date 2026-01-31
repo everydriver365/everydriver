@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import { DeviceStatusCard } from "@/components/instructor/vehicle-health/DeviceStatusCard";
+import { EnhancedDeviceStatusCard } from "@/components/instructor/vehicle-health/EnhancedDeviceStatusCard";
+import { BatteryHistoryChart } from "@/components/instructor/vehicle-health/BatteryHistoryChart";
+import { IgnitionEventsLog } from "@/components/instructor/vehicle-health/IgnitionEventsLog";
 import { VehicleFleetCard } from "@/components/instructor/vehicle-health/VehicleFleetCard";
 import { AutoMileageLog } from "@/components/instructor/vehicle-health/AutoMileageLog";
 import { LinkDeviceDialog } from "@/components/instructor/vehicle-health/LinkDeviceDialog";
@@ -13,6 +15,7 @@ import { AddVehicleDialog } from "@/components/instructor/vehicle-health/AddVehi
 import { ComplianceOverview } from "@/components/instructor/vehicle-health/ComplianceOverview";
 import { SecurityAlertsTab } from "@/components/instructor/vehicle-health/SecurityAlertsTab";
 import { ServiceRemindersTab } from "@/components/instructor/vehicle-health/ServiceRemindersTab";
+import { LiveTelemetryTab } from "@/components/instructor/vehicle-health/LiveTelemetryTab";
 import { useVehicleHealth, TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
 import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useVehicleService } from "@/hooks/useVehicleService";
@@ -188,37 +191,13 @@ export default function InstructorVehicleHealth() {
           </TabsContent>
 
           {/* Live Status Tab */}
-          <TabsContent value="live" className="mt-4 space-y-3">
-            {isLoading ? (
-              <>
-                <Skeleton className="h-32 w-full rounded-lg" />
-                <Skeleton className="h-32 w-full rounded-lg" />
-              </>
-            ) : devices.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Radio className="h-12 w-12 text-muted-foreground/30 mb-3" />
-                <p className="text-muted-foreground font-medium">No GPS devices registered</p>
-                <p className="text-sm text-muted-foreground/70 mt-1">
-                  Set up a GPS tracker in Settings → Traccar
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => navigate("/instructor/settings/traccar")}
-                >
-                  <Plus className="h-4 w-4 mr-1.5" />
-                  Add Device
-                </Button>
-              </div>
-            ) : (
-              devices.map(device => (
-                <DeviceStatusCard
-                  key={device.id}
-                  device={device}
-                  onLinkClick={() => setLinkingDevice(device)}
-                />
-              ))
-            )}
+          <TabsContent value="live" className="mt-4 space-y-4">
+            <LiveTelemetryTab 
+              devices={devices}
+              isLoading={isLoading}
+              onLinkClick={(device) => setLinkingDevice(device)}
+              onNavigateToSettings={() => navigate("/instructor/settings/traccar")}
+            />
           </TabsContent>
 
           {/* Security Tab */}
