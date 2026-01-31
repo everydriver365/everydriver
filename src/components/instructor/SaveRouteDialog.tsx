@@ -149,7 +149,7 @@ export function SaveRouteDialog({
               )}
               {distanceKm && (
                 <div className="text-muted-foreground">
-                  Distance: {distanceKm.toFixed(1)} km
+                  Distance: {(distanceKm * 0.621371).toFixed(1)} mi
                 </div>
               )}
             </div>

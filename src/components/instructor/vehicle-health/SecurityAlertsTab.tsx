@@ -148,7 +148,7 @@ export function SecurityAlertsTab({ vehicles }: SecurityAlertsTabProps) {
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {alert.speed_kmh
-                            ? `Moving at ${Math.round(alert.speed_kmh)} km/h`
+                            ? `Moving at ${Math.round(alert.speed_kmh * 0.621371)} mph`
                             : "Movement detected"}
                         </p>
                         <p className="text-xs text-muted-foreground">

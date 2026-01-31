@@ -101,7 +101,7 @@ export function VehicleSecurityCard({ vehicle }: VehicleSecurityCardProps) {
                     step={1}
                     className="flex-1"
                   />
-                  <span className="text-sm font-medium w-16">{threshold} km/h</span>
+                  <span className="text-sm font-medium w-16">{Math.round(threshold * 0.621371)} mph</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Alert when vehicle exceeds this speed while no lesson is scheduled

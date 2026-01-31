@@ -157,19 +157,19 @@ const RouteMapView: React.FC<RouteMapViewProps> = ({
         <div className="flex items-center justify-center gap-4 py-2 px-4 bg-muted/30 text-xs">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span>&lt;50 km/h</span>
+            <span>&lt;30 mph</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <span>50-80 km/h</span>
+            <span>30-50 mph</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-orange-500" />
-            <span>80-100 km/h</span>
+            <span>50-60 mph</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span>&gt;100 km/h</span>
+            <span>&gt;60 mph</span>
           </div>
         </div>
       </CardContent>

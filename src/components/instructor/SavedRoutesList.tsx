@@ -290,7 +290,7 @@ export function SavedRoutesList({ instructorId, onNavigate }: SavedRoutesListPro
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                       {route.distance_km && (
-                        <span>{route.distance_km.toFixed(1)} km</span>
+                        <span>{(route.distance_km * 0.621371).toFixed(1)} mi</span>
                       )}
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />

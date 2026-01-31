@@ -236,7 +236,7 @@ export function AddVehicleDialog({ open, onOpenChange, onSuccess }: AddVehicleDi
 
           {/* Odometer */}
           <div className="space-y-2">
-            <Label htmlFor="odometer">Current Mileage (km)</Label>
+            <Label htmlFor="odometer">Current Mileage (miles)</Label>
             <Input
               id="odometer"
               type="number"
@@ -287,7 +287,7 @@ export function AddVehicleDialog({ open, onOpenChange, onSuccess }: AddVehicleDi
 
           {/* Service */}
           <div className="space-y-2">
-            <Label htmlFor="next_service">Next Service Due (km)</Label>
+            <Label htmlFor="next_service">Next Service Due (miles)</Label>
             <Input
               id="next_service"
               type="number"

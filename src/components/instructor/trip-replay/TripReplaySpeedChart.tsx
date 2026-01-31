@@ -10,6 +10,7 @@ import {
   ReferenceDot,
 } from "recharts";
 import { GpsPoint } from "@/hooks/useTripReplay";
+import { kmhToMph } from "@/lib/utils";
 
 interface TripReplaySpeedChartProps {
   gpsPoints: GpsPoint[];
@@ -34,8 +35,8 @@ export function TripReplaySpeedChart({
       return {
         index,
         time: elapsedMinutes,
-        speed: Math.round(point.speed_kmh || 0),
-        limit: point.speed_limit_kmh || null,
+        speed: Math.round(kmhToMph(point.speed_kmh || 0)),
+        limit: point.speed_limit_kmh ? Math.round(kmhToMph(point.speed_limit_kmh)) : null,
         roadName: point.road_name,
         isSpeeding: point.speed_limit_kmh && (point.speed_kmh || 0) > point.speed_limit_kmh,
       };
@@ -97,10 +98,10 @@ export function TripReplaySpeedChart({
               const data = payload[0].payload;
               return (
                 <div className="bg-popover border rounded-md shadow-md p-2 text-xs">
-                  <div className="font-medium">{data.speed} km/h</div>
+                  <div className="font-medium">{data.speed} mph</div>
                   {data.limit && (
                     <div className={data.isSpeeding ? "text-destructive" : "text-muted-foreground"}>
-                      Limit: {data.limit} km/h
+                      Limit: {data.limit} mph
                     </div>
                   )}
                   {data.roadName && (
