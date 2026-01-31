@@ -77,12 +77,12 @@ export function QuickActionTiles({
   const { data: jobPreview } = usePendingJobsPreview(instructorId);
   const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
   
-  // Get tiles in user's preferred order (includes both system and custom tiles)
-  const allPossibleTiles = [...quickActions, ...additionalTiles];
-  const orderedTiles = getOrderedTiles(allPossibleTiles);
+  // Get tiles in user's preferred order (only system tiles by default)
+  const orderedTiles = getOrderedTiles(quickActions);
   
-  // Get ALL tiles not currently visible (hidden + additional tiles not yet added)
-  const availableTilesToAdd = allPossibleTiles.filter(
+  // Combine hidden system tiles + additional tiles not yet added
+  const allPossibleAdditions = [...quickActions, ...additionalTiles];
+  const availableTilesToAdd = allPossibleAdditions.filter(
     tile => !orderedTiles.some(t => t.id === tile.id)
   );
   const [localTiles, setLocalTiles] = useState<QuickAction[]>(orderedTiles);
