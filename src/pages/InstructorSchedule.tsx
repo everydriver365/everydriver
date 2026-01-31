@@ -143,7 +143,11 @@ export default function InstructorSchedule() {
             <Button
               variant={viewMode === 'schedule' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setViewMode('schedule')}
+              onClick={() => {
+                setViewMode('schedule');
+                // Reset init flag so schedule view scrolls to today
+                scheduleInitRef.current = false;
+              }}
               className="gap-1 px-2 sm:px-3 h-8"
             >
               <CalendarDays className="h-4 w-4" />
