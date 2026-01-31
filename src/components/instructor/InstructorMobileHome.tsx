@@ -3,16 +3,11 @@ import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { Link, useNavigate } from "react-router-dom";
 import { 
-  Calendar, 
   CalendarClock,
-  Users, 
-  Briefcase, 
   CreditCard, 
-  Clock, 
   Settings,
   Car,
   ChevronRight,
-  Receipt,
   Moon,
   Sun,
   LogOut,
@@ -21,13 +16,10 @@ import {
   HelpCircle,
   Palette,
   Navigation,
-  Award,
-  Wifi,
-  WifiOff
+  Award
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,25 +34,12 @@ import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
 import { InstructorNotificationsDropdown } from "@/components/instructor/InstructorNotificationsDropdown";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 const instructorLogo = "/everydriver-logo-v2.png";
-
-// Icon mapping
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Calendar,
-  Users,
-  Briefcase,
-  CreditCard,
-  Clock,
-  Settings,
-  Car,
-  Receipt,
-  Navigation,
-  Award
-};
 
 interface InstructorMobileHomeProps {
   instructor: {
@@ -134,17 +113,6 @@ export function InstructorMobileHome({
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
-
-  const getIcon = (iconName: string) => {
-    const Icon = iconMap[iconName] || Calendar;
-    return Icon;
-  };
-
-  // Check if action is job offers (by route or title)
-  const isJobOffersAction = (action: QuickAction) => {
-    return action.route === "/instructor/jobs" || 
-           action.title.toLowerCase().includes("job");
   };
 
   // Default hero image
@@ -388,107 +356,13 @@ export function InstructorMobileHome({
       )}
 
       {/* Quick Actions */}
-      <div className="px-4 mt-6 space-y-3 relative z-10">
-        {/* Loading skeleton */}
-        {loading && (
-          <div className="space-y-3">
-            <div className="bg-card rounded-xl border border-border p-4 h-16 animate-pulse" />
-            <div className="grid grid-cols-2 gap-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-card rounded-xl border border-border p-4 h-20 animate-pulse" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {!loading && quickActions.length > 0 && (
-          <>
-            {quickActions
-              .sort((a, b) => a.display_order - b.display_order)
-              .map((action, index) => {
-                const Icon = getIcon(action.icon);
-                const isWide = index === 0; // First action is full width
-                const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
-                
-                if (isWide) {
-                  return (
-                    <motion.div
-                      key={action.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Link to={action.route}>
-                        <div className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex items-center gap-4 shadow-lg active:shadow-md transition-all">
-                          <div className="relative w-12 h-12 rounded-xl bg-violet-500/15 dark:bg-violet-500/20 flex items-center justify-center">
-                            <Icon className="h-6 w-6 text-violet-600 dark:text-violet-400" />
-                            {showBadge && (
-                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                              </span>
-                            )}
-                          </div>
-                          <div className="relative flex-1">
-                            <span className="font-semibold text-foreground text-base">{action.title}</span>
-                            <p className="text-muted-foreground text-xs mt-0.5">Tap to view</p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground relative" />
-                        </div>
-                      </Link>
-                    </motion.div>
-                  );
-                }
-                return null;
-              })}
-
-            {/* 2-column grid for remaining actions */}
-            <div className="grid grid-cols-2 gap-3">
-              {quickActions
-                .sort((a, b) => a.display_order - b.display_order)
-                .slice(1)
-                .map((action, index) => {
-                  const Icon = getIcon(action.icon);
-                  const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
-                  
-                  // Different accent colors for visual variety - dark mode uses subtle tinted backgrounds
-                  const tileStyles = [
-                    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-blue-500/15 dark:bg-blue-500/20', iconColor: 'text-blue-600 dark:text-blue-400' },
-                    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-emerald-500/15 dark:bg-emerald-500/20', iconColor: 'text-emerald-600 dark:text-emerald-400' },
-                    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-blue-500/15 dark:bg-blue-500/20', iconColor: 'text-blue-600 dark:text-blue-400' },
-                    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-rose-500/15 dark:bg-rose-500/20', iconColor: 'text-rose-600 dark:text-rose-400' },
-                  ];
-                  const style = tileStyles[index % tileStyles.length];
-                  
-                  return (
-                    <motion.div
-                      key={action.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.15 + index * 0.05 }}
-                      whileTap={{ scale: 0.97 }}
-                    >
-                      <Link to={action.route}>
-                        <div className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex flex-col gap-3 shadow-lg hover:shadow-xl active:shadow-md transition-all min-h-[120px]`}>
-                          <div className={`relative w-12 h-12 rounded-xl ${style.iconBg} flex items-center justify-center`}>
-                            <Icon className={`h-5 w-5 ${style.iconColor}`} />
-                            {showBadge && (
-                              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow-md ring-2 ring-card">
-                                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                              </span>
-                            )}
-                          </div>
-                          <span className="font-semibold text-foreground text-sm leading-tight relative mt-auto">
-                            {action.title}
-                          </span>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-            </div>
-          </>
-        )}
+      <div className="px-4 mt-6 relative z-10">
+        <QuickActionTiles
+          quickActions={quickActions}
+          pendingJobsCount={pendingJobsCount}
+          instructorId={instructorId}
+          loading={loading}
+        />
       </div>
 
       {/* Primary Promo Banners */}
