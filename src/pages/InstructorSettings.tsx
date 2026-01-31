@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
@@ -21,6 +21,7 @@ import { InstructorCoursesManager } from "@/components/instructor/InstructorCour
 import { TestCentresAndExaminersManager } from "@/components/instructor/TestCentresAndExaminersManager";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
+import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutManager";
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -763,6 +764,18 @@ export default function InstructorSettings() {
           <CategoryHeader category={settingsCategories[5]} />
           <Collapsible open={isCategoryOpen("preferences")}>
             <CollapsibleContent className="space-y-3 pt-1">
+              {/* Dashboard Layout Section */}
+              <SettingsTile 
+                id="dashboard-layout" 
+                icon={LayoutGrid} 
+                title="Dashboard Layout" 
+                description="Customize your home screen tiles"
+                iconColor="text-indigo-600"
+                iconBg="bg-indigo-100 dark:bg-indigo-900/30"
+              >
+                <DashboardLayoutManager instructorId={instructorId} />
+              </SettingsTile>
+
               {/* Push Notifications Section */}
               <SettingsTile 
                 id="notifications" 
