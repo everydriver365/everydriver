@@ -20,6 +20,8 @@ interface InstructorProfile {
   website_footer_bg: string | null;
   payment_qr_url: string | null;
   booking_mode: string | null;
+  adi_badge_expiry: string | null;
+  dbs_certificate_expiry: string | null;
 }
 
 interface Subscription {
@@ -92,7 +94,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       // Fetch instructor profile linked to this auth user
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
-        .select('id, name, email, phone, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active, website_theme, website_font, website_header_style, website_button_color, website_footer_bg, payment_qr_url, booking_mode')
+        .select('id, name, email, phone, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active, website_theme, website_font, website_header_style, website_button_color, website_footer_bg, payment_qr_url, booking_mode, adi_badge_expiry, dbs_certificate_expiry')
         .eq('auth_user_id', userId)
         .maybeSingle();
 

@@ -1,12 +1,30 @@
-import { Car, Gauge, Wrench, Wifi, Star } from "lucide-react";
+import { Car, Gauge, Wrench, Wifi, Star, Camera } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { InstructorVehicle } from "@/hooks/useVehicleHealth";
 import { differenceInDays } from "date-fns";
 
+export interface InstructorVehicleExtended {
+  id: string;
+  instructor_id: string;
+  registration: string;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  transmission: string | null;
+  current_odometer_km: number | null;
+  mot_expiry: string | null;
+  insurance_expiry: string | null;
+  tax_expiry: string | null;
+  next_service_due_km: number | null;
+  last_service_date: string | null;
+  is_primary: boolean;
+  linked_device_id?: string | null;
+  image_url?: string | null;
+}
+
 interface VehicleFleetCardProps {
-  vehicle: InstructorVehicle;
+  vehicle: InstructorVehicleExtended;
 }
 
 function getDaysUntil(dateStr: string | null): number | null {
@@ -53,12 +71,27 @@ export function VehicleFleetCard({ vehicle }: VehicleFleetCardProps) {
 
   return (
     <Card className="overflow-hidden">
+      {/* Vehicle Image */}
+      {vehicle.image_url ? (
+        <div className="aspect-video bg-muted">
+          <img
+            src={vehicle.image_url}
+            alt={vehicle.registration}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="aspect-video bg-muted/50 flex items-center justify-center">
+          <Camera className="h-10 w-10 text-muted-foreground/30" />
+        </div>
+      )}
+      
       <CardContent className="p-4 space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-base">
+              <h3 className="font-semibold text-base font-mono tracking-wider">
                 {vehicle.registration}
               </h3>
               {vehicle.is_primary && (
