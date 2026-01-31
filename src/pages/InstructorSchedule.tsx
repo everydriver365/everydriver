@@ -165,8 +165,6 @@ export default function InstructorSchedule() {
           </div>
         </div>
 
-        {/* Weekly Summary Widget */}
-        <WeeklySummaryWidget instructorId={instructorId} />
 
         {viewMode === 'list' ? (
           <NewMobileScheduleView instructorId={instructorId} />
