@@ -1,71 +1,127 @@
 
-# Fix Missing Email Display for Google Calendar Connection
+# Feature Enhancement Plan
 
-## Problem
-The Google Calendar connection status shows a blank/undefined email because the `email` field in the `instructor_calendar_tokens` table is `null` for existing connections that were made before the email-saving logic was added.
-
-## Solution
-Modify the `checkConnection` action in the `google-oauth` edge function to automatically fetch and save the email when it's missing. This is a "self-healing" approach that fixes existing records without requiring users to reconnect.
+This plan covers 6 features to improve the instructor experience: recurring lessons polish, floating action button, reminder improvements, quick message templates, weekly summary widget, and vehicle cost tracking for tax.
 
 ---
 
-## Implementation
+## 1. Floating Action Button (FAB) for Quick-Add
 
-### 1. Update the Edge Function (`supabase/functions/google-oauth/index.ts`)
+Add a mobile-friendly floating action button to the Schedule page that stays fixed at the bottom-right corner for one-tap lesson creation.
 
-Modify the `checkConnection` action (around lines 295-327) to:
+**Changes:**
+- Create new component `src/components/instructor/ScheduleFAB.tsx`
+- Update `src/pages/InstructorSchedule.tsx` to include the FAB
+- The FAB will open the existing `AddLessonSheet` component
 
-1. After fetching the token data, check if `email` is null/missing
-2. If missing and we have a valid access token, call Google's userinfo API
-3. Update the database with the fetched email
-4. Return the email in the response
+---
 
-**Changes to make:**
+## 2. Enhanced Automated Reminders
 
-```typescript
-// Inside the checkConnection action, after fetching tokenData:
+The system already has a cron job running at 6pm daily sending tomorrow's lesson reminders. Enhancements include:
 
-// If email is missing, fetch it from Google and update the record
-let email = tokenData.email;
-if (!email && tokenData.access_token) {
-  try {
-    const userInfoResponse = await fetch(
-      "https://www.googleapis.com/oauth2/v2/userinfo",
-      { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
-    );
-    
-    if (userInfoResponse.ok) {
-      const userInfo = await userInfoResponse.json();
-      email = userInfo.email;
-      
-      // Save the email for future requests
-      if (email) {
-        await supabase
-          .from("instructor_calendar_tokens")
-          .update({ email })
-          .eq("instructor_id", instructorId)
-          .eq("provider", "google");
-      }
-    }
-  } catch (e) {
-    console.error("Failed to fetch email from Google:", e);
-  }
-}
-```
+- Add instructor notification setting to enable/disable reminders
+- Add push notification support alongside SMS/email
+- Create settings UI in instructor preferences
+
+**Changes:**
+- Create `src/components/instructor/ReminderSettings.tsx` component
+- Update `supabase/functions/send-lesson-reminders/index.ts` to check instructor preferences and send push notifications
+- Add database migration for `instructor_reminder_preferences` table
+
+---
+
+## 3. One-Tap Quick Message Templates
+
+Add quick-tap message templates for common messages (running late, on my way, etc.) accessible from lesson cards.
+
+**Changes:**
+- Create `src/components/instructor/QuickMessageSheet.tsx` with preset messages
+- Update `ExpandableLessonCard.tsx` to include quick message trigger
+- Templates include: "On my way", "Running 5 mins late", "Running 10 mins late", "Please be ready", "Lesson cancelled"
+
+---
+
+## 4. Weekly Summary Widget
+
+Add a compact summary widget at the top of the Schedule page showing:
+- Hours taught this week
+- Earnings this week
+- Lessons completed
+- Cancellation rate
+
+**Changes:**
+- Create `src/components/instructor/WeeklySummaryWidget.tsx`
+- Add to `InstructorSchedule.tsx` above the schedule views
+- Fetch data from `scheduled_lessons` and `payment_history` tables
+
+---
+
+## 5. Vehicle Cost Tracking for Tax (HMRC)
+
+Consolidate vehicle service costs with general expenses for comprehensive tax reporting:
+
+**Changes:**
+- Create `src/components/instructor/vehicle-health/VehicleCostSummary.tsx`
+- Shows total service/repair costs by tax year
+- Links to existing service history with costs
+- Adds HMRC-friendly export (CSV with categories: repairs, servicing, MOT, insurance)
+- Update `ServiceRemindersTab.tsx` to display running cost totals
+
+---
+
+## 6. Recurring Lessons Enhancement
+
+The recurring lesson feature exists but needs polish:
+
+**Changes:**
+- Add visual indicator on calendar/schedule for recurring lessons
+- Add "Edit series" option to modify all future recurring lessons
+- Show recurrence info in lesson details sheet
+
+---
+
+## Implementation Order
+
+| Priority | Feature | Complexity |
+|----------|---------|------------|
+| 1 | Floating Action Button | Low |
+| 2 | Weekly Summary Widget | Medium |
+| 3 | Quick Message Templates | Low |
+| 4 | Vehicle Cost Tracking | Medium |
+| 5 | Recurring Lessons Polish | Medium |
+| 6 | Enhanced Reminders | High |
 
 ---
 
 ## Technical Details
 
-| Aspect | Detail |
-|--------|--------|
-| File to modify | `supabase/functions/google-oauth/index.ts` |
-| Action affected | `checkConnection` (lines 295-327) |
-| API used | Google OAuth2 userinfo endpoint |
-| Fallback | If fetch fails, continues without email (graceful degradation) |
+### Database Changes
+```sql
+-- Instructor reminder preferences
+CREATE TABLE IF NOT EXISTS instructor_reminder_preferences (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  instructor_id uuid REFERENCES instructors(id) ON DELETE CASCADE,
+  sms_enabled boolean DEFAULT true,
+  email_enabled boolean DEFAULT true,
+  push_enabled boolean DEFAULT true,
+  reminder_time time DEFAULT '18:00:00',
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE(instructor_id)
+);
+```
 
-### Why This Approach?
-- **No user action required** - fixes itself on next page load
-- **One-time operation** - once email is saved, subsequent checks skip the fetch
-- **Backwards compatible** - doesn't break anything for new connections
-- **Minimal code change** - localized to one action in one file
+### New Files
+- `src/components/instructor/ScheduleFAB.tsx`
+- `src/components/instructor/QuickMessageSheet.tsx`
+- `src/components/instructor/WeeklySummaryWidget.tsx`
+- `src/components/instructor/ReminderSettings.tsx`
+- `src/components/instructor/vehicle-health/VehicleCostSummary.tsx`
+
+### Modified Files
+- `src/pages/InstructorSchedule.tsx`
+- `src/components/instructor/ExpandableLessonCard.tsx`
+- `src/components/instructor/CalendarEventSheet.tsx`
+- `src/components/instructor/vehicle-health/ServiceRemindersTab.tsx`
+- `supabase/functions/send-lesson-reminders/index.ts`
