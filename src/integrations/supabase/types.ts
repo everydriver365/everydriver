@@ -2846,6 +2846,7 @@ export type Database = {
       instructor_tile_preferences: {
         Row: {
           created_at: string
+          hidden_tiles: Json | null
           id: string
           instructor_id: string
           tile_order: Json
@@ -2853,6 +2854,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          hidden_tiles?: Json | null
           id?: string
           instructor_id: string
           tile_order?: Json
@@ -2860,6 +2862,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          hidden_tiles?: Json | null
           id?: string
           instructor_id?: string
           tile_order?: Json

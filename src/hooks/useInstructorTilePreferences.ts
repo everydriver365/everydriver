@@ -7,12 +7,14 @@ export interface TilePreference {
   id: string;
   instructor_id: string;
   tile_order: string[];
+  hidden_tiles: string[];
   created_at: string;
   updated_at: string;
 }
 
 export function useInstructorTilePreferences(instructorId: string | undefined) {
   const [tileOrder, setTileOrder] = useState<string[] | null>(null);
+  const [hiddenTiles, setHiddenTiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -26,7 +28,7 @@ export function useInstructorTilePreferences(instructorId: string | undefined) {
     try {
       const { data, error } = await supabase
         .from("instructor_tile_preferences")
-        .select("tile_order")
+        .select("tile_order, hidden_tiles")
         .eq("instructor_id", instructorId)
         .maybeSingle();
 
@@ -34,6 +36,7 @@ export function useInstructorTilePreferences(instructorId: string | undefined) {
         console.error("Error fetching tile preferences:", error);
       } else if (data) {
         setTileOrder(data.tile_order as string[]);
+        setHiddenTiles((data.hidden_tiles as string[]) || []);
       }
     } catch (error) {
       console.error("Error fetching tile preferences:", error);
@@ -58,6 +61,7 @@ export function useInstructorTilePreferences(instructorId: string | undefined) {
         .upsert({
           instructor_id: instructorId,
           tile_order: newOrder,
+          hidden_tiles: hiddenTiles,
           updated_at: new Date().toISOString()
         }, {
           onConflict: "instructor_id"
@@ -75,43 +79,135 @@ export function useInstructorTilePreferences(instructorId: string | undefined) {
     } finally {
       setSaving(false);
     }
-  }, [instructorId]);
+  }, [instructorId, hiddenTiles]);
+
+  // Hide a tile (move to hidden list)
+  const hideTile = useCallback(async (tileId: string) => {
+    if (!instructorId) return false;
+
+    setSaving(true);
+    try {
+      const newHiddenTiles = [...hiddenTiles, tileId];
+      const newTileOrder = (tileOrder || []).filter(id => id !== tileId);
+
+      const { error } = await supabase
+        .from("instructor_tile_preferences")
+        .upsert({
+          instructor_id: instructorId,
+          tile_order: newTileOrder,
+          hidden_tiles: newHiddenTiles,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: "instructor_id"
+        });
+
+      if (error) throw error;
+
+      setHiddenTiles(newHiddenTiles);
+      setTileOrder(newTileOrder);
+      toast.success("Tile hidden");
+      return true;
+    } catch (error) {
+      console.error("Error hiding tile:", error);
+      toast.error("Failed to hide tile");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [instructorId, tileOrder, hiddenTiles]);
+
+  // Show a tile (remove from hidden list, add back to visible)
+  const showTile = useCallback(async (tileId: string) => {
+    if (!instructorId) return false;
+
+    setSaving(true);
+    try {
+      const newHiddenTiles = hiddenTiles.filter(id => id !== tileId);
+      const newTileOrder = [...(tileOrder || []), tileId];
+
+      const { error } = await supabase
+        .from("instructor_tile_preferences")
+        .upsert({
+          instructor_id: instructorId,
+          tile_order: newTileOrder,
+          hidden_tiles: newHiddenTiles,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: "instructor_id"
+        });
+
+      if (error) throw error;
+
+      setHiddenTiles(newHiddenTiles);
+      setTileOrder(newTileOrder);
+      toast.success("Tile added to home");
+      return true;
+    } catch (error) {
+      console.error("Error showing tile:", error);
+      toast.error("Failed to add tile");
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [instructorId, tileOrder, hiddenTiles]);
 
   // Merge saved order with global tiles (handles admin adding new tiles)
+  // Also filters out hidden tiles
   const getOrderedTiles = useCallback((globalTiles: QuickAction[]): QuickAction[] => {
-    if (!tileOrder || tileOrder.length === 0) {
-      // No custom order - use default display_order
-      return [...globalTiles].sort((a, b) => a.display_order - b.display_order);
-    }
-
     // Create a map for quick lookup
     const tileMap = new Map<string, QuickAction>();
     globalTiles.forEach(tile => tileMap.set(tile.id, tile));
 
-    // Build ordered array from saved order
+    // Filter out hidden tiles first
+    const visibleTileIds = new Set(
+      globalTiles
+        .map(t => t.id)
+        .filter(id => !hiddenTiles.includes(id))
+    );
+
+    if (!tileOrder || tileOrder.length === 0) {
+      // No custom order - use default display_order, but exclude hidden
+      return [...globalTiles]
+        .filter(tile => visibleTileIds.has(tile.id))
+        .sort((a, b) => a.display_order - b.display_order);
+    }
+
+    // Build ordered array from saved order (excluding hidden tiles)
     const orderedTiles: QuickAction[] = [];
     tileOrder.forEach(id => {
-      const tile = tileMap.get(id);
-      if (tile) {
-        orderedTiles.push(tile);
-        tileMap.delete(id);
+      if (visibleTileIds.has(id)) {
+        const tile = tileMap.get(id);
+        if (tile) {
+          orderedTiles.push(tile);
+          tileMap.delete(id);
+        }
       }
     });
 
-    // Append any new tiles not in saved order (admin added new ones)
+    // Append any new tiles not in saved order (admin added new ones) - excluding hidden
     const remainingTiles = Array.from(tileMap.values())
+      .filter(tile => visibleTileIds.has(tile.id))
       .sort((a, b) => a.display_order - b.display_order);
     orderedTiles.push(...remainingTiles);
 
     return orderedTiles;
-  }, [tileOrder]);
+  }, [tileOrder, hiddenTiles]);
+
+  // Get hidden tiles from global tiles list
+  const getHiddenTiles = useCallback((globalTiles: QuickAction[]): QuickAction[] => {
+    return globalTiles.filter(tile => hiddenTiles.includes(tile.id));
+  }, [hiddenTiles]);
 
   return {
     tileOrder,
+    hiddenTiles,
     loading,
     saving,
     saveTileOrder,
+    hideTile,
+    showTile,
     getOrderedTiles,
+    getHiddenTiles,
     refetch: fetchPreferences
   };
 }

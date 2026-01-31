@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { motion, Reorder, useDragControls, PanInfo } from "framer-motion";
+import { motion, Reorder, useDragControls, PanInfo, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -18,7 +18,8 @@ import {
   Check,
   MapPin,
   MessageSquare,
-  Timer
+  Timer,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuickAction } from "@/hooks/useInstructorHomepageContent";
@@ -57,7 +58,7 @@ export function QuickActionTiles({
   const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
   const [swipedTileId, setSwipedTileId] = useState<string | null>(null);
-  const { getOrderedTiles, saveTileOrder, saving } = useInstructorTilePreferences(instructorId);
+  const { getOrderedTiles, saveTileOrder, hideTile, saving } = useInstructorTilePreferences(instructorId);
   const { data: jobPreview } = usePendingJobsPreview(instructorId);
   const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
   
@@ -104,6 +105,13 @@ export function QuickActionTiles({
 
   const handleReorder = (newOrder: QuickAction[]) => {
     setLocalTiles(newOrder);
+  };
+
+  const handleHideTile = async (tileId: string) => {
+    // Optimistically update local state
+    setLocalTiles(prev => prev.filter(t => t.id !== tileId));
+    // Persist to database
+    await hideTile(tileId);
   };
 
   // Swipe action handlers
@@ -195,44 +203,59 @@ export function QuickActionTiles({
           onReorder={handleReorder}
           className="space-y-2"
         >
-          {localTiles.map((action, index) => {
-            const Icon = getIcon(action.icon);
-            const style = tileStyles[index % tileStyles.length];
-            const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
+          <AnimatePresence mode="popLayout">
+            {localTiles.map((action, index) => {
+              const Icon = getIcon(action.icon);
+              const style = tileStyles[index % tileStyles.length];
+              const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
 
-            return (
-              <Reorder.Item
-                key={action.id}
-                value={action}
-                className="touch-none"
-              >
-                <motion.div
-                  className={cn(
-                    "relative overflow-hidden backdrop-blur-md rounded-2xl border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
-                    style.bg
-                  )}
-                  whileDrag={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
-                  animate={{ 
-                    rotate: [0, -0.5, 0.5, 0],
-                  }}
-                  transition={{ 
-                    rotate: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
-                  }}
+              return (
+                <Reorder.Item
+                  key={action.id}
+                  value={action}
+                  className="touch-none"
+                  layout
                 >
-                  <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <div className={`relative w-10 h-10 rounded-xl ${style.iconBg} flex items-center justify-center shrink-0`}>
-                    <Icon className={`h-5 w-5 ${style.iconColor}`} />
-                    {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
-                        {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-                      </span>
+                  <motion.div
+                    className={cn(
+                      "relative overflow-hidden backdrop-blur-md rounded-2xl border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
+                      style.bg
                     )}
-                  </div>
-                  <span className="font-medium text-foreground text-sm flex-1">{action.title}</span>
-                </motion.div>
-              </Reorder.Item>
-            );
-          })}
+                    whileDrag={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
+                    animate={{ 
+                      rotate: [0, -0.5, 0.5, 0],
+                    }}
+                    transition={{ 
+                      rotate: { repeat: Infinity, duration: 0.3, ease: "easeInOut" }
+                    }}
+                    exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
+                  >
+                    {/* Hide button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleHideTile(action.id);
+                      }}
+                      className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-md z-10 hover:bg-destructive/90 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+
+                    <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className={`relative w-10 h-10 rounded-xl ${style.iconBg} flex items-center justify-center shrink-0`}>
+                      <Icon className={`h-5 w-5 ${style.iconColor}`} />
+                      {showBadge && (
+                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                          {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-medium text-foreground text-sm flex-1">{action.title}</span>
+                  </motion.div>
+                </Reorder.Item>
+              );
+            })}
+          </AnimatePresence>
         </Reorder.Group>
       ) : (
         // Normal view mode
