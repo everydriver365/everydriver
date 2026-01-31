@@ -6203,6 +6203,45 @@ export type Database = {
         }
         Relationships: []
       }
+      traccar_battery_history: {
+        Row: {
+          battery_percent: number
+          device_id: string
+          id: string
+          instructor_id: string
+          recorded_at: string
+        }
+        Insert: {
+          battery_percent: number
+          device_id: string
+          id?: string
+          instructor_id: string
+          recorded_at?: string
+        }
+        Update: {
+          battery_percent?: number
+          device_id?: string
+          id?: string
+          instructor_id?: string
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traccar_battery_history_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "traccar_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_battery_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       traccar_devices: {
         Row: {
           created_at: string | null
@@ -6300,6 +6339,64 @@ export type Database = {
           },
           {
             foreignKeyName: "traccar_devices_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      traccar_ignition_events: {
+        Row: {
+          device_id: string
+          event_type: string
+          id: string
+          instructor_id: string
+          latitude: number | null
+          longitude: number | null
+          recorded_at: string
+          road_name: string | null
+          vehicle_id: string | null
+        }
+        Insert: {
+          device_id: string
+          event_type: string
+          id?: string
+          instructor_id: string
+          latitude?: number | null
+          longitude?: number | null
+          recorded_at?: string
+          road_name?: string | null
+          vehicle_id?: string | null
+        }
+        Update: {
+          device_id?: string
+          event_type?: string
+          id?: string
+          instructor_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          recorded_at?: string
+          road_name?: string | null
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traccar_ignition_events_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "traccar_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_ignition_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_ignition_events_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "instructor_vehicles"
