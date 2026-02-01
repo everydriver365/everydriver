@@ -216,11 +216,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </SheetContent>
                   </Sheet>
 
-                  {/* Text logo for white background */}
-                  <div className="flex flex-col">
-                    <span className="text-primary font-bold text-base tracking-tight">EVERY DRIVER<span className="text-[10px] font-normal">.CO.UK</span></span>
-                    <span className="text-[10px] text-muted-foreground -mt-0.5">Supporting Your Journey</span>
-                  </div>
+                  {/* Logo */}
+                  <img 
+                    src="/everydriver-logo-mobile.png" 
+                    alt="EveryDriver" 
+                    className="h-7 object-contain"
+                  />
                 </div>
 
                 {/* Right: QR, Availability, Avatar */}
