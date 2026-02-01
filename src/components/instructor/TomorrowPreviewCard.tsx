@@ -98,42 +98,44 @@ export function TomorrowPreviewCard({
         animate={{ opacity: 1, y: 0 }}
         className={`mx-4 ${className}`}
       >
-        <div className="bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl border-2 border-slate-200 dark:border-slate-700 p-5 shadow-lg">
+        <div className="bg-gradient-to-br from-slate-100 via-blue-50/50 to-indigo-50/30 dark:from-slate-800 dark:via-blue-950/30 dark:to-indigo-950/20 rounded-3xl border border-slate-200/80 dark:border-slate-700/50 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+          {/* Header */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Calendar className="h-6 w-6 text-primary" />
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 flex items-center justify-center shadow-sm">
+              <Calendar className="h-7 w-7 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <p className="font-semibold text-foreground text-base">{dayName}'s Schedule</p>
+                <p className="font-bold text-slate-800 dark:text-slate-100 text-lg">{dayName}'s Schedule</p>
                 {weather && WeatherIcon && (
-                  <div className="flex items-center gap-1 text-muted-foreground bg-background/80 rounded-full px-2 py-0.5">
+                  <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-700/50 rounded-full px-2.5 py-1 shadow-sm border border-slate-100 dark:border-slate-600">
                     <WeatherIcon className="h-4 w-4" />
-                    <span className="text-xs font-medium">{weather.temperature}°</span>
+                    <span className="text-sm font-semibold">{weather.temperature}°</span>
                   </div>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">No lessons booked yet</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">No lessons booked yet</p>
             </div>
           </div>
           
           {/* Quiet day tip */}
-          <div className="flex items-center gap-2 text-muted-foreground mb-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2">
-            <Coffee className="h-4 w-4 text-amber-500" />
-            <span className="text-sm">Enjoy a well-deserved break</span>
+          <div className="flex items-center justify-center gap-2 mb-4 bg-amber-50/80 dark:bg-amber-950/30 rounded-2xl px-4 py-3 border border-amber-100/50 dark:border-amber-800/30">
+            <span className="text-lg">☕</span>
+            <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Enjoy a well-deserved break</span>
+            <span className="text-lg">☕</span>
           </div>
           
           {/* Action buttons */}
           <div className="flex gap-3">
             <Link to="/instructor/schedule" className="flex-1">
-              <Button variant="outline" size="default" className="w-full gap-2 h-10">
-                <Calendar className="h-4 w-4" />
+              <Button variant="outline" size="default" className="w-full gap-2 h-12 rounded-2xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm font-semibold text-slate-700 dark:text-slate-200">
+                <Calendar className="h-5 w-5" />
                 View Schedule
               </Button>
             </Link>
             <Link to="/instructor/waitlist" className="flex-1">
-              <Button variant="ghost" size="default" className="w-full gap-2 h-10">
-                <ClipboardList className="h-4 w-4" />
+              <Button size="default" className="w-full gap-2 h-12 rounded-2xl bg-blue-400 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 text-white shadow-md font-semibold">
+                <ClipboardList className="h-5 w-5" />
                 Check Waitlist
               </Button>
             </Link>
