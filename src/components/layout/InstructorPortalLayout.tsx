@@ -220,7 +220,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   <img 
                     src="/everydriver-logo-mobile.png" 
                     alt="EveryDriver" 
-                    className="h-7 object-contain"
+                    className="h-5 object-contain"
                   />
                 </div>
 
