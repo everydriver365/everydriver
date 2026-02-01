@@ -28,20 +28,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
-import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
-import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
-import { InstructorNotificationsDropdown } from "@/components/instructor/InstructorNotificationsDropdown";
+import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import { HomeMapHero } from "@/components/instructor/HomeMapHero";
-import { HomeQuickActions } from "@/components/instructor/HomeQuickActions";
-import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
-import { HomeMoneyOverview } from "@/components/instructor/HomeMoneyOverview";
+import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 interface InstructorMobileHomeProps {
   instructor: {
@@ -65,19 +58,16 @@ export function InstructorMobileHome({
   const { setTheme } = useTheme();
   const { instructor: authInstructor } = useInstructorAuth();
   const [isTileEditMode, setIsTileEditMode] = useState(false);
+  const { content, loading: contentLoading } = useInstructorHomepageContent();
 
   // Use auth context for instructor ID
   const instructorId = authInstructor?.id || instructor?.id;
-  
-  // Traccar device connection status
-  const { isConnected: isTraccarConnected } = useTraccarConnectionStatus(instructorId || null);
-  
-  // Get instructor's last GPS position for the map
-  const lastPosition = useInstructorLastPosition(instructorId || null);
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
+
+  const firstName = instructor?.name?.split(" ")[0] || "Instructor";
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
@@ -221,50 +211,38 @@ export function InstructorMobileHome({
       {/* Spacer for fixed header */}
       <div className="h-16 pt-[env(safe-area-inset-top,0px)]" />
 
-      {/* Tracking Status Banner */}
-      {isTraccarConnected && (
-        <div className="bg-primary text-primary-foreground py-2 px-4 text-center">
-          <span className="text-sm font-semibold tracking-wide">TRACKING LIVE</span>
+      {/* Hero Section with Image */}
+      {content?.hero_image_url && (
+        <div className="relative w-full h-48 overflow-hidden">
+          <img 
+            src={content.hero_image_url} 
+            alt="Hero" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
         </div>
       )}
 
-      {/* Status Message */}
-      <div className="bg-muted/50 py-2 px-4 border-b">
-        <p className="text-sm text-center text-muted-foreground">
-          {isTraccarConnected ? "You're currently live." : "Your vehicle is offline."}
+      {/* Motivation Section */}
+      <div className="px-4 py-6">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">
+          {content?.motivation_title || `READY TO TEACH, ${firstName.toUpperCase()}?`}
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          {content?.motivation_subtitle || "Let's make today count."}
         </p>
       </div>
 
-      {/* Live Map Hero */}
-      <HomeMapHero
-        latitude={lastPosition.latitude}
-        longitude={lastPosition.longitude}
-        heading={lastPosition.heading}
-        roadName={lastPosition.roadName}
-        isActive={lastPosition.isActive}
-        isLoading={lastPosition.isLoading}
-      />
-
-      {/* Road Name below map */}
-      {lastPosition.roadName && (
-        <div className="px-4 py-2 border-b bg-background">
-          <p className="text-sm font-medium text-foreground">{lastPosition.roadName}</p>
-        </div>
-      )}
-
-      {/* Quick Actions Grid */}
-      <div className="px-4 py-4">
-        <HomeQuickActions onTakePayment={onPaymentClick} />
-      </div>
-
-      {/* Today's Schedule */}
+      {/* Quick Action Tiles */}
       <div className="px-4 pb-4">
-        <HomeTodaySchedule instructorId={instructorId} />
-      </div>
-
-      {/* Money Overview */}
-      <div className="px-4 pb-4">
-        <HomeMoneyOverview instructorId={instructorId} />
+        <QuickActionTiles
+          quickActions={content?.quick_actions || []}
+          pendingJobsCount={pendingJobsCount}
+          instructorId={instructorId}
+          loading={contentLoading}
+          isEditMode={isTileEditMode}
+          onEditModeChange={setIsTileEditMode}
+        />
       </div>
 
       {/* Smart Reminders */}
