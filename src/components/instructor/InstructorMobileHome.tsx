@@ -349,19 +349,9 @@ export function InstructorMobileHome({
                 </h1>
                 
                 {/* Subtitle */}
-                <p className="text-muted-foreground text-xs leading-relaxed mt-0.5 mb-3 line-clamp-2">
+                <p className="text-muted-foreground text-xs leading-relaxed mt-0.5 line-clamp-2">
                   {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help!"}
                 </p>
-                
-                {/* Go Live Button */}
-                <Button 
-                  onClick={() => navigate("/instructor/traccar")}
-                  size="sm"
-                  className="bg-primary text-primary-foreground rounded-lg px-4 h-9 font-semibold shadow-sm"
-                >
-                  <Play className="h-3.5 w-3.5 mr-1.5 fill-current" />
-                  Go Live
-                </Button>
               </div>
             </div>
             
@@ -513,25 +503,6 @@ export function InstructorMobileHome({
         />
       )}
 
-      {/* Sticky Go Live FAB */}
-      <AnimatePresence>
-        {showFAB && !isTraccarConnected && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            onClick={() => {
-              triggerHaptic("medium");
-              navigate("/instructor/traccar");
-            }}
-            className="fixed bottom-24 right-4 z-30 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
-            style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
-          >
-            <Play className="h-6 w-6 fill-current" />
-          </motion.button>
-        )}
-      </AnimatePresence>
 
       {/* Bottom Navigation */}
       <InstructorBottomNav />
