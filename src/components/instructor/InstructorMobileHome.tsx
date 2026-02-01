@@ -1,13 +1,10 @@
-import { useState, useCallback, useEffect } from "react";
-import { motion } from "framer-motion";
-import useEmblaCarousel from "embla-carousel-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   CalendarClock,
   CreditCard, 
   Settings,
   Car,
-  ChevronRight,
   Moon,
   Sun,
   LogOut,
@@ -17,9 +14,8 @@ import {
   Palette,
   Navigation,
   Award,
-  Play,
-  CalendarCheck,
-  LayoutGrid
+  LayoutGrid,
+  MessageSquare
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -31,22 +27,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useInstructorHomepageContent, QuickAction, PromoBanner } from "@/hooks/useInstructorHomepageContent";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
+import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { InstructorNotificationsDropdown } from "@/components/instructor/InstructorNotificationsDropdown";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
-import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
-import { TodayOverviewStrip } from "@/components/instructor/TodayOverviewStrip";
+import { HomeMapHero } from "@/components/instructor/HomeMapHero";
+import { HomeQuickActions } from "@/components/instructor/HomeQuickActions";
+import { HomeTodaySchedule } from "@/components/instructor/HomeTodaySchedule";
+import { HomeMoneyOverview } from "@/components/instructor/HomeMoneyOverview";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
-import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
+import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
-import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-const instructorLogo = "/everydriver-logo-mobile.png";
 
 interface InstructorMobileHomeProps {
   instructor: {
@@ -65,83 +60,35 @@ export function InstructorMobileHome({
   todaysLessonCount,
   onPaymentClick 
 }: InstructorMobileHomeProps) {
-  const { content, loading } = useInstructorHomepageContent();
   const pendingJobsCount = usePendingJobsCount();
   const navigate = useNavigate();
-  const { resolvedTheme, setTheme } = useTheme();
-  const { refreshInstructor, instructor: authInstructor } = useInstructorAuth();
-  const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
+  const { setTheme } = useTheme();
+  const { instructor: authInstructor } = useInstructorAuth();
   const [isTileEditMode, setIsTileEditMode] = useState(false);
-  // QR modal is now handled by parent via onPaymentClick
 
-  // Use auth context for visibility status (gets refreshed properly)
+  // Use auth context for instructor ID
   const instructorId = authInstructor?.id || instructor?.id;
-  const isVisible = authInstructor?.is_active ?? instructor?.is_active;
   
   // Traccar device connection status
-  const { isConnected: isTraccarConnected, status: traccarStatus } = useTraccarConnectionStatus(instructorId || null);
+  const { isConnected: isTraccarConnected } = useTraccarConnectionStatus(instructorId || null);
   
-  // Driving alerts (weather + traffic)
-  const { alerts: drivingAlerts, dismissAlert, location: alertsLocation } = useDrivingAlerts(instructorId);
-
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-  };
-
-  const toggleVisibility = async () => {
-    if (!instructorId || isTogglingVisibility) return;
-    
-    setIsTogglingVisibility(true);
-    const newStatus = !isVisible;
-    
-    try {
-      const { error } = await supabase
-        .from("instructors")
-        .update({ is_active: newStatus })
-        .eq("id", instructorId);
-
-      if (error) throw error;
-      
-      await refreshInstructor();
-      toast.success(newStatus ? "You're now visible to learners" : "You're now hidden from learners");
-    } catch (error) {
-      console.error("Error toggling visibility:", error);
-      toast.error("Failed to update visibility");
-    } finally {
-      setIsTogglingVisibility(false);
-    }
-  };
-
-  // Default quick actions fallback
-  const defaultQuickActions: QuickAction[] = [
-    { id: 'schedule', title: 'View Schedule', icon: 'Calendar', route: '/instructor/schedule', display_order: 1 },
-    { id: 'pupils', title: 'My Pupils', icon: 'Users', route: '/instructor/pupils', display_order: 2 },
-    { id: 'jobs', title: 'Job Offers', icon: 'Briefcase', route: '/instructor/jobs', display_order: 3 },
-    { id: 'payments', title: 'Payments', icon: 'CreditCard', route: '/instructor/pay', display_order: 4 },
-  ];
-
-  const quickActions = content?.quick_actions?.length ? content.quick_actions : defaultQuickActions;
+  // Get instructor's last GPS position for the map
+  const lastPosition = useInstructorLastPosition(instructorId || null);
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  // Default hero image
-  const heroImage = content?.hero_image_url || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80";
-
-  // Calculate header height for spacing (approximately 56px + safe area)
-  const headerHeight = "pt-[calc(56px+env(safe-area-inset-top,0px))]";
-
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
-      {/* Header Bar - white background with dark icons */}
+      {/* Header Bar */}
       <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-background border-b border-border shadow-sm">
-        {/* Logo on the left - dark version for white background */}
-        <img 
-          src={instructorLogo}
-          alt="EveryDriver" 
-          className="h-4 object-contain"
-        />
+        {/* Logo/Branding on the left */}
+        <div className="flex flex-col">
+          <span className="text-primary font-bold text-base leading-tight">EVERY</span>
+          <span className="text-primary font-bold text-base leading-tight">DRIVER<span className="text-[10px] font-normal text-muted-foreground">.co.uk</span></span>
+          <span className="text-[10px] text-muted-foreground -mt-0.5">Supporting Your Journey</span>
+        </div>
         
         {/* Controls and Avatar on the right */}
         <div className="flex items-center gap-1">
@@ -157,23 +104,20 @@ export function InstructorMobileHome({
             </Button>
           )}
 
-          {/* Quick Availability Button */}
+          {/* Messages Button */}
           <Button
             variant="ghost"
             size="icon"
-            className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
-            onClick={() => navigate("/instructor/availability")}
-            title="Quick Availability"
+            className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8 relative"
+            onClick={() => navigate("/instructor/messages")}
           >
-            <CalendarClock className="h-5 w-5" />
+            <MessageSquare className="h-5 w-5" />
+            {pendingJobsCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+              </span>
+            )}
           </Button>
-
-          {/* Notifications/Alerts Dropdown */}
-          <InstructorNotificationsDropdown 
-            instructorId={instructorId} 
-            pendingJobsCount={pendingJobsCount}
-            variant="light"
-          />
 
           {/* Settings Dropdown */}
           <DropdownMenu>
@@ -275,125 +219,53 @@ export function InstructorMobileHome({
       </div>
 
       {/* Spacer for fixed header */}
-      <div className="h-14 pt-[env(safe-area-inset-top,0px)]" />
+      <div className="h-16 pt-[env(safe-area-inset-top,0px)]" />
 
-      {/* Hero Image - below the nav bar, scrolls with content */}
-      <div className="relative w-full h-56 overflow-hidden">
-        <img 
-          src={heroImage}
-          alt="Driving"
-          className="w-full h-full object-cover"
-        />
-        {/* Gradient overlay for fade to content */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+      {/* Tracking Status Banner */}
+      {isTraccarConnected && (
+        <div className="bg-primary text-primary-foreground py-2 px-4 text-center">
+          <span className="text-sm font-semibold tracking-wide">TRACKING LIVE</span>
+        </div>
+      )}
+
+      {/* Status Message */}
+      <div className="bg-muted/50 py-2 px-4 border-b">
+        <p className="text-sm text-center text-muted-foreground">
+          {isTraccarConnected ? "You're currently live." : "Your vehicle is offline."}
+        </p>
       </div>
 
-      {/* Motivational Card */}
-      <div className="px-4 -mt-8 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl shadow-lg border border-border/50 dark:border-white/10 p-5"
-        >
-          {/* Subtle accent gradient in corner */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-bl-full" />
-          
-          <div className="flex items-start justify-between">
-            <div className="flex-1 relative z-10">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Today</span>
-                {/* Online/Offline badge with flashing dot */}
-                {isTraccarConnected ? (
-                  <span className="flex items-center gap-1 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded-full">
-                    <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                    </span>
-                    Online
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-[9px] font-medium text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
-                    <span className="h-2 w-2 rounded-full bg-destructive" />
-                    Offline
-                  </span>
-                )}
-              </div>
-              <h2 className="text-lg font-bold text-foreground">
-                {content?.motivation_title || `READY TO TEACH, ${(authInstructor?.name || instructor?.name || '').split(' ')[0].toUpperCase() || 'INSTRUCTOR'}?`}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help! You are not alone."}
-              </p>
-              
-              {/* CTA Button */}
-              <motion.div 
-                className="mt-3"
-                whileTap={{ scale: 0.98 }}
-              >
-                <Link to={todaysLessonCount > 0 ? "/instructor/schedule" : "/instructor/traccar"}>
-                  <Button size="sm" className="gap-2 font-medium">
-                    {todaysLessonCount > 0 ? (
-                      <>
-                        <CalendarCheck className="h-4 w-4" />
-                        Start Today's Lessons
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4" />
-                        Go Live
-                      </>
-                    )}
-                  </Button>
-                </Link>
-              </motion.div>
-            </div>
-            
-            {content?.show_progress_indicator !== false && (
-              <Link to="/instructor/schedule">
-                <motion.div 
-                  className="flex flex-col items-center ml-4 relative z-10 cursor-pointer"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <div className="relative">
-                    <svg className="w-16 h-16 transform -rotate-90">
-                      <circle
-                        cx="32"
-                        cy="32"
-                        r="28"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        className="text-muted/30 dark:text-white/10"
-                      />
-                      <circle
-                        cx="32"
-                        cy="32"
-                        r="28"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        strokeDasharray={`${(todaysLessonCount / 6) * 175.9} 175.9`}
-                        strokeLinecap="round"
-                        className="text-primary dark:text-white/80"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-xl font-bold text-foreground">{todaysLessonCount}</span>
-                      <span className="text-[10px] text-muted-foreground">/6</span>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground mt-1 uppercase tracking-wide">
-                    {content?.progress_label || "TODAY"}
-                  </span>
-                </motion.div>
-              </Link>
-            )}
-          </div>
-        </motion.div>
+      {/* Live Map Hero */}
+      <HomeMapHero
+        latitude={lastPosition.latitude}
+        longitude={lastPosition.longitude}
+        heading={lastPosition.heading}
+        roadName={lastPosition.roadName}
+        isActive={lastPosition.isActive}
+        isLoading={lastPosition.isLoading}
+      />
+
+      {/* Road Name below map */}
+      {lastPosition.roadName && (
+        <div className="px-4 py-2 border-b bg-background">
+          <p className="text-sm font-medium text-foreground">{lastPosition.roadName}</p>
+        </div>
+      )}
+
+      {/* Quick Actions Grid */}
+      <div className="px-4 py-4">
+        <HomeQuickActions onTakePayment={onPaymentClick} />
       </div>
 
-      {/* Driving Alerts (Weather + Traffic) */}
-      <DrivingAlertsStrip alerts={drivingAlerts} onDismiss={dismissAlert} location={alertsLocation} />
+      {/* Today's Schedule */}
+      <div className="px-4 pb-4">
+        <HomeTodaySchedule instructorId={instructorId} />
+      </div>
+
+      {/* Money Overview */}
+      <div className="px-4 pb-4">
+        <HomeMoneyOverview instructorId={instructorId} />
+      </div>
 
       {/* Smart Reminders */}
       <SmartRemindersCard />
@@ -406,211 +278,8 @@ export function InstructorMobileHome({
         />
       )}
 
-      {/* Quick Actions */}
-      <div className="px-4 mt-6 relative z-10">
-        <QuickActionTiles
-          quickActions={quickActions}
-          pendingJobsCount={pendingJobsCount}
-          instructorId={instructorId}
-          loading={loading}
-          isEditMode={isTileEditMode}
-          onEditModeChange={setIsTileEditMode}
-        />
-      </div>
-
-      {/* Primary Promo Banners */}
-      {content?.promo_banners && content.promo_banners.length > 0 && (
-        <PromoBannerCarousel banners={content.promo_banners} title="Featured" />
-      )}
-
-      {/* Secondary Promo Banners - Horizontal Scroll Cards */}
-      {content?.secondary_promo_banners && content.secondary_promo_banners.length > 0 && (
-        <SecondaryPromoCards banners={content.secondary_promo_banners} />
-      )}
-
       {/* Bottom Navigation */}
       <InstructorBottomNav />
-
-    </div>
-  );
-}
-
-// Promo Banner Carousel Component with Swipe Support
-function PromoBannerCarousel({ 
-  banners, 
-  title,
-  variant = "primary" 
-}: { 
-  banners: PromoBanner[];
-  title?: string;
-  variant?: "primary" | "secondary";
-}) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    loop: true,
-    align: 'start',
-    skipSnaps: false,
-    dragFree: false
-  });
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setActiveIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on('select', onSelect);
-    emblaApi.on('reInit', onSelect);
-    return () => {
-      emblaApi.off('select', onSelect);
-      emblaApi.off('reInit', onSelect);
-    };
-  }, [emblaApi, onSelect]);
-
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index);
-  }, [emblaApi]);
-
-  const isSecondary = variant === "secondary";
-
-  return (
-    <div className="mt-6">
-      {/* Section Title */}
-      {title && (
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-4 mb-3">
-          {title}
-        </h3>
-      )}
-      
-      {/* Carousel Container with Swipe Support */}
-      <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex">
-          {banners.map((banner) => (
-            <div key={banner.id} className="flex-[0_0_100%] min-w-0 px-4">
-              <Link to={banner.link}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className={`relative rounded-2xl overflow-hidden ${isSecondary ? "h-24" : "h-28"}`}
-                >
-                  {/* Background Image */}
-                  {banner.image_url ? (
-                    <img 
-                      src={banner.image_url} 
-                      alt={banner.title}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/70" />
-                  )}
-                  
-                  {/* Dark Overlay for text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                  
-                  {/* Content */}
-                  <div className="absolute inset-0 p-4 flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-white font-bold text-lg leading-tight">
-                        {banner.title}
-                      </h3>
-                      <p className="text-white/90 text-sm mt-1 leading-snug">
-                        {banner.subtitle}
-                      </p>
-                    </div>
-                    
-                    {/* CTA Button */}
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      className="bg-white text-foreground hover:bg-white/90 font-semibold px-4 rounded-full shrink-0 ml-3"
-                    >
-                      Learn more
-                    </Button>
-                  </div>
-                </motion.div>
-              </Link>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Pagination Dots */}
-      {banners.length > 1 && (
-        <div className="flex justify-center gap-2 mt-4 pb-2">
-          {banners.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => scrollTo(index)}
-              className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
-                index === activeIndex 
-                  ? "bg-primary w-3 h-3" 
-                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Secondary Promo Cards - Horizontal Scrollable Layout
-function SecondaryPromoCards({ banners }: { banners: PromoBanner[] }) {
-  return (
-    <div className="mt-6">
-      {/* Section Title */}
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide px-4 mb-3">
-        More for You
-      </h3>
-      
-      {/* Horizontal Scroll Container */}
-      <div className="overflow-x-auto scrollbar-hide">
-        <div className="flex gap-2 px-4 pb-2">
-          {banners.map((banner, index) => (
-            <Link key={banner.id} to={banner.link} className="shrink-0">
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 + index * 0.05 }}
-                className="relative w-[calc(50vw-24px)] h-28 rounded-xl overflow-hidden group"
-              >
-                {/* Background Image */}
-                {banner.image_url ? (
-                  <img 
-                    src={banner.image_url} 
-                    alt={banner.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/70" />
-                )}
-                
-                {/* Dark Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                
-                {/* Content */}
-                <div className="absolute inset-0 p-3 flex flex-col justify-end">
-                  <h4 className="text-white font-semibold text-sm leading-tight line-clamp-2">
-                    {banner.title}
-                  </h4>
-                  <p className="text-white/80 text-xs mt-1 line-clamp-1">
-                    {banner.subtitle}
-                  </p>
-                </div>
-
-                {/* Hover Arrow */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ChevronRight className="h-4 w-4 text-white" />
-                </div>
-              </motion.div>
-            </Link>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
