@@ -44,6 +44,7 @@ import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { NextLessonCard } from "@/components/instructor/NextLessonCard";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -123,7 +124,8 @@ export function InstructorMobileHome({
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
       {/* Header Bar */}
       <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-background border-b border-border shadow-sm">
         {/* Logo */}
@@ -314,23 +316,32 @@ export function InstructorMobileHome({
                   Go Live
                 </Button>
               </div>
-              
-              {/* Right - Quick Stats */}
-              <div className="flex flex-col items-center shrink-0 gap-2">
-                {/* Stats Row */}
-                <div className="flex flex-col items-center gap-1 bg-muted/30 rounded-xl px-3 py-2">
-                  <div className="flex items-center gap-1 text-primary">
-                    <BookOpen className="h-3.5 w-3.5" />
-                    <span className="text-lg font-bold">{currentLessons}</span>
-                  </div>
-                  <span className="text-[9px] text-muted-foreground font-medium uppercase">Lessons</span>
+            </div>
+            
+            {/* Quick Stats Row - Horizontal scannable layout */}
+            <div className="flex items-center justify-around mt-3 pt-3 border-t border-border/40">
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="flex items-center gap-1 text-primary">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-lg font-bold">{currentLessons}</span>
                 </div>
-                {todayOverview && todayOverview.expectedEarnings > 0 && (
-                  <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
-                    <PoundSterling className="h-3 w-3" />
-                    <span className="text-xs font-semibold">{todayOverview.expectedEarnings}</span>
-                  </div>
-                )}
+                <span className="text-[10px] text-muted-foreground font-medium">Lessons</span>
+              </div>
+              <div className="w-px h-8 bg-border/50" />
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-lg font-bold">{todayOverview?.totalHours || 0}</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-medium">Hours</span>
+              </div>
+              <div className="w-px h-8 bg-border/50" />
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                  <PoundSterling className="h-4 w-4" />
+                  <span className="text-lg font-bold">{todayOverview?.expectedEarnings || 0}</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-medium">Expected</span>
               </div>
             </div>
           </div>
@@ -404,6 +415,7 @@ export function InstructorMobileHome({
 
       {/* Bottom Navigation */}
       <InstructorBottomNav />
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }
