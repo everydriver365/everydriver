@@ -55,6 +55,7 @@ import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal
 import { PupilPickerDialog } from "@/components/instructor/PupilPickerDialog";
 import { TestResultsHistory, DrivingTestReportForm } from "@/components/instructor/driving-test";
 import { useActiveTrackingPupils } from "@/hooks/useActiveTrackingPupils";
+import { UpcomingLessonMap } from "@/components/instructor/UpcomingLessonMap";
 
 interface Pupil {
   id: string;
@@ -450,6 +451,9 @@ export default function InstructorPupils() {
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Lessons</span>
           </div>
         </div>
+
+        {/* Upcoming Lesson Map */}
+        <UpcomingLessonMap instructorId={instructorId} />
 
         {/* Search and Filters */}
         <div className="flex flex-col gap-3">
