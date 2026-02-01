@@ -318,7 +318,7 @@ export function InstructorMobileHome({
                 )}
               </div>
               <h2 className="text-lg font-bold text-foreground">
-                {content?.motivation_title || `READY TO TEACH${instructor?.name ? `, ${instructor.name.split(' ')[0].toUpperCase()}` : ''}?`}
+                {content?.motivation_title || `READY TO TEACH${authInstructor?.name ? `, ${authInstructor.name.split(' ')[0].toUpperCase()}` : ''}?`}
               </h2>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                 {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help! You are not alone."}
