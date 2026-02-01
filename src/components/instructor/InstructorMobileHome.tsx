@@ -435,33 +435,6 @@ export function InstructorMobileHome({
         />
       </div>
 
-      {/* Weekly Goal Progress */}
-      {weeklyGoals && (
-        <div className="px-4 mt-4">
-          <div className="bg-card rounded-xl border border-border p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground text-sm mb-1">Weekly Progress</h3>
-                <p className="text-xs text-muted-foreground">
-                  {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
-                </p>
-                {lastWeekComparison && (
-                  <p className={`text-[10px] mt-1 ${lastWeekComparison.isImprovement ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                    {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
-                  </p>
-                )}
-              </div>
-              <WeeklyGoalRing
-                hoursThisWeek={weeklyGoals.hoursThisWeek}
-                hoursGoal={weeklyGoals.hoursGoal}
-                progressPercent={weeklyGoals.progressPercent}
-                isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Today's Stats */}
       <div className="px-4 mt-4">
         <div className="bg-card rounded-xl border border-border p-4">
@@ -493,6 +466,33 @@ export function InstructorMobileHome({
           </div>
         </div>
       </div>
+
+      {/* Weekly Goal Progress */}
+      {weeklyGoals && (
+        <div className="px-4 mt-4">
+          <div className="bg-card rounded-xl border border-border p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground text-sm mb-1">Weekly Progress</h3>
+                <p className="text-xs text-muted-foreground">
+                  {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
+                </p>
+                {lastWeekComparison && (
+                  <p className={`text-[10px] mt-1 ${lastWeekComparison.isImprovement ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                    {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
+                  </p>
+                )}
+              </div>
+              <WeeklyGoalRing
+                hoursThisWeek={weeklyGoals.hoursThisWeek}
+                hoursGoal={weeklyGoals.hoursGoal}
+                progressPercent={weeklyGoals.progressPercent}
+                isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Setup Checklist for new instructors */}
       {instructorId && (
