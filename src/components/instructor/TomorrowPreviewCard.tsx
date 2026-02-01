@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, AlertTriangle, ChevronRight, PoundSterling } from "lucide-react";
+import { Calendar, Clock, MapPin, AlertTriangle, ChevronRight, PoundSterling, Coffee, ClipboardList } from "lucide-react";
 import { format, parse, addDays } from "date-fns";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface TomorrowPreviewCardProps {
   lessonCount: number;
@@ -42,22 +43,39 @@ export function TomorrowPreviewCard({
         animate={{ opacity: 1, y: 0 }}
         className={`mx-4 ${className}`}
       >
-        <Link to="/instructor/schedule">
-          <div className="bg-muted/50 rounded-xl border border-dashed border-border p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground text-sm">{dayName}'s Schedule</p>
-                  <p className="text-xs text-muted-foreground">No lessons booked yet</p>
-                </div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <div className="bg-muted/50 rounded-xl border border-dashed border-border p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-foreground text-sm">{dayName}'s Schedule</p>
+              <p className="text-xs text-muted-foreground">No lessons booked yet</p>
             </div>
           </div>
-        </Link>
+          
+          {/* Quiet day tip */}
+          <div className="flex items-center gap-2 text-muted-foreground mb-3">
+            <Coffee className="h-3.5 w-3.5 text-amber-500" />
+            <span className="text-xs">Enjoy a well-deserved break</span>
+          </div>
+          
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Link to="/instructor/schedule" className="flex-1">
+              <Button variant="outline" size="sm" className="w-full text-xs h-8 gap-1.5">
+                <Calendar className="h-3.5 w-3.5" />
+                View Schedule
+              </Button>
+            </Link>
+            <Link to="/instructor/waitlist" className="flex-1">
+              <Button variant="ghost" size="sm" className="w-full text-xs h-8 gap-1.5">
+                <ClipboardList className="h-3.5 w-3.5" />
+                Check Waitlist
+              </Button>
+            </Link>
+          </div>
+        </div>
       </motion.div>
     );
   }
