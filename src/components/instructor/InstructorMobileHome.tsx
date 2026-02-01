@@ -310,7 +310,7 @@ export function InstructorMobileHome({
       </div>
 
       {/* Quick Action Tiles */}
-      <div className="px-4 pb-4">
+      <div className="px-4 pt-4 pb-4">
         <QuickActionTiles
           quickActions={content?.quick_actions || []}
           pendingJobsCount={pendingJobsCount}
