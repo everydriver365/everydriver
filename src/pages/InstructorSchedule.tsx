@@ -153,15 +153,17 @@ export default function InstructorSchedule() {
               <CalendarDays className="h-4 w-4" />
               <span className="text-xs sm:text-sm">Schedule</span>
             </Button>
-            <Button
-              variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('calendar')}
-              className="gap-1 px-2 sm:px-3 h-8"
-            >
-              <Calendar className="h-4 w-4" />
-              <span className="text-xs sm:text-sm">Calendar</span>
-            </Button>
+            {!isMobile && (
+              <Button
+                variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+                className="gap-1 px-2 sm:px-3 h-8"
+              >
+                <Calendar className="h-4 w-4" />
+                <span className="text-xs sm:text-sm">Calendar</span>
+              </Button>
+            )}
           </div>
         </div>
 
