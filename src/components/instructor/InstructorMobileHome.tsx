@@ -473,9 +473,7 @@ export function InstructorMobileHome({
       {/* Gap Filler Suggestions */}
       {gapSuggestions && gapSuggestions.length > 0 && (
         <GapFillerCard
-          date={gapSuggestions[0].date}
-          durationMinutes={gapSuggestions[0].durationMinutes}
-          suggestedPupils={gapSuggestions[0].suggestedPupils}
+          gaps={gapSuggestions}
           className="mt-4"
         />
       )}
