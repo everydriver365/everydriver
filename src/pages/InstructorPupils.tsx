@@ -423,79 +423,79 @@ export default function InstructorPupils() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4">
-        {/* Add Pupil Button */}
-        <div className="flex justify-end">
+      <div className="space-y-5 pb-6">
+        {/* Header with Add Button */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold">My Pupils</h1>
+            <p className="text-sm text-muted-foreground">{stats.total} total</p>
+          </div>
           <Button onClick={() => setIsAddOpen(true)} size="sm" className="gap-2">
             <Plus className="h-4 w-4" />
-            Add Pupil
+            Add
           </Button>
-        </div>
-
-        {/* Stats Row - Compact Tabs */}
-        <div className="grid grid-cols-4 gap-2">
-          <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
-            <span className="text-lg font-bold">{stats.total}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Pupils</span>
-          </div>
-          <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
-            <span className="text-lg font-bold text-emerald-600">{stats.active}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Active</span>
-          </div>
-          <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
-            <span className="text-lg font-bold text-primary">{stats.passed}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Passed</span>
-          </div>
-          <div className="flex flex-col items-center justify-center py-3 px-2 bg-card rounded-lg border">
-            <span className="text-lg font-bold text-blue-600">{stats.totalLessons}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Lessons</span>
-          </div>
         </div>
 
         {/* Upcoming Lesson Map */}
         <UpcomingLessonMap instructorId={instructorId} />
 
-        {/* Search and Filters */}
-        <div className="flex flex-col gap-3">
-          <div className="relative">
+        {/* Stats Row - Clean pills */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-full border whitespace-nowrap">
+            <span className="text-sm font-semibold">{stats.active}</span>
+            <span className="text-xs text-muted-foreground">Active</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-full border whitespace-nowrap">
+            <span className="text-sm font-semibold text-primary">{stats.passed}</span>
+            <span className="text-xs text-muted-foreground">Passed</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-full border whitespace-nowrap">
+            <span className="text-sm font-semibold">{stats.totalLessons}</span>
+            <span className="text-xs text-muted-foreground">Lessons</span>
+          </div>
+        </div>
+
+        {/* Search and Filter - Combined row */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name, postcode, or email..."
+              placeholder="Search pupils..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-muted/50 border-0"
             />
           </div>
           <Select value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | PupilStatus)}>
-            <SelectTrigger className="w-full bg-background">
+            <SelectTrigger className="w-28 bg-muted/50 border-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background z-50">
-              <SelectItem value="all">All Pupils ({stats.total})</SelectItem>
-              <SelectItem value="active">Active ({statusCounts.active})</SelectItem>
-              <SelectItem value="passed">Passed ({statusCounts.passed})</SelectItem>
-              <SelectItem value="inactive">Inactive ({statusCounts.inactive})</SelectItem>
-              <SelectItem value="on_hold">On Hold ({statusCounts.on_hold})</SelectItem>
-              <SelectItem value="cancelled">Cancelled ({statusCounts.cancelled})</SelectItem>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="passed">Passed</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="on_hold">On Hold</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {/* Pupils List */}
         {filteredPupils.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Users className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No pupils found</h3>
-              <p className="text-muted-foreground text-center max-w-md">
-                {searchQuery
-                  ? "No pupils match your search criteria."
-                  : "You don't have any pupils yet. Accept a bespoke course request to add your first pupil."}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-semibold mb-1">No pupils found</h3>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              {searchQuery
+                ? "No pupils match your search."
+                : "Add your first pupil to get started."}
+            </p>
+          </div>
         ) : (
-          <div className="grid gap-4 grid-cols-1">
+          <div className="space-y-3">
             {filteredPupils.map((pupil, index) => (
               <ExpandablePupilCard
                 key={pupil.id}
