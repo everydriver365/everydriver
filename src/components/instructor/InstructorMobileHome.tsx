@@ -411,8 +411,8 @@ export function InstructorMobileHome({
         />
       )}
 
-      {/* Next Lesson Card OR Quiet Day */}
-      {nextLesson ? (
+      {/* Next Lesson Card - only show when there's a lesson */}
+      {nextLesson && (
         <div className="mt-4">
           <NextLessonCard
             pupilName={nextLesson.pupilName}
@@ -426,9 +426,7 @@ export function InstructorMobileHome({
             prepaidHours={nextLesson.prepaidHours}
           />
         </div>
-      ) : currentLessons === 0 && !todayLoading ? (
-        <QuietDayEmpty className="mt-4" />
-      ) : null}
+      )}
 
       {/* Tomorrow Preview */}
       {tomorrowPreview && (
