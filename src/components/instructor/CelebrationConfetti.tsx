@@ -3,16 +3,16 @@ import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, PartyPopper } from "lucide-react";
 
-interface CelebrationConfettiProps {
+export interface CelebrationConfettiProps {
   trigger: boolean;
-  type: "day-complete" | "streak-milestone" | "earnings-milestone";
+  type?: "day-complete" | "streak-milestone" | "earnings-milestone";
   message?: string;
   onComplete?: () => void;
 }
 
 export function CelebrationConfetti({
   trigger,
-  type,
+  type = "day-complete",
   message,
   onComplete,
 }: CelebrationConfettiProps) {
