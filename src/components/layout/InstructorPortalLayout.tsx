@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 
-const whiteLogo = "/everydriver-logo-v2.png";
+const instructorLogo = "/everydriver-logo-instructor.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
@@ -218,9 +218,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                   {/* Logo */}
                   <img 
-                    src="/everydriver-logo-mobile.png" 
+                    src={instructorLogo}
                     alt="EveryDriver" 
-                    className="h-4 object-contain"
+                    className="h-6 object-contain"
                   />
                 </div>
 
