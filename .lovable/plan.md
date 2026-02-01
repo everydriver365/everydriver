@@ -1,46 +1,75 @@
 
-# Fix Instructor Mobile Home Page Logo
+# Plan: Display Lesson Details in Tomorrow Preview Card
 
-## Problem Identified
-The `InstructorMobileHome.tsx` component renders its **own header** with text-based branding instead of using the graphical logo. The header at lines 140-143 displays "EVERY DRIVER.CO.UK" as styled text, which is why your logo changes haven't appeared on this page.
+## Overview
+Update the Tomorrow Preview Card to show individual lesson details (pupil name, time, and duration) instead of just summary statistics.
 
-The component even defines a logo path on line 49 (`const instructorLogo = "/everydriver-logo-v2.png"`) but never uses it.
+## Current State
+- The `useTomorrowPreview` hook already fetches lesson data including:
+  - `pupilName`
+  - `startTime`
+  - `durationMinutes`
+- However, this `lessons` array is not being passed to or displayed in `TomorrowPreviewCard`
+- The card currently only shows: lesson count, total hours, expected earnings, and time range
 
-## Solution
-Replace the text-based branding with the smaller graphical logo (`/everydriver-logo-mobile.png`) using `h-4` sizing to prevent header squashing.
+## Implementation Steps
 
----
+### Step 1: Update TomorrowPreviewCard Props
+Add a `lessons` prop to accept the lesson array:
+```typescript
+interface TomorrowLesson {
+  id: string;
+  pupilName: string;
+  startTime: string;
+  durationMinutes: number;
+}
 
-## Technical Changes
+interface TomorrowPreviewCardProps {
+  // ... existing props
+  lessons?: TomorrowLesson[];
+}
+```
 
-### File: `src/components/instructor/InstructorMobileHome.tsx`
+### Step 2: Pass Lessons from InstructorMobileHome
+Update the component usage to include the lessons data:
+```tsx
+<TomorrowPreviewCard
+  // ... existing props
+  lessons={tomorrowPreview.lessons}
+/>
+```
 
-**Change 1**: Update the logo constant (line 49)
-- From: `const instructorLogo = "/everydriver-logo-v2.png";`
-- To: `const instructorLogo = "/everydriver-logo-mobile.png";`
+### Step 3: Display Lesson List in the Card
+Add a lessons list section below the stats grid showing each lesson:
+- Formatted time (e.g., "9:00 AM")
+- Pupil name
+- Duration in minutes (e.g., "60m")
 
-**Change 2**: Replace the text branding with image logo (lines 140-143)
-- Remove:
-  ```tsx
-  <div className="flex flex-col">
-    <span className="text-primary font-bold text-lg tracking-tight">EVERY DRIVER<span className="text-xs font-normal">.CO.UK</span></span>
-    <span className="text-xs text-muted-foreground -mt-1">Supporting Your Journey</span>
-  </div>
-  ```
-- Replace with:
-  ```tsx
-  <img 
-    src={instructorLogo}
-    alt="EveryDriver" 
-    className="h-4 object-contain"
-  />
-  ```
+The design will use a compact list format with:
+- Time on the left
+- Pupil name in the middle
+- Duration badge on the right
+- Subtle dividers between lessons
+- Scrollable if more than 3-4 lessons
 
----
+## Visual Design
+```text
++----------------------------------------+
+| Monday                    [Weather] [!] |
+| 3 Feb                                   |
++----------------------------------------+
+|   3      |    4.5    |     £158        |
+| Lessons  |   Hours   |   Expected      |
++----------------------------------------+
+| LESSONS                                 |
+| 9:00 AM   John Smith          60m      |
+| 10:30 AM  Sarah Jones         90m      |
+| 1:00 PM   Mike Brown          60m      |
++----------------------------------------+
+| 9:00 AM — 2:00 PM              View >  |
++----------------------------------------+
+```
 
-## Summary
-| Item | Before | After |
-|------|--------|-------|
-| Logo source | Text styling | `/everydriver-logo-mobile.png` |
-| Logo size | N/A (text) | `h-4` (16px) |
-| Header height | Squashed | Compact |
+## Files to Modify
+1. `src/components/instructor/TomorrowPreviewCard.tsx` - Add lessons prop and render lesson list
+2. `src/components/instructor/InstructorMobileHome.tsx` - Pass lessons array to the card
