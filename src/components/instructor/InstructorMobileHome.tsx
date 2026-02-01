@@ -46,7 +46,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-const instructorLogo = "/everydriver-logo-v2.png";
+const instructorLogo = "/everydriver-logo-mobile.png";
 
 interface InstructorMobileHomeProps {
   instructor: {
@@ -137,10 +137,11 @@ export function InstructorMobileHome({
       {/* Header Bar - white background with dark icons */}
       <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-background border-b border-border shadow-sm">
         {/* Logo on the left - dark version for white background */}
-        <div className="flex flex-col">
-          <span className="text-primary font-bold text-lg tracking-tight">EVERY DRIVER<span className="text-xs font-normal">.CO.UK</span></span>
-          <span className="text-xs text-muted-foreground -mt-1">Supporting Your Journey</span>
-        </div>
+        <img 
+          src={instructorLogo}
+          alt="EveryDriver" 
+          className="h-4 object-contain"
+        />
         
         {/* Controls and Avatar on the right */}
         <div className="flex items-center gap-1">
