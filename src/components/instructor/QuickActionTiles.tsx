@@ -220,7 +220,6 @@ export function QuickActionTiles({
   // Different accent colors for visual variety
   const tileStyles = [
     { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-violet-500/15 dark:bg-violet-500/20', iconColor: 'text-violet-600 dark:text-violet-400' },
-    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-blue-500/15 dark:bg-blue-500/20', iconColor: 'text-blue-600 dark:text-blue-400' },
     { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-emerald-500/15 dark:bg-emerald-500/20', iconColor: 'text-emerald-600 dark:text-emerald-400' },
     { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-rose-500/15 dark:bg-rose-500/20', iconColor: 'text-rose-600 dark:text-rose-400' },
   ];
@@ -293,7 +292,7 @@ export function QuickActionTiles({
                           </span>
                         )}
                       </div>
-                      <span className="font-medium text-foreground text-sm flex-1">{action.title}</span>
+                      <span className="font-medium text-foreground text-base flex-1">{action.title}</span>
                     </motion.div>
                   </Reorder.Item>
                 );
@@ -379,7 +378,7 @@ export function QuickActionTiles({
                       })()}
                     </div>
                     <div className="relative flex-1 min-w-0">
-                      <span className="font-semibold text-foreground text-base">{localTiles[0].title}</span>
+                      <span className="font-semibold text-foreground text-lg">{localTiles[0].title}</span>
                       {/* Simple subtitle */}
                       <p className="text-muted-foreground text-xs mt-0.5">
                         {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0
@@ -439,7 +438,7 @@ export function QuickActionTiles({
                         </span>
                       )}
                     </div>
-                    <span className="font-medium text-foreground text-xs leading-tight">
+                    <span className="font-medium text-foreground text-sm leading-tight">
                       {action.title}
                     </span>
                   </motion.div>
