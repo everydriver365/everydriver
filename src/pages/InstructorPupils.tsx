@@ -423,62 +423,67 @@ export default function InstructorPupils() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-5 pb-6">
-        {/* Header with Add Button */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold">My Pupils</h1>
-            <p className="text-sm text-muted-foreground">{stats.total} total</p>
+      <div className="space-y-4 pb-6">
+        {/* Page Header */}
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Pupils</h1>
+        </div>
+
+        {/* Stats Row - Matching reference design */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="flex flex-col items-center justify-center py-3 bg-card rounded-xl border">
+            <span className="text-lg font-bold">{stats.total}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Pupils</span>
           </div>
-          <Button onClick={() => setIsAddOpen(true)} size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add
-          </Button>
+          <div className="flex flex-col items-center justify-center py-3 bg-card rounded-xl border">
+            <span className="text-lg font-bold text-emerald-600">{stats.active}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Active</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-3 bg-card rounded-xl border">
+            <span className="text-lg font-bold text-amber-600">{stats.passed}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Passed</span>
+          </div>
+          <div className="flex flex-col items-center justify-center py-3 bg-card rounded-xl border">
+            <span className="text-lg font-bold text-primary">{stats.totalLessons}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Lessons</span>
+          </div>
         </div>
 
         {/* Upcoming Lesson Map */}
         <UpcomingLessonMap instructorId={instructorId} />
 
-        {/* Stats Row - Clean pills */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-full border whitespace-nowrap">
-            <span className="text-sm font-semibold">{stats.active}</span>
-            <span className="text-xs text-muted-foreground">Active</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-full border whitespace-nowrap">
-            <span className="text-sm font-semibold text-primary">{stats.passed}</span>
-            <span className="text-xs text-muted-foreground">Passed</span>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-card rounded-full border whitespace-nowrap">
-            <span className="text-sm font-semibold">{stats.totalLessons}</span>
-            <span className="text-xs text-muted-foreground">Lessons</span>
-          </div>
-        </div>
-
-        {/* Search and Filter - Combined row */}
+        {/* Search and Add Button Row - Matching reference */}
         <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search pupils..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-muted/50 border-0"
-            />
-          </div>
           <Select value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | PupilStatus)}>
-            <SelectTrigger className="w-28 bg-muted/50 border-0">
-              <SelectValue />
+            <SelectTrigger className="flex-1 bg-card border rounded-xl h-12">
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {activeTab === "all" ? `All Pupils (${stats.total})` : 
+                   activeTab === "active" ? `Active (${statusCounts.active})` :
+                   activeTab === "passed" ? `Passed (${statusCounts.passed})` :
+                   activeTab === "inactive" ? `Inactive (${statusCounts.inactive})` :
+                   activeTab === "on_hold" ? `On Hold (${statusCounts.on_hold})` :
+                   `Cancelled (${statusCounts.cancelled})`}
+                </span>
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-background z-50">
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="passed">Passed</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="on_hold">On Hold</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="all">All Pupils ({stats.total})</SelectItem>
+              <SelectItem value="active">Active ({statusCounts.active})</SelectItem>
+              <SelectItem value="passed">Passed ({statusCounts.passed})</SelectItem>
+              <SelectItem value="inactive">Inactive ({statusCounts.inactive})</SelectItem>
+              <SelectItem value="on_hold">On Hold ({statusCounts.on_hold})</SelectItem>
+              <SelectItem value="cancelled">Cancelled ({statusCounts.cancelled})</SelectItem>
             </SelectContent>
           </Select>
+          <Button 
+            onClick={() => setIsAddOpen(true)} 
+            className="h-12 px-4 gap-2 bg-primary hover:bg-primary/90 rounded-xl font-semibold"
+          >
+            <Plus className="h-4 w-4" />
+            Add Pupil
+          </Button>
         </div>
 
         {/* Pupils List */}
