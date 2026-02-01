@@ -113,8 +113,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return (
       <div
         className={cn(
-          "min-h-screen bg-background overflow-x-hidden",
-          isTrackingPage ? "h-[100dvh] overflow-hidden" : "pb-20"
+          "min-h-screen overflow-x-hidden",
+          isTrackingPage ? "h-[100dvh] overflow-hidden bg-background" : "pb-20 bg-[#f0f0f0]"
         )}
       >
         {!isTrackingPage && (
