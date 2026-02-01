@@ -361,16 +361,19 @@ serve(async (req) => {
   }
 
   try {
-    const TRACCAR_URL = Deno.env.get("TRACCAR_SERVER_URL");
+    const TRACCAR_URL_RAW = Deno.env.get("TRACCAR_SERVER_URL");
     const email = Deno.env.get("TRACCAR_EMAIL");
     const password = Deno.env.get("TRACCAR_PASSWORD");
 
-    if (!TRACCAR_URL || !email || !password) {
+    if (!TRACCAR_URL_RAW || !email || !password) {
       return new Response(
         JSON.stringify({ error: "Missing Traccar credentials" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Normalize URL: remove trailing slash to prevent double-slash in API paths
+    const TRACCAR_URL = TRACCAR_URL_RAW.replace(/\/+$/, "");
 
     const auth = btoa(`${email}:${password}`);
     const authHeaders = {
