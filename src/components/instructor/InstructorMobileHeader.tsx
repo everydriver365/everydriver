@@ -55,11 +55,24 @@ export function InstructorMobileHeader({
             <ArrowLeft className="h-5 w-5" />
           </Button>
         )}
-        <img 
-          src="/everydriver-logo-v2.png" 
-          alt="EveryDriver" 
-          className="h-10 object-contain"
-        />
+        <div className="flex items-center gap-1">
+          <img 
+            src="/everydriver-logo-v2.png" 
+            alt="EveryDriver" 
+            className="h-10 object-contain"
+          />
+          {/* Traffic light dots */}
+          <div className="flex flex-col gap-0.5 ml-0.5">
+            <div className="w-2 h-2 rounded-full bg-[#e53935]" />
+            <div className="w-2 h-2 rounded-full bg-[#fdd835]" />
+            <div className="w-2 h-2 rounded-full bg-[#43a047]" />
+          </div>
+          {/* CO UK text */}
+          <div className="flex flex-col leading-none ml-0.5">
+            <span className="text-primary-foreground font-bold text-[10px] tracking-tight">CO</span>
+            <span className="text-primary-foreground font-bold text-[10px] tracking-tight">UK</span>
+          </div>
+        </div>
       </div>
       
       {/* QR, Availability, Settings, and avatar on the right */}
