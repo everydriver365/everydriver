@@ -83,12 +83,12 @@ export function InstructorMobileHome({
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
       {/* Header Bar */}
       <div className="fixed top-0 left-0 right-0 z-40 px-4 pb-3 flex items-center justify-between overflow-hidden pt-[max(0.75rem,env(safe-area-inset-top))] bg-background border-b border-border shadow-sm">
-        {/* Logo/Branding on the left */}
-        <div className="flex flex-col">
-          <span className="text-primary font-bold text-base leading-tight">EVERY</span>
-          <span className="text-primary font-bold text-base leading-tight">DRIVER<span className="text-[10px] font-normal text-muted-foreground">.co.uk</span></span>
-          <span className="text-[10px] text-muted-foreground -mt-0.5">Supporting Your Journey</span>
-        </div>
+        {/* Logo */}
+        <img 
+          src="/everydriver-logo-instructor.png"
+          alt="EveryDriver" 
+          className="h-6 object-contain"
+        />
         
         {/* Controls and Avatar on the right */}
         <div className="flex items-center gap-1">

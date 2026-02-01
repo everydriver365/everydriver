@@ -723,12 +723,16 @@ export default function InstructorTraccarSession() {
   if (!device) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <div className="sticky top-0 z-50 bg-primary border-b border-primary-foreground/10 px-4 py-3">
+        <div className="sticky top-0 z-50 bg-background border-b border-border shadow-sm px-4 py-3">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor")} className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor")} className="text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-semibold text-primary-foreground">Live Tracking</h1>
+            <img 
+              src="/everydriver-logo-instructor.png"
+              alt="EveryDriver" 
+              className="h-6 object-contain"
+            />
           </div>
         </div>
         <div className="flex-1 flex items-center justify-center p-4">
@@ -770,34 +774,36 @@ export default function InstructorTraccarSession() {
         </div>
       )}
 
-      {/* Compact Header - Hidden during active session for full-screen map */}
+      {/* Header - Matches other pages */}
       {!isSessionActive && (
-        <div className="flex-shrink-0 z-50 bg-primary border-b border-primary-foreground/10 px-4 py-2">
+        <div className="flex-shrink-0 z-50 bg-background border-b border-border shadow-sm px-4 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/instructor")}>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2" onClick={() => navigate("/instructor")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <div className="flex flex-col">
-                <span className="font-medium text-sm text-primary-foreground">Live Tracking</span>
-              </div>
+              <img 
+                src="/everydriver-logo-instructor.png"
+                alt="EveryDriver" 
+                className="h-6 object-contain"
+              />
             </div>
             <div className="flex items-center gap-2">
               {isConnected ? (
-                <Badge className="bg-green-500/20 text-green-300 border-green-500/30 text-xs px-2 py-0.5">
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-2 py-0.5">
                   <span className="relative flex h-2 w-2 mr-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                   </span>
                   Live
                 </Badge>
               ) : (
-                <Badge className="bg-primary-foreground/10 text-primary-foreground/70 border-primary-foreground/20 text-xs px-2 py-0.5">
+                <Badge variant="outline" className="text-muted-foreground text-xs px-2 py-0.5">
                   <WifiOff className="h-3 w-3 mr-1" />
                   Offline
                 </Badge>
               )}
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/instructor/settings/traccar")}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10" onClick={() => navigate("/instructor/settings/traccar")}>
                 <Settings className="h-4 w-4" />
               </Button>
             </div>
