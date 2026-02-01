@@ -15,7 +15,6 @@ import {
   LogOut,
   ChevronRight,
   Briefcase,
-  Clock,
   Route,
   Globe,
   TrendingUp,
@@ -25,11 +24,13 @@ import {
   QrCode,
   CalendarPlus,
   Navigation,
+  ArrowLeft,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { QuickTestResultForm } from "@/components/instructor/QuickTestResultForm";
+import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -50,6 +51,10 @@ export default function InstructorMenu() {
   const handleLogout = async () => {
     await signOut();
     navigate("/instructor-app/login");
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
   const menuSections: { title: string; items: MenuItem[] }[] = [
@@ -82,8 +87,8 @@ export default function InstructorMenu() {
           label: "Take a Payment",
           description: "Generate payment QR code",
           path: "/instructor/pay",
-          iconColor: "text-green-600",
-          iconBg: "bg-green-100 dark:bg-green-900/30",
+          iconColor: "text-emerald-600",
+          iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
         },
         {
           icon: Car,
@@ -95,17 +100,49 @@ export default function InstructorMenu() {
         {
           icon: Navigation,
           label: "Find My Car",
-          description: "Locate your vehicle",
           path: "/instructor/find-my-car",
-          iconColor: "text-rose-600",
+          iconColor: "text-rose-500",
           iconBg: "bg-rose-100 dark:bg-rose-900/30",
         },
         {
           icon: Receipt,
           label: "Expenses",
           path: "/instructor/expenses",
-          iconColor: "text-orange-600",
-          iconBg: "bg-orange-100 dark:bg-orange-900/30",
+          iconColor: "text-amber-600",
+          iconBg: "bg-amber-100 dark:bg-amber-900/30",
+        },
+      ],
+    },
+    {
+      title: "Money & Reports",
+      items: [
+        {
+          icon: CreditCard,
+          label: "Payments",
+          path: "/instructor/pay",
+          iconColor: "text-emerald-600",
+          iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+        },
+        {
+          icon: TrendingUp,
+          label: "Income Summary",
+          path: "/instructor/income",
+          iconColor: "text-green-600",
+          iconBg: "bg-green-100 dark:bg-green-900/30",
+        },
+        {
+          icon: ArrowUpDown,
+          label: "Income vs Expenses",
+          path: "/instructor/in-out",
+          iconColor: "text-sky-600",
+          iconBg: "bg-sky-100 dark:bg-sky-900/30",
+        },
+        {
+          icon: Calculator,
+          label: "Tax Summary",
+          path: "/instructor/tax",
+          iconColor: "text-purple-600",
+          iconBg: "bg-purple-100 dark:bg-purple-900/30",
         },
       ],
     },
@@ -125,39 +162,6 @@ export default function InstructorMenu() {
           path: "/instructor/pupils",
           iconColor: "text-indigo-600",
           iconBg: "bg-indigo-100 dark:bg-indigo-900/30",
-        },
-      ],
-    },
-    {
-      title: "Money & Reports",
-      items: [
-        {
-          icon: CreditCard,
-          label: "Payments",
-          path: "/instructor/pay",
-          iconColor: "text-green-600",
-          iconBg: "bg-green-100 dark:bg-green-900/30",
-        },
-        {
-          icon: TrendingUp,
-          label: "Income Summary",
-          path: "/instructor/income",
-          iconColor: "text-emerald-600",
-          iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
-        },
-        {
-          icon: ArrowUpDown,
-          label: "Income vs Expenses",
-          path: "/instructor/in-out",
-          iconColor: "text-blue-600",
-          iconBg: "bg-blue-100 dark:bg-blue-900/30",
-        },
-        {
-          icon: Calculator,
-          label: "Tax Summary",
-          path: "/instructor/tax",
-          iconColor: "text-purple-600",
-          iconBg: "bg-purple-100 dark:bg-purple-900/30",
         },
       ],
     },
@@ -266,59 +270,82 @@ export default function InstructorMenu() {
   ];
 
   return (
-    <InstructorPortalLayout>
-      <div className="space-y-4 pb-24">
-        <div>
-          <h1 className="text-xl font-bold">Menu</h1>
-          <p className="text-sm text-muted-foreground">
-            Quick access to all features
-          </p>
+    <div className="min-h-screen bg-muted/30 pb-24">
+      {/* Header */}
+      <div className="sticky top-0 z-40 bg-background border-b border-border px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 -ml-2"
+              onClick={() => navigate("/instructor")}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold">Menu</h1>
+              <p className="text-xs text-muted-foreground">
+                Quick access to all features
+              </p>
+            </div>
+          </div>
+          <Avatar 
+            className="h-10 w-10 border-2 border-border cursor-pointer"
+            onClick={() => navigate("/instructor/settings")}
+          >
+            <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+              {instructor?.name ? getInitials(instructor.name) : "?"}
+            </AvatarFallback>
+          </Avatar>
         </div>
+      </div>
 
+      {/* Menu Sections */}
+      <div className="px-4 py-4 space-y-5">
         {menuSections.map((section) => (
           <div key={section.title} className="space-y-2">
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               {section.title}
             </h2>
-            <Card>
-              <CardContent className="p-0 divide-y">
-                {section.items.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      if (item.action) {
-                        item.action();
-                      } else if (item.path) {
-                        navigate(item.path);
-                      }
-                    }}
-                    className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "h-10 w-10 rounded-lg flex items-center justify-center shrink-0",
-                          item.iconBg || "bg-primary/10"
-                        )}
-                      >
-                        <item.icon
-                          className={cn("h-5 w-5", item.iconColor || "text-primary")}
-                        />
-                      </div>
-                      <div>
-                        <div className="font-medium text-sm">{item.label}</div>
-                        {item.description && (
-                          <div className="text-xs text-muted-foreground">
-                            {item.description}
-                          </div>
-                        )}
-                      </div>
+            <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden divide-y divide-border/50">
+              {section.items.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    if (item.action) {
+                      item.action();
+                    } else if (item.path) {
+                      navigate(item.path);
+                    }
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
+                        item.iconBg || "bg-primary/10"
+                      )}
+                    >
+                      <item.icon
+                        className={cn("h-5 w-5", item.iconColor || "text-primary")}
+                      />
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
+                    <div>
+                      <div className="font-medium text-sm text-foreground">{item.label}</div>
+                      {item.description && (
+                        <div className="text-xs text-muted-foreground">
+                          {item.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
+                </button>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -331,6 +358,9 @@ export default function InstructorMenu() {
           instructorId={instructor.id}
         />
       )}
-    </InstructorPortalLayout>
+
+      {/* Bottom Navigation */}
+      <InstructorBottomNav />
+    </div>
   );
 }
