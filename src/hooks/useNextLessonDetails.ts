@@ -13,6 +13,8 @@ interface NextLessonDetails {
   startTime: string;
   minutesUntil: number;
   durationMinutes: number;
+  accountBalance: number;
+  prepaidHours: number;
 }
 
 export function useNextLessonDetails(instructorId: string | undefined) {
@@ -38,7 +40,9 @@ export function useNextLessonDetails(instructorId: string | undefined) {
             phone,
             profile_image_url,
             postcode,
-            address
+            address,
+            account_balance,
+            prepaid_hours
           )
         `)
         .eq("instructor_id", instructorId)
@@ -69,6 +73,8 @@ export function useNextLessonDetails(instructorId: string | undefined) {
         startTime: lesson.start_time,
         minutesUntil: Math.max(0, minutesUntil),
         durationMinutes: lesson.duration_minutes || 60,
+        accountBalance: pupil.account_balance || 0,
+        prepaidHours: pupil.prepaid_hours || 0,
       };
     },
     enabled: !!instructorId,

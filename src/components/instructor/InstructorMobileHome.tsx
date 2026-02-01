@@ -432,6 +432,8 @@ export function InstructorMobileHome({
             pickupLocation={nextLesson.pickupLocation}
             startTime={nextLesson.startTime}
             minutesUntil={nextLesson.minutesUntil}
+            accountBalance={nextLesson.accountBalance}
+            prepaidHours={nextLesson.prepaidHours}
           />
         </div>
       ) : currentLessons === 0 && !todayLoading ? (
