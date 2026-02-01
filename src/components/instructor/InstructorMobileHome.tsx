@@ -41,7 +41,7 @@ import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { useInstructorStreak } from "@/hooks/useInstructorStreak";
 import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
-import { useGapSuggestions } from "@/hooks/useGapSuggestions";
+import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
@@ -112,7 +112,7 @@ export function InstructorMobileHome({
   const { data: streak } = useInstructorStreak(instructorId);
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
   const { data: tomorrowPreview } = useTomorrowPreview(instructorId);
-  const { data: gapSuggestions } = useGapSuggestions(instructorId);
+  const { data: gapSuggestions } = useRealGapSlots(instructorId);
   const { data: lastWeekComparison } = useLastWeekComparison(instructorId);
 
   const getInitials = (name: string) => {
