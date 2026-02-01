@@ -38,16 +38,29 @@ import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
 import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
+import { useInstructorStreak } from "@/hooks/useInstructorStreak";
+import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
+import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
+import { useGapSuggestions } from "@/hooks/useGapSuggestions";
+import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { NextLessonCard } from "@/components/instructor/NextLessonCard";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
+import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
+import { StreakBadge } from "@/components/instructor/StreakBadge";
+import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
+import { GapFillerCard } from "@/components/instructor/GapFillerCard";
+import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
+import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
+import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import { triggerHaptic } from "@/lib/haptics";
 
 interface InstructorMobileHomeProps {
   instructor: {
@@ -82,6 +95,7 @@ export function InstructorMobileHome({
   const { instructor: authInstructor } = useInstructorAuth();
   const [isTileEditMode, setIsTileEditMode] = useState(false);
   const [showFAB, setShowFAB] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
 
   // Use auth context for instructor ID
@@ -89,10 +103,17 @@ export function InstructorMobileHome({
   
   // Traccar connection status and today's overview
   const { isConnected: isTraccarConnected } = useTraccarConnectionStatus(instructorId || null);
-  const { data: todayOverview } = useTodayOverview(instructorId);
+  const { data: todayOverview, isLoading: todayLoading } = useTodayOverview(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: unreadCount } = useUnreadMessagesCount(instructorId);
   const { alerts, dismissAlert, location: alertsLocation } = useDrivingAlerts(instructorId);
+  
+  // New enhancement hooks
+  const { data: streak } = useInstructorStreak(instructorId);
+  const { data: weeklyGoals } = useWeeklyGoals(instructorId);
+  const { data: tomorrowPreview } = useTomorrowPreview(instructorId);
+  const { data: gapSuggestions } = useGapSuggestions(instructorId);
+  const { data: lastWeekComparison } = useLastWeekComparison(instructorId);
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -103,6 +124,21 @@ export function InstructorMobileHome({
   // Calculate max lessons for progress (default 6 if no data)
   const maxLessons = 6;
   const currentLessons = todayOverview?.lessonCount || todaysLessonCount || 0;
+
+  // Detect day completion for confetti (simplified - trigger when all lessons for day are done)
+  useEffect(() => {
+    // We'll use a simple heuristic: if it's evening and there are lessons, celebrate
+    const hour = new Date().getHours();
+    if (todayOverview && todayOverview.lessonCount > 0 && hour >= 18) {
+      const today = new Date().toDateString();
+      const lastCelebration = localStorage.getItem("last-celebration-date");
+      if (lastCelebration !== today) {
+        setShowConfetti(true);
+        triggerHaptic("success");
+        localStorage.setItem("last-celebration-date", today);
+      }
+    }
+  }, [todayOverview]);
 
   // Scroll detection for FAB
   useEffect(() => {
@@ -115,13 +151,24 @@ export function InstructorMobileHome({
 
   // Pull to refresh handler
   const handleRefresh = async () => {
+    triggerHaptic("light");
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["today-overview"] }),
       queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] }),
       queryClient.invalidateQueries({ queryKey: ["instructor-homepage-content"] }),
       queryClient.invalidateQueries({ queryKey: ["unread-messages-count"] }),
+      queryClient.invalidateQueries({ queryKey: ["instructor-streak"] }),
+      queryClient.invalidateQueries({ queryKey: ["weekly-goals"] }),
+      queryClient.invalidateQueries({ queryKey: ["tomorrow-preview"] }),
+      queryClient.invalidateQueries({ queryKey: ["gap-suggestions"] }),
+      queryClient.invalidateQueries({ queryKey: ["last-week-comparison"] }),
     ]);
   };
+
+  // Show skeleton while loading critical data
+  if (contentLoading && !content) {
+    return <HomePageSkeleton />;
+  }
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
@@ -348,6 +395,22 @@ export function InstructorMobileHome({
         </div>
       </div>
 
+      {/* Celebration Confetti */}
+      <CelebrationConfetti 
+        trigger={showConfetti} 
+        onComplete={() => setShowConfetti(false)} 
+      />
+
+      {/* Streak Badge - shown if streak >= 2 days */}
+      {streak && streak.currentStreak >= 2 && (
+        <div className="px-4 mt-3 flex justify-center">
+          <StreakBadge 
+            currentStreak={streak.currentStreak} 
+            isActiveToday={streak.isActiveToday} 
+          />
+        </div>
+      )}
+
       {/* Weather/Traffic Alerts */}
       {alerts.length > 0 && (
         <DrivingAlertsStrip 
@@ -358,8 +421,8 @@ export function InstructorMobileHome({
         />
       )}
 
-      {/* Next Lesson Card */}
-      {nextLesson && (
+      {/* Next Lesson Card OR Quiet Day */}
+      {nextLesson ? (
         <div className="mt-4">
           <NextLessonCard
             pupilName={nextLesson.pupilName}
@@ -371,6 +434,58 @@ export function InstructorMobileHome({
             minutesUntil={nextLesson.minutesUntil}
           />
         </div>
+      ) : currentLessons === 0 && !todayLoading ? (
+        <QuietDayEmpty className="mt-4" />
+      ) : null}
+
+      {/* Weekly Goal Progress */}
+      {weeklyGoals && (
+        <div className="px-4 mt-4">
+          <div className="bg-card rounded-xl border border-border p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground text-sm mb-1">Weekly Progress</h3>
+                <p className="text-xs text-muted-foreground">
+                  {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
+                </p>
+                {lastWeekComparison && (
+                  <p className={`text-[10px] mt-1 ${lastWeekComparison.isImprovement ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                    {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
+                  </p>
+                )}
+              </div>
+              <WeeklyGoalRing
+                hoursThisWeek={weeklyGoals.hoursThisWeek}
+                hoursGoal={weeklyGoals.hoursGoal}
+                progressPercent={weeklyGoals.progressPercent}
+                isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tomorrow Preview */}
+      {tomorrowPreview && (
+        <TomorrowPreviewCard
+          lessonCount={tomorrowPreview.lessonCount}
+          totalHours={tomorrowPreview.totalHours}
+          expectedEarnings={tomorrowPreview.expectedEarnings}
+          firstLessonTime={tomorrowPreview.firstLessonTime}
+          lastLessonTime={tomorrowPreview.lastLessonTime}
+          hasGaps={tomorrowPreview.hasGaps}
+          className="mt-4"
+        />
+      )}
+
+      {/* Gap Filler Suggestions */}
+      {gapSuggestions && gapSuggestions.length > 0 && (
+        <GapFillerCard
+          date={gapSuggestions[0].date}
+          durationMinutes={gapSuggestions[0].durationMinutes}
+          suggestedPupils={gapSuggestions[0].suggestedPupils}
+          className="mt-4"
+        />
       )}
 
       {/* Quick Action Tiles */}
@@ -404,7 +519,10 @@ export function InstructorMobileHome({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            onClick={() => navigate("/instructor/traccar")}
+            onClick={() => {
+              triggerHaptic("medium");
+              navigate("/instructor/traccar");
+            }}
             className="fixed bottom-24 right-4 z-30 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
             style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
           >

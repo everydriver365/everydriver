@@ -32,6 +32,11 @@ export const haptics = {
   },
 };
 
+// Convenience function for triggering haptics by type
+export function triggerHaptic(type: "light" | "medium" | "heavy" | "success" | "error" | "selection") {
+  haptics[type]();
+}
+
 // Hook for long press detection
 export function useLongPress(
   callback: () => void,

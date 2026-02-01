@@ -7,7 +7,7 @@ interface SuggestedPupil {
   id: string;
   name: string;
   phone: string | null;
-  postcode: string | null;
+  postcode?: string | null;
   isWaitlisted: boolean;
 }
 
