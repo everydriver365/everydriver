@@ -38,7 +38,6 @@ interface SelectedPupil extends SuggestedPupil {
 
 export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [expandedDate, setExpandedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<GapSlot | null>(null);
   const [selectedPupils, setSelectedPupils] = useState<Map<string, SelectedPupil>>(new Map());
   const [showPreview, setShowPreview] = useState(false);
@@ -46,12 +45,6 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
   const handleToggle = () => {
     haptics.selection();
     setIsExpanded(!isExpanded);
-  };
-
-  const handleDateToggle = (date: string) => {
-    haptics.light();
-    setExpandedDate(expandedDate === date ? null : date);
-    setSelectedSlot(null);
   };
 
   const handleSlotSelect = (slot: GapSlot) => {
@@ -170,139 +163,108 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="px-3 pb-3 space-y-2">
-                {gaps.map((gap) => {
-                  const isDateExpanded = expandedDate === gap.date;
-
-                  return (
-                    <div key={gap.date} className="bg-background/60 rounded-lg overflow-hidden">
-                      {/* Date header */}
-                      <button
-                        onClick={() => handleDateToggle(gap.date)}
-                        className="w-full p-2 flex items-center justify-between text-left"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-foreground">
-                            {gap.formattedDate}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {gap.slots.length} {gap.slots.length === 1 ? "slot" : "slots"} free
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {isDateExpanded ? (
-                            <ChevronUp className="h-3 w-3 text-muted-foreground" />
-                          ) : (
-                            <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                          )}
-                        </div>
-                      </button>
-
-                      {/* Slots for this date */}
-                      <AnimatePresence>
-                        {isDateExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.15 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="px-2 pb-2 space-y-2">
-                              {/* Time slots */}
-                              <div className="flex flex-wrap gap-1.5">
-                                {gap.slots.map((slot) => {
-                                  const isSelected = selectedSlot?.id === slot.id;
-                                  return (
-                                    <button
-                                      key={slot.id}
-                                      onClick={() => handleSlotSelect(slot)}
-                                      className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                        isSelected
-                                          ? "bg-emerald-500 text-white"
-                                          : "bg-muted hover:bg-muted/80 text-foreground"
-                                      }`}
-                                    >
-                                      {slot.startTime}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Pupils for selected slot */}
-                              <AnimatePresence>
-                                {selectedSlot && gap.slots.some((s) => s.id === selectedSlot.id) && (
-                                  <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="space-y-1.5 pt-2 border-t border-border/50"
-                                  >
-                                    <p className="text-xs text-muted-foreground">
-                                      Offer {selectedSlot.startTime} - {selectedSlot.endTime} to:
-                                    </p>
-                                    {gap.suggestedPupils.map((pupil) => {
-                                      const isSelected = isPupilSelected(pupil.id, selectedSlot.id);
-                                      return (
-                                        <button
-                                          key={pupil.id}
-                                          onClick={() =>
-                                            togglePupilSelection(pupil, selectedSlot, gap.formattedDate)
-                                          }
-                                          disabled={!pupil.phone}
-                                          className={`w-full flex items-center justify-between rounded-lg p-2 transition-colors ${
-                                            isSelected
-                                              ? "bg-emerald-500/20 border border-emerald-500/40"
-                                              : "bg-background hover:bg-muted"
-                                          } ${!pupil.phone ? "opacity-50 cursor-not-allowed" : ""}`}
-                                        >
-                                          <div className="flex items-center gap-2">
-                                            <div
-                                              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
-                                                isSelected
-                                                  ? "bg-emerald-500 text-white"
-                                                  : "bg-primary/10 text-primary"
-                                              }`}
-                                            >
-                                              {isSelected ? (
-                                                <Check className="h-4 w-4" />
-                                              ) : (
-                                                pupil.name
-                                                  .split(" ")
-                                                  .map((n) => n[0])
-                                                  .join("")
-                                                  .slice(0, 2)
-                                              )}
-                                            </div>
-                                            <div className="min-w-0 text-left">
-                                              <p className="text-sm font-medium text-foreground truncate">
-                                                {pupil.name}
-                                              </p>
-                                              {pupil.isWaitlisted && (
-                                                <span className="text-[10px] text-amber-600 dark:text-amber-400">
-                                                  Waitlisted
-                                                </span>
-                                              )}
-                                              {!pupil.phone && (
-                                                <span className="text-[10px] text-muted-foreground">
-                                                  No phone number
-                                                </span>
-                                              )}
-                                            </div>
-                                          </div>
-                                        </button>
-                                      );
-                                    })}
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+              <div className="px-3 pb-3 space-y-3">
+                {gaps.map((gap) => (
+                  <div key={gap.date} className="bg-background/60 rounded-lg p-3">
+                    {/* Date header with slots inline */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-foreground">
+                        {gap.formattedDate}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {gap.slots.length} {gap.slots.length === 1 ? "slot" : "slots"} available
+                      </span>
                     </div>
-                  );
-                })}
+
+                    {/* Time slots - always visible */}
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {gap.slots.map((slot) => {
+                        const isSelected = selectedSlot?.id === slot.id;
+                        return (
+                          <button
+                            key={slot.id}
+                            onClick={() => handleSlotSelect(slot)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                              isSelected
+                                ? "bg-emerald-500 text-white shadow-sm"
+                                : "bg-muted hover:bg-muted/80 text-foreground"
+                            }`}
+                          >
+                            {slot.startTime} - {slot.endTime}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Pupils for selected slot */}
+                    <AnimatePresence>
+                      {selectedSlot && gap.slots.some((s) => s.id === selectedSlot.id) && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="space-y-1.5 pt-2 border-t border-border/50"
+                        >
+                          <p className="text-xs text-muted-foreground">
+                            Offer {selectedSlot.startTime} - {selectedSlot.endTime} to:
+                          </p>
+                          {gap.suggestedPupils.map((pupil) => {
+                            const isSelected = isPupilSelected(pupil.id, selectedSlot.id);
+                            return (
+                              <button
+                                key={pupil.id}
+                                onClick={() =>
+                                  togglePupilSelection(pupil, selectedSlot, gap.formattedDate)
+                                }
+                                disabled={!pupil.phone}
+                                className={`w-full flex items-center justify-between rounded-lg p-2 transition-colors ${
+                                  isSelected
+                                    ? "bg-emerald-500/20 border border-emerald-500/40"
+                                    : "bg-background hover:bg-muted"
+                                } ${!pupil.phone ? "opacity-50 cursor-not-allowed" : ""}`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
+                                      isSelected
+                                        ? "bg-emerald-500 text-white"
+                                        : "bg-primary/10 text-primary"
+                                    }`}
+                                  >
+                                    {isSelected ? (
+                                      <Check className="h-4 w-4" />
+                                    ) : (
+                                      pupil.name
+                                        .split(" ")
+                                        .map((n) => n[0])
+                                        .join("")
+                                        .slice(0, 2)
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 text-left">
+                                    <p className="text-sm font-medium text-foreground truncate">
+                                      {pupil.name}
+                                    </p>
+                                    {pupil.isWaitlisted && (
+                                      <span className="text-[10px] text-amber-600 dark:text-amber-400">
+                                        Waitlisted
+                                      </span>
+                                    )}
+                                    {!pupil.phone && (
+                                      <span className="text-[10px] text-muted-foreground">
+                                        No phone number
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ))}
 
                 {/* Send button */}
                 {selectedPupils.size > 0 && (
