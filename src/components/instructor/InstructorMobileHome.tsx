@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   CreditCard, 
@@ -15,7 +15,10 @@ import {
   Award,
   LayoutGrid,
   MessageSquare,
-  Play
+  Play,
+  BookOpen,
+  Clock,
+  PoundSterling
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -27,16 +30,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
+import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useDrivingAlerts } from "@/hooks/useDrivingAlerts";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+import { NextLessonCard } from "@/components/instructor/NextLessonCard";
+import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface InstructorMobileHomeProps {
   instructor: {
@@ -50,6 +60,15 @@ interface InstructorMobileHomeProps {
   onPaymentClick: () => void;
 }
 
+// Time-aware greeting helper
+const getGreeting = (firstName: string) => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return `Good morning, ${firstName}!`;
+  if (hour >= 12 && hour < 17) return `Good afternoon, ${firstName}!`;
+  if (hour >= 17 && hour < 21) return `Good evening, ${firstName}!`;
+  return `Ready to plan, ${firstName}?`;
+};
+
 export function InstructorMobileHome({ 
   instructor, 
   todaysLessonCount,
@@ -57,9 +76,11 @@ export function InstructorMobileHome({
 }: InstructorMobileHomeProps) {
   const pendingJobsCount = usePendingJobsCount();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { setTheme } = useTheme();
   const { instructor: authInstructor } = useInstructorAuth();
   const [isTileEditMode, setIsTileEditMode] = useState(false);
+  const [showFAB, setShowFAB] = useState(false);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
 
   // Use auth context for instructor ID
@@ -68,6 +89,9 @@ export function InstructorMobileHome({
   // Traccar connection status and today's overview
   const { isConnected: isTraccarConnected } = useTraccarConnectionStatus(instructorId || null);
   const { data: todayOverview } = useTodayOverview(instructorId);
+  const { data: nextLesson } = useNextLessonDetails(instructorId);
+  const { data: unreadCount } = useUnreadMessagesCount(instructorId);
+  const { alerts, dismissAlert, location: alertsLocation } = useDrivingAlerts(instructorId);
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -78,6 +102,25 @@ export function InstructorMobileHome({
   // Calculate max lessons for progress (default 6 if no data)
   const maxLessons = 6;
   const currentLessons = todayOverview?.lessonCount || todaysLessonCount || 0;
+
+  // Scroll detection for FAB
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowFAB(window.scrollY > 200);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Pull to refresh handler
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["today-overview"] }),
+      queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] }),
+      queryClient.invalidateQueries({ queryKey: ["instructor-homepage-content"] }),
+      queryClient.invalidateQueries({ queryKey: ["unread-messages-count"] }),
+    ]);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
@@ -104,7 +147,7 @@ export function InstructorMobileHome({
             </Button>
           )}
 
-          {/* Messages Button */}
+          {/* Messages Button with unread badge */}
           <Button
             variant="ghost"
             size="icon"
@@ -112,9 +155,9 @@ export function InstructorMobileHome({
             onClick={() => navigate("/instructor/messages")}
           >
             <MessageSquare className="h-5 w-5" />
-            {pendingJobsCount > 0 && (
+            {(unreadCount || 0) > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </Button>
@@ -251,9 +294,9 @@ export function InstructorMobileHome({
                   </span>
                 </div>
                 
-                {/* Title */}
+                {/* Personalized Greeting */}
                 <h1 className="text-lg font-bold text-foreground tracking-tight">
-                  READY TO TEACH?
+                  {getGreeting(firstName)}
                 </h1>
                 
                 {/* Subtitle */}
@@ -272,42 +315,52 @@ export function InstructorMobileHome({
                 </Button>
               </div>
               
-              {/* Right - Progress Indicator */}
-              <div className="flex flex-col items-center shrink-0">
-                <div className="relative w-14 h-14">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r="15.5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      className="text-muted/20"
-                    />
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r="15.5"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeDasharray={`${(currentLessons / maxLessons) * 97.4} 97.4`}
-                      strokeLinecap="round"
-                      className="text-primary"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-lg font-bold text-foreground leading-none">{currentLessons}</span>
-                    <span className="text-[10px] text-muted-foreground">/{maxLessons}</span>
+              {/* Right - Quick Stats */}
+              <div className="flex flex-col items-center shrink-0 gap-2">
+                {/* Stats Row */}
+                <div className="flex flex-col items-center gap-1 bg-muted/30 rounded-xl px-3 py-2">
+                  <div className="flex items-center gap-1 text-primary">
+                    <BookOpen className="h-3.5 w-3.5" />
+                    <span className="text-lg font-bold">{currentLessons}</span>
                   </div>
+                  <span className="text-[9px] text-muted-foreground font-medium uppercase">Lessons</span>
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground mt-0.5">TODAY</span>
+                {todayOverview && todayOverview.expectedEarnings > 0 && (
+                  <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
+                    <PoundSterling className="h-3 w-3" />
+                    <span className="text-xs font-semibold">{todayOverview.expectedEarnings}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Weather/Traffic Alerts */}
+      {alerts.length > 0 && (
+        <DrivingAlertsStrip 
+          alerts={alerts} 
+          onDismiss={dismissAlert}
+          location={alertsLocation}
+          className="mt-4"
+        />
+      )}
+
+      {/* Next Lesson Card */}
+      {nextLesson && (
+        <div className="mt-4">
+          <NextLessonCard
+            pupilName={nextLesson.pupilName}
+            pupilProfileImage={nextLesson.pupilProfileImage}
+            pupilPhone={nextLesson.pupilPhone}
+            pickupPostcode={nextLesson.pickupPostcode}
+            pickupLocation={nextLesson.pickupLocation}
+            startTime={nextLesson.startTime}
+            minutesUntil={nextLesson.minutesUntil}
+          />
+        </div>
+      )}
 
       {/* Quick Action Tiles */}
       <div className="px-4 pt-4 pb-4">
@@ -331,6 +384,23 @@ export function InstructorMobileHome({
           variant="mobile"
         />
       )}
+
+      {/* Sticky Go Live FAB */}
+      <AnimatePresence>
+        {showFAB && !isTraccarConnected && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            onClick={() => navigate("/instructor/traccar")}
+            className="fixed bottom-24 right-4 z-30 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+            style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
+          >
+            <Play className="h-6 w-6 fill-current" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Bottom Navigation */}
       <InstructorBottomNav />
