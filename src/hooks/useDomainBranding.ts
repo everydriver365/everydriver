@@ -56,7 +56,7 @@ export function useDomainBranding(): DomainBranding {
     // EveryDriver = Instructors (default for localhost, lovable.app, etc.)
     return {
       brandName: "EveryDriver",
-      logoPath: "/everydriver-logo-v2.png",
+      logoPath: "/everydriver-logo-full.png",
       isInstructorDomain: true,
       isLearnerDomain: false,
       homeLink: "/",
