@@ -87,7 +87,7 @@ serve(async (req) => {
     // Get instructor's postcode and cached coordinates
     const { data: instructor, error: instructorError } = await supabase
       .from("instructors")
-      .select("home_postcode, lat, lng")
+      .select("home_postcode, lat, lng, location_name")
       .eq("id", instructorId)
       .single();
 
@@ -100,6 +100,7 @@ serve(async (req) => {
 
     let lat = instructor.lat;
     let lng = instructor.lng;
+    let locationName = instructor.location_name;
 
     // If no cached coordinates, geocode the postcode
     if (!lat || !lng) {
@@ -111,11 +112,16 @@ serve(async (req) => {
         if (geocodeData.result) {
           lat = geocodeData.result.latitude;
           lng = geocodeData.result.longitude;
+          // Extract location name from geocode result
+          locationName = geocodeData.result.admin_ward || 
+                        geocodeData.result.admin_district || 
+                        geocodeData.result.parliamentary_constituency ||
+                        geocodeData.result.region;
           
-          // Cache the coordinates
+          // Cache the coordinates and location name
           await supabase
             .from("instructors")
-            .update({ lat, lng })
+            .update({ lat, lng, location_name: locationName })
             .eq("id", instructorId);
         }
       }
@@ -296,7 +302,7 @@ serve(async (req) => {
     alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
     return new Response(
-      JSON.stringify({ alerts, lat, lng }),
+      JSON.stringify({ alerts, lat, lng, location: locationName }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 

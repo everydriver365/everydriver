@@ -3155,6 +3155,7 @@ export type Database = {
           lat: number | null
           linkedin_url: string | null
           lng: number | null
+          location_name: string | null
           logo_url: string | null
           mini_website_domain_id: string | null
           name: string
@@ -3254,6 +3255,7 @@ export type Database = {
           lat?: number | null
           linkedin_url?: string | null
           lng?: number | null
+          location_name?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
           name: string
@@ -3353,6 +3355,7 @@ export type Database = {
           lat?: number | null
           linkedin_url?: string | null
           lng?: number | null
+          location_name?: string | null
           logo_url?: string | null
           mini_website_domain_id?: string | null
           name?: string

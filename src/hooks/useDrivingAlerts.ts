@@ -21,6 +21,7 @@ interface UseDrivingAlertsResult {
   refetch: () => Promise<void>;
   dismissedAlerts: Set<string>;
   dismissAlert: (alertId: string) => void;
+  location: string | null;
 }
 
 const CACHE_KEY = "driving_alerts_cache";
@@ -31,13 +32,14 @@ interface CachedAlerts {
   alerts: DrivingAlert[];
   timestamp: number;
   instructorId: string;
+  location: string | null;
 }
 
 function getAlertId(alert: DrivingAlert): string {
   return `${alert.type}-${alert.title}-${alert.description}`.replace(/\s+/g, "_").toLowerCase();
 }
 
-function getCachedAlerts(instructorId: string): DrivingAlert[] | null {
+function getCachedAlerts(instructorId: string): { alerts: DrivingAlert[]; location: string | null } | null {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (!cached) return null;
@@ -46,18 +48,19 @@ function getCachedAlerts(instructorId: string): DrivingAlert[] | null {
     if (parsed.instructorId !== instructorId) return null;
     if (Date.now() - parsed.timestamp > CACHE_DURATION_MS) return null;
     
-    return parsed.alerts;
+    return { alerts: parsed.alerts, location: parsed.location };
   } catch {
     return null;
   }
 }
 
-function setCachedAlerts(instructorId: string, alerts: DrivingAlert[]): void {
+function setCachedAlerts(instructorId: string, alerts: DrivingAlert[], location: string | null): void {
   try {
     const cache: CachedAlerts = {
       alerts,
       timestamp: Date.now(),
       instructorId,
+      location,
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
   } catch {
@@ -104,6 +107,7 @@ export function useDrivingAlerts(instructorId: string | undefined): UseDrivingAl
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(getDismissedAlerts);
+  const [location, setLocation] = useState<string | null>(null);
 
   const fetchAlerts = useCallback(async () => {
     if (!instructorId) {
@@ -115,7 +119,8 @@ export function useDrivingAlerts(instructorId: string | undefined): UseDrivingAl
     // Check cache first
     const cached = getCachedAlerts(instructorId);
     if (cached) {
-      setAlerts(cached);
+      setAlerts(cached.alerts);
+      setLocation(cached.location);
       setLoading(false);
       return;
     }
@@ -131,8 +136,10 @@ export function useDrivingAlerts(instructorId: string | undefined): UseDrivingAl
       if (fnError) throw fnError;
 
       const fetchedAlerts = data?.alerts || [];
+      const fetchedLocation = data?.location || null;
       setAlerts(fetchedAlerts);
-      setCachedAlerts(instructorId, fetchedAlerts);
+      setLocation(fetchedLocation);
+      setCachedAlerts(instructorId, fetchedAlerts, fetchedLocation);
     } catch (err) {
       console.error("Error fetching driving alerts:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch alerts");
@@ -184,6 +191,7 @@ export function useDrivingAlerts(instructorId: string | undefined): UseDrivingAl
     refetch: fetchAlerts,
     dismissedAlerts,
     dismissAlert,
+    location,
   };
 }
 

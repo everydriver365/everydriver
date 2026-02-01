@@ -14,7 +14,7 @@ import {
   Ban,
   Construction,
   X,
-  ChevronRight
+  MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DrivingAlert, getAlertId } from "@/hooks/useDrivingAlerts";
@@ -23,6 +23,7 @@ interface DrivingAlertsStripProps {
   alerts: DrivingAlert[];
   onDismiss: (alertId: string) => void;
   className?: string;
+  location?: string | null;
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -47,7 +48,7 @@ function AlertIcon({ iconName, className }: { iconName: string; className?: stri
   return <Icon className={className} />;
 }
 
-export function DrivingAlertsStrip({ alerts, onDismiss, className }: DrivingAlertsStripProps) {
+export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: DrivingAlertsStripProps) {
   if (alerts.length === 0) return null;
 
   return (
@@ -91,23 +92,36 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className }: DrivingAler
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  {/* Location and type header */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {isWeather && location && (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <MapPin className="h-3 w-3" />
+                        {location}
+                      </span>
+                    )}
                     <span className={cn(
-                      "text-xs font-medium uppercase tracking-wide",
-                      isSevere ? "text-destructive" : "text-warning-foreground"
+                      "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded",
+                      isSevere 
+                        ? "text-destructive bg-destructive/15" 
+                        : "text-warning-foreground bg-warning/20"
                     )}>
                       {isWeather ? "Weather" : "Traffic"}
                     </span>
                     {isSevere && (
-                      <span className="text-[10px] font-bold text-destructive bg-destructive/20 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] font-bold text-destructive-foreground bg-destructive px-1.5 py-0.5 rounded">
                         SEVERE
                       </span>
                     )}
                   </div>
-                  <h4 className="font-semibold text-foreground text-sm mt-0.5 truncate">
+                  
+                  {/* Title - more prominent */}
+                  <h4 className="font-bold text-foreground text-base mt-1 leading-tight">
                     {alert.title}
                   </h4>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                  
+                  {/* Description */}
+                  <p className="text-sm text-muted-foreground mt-1 leading-snug">
                     {alert.description}
                   </p>
                 </div>
