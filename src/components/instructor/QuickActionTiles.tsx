@@ -228,9 +228,8 @@ export function QuickActionTiles({
   return (
     <div className="space-y-3">
       {/* Header with Done button only shown in edit mode */}
-      <div className="flex items-center justify-between px-1">
-        <span className="text-sm font-medium text-muted-foreground">Quick Actions</span>
-        {isEditMode && (
+      {isEditMode && (
+        <div className="flex items-center justify-end px-1">
           <Button
             variant="ghost"
             size="sm"
@@ -241,8 +240,8 @@ export function QuickActionTiles({
             <Check className="h-3.5 w-3.5" />
             Done
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {isEditMode ? (
         // Edit mode with drag-and-drop
