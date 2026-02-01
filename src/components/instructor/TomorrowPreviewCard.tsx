@@ -169,22 +169,22 @@ export function TomorrowPreviewCard({
       className={`mx-4 ${className}`}
     >
       <Link to="/instructor/schedule">
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-blue-700 dark:to-indigo-800 rounded-2xl p-5 shadow-lg shadow-blue-500/20">
+        <div className="bg-gradient-to-br from-slate-100 via-violet-50/50 to-indigo-50/30 dark:from-slate-800 dark:via-violet-950/30 dark:to-indigo-950/20 rounded-3xl border border-slate-200/80 dark:border-slate-700/50 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-violet-50 dark:bg-violet-900/30 border border-violet-100 dark:border-violet-800/50 flex items-center justify-center shadow-sm">
+                <Calendar className="h-7 w-7 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
-                <span className="font-bold text-white text-lg">{dayName}</span>
-                <p className="text-blue-100 text-xs">{dateStr}</p>
+                <span className="font-bold text-slate-800 dark:text-slate-100 text-lg">{dayName}</span>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">{dateStr}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {/* Weather display */}
               {weather && WeatherIcon && (
-                <div className="flex items-center gap-1.5 text-white bg-white/20 rounded-full px-3 py-1">
+                <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-slate-700/50 rounded-full px-3 py-1.5 shadow-sm border border-slate-100 dark:border-slate-600">
                   <WeatherIcon className="h-4 w-4" />
                   <span className="text-sm font-semibold">{weather.temperature}°</span>
                 </div>
@@ -199,47 +199,47 @@ export function TomorrowPreviewCard({
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 bg-white/10 rounded-xl p-3">
+          <div className="grid grid-cols-3 gap-4 bg-violet-100/50 dark:bg-violet-900/20 rounded-2xl p-3 border border-violet-200/50 dark:border-violet-800/30">
             <div className="flex flex-col items-center">
-              <span className="text-2xl font-bold text-white">{lessonCount}</span>
-              <span className="text-xs text-blue-100">
+              <span className="text-2xl font-bold text-slate-800 dark:text-slate-100">{lessonCount}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 Lesson{lessonCount !== 1 ? "s" : ""}
               </span>
             </div>
             
-            <div className="flex flex-col items-center border-x border-white/20">
-              <div className="flex items-center gap-1 text-white">
-                <Clock className="h-4 w-4" />
+            <div className="flex flex-col items-center border-x border-violet-200/50 dark:border-violet-700/50">
+              <div className="flex items-center gap-1 text-slate-800 dark:text-slate-100">
+                <Clock className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                 <span className="text-2xl font-bold">{totalHours}</span>
               </div>
-              <span className="text-xs text-blue-100">Hours</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Hours</span>
             </div>
             
             <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1 text-white">
-                <PoundSterling className="h-4 w-4" />
+              <div className="flex items-center gap-1 text-slate-800 dark:text-slate-100">
+                <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="text-2xl font-bold">{expectedEarnings}</span>
               </div>
-              <span className="text-xs text-blue-100">Expected</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Expected</span>
             </div>
           </div>
 
           {/* Lesson List */}
           {lessons.length > 0 && (
-            <div className="mt-3 bg-white/10 rounded-xl p-3 max-h-36 overflow-y-auto">
+            <div className="mt-3 bg-white/60 dark:bg-slate-700/30 rounded-2xl p-3 max-h-36 overflow-y-auto border border-slate-200/50 dark:border-slate-600/30">
               <div className="space-y-2">
                 {lessons.map((lesson) => (
                   <div 
                     key={lesson.id} 
-                    className="flex items-center justify-between py-1.5 border-b border-white/10 last:border-0"
+                    className="flex items-center justify-between py-1.5 border-b border-slate-200/50 dark:border-slate-600/30 last:border-0"
                   >
-                    <span className="text-xs text-blue-100 w-16">
+                    <span className="text-sm text-slate-500 dark:text-slate-400 w-20">
                       {formatTime(lesson.startTime)}
                     </span>
-                    <span className="text-sm font-medium text-white flex-1 truncate px-2">
+                    <span className="text-base font-medium text-slate-800 dark:text-slate-100 flex-1 truncate px-2">
                       {lesson.pupilName}
                     </span>
-                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full text-white">
+                    <span className="text-xs bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 rounded-full text-violet-700 dark:text-violet-300 font-medium">
                       {lesson.durationMinutes}m
                     </span>
                   </div>
@@ -251,11 +251,11 @@ export function TomorrowPreviewCard({
           {/* Time range */}
           {firstLessonTime && lessons.length > 0 && (
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm text-blue-100">
+              <span className="text-sm text-slate-500 dark:text-slate-400">
                 {formatTime(firstLessonTime)} — {formatTime(addMinutesToTime(lessons[lessons.length - 1].startTime, lessons[lessons.length - 1].durationMinutes))}
               </span>
-              <div className="flex items-center gap-1 text-white">
-                <span className="text-xs font-medium">View</span>
+              <div className="flex items-center gap-1 text-violet-600 dark:text-violet-400">
+                <span className="text-sm font-medium">View</span>
                 <ChevronRight className="h-4 w-4" />
               </div>
             </div>
