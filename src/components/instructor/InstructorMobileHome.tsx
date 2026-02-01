@@ -411,6 +411,7 @@ export function InstructorMobileHome({
           lastLessonTime={tomorrowPreview.lastLessonTime}
           hasGaps={tomorrowPreview.hasGaps}
           instructorId={instructorId}
+          lessons={tomorrowPreview.lessons}
           className="mt-4"
         />
       )}
