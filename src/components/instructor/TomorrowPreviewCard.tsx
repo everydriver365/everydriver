@@ -133,7 +133,7 @@ export function TomorrowPreviewCard({
                 View Schedule
               </Button>
             </Link>
-            <Link to="/instructor/waitlist" className="flex-1">
+            <Link to="/instructor/gaps" className="flex-1">
               <Button size="default" className="w-full gap-2 h-12 rounded-2xl bg-blue-400 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 text-white shadow-md font-semibold">
                 <ClipboardList className="h-5 w-5" />
                 Check Waitlist
