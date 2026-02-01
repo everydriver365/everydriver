@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
-  CalendarClock,
   CreditCard, 
   Settings,
   Car,
@@ -15,7 +14,8 @@ import {
   Navigation,
   Award,
   LayoutGrid,
-  MessageSquare
+  MessageSquare,
+  Play
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
+import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
+import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
@@ -62,12 +64,20 @@ export function InstructorMobileHome({
 
   // Use auth context for instructor ID
   const instructorId = authInstructor?.id || instructor?.id;
+  
+  // Traccar connection status and today's overview
+  const { isConnected: isTraccarConnected } = useTraccarConnectionStatus(instructorId || null);
+  const { data: todayOverview } = useTodayOverview(instructorId);
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
   const firstName = instructor?.name?.split(" ")[0] || "Instructor";
+  
+  // Calculate max lessons for progress (default 6 if no data)
+  const maxLessons = 6;
+  const currentLessons = todayOverview?.lessonCount || todaysLessonCount || 0;
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
@@ -211,26 +221,94 @@ export function InstructorMobileHome({
       {/* Spacer for fixed header */}
       <div className="h-16 pt-[env(safe-area-inset-top,0px)]" />
 
-      {/* Hero Section with Image */}
-      {content?.hero_image_url && (
-        <div className="relative w-full h-48 overflow-hidden">
+      {/* Hero Section with Overlapping Card */}
+      <div className="relative">
+        {/* Hero Image */}
+        <div className="w-full h-56 overflow-hidden">
           <img 
-            src={content.hero_image_url} 
+            src={content?.hero_image_url || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"} 
             alt="Hero" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
         </div>
-      )}
-
-      {/* Motivation Section */}
-      <div className="px-4 py-6">
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">
-          READY TO TEACH, {firstName.toUpperCase()}?
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          {content?.motivation_subtitle || "Let's make today count."}
-        </p>
+        
+        {/* Overlapping Motivation Card */}
+        <div className="relative -mt-20 mx-4">
+          <div className="bg-card rounded-3xl shadow-xl p-5 border border-border/50">
+            <div className="flex items-start justify-between">
+              {/* Left Content */}
+              <div className="flex-1">
+                {/* TODAY Label with Status */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-semibold text-muted-foreground tracking-wide">TODAY</span>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    isTraccarConnected 
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                      : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full ${isTraccarConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    {isTraccarConnected ? 'Live' : 'Offline'}
+                  </span>
+                </div>
+                
+                {/* Title */}
+                <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
+                  READY TO TEACH?
+                </h1>
+                
+                {/* Subtitle */}
+                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                  {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help! You are not alone."}
+                </p>
+                
+                {/* Go Live Button */}
+                <Button 
+                  onClick={() => navigate("/instructor/traccar")}
+                  className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 h-auto font-semibold shadow-md"
+                >
+                  <Play className="h-4 w-4 mr-2 fill-current" />
+                  Go Live
+                </Button>
+              </div>
+              
+              {/* Right - Progress Indicator */}
+              <div className="flex flex-col items-center ml-4">
+                <div className="relative w-16 h-16">
+                  {/* Background circle */}
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-muted/20"
+                    />
+                    {/* Progress circle */}
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeDasharray={`${(currentLessons / maxLessons) * 97.4} 97.4`}
+                      strokeLinecap="round"
+                      className="text-primary"
+                    />
+                  </svg>
+                  {/* Center text */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-xl font-bold text-foreground">{currentLessons}</span>
+                    <span className="text-xs text-muted-foreground">/{maxLessons}</span>
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-muted-foreground mt-1">TODAY</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Quick Action Tiles */}
