@@ -415,32 +415,31 @@ export function QuickActionTiles({
             </motion.div>
           )}
 
-          {/* 2-column grid for remaining actions */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* 2-column grid for remaining actions - compact oblong tiles */}
+          <div className="grid grid-cols-2 gap-2">
             {localTiles.slice(1).map((action, index) => {
               const Icon = getIcon(action.icon);
               const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
               const style = tileStyles[(index + 1) % tileStyles.length];
-              const isJobTile = isJobOffersAction(action);
               
               return (
                 <Link key={action.id} to={action.route} className="block">
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 + index * 0.05 }}
+                    transition={{ delay: 0.1 + index * 0.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 flex flex-col gap-2 shadow-lg hover:shadow-xl active:shadow-md transition-shadow min-h-[120px]`}
+                    className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-xl border border-border/50 dark:border-white/10 px-3 py-2.5 flex items-center gap-2.5 shadow-md hover:shadow-lg active:shadow-sm transition-shadow`}
                   >
-                    <div className={`relative w-12 h-12 rounded-xl ${style.iconBg} flex items-center justify-center`}>
-                      <Icon className={`h-5 w-5 ${style.iconColor}`} />
+                    <div className={`relative w-8 h-8 rounded-lg ${style.iconBg} flex items-center justify-center shrink-0`}>
+                      <Icon className={`h-4 w-4 ${style.iconColor}`} />
                       {showBadge && (
-                        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-md ring-2 ring-card">
+                        <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
                           {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                         </span>
                       )}
                     </div>
-                    <span className="font-semibold text-foreground text-sm leading-tight mt-auto">
+                    <span className="font-medium text-foreground text-xs leading-tight">
                       {action.title}
                     </span>
                   </motion.div>
