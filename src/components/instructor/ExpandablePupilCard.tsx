@@ -33,7 +33,8 @@ import {
   UserCheck,
   UserX,
   Pause,
-  XCircle
+  XCircle,
+  Route
 } from "lucide-react";
 import { PupilAssignmentsPanel } from "@/components/instructor/PupilAssignmentsPanel";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
@@ -168,6 +169,7 @@ export function ExpandablePupilCard({
   const [changingStatus, setChangingStatus] = useState(false);
   const currentStatus = (pupil.status || 'active') as PupilStatus;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isTrackingHistoryExpanded, setIsTrackingHistoryExpanded] = useState(false);
   const [latestFeedback, setLatestFeedback] = useState<LatestFeedback | null>(null);
   const [isAddingFeedback, setIsAddingFeedback] = useState(false);
   const [newFeedback, setNewFeedback] = useState("");
@@ -907,8 +909,42 @@ export function ExpandablePupilCard({
                 />
               )}
 
-              {/* Tracking History - Shows GPS tracked routes for this pupil */}
-              <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
+              {/* Tracking History - Collapsible Section */}
+              <div className="border rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsTrackingHistoryExpanded(!isTrackingHistoryExpanded);
+                  }}
+                  className="w-full flex items-center justify-between p-3 bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Route className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm">Tracking History</span>
+                  </div>
+                  {isTrackingHistoryExpanded ? (
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {isTrackingHistoryExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-3 pt-0">
+                        <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Payment Section */}
               <div className="space-y-3">
