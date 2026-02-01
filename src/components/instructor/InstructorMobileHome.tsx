@@ -226,7 +226,7 @@ export function InstructorMobileHome({
       {/* Motivation Section */}
       <div className="px-4 py-6">
         <h1 className="text-2xl font-bold text-foreground tracking-tight">
-          {content?.motivation_title || `READY TO TEACH, ${firstName.toUpperCase()}?`}
+          READY TO TEACH, {firstName.toUpperCase()}?
         </h1>
         <p className="text-muted-foreground mt-1">
           {content?.motivation_subtitle || "Let's make today count."}
