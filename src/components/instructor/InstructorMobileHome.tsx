@@ -51,7 +51,7 @@ import { NextLessonCard } from "@/components/instructor/NextLessonCard";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { StreakBadge } from "@/components/instructor/StreakBadge";
-import { TomorrowPreviewCard } from "@/components/instructor/TomorrowPreviewCard";
+
 import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
@@ -401,20 +401,6 @@ export function InstructorMobileHome({
         </div>
       )}
 
-      {/* Tomorrow Preview */}
-      {tomorrowPreview && (
-        <TomorrowPreviewCard
-          lessonCount={tomorrowPreview.lessonCount}
-          totalHours={tomorrowPreview.totalHours}
-          expectedEarnings={tomorrowPreview.expectedEarnings}
-          firstLessonTime={tomorrowPreview.firstLessonTime}
-          lastLessonTime={tomorrowPreview.lastLessonTime}
-          hasGaps={tomorrowPreview.hasGaps}
-          instructorId={instructorId}
-          lessons={tomorrowPreview.lessons}
-          className="mt-4"
-        />
-      )}
 
       {/* Gap Filler Suggestions */}
       {gapSuggestions && gapSuggestions.length > 0 && (
