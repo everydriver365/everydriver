@@ -1,10 +1,11 @@
-import { Clock, MapPin, MessageSquare, Navigation } from "lucide-react";
+import { Clock, MapPin, MessageSquare, Navigation, Car, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { format, parse } from "date-fns";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { haptics } from "@/lib/haptics";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
 
 interface NextLessonCardProps {
   pupilName: string;
@@ -26,6 +27,8 @@ export function NextLessonCard({
   startTime,
   minutesUntil,
 }: NextLessonCardProps) {
+  const { durationMinutes, durationText, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -104,6 +107,26 @@ export function NextLessonCard({
                   <span className="text-muted-foreground/50">•</span>
                   <MapPin className="h-3 w-3" />
                   <span className="truncate">{pickupPostcode}</span>
+                </>
+              )}
+              {/* Traffic ETA */}
+              {pickupPostcode && (
+                <>
+                  <span className="text-muted-foreground/50">•</span>
+                  {etaLoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                  ) : durationMinutes > 0 ? (
+                    <span className={`flex items-center gap-1 font-medium ${
+                      durationMinutes >= minutesUntil 
+                        ? 'text-destructive' 
+                        : durationMinutes >= minutesUntil - 10
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-emerald-600 dark:text-emerald-400'
+                    }`}>
+                      <Car className="h-3 w-3" />
+                      {durationText}
+                    </span>
+                  ) : null}
                 </>
               )}
             </div>
