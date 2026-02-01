@@ -18,9 +18,7 @@ import {
   MapPin,
   MessageSquare,
   X,
-  Plus,
-  Coffee,
-  ClipboardList
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuickAction } from "@/hooks/useInstructorHomepageContent";
@@ -382,12 +380,10 @@ export function QuickActionTiles({
                     </div>
                     <div className="relative flex-1 min-w-0">
                       <span className="font-semibold text-foreground text-base">{localTiles[0].title}</span>
-                      {/* Subtitle based on schedule status */}
+                      {/* Simple subtitle */}
                       <p className="text-muted-foreground text-xs mt-0.5">
                         {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0
                           ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount !== 1 ? 's' : ''} today`
-                          : isScheduleAction(localTiles[0])
-                          ? 'No lessons today'
                           : 'Tap to view'
                         }
                       </p>
@@ -395,7 +391,7 @@ export function QuickActionTiles({
                     <ChevronRight className="h-5 w-5 text-muted-foreground relative shrink-0" />
                   </div>
                   
-                  {/* Quick stats row for schedule tile WITH lessons */}
+                  {/* Quick stats row for schedule tile */}
                   {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0 && (
                     <div className="mt-3 pt-3 border-t border-border/30 space-y-1.5">
                       <div className="flex items-center gap-2">
@@ -412,30 +408,6 @@ export function QuickActionTiles({
                           </span>
                         </div>
                       )}
-                    </div>
-                  )}
-
-                  {/* Quiet day actions for schedule tile WITHOUT lessons */}
-                  {isScheduleAction(localTiles[0]) && (!todayOverview || todayOverview.lessonCount === 0) && (
-                    <div className="mt-3 pt-3 border-t border-border/30">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-3">
-                        <Coffee className="h-3.5 w-3.5 text-amber-500" />
-                        <span className="text-xs">Enjoy a well-deserved break</span>
-                      </div>
-                      <div className="flex gap-2" onClick={(e) => e.preventDefault()}>
-                        <Link to="/instructor/schedule" className="flex-1">
-                          <Button variant="outline" size="sm" className="w-full text-xs h-8 gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            View Schedule
-                          </Button>
-                        </Link>
-                        <Link to="/instructor/waitlist" className="flex-1">
-                          <Button variant="ghost" size="sm" className="w-full text-xs h-8 gap-1.5">
-                            <ClipboardList className="h-3.5 w-3.5" />
-                            Check Waitlist
-                          </Button>
-                        </Link>
-                      </div>
                     </div>
                   )}
                 </div>
