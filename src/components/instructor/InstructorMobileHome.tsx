@@ -82,7 +82,7 @@ export function InstructorMobileHome({
   const { isConnected: isTraccarConnected, status: traccarStatus } = useTraccarConnectionStatus(instructorId || null);
   
   // Driving alerts (weather + traffic)
-  const { alerts: drivingAlerts, dismissAlert } = useDrivingAlerts(instructorId);
+  const { alerts: drivingAlerts, dismissAlert, location: alertsLocation } = useDrivingAlerts(instructorId);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -392,7 +392,7 @@ export function InstructorMobileHome({
       </div>
 
       {/* Driving Alerts (Weather + Traffic) */}
-      <DrivingAlertsStrip alerts={drivingAlerts} onDismiss={dismissAlert} />
+      <DrivingAlertsStrip alerts={drivingAlerts} onDismiss={dismissAlert} location={alertsLocation} />
 
       {/* Smart Reminders */}
       <SmartRemindersCard />
