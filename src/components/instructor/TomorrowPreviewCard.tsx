@@ -1,8 +1,28 @@
 import { motion } from "framer-motion";
-import { Calendar, Clock, MapPin, AlertTriangle, ChevronRight, PoundSterling, Coffee, ClipboardList } from "lucide-react";
+import { 
+  Calendar, 
+  Clock, 
+  AlertTriangle, 
+  ChevronRight, 
+  PoundSterling, 
+  Coffee, 
+  ClipboardList,
+  Sun,
+  Cloud,
+  CloudSun,
+  CloudRain,
+  CloudDrizzle,
+  CloudSnow,
+  CloudFog,
+  CloudLightning,
+  Snowflake
+} from "lucide-react";
 import { format, parse, addDays } from "date-fns";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useTomorrowWeather } from "@/hooks/useTomorrowWeather";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TomorrowPreviewCardProps {
   lessonCount: number;
@@ -11,8 +31,21 @@ interface TomorrowPreviewCardProps {
   firstLessonTime: string | null;
   lastLessonTime: string | null;
   hasGaps: boolean;
+  instructorId?: string;
   className?: string;
 }
+
+const weatherIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  Sun,
+  Cloud,
+  CloudSun,
+  CloudRain,
+  CloudDrizzle,
+  CloudSnow,
+  CloudFog,
+  CloudLightning,
+  Snowflake,
+};
 
 export function TomorrowPreviewCard({
   lessonCount,
@@ -21,11 +54,33 @@ export function TomorrowPreviewCard({
   firstLessonTime,
   lastLessonTime,
   hasGaps,
+  instructorId,
   className = "",
 }: TomorrowPreviewCardProps) {
   const tomorrow = addDays(new Date(), 1);
   const dayName = format(tomorrow, "EEEE");
   const dateStr = format(tomorrow, "d MMM");
+
+  // Fetch instructor's coordinates
+  const { data: coords } = useQuery({
+    queryKey: ["instructor-coords", instructorId],
+    queryFn: async () => {
+      if (!instructorId) return null;
+      const { data } = await supabase
+        .from("instructors")
+        .select("lat, lng")
+        .eq("id", instructorId)
+        .single();
+      return data;
+    },
+    enabled: !!instructorId,
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
+
+  // Fetch tomorrow's weather
+  const { data: weather } = useTomorrowWeather(coords?.lat, coords?.lng);
+
+  const WeatherIcon = weather ? weatherIcons[weather.icon] || Cloud : null;
 
   const formatTime = (time: string | null) => {
     if (!time) return "—";
@@ -49,7 +104,15 @@ export function TomorrowPreviewCard({
               <Calendar className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-foreground text-sm">{dayName}'s Schedule</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-foreground text-sm">{dayName}'s Schedule</p>
+                {weather && WeatherIcon && (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <WeatherIcon className="h-4 w-4" />
+                    <span className="text-xs">{weather.temperature}°</span>
+                  </div>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">No lessons booked yet</p>
             </div>
           </div>
@@ -95,12 +158,21 @@ export function TomorrowPreviewCard({
               <span className="font-semibold text-foreground text-sm">{dayName}</span>
               <span className="text-xs text-muted-foreground">{dateStr}</span>
             </div>
-            {hasGaps && (
-              <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                <AlertTriangle className="h-3 w-3" />
-                <span className="text-[10px] font-medium">Has gaps</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {/* Weather display */}
+              {weather && WeatherIcon && (
+                <div className="flex items-center gap-1 text-muted-foreground bg-background/60 rounded-full px-2 py-0.5">
+                  <WeatherIcon className="h-3.5 w-3.5" />
+                  <span className="text-xs font-medium">{weather.temperature}°</span>
+                </div>
+              )}
+              {hasGaps && (
+                <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="h-3 w-3" />
+                  <span className="text-[10px] font-medium">Has gaps</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Stats */}
