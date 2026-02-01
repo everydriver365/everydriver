@@ -754,25 +754,6 @@ export default function InstructorTraccarSession() {
 
   return (
     <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
-      {/* Not Connected Warning Banner - only show when not in session */}
-      {!isConnected && !isSessionActive && (
-        <div className="bg-amber-500 text-white px-4 py-2.5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <WifiOff className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm font-medium truncate">
-              Device not connected – check your ST-902L tracker
-            </span>
-          </div>
-          <Button 
-            size="sm" 
-            variant="secondary"
-            className="h-7 text-xs bg-white/20 hover:bg-white/30 text-white border-0 flex-shrink-0"
-            onClick={() => navigate("/instructor/settings/traccar")}
-          >
-            Setup
-          </Button>
-        </div>
-      )}
 
       {/* Header - Matches other pages */}
       {!isSessionActive && (
