@@ -24,6 +24,13 @@ import { useTomorrowWeather } from "@/hooks/useTomorrowWeather";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface TomorrowLesson {
+  id: string;
+  pupilName: string;
+  startTime: string;
+  durationMinutes: number;
+}
+
 interface TomorrowPreviewCardProps {
   lessonCount: number;
   totalHours: number;
@@ -33,6 +40,7 @@ interface TomorrowPreviewCardProps {
   hasGaps: boolean;
   instructorId?: string;
   className?: string;
+  lessons?: TomorrowLesson[];
 }
 
 const weatherIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -56,6 +64,7 @@ export function TomorrowPreviewCard({
   hasGaps,
   instructorId,
   className = "",
+  lessons = [],
 }: TomorrowPreviewCardProps) {
   const tomorrow = addDays(new Date(), 1);
   const dayName = format(tomorrow, "EEEE");
@@ -206,6 +215,30 @@ export function TomorrowPreviewCard({
               <span className="text-xs text-blue-100">Expected</span>
             </div>
           </div>
+
+          {/* Lesson List */}
+          {lessons.length > 0 && (
+            <div className="mt-3 bg-white/10 rounded-xl p-3 max-h-36 overflow-y-auto">
+              <div className="space-y-2">
+                {lessons.map((lesson) => (
+                  <div 
+                    key={lesson.id} 
+                    className="flex items-center justify-between py-1.5 border-b border-white/10 last:border-0"
+                  >
+                    <span className="text-xs text-blue-100 w-16">
+                      {formatTime(lesson.startTime)}
+                    </span>
+                    <span className="text-sm font-medium text-white flex-1 truncate px-2">
+                      {lesson.pupilName}
+                    </span>
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full text-white">
+                      {lesson.durationMinutes}m
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Time range */}
           {firstLessonTime && lastLessonTime && (
