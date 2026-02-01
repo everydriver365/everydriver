@@ -1,9 +1,8 @@
-import { Clock, MapPin, MessageSquare, Navigation, Car, Loader2 } from "lucide-react";
+import { Clock, MapPin, MessageSquare, Navigation, Car, Loader2, CreditCard, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { format, parse } from "date-fns";
-import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { haptics } from "@/lib/haptics";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 
@@ -15,7 +14,8 @@ interface NextLessonCardProps {
   pickupLocation: string | null;
   startTime: string;
   minutesUntil: number;
-  pupilBalance?: number;
+  accountBalance?: number;
+  prepaidHours?: number;
 }
 
 export function NextLessonCard({
@@ -26,8 +26,49 @@ export function NextLessonCard({
   pickupLocation,
   startTime,
   minutesUntil,
+  accountBalance = 0,
+  prepaidHours = 0,
 }: NextLessonCardProps) {
   const { durationMinutes, durationText, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
+
+  // Payment status logic
+  const getPaymentStatus = () => {
+    if (accountBalance < 0) {
+      // Owes money (negative balance means debt)
+      return { 
+        type: 'owes' as const, 
+        label: `Owes £${Math.abs(accountBalance).toFixed(0)}`,
+        icon: AlertCircle,
+        className: 'bg-destructive/15 text-destructive'
+      };
+    } else if (prepaidHours > 0) {
+      // Has prepaid credit
+      return { 
+        type: 'credit' as const, 
+        label: `${prepaidHours}h credit`,
+        icon: CreditCard,
+        className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+      };
+    } else if (accountBalance > 0) {
+      // Has positive balance
+      return { 
+        type: 'credit' as const, 
+        label: `£${accountBalance.toFixed(0)} credit`,
+        icon: CreditCard,
+        className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+      };
+    }
+    // Paid up (zero balance, no prepaid)
+    return { 
+      type: 'paid' as const, 
+      label: 'Paid up',
+      icon: CheckCircle2,
+      className: 'bg-muted text-muted-foreground'
+    };
+  };
+
+  const paymentStatus = getPaymentStatus();
+  const PaymentIcon = paymentStatus.icon;
 
   const getInitials = (name: string) => {
     return name
@@ -97,6 +138,11 @@ export function NextLessonCard({
                   : 'bg-primary/15 text-primary'
               }`}>
                 {getCountdownText()}
+              </span>
+              {/* Payment Status Badge */}
+              <span className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${paymentStatus.className}`}>
+                <PaymentIcon className="h-2.5 w-2.5" />
+                {paymentStatus.label}
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
