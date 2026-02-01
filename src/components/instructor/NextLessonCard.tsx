@@ -3,6 +3,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { format, parse } from "date-fns";
+import { PaymentStatusBadge } from "./PaymentStatusBadge";
+import { haptics } from "@/lib/haptics";
 
 interface NextLessonCardProps {
   pupilName: string;
@@ -12,6 +14,7 @@ interface NextLessonCardProps {
   pickupLocation: string | null;
   startTime: string;
   minutesUntil: number;
+  pupilBalance?: number;
 }
 
 export function NextLessonCard({
