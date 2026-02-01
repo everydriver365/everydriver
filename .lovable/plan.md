@@ -1,145 +1,86 @@
 
-# Traffic & Weather Alerts for Instructor Home
+# Improve Weather Alerts Readability & Location Display
 
 ## Overview
-Add a contextual alert strip to the instructor home page that displays real-time weather conditions and traffic incidents affecting their teaching area. This will help instructors plan their lessons more effectively by warning about adverse conditions.
+Enhance the driving alerts to be more readable and include the location name (area/town) so instructors know exactly where the weather report is for.
 
 ---
 
-## What You'll Get
+## What Will Change
 
-### Weather Alerts
-- Current temperature and conditions for your area
-- Warnings for adverse weather (heavy rain, ice, fog, snow)
-- Visibility and wind speed warnings relevant to driving lessons
+### 1. Location Display
+- Show area name (e.g., "Finchley", "Camden Town") derived from the postcode
+- Display at the top of weather alerts so it's immediately clear where the forecast is for
 
-### Traffic Alerts  
-- Real-time traffic incidents near your location
-- Road closures and delays on common routes
-- Estimated impact on lesson times
-
-### Smart Integration
-- Alerts appear between the motivational card and Smart Reminders
-- Colour-coded by severity (amber for moderate, red for severe)
-- Dismissible for the day if not relevant
-- Only shows when there's something noteworthy
+### 2. Better Readability  
+- Clearer typography hierarchy
+- Temperature displayed more prominently
+- Condition text simplified and easier to scan
+- Location name shown in a subtle badge
 
 ---
 
-## How It Will Look
+## Visual Preview
 
-The alerts will appear as compact, tappable cards below the hero section:
-
+**Before:**
 ```text
-┌─────────────────────────────────────────────┐
-│  ☁️ 8°C Overcast • Light rain expected      │
-│     Visibility: 5km • Wind: 15 mph          │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│ 🌡️ WEATHER              SEVERE      │
+│ 2°C - Ice Risk                      │
+│ Near freezing. Watch for ice...     │
+└──────────────────────────────────────┘
+```
 
-┌─────────────────────────────────────────────┐
-│  🚧 Traffic Alert: A406 Roadworks           │
-│     20 min delay • Finchley Road area       │
-└─────────────────────────────────────────────┘
+**After:**
+```text
+┌──────────────────────────────────────┐
+│ 📍 Finchley   WEATHER               │
+│ 🌡️ 2°C - Ice Risk                   │
+│ Near freezing. Watch for ice...     │
+└──────────────────────────────────────┘
 ```
 
 ---
 
-## Data Sources
+## Technical Changes
 
-### Weather (Free API - No Key Needed)
-- **Open-Meteo API**: Completely free, no API key required
-- Provides current conditions, hourly forecasts, and weather codes
-- Excellent for UK weather with high accuracy
+### Backend (Edge Function)
+Add location name retrieval from postcodes.io geocode response and include it in the API response.
 
-### Traffic (Using Existing Key)
-- **TomTom Traffic API**: You already have `TOMTOM_API_KEY` configured
-- Provides real-time incident data within a radius
-- Includes delays, roadworks, closures, and accidents
+**File:** `supabase/functions/get-driving-alerts/index.ts`
+- Extract `admin_district` or `ward` from the geocode response
+- Add `location` field to the returned data
+- Cache the location name alongside lat/lng
 
----
+### Data Layer (Hook)
+Update the hook to capture and expose the location name.
 
-## Technical Implementation
+**File:** `src/hooks/useDrivingAlerts.ts`
+- Add `location` to the return type
+- Include location in cache structure
+- Pass location through to the UI
 
-### 1. New Edge Function: `get-driving-alerts`
-Creates a backend function that:
-- Geocodes the instructor's `home_postcode` to coordinates
-- Fetches weather from Open-Meteo (free, no key)
-- Fetches traffic incidents from TomTom (using existing key)
-- Returns combined, filtered alerts
+### UI Component
+Enhance the alert cards for better readability with location context.
 
-### 2. New Database Columns
-Adds to `instructors` table:
-- `lat` (numeric) - Cached latitude for postcode
-- `lng` (numeric) - Cached longitude for postcode
-
-### 3. New Hook: `useDrivingAlerts`
-A React hook that:
-- Calls the edge function periodically (every 10 minutes)
-- Caches results to prevent excessive API calls
-- Filters alerts based on severity thresholds
-- Handles loading and error states
-
-### 4. New Component: `DrivingAlertsStrip`
-A mobile-optimised alert strip that:
-- Shows weather conditions with temperature and icon
-- Lists nearby traffic incidents with severity
-- Uses compact, horizontal layout following existing UI standards
-- Supports dismiss functionality
-
-### 5. Integration into Home Page
-- Placed in `InstructorMobileHome.tsx` after the motivational card
-- Only renders when there are noteworthy conditions
-- Follows the same motion animations as other elements
+**File:** `src/components/instructor/DrivingAlertsStrip.tsx`
+- Add location prop
+- Display location badge at top of weather alerts
+- Improve typography: larger title, better spacing
+- Add MapPin icon for location indicator
 
 ---
 
-## Files to Create
+## Database Change
+Add `location_name` column to the `instructors` table to cache the area name (avoids repeated geocoding calls).
 
-| File | Purpose |
-|------|---------|
-| `supabase/functions/get-driving-alerts/index.ts` | Edge function for weather + traffic API calls |
-| `src/hooks/useDrivingAlerts.ts` | React hook for fetching and caching alerts |
-| `src/components/instructor/DrivingAlertsStrip.tsx` | UI component for displaying alerts |
+---
 
-## Files to Modify
+## Summary of Files
 
 | File | Change |
 |------|--------|
-| `src/components/instructor/InstructorMobileHome.tsx` | Import and render DrivingAlertsStrip |
-| Database migration | Add lat/lng columns to instructors table |
-
----
-
-## Alert Threshold Logic
-
-### Weather Triggers
-- Temperature below 3°C (ice risk)
-- Rain probability > 60%
-- Wind speed > 25 mph
-- Visibility < 2km
-- Weather codes for snow, fog, thunderstorm
-
-### Traffic Triggers
-- Incidents within 10km of instructor
-- Delay > 10 minutes
-- Severity: Major or Moderate
-- Types: Accident, roadworks, closure, congestion
-
----
-
-## Cost Considerations
-
-- **Open-Meteo**: Completely free, unlimited calls
-- **TomTom**: Already configured; Traffic API has generous free tier (2,500 requests/day)
-- Caching ensures minimal API usage (1 call per instructor per 10 mins max)
-
----
-
-## Mobile UI Standards Applied
-
-Following existing patterns:
-- Compact card with gradient background based on alert type
-- Icon-first layout with minimal text
-- Horizontal scrolling if multiple alerts
-- Uses existing colour tokens (amber for warnings, red for severe)
-- Respects dark/light mode theming
+| `supabase/functions/get-driving-alerts/index.ts` | Return location name from geocode |
+| `src/hooks/useDrivingAlerts.ts` | Expose location in hook return |
+| `src/components/instructor/DrivingAlertsStrip.tsx` | Display location + improve readability |
+| Database migration | Add `location_name` column to instructors |
