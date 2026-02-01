@@ -50,7 +50,7 @@ import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetu
 import { NextLessonCard } from "@/components/instructor/NextLessonCard";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
-import { StreakBadge } from "@/components/instructor/StreakBadge";
+
 
 import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
@@ -364,15 +364,6 @@ export function InstructorMobileHome({
         onComplete={() => setShowConfetti(false)} 
       />
 
-      {/* Streak Badge - shown if streak >= 2 days */}
-      {streak && streak.currentStreak >= 2 && (
-        <div className="px-4 mt-3 flex justify-center">
-          <StreakBadge 
-            currentStreak={streak.currentStreak} 
-            isActiveToday={streak.isActiveToday} 
-          />
-        </div>
-      )}
 
       {/* Weather/Traffic Alerts */}
       {alerts.length > 0 && (
