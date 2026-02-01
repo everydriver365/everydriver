@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarPlus, MessageSquare, ChevronDown, ChevronUp, Clock, Users } from "lucide-react";
+import { CalendarPlus, ChevronDown, ChevronUp, Clock, Users, Check, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, parseISO } from "date-fns";
 import { haptics } from "@/lib/haptics";
@@ -24,12 +24,18 @@ interface GapFillerCardProps {
   className?: string;
 }
 
+interface SelectedPupil extends SuggestedPupil {
+  formattedDate: string;
+}
+
 export function GapFillerCard({
   gaps,
   className = "",
 }: GapFillerCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedDate, setExpandedDate] = useState<string | null>(null);
+  const [selectedPupils, setSelectedPupils] = useState<Map<string, SelectedPupil>>(new Map());
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleToggle = () => {
     haptics.selection();
@@ -41,13 +47,60 @@ export function GapFillerCard({
     setExpandedDate(expandedDate === date ? null : date);
   };
 
-  const handleSMS = (pupil: SuggestedPupil, formattedDate: string) => {
+  const togglePupilSelection = (pupil: SuggestedPupil, formattedDate: string) => {
     if (!pupil.phone) return;
     haptics.light();
-    const message = encodeURIComponent(
-      `Hi ${pupil.name.split(" ")[0]}, I have availability on ${formattedDate}. Would you like to book a lesson?`
-    );
-    window.open(`sms:${pupil.phone}?body=${message}`, "_self");
+    
+    setSelectedPupils(prev => {
+      const newMap = new Map(prev);
+      const key = `${pupil.id}-${formattedDate}`;
+      
+      if (newMap.has(key)) {
+        newMap.delete(key);
+      } else {
+        newMap.set(key, { ...pupil, formattedDate });
+      }
+      return newMap;
+    });
+  };
+
+  const isPupilSelected = (pupilId: string, formattedDate: string) => {
+    return selectedPupils.has(`${pupilId}-${formattedDate}`);
+  };
+
+  const generateMessage = (pupil: SelectedPupil) => {
+    return `Hi ${pupil.name.split(" ")[0]}, I have availability on ${pupil.formattedDate}. Would you like to book a lesson?`;
+  };
+
+  const handleSendMessages = () => {
+    haptics.medium();
+    
+    // Send SMS to each selected pupil
+    const pupils = Array.from(selectedPupils.values());
+    pupils.forEach((pupil, index) => {
+      if (pupil.phone) {
+        const message = encodeURIComponent(generateMessage(pupil));
+        // Small delay between opening each SMS to prevent issues
+        setTimeout(() => {
+          window.open(`sms:${pupil.phone}?body=${message}`, "_self");
+        }, index * 100);
+      }
+    });
+    
+    // Clear selection after sending
+    setSelectedPupils(new Map());
+    setShowPreview(false);
+  };
+
+  const handleCancelPreview = () => {
+    haptics.light();
+    setShowPreview(false);
+  };
+
+  const handleShowPreview = () => {
+    if (selectedPupils.size === 0) return;
+    haptics.medium();
+    setShowPreview(true);
   };
 
   if (gaps.length === 0) return null;
@@ -156,44 +209,52 @@ export function GapFillerCard({
                           >
                             <div className="px-2 pb-2 space-y-1.5">
                               <p className="text-xs text-muted-foreground px-1">
-                                Quick message these pupils:
+                                Tap to select pupils to message:
                               </p>
-                              {gap.suggestedPupils.map((pupil) => (
-                                <div
-                                  key={pupil.id}
-                                  className="flex items-center justify-between bg-background rounded-lg p-2"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                                      {pupil.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                              {gap.suggestedPupils.map((pupil) => {
+                                const isSelected = isPupilSelected(pupil.id, formattedDate);
+                                return (
+                                  <button
+                                    key={pupil.id}
+                                    onClick={() => togglePupilSelection(pupil, formattedDate)}
+                                    disabled={!pupil.phone}
+                                    className={`w-full flex items-center justify-between rounded-lg p-2 transition-colors ${
+                                      isSelected 
+                                        ? "bg-emerald-500/20 border border-emerald-500/40" 
+                                        : "bg-background hover:bg-muted"
+                                    } ${!pupil.phone ? "opacity-50 cursor-not-allowed" : ""}`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
+                                        isSelected 
+                                          ? "bg-emerald-500 text-white" 
+                                          : "bg-primary/10 text-primary"
+                                      }`}>
+                                        {isSelected ? (
+                                          <Check className="h-4 w-4" />
+                                        ) : (
+                                          pupil.name.split(" ").map(n => n[0]).join("").slice(0, 2)
+                                        )}
+                                      </div>
+                                      <div className="min-w-0 text-left">
+                                        <p className="text-sm font-medium text-foreground truncate">
+                                          {pupil.name}
+                                        </p>
+                                        {pupil.isWaitlisted && (
+                                          <span className="text-[10px] text-amber-600 dark:text-amber-400">
+                                            Waitlisted
+                                          </span>
+                                        )}
+                                        {!pupil.phone && (
+                                          <span className="text-[10px] text-muted-foreground">
+                                            No phone number
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
-                                    <div className="min-w-0">
-                                      <p className="text-sm font-medium text-foreground truncate">
-                                        {pupil.name}
-                                      </p>
-                                      {pupil.isWaitlisted && (
-                                        <span className="text-[10px] text-amber-600 dark:text-amber-400">
-                                          Waitlisted
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                  
-                                  {pupil.phone && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-7 w-7 p-0 text-primary hover:bg-primary/10"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleSMS(pupil, formattedDate);
-                                      }}
-                                    >
-                                      <MessageSquare className="h-4 w-4" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
+                                  </button>
+                                );
+                              })}
                             </div>
                           </motion.div>
                         )}
@@ -201,7 +262,90 @@ export function GapFillerCard({
                     </div>
                   );
                 })}
+
+                {/* Send button */}
+                {selectedPupils.size > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="pt-2"
+                  >
+                    <Button
+                      onClick={handleShowPreview}
+                      className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    >
+                      <Send className="h-4 w-4" />
+                      Preview Message ({selectedPupils.size} {selectedPupils.size === 1 ? "pupil" : "pupils"})
+                    </Button>
+                  </motion.div>
+                )}
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Message Preview Modal */}
+        <AnimatePresence>
+          {showPreview && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+              onClick={handleCancelPreview}
+            >
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="w-full max-w-lg bg-background rounded-t-2xl p-4 pb-safe"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Preview Messages</h3>
+                  <button
+                    onClick={handleCancelPreview}
+                    className="p-1 rounded-full hover:bg-muted"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 max-h-[50vh] overflow-y-auto">
+                  {Array.from(selectedPupils.values()).map((pupil) => (
+                    <div key={`${pupil.id}-${pupil.formattedDate}`} className="bg-muted rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                          {pupil.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                        </div>
+                        <span className="text-sm font-medium">{pupil.name}</span>
+                        <span className="text-xs text-muted-foreground">• {pupil.phone}</span>
+                      </div>
+                      <p className="text-sm text-foreground bg-background rounded-lg p-2 border">
+                        {generateMessage(pupil)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleCancelPreview}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    onClick={handleSendMessages}
+                  >
+                    <Send className="h-4 w-4" />
+                    Send {selectedPupils.size} {selectedPupils.size === 1 ? "Message" : "Messages"}
+                  </Button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
