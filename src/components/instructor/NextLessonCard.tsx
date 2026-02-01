@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Clock, MapPin, MessageSquare, Navigation, Car, Loader2, CreditCard, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { motion } from "framer-motion";
 import { format, parse } from "date-fns";
 import { haptics } from "@/lib/haptics";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
+import { RunningLateSheet } from "./RunningLateSheet";
 
 interface NextLessonCardProps {
   pupilName: string;
@@ -29,6 +31,7 @@ export function NextLessonCard({
   accountBalance = 0,
   prepaidHours = 0,
 }: NextLessonCardProps) {
+  const [showLateSheet, setShowLateSheet] = useState(false);
   const { durationMinutes, durationText, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
 
   // Payment status logic
@@ -103,11 +106,9 @@ export function NextLessonCard({
     }
   };
 
-  const handleSendSMS = () => {
-    if (pupilPhone) {
-      const message = encodeURIComponent("Hi, I'm on my way!");
-      window.open(`sms:${pupilPhone}?body=${message}`, "_self");
-    }
+  const handleOpenLateSheet = () => {
+    haptics.selection();
+    setShowLateSheet(true);
   };
 
   return (
@@ -195,7 +196,7 @@ export function NextLessonCard({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                onClick={handleSendSMS}
+                onClick={handleOpenLateSheet}
               >
                 <MessageSquare className="h-4 w-4" />
               </Button>
@@ -203,6 +204,15 @@ export function NextLessonCard({
           </div>
         </div>
       </div>
+
+      {/* Running Late Sheet */}
+      <RunningLateSheet
+        open={showLateSheet}
+        onOpenChange={setShowLateSheet}
+        pupilName={pupilName}
+        pupilPhone={pupilPhone}
+        startTime={startTime}
+      />
     </motion.div>
   );
 }
