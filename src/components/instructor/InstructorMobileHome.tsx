@@ -233,48 +233,48 @@ export function InstructorMobileHome({
         </div>
         
         {/* Overlapping Motivation Card */}
-        <div className="relative -mt-20 mx-4">
-          <div className="bg-card rounded-3xl shadow-xl p-5 border border-border/50">
-            <div className="flex items-start justify-between">
+        <div className="relative -mt-16 mx-3">
+          <div className="bg-card rounded-2xl shadow-lg p-4 border border-border/50">
+            <div className="flex items-start justify-between gap-3">
               {/* Left Content */}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 {/* TODAY Label with Status */}
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-semibold text-muted-foreground tracking-wide">TODAY</span>
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
                     isTraccarConnected 
                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
                       : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                   }`}>
-                    <span className={`w-2 h-2 rounded-full ${isTraccarConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isTraccarConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
                     {isTraccarConnected ? 'Live' : 'Offline'}
                   </span>
                 </div>
                 
                 {/* Title */}
-                <h1 className="text-2xl font-bold text-foreground tracking-tight mb-1">
+                <h1 className="text-lg font-bold text-foreground tracking-tight">
                   READY TO TEACH?
                 </h1>
                 
                 {/* Subtitle */}
-                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                  {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help! You are not alone."}
+                <p className="text-muted-foreground text-xs leading-relaxed mt-0.5 mb-3 line-clamp-2">
+                  {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help!"}
                 </p>
                 
                 {/* Go Live Button */}
                 <Button 
                   onClick={() => navigate("/instructor/traccar")}
-                  className="bg-primary text-primary-foreground rounded-xl px-5 py-2.5 h-auto font-semibold shadow-md"
+                  size="sm"
+                  className="bg-primary text-primary-foreground rounded-lg px-4 h-9 font-semibold shadow-sm"
                 >
-                  <Play className="h-4 w-4 mr-2 fill-current" />
+                  <Play className="h-3.5 w-3.5 mr-1.5 fill-current" />
                   Go Live
                 </Button>
               </div>
               
               {/* Right - Progress Indicator */}
-              <div className="flex flex-col items-center ml-4">
-                <div className="relative w-16 h-16">
-                  {/* Background circle */}
+              <div className="flex flex-col items-center shrink-0">
+                <div className="relative w-14 h-14">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                     <circle
                       cx="18"
@@ -282,29 +282,27 @@ export function InstructorMobileHome({
                       r="15.5"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                       className="text-muted/20"
                     />
-                    {/* Progress circle */}
                     <circle
                       cx="18"
                       cy="18"
                       r="15.5"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                       strokeDasharray={`${(currentLessons / maxLessons) * 97.4} 97.4`}
                       strokeLinecap="round"
                       className="text-primary"
                     />
                   </svg>
-                  {/* Center text */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-bold text-foreground">{currentLessons}</span>
-                    <span className="text-xs text-muted-foreground">/{maxLessons}</span>
+                    <span className="text-lg font-bold text-foreground leading-none">{currentLessons}</span>
+                    <span className="text-[10px] text-muted-foreground">/{maxLessons}</span>
                   </div>
                 </div>
-                <span className="text-xs font-medium text-muted-foreground mt-1">TODAY</span>
+                <span className="text-[10px] font-medium text-muted-foreground mt-0.5">TODAY</span>
               </div>
             </div>
           </div>
