@@ -402,12 +402,6 @@ export function InstructorMobileHome({
         />
       )}
 
-      {/* Fuel Finder Card */}
-      <FuelFinderCard
-        instructorId={instructorId}
-        className="mt-4"
-      />
-
       {/* Quick Action Tiles */}
       <div className="px-4 pt-4 pb-4">
         <QuickActionTiles
@@ -419,6 +413,12 @@ export function InstructorMobileHome({
           onEditModeChange={setIsTileEditMode}
         />
       </div>
+
+      {/* Fuel Finder Card - Above Today's Stats */}
+      <FuelFinderCard
+        instructorId={instructorId}
+        className="mt-4"
+      />
 
       {/* Today's Stats */}
       <div className="px-4 mt-4">

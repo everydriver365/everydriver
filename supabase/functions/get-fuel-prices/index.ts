@@ -130,16 +130,49 @@ function parseStations(data: any, brand: string, userLat: number, userLng: numbe
         // Skip if no usable prices
         if (!prices.E10 && !prices.E5 && !prices.B7) continue;
         
-        const address = station.address || station.Address || station.site_address || "";
-        const postcode = station.postcode || station.Postcode || station.post_code || station.location?.postcode || "";
-        const name = station.site_name || station.name || station.Name || station.SiteName || station.site_id || brand;
+        // Handle address field - can be object or string
+        let address = "";
+        if (typeof station.address === "object" && station.address !== null) {
+          address = [
+            station.address.street_number,
+            station.address.street, 
+            station.address.city,
+            station.address.town,
+            station.address.county
+          ].filter(Boolean).join(", ");
+        } else {
+          address = station.address || station.Address || station.site_address || "";
+        }
+        
+        const postcode = station.postcode || station.Postcode || station.post_code || 
+                        station.location?.postcode || station.address?.postcode || "";
+        
+        // Try to get proper name - many APIs use different field names
+        // Skip ID-like fields (e.g. "gcncr7kkq0kk") 
+        const rawName = station.site_name || station.siteName || station.SiteName || 
+                       station.name || station.Name || station.brand_name || 
+                       station.site_id || "";
+        
+        // Check if name looks like an ID (alphanumeric hash) and use brand + location instead
+        const isIdLike = typeof rawName === "string" && 
+                        /^[a-z0-9]{10,}$/i.test(rawName) && 
+                        !rawName.includes(" ");
+        
+        let name: string;
+        if (!rawName || isIdLike) {
+          // Build a descriptive name from brand + address/postcode
+          const locationHint = postcode || 
+            (typeof address === "string" ? address.split(",")[0] : "") || 
+            "";
+          name = locationHint ? `${brand} ${locationHint}` : brand;
+        } else {
+          name = rawName;
+        }
         
         stations.push({
           name: typeof name === "string" ? name : brand,
           brand,
-          address: typeof address === "object" ? 
-            [address.street, address.city].filter(Boolean).join(", ") : 
-            (address || ""),
+          address: address || "",
           postcode: postcode || "",
           lat,
           lng,
