@@ -53,6 +53,7 @@ import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 
 
 import { GapFillerCard } from "@/components/instructor/GapFillerCard";
+import { FuelFinderCard } from "@/components/instructor/FuelFinderCard";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
@@ -400,6 +401,12 @@ export function InstructorMobileHome({
           className="mt-4"
         />
       )}
+
+      {/* Fuel Finder Card */}
+      <FuelFinderCard
+        instructorId={instructorId}
+        className="mt-4"
+      />
 
       {/* Quick Action Tiles */}
       <div className="px-4 pt-4 pb-4">

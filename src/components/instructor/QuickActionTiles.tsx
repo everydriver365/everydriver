@@ -42,7 +42,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Navigation,
   Award,
   MapPin,
-  MessageSquare
+  MessageSquare,
+  Fuel: Car, // Reuse Car icon for Fuel until Fuel is available
 };
 
 // Additional tiles available to add
@@ -69,6 +70,7 @@ const additionalTiles: QuickAction[] = [
   { id: "courses", title: "My Courses", icon: "Briefcase", route: "/instructor/courses", display_order: 115 },
   { id: "reviews", title: "Reviews", icon: "Award", route: "/instructor/reviews", display_order: 116 },
   { id: "mini-website", title: "Mini Website", icon: "Users", route: "/instructor/mini-website", display_order: 117 },
+  { id: "fuel-finder", title: "Cheapest Fuel", icon: "Fuel", route: "/instructor/fuel", display_order: 118 },
 ];
 
 interface QuickActionTilesProps {
