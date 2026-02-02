@@ -161,3 +161,6 @@ verify_jwt = false
 
 [functions.get-driving-alerts]
 verify_jwt = false
+
+[functions.get-fuel-prices]
+verify_jwt = false
