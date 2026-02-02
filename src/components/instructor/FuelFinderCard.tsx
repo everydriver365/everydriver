@@ -113,7 +113,9 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
         {/* Header */}
         <div className="px-4 py-2 border-b border-border/50 bg-muted/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Fuel className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            <div className="w-5 h-5 rounded bg-amber-500/20 flex items-center justify-center">
+              <Fuel className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            </div>
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cheapest Fuel Nearby</span>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
