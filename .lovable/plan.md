@@ -1,71 +1,166 @@
 
-# Tracker App Reminder Before Lessons
+# Enhance GPS Tracker Connection Status on Mobile Tracking Page
 
 ## Overview
 
-This feature adds an intelligent reminder system that prompts instructors to open the GPSgate Tracker app before their lessons start, ensuring GPS tracking is active for trip recording.
+This plan improves the visibility of the GPSgate Tracker app connection status on the mobile tracking page (`/instructor/live`). Currently, the status is shown as a small inline bar - we'll make it more prominent with clearer visual indicators, real-time updates, and actionable troubleshooting guidance when offline.
 
-## How It Works
+## Current State
 
-The reminder will:
-1. Show a dismissible prompt on the home page when the next lesson is within 30 minutes
-2. Only show if GPS status is "Offline" (no recent heartbeat from tracker)
-3. Include a deep link to open the GPSgate Tracker app (or App Store if not installed)
-4. Persist dismissal state per-lesson to avoid nagging
+The connection status bar (lines 877-898) is:
+- A small single-line bar at the top of the map
+- Shows "Connected" or "Last: Xm Xs ago"
+- Uses subtle color coding (emerald/destructive)
+- No troubleshooting guidance or actionable steps
 
-## Data Flow
+## Proposed Design
 
+### 1. Enhanced Connection Status Card (Pre-Session)
+
+Replace the simple status bar with an expanded, more prominent status card:
+
+```text
+When Connected:
+┌────────────────────────────────────────────────┐
+│  📡  GPSgate Tracker                           │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━           │
+│  ● Connected • Updated 5s ago        [Pulsing] │
+│                                                │
+│  Speed: 32 mph  •  Road: High Street           │
+└────────────────────────────────────────────────┘
+
+When Offline:
+┌────────────────────────────────────────────────┐
+│  📵  GPSgate Tracker                    ⚠️     │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━           │
+│  ✕ Offline • Last seen 3m ago                  │
+│                                                │
+│  Tap to open GPSgate Tracker app →             │
+│  [Open Tracker App]                            │
+└────────────────────────────────────────────────┘
 ```
-useNextLessonDetails → nextLesson.minutesUntil (30 min threshold)
-       ↓
-useGPSConnectionStatus → isConnected: false triggers reminder
-       ↓
-TrackerReminderBanner component displays prompt
-       ↓
-localStorage tracks dismissed lesson IDs
-```
+
+### 2. Key Visual Improvements
+
+| Element | Before | After |
+|---------|--------|-------|
+| Size | Single line, 48px height | Expanded card, ~100px height |
+| Status Indicator | Small text badge | Large animated dot with label |
+| Device Name | Small text | Prominent heading |
+| Last Update | "Last: 3m 20s ago" | "Updated 5s ago" or "Last seen 3m ago" |
+| Troubleshooting | None | "Open Tracker App" button when offline |
+| Real-time Data | Not shown | Speed + Road name when connected |
+
+### 3. Deep Link Integration
+
+When offline, include a prominent button to open the GPSgate Tracker app (reusing logic from `TrackerReminderBanner`):
+- Attempts deep link to `gpsgate://`
+- Falls back to App Store/Play Store
+
+### 4. Active Session Status
+
+During an active session, show a more prominent floating status indicator:
+- Larger pulsing dot when connected
+- Prominent warning banner with countdown when offline
+- Clear visual feedback for data freshness
 
 ## Implementation Details
 
-### 1. New Component: TrackerReminderBanner
+### Files to Modify
 
-A compact, dismissible banner that appears above the Next Lesson card when conditions are met:
+| File | Changes |
+|------|---------|
+| `src/pages/InstructorLiveSession.tsx` | Replace inline status bar with enhanced status card component |
 
-**Display conditions:**
-- Next lesson exists AND minutesUntil <= 30
-- GPS status is "offline" (no device heartbeat in 5+ minutes)
-- User hasn't dismissed this specific lesson's reminder
+### New UI Components Within Page
 
-**UI Design:**
-- Amber/warning styling to draw attention
-- Smartphone icon + clear message
-- "Open Tracker" button with deep link
-- Dismiss (X) button
+Create inline components/sections in `InstructorLiveSession.tsx`:
 
+**1. Pre-Session Status Card**
+```tsx
+{/* Enhanced Connection Status Card */}
+<div className="pointer-events-auto flex-shrink-0 p-3 pb-0">
+  <div className={`rounded-2xl border-2 backdrop-blur shadow-lg ${
+    isConnected 
+      ? "bg-emerald-50/95 border-emerald-300" 
+      : "bg-amber-50/95 border-amber-300"
+  }`}>
+    <div className="p-4 space-y-3">
+      {/* Header with icon and device name */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-full ${...}`}>
+            <Smartphone className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold">GPSgate Tracker</h3>
+            <p className="text-xs text-muted-foreground">{device.device_name}</p>
+          </div>
+        </div>
+        {/* Pulsing status indicator */}
+        <StatusDot isConnected={isConnected} />
+      </div>
+      
+      {/* Connection details */}
+      <div className="flex items-center justify-between text-sm">
+        <span>{isConnected ? "Connected" : "Offline"}</span>
+        <span className="text-muted-foreground">{lastSeenLabel}</span>
+      </div>
+      
+      {/* Live data when connected */}
+      {isConnected && device.last_speed_kmh != null && (
+        <div className="flex items-center gap-4 text-sm">
+          <span>🏎️ {speedMph} mph</span>
+          {device.last_road_name && <span>📍 {device.last_road_name}</span>}
+        </div>
+      )}
+      
+      {/* Open app button when offline */}
+      {!isConnected && (
+        <Button onClick={openTrackerApp} className="w-full">
+          <ExternalLink className="h-4 w-4 mr-2" />
+          Open GPSgate Tracker
+        </Button>
+      )}
+    </div>
+  </div>
+</div>
 ```
-┌──────────────────────────────────────────────────┐
-│ 📱 Open GPSgate Tracker          [Open] [✕]    │
-│ Start the app to record your upcoming lesson    │
-└──────────────────────────────────────────────────┘
+
+**2. Active Session Status Badge**
+```tsx
+{/* Enhanced session status - top left */}
+<div className="absolute top-4 left-4 z-30">
+  <div className={`flex items-center gap-2 px-3 py-2 rounded-xl backdrop-blur shadow-lg ${
+    isConnected 
+      ? "bg-emerald-500/90 text-white" 
+      : "bg-amber-500/90 text-white"
+  }`}>
+    <span className="relative flex h-3 w-3">
+      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+        isConnected ? "bg-white" : "bg-red-300"
+      }`}></span>
+      <span className={`relative inline-flex rounded-full h-3 w-3 ${
+        isConnected ? "bg-white" : "bg-red-400"
+      }`}></span>
+    </span>
+    <span className="text-sm font-semibold">
+      {isConnected ? "Recording" : "Signal Lost"}
+    </span>
+  </div>
+</div>
 ```
 
-### 2. Deep Link Strategy
+### Deep Link Function
 
-GPSgate Tracker app deep links:
-- **iOS**: `gpsgate://` or App Store fallback
-- **Android**: Intent URL or Play Store fallback
-
-Implementation:
 ```typescript
 const openTrackerApp = () => {
-  // Try deep link first, fallback to app store
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const deepLink = "gpsgate://";
   const appStoreLink = isIOS 
     ? "https://apps.apple.com/app/gpsgate-tracker/id434645675"
     : "https://play.google.com/store/apps/details?id=com.gpsgate.tracker";
   
-  // Attempt deep link with fallback
   window.location.href = deepLink;
   setTimeout(() => {
     window.location.href = appStoreLink;
@@ -73,66 +168,23 @@ const openTrackerApp = () => {
 };
 ```
 
-### 3. Dismissal Logic
+## Visual Comparison
 
-Store dismissed lesson IDs in localStorage with daily cleanup:
+### Before
+- Small inline bar, easy to miss
+- No troubleshooting when offline
+- No live data preview
 
-```typescript
-const DISMISSED_KEY = "tracker_reminder_dismissed";
+### After
+- Prominent card with clear visual hierarchy
+- Actionable "Open Tracker" button when offline
+- Shows live speed and road when connected
+- Animated status indicators for visual feedback
+- Consistent with existing UI patterns (GPSConnectionChecklist styling)
 
-const isDismissed = (lessonId: string): boolean => {
-  const dismissed = JSON.parse(localStorage.getItem(DISMISSED_KEY) || "{}");
-  return dismissed[lessonId] === true;
-};
+## Benefits
 
-const dismissReminder = (lessonId: string) => {
-  const dismissed = JSON.parse(localStorage.getItem(DISMISSED_KEY) || "{}");
-  dismissed[lessonId] = true;
-  localStorage.setItem(DISMISSED_KEY, JSON.stringify(dismissed));
-};
-```
-
-### 4. Integration in InstructorMobileHome
-
-Insert the banner between the greeting card and the Next Lesson card:
-
-```tsx
-{/* Tracker Reminder - show when offline and lesson soon */}
-{nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
-  <TrackerReminderBanner 
-    lessonId={nextLesson.lessonId}
-    minutesUntil={nextLesson.minutesUntil}
-  />
-)}
-
-{/* Next Lesson Card */}
-{nextLesson && (
-  <NextLessonCard ... />
-)}
-```
-
-## Files to Create/Modify
-
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/instructor/TrackerReminderBanner.tsx` | Create | New dismissible reminder component |
-| `src/components/instructor/InstructorMobileHome.tsx` | Modify | Add TrackerReminderBanner import and placement |
-
-## Technical Considerations
-
-1. **Timing threshold**: 30 minutes before lesson gives enough time to start the app
-2. **Offline detection**: Uses existing `useGPSConnectionStatus` hook (5-minute threshold)
-3. **Per-lesson dismissal**: Prevents the same reminder from reappearing after dismissal
-4. **Deep links**: Platform-specific handling with graceful fallback to app store
-5. **No database changes**: Uses localStorage for dismissal state (ephemeral by design)
-
-## User Experience
-
-**Scenario**: Instructor opens home page 25 minutes before a lesson. GPS tracker is offline.
-
-1. Banner appears: "Open GPSgate Tracker - Start the app to record your upcoming lesson"
-2. Instructor taps "Open Tracker"
-3. GPSgate Tracker app opens (or App Store if not installed)
-4. Instructor starts tracking in the app
-5. After ~30 seconds, GPS status changes to "Connected" and banner auto-hides
-6. If instructor dismisses instead, banner won't show again for that specific lesson
+1. **Immediate visibility**: Instructors can instantly see if tracking is active
+2. **Actionable**: One-tap to open GPSgate Tracker when offline
+3. **Contextual data**: Shows live speed/road when connected (confirms data is flowing)
+4. **Consistent design**: Matches the amber/emerald styling used elsewhere in the app
