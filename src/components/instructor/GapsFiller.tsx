@@ -364,6 +364,17 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
     return format(date, "EEE d MMM");
   };
 
+  const calculateDuration = (startTime: string, endTime: string): string => {
+    const [startH, startM] = startTime.split(":").map(Number);
+    const [endH, endM] = endTime.split(":").map(Number);
+    const durationMins = (endH * 60 + endM) - (startH * 60 + startM);
+    const hours = Math.floor(durationMins / 60);
+    const mins = durationMins % 60;
+    
+    if (mins === 0) return `${hours}h`;
+    return `${hours}h ${mins}m`;
+  };
+
   return (
     <Card className="border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5">
       <CardHeader className="pb-3">
@@ -431,6 +442,9 @@ export function GapsFiller({ instructorId }: GapsFillerProps) {
                         <Clock className="h-3 w-3" />
                         {slot.startTime} - {slot.endTime}
                       </span>
+                      <Badge variant="secondary" className="text-xs bg-purple-500/20 text-purple-700 dark:text-purple-300">
+                        {calculateDuration(slot.startTime, slot.endTime)}
+                      </Badge>
                     </div>
                   </div>
                 ))}
