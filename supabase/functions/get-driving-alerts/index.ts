@@ -135,6 +135,13 @@ serve(async (req) => {
     }
 
     const alerts: DrivingAlert[] = [];
+    let currentWeather: {
+      temperature: number | null;
+      weatherCode: number | null;
+      description: string;
+      icon: string;
+      windSpeed: number | null;
+    } | null = null;
 
     // Fetch weather from Open-Meteo (free, no API key needed)
     try {
@@ -157,6 +164,15 @@ serve(async (req) => {
         // Get current hour's precipitation probability
         const currentHour = new Date().getHours();
         const precipProbability = hourly?.precipitation_probability?.[currentHour];
+
+        // Build current weather response
+        currentWeather = {
+          temperature: temperature !== undefined ? Math.round(temperature) : null,
+          weatherCode: weatherCode ?? null,
+          description: getWeatherDescription(weatherCode),
+          icon: getWeatherIcon(weatherCode ?? 0),
+          windSpeed: windSpeedMph,
+        };
 
         // Check for adverse conditions
         let weatherAlert: WeatherAlert | null = null;
@@ -246,12 +262,12 @@ serve(async (req) => {
       console.error("Weather API error:", weatherError);
     }
 
-    // Fetch traffic incidents from TomTom
+    // Fetch traffic incidents from TomTom (reduced to ~3 miles / 5km radius)
     if (tomtomApiKey) {
       try {
-        // Search within 10km radius
-        const radiusKm = 10;
-        const trafficUrl = `https://api.tomtom.com/traffic/services/5/incidentDetails?key=${tomtomApiKey}&bbox=${lng - 0.1},${lat - 0.1},${lng + 0.1},${lat + 0.1}&fields=%7Bincidents%7Btype,geometry%7Bcoordinates%7D,properties%7BiconCategory,magnitudeOfDelay,events%7Bdescription%7D,from,to%7D%7D%7D&language=en-GB`;
+        // Search within 5km radius (~3 miles)
+        const radiusDeg = 0.045; // ~5km at UK latitudes
+        const trafficUrl = `https://api.tomtom.com/traffic/services/5/incidentDetails?key=${tomtomApiKey}&bbox=${lng - radiusDeg},${lat - radiusDeg},${lng + radiusDeg},${lat + radiusDeg}&fields=%7Bincidents%7Btype,geometry%7Bcoordinates%7D,properties%7BiconCategory,magnitudeOfDelay,events%7Bdescription%7D,from,to%7D%7D%7D&language=en-GB`;
         
         const trafficResponse = await fetch(trafficUrl);
         
@@ -302,7 +318,7 @@ serve(async (req) => {
     alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
     return new Response(
-      JSON.stringify({ alerts, lat, lng, location: locationName }),
+      JSON.stringify({ alerts, lat, lng, location: locationName, currentWeather }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
@@ -317,12 +333,31 @@ serve(async (req) => {
 });
 
 function getWeatherIcon(code: number): string {
+  if (code === 0) return "Sun";
+  if (code === 1 || code === 2) return "CloudSun";
+  if (code === 3) return "Cloud";
   if (code >= 95) return "CloudLightning";
   if (code >= 71 && code <= 86) return "Snowflake";
   if (code >= 61 && code <= 67) return "CloudRain";
   if (code >= 51 && code <= 57) return "CloudDrizzle";
   if (code >= 45 && code <= 48) return "CloudFog";
   return "Cloud";
+}
+
+function getWeatherDescription(code: number | null | undefined): string {
+  if (code === null || code === undefined) return "Unknown";
+  if (code === 0) return "Clear";
+  if (code === 1) return "Mainly Clear";
+  if (code === 2) return "Partly Cloudy";
+  if (code === 3) return "Overcast";
+  if (code >= 45 && code <= 48) return "Foggy";
+  if (code >= 51 && code <= 57) return "Drizzle";
+  if (code >= 61 && code <= 67) return "Rain";
+  if (code >= 71 && code <= 77) return "Snow";
+  if (code >= 80 && code <= 82) return "Showers";
+  if (code >= 85 && code <= 86) return "Snow Showers";
+  if (code >= 95) return "Thunderstorm";
+  return "Cloudy";
 }
 
 function getTrafficTitle(iconCategory: number): string {
