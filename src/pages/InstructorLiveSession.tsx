@@ -128,9 +128,12 @@ export default function InstructorLiveSession() {
   // fresh and accurately reflect connectivity even before a session starts.
   // Only poll when page is visible to reduce background churn on mobile
   const isSessionActive = !!device?.current_session_id;
+  
+  // Use fast 3-second polling during active sessions for near real-time tracking
+  // Use slower 15-second polling when idle to check connection status
   useGPSPoller({
     enabled: !!device?.id && isPageVisible,
-    intervalMs: isSessionActive ? 5000 : 30000, // 5s active for faster updates, 30s inactive
+    intervalMs: isSessionActive ? 3000 : 15000,
     onError: handlePollerError,
   });
 
