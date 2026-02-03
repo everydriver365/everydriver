@@ -487,24 +487,30 @@ serve(async (req) => {
       if (i.gpsgate_user_id) {
         instructorsByGpsGateId.set(i.gpsgate_user_id, i as InstructorGPS);
       } else if (i.gpsgate_username) {
-        // Auto-discover numeric ID from username
-        const normalizedUsername = normalizeText(i.gpsgate_username);
-        const discoveredUserId = usernameToUserId.get(normalizedUsername);
-        if (discoveredUserId) {
-          instructorsByGpsGateId.set(discoveredUserId, i as InstructorGPS);
+        // Use the same smart matching logic as device resolution
+        // This handles exact username, Name, Description substring matches and digit patterns
+        const resolved = resolveGpsGateUserIdForDevice(
+          i.gpsgate_username,
+          null, // No explicit user ID
+          gpsGateUsers,
+          usernameToUserId
+        );
+        
+        if (resolved.userId) {
+          instructorsByGpsGateId.set(resolved.userId, i as InstructorGPS);
           // Persist discovered ID to database (fire and forget)
           supabase
             .from("instructors")
-            .update({ gpsgate_user_id: discoveredUserId })
+            .update({ gpsgate_user_id: resolved.userId })
             .eq("id", i.id)
             .then(({ error }) => {
               if (error) {
                 console.error(`[GPSgate-Poller] Failed to persist discovered ID for instructor ${i.id}:`, error);
               }
             });
-          console.log(`[GPSgate-Poller] Auto-linked instructor ${i.id} username ${i.gpsgate_username} -> GPSgate user ${discoveredUserId}`);
+          console.log(`[GPSgate-Poller] Auto-linked instructor ${i.id} (${i.gpsgate_username}) -> GPSgate user ${resolved.userId} via ${resolved.reason}`);
         } else {
-          console.log(`[GPSgate-Poller] Instructor ${i.id} username ${i.gpsgate_username} not found in GPSgate users`);
+          console.log(`[GPSgate-Poller] Instructor ${i.id} (${i.gpsgate_username}) not found in GPSgate users (${resolved.reason})`);
         }
       }
     }
@@ -897,7 +903,7 @@ serve(async (req) => {
 
         // Update the traccar_devices table for this instructor (if they have any device)
         // This updates last_seen_at so the connection status works
-        const { error: updateErr } = await supabase
+        const { data: updateData, error: updateErr } = await supabase
           .from("traccar_devices")
           .update({
             last_seen_at: latestTrack.Time,
@@ -905,11 +911,32 @@ serve(async (req) => {
             last_latitude: lat,
             last_longitude: lon,
             last_heading: latestTrack.Heading || 0,
+            gpsgate_user_id: gpsGateUserId,
           })
-          .eq("instructor_id", instructor.id);
+          .eq("instructor_id", instructor.id)
+          .select("id");
 
-        if (updateErr) {
-          console.log(`[GPSgate-Poller] No device to update for instructor ${instructor.id}, creating virtual entry`);
+        // If no rows updated, insert a virtual device so connection status works
+        if (!updateData || updateData.length === 0) {
+          console.log(`[GPSgate-Poller] No device for instructor ${instructor.id}, inserting virtual device`);
+          const { error: insertErr } = await supabase
+            .from("traccar_devices")
+            .insert({
+              instructor_id: instructor.id,
+              device_identifier: `gpsgate-${gpsGateUserId}`,
+              device_name: `GPSgate Tracker`,
+              gpsgate_user_id: gpsGateUserId,
+              last_seen_at: latestTrack.Time,
+              last_speed_kmh: speedKmh,
+              last_latitude: lat,
+              last_longitude: lon,
+              last_heading: latestTrack.Heading || 0,
+            });
+          if (insertErr) {
+            console.error(`[GPSgate-Poller] Failed to insert virtual device for instructor ${instructor.id}:`, insertErr);
+          } else {
+            console.log(`[GPSgate-Poller] Created virtual device for instructor ${instructor.id}`);
+          }
         }
 
         instructorsProcessed++;
