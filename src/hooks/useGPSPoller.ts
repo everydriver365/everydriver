@@ -35,31 +35,14 @@ export function useGPSPoller({
     isPollingRef.current = true;
     
     try {
-      // Try GPSgate poller first, fall back to Traccar poller
-      let data: GPSPollerResult | null = null;
-      let error: any = null;
-
-      // First try GPSgate poller
-      const gpsGateResult = await supabase.functions.invoke<GPSPollerResult>(
+      // Use GPSgate poller only (Traccar is deprecated)
+      const { data, error } = await supabase.functions.invoke<GPSPollerResult>(
         "gpsgate-poller"
       );
 
-      if (gpsGateResult.error) {
-        // Fall back to Traccar poller if GPSgate fails
-        console.log("[GPSPoller] GPSgate failed, trying Traccar fallback");
-        const traccarResult = await supabase.functions.invoke<GPSPollerResult>(
-          "traccar-poller"
-        );
-        data = traccarResult.data;
-        error = traccarResult.error;
-      } else {
-        data = gpsGateResult.data;
-        error = gpsGateResult.error;
-      }
-
       if (error) {
         console.error("[GPSPoller] Error:", error);
-        onError?.(new Error(error.message));
+        onError?.(new Error(typeof error === 'string' ? error : error.message || 'Unknown error'));
         return;
       }
 
