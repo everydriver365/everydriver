@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
@@ -64,6 +65,34 @@ export interface MileageLogEntry {
 
 export function useVehicleHealth() {
   const { instructor } = useInstructorAuth();
+  const pollerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Trigger the GPSgate poller edge function to fetch fresh data from GPSgate
+  useEffect(() => {
+    if (!instructor?.id) return;
+
+    const triggerPoller = async () => {
+      try {
+        await supabase.functions.invoke("gpsgate-poller", {
+          method: "POST",
+        });
+      } catch (err) {
+        console.error("Failed to trigger GPSgate poller:", err);
+      }
+    };
+
+    // Trigger immediately when hook mounts
+    triggerPoller();
+
+    // Then poll every 30 seconds while the page is open
+    pollerIntervalRef.current = setInterval(triggerPoller, 30000);
+
+    return () => {
+      if (pollerIntervalRef.current) {
+        clearInterval(pollerIntervalRef.current);
+      }
+    };
+  }, [instructor?.id]);
 
   // Fetch devices with vehicle info
   const devicesQuery = useQuery({
