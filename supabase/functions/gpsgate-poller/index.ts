@@ -1026,6 +1026,7 @@ serve(async (req) => {
               heading: bearing,
               altitude_m: altitude,
               accuracy_m: accuracy,
+              road_name: roadName,
               speed_limit_kmh: speedLimitKmh,
               recorded_at: latestTrack.Time,
             });
