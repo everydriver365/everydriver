@@ -204,11 +204,15 @@ export default function InstructorTraccarSetup() {
   };
 
   const getConnectionStatus = (device: TraccarDevice) => {
-    if (!device.last_seen_at) return 'offline';
+    // MUST have valid GPS coordinates to be considered "live" - no fake status
+    const hasValidGPS = device.last_latitude !== null && device.last_longitude !== null;
+    if (!hasValidGPS || !device.last_seen_at) return 'offline';
+    
     const lastSeen = new Date(device.last_seen_at);
     const now = new Date();
     const diffSeconds = (now.getTime() - lastSeen.getTime()) / 1000;
     
+    // Only show "Live" if we have real GPS data within 30 seconds
     if (diffSeconds < 30) return 'active';
     if (diffSeconds < 120) return 'recent';
     return 'offline';
