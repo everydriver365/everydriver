@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +58,7 @@ import { AdminSectionNotes } from "@/components/admin/AdminSectionNotes";
 import { DemoMiniSiteCMS } from "@/components/admin/DemoMiniSiteCMS";
 import { DiscountCodesManager } from "@/components/admin/DiscountCodesManager";
 import { PupilRecordsManager } from "@/components/admin/PupilRecordsManager";
+import { AdminLiveMapView } from "@/components/admin/AdminLiveMapView";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -88,6 +89,7 @@ interface Instructor {
 const sectionMeta: Record<string, { title: string; group: string; icon: React.ElementType }> = {
   // Dashboard
   overview: { title: "Overview", group: "Dashboard", icon: LayoutDashboard },
+  "live-map": { title: "Live Instructor Map", group: "Dashboard", icon: MapPin },
   // People
   instructors: { title: "Instructors", group: "People", icon: Users },
   "pupil-records": { title: "Pupil Records", group: "People", icon: Users },
@@ -258,6 +260,14 @@ export default function AdminPortal() {
             {/* Settings-style Grid with integrated alerts */}
             <AdminSettingsGrid onNavigate={setActiveSection} />
           </>
+        );
+
+      case "live-map":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminLiveMapView />
+          </motion.div>
         );
 
       case "instructors":
