@@ -208,7 +208,7 @@ export default function InstructorLiveSession() {
   // Track last seen time to prevent duplicate updates causing flickering
   const lastSeenRef = React.useRef<string | null>(null);
 
-  // Realtime subscription to traccar_devices for instant updates
+  // Realtime subscription to gps_devices for instant updates
   // Uses deviceIdRef to prevent subscription churn when device data updates
   useEffect(() => {
     const currentDeviceId = device?.id;
@@ -226,7 +226,7 @@ export default function InstructorLiveSession() {
         .single();
       
       if (error) {
-        console.error('[Traccar Poll] Error:', error.message);
+        console.error('[GPS Poll] Error:', error.message);
         return;
       }
       
@@ -268,7 +268,7 @@ export default function InstructorLiveSession() {
         {
           event: "UPDATE",
           schema: "public",
-          table: "traccar_devices",
+          table: "gps_devices",
           filter: `id=eq.${currentDeviceId}`,
         },
         (payload) => {
@@ -296,7 +296,7 @@ export default function InstructorLiveSession() {
   }, [device?.id]);
 
   // Additional realtime subscription for pupil sessions (live_pupil_positions)
-  // This is supplementary - the main updates come from traccar_devices subscription above
+  // This is supplementary - the main updates come from gps_devices subscription above
   useEffect(() => {
     if (!device?.current_pupil_id || !device?.current_session_id) return;
 
@@ -749,7 +749,7 @@ export default function InstructorLiveSession() {
             <p className="text-sm text-muted-foreground mb-6">
               Set up a GPS device before starting a session
             </p>
-            <Button size="lg" onClick={() => navigate("/instructor/settings/traccar")}>
+            <Button size="lg" onClick={() => navigate("/instructor/settings/gps")}>
               <Settings className="h-5 w-5 mr-2" />
               Setup Device
             </Button>
@@ -791,7 +791,7 @@ export default function InstructorLiveSession() {
                   Offline
                 </Badge>
               )}
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10" onClick={() => navigate("/instructor/settings/traccar")}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10" onClick={() => navigate("/instructor/settings/gps")}>
                 <Settings className="h-4 w-4" />
               </Button>
             </div>

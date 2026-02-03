@@ -46,7 +46,7 @@ export function useGPSPoller({
     isPollingRef.current = true;
     
     try {
-      // Use GPSgate poller only (Traccar is deprecated)
+      // Use GPSgate poller only
       const { data, error } = await supabase.functions.invoke<GPSPollerResult>(
         "gpsgate-poller"
       );
@@ -94,6 +94,3 @@ export function useGPSPoller({
 
   return { poll };
 }
-
-// Re-export for backwards compatibility
-export { useGPSPoller as useTraccarPoller };
