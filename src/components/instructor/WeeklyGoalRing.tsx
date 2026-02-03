@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Target, TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Sparkles } from "lucide-react";
+import confetti from "canvas-confetti";
 
 interface WeeklyGoalRingProps {
   hoursThisWeek: number;
@@ -16,22 +18,62 @@ export function WeeklyGoalRing({
   isAheadOfLastWeek,
   className = "",
 }: WeeklyGoalRingProps) {
+  const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
   const radius = 40;
   const strokeWidth = 6;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+  const clampedProgress = Math.min(progressPercent, 100);
+  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
 
-  // Color based on progress
-  const getProgressColor = () => {
-    if (progressPercent >= 100) return "stroke-emerald-500";
-    if (progressPercent >= 75) return "stroke-blue-500";
-    if (progressPercent >= 50) return "stroke-amber-500";
-    return "stroke-rose-500";
+  // Trigger confetti on 100% completion
+  useEffect(() => {
+    if (progressPercent >= 100 && !hasTriggeredConfetti) {
+      const today = new Date().toDateString();
+      const lastConfetti = localStorage.getItem("weekly-goal-confetti");
+      if (lastConfetti !== today) {
+        confetti({
+          particleCount: 80,
+          spread: 60,
+          origin: { y: 0.6 },
+          colors: ["#10b981", "#34d399", "#6ee7b7", "#fbbf24", "#f59e0b"],
+        });
+        localStorage.setItem("weekly-goal-confetti", today);
+        setHasTriggeredConfetti(true);
+      }
+    }
+  }, [progressPercent, hasTriggeredConfetti]);
+
+  // Gradient colors based on progress
+  const getGradientColors = () => {
+    if (progressPercent >= 100) return { start: "#10b981", end: "#fbbf24" }; // emerald → gold
+    if (progressPercent >= 75) return { start: "#3b82f6", end: "#10b981" }; // blue → emerald
+    if (progressPercent >= 50) return { start: "#f59e0b", end: "#3b82f6" }; // amber → blue
+    return { start: "#f43f5e", end: "#f59e0b" }; // rose → amber
   };
+
+  const gradientColors = getGradientColors();
+  const gradientId = `weeklyGoalGradient-${progressPercent}`;
+  const glowId = `weeklyGoalGlow-${progressPercent}`;
 
   return (
     <div className={`relative flex flex-col items-center ${className}`}>
       <svg width="100" height="100" className="transform -rotate-90">
+        <defs>
+          {/* Gradient definition */}
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor={gradientColors.start} />
+            <stop offset="100%" stopColor={gradientColors.end} />
+          </linearGradient>
+          {/* Glow filter */}
+          <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        
         {/* Background circle */}
         <circle
           cx="50"
@@ -42,7 +84,7 @@ export function WeeklyGoalRing({
           strokeWidth={strokeWidth}
           className="text-muted/30"
         />
-        {/* Progress circle */}
+        {/* Progress circle with gradient */}
         <motion.circle
           cx="50"
           cy="50"
@@ -50,7 +92,8 @@ export function WeeklyGoalRing({
           fill="none"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          className={getProgressColor()}
+          stroke={`url(#${gradientId})`}
+          filter={progressPercent >= 50 ? `url(#${glowId})` : undefined}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset }}
           transition={{ duration: 1, ease: "easeOut" }}
@@ -58,12 +101,51 @@ export function WeeklyGoalRing({
             strokeDasharray: circumference,
           }}
         />
+        
+        {/* Shimmer effect for 100% */}
+        {progressPercent >= 100 && (
+          <motion.circle
+            cx="50"
+            cy="50"
+            r={radius}
+            fill="none"
+            strokeWidth={strokeWidth + 2}
+            strokeLinecap="round"
+            stroke="white"
+            opacity="0.3"
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ 
+              strokeDashoffset: [circumference, 0, circumference],
+            }}
+            transition={{ 
+              duration: 3, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            style={{
+              strokeDasharray: `${circumference * 0.1} ${circumference * 0.9}`,
+            }}
+          />
+        )}
       </svg>
       
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-foreground">{hoursThisWeek}h</span>
-        <span className="text-[10px] text-muted-foreground">of {hoursGoal}h</span>
+        {progressPercent >= 100 ? (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="flex items-center gap-0.5"
+          >
+            <Sparkles className="h-4 w-4 text-amber-500" />
+            <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">Done!</span>
+          </motion.div>
+        ) : (
+          <>
+            <span className="text-xl font-bold text-foreground">{hoursThisWeek}h</span>
+            <span className="text-[10px] text-muted-foreground">of {hoursGoal}h</span>
+          </>
+        )}
       </div>
 
       {/* Trend indicator */}
