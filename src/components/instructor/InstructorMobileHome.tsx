@@ -54,6 +54,7 @@ import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
+import { useGPSPoller } from "@/hooks/useGPSPoller";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
@@ -169,6 +170,12 @@ export function InstructorMobileHome({
   const { data: unreadCount } = useUnreadMessagesCount(instructorId);
   const { alerts, dismissAlert, location: alertsLocation, currentWeather } = useDrivingAlerts(instructorId);
   const { roadName: gpsRoadName } = useInstructorLastPosition(instructorId || null);
+  
+  // Poll GPS server every 10 seconds on home screen for fresh connection status
+  useGPSPoller({
+    enabled: !!instructorId,
+    intervalMs: 10000,
+  });
   
   // New enhancement hooks
   const { data: streak } = useInstructorStreak(instructorId);
