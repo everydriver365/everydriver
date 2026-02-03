@@ -42,7 +42,7 @@ export function useActiveTrackingPupils(instructorId: string | null) {
     }
 
     fetchActiveIds();
-    const interval = setInterval(fetchActiveIds, 2000); // 2s polling for near-instant updates
+    const interval = setInterval(fetchActiveIds, 1000); // 1s polling for real-time updates
 
     return () => clearInterval(interval);
   }, [instructorId, fetchActiveIds]);
