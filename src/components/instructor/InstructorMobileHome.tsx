@@ -65,12 +65,15 @@ import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBa
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
-
 import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { FuelFinderCard } from "@/components/instructor/FuelFinderCard";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
+import { QuickStatsChips } from "@/components/instructor/QuickStatsChips";
+import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
+import { CardSection } from "@/components/ui/CardSection";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { useTheme } from "@/context/ThemeContext";
@@ -403,12 +406,19 @@ export function InstructorMobileHome({
         motivationSubtitle={content?.motivation_subtitle}
       />
 
+      {/* Quick Stats Chips Row */}
+      <QuickStatsChips
+        lessonCount={currentLessons}
+        hoursToday={todayOverview?.totalHours || 0}
+        expectedEarnings={todayOverview?.expectedEarnings || 0}
+        weeklyProgress={weeklyGoals?.progressPercent}
+      />
+
       {/* Celebration Confetti */}
       <CelebrationConfetti 
         trigger={showConfetti} 
         onComplete={() => setShowConfetti(false)} 
       />
-
 
       {/* Weather/Traffic Alerts */}
       {alerts.length > 0 && (
@@ -478,42 +488,48 @@ export function InstructorMobileHome({
         className="mt-4"
       />
 
-      {/* Today's Stats */}
+      {/* Today's Stats - Glass Card */}
       <div className="px-4 mt-4">
-        <div className="bg-card rounded-xl border border-border p-4">
+        <GlassCard intensity="medium" className="p-4">
           <h3 className="font-semibold text-foreground text-sm mb-3">Today's Stats</h3>
           <div className="flex items-center justify-around">
             <div className="flex flex-col items-center gap-0.5">
               <div className="flex items-center gap-1 text-primary">
                 <BookOpen className="h-4 w-4" />
-                <span className="text-lg font-bold">{currentLessons}</span>
+                <span className="text-lg font-bold">
+                  <AnimatedCounter value={currentLessons} />
+                </span>
               </div>
               <span className="text-[10px] text-muted-foreground font-medium">Lessons</span>
             </div>
             <div className="w-px h-8 bg-border/50" />
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+              <div className="flex items-center gap-1 text-primary">
                 <Clock className="h-4 w-4" />
-                <span className="text-lg font-bold">{todayOverview?.totalHours || 0}</span>
+                <span className="text-lg font-bold">
+                  <AnimatedCounter value={todayOverview?.totalHours || 0} />
+                </span>
               </div>
               <span className="text-[10px] text-muted-foreground font-medium">Hours</span>
             </div>
             <div className="w-px h-8 bg-border/50" />
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-1 text-primary">
                 <PoundSterling className="h-4 w-4" />
-                <span className="text-lg font-bold">{todayOverview?.expectedEarnings || 0}</span>
+                <span className="text-lg font-bold">
+                  <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
+                </span>
               </div>
               <span className="text-[10px] text-muted-foreground font-medium">Expected</span>
             </div>
           </div>
-        </div>
+        </GlassCard>
       </div>
 
-      {/* Weekly Goal Progress */}
+      {/* Weekly Goal Progress - Glass Card */}
       {weeklyGoals && (
         <div className="px-4 mt-4">
-          <div className="bg-card rounded-xl border border-border p-4">
+          <GlassCard intensity="medium" glow={weeklyGoals.progressPercent >= 75} className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <h3 className="font-semibold text-foreground text-sm mb-1">Weekly Progress</h3>
@@ -533,7 +549,7 @@ export function InstructorMobileHome({
                 isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
               />
             </div>
-          </div>
+          </GlassCard>
         </div>
       )}
 
@@ -568,6 +584,9 @@ export function InstructorMobileHome({
           // TODO: Open break log modal
         }}
       />
+
+      {/* Floating Session Bar - shows during active tracking */}
+      <FloatingSessionBar instructorId={instructorId} />
 
       {/* Bottom Navigation */}
       <InstructorBottomNav />

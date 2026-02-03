@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Clock, 
@@ -18,10 +19,13 @@ import {
   CloudFog,
   CloudLightning,
   Snowflake,
-  Wind
+  Wind,
+  ChevronDown,
+  BookOpen
 } from "lucide-react";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+import { haptics } from "@/lib/haptics";
 
 interface ContextualHomeHeroProps {
   firstName: string;
@@ -151,6 +155,7 @@ export function ContextualHomeHero({
   heroImageUrl,
   motivationSubtitle,
 }: ContextualHomeHeroProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const timePeriod = getTimePeriod();
   const TimeIcon = getTimeIcon(timePeriod);
   
@@ -158,6 +163,10 @@ export function ContextualHomeHero({
   const { durationMinutes, durationText, isLoading: etaLoading } = useTrafficETA(
     timePeriod === "morning" && nextLesson?.pickupPostcode ? nextLesson.pickupPostcode : null
   );
+
+  const handleCardTap = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   // Contextual subtitle based on time of day
   const getContextualSubtitle = () => {
@@ -292,26 +301,39 @@ export function ContextualHomeHero({
         />
       </div>
       
-      {/* Overlapping Contextual Card */}
+      {/* Overlapping Contextual Card - Tappable */}
       <div className="relative -mt-16 mx-3">
         <motion.div 
-          className="bg-card rounded-2xl shadow-lg p-4 border border-border/50"
+          className="glass-strong rounded-2xl shadow-lg p-4 cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
+          onClick={() => {
+            haptics.selection();
+            handleCardTap();
+          }}
+          whileTap={{ scale: 0.98 }}
         >
-          {/* Row 1: TODAY label + Status + Time Icon */}
+          {/* Row 1: TODAY label + Status + Time Icon + Expand indicator */}
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
               isGPSConnected 
                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                : 'bg-destructive/10 text-destructive'
             }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-destructive'}`} />
               {isGPSConnected ? 'Live' : 'Offline'}
             </span>
-            <TimeIcon className="h-3.5 w-3.5 text-muted-foreground ml-auto" />
+            <div className="ml-auto flex items-center gap-1">
+              <TimeIcon className="h-3.5 w-3.5 text-muted-foreground" />
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              </motion.div>
+            </div>
           </div>
           
           {/* Row 2: Greeting */}
@@ -385,6 +407,88 @@ export function ContextualHomeHero({
               )}
             </motion.div>
           )}
+          
+          {/* Expanded Content - Today's Summary */}
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+                  <h4 className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY'S SUMMARY</h4>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Lessons */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {todayOverview?.lessonCount || 0} lessons
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {todayOverview?.completedLessons || 0} completed
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Hours */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                      <Clock className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {todayOverview?.totalHours || 0}h scheduled
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">driving today</p>
+                      </div>
+                    </div>
+                    
+                    {/* Earnings */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                      <PoundSterling className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          £{todayOverview?.expectedEarnings || 0}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">expected</p>
+                      </div>
+                    </div>
+                    
+                    {/* Tomorrow Preview */}
+                    {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {tomorrowPreview.lessonCount} tomorrow
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            starts {tomorrowPreview.firstLessonTime || 'TBD'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Weekly Progress if available */}
+                  {weeklyStats && (
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-primary/5">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        <span className="text-xs text-muted-foreground">Weekly goal</span>
+                      </div>
+                      <span className="text-sm font-semibold text-foreground">
+                        {weeklyStats.progressPercent}% ({weeklyStats.hoursThisWeek}h of {weeklyStats.hoursGoal}h)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           
           {/* Row 6: Compact Alert Indicator (if alerts exist) */}
           {alerts.length > 0 && (

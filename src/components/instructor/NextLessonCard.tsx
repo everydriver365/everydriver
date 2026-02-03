@@ -7,6 +7,7 @@ import { format, parse } from "date-fns";
 import { haptics } from "@/lib/haptics";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { RunningLateSheet } from "./RunningLateSheet";
+import { SwipeHint } from "@/components/ui/ActionAffordance";
 
 interface NextLessonCardProps {
   pupilName: string;
@@ -149,132 +150,134 @@ export function NextLessonCard({
       animate={{ opacity: 1, y: 0 }}
       className="mx-4 mb-4"
     >
-      <div className="relative overflow-hidden rounded-xl">
-        {/* Slide action background */}
-        <motion.div 
-          className="absolute inset-y-0 left-0 flex items-center pl-4 bg-gradient-to-r from-primary to-primary/80 rounded-xl"
-          style={{ 
-            width: maxSwipe + 20,
-            opacity: actionOpacity
-          }}
-        >
+      <SwipeHint direction="right" hintKey="next-lesson-swipe" show={!!pickupPostcode}>
+        <div className="relative overflow-hidden rounded-xl">
+          {/* Slide action background */}
           <motion.div 
-            className="flex items-center gap-2 text-primary-foreground"
-            style={{ scale: actionScale, x: arrowX }}
+            className="absolute inset-y-0 left-0 flex items-center pl-4 bg-gradient-to-r from-primary to-primary/80 rounded-xl"
+            style={{ 
+              width: maxSwipe + 20,
+              opacity: actionOpacity
+            }}
           >
-            <Navigation className="h-5 w-5" />
-            <span className="text-sm font-medium">Navigate</span>
-            <ChevronRight className="h-4 w-4" />
+            <motion.div 
+              className="flex items-center gap-2 text-primary-foreground"
+              style={{ scale: actionScale, x: arrowX }}
+            >
+              <Navigation className="h-5 w-5" />
+              <span className="text-sm font-medium">Navigate</span>
+              <ChevronRight className="h-4 w-4" />
+            </motion.div>
           </motion.div>
-        </motion.div>
-        
-        {/* Main card - draggable */}
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: maxSwipe }}
-          dragElastic={0.1}
-          onDragStart={() => setIsDragging(true)}
-          onDrag={handleDrag}
-          onDragEnd={handleDragEnd}
-          style={{ x }}
-          className="relative bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20 rounded-xl border border-primary/20 p-3 shadow-sm cursor-grab active:cursor-grabbing"
-        >
-          <div className="flex items-center gap-3">
-            {/* Avatar */}
-            <Avatar className="h-11 w-11 border-2 border-primary/20">
-              <AvatarImage src={pupilProfileImage || undefined} alt={pupilName} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                {getInitials(pupilName)}
-              </AvatarFallback>
-            </Avatar>
+          
+          {/* Main card - draggable with glass effect */}
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: maxSwipe }}
+            dragElastic={0.1}
+            onDragStart={() => setIsDragging(true)}
+            onDrag={handleDrag}
+            onDragEnd={handleDragEnd}
+            style={{ x }}
+            className="relative glass rounded-xl border border-primary/20 p-3 cursor-grab active:cursor-grabbing"
+          >
+            <div className="flex items-center gap-3">
+              {/* Avatar */}
+              <Avatar className="h-11 w-11 border-2 border-primary/20">
+                <AvatarImage src={pupilProfileImage || undefined} alt={pupilName} />
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                  {getInitials(pupilName)}
+                </AvatarFallback>
+              </Avatar>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground text-sm truncate">
-                  {pupilName}
-                </span>
-                <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                  minutesUntil <= 15 
-                    ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' 
-                    : 'bg-primary/15 text-primary'
-                }`}>
-                  {getCountdownText()}
-                </span>
-                {/* Payment Status Badge */}
-                <span className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${paymentStatus.className}`}>
-                  <PaymentIcon className="h-2.5 w-2.5" />
-                  {paymentStatus.label}
-                </span>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground text-sm truncate">
+                    {pupilName}
+                  </span>
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                    minutesUntil <= 15 
+                      ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' 
+                      : 'bg-primary/15 text-primary'
+                  }`}>
+                    {getCountdownText()}
+                  </span>
+                  {/* Payment Status Badge */}
+                  <span className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${paymentStatus.className}`}>
+                    <PaymentIcon className="h-2.5 w-2.5" />
+                    {paymentStatus.label}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                  <Clock className="h-3 w-3" />
+                  <span>{formatTime(startTime)}</span>
+                  {pickupPostcode && (
+                    <>
+                      <span className="text-muted-foreground/50">•</span>
+                      <MapPin className="h-3 w-3" />
+                      <span className="truncate">{pickupPostcode}</span>
+                    </>
+                  )}
+                  {/* Traffic ETA */}
+                  {pickupPostcode && (
+                    <>
+                      <span className="text-muted-foreground/50">•</span>
+                      {etaLoading ? (
+                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                      ) : durationMinutes > 0 ? (
+                        <span className={`flex items-center gap-1 font-medium ${
+                          durationMinutes >= minutesUntil 
+                            ? 'text-destructive' 
+                            : durationMinutes >= minutesUntil - 10
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-emerald-600 dark:text-emerald-400'
+                        }`}>
+                          <Car className="h-3 w-3" />
+                          {durationText}
+                        </span>
+                      ) : null}
+                    </>
+                  )}
+                </div>
+                
+                {/* Slide hint */}
+                <motion.p 
+                  className="text-[10px] text-muted-foreground/60 mt-1 flex items-center gap-1"
+                  animate={{ opacity: isDragging ? 0 : 1 }}
+                >
+                  <ChevronRight className="h-3 w-3" />
+                  Slide to navigate
+                </motion.p>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
-                <Clock className="h-3 w-3" />
-                <span>{formatTime(startTime)}</span>
-                {pickupPostcode && (
-                  <>
-                    <span className="text-muted-foreground/50">•</span>
-                    <MapPin className="h-3 w-3" />
-                    <span className="truncate">{pickupPostcode}</span>
-                  </>
-                )}
-                {/* Traffic ETA */}
-                {pickupPostcode && (
-                  <>
-                    <span className="text-muted-foreground/50">•</span>
-                    {etaLoading ? (
-                      <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-                    ) : durationMinutes > 0 ? (
-                      <span className={`flex items-center gap-1 font-medium ${
-                        durationMinutes >= minutesUntil 
-                          ? 'text-destructive' 
-                          : durationMinutes >= minutesUntil - 10
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-emerald-600 dark:text-emerald-400'
-                      }`}>
-                        <Car className="h-3 w-3" />
-                        {durationText}
-                      </span>
-                    ) : null}
-                  </>
-                )}
-              </div>
-              
-              {/* Slide hint */}
-              <motion.p 
-                className="text-[10px] text-muted-foreground/60 mt-1 flex items-center gap-1"
-                animate={{ opacity: isDragging ? 0 : 1 }}
-              >
-                <ChevronRight className="h-3 w-3" />
-                Slide to navigate
-              </motion.p>
-            </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              {pickupPostcode && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary"
-                  onClick={handleNavigate}
-                >
-                  <Navigation className="h-4 w-4" />
-                </Button>
-              )}
-              {pupilPhone && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                  onClick={handleOpenLateSheet}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                </Button>
-              )}
+              {/* Actions */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {pickupPostcode && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary"
+                    onClick={handleNavigate}
+                  >
+                    <Navigation className="h-4 w-4" />
+                  </Button>
+                )}
+                {pupilPhone && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary"
+                    onClick={handleOpenLateSheet}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      </SwipeHint>
 
       {/* Running Late Sheet */}
       <RunningLateSheet
