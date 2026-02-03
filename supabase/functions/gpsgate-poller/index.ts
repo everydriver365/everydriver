@@ -896,21 +896,58 @@ serve(async (req) => {
     // 4. Process instructors with GPSgate IDs (phone tracking)
     for (const [gpsGateUserId, instructor] of instructorsByGpsGateId) {
       try {
-        // Fetch latest tracks for today
+        // Try to fetch tracks for today, then yesterday as fallback
         const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        let tracks: GPSGateTrackPoint[] = [];
+        
+        // Try today first
         const tracksRes = await fetch(
           `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${today}`,
           { headers: authHeaders }
         );
 
-        if (!tracksRes.ok) {
-          console.log(`[GPSgate-Poller] Failed to fetch tracks for instructor GPSgate user ${gpsGateUserId}`);
-          continue;
+        if (tracksRes.ok) {
+          tracks = await tracksRes.json();
+        }
+        
+        // If no tracks today, try yesterday (timezone boundary)
+        if (!tracks || tracks.length === 0) {
+          const yesterdayRes = await fetch(
+            `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${yesterday}`,
+            { headers: authHeaders }
+          );
+          if (yesterdayRes.ok) {
+            tracks = await yesterdayRes.json();
+          }
         }
 
-        const tracks: GPSGateTrackPoint[] = await tracksRes.json();
+        // Even if no tracks, update last_seen_at to show we successfully polled this user
+        const now = new Date().toISOString();
         
         if (!tracks || tracks.length === 0) {
+          // No tracks but connection is working - update last_seen_at to now
+          const { data: updateData } = await supabase
+            .from("traccar_devices")
+            .update({ last_seen_at: now, gpsgate_user_id: gpsGateUserId })
+            .eq("instructor_id", instructor.id)
+            .select("id");
+            
+          if (!updateData || updateData.length === 0) {
+            // Create virtual device with current time
+            await supabase.from("traccar_devices").insert({
+              instructor_id: instructor.id,
+              device_identifier: `gpsgate-${gpsGateUserId}`,
+              device_name: `GPSgate Tracker`,
+              gpsgate_user_id: gpsGateUserId,
+              last_seen_at: now,
+            });
+            console.log(`[GPSgate-Poller] Created virtual device for instructor ${instructor.id} (no tracks yet)`);
+          }
+          
+          console.log(`[GPSgate-Poller] Instructor ${instructor.id}: connected but no recent tracks`);
+          instructorsProcessed++;
           continue;
         }
 
@@ -926,7 +963,7 @@ serve(async (req) => {
         const { data: updateData, error: updateErr } = await supabase
           .from("traccar_devices")
           .update({
-            last_seen_at: latestTrack.Time,
+            last_seen_at: latestTrack.Time || now,
             last_speed_kmh: speedKmh,
             last_latitude: lat,
             last_longitude: lon,
@@ -946,7 +983,7 @@ serve(async (req) => {
               device_identifier: `gpsgate-${gpsGateUserId}`,
               device_name: `GPSgate Tracker`,
               gpsgate_user_id: gpsGateUserId,
-              last_seen_at: latestTrack.Time,
+              last_seen_at: latestTrack.Time || now,
               last_speed_kmh: speedKmh,
               last_latitude: lat,
               last_longitude: lon,
