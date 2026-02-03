@@ -164,7 +164,7 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Link2 className="h-4 w-4" />
-            Every Driver GPS Gate
+            Connect Your Tracker
           </CardTitle>
           {isVerified && savedUserId && (
             <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
@@ -174,7 +174,7 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
           )}
         </div>
         <CardDescription>
-          Link your tracker to sync trips and mileage for tax records
+          Sync trips and mileage automatically for tax records
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
