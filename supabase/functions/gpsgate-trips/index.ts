@@ -173,25 +173,29 @@ serve(async (req) => {
       );
     }
 
-    // Get GPSgate user ID for instructor
-    const { data: instructor, error: instError } = await supabase
-      .from("instructors")
+    // Get GPSgate user ID from instructor's gps_devices
+    const { data: device, error: deviceError } = await supabase
+      .from("gps_devices")
       .select("gpsgate_user_id")
-      .eq("id", instructorId)
+      .eq("instructor_id", instructorId)
+      .not("gpsgate_user_id", "is", null)
+      .limit(1)
       .single();
 
-    if (instError || !instructor?.gpsgate_user_id) {
+    if (deviceError || !device?.gpsgate_user_id) {
       return new Response(
-        JSON.stringify({ error: "GPSgate user not configured", trips: [] }),
+        JSON.stringify({ error: "GPSgate user not configured. Please link your GPSgate User ID in GPS Setup.", trips: [] }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const gpsGateUserId = instructor.gpsgate_user_id;
+    const gpsGateUserId = device.gpsgate_user_id;
 
     // Parse date range from body (default: last 7 days)
     const fromDate = body.fromDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const toDate = body.toDate || new Date().toISOString();
+    const syncToMileage = body.syncToMileage === true;
+    const pupilId = body.pupilId || null;
 
     // Fetch trip infos from GPSgate
     const tripInfosUrl = `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tripinfos?from=${encodeURIComponent(fromDate)}&to=${encodeURIComponent(toDate)}`;
@@ -229,6 +233,46 @@ serve(async (req) => {
 
     console.log(`[GPSgate-Trips] Returning ${trips.length} trips`);
 
+    // Optionally sync trips to mileage_logs
+    let syncedCount = 0;
+    if (syncToMileage && trips.length > 0) {
+      for (const trip of trips) {
+        // Check if already synced (by checking for similar date/distance)
+        const tripDate = new Date(trip.startTime).toISOString().split('T')[0];
+        
+        const { data: existing } = await supabase
+          .from("mileage_logs")
+          .select("id")
+          .eq("instructor_id", instructorId)
+          .eq("log_date", tripDate)
+          .gte("distance_km", trip.distanceKm - 0.1)
+          .lte("distance_km", trip.distanceKm + 0.1)
+          .limit(1);
+
+        if (!existing || existing.length === 0) {
+          // Insert new mileage log
+          const { error: insertError } = await supabase
+            .from("mileage_logs")
+            .insert({
+              instructor_id: instructorId,
+              pupil_id: pupilId,
+              log_date: tripDate,
+              distance_km: trip.distanceKm,
+              trip_type: pupilId ? "business" : "personal",
+              purpose: trip.name || "GPSgate tracked trip",
+              is_auto_logged: true,
+            });
+
+          if (!insertError) {
+            syncedCount++;
+          } else {
+            console.error(`[GPSgate-Trips] Failed to insert trip ${trip.id}:`, insertError);
+          }
+        }
+      }
+      console.log(`[GPSgate-Trips] Synced ${syncedCount} trips to mileage_logs`);
+    }
+
     return new Response(
       JSON.stringify({ 
         trips,
@@ -239,6 +283,7 @@ serve(async (req) => {
           totalDistanceKm: trips.reduce((sum, t) => sum + t.distanceKm, 0),
           totalDurationMinutes: trips.reduce((sum, t) => sum + t.durationMinutes, 0),
           tripsWithOverspeeding: trips.filter(t => t.hasOverspeeding).length,
+          syncedCount,
         }
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
