@@ -775,38 +775,76 @@ serve(async (req) => {
         }
       }
 
-      // Fetch latest tracks for today
-      const today = new Date().toISOString().split('T')[0];
-      const tracksRes = await fetch(
-        `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${today}`,
-        { headers: authHeaders }
-      );
+      // First, try to fetch the LATEST position from the position endpoint (most real-time)
+      // Add cache-busting timestamp to prevent stale data
+      const cacheBuster = Date.now();
+      let latestTrack: GPSGateTrackPoint | null = null;
+      let trackTime: string | null = null;
+      
+      // Try /position endpoint first (returns single most recent position)
+      try {
+        const positionRes = await fetch(
+          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/position?_=${cacheBuster}`,
+          { 
+            headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" }
+          }
+        );
+        
+        console.log(`[GPSgate-Poller] /position endpoint status for user ${gpsGateUserId}: ${positionRes.status}`);
+        
+        if (positionRes.ok) {
+          const positionData = await positionRes.json();
+          console.log(`[GPSgate-Poller] /position response for user ${gpsGateUserId}: ${JSON.stringify(positionData).substring(0, 500)}`);
+          if (positionData && (positionData.position || positionData.Position || positionData.latitude || positionData.Lat)) {
+            latestTrack = positionData;
+            trackTime = extractTime(positionData);
+            console.log(`[GPSgate-Poller] Using /position data for user ${gpsGateUserId}`);
+          } else {
+            console.log(`[GPSgate-Poller] /position data missing expected fields for user ${gpsGateUserId}`);
+          }
+        } else {
+          const errorText = await positionRes.text();
+          console.log(`[GPSgate-Poller] /position endpoint returned ${positionRes.status}: ${errorText.substring(0, 200)}`);
+        }
+      } catch (posErr) {
+        console.log(`[GPSgate-Poller] /position endpoint failed for user ${gpsGateUserId}:`, posErr);
+      }
+      
+      // Fallback to /tracks endpoint if /position didn't work
+      if (!latestTrack) {
+        const today = new Date().toISOString().split('T')[0];
+        const tracksRes = await fetch(
+          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${today}&_=${cacheBuster}`,
+          { 
+            headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" }
+          }
+        );
 
-      if (!tracksRes.ok) {
-        console.log(`[GPSgate-Poller] Failed to fetch tracks for user ${gpsGateUserId}`);
+        if (!tracksRes.ok) {
+          console.log(`[GPSgate-Poller] Failed to fetch tracks for user ${gpsGateUserId}`);
+          skipped++;
+          continue;
+        }
+
+        const tracks: GPSGateTrackPoint[] = await tracksRes.json();
+        
+        if (!tracks || tracks.length === 0) {
+          console.log(`[GPSgate-Poller] No tracks today for user ${gpsGateUserId}`);
+          skipped++;
+          continue;
+        }
+        
+        // Get the latest track point
+        latestTrack = tracks[tracks.length - 1];
+        trackTime = extractTime(latestTrack);
+        console.log(`[GPSgate-Poller] Track sample for user ${gpsGateUserId}:`, JSON.stringify(latestTrack).substring(0, 500));
+      }
+      
+      if (!latestTrack) {
+        console.log(`[GPSgate-Poller] No position data for user ${gpsGateUserId}`);
         skipped++;
         continue;
       }
-
-      const tracks: GPSGateTrackPoint[] = await tracksRes.json();
-      
-      // DEBUG: Log the first track point structure to understand API format
-      if (tracks && tracks.length > 0) {
-        console.log(`[GPSgate-Poller] Track sample for user ${gpsGateUserId}:`, JSON.stringify(tracks[0]).substring(0, 500));
-      }
-      
-      if (!tracks || tracks.length === 0) {
-        console.log(`[GPSgate-Poller] No tracks today for user ${gpsGateUserId}`);
-        // Do NOT update last_seen_at here - it should only reflect actual device activity
-        // The UI uses last_seen_at to determine online/offline status
-        skipped++;
-        continue;
-      }
-
-      // Get the latest track point
-      const latestTrack = tracks[tracks.length - 1];
-      const trackTime = extractTime(latestTrack);
-      
       // Check if we've already processed this position
       if (device.last_gpsgate_track_time && trackTime) {
         const lastTrackTime = new Date(device.last_gpsgate_track_time).getTime();
