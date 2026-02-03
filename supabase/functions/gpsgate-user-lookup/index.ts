@@ -13,6 +13,23 @@ interface GPSGateUser {
   Description: string;
 }
 
+function normalizeGpsGateUser(raw: any): GPSGateUser | null {
+  const idRaw = raw?.Id ?? raw?.id;
+  const usernameRaw = raw?.Username ?? raw?.username;
+  const nameRaw = raw?.Name ?? raw?.name;
+  const descRaw = raw?.Description ?? raw?.description;
+
+  const id = typeof idRaw === "number" ? idRaw : Number.parseInt(String(idRaw ?? ""), 10);
+  if (!Number.isFinite(id)) return null;
+
+  return {
+    Id: id,
+    Username: String(usernameRaw ?? ""),
+    Name: String(nameRaw ?? ""),
+    Description: String(descRaw ?? ""),
+  };
+}
+
 function normalizeText(v: unknown): string {
   return String(v ?? "").trim().toLowerCase();
 }
@@ -93,7 +110,10 @@ serve(async (req) => {
       );
     }
 
-    const gpsGateUsers: GPSGateUser[] = await usersRes.json();
+    const rawUsers = await usersRes.json();
+    const gpsGateUsers: GPSGateUser[] = Array.isArray(rawUsers)
+      ? rawUsers.map(normalizeGpsGateUser).filter(Boolean) as GPSGateUser[]
+      : [];
 
     // If no query provided, return all users (up to 20)
     if (!searchQuery) {
