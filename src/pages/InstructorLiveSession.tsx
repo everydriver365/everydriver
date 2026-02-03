@@ -36,7 +36,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import LiveTrackingMap from "@/components/instructor/LiveTrackingMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
-import { GPSConnectionChecklist } from "@/components/instructor/GPSConnectionChecklist";
+// GPSConnectionChecklist removed - using inline status bar for compact UI
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 
 interface GPSDevice {
@@ -872,65 +872,63 @@ export default function InstructorLiveSession() {
             </div>
           </>
         ) : (
-          /* Pre-session: Start controls overlay (map stays visible behind) */
-          <div className="absolute inset-0 z-30 flex flex-col justify-end pointer-events-none">
-            <div className="pointer-events-auto px-4 pb-[calc(150px+env(safe-area-inset-bottom))]">
-              <div className="mx-auto w-full max-w-sm rounded-2xl border border-border bg-background/95 backdrop-blur shadow-lg max-h-[calc(100dvh-220px)] overflow-y-auto no-scrollbar">
-                <div className="p-4 space-y-5">
-                  {/* Header */}
-                  <div className="text-center">
-                    <div className="h-16 w-16 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
-                      {device?.is_test_route_mode || !selectedPupilId ? (
-                        <Flag className="h-8 w-8 text-primary" />
-                      ) : (
-                        <User className="h-8 w-8 text-primary" />
-                      )}
-                    </div>
-                    <h2 className="text-xl font-semibold mb-1">Start Tracking</h2>
-                    <p className="text-sm text-muted-foreground">
-                      Connect your device and select a pupil
-                    </p>
-                  </div>
+          /* Pre-session: Compact Start controls overlay - no scrolling */
+          <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
+            {/* Connection Status Bar - Top */}
+            <div className="pointer-events-auto flex-shrink-0 p-3 pb-0">
+              <div className={`flex items-center justify-between px-3 py-2 rounded-xl border backdrop-blur ${
+                isConnected 
+                  ? "bg-emerald-500/10 border-emerald-500/30" 
+                  : "bg-destructive/10 border-destructive/30"
+              }`}>
+                <div className="flex items-center gap-2">
+                  {isConnected ? (
+                    <Wifi className="h-4 w-4 text-emerald-600" />
+                  ) : (
+                    <WifiOff className="h-4 w-4 text-destructive" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {device.device_name || "GPS Device"}
+                  </span>
+                </div>
+                <span className={`text-xs ${isConnected ? "text-emerald-600" : "text-destructive"}`}>
+                  {isConnected ? "Connected" : `Last: ${lastSeenLabel}`}
+                </span>
+              </div>
+            </div>
 
-                  {/* Connection Checklist */}
-                  <GPSConnectionChecklist
-                    isConnected={isConnected}
-                    lastSeenAt={device.last_seen_at}
-                    deviceName={device.device_name || "GPS Device"}
-                  />
+            {/* Spacer to push content to bottom */}
+            <div className="flex-1" />
 
-                  {/* Pupil Selection */}
-                  <div className="space-y-4">
-                    <Select value={selectedPupilId} onValueChange={(value) => {
-                      setSelectedPupilId(value);
-                    }}>
-                      <SelectTrigger className="h-14 text-base">
-                        <SelectValue placeholder="Select pupil (optional)..." />
+            {/* Bottom Controls Panel */}
+            <div className="pointer-events-auto px-3 pb-[calc(70px+env(safe-area-inset-bottom))]">
+              <div className="rounded-2xl border border-border bg-background/95 backdrop-blur shadow-lg">
+                <div className="p-3 space-y-3">
+                  {/* Pupil Selection Row */}
+                  <div className="flex items-center gap-2">
+                    <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
+                      <SelectTrigger className="flex-1 h-11">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <SelectValue placeholder="Select pupil..." />
+                        </div>
                       </SelectTrigger>
                       <SelectContent>
                         {pupils.map((pupil) => (
-                          <SelectItem key={pupil.id} value={pupil.id} className="py-3">
+                          <SelectItem key={pupil.id} value={pupil.id}>
                             {pupil.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-
-                    {/* Test Route Mode Toggle - always visible */}
-                    <div className={`flex items-center justify-between p-3 rounded-xl border ${
+                    
+                    {/* Test Route Toggle */}
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
                       device?.is_test_route_mode || !selectedPupilId 
                         ? "bg-amber-500/10 border-amber-500/30" 
                         : "bg-muted/50 border-border"
                     }`}>
-                      <div className="flex items-center gap-2">
-                        <Flag className={`h-4 w-4 ${device?.is_test_route_mode || !selectedPupilId ? "text-amber-600" : "text-muted-foreground"}`} />
-                        <div>
-                          <Label className="text-sm font-medium">Test Route</Label>
-                          {!selectedPupilId && (
-                            <p className="text-[10px] text-muted-foreground">Auto-enabled without pupil</p>
-                          )}
-                        </div>
-                      </div>
+                      <Flag className={`h-4 w-4 ${device?.is_test_route_mode || !selectedPupilId ? "text-amber-600" : "text-muted-foreground"}`} />
                       <Switch 
                         checked={device?.is_test_route_mode || !selectedPupilId}
                         onCheckedChange={async (checked) => {
@@ -944,58 +942,44 @@ export default function InstructorLiveSession() {
                           }
                         }}
                         disabled={!selectedPupilId}
+                        className="scale-90"
                       />
                     </div>
+                  </div>
 
-                    {/* Action buttons */}
-                    <div className="space-y-2">
-                      {/* Start with pupil button */}
-                      {selectedPupilId && (
-                        <Button 
-                          size="lg"
-                          className="w-full h-14 text-lg font-semibold rounded-xl"
-                          onClick={() => startSession("practice")}
-                          disabled={isStarting || !isConnected}
-                        >
-                          {isStarting ? (
-                            <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                          ) : (
-                            <Play className="h-5 w-5 mr-2" />
-                          )}
-                          {device?.is_test_route_mode ? "Start Test Route" : "Start Trip"}
-                        </Button>
+                  {/* Action Buttons - Side by Side */}
+                  <div className="flex gap-2">
+                    {/* Main Start Button */}
+                    <Button 
+                      size="lg"
+                      className={`flex-1 h-12 text-base font-semibold rounded-xl ${
+                        !selectedPupilId ? "bg-amber-600 hover:bg-amber-700" : ""
+                      }`}
+                      onClick={() => startSession(selectedPupilId ? "practice" : "test")}
+                      disabled={isStarting || !isConnected}
+                    >
+                      {isStarting ? (
+                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                      ) : selectedPupilId ? (
+                        <Play className="h-5 w-5 mr-2" />
+                      ) : (
+                        <Flag className="h-5 w-5 mr-2" />
                       )}
+                      {selectedPupilId 
+                        ? (device?.is_test_route_mode ? "Test Route" : "Start") 
+                        : "Test Route"
+                      }
+                    </Button>
 
-                      {/* Quick start test route button */}
-                      {!selectedPupilId && (
-                        <Button 
-                          size="lg"
-                          variant="default"
-                          className="w-full h-14 text-lg font-semibold rounded-xl bg-amber-600 hover:bg-amber-700"
-                          onClick={() => startSession("test")}
-                          disabled={isStarting || !isConnected}
-                        >
-                          {isStarting ? (
-                            <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                          ) : (
-                            <Flag className="h-5 w-5 mr-2" />
-                          )}
-                          Start Test Route
-                        </Button>
-                      )}
-
-                      {/* Driving Test button - opens dialog */}
-                      <Button 
-                        size="lg"
-                        variant="default"
-                        className="w-full h-14 text-lg font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700"
-                        onClick={() => setShowDrivingTestDialog(true)}
-                        disabled={isStarting || !isConnected}
-                      >
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Driving Test
-                      </Button>
-                    </div>
+                    {/* Driving Test Button */}
+                    <Button 
+                      size="lg"
+                      className="h-12 px-4 font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700"
+                      onClick={() => setShowDrivingTestDialog(true)}
+                      disabled={isStarting || !isConnected}
+                    >
+                      <CheckCircle className="h-5 w-5" />
+                    </Button>
                   </div>
                 </div>
               </div>
