@@ -109,10 +109,11 @@ export default function InstructorTraccarSession() {
 
   // Poll GPS server while this page is open so we can keep `last_seen_at`
   // fresh and accurately reflect connectivity even before a session starts.
+  // Reduced frequency to prevent flickering - realtime handles instant updates
   const isSessionActive = !!device?.current_session_id;
   useGPSPoller({
     enabled: !!device?.id,
-    intervalMs: isSessionActive ? 10000 : 20000,
+    intervalMs: isSessionActive ? 15000 : 30000, // 15s active, 30s inactive
     onError: (error) => {
       console.error("[GPSPoller] Error:", error);
     },
@@ -189,6 +190,8 @@ export default function InstructorTraccarSession() {
 
   // Store device ID in a ref to avoid re-creating subscriptions when device object updates
   const deviceIdRef = React.useRef<string | null>(null);
+  // Track last seen time to prevent duplicate updates causing flickering
+  const lastSeenRef = React.useRef<string | null>(null);
 
   // Realtime subscription to traccar_devices for instant updates
   // Uses deviceIdRef to prevent subscription churn when device data updates
@@ -199,8 +202,6 @@ export default function InstructorTraccarSession() {
     // Only set up subscription once per device ID
     if (deviceIdRef.current === currentDeviceId) return;
     deviceIdRef.current = currentDeviceId;
-
-    console.log('[Traccar] Setting up realtime for device:', currentDeviceId);
 
     const pollDevice = async () => {
       const { data, error } = await supabase
@@ -216,20 +217,17 @@ export default function InstructorTraccarSession() {
       
       if (data) {
         const typedDevice = data as TraccarDevice;
-        console.log('[Traccar Poll] Device update:', {
-          lat: typedDevice.last_latitude,
-          lng: typedDevice.last_longitude,
-          speed: typedDevice.last_speed_kmh,
-          road: typedDevice.last_road_name,
-          limit: typedDevice.last_speed_limit_kmh,
-        });
-        setDevice(typedDevice);
-        // Always read speed limit from device (works for test routes too)
-        if (typedDevice.last_speed_limit_kmh !== undefined) {
-          setSpeedLimitKmh(typedDevice.last_speed_limit_kmh);
+        
+        // Only update state if data actually changed (prevents flickering)
+        if (typedDevice.last_seen_at !== lastSeenRef.current) {
+          lastSeenRef.current = typedDevice.last_seen_at;
+          setDevice(typedDevice);
+          if (typedDevice.last_speed_limit_kmh !== undefined) {
+            setSpeedLimitKmh(typedDevice.last_speed_limit_kmh);
+          }
         }
         
-        // Also fetch distance if session active
+        // Fetch distance if session active (always check this)
         if (typedDevice.current_session_id) {
           const { data: session } = await supabase
             .from("lesson_telematics")
@@ -260,29 +258,22 @@ export default function InstructorTraccarSession() {
         },
         (payload) => {
           const newDevice = payload.new as TraccarDevice;
-          console.log('[Traccar RT] Device update:', {
-            lat: newDevice.last_latitude,
-            lng: newDevice.last_longitude,
-            speed: newDevice.last_speed_kmh,
-            road: newDevice.last_road_name,
-            limit: newDevice.last_speed_limit_kmh,
-          });
-          setDevice(newDevice);
-          // Update speed limit from device (works for all session types)
-          if (newDevice.last_speed_limit_kmh !== undefined) {
-            setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
+          // Only update if data actually changed (prevents flickering)
+          if (newDevice.last_seen_at !== lastSeenRef.current) {
+            lastSeenRef.current = newDevice.last_seen_at;
+            setDevice(newDevice);
+            if (newDevice.last_speed_limit_kmh !== undefined) {
+              setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
+            }
           }
         }
       )
-      .subscribe((status) => {
-        console.log('[Traccar RT] Subscription status:', status);
-      });
+      .subscribe();
     
-    // Aggressive fallback polling every 2s to ensure updates are timely
-    const interval = setInterval(pollDevice, 2000);
+    // Fallback polling every 15s (realtime handles most updates)
+    const interval = setInterval(pollDevice, 15000);
     
     return () => {
-      console.log('[Traccar] Cleaning up realtime for device:', currentDeviceId);
       deviceIdRef.current = null;
       supabase.removeChannel(channel);
       clearInterval(interval);
