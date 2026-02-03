@@ -20,6 +20,8 @@ export interface MileageLog {
   is_auto_logged: boolean;
   created_at: string;
   updated_at: string;
+  estimated_fuel_cost_gbp: number | null;
+  fuel_litres_used: number | null;
   pupil?: { name: string } | null;
   vehicle?: { registration: string } | null;
 }
@@ -30,6 +32,7 @@ export interface MileageSummary {
   totalMiles: number;
   businessPercentage: number;
   taxDeductibleMiles: number; // HMRC rate at 45p/mi for first 10k, 25p after
+  totalFuelCost: number;
 }
 
 export function useMileageLogs(dateRange?: { from: Date; to: Date }) {
@@ -77,12 +80,13 @@ export function useMileageLogs(dateRange?: { from: Date; to: Date }) {
           totalMiles: 0,
           businessPercentage: 0,
           taxDeductibleMiles: 0,
+          totalFuelCost: 0,
         };
       }
 
       let query = supabase
         .from("mileage_logs")
-        .select("distance_km, trip_type")
+        .select("distance_km, trip_type, estimated_fuel_cost_gbp")
         .eq("instructor_id", instructor.id);
 
       if (dateRange?.from) {
@@ -111,12 +115,17 @@ export function useMileageLogs(dateRange?: { from: Date; to: Date }) {
       // HMRC mileage allowance: 45p for first 10,000 miles, 25p after
       const taxDeductibleMiles = totalBusiness;
 
+      // Sum up fuel costs if available
+      const totalFuelCost = (data || [])
+        .reduce((sum, l) => sum + (l.estimated_fuel_cost_gbp || 0), 0);
+
       return {
         totalBusiness,
         totalPersonal,
         totalMiles,
         businessPercentage,
         taxDeductibleMiles,
+        totalFuelCost,
       };
     },
     enabled: !!instructor?.id,
@@ -221,6 +230,7 @@ export function useMileageLogs(dateRange?: { from: Date; to: Date }) {
       totalMiles: 0,
       businessPercentage: 0,
       taxDeductibleMiles: 0,
+      totalFuelCost: 0,
     },
     isLoading: logsQuery.isLoading || summaryQuery.isLoading,
     updateTripType,

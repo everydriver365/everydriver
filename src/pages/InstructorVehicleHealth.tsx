@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench } from "lucide-react";
+import { ArrowLeft, Radio, Car, MapPin, RefreshCw, Plus, Shield, ShieldAlert, Wrench, Fuel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ import { ComplianceOverview } from "@/components/instructor/vehicle-health/Compl
 import { SecurityAlertsTab } from "@/components/instructor/vehicle-health/SecurityAlertsTab";
 import { ServiceRemindersTab } from "@/components/instructor/vehicle-health/ServiceRemindersTab";
 import { LiveTelemetryTab } from "@/components/instructor/vehicle-health/LiveTelemetryTab";
+import { RunningCostsTab } from "@/components/instructor/vehicle-health/RunningCostsTab";
 import { useVehicleHealth, TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
 import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useVehicleService } from "@/hooks/useVehicleService";
@@ -84,7 +85,7 @@ export default function InstructorVehicleHealth() {
         {/* Tabs - Horizontally scrollable on mobile */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-6 gap-1">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-7 gap-1">
               <TabsTrigger value="compliance" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
                 <Shield className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden xs:inline sm:inline">DVSA</span>
@@ -108,6 +109,10 @@ export default function InstructorVehicleHealth() {
               <TabsTrigger value="mileage" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
                 <MapPin className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden xs:inline sm:inline">Mileage</span>
+              </TabsTrigger>
+              <TabsTrigger value="costs" className="text-xs px-2 sm:px-3 gap-1 whitespace-nowrap">
+                <Fuel className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden xs:inline sm:inline">Costs</span>
               </TabsTrigger>
               <TabsTrigger value="security" className="text-xs px-2 sm:px-3 gap-1 relative whitespace-nowrap">
                 <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
@@ -188,6 +193,11 @@ export default function InstructorVehicleHealth() {
           {/* Mileage Tab - Auto-logged with business/personal tagging */}
           <TabsContent value="mileage" className="mt-4">
             <AutoMileageLog />
+          </TabsContent>
+
+          {/* Running Costs Tab */}
+          <TabsContent value="costs" className="mt-4">
+            <RunningCostsTab />
           </TabsContent>
 
           {/* Live Status Tab */}

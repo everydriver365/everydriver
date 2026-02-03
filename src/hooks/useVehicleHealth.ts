@@ -17,6 +17,10 @@ export interface TraccarDeviceHealth {
   last_longitude: number | null;
   last_seen_at: string | null;
   is_connected: boolean;
+  gpsgate_odometer_m: number | null;
+  gpsgate_engine_hours_s: number | null;
+  daily_start_odometer_m: number | null;
+  daily_start_date: string | null;
   vehicle?: {
     id: string;
     registration: string;
@@ -82,7 +86,11 @@ export function useVehicleHealth() {
           last_heading,
           last_latitude,
           last_longitude,
-          last_seen_at
+          last_seen_at,
+          gpsgate_odometer_m,
+          gpsgate_engine_hours_s,
+          daily_start_odometer_m,
+          daily_start_date
         `)
         .eq("instructor_id", instructor.id);
 
