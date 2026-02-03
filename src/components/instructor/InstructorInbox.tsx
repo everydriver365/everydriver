@@ -194,62 +194,60 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
 
   return (
     <>
-      <Card className="h-[calc(100vh-12rem)]">
+      <Card className="h-[calc(100vh-8rem)]">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-xl">
               <MessageCircle className="h-5 w-5" />
               Messages
               {(totalUnread + adminUnreadCount) > 0 && (
-                <Badge variant="destructive" className="ml-2">
+                <Badge variant="destructive" className="ml-1">
                   {totalUnread + adminUnreadCount}
                 </Badge>
               )}
             </CardTitle>
-            {activeTab === "pupils" && (
-              <Button size="sm" onClick={() => setShowNewChatDialog(true)}>
-                <Plus className="h-4 w-4 mr-1" />
-                New Chat
-              </Button>
-            )}
           </div>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="px-4 pb-4 pt-0 space-y-3">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="px-4 pb-3">
-              <TabsList className="w-full grid grid-cols-2">
-                <TabsTrigger value="pupils" className="relative">
+            <div className="flex items-center justify-between gap-2">
+              <TabsList className="grid grid-cols-2 flex-1">
+                <TabsTrigger value="pupils" className="relative text-sm">
                   Pupils
                   {totalUnread > 0 && (
-                    <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-[10px]">
+                    <Badge variant="destructive" className="ml-1.5 h-5 px-1.5 text-[10px]">
                       {totalUnread}
                     </Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="admin" className="relative">
+                <TabsTrigger value="admin" className="relative text-sm">
                   Admin
                   {adminUnreadCount > 0 && (
-                    <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-[10px]">
+                    <Badge variant="destructive" className="ml-1.5 h-5 px-1.5 text-[10px]">
                       {adminUnreadCount}
                     </Badge>
                   )}
                 </TabsTrigger>
               </TabsList>
+              {activeTab === "pupils" && (
+                <Button size="sm" onClick={() => setShowNewChatDialog(true)}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  New
+                </Button>
+              )}
             </div>
 
-            <TabsContent value="pupils" className="m-0">
-              <div className="px-4 pb-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search conversations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
+            <TabsContent value="pupils" className="mt-3 space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
               </div>
-              <ScrollArea className="h-[calc(100vh-22rem)]">
+              <ScrollArea className="h-[calc(100vh-18rem)]">
                 {loading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
@@ -315,41 +313,37 @@ export function InstructorInbox({ instructorId }: InstructorInboxProps) {
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="admin" className="m-0">
-              <div className="px-4">
-                <button
-                  onClick={() => setShowAdminChat(true)}
-                  className="w-full p-4 rounded-lg border hover:bg-muted/50 transition-colors flex items-center gap-4"
-                >
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ShieldCheck className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">EveryDriver Support</h3>
-                      {adminUnreadCount > 0 && (
-                        <Badge variant="destructive">{adminUnreadCount}</Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Contact the admin team for help
-                    </p>
-                  </div>
-                </button>
-              </div>
-              <div className="px-4 mt-4">
-                <div className="p-4 rounded-lg bg-muted/50">
-                  <h4 className="font-medium mb-2">Need Help?</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Message our admin team for assistance with:
-                  </p>
-                  <ul className="text-sm text-muted-foreground mt-2 space-y-1">
-                    <li>• Account or billing questions</li>
-                    <li>• Technical issues</li>
-                    <li>• Feature requests</li>
-                    <li>• General enquiries</li>
-                  </ul>
+            <TabsContent value="admin" className="mt-3 space-y-3">
+              <button
+                onClick={() => setShowAdminChat(true)}
+                className="w-full p-4 rounded-lg border hover:bg-muted/50 transition-colors flex items-center gap-4"
+              >
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <ShieldCheck className="h-6 w-6 text-primary" />
                 </div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">EveryDriver Support</h3>
+                    {adminUnreadCount > 0 && (
+                      <Badge variant="destructive">{adminUnreadCount}</Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Contact the admin team for help
+                  </p>
+                </div>
+              </button>
+              <div className="p-4 rounded-lg bg-muted/50">
+                <h4 className="font-medium mb-2">Need Help?</h4>
+                <p className="text-sm text-muted-foreground">
+                  Message our admin team for assistance with:
+                </p>
+                <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+                  <li>• Account or billing questions</li>
+                  <li>• Technical issues</li>
+                  <li>• Feature requests</li>
+                  <li>• General enquiries</li>
+                </ul>
               </div>
             </TabsContent>
           </Tabs>
