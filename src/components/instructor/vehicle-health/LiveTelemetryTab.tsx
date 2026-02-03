@@ -48,7 +48,7 @@ export function LiveTelemetryTab({
         <Radio className="h-12 w-12 text-muted-foreground/30 mb-3" />
         <p className="text-muted-foreground font-medium">No GPS devices registered</p>
         <p className="text-sm text-muted-foreground/70 mt-1">
-          Set up a GPS tracker in Settings → Traccar
+          Set up a GPS tracker in Settings → GPS Tracking
         </p>
         <Button
           variant="outline"

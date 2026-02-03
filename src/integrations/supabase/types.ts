@@ -6293,11 +6293,13 @@ export type Database = {
           current_session_id: string | null
           device_identifier: string
           device_name: string | null
+          gpsgate_user_id: number | null
           id: string
           instructor_id: string
           is_active: boolean | null
           is_test_route_mode: boolean
           last_battery_percent: number | null
+          last_gpsgate_track_time: string | null
           last_heading: number | null
           last_ignition_status: boolean | null
           last_latitude: number | null
@@ -6317,11 +6319,13 @@ export type Database = {
           current_session_id?: string | null
           device_identifier: string
           device_name?: string | null
+          gpsgate_user_id?: number | null
           id?: string
           instructor_id: string
           is_active?: boolean | null
           is_test_route_mode?: boolean
           last_battery_percent?: number | null
+          last_gpsgate_track_time?: string | null
           last_heading?: number | null
           last_ignition_status?: boolean | null
           last_latitude?: number | null
@@ -6341,11 +6345,13 @@ export type Database = {
           current_session_id?: string | null
           device_identifier?: string
           device_name?: string | null
+          gpsgate_user_id?: number | null
           id?: string
           instructor_id?: string
           is_active?: boolean | null
           is_test_route_mode?: boolean
           last_battery_percent?: number | null
+          last_gpsgate_track_time?: string | null
           last_heading?: number | null
           last_ignition_status?: boolean | null
           last_latitude?: number | null
