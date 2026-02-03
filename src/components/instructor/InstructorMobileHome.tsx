@@ -566,22 +566,28 @@ export function InstructorMobileHome({
       <RadialFAB
         onAddNote={() => {
           triggerHaptic("selection");
-          // TODO: Open quick note modal
+          navigate("/instructor/pupils");
         }}
         onNavigate={() => {
+          triggerHaptic("selection");
           if (nextLesson?.pickupPostcode) {
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nextLesson.pickupPostcode)}`;
             window.open(mapsUrl, "_blank");
+          } else {
+            navigate("/instructor/traccar");
           }
         }}
         onMessage={() => {
+          triggerHaptic("selection");
           if (nextLesson?.pupilPhone) {
             window.location.href = `sms:${nextLesson.pupilPhone}`;
+          } else {
+            navigate("/instructor/messages");
           }
         }}
         onLogBreak={() => {
           triggerHaptic("selection");
-          // TODO: Open break log modal
+          navigate("/instructor/mileage");
         }}
       />
 
