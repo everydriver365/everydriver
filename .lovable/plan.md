@@ -1,178 +1,138 @@
 
-# Enhance Greeting Tile with Weather, Road & Nearby Alerts
+# Tracker App Reminder Before Lessons
 
 ## Overview
 
-This plan enhances the "Good morning" greeting tile on the instructor mobile home page to display:
-- Current road name (from GPS tracking)
-- Current weather conditions (temperature and icon)
-- Nearby weather/traffic warnings within 3 miles
+This feature adds an intelligent reminder system that prompts instructors to open the GPSgate Tracker app before their lessons start, ensuring GPS tracking is active for trip recording.
 
-The design will be compact and non-scrolling, integrating seamlessly into the existing card.
+## How It Works
 
-## Current Architecture
-
-The greeting tile is in `InstructorMobileHome.tsx` (lines 328-359). Relevant data sources:
-
-| Hook/Source | Data Available |
-|-------------|----------------|
-| `useInstructorLastPosition` | `roadName`, `latitude`, `longitude` |
-| `useDrivingAlerts` | `alerts[]`, `location` |
-| `get-driving-alerts` edge function | Weather + traffic (already fetches current temp, weather code) |
-
-## Implementation Plan
-
-### 1. Enhance Edge Function to Return Current Weather
-
-Modify `supabase/functions/get-driving-alerts/index.ts` to return current weather data alongside alerts:
-
-```typescript
-// Add to response:
-{
-  alerts: [...],
-  location: "Birmingham",
-  currentWeather: {
-    temperature: 12,
-    weatherCode: 3,
-    description: "Overcast",
-    icon: "Cloud",
-    windSpeed: 15  // mph
-  }
-}
-```
-
-This data is already being fetched - we just need to include it in the response.
-
-### 2. Update `useDrivingAlerts` Hook
-
-Extend the hook to expose `currentWeather`:
-
-```typescript
-interface UseDrivingAlertsResult {
-  alerts: DrivingAlert[];
-  loading: boolean;
-  currentWeather: {
-    temperature: number;
-    description: string;
-    icon: string;
-  } | null;
-  // ... existing fields
-}
-```
-
-### 3. Add Radius Filter for Nearby Alerts (3 miles)
-
-Modify the edge function to add distance calculation and filter traffic incidents to 3-mile radius (currently 10km ~ 6 miles):
-
-```typescript
-// Change from 10km to ~5km (3 miles)
-const radiusKm = 5; // 3 miles ≈ 4.8km
-```
-
-### 4. Redesign Greeting Tile Component
-
-Transform the existing greeting card to show contextual information:
-
-**New Layout:**
-
-```text
-┌─────────────────────────────────────────┐
-│ TODAY              🟢 Live              │
-│                                         │
-│ Good morning, John!         ☁️ 12°C    │
-│ 📍 High Street, Birmingham              │
-│                                         │
-│ ⚠️ Heavy rain warning nearby            │ (if alerts exist)
-└─────────────────────────────────────────┘
-```
-
-**Design Details:**
-- Weather icon + temperature displayed on the right of the greeting
-- Current road shown below greeting with location pin icon
-- If alerts exist within 3 miles, show a compact single-line warning
-- All content fits without scrolling
-
-### 5. Create Compact Alert Indicator
-
-Instead of showing full alert cards in the greeting, show a condensed summary:
-- Show count of nearby warnings
-- Tapping expands to the full `DrivingAlertsStrip`
-- Use color coding: amber for moderate, red for severe
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `supabase/functions/get-driving-alerts/index.ts` | Add `currentWeather` to response, reduce radius to 3 miles |
-| `src/hooks/useDrivingAlerts.ts` | Add `currentWeather` to return type and state |
-| `src/components/instructor/InstructorMobileHome.tsx` | Redesign greeting tile with weather/road/alerts |
-
-## Technical Details
-
-### Weather Icon Mapping
-
-```typescript
-const WEATHER_ICONS: Record<number, string> = {
-  0: "Sun",       // Clear
-  1: "Sun",       // Mainly clear
-  2: "CloudSun",  // Partly cloudy
-  3: "Cloud",     // Overcast
-  45: "CloudFog", // Fog
-  // ... existing mapping in useTomorrowWeather.ts
-};
-```
-
-### Compact Alert Display Logic
-
-```typescript
-// Show at most 1 line for alerts in greeting tile
-const compactAlertText = alerts.length > 0 
-  ? alerts[0].severity === 'severe'
-    ? `⚠️ ${alerts[0].title}`
-    : `⚠️ ${alerts.length} warning${alerts.length > 1 ? 's' : ''} nearby`
-  : null;
-```
-
-### Road Name Source Priority
-
-1. GPS device `last_road_name` (real-time from tracking)
-2. Fall back to `location` from alerts (area name from postcode)
-
-## Visual Mockup
-
-```text
-Before:
-┌────────────────────────────────┐
-│ TODAY              🟢 Live     │
-│ Good morning, John!            │
-│ Enjoy your lessons today...    │
-└────────────────────────────────┘
-
-After:
-┌────────────────────────────────┐
-│ TODAY              🟢 Live     │
-│ Good morning, John!    ⛅ 14°C │
-│ 📍 Bristol Road, Edgbaston     │
-│ 🔶 Strong winds - 28mph       │
-└────────────────────────────────┘
-```
+The reminder will:
+1. Show a dismissible prompt on the home page when the next lesson is within 30 minutes
+2. Only show if GPS status is "Offline" (no recent heartbeat from tracker)
+3. Include a deep link to open the GPSgate Tracker app (or App Store if not installed)
+4. Persist dismissal state per-lesson to avoid nagging
 
 ## Data Flow
 
-```text
-InstructorMobileHome
-  │
-  ├── useDrivingAlerts(instructorId)
-  │     └── calls get-driving-alerts edge function
-  │           └── Returns: { alerts, currentWeather, location }
-  │
-  └── useInstructorLastPosition(instructorId)
-        └── Returns: { roadName, latitude, longitude }
+```
+useNextLessonDetails → nextLesson.minutesUntil (30 min threshold)
+       ↓
+useGPSConnectionStatus → isConnected: false triggers reminder
+       ↓
+TrackerReminderBanner component displays prompt
+       ↓
+localStorage tracks dismissed lesson IDs
 ```
 
-## Benefits
+## Implementation Details
 
-1. **At-a-glance context**: Instructors immediately see weather, location, and any warnings
-2. **No extra API calls**: Current weather is already fetched by alerts function
-3. **Compact design**: All info in existing tile, no additional scrolling
-4. **Actionable**: Warnings help instructors plan their day better
+### 1. New Component: TrackerReminderBanner
+
+A compact, dismissible banner that appears above the Next Lesson card when conditions are met:
+
+**Display conditions:**
+- Next lesson exists AND minutesUntil <= 30
+- GPS status is "offline" (no device heartbeat in 5+ minutes)
+- User hasn't dismissed this specific lesson's reminder
+
+**UI Design:**
+- Amber/warning styling to draw attention
+- Smartphone icon + clear message
+- "Open Tracker" button with deep link
+- Dismiss (X) button
+
+```
+┌──────────────────────────────────────────────────┐
+│ 📱 Open GPSgate Tracker          [Open] [✕]    │
+│ Start the app to record your upcoming lesson    │
+└──────────────────────────────────────────────────┘
+```
+
+### 2. Deep Link Strategy
+
+GPSgate Tracker app deep links:
+- **iOS**: `gpsgate://` or App Store fallback
+- **Android**: Intent URL or Play Store fallback
+
+Implementation:
+```typescript
+const openTrackerApp = () => {
+  // Try deep link first, fallback to app store
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const deepLink = "gpsgate://";
+  const appStoreLink = isIOS 
+    ? "https://apps.apple.com/app/gpsgate-tracker/id434645675"
+    : "https://play.google.com/store/apps/details?id=com.gpsgate.tracker";
+  
+  // Attempt deep link with fallback
+  window.location.href = deepLink;
+  setTimeout(() => {
+    window.location.href = appStoreLink;
+  }, 1500);
+};
+```
+
+### 3. Dismissal Logic
+
+Store dismissed lesson IDs in localStorage with daily cleanup:
+
+```typescript
+const DISMISSED_KEY = "tracker_reminder_dismissed";
+
+const isDismissed = (lessonId: string): boolean => {
+  const dismissed = JSON.parse(localStorage.getItem(DISMISSED_KEY) || "{}");
+  return dismissed[lessonId] === true;
+};
+
+const dismissReminder = (lessonId: string) => {
+  const dismissed = JSON.parse(localStorage.getItem(DISMISSED_KEY) || "{}");
+  dismissed[lessonId] = true;
+  localStorage.setItem(DISMISSED_KEY, JSON.stringify(dismissed));
+};
+```
+
+### 4. Integration in InstructorMobileHome
+
+Insert the banner between the greeting card and the Next Lesson card:
+
+```tsx
+{/* Tracker Reminder - show when offline and lesson soon */}
+{nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
+  <TrackerReminderBanner 
+    lessonId={nextLesson.lessonId}
+    minutesUntil={nextLesson.minutesUntil}
+  />
+)}
+
+{/* Next Lesson Card */}
+{nextLesson && (
+  <NextLessonCard ... />
+)}
+```
+
+## Files to Create/Modify
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/instructor/TrackerReminderBanner.tsx` | Create | New dismissible reminder component |
+| `src/components/instructor/InstructorMobileHome.tsx` | Modify | Add TrackerReminderBanner import and placement |
+
+## Technical Considerations
+
+1. **Timing threshold**: 30 minutes before lesson gives enough time to start the app
+2. **Offline detection**: Uses existing `useGPSConnectionStatus` hook (5-minute threshold)
+3. **Per-lesson dismissal**: Prevents the same reminder from reappearing after dismissal
+4. **Deep links**: Platform-specific handling with graceful fallback to app store
+5. **No database changes**: Uses localStorage for dismissal state (ephemeral by design)
+
+## User Experience
+
+**Scenario**: Instructor opens home page 25 minutes before a lesson. GPS tracker is offline.
+
+1. Banner appears: "Open GPSgate Tracker - Start the app to record your upcoming lesson"
+2. Instructor taps "Open Tracker"
+3. GPSgate Tracker app opens (or App Store if not installed)
+4. Instructor starts tracking in the app
+5. After ~30 seconds, GPS status changes to "Connected" and banner auto-hides
+6. If instructor dismisses instead, banner won't show again for that specific lesson
