@@ -784,11 +784,8 @@ serve(async (req) => {
       
       if (!tracks || tracks.length === 0) {
         console.log(`[GPSgate-Poller] No tracks today for user ${gpsGateUserId}`);
-        // Still update last_seen_at to indicate we checked
-        await supabase
-          .from("traccar_devices")
-          .update({ last_seen_at: new Date().toISOString() })
-          .eq("id", device.id);
+        // Do NOT update last_seen_at here - it should only reflect actual device activity
+        // The UI uses last_seen_at to determine online/offline status
         skipped++;
         continue;
       }
@@ -802,11 +799,8 @@ serve(async (req) => {
         const lastTrackTime = new Date(device.last_gpsgate_track_time).getTime();
         const currentTrackTime = new Date(trackTime).getTime();
         if (currentTrackTime <= lastTrackTime) {
-          // Still update last_seen_at
-          await supabase
-            .from("traccar_devices")
-            .update({ last_seen_at: new Date().toISOString() })
-            .eq("id", device.id);
+          // Do NOT update last_seen_at here - this is a duplicate/old point
+          // Keep last_seen_at reflecting when we actually got new data
           skipped++;
           continue;
         }
@@ -824,11 +818,7 @@ serve(async (req) => {
       // Skip if no valid position found
       if (lat === null || lon === null) {
         console.log(`[GPSgate-Poller] No valid position in track for device ${identifier}. Track keys: ${Object.keys(latestTrack).join(', ')}`);
-        // Still update last_seen_at
-        await supabase
-          .from("traccar_devices")
-          .update({ last_seen_at: new Date().toISOString() })
-          .eq("id", device.id);
+        // Do NOT update last_seen_at here - invalid position means no usable data
         skipped++;
         continue;
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,16 +107,31 @@ export default function InstructorTraccarSession() {
     examinerId: string | null;
   } | null>(null);
 
+  // Stable error handler for GPS poller (prevents effect restarts)
+  const handlePollerError = useCallback((error: Error) => {
+    console.error("[GPSPoller] Error:", error);
+  }, []);
+
+  // Track page visibility to pause polling when hidden (mobile optimization)
+  const [isPageVisible, setIsPageVisible] = useState(true);
+  
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(document.visibilityState === 'visible');
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
   // Poll GPS server while this page is open so we can keep `last_seen_at`
   // fresh and accurately reflect connectivity even before a session starts.
-  // Reduced frequency to prevent flickering - realtime handles instant updates
+  // Only poll when page is visible to reduce background churn on mobile
   const isSessionActive = !!device?.current_session_id;
   useGPSPoller({
-    enabled: !!device?.id,
+    enabled: !!device?.id && isPageVisible,
     intervalMs: isSessionActive ? 15000 : 30000, // 15s active, 30s inactive
-    onError: (error) => {
-      console.error("[GPSPoller] Error:", error);
-    },
+    onError: handlePollerError,
   });
 
   useEffect(() => {
