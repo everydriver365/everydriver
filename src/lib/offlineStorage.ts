@@ -51,6 +51,39 @@ const STORES: OfflineStore[] = [
     name: 'metadata',
     keyPath: 'key',
   },
+  // New stores for enhanced offline support
+  {
+    name: 'gpsPoints',
+    keyPath: 'id',
+    indexes: [
+      { name: 'telematics', keyPath: 'telematicsId' },
+      { name: 'queued', keyPath: 'queuedAt' },
+      { name: 'synced', keyPath: 'synced' },
+    ],
+  },
+  {
+    name: 'lessonNotes',
+    keyPath: 'id',
+    indexes: [
+      { name: 'lesson', keyPath: 'lessonId' },
+      { name: 'synced', keyPath: 'synced' },
+    ],
+  },
+  {
+    name: 'paymentQueue',
+    keyPath: 'id',
+    indexes: [
+      { name: 'pupil', keyPath: 'pupilId' },
+      { name: 'synced', keyPath: 'synced' },
+    ],
+  },
+  {
+    name: 'speedLimitCache',
+    keyPath: 'gridKey',
+    indexes: [
+      { name: 'expires', keyPath: 'expiresAt' },
+    ],
+  },
 ];
 
 let dbInstance: IDBDatabase | null = null;
