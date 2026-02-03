@@ -682,7 +682,7 @@ export default function InstructorSettings() {
                 id="gps-mobile" 
                 icon={Satellite} 
                 title="Mobile GPS Tracking" 
-                description="Link your GPSgate Tracker app"
+                description="Link your Every Driver GPS Gate account"
                 iconColor="text-cyan-600"
                 iconBg="bg-cyan-100 dark:bg-cyan-900/30"
               >
