@@ -125,18 +125,23 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
     <div className="space-y-2">
       <Button
         type="button"
-        variant="outline"
+        variant={selectedId ? "default" : "outline"}
         size="sm"
         onClick={handleLookup}
         disabled={loading}
-        className="w-full"
+        className={cn(
+          "w-full transition-colors",
+          selectedId && "bg-green-600 hover:bg-green-700 text-white border-green-600"
+        )}
       >
         {loading ? (
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+        ) : selectedId ? (
+          <CheckCircle2 className="h-4 w-4 mr-2" />
         ) : (
           <Search className="h-4 w-4 mr-2" />
         )}
-        Find Tracker
+        {selectedId ? "Tracker Linked" : "Find Tracker"}
       </Button>
 
       {error && (
