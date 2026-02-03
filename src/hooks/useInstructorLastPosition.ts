@@ -32,7 +32,7 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
 
     try {
       const { data } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("last_latitude, last_longitude, last_heading, last_speed_kmh, last_road_name, last_seen_at, is_active")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false })

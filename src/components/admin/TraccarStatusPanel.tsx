@@ -67,9 +67,9 @@ export function TraccarStatusPanel() {
         `)
         .eq("is_active", true)
         .order("updated_at", { ascending: false }),
-      // Fetch traccar devices - get all active devices
+      // Fetch GPS devices - get all active devices
       supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select(`
           id,
           instructor_id,

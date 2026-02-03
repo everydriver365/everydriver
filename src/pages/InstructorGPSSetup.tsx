@@ -89,7 +89,7 @@ export default function InstructorTraccarSetup() {
     
     try {
       const { data, error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("*")
         .eq("instructor_id", instructor.id)
         .order("created_at", { ascending: false });
@@ -123,7 +123,7 @@ export default function InstructorTraccarSetup() {
     setIsCreating(true);
     try {
       const { data, error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .insert({
           device_identifier: deviceId.trim(),
           instructor_id: instructor.id,
@@ -160,7 +160,7 @@ export default function InstructorTraccarSetup() {
   const deleteDevice = async (deviceId: string) => {
     try {
       const { error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .delete()
         .eq("id", deviceId);
 

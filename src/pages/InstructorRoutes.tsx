@@ -170,7 +170,7 @@ export default function InstructorRoutes() {
     
     try {
       const { data, error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("is_test_route_mode")
         .eq("instructor_id", instructor.id)
         .eq("is_active", true)
@@ -189,7 +189,7 @@ export default function InstructorRoutes() {
     
     try {
       const { error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .update({ is_test_route_mode: enabled })
         .eq("instructor_id", instructor.id)
         .eq("is_active", true);

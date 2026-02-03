@@ -185,7 +185,7 @@ export function useRunningCosts() {
       if (!instructor?.id) return { todayMiles: 0, todayFuelCost: 0 };
 
       const { data: devices, error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("gpsgate_odometer_m, daily_start_odometer_m, daily_start_date")
         .eq("instructor_id", instructor.id);
 

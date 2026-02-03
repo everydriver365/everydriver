@@ -31,7 +31,7 @@ export function useDeviceBatteryHistory(deviceId: string | null, hoursBack: numb
       const since = new Date(Date.now() - hoursBack * 60 * 60 * 1000).toISOString();
 
       const { data, error } = await supabase
-        .from("traccar_battery_history")
+        .from("gps_battery_history")
         .select("id, device_id, battery_percent, recorded_at")
         .eq("device_id", deviceId)
         .gte("recorded_at", since)
@@ -54,7 +54,7 @@ export function useDeviceIgnitionEvents(deviceId: string | null, limit: number =
       if (!deviceId || !instructor?.id) return [];
 
       const { data, error } = await supabase
-        .from("traccar_ignition_events")
+        .from("gps_ignition_events")
         .select("id, device_id, vehicle_id, event_type, latitude, longitude, road_name, recorded_at")
         .eq("device_id", deviceId)
         .order("recorded_at", { ascending: false })
@@ -77,10 +77,10 @@ export function useAllIgnitionEvents(limit: number = 50) {
       if (!instructor?.id) return [];
 
       const { data, error } = await supabase
-        .from("traccar_ignition_events")
+        .from("gps_ignition_events")
         .select(`
           id, device_id, vehicle_id, event_type, latitude, longitude, road_name, recorded_at,
-          device:traccar_devices(device_name, device_identifier),
+          device:gps_devices(device_name, device_identifier),
           vehicle:instructor_vehicles(registration)
         `)
         .eq("instructor_id", instructor.id)

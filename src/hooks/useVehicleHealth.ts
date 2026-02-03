@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 
-export interface TraccarDeviceHealth {
+export interface GPSDeviceHealth {
   id: string;
   device_identifier: string;
   device_name: string | null;
@@ -35,6 +35,9 @@ export interface TraccarDeviceHealth {
     next_service_due_km: number | null;
   } | null;
 }
+
+// Backwards compatibility alias
+export type TraccarDeviceHealth = GPSDeviceHealth;
 
 export interface InstructorVehicle {
   id: string;
@@ -97,11 +100,11 @@ export function useVehicleHealth() {
   // Fetch devices with vehicle info
   const devicesQuery = useQuery({
     queryKey: ["vehicle-health-devices", instructor?.id],
-    queryFn: async (): Promise<TraccarDeviceHealth[]> => {
+    queryFn: async (): Promise<GPSDeviceHealth[]> => {
       if (!instructor?.id) return [];
 
       const { data: devices, error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select(`
           id,
           device_identifier,
@@ -130,7 +133,7 @@ export function useVehicleHealth() {
         ?.map(d => d.vehicle_id)
         .filter((id): id is string => id !== null) || [];
 
-      let vehiclesMap: Record<string, TraccarDeviceHealth["vehicle"]> = {};
+      let vehiclesMap: Record<string, GPSDeviceHealth["vehicle"]> = {};
 
       if (vehicleIds.length > 0) {
         const { data: vehicles } = await supabase
@@ -176,7 +179,7 @@ export function useVehicleHealth() {
 
       // Find which devices are linked to which vehicles
       const { data: devices } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("id, vehicle_id")
         .eq("instructor_id", instructor.id);
 
@@ -232,7 +235,7 @@ export function useVehicleHealth() {
   // Function to link device to vehicle
   async function linkDeviceToVehicle(deviceId: string, vehicleId: string | null) {
     const { error } = await supabase
-      .from("traccar_devices")
+      .from("gps_devices")
       .update({ vehicle_id: vehicleId })
       .eq("id", deviceId);
 

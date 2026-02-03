@@ -70,7 +70,7 @@ export default function InstructorFindMyCar() {
     try {
       // Fetch devices with positions
       const { data: deviceData, error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select(`
           id,
           device_name,
@@ -198,7 +198,7 @@ export default function InstructorFindMyCar() {
               <p className="text-sm text-muted-foreground/70 mt-1 mb-4">
                 Set up a GPS tracker to find your car
               </p>
-              <Button onClick={() => navigate("/instructor/settings/traccar")}>
+              <Button onClick={() => navigate("/instructor/settings/gps")}>
                 Add GPS Device
               </Button>
             </CardContent>
