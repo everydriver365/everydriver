@@ -116,25 +116,25 @@ export function RecordTestResultDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-3 py-2">
           {/* Pass/Fail Selection */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant={result === "pass" ? "default" : "outline"}
-              className={`h-20 flex-col gap-2 ${result === "pass" ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
+              className={`h-12 gap-2 ${result === "pass" ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
               onClick={() => setResult("pass")}
             >
-              <CheckCircle2 className="h-6 w-6" />
+              <CheckCircle2 className="h-4 w-4" />
               <span>Passed</span>
             </Button>
             <Button
               type="button"
               variant={result === "fail" ? "default" : "outline"}
-              className={`h-20 flex-col gap-2 ${result === "fail" ? "bg-destructive hover:bg-destructive/90" : ""}`}
+              className={`h-12 gap-2 ${result === "fail" ? "bg-destructive hover:bg-destructive/90" : ""}`}
               onClick={() => setResult("fail")}
             >
-              <XCircle className="h-6 w-6" />
+              <XCircle className="h-4 w-4" />
               <span>Failed</span>
             </Button>
           </div>
