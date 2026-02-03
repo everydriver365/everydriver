@@ -144,13 +144,15 @@ function resolveGpsGateUserIdForDevice(
 
 // GPSgate API response can have different field names - we normalize them
 interface GPSGateTrackPoint {
-  // Time fields
+  // Time fields (various casings from /status and /tracks endpoints)
   Time?: string;
   time?: string;
   Timestamp?: string;
   timestamp?: string;
   utc?: string;
+  Utc?: string;
   serverUtc?: string;
+  ServerUtc?: string;
   // Direct position fields (flat format)
   Lat?: number;
   lat?: number;
@@ -162,7 +164,7 @@ interface GPSGateTrackPoint {
   lon?: number;
   Longitude?: number;
   longitude?: number;
-  // Nested position (GPSgate Cloud format)
+  // Nested position (GPSgate Cloud format - both casings)
   position?: { 
     latitude?: number; 
     longitude?: number; 
@@ -171,21 +173,34 @@ interface GPSGateTrackPoint {
     Lng?: number; 
     lat?: number; 
     lng?: number;
+    Latitude?: number;
+    Longitude?: number;
   };
   Position?: { 
     Lat?: number; 
     Lng?: number; 
     lat?: number; 
     lng?: number;
+    Latitude?: number;
+    latitude?: number;
+    Longitude?: number;
+    longitude?: number;
   };
   // Direct speed fields
   Speed?: number;
   speed?: number;
-  Velocity?: number;
-  // Nested velocity (GPSgate Cloud format)
+  // Nested velocity (GPSgate Cloud format - both casings)
   velocity?: {
     groundSpeed?: number;
+    GroundSpeed?: number;
     heading?: number;
+    Heading?: number;
+  };
+  Velocity?: {
+    groundSpeed?: number;
+    GroundSpeed?: number;
+    heading?: number;
+    Heading?: number;
   };
   // Heading fields
   Heading?: number;
@@ -200,11 +215,23 @@ interface GPSGateTrackPoint {
   ignition?: boolean;
   Battery?: number;
   battery?: number;
-  // Nested variables (GPSgate Cloud format)
+  // Nested variables (GPSgate Cloud format - both casings)
   variables?: {
     batteryLevel?: number;
+    BatteryLevel?: number;
     speed?: number;
+    Speed?: number;
     accuracy?: number;
+    Accuracy?: number;
+    charging?: boolean;
+  };
+  Variables?: {
+    batteryLevel?: number;
+    BatteryLevel?: number;
+    speed?: number;
+    Speed?: number;
+    accuracy?: number;
+    Accuracy?: number;
     charging?: boolean;
   };
   // Allow any additional fields for debugging
@@ -229,10 +256,18 @@ function extractPosition(track: GPSGateTrackPoint): { lat: number | null; lng: n
     if (lat !== null && lng !== null) return { lat, lng };
   }
   
-  // 2. Try Position (capitalized)
+  // 2. Try Position (capitalized) - handle multiple inner formats
   if (track.Position) {
     if (typeof track.Position.Lat === 'number' && isFinite(track.Position.Lat)) lat = track.Position.Lat;
+    else if (typeof track.Position.lat === 'number' && isFinite(track.Position.lat)) lat = track.Position.lat;
+    else if (typeof track.Position.Latitude === 'number' && isFinite(track.Position.Latitude)) lat = track.Position.Latitude;
+    else if (typeof track.Position.latitude === 'number' && isFinite(track.Position.latitude)) lat = track.Position.latitude;
+    
     if (typeof track.Position.Lng === 'number' && isFinite(track.Position.Lng)) lng = track.Position.Lng;
+    else if (typeof track.Position.lng === 'number' && isFinite(track.Position.lng)) lng = track.Position.lng;
+    else if (typeof track.Position.Longitude === 'number' && isFinite(track.Position.Longitude)) lng = track.Position.Longitude;
+    else if (typeof track.Position.longitude === 'number' && isFinite(track.Position.longitude)) lng = track.Position.longitude;
+    
     if (lat !== null && lng !== null) return { lat, lng };
   }
 
@@ -259,23 +294,45 @@ function extractSpeed(track: GPSGateTrackPoint): number {
   
   let speedMps = 0;
   
-  // 1. Try nested velocity.groundSpeed (GPSgate Cloud format) - in m/s
-  if (track.velocity && typeof track.velocity.groundSpeed === 'number' && isFinite(track.velocity.groundSpeed)) {
-    speedMps = track.velocity.groundSpeed;
+  // 1. Try nested velocity.groundSpeed (GPSgate Cloud format) - both casings
+  if (track.velocity) {
+    if (typeof track.velocity.groundSpeed === 'number' && isFinite(track.velocity.groundSpeed)) {
+      speedMps = track.velocity.groundSpeed;
+    } else if (typeof track.velocity.GroundSpeed === 'number' && isFinite(track.velocity.GroundSpeed)) {
+      speedMps = track.velocity.GroundSpeed;
+    }
   }
-  // 2. Try nested variables.speed - in m/s
-  else if (track.variables && typeof track.variables.speed === 'number' && isFinite(track.variables.speed)) {
-    speedMps = track.variables.speed;
+  // 2. Try Velocity (capitalized)
+  else if (track.Velocity && typeof track.Velocity === 'object') {
+    const vel = track.Velocity as { groundSpeed?: number; GroundSpeed?: number };
+    if (typeof vel.groundSpeed === 'number' && isFinite(vel.groundSpeed)) {
+      speedMps = vel.groundSpeed;
+    } else if (typeof vel.GroundSpeed === 'number' && isFinite(vel.GroundSpeed)) {
+      speedMps = vel.GroundSpeed;
+    }
   }
-  // 3. Try direct fields
+  // 3. Try nested variables.speed - both casings
+  else if (track.variables) {
+    if (typeof track.variables.speed === 'number' && isFinite(track.variables.speed)) {
+      speedMps = track.variables.speed;
+    } else if (typeof track.variables.Speed === 'number' && isFinite(track.variables.Speed)) {
+      speedMps = track.variables.Speed;
+    }
+  }
+  // 4. Try Variables (capitalized)
+  else if (track.Variables) {
+    if (typeof track.Variables.speed === 'number' && isFinite(track.Variables.speed)) {
+      speedMps = track.Variables.speed;
+    } else if (typeof track.Variables.Speed === 'number' && isFinite(track.Variables.Speed)) {
+      speedMps = track.Variables.Speed;
+    }
+  }
+  // 5. Try direct fields
   else if (typeof track.Speed === 'number' && isFinite(track.Speed)) {
     speedMps = track.Speed;
   }
   else if (typeof track.speed === 'number' && isFinite(track.speed)) {
     speedMps = track.speed;
-  }
-  else if (typeof track.Velocity === 'number' && isFinite(track.Velocity)) {
-    speedMps = track.Velocity;
   }
   
   // Convert m/s to km/h
@@ -284,11 +341,26 @@ function extractSpeed(track: GPSGateTrackPoint): number {
 
 // Helper to extract heading from track point
 function extractHeading(track: GPSGateTrackPoint): number {
-  // 1. Try nested velocity.heading (GPSgate Cloud format)
-  if (track.velocity && typeof track.velocity.heading === 'number' && isFinite(track.velocity.heading)) {
-    return track.velocity.heading;
+  // 1. Try nested velocity.heading (GPSgate Cloud format) - both casings
+  if (track.velocity) {
+    if (typeof track.velocity.heading === 'number' && isFinite(track.velocity.heading)) {
+      return track.velocity.heading;
+    }
+    if (typeof track.velocity.Heading === 'number' && isFinite(track.velocity.Heading)) {
+      return track.velocity.Heading;
+    }
   }
-  // 2. Try direct fields
+  // 2. Try Velocity (capitalized)
+  if (track.Velocity && typeof track.Velocity === 'object') {
+    const vel = track.Velocity as { heading?: number; Heading?: number };
+    if (typeof vel.heading === 'number' && isFinite(vel.heading)) {
+      return vel.heading;
+    }
+    if (typeof vel.Heading === 'number' && isFinite(vel.Heading)) {
+      return vel.Heading;
+    }
+  }
+  // 3. Try direct fields
   if (typeof track.Heading === 'number' && isFinite(track.Heading)) return track.Heading;
   if (typeof track.heading === 'number' && isFinite(track.heading)) return track.heading;
   if (typeof track.Course === 'number' && isFinite(track.Course)) return track.Course;
@@ -298,9 +370,11 @@ function extractHeading(track: GPSGateTrackPoint): number {
 
 // Helper to extract time from track point
 function extractTime(track: GPSGateTrackPoint): string | null {
-  // 1. Try utc (GPSgate Cloud format)
+  // 1. Try utc (GPSgate Cloud format) - both casings
   if (track.utc) return track.utc;
+  if (track.Utc) return track.Utc;
   if (track.serverUtc) return track.serverUtc;
+  if (track.ServerUtc) return track.ServerUtc;
   // 2. Try direct fields
   if (track.Time) return track.Time;
   if (track.time) return track.time;
@@ -323,11 +397,25 @@ function extractAltitude(track: GPSGateTrackPoint): number {
 
 // Helper to extract battery from track point
 function extractBattery(track: GPSGateTrackPoint): number | null {
-  // 1. Try nested variables.batteryLevel (GPSgate Cloud format)
-  if (track.variables && typeof track.variables.batteryLevel === 'number' && isFinite(track.variables.batteryLevel)) {
-    return Math.round(track.variables.batteryLevel);
+  // 1. Try nested variables.batteryLevel (GPSgate Cloud format) - both casings
+  if (track.variables) {
+    if (typeof track.variables.batteryLevel === 'number' && isFinite(track.variables.batteryLevel)) {
+      return Math.round(track.variables.batteryLevel);
+    }
+    if (typeof track.variables.BatteryLevel === 'number' && isFinite(track.variables.BatteryLevel)) {
+      return Math.round(track.variables.BatteryLevel);
+    }
   }
-  // 2. Try direct fields
+  // 2. Try Variables (capitalized)
+  if (track.Variables) {
+    if (typeof track.Variables.batteryLevel === 'number' && isFinite(track.Variables.batteryLevel)) {
+      return Math.round(track.Variables.batteryLevel);
+    }
+    if (typeof track.Variables.BatteryLevel === 'number' && isFinite(track.Variables.BatteryLevel)) {
+      return Math.round(track.Variables.BatteryLevel);
+    }
+  }
+  // 3. Try direct fields
   if (typeof track.Battery === 'number' && isFinite(track.Battery)) return Math.round(track.Battery);
   if (typeof track.battery === 'number' && isFinite(track.battery)) return Math.round(track.battery);
   return null;
@@ -775,44 +863,50 @@ serve(async (req) => {
         }
       }
 
-      // First, try to fetch the LATEST position from the position endpoint (most real-time)
-      // Add cache-busting timestamp to prevent stale data
+      // First, try to fetch the LATEST position from the /status endpoint (most real-time)
+      // This is the correct endpoint for live position data - NOT /position which doesn't exist
       const cacheBuster = Date.now();
       let latestTrack: GPSGateTrackPoint | null = null;
       let trackTime: string | null = null;
+      let dataSource = "none";
       
-      // Try /position endpoint first (returns single most recent position)
+      // Try /status endpoint first (returns latest position and variables for a user)
       try {
-        const positionRes = await fetch(
-          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/position?_=${cacheBuster}`,
+        const statusRes = await fetch(
+          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/status?_=${cacheBuster}`,
           { 
             headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" }
           }
         );
         
-        console.log(`[GPSgate-Poller] /position endpoint status for user ${gpsGateUserId}: ${positionRes.status}`);
-        
-        if (positionRes.ok) {
-          const positionData = await positionRes.json();
-          console.log(`[GPSgate-Poller] /position response for user ${gpsGateUserId}: ${JSON.stringify(positionData).substring(0, 500)}`);
-          if (positionData && (positionData.position || positionData.Position || positionData.latitude || positionData.Lat)) {
-            latestTrack = positionData;
-            trackTime = extractTime(positionData);
-            console.log(`[GPSgate-Poller] Using /position data for user ${gpsGateUserId}`);
+        if (statusRes.ok) {
+          const statusData = await statusRes.json();
+          // Log only on first few polls or when debugging
+          console.log(`[GPSgate-Poller] /status for user ${gpsGateUserId}: ${JSON.stringify(statusData).substring(0, 400)}`);
+          
+          // Check if status data has position info
+          const testPos = extractPosition(statusData);
+          if (testPos.lat !== null && testPos.lng !== null) {
+            latestTrack = statusData;
+            trackTime = extractTime(statusData);
+            dataSource = "status";
+            console.log(`[GPSgate-Poller] Using /status data for user ${gpsGateUserId}`);
           } else {
-            console.log(`[GPSgate-Poller] /position data missing expected fields for user ${gpsGateUserId}`);
+            console.log(`[GPSgate-Poller] /status has no valid position for user ${gpsGateUserId}, keys: ${Object.keys(statusData).join(',')}`);
           }
         } else {
-          const errorText = await positionRes.text();
-          console.log(`[GPSgate-Poller] /position endpoint returned ${positionRes.status}: ${errorText.substring(0, 200)}`);
+          console.log(`[GPSgate-Poller] /status returned ${statusRes.status} for user ${gpsGateUserId}`);
         }
-      } catch (posErr) {
-        console.log(`[GPSgate-Poller] /position endpoint failed for user ${gpsGateUserId}:`, posErr);
+      } catch (statusErr) {
+        console.log(`[GPSgate-Poller] /status failed for user ${gpsGateUserId}:`, statusErr);
       }
       
-      // Fallback to /tracks endpoint if /position didn't work
+      // Fallback to /tracks endpoint if /status didn't work
       if (!latestTrack) {
         const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        // Try today first
         const tracksRes = await fetch(
           `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${today}&_=${cacheBuster}`,
           { 
@@ -820,16 +914,27 @@ serve(async (req) => {
           }
         );
 
-        if (!tracksRes.ok) {
-          console.log(`[GPSgate-Poller] Failed to fetch tracks for user ${gpsGateUserId}`);
-          skipped++;
-          continue;
+        let tracks: GPSGateTrackPoint[] = [];
+        if (tracksRes.ok) {
+          tracks = await tracksRes.json();
         }
-
-        const tracks: GPSGateTrackPoint[] = await tracksRes.json();
+        
+        // If no tracks today, try yesterday (timezone boundary handling)
+        if (!tracks || tracks.length === 0) {
+          console.log(`[GPSgate-Poller] No tracks today for user ${gpsGateUserId}, trying yesterday`);
+          const yesterdayRes = await fetch(
+            `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${yesterday}&_=${cacheBuster}`,
+            { 
+              headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" }
+            }
+          );
+          if (yesterdayRes.ok) {
+            tracks = await yesterdayRes.json();
+          }
+        }
         
         if (!tracks || tracks.length === 0) {
-          console.log(`[GPSgate-Poller] No tracks today for user ${gpsGateUserId}`);
+          console.log(`[GPSgate-Poller] No tracks for user ${gpsGateUserId}`);
           skipped++;
           continue;
         }
@@ -837,7 +942,8 @@ serve(async (req) => {
         // Get the latest track point
         latestTrack = tracks[tracks.length - 1];
         trackTime = extractTime(latestTrack);
-        console.log(`[GPSgate-Poller] Track sample for user ${gpsGateUserId}:`, JSON.stringify(latestTrack).substring(0, 500));
+        dataSource = "tracks";
+        console.log(`[GPSgate-Poller] Fallback to /tracks for user ${gpsGateUserId}`);
       }
       
       if (!latestTrack) {
@@ -845,46 +951,54 @@ serve(async (req) => {
         skipped++;
         continue;
       }
-      // Check if we've already processed this position
-      if (device.last_gpsgate_track_time && trackTime) {
-        const lastTrackTime = new Date(device.last_gpsgate_track_time).getTime();
-        const currentTrackTime = new Date(trackTime).getTime();
-        if (currentTrackTime <= lastTrackTime) {
-          // Do NOT update last_seen_at here - this is a duplicate/old point
-          // Keep last_seen_at reflecting when we actually got new data
-          skipped++;
-          continue;
-        }
-      }
-
-      // Extract position using flexible field parsing
+      // Extract position using flexible field parsing FIRST so we can check for movement
       const { lat, lng: lon } = extractPosition(latestTrack);
       const speedKmh = extractSpeed(latestTrack);
       const bearing = extractHeading(latestTrack);
       const altitude = extractAltitude(latestTrack);
       const now = new Date();
 
-      console.log(`[GPSgate-Poller] Extracted position: lat=${lat}, lon=${lon}, speed=${speedKmh.toFixed(1)}km/h`);
+      console.log(`[GPSgate-Poller] ${dataSource}: lat=${lat}, lon=${lon}, speed=${speedKmh.toFixed(1)}km/h, trackTime=${trackTime}`);
 
       // Skip if no valid position found
       if (lat === null || lon === null) {
-        console.log(`[GPSgate-Poller] No valid position in track for device ${identifier}. Track keys: ${Object.keys(latestTrack).join(', ')}`);
-        // Do NOT update last_seen_at here - invalid position means no usable data
+        console.log(`[GPSgate-Poller] No valid position for device ${identifier}. Keys: ${Object.keys(latestTrack).join(', ')}`);
         skipped++;
         continue;
       }
 
-      console.log(`[GPSgate-Poller] Processing: device=${identifier}, speed=${speedKmh.toFixed(1)}km/h at ${lat},${lon}`);
-
-      // Calculate time diff for acceleration detection
-      const lastSeenAt = device.last_seen_at ? new Date(device.last_seen_at) : null;
-      const timeDiffSeconds = lastSeenAt ? (now.getTime() - lastSeenAt.getTime()) / 1000 : null;
-
-      // Calculate distance from last point
+      // Calculate distance from last position for movement detection
       let distanceMeters = 0;
       if (device.last_latitude !== null && device.last_longitude !== null) {
         distanceMeters = calculateDistance(device.last_latitude, device.last_longitude, lat, lon);
       }
+      
+      // Movement detection: Only consider this as "new" data if:
+      // 1. We have a newer track timestamp than before, OR
+      // 2. Position has moved by more than 5 meters (meaningful movement)
+      const MOVEMENT_THRESHOLD_METERS = 5;
+      const hasNewerTimestamp = (() => {
+        if (!device.last_gpsgate_track_time || !trackTime) return true; // First time or no timestamp
+        const lastTrackTime = new Date(device.last_gpsgate_track_time).getTime();
+        const currentTrackTime = new Date(trackTime).getTime();
+        return currentTrackTime > lastTrackTime;
+      })();
+      
+      const hasMoved = distanceMeters >= MOVEMENT_THRESHOLD_METERS;
+      
+      // Skip if no new timestamp AND no meaningful movement - this prevents "fake live"
+      if (!hasNewerTimestamp && !hasMoved) {
+        // Position hasn't changed and timestamp is the same/older - don't update last_seen_at
+        console.log(`[GPSgate-Poller] Device ${identifier}: no movement (${distanceMeters.toFixed(1)}m) and no newer timestamp, skipping`);
+        skipped++;
+        continue;
+      }
+
+      console.log(`[GPSgate-Poller] Processing: device=${identifier}, moved=${distanceMeters.toFixed(1)}m, newerTime=${hasNewerTimestamp}`);
+
+      // Calculate time diff for acceleration detection
+      const lastSeenAt = device.last_seen_at ? new Date(device.last_seen_at) : null;
+      const timeDiffSeconds = lastSeenAt ? (now.getTime() - lastSeenAt.getTime()) / 1000 : null;
 
       // Fetch road info
       let speedLimitKmh: number | null = null;
@@ -1181,41 +1295,75 @@ serve(async (req) => {
       processed++;
     }
 
-    // 4. Process instructors with GPSgate IDs (phone tracking)
+    // 4. Process instructors with GPSgate IDs (phone tracking) - use /status first for real-time
     for (const [gpsGateUserId, instructor] of instructorsByGpsGateId) {
       try {
-        // Try to fetch tracks for today, then yesterday as fallback
-        const today = new Date().toISOString().split('T')[0];
-        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const cacheBuster = Date.now();
+        let latestTrack: GPSGateTrackPoint | null = null;
+        let instructorTrackTime: string | null = null;
+        let instructorDataSource = "none";
         
-        let tracks: GPSGateTrackPoint[] = [];
-        
-        // Try today first
-        const tracksRes = await fetch(
-          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${today}`,
-          { headers: authHeaders }
-        );
-
-        if (tracksRes.ok) {
-          tracks = await tracksRes.json();
+        // Try /status endpoint first (real-time position)
+        try {
+          const statusRes = await fetch(
+            `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/status?_=${cacheBuster}`,
+            { 
+              headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" }
+            }
+          );
+          
+          if (statusRes.ok) {
+            const statusData = await statusRes.json();
+            const testPos = extractPosition(statusData);
+            if (testPos.lat !== null && testPos.lng !== null) {
+              latestTrack = statusData;
+              instructorTrackTime = extractTime(statusData);
+              instructorDataSource = "status";
+            }
+          }
+        } catch {
+          // /status failed, will try tracks fallback
         }
         
-        // If no tracks today, try yesterday (timezone boundary)
-        if (!tracks || tracks.length === 0) {
-          const yesterdayRes = await fetch(
-            `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${yesterday}`,
-            { headers: authHeaders }
+        // Fallback to /tracks if /status didn't work
+        if (!latestTrack) {
+          const today = new Date().toISOString().split('T')[0];
+          const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          
+          let tracks: GPSGateTrackPoint[] = [];
+          
+          // Try today first
+          const tracksRes = await fetch(
+            `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${today}&_=${cacheBuster}`,
+            { headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" } }
           );
-          if (yesterdayRes.ok) {
-            tracks = await yesterdayRes.json();
+
+          if (tracksRes.ok) {
+            tracks = await tracksRes.json();
+          }
+          
+          // If no tracks today, try yesterday (timezone boundary)
+          if (!tracks || tracks.length === 0) {
+            const yesterdayRes = await fetch(
+              `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${yesterday}&_=${cacheBuster}`,
+              { headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" } }
+            );
+            if (yesterdayRes.ok) {
+              tracks = await yesterdayRes.json();
+            }
+          }
+          
+          if (tracks && tracks.length > 0) {
+            latestTrack = tracks[tracks.length - 1];
+            instructorTrackTime = extractTime(latestTrack);
+            instructorDataSource = "tracks";
           }
         }
 
-        // Even if no tracks, update last_seen_at to show we successfully polled this user
         const now = new Date().toISOString();
         
-        if (!tracks || tracks.length === 0) {
-          // No tracks but connection is working - update last_seen_at to now
+        // If no position data, still update connection status
+        if (!latestTrack) {
           const { data: updateData } = await supabase
             .from("gps_devices")
             .update({ last_seen_at: now, gpsgate_user_id: gpsGateUserId })
@@ -1223,7 +1371,6 @@ serve(async (req) => {
             .select("id");
             
           if (!updateData || updateData.length === 0) {
-            // Create virtual device with current time
             await supabase.from("gps_devices").insert({
               instructor_id: instructor.id,
               device_identifier: `gpsgate-${gpsGateUserId}`,
@@ -1231,36 +1378,32 @@ serve(async (req) => {
               gpsgate_user_id: gpsGateUserId,
               last_seen_at: now,
             });
-            console.log(`[GPSgate-Poller] Created virtual device for instructor ${instructor.id} (no tracks yet)`);
+            console.log(`[GPSgate-Poller] Created virtual device for instructor ${instructor.id} (no data yet)`);
           }
           
-          console.log(`[GPSgate-Poller] Instructor ${instructor.id}: connected but no recent tracks`);
+          console.log(`[GPSgate-Poller] Instructor ${instructor.id}: connected but no recent position`);
           instructorsProcessed++;
           continue;
         }
 
-        const latestTrack = tracks[tracks.length - 1];
         const { lat, lng: lon } = extractPosition(latestTrack);
         const speedKmh = extractSpeed(latestTrack);
-        const instructorTrackTime = extractTime(latestTrack);
         const heading = extractHeading(latestTrack);
 
         // Skip if no valid position
         if (lat === null || lon === null) {
-          console.log(`[GPSgate-Poller] Instructor ${instructor.id}: no valid position in track`);
+          console.log(`[GPSgate-Poller] Instructor ${instructor.id}: no valid position`);
           instructorsProcessed++;
           continue;
         }
 
-        console.log(`[GPSgate-Poller] Instructor ${instructor.id}: ${speedKmh.toFixed(1)}km/h at ${lat},${lon}`);
+        console.log(`[GPSgate-Poller] Instructor ${instructor.id} (${instructorDataSource}): ${speedKmh.toFixed(1)}km/h at ${lat},${lon}`);
 
-        // Update the gps_devices table for this instructor (if they have any device)
-        // Use current time for last_seen_at (shows we successfully polled) while 
-        // the track time is stored in last_gpsgate_track_time for data freshness
+        // Update the gps_devices table for this instructor
         const { data: updateData, error: updateErr } = await supabase
           .from("gps_devices")
           .update({
-            last_seen_at: now, // Use poll time, not GPS timestamp
+            last_seen_at: now,
             last_gpsgate_track_time: instructorTrackTime || now,
             last_speed_kmh: speedKmh,
             last_latitude: lat,
@@ -1271,9 +1414,9 @@ serve(async (req) => {
           .eq("instructor_id", instructor.id)
           .select("id");
 
-        // If no rows updated, insert a virtual device so connection status works
+        // If no rows updated, insert a virtual device
         if (!updateData || updateData.length === 0) {
-          console.log(`[GPSgate-Poller] No device for instructor ${instructor.id}, inserting virtual device`);
+          console.log(`[GPSgate-Poller] No device for instructor ${instructor.id}, creating virtual device`);
           const { error: insertErr } = await supabase
             .from("gps_devices")
             .insert({
@@ -1281,7 +1424,7 @@ serve(async (req) => {
               device_identifier: `gpsgate-${gpsGateUserId}`,
               device_name: `GPSgate Tracker`,
               gpsgate_user_id: gpsGateUserId,
-              last_seen_at: now, // Use poll time
+              last_seen_at: now,
               last_gpsgate_track_time: instructorTrackTime || now,
               last_speed_kmh: speedKmh,
               last_latitude: lat,
