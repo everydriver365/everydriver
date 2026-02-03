@@ -1,62 +1,100 @@
 
-# Fix GPSgate Position, Road Name, and Speed Limit Display
+Goal
+- Stop the mobile “tracking tile” / session header from flickering between “Live” and “Not connected/Offline”, and make the connectivity indicator reflect true device activity (not “we polled the server”).
 
-## ✅ COMPLETED
+What’s actually causing the flicker (based on code + logs)
+1) The backend poller is overwriting last_seen_at even when there is no new GPS data
+- In supabase/functions/gpsgate-poller/index.ts there are multiple “skip” branches that do:
+  - update({ last_seen_at: new Date().toISOString() })
+  - even when:
+    - there are no tracks today
+    - the latest track is not newer than last_gpsgate_track_time
+    - the track has no valid lat/lon
+- That makes last_seen_at bounce between “real GPS timestamp” and “poll timestamp”.
+- The UI (home badge + /instructor/traccar) uses last_seen_at to decide “Live” vs “Offline”, so those artificial updates can flip the UI state.
 
-The issue has been fixed. The GPSgate API returns data in a **nested format** that was different from what the original code expected.
+2) The frontend is calling gpsgate-poller far more often than intended (feedback loop)
+- Network logs show multiple gpsgate-poller POSTs in the same second.
+- In src/hooks/useGPSPoller.ts:
+  - poll() depends on onData/onError
+  - InstructorTraccarSession passes an inline onError function, which changes every render
+  - that changes poll, which restarts the effect, which immediately calls poll again
+- If the page is re-rendering frequently (realtime updates, timers), this can repeatedly “re-arm” the poller and cause rapid backend calls, which then increases DB updates and UI churn.
 
-### Root Cause Found
-The GPSgate Cloud API returns track data in this format:
-```json
-{
-  "position": {
-    "latitude": 50.9307449,
-    "longitude": -1.2948283,
-    "altitude": 30.8
-  },
-  "velocity": {
-    "groundSpeed": 0,
-    "heading": 0
-  },
-  "variables": {
-    "batteryLevel": 90,
-    "speed": 0,
-    "accuracy": 2
-  },
-  "utc": "2026-02-03T08:04:49Z"
-}
-```
+3) The “connection gating” logic currently hinges on a single timestamp
+- InstructorMobileHome uses useTraccarConnectionStatus (polls last_seen_at every 30s).
+- InstructorTraccarSession computes isConnected directly from device.last_seen_at.
+- If last_seen_at is being manipulated by polling rather than actual device activity, both screens will visibly oscillate.
 
-The original code expected flat fields like `Lat`, `Lng`, `Speed`, `Time`.
+Implementation plan (code changes)
+A) Stabilize frontend polling so gpsgate-poller is invoked at the intended interval only
+1. Update src/hooks/useGPSPoller.ts
+- Make the interval lifecycle independent of callback identity changes:
+  - Store onData and onError in refs (onDataRef/onErrorRef)
+  - Update those refs in a small useEffect when callbacks change
+  - Make poll() not depend on onData/onError (so poll is stable)
+- Result: useEffect in useGPSPoller will only restart when enabled or intervalMs changes, not on every render.
 
-### Changes Made
+2. Update src/pages/InstructorTraccarSession.tsx
+- Ensure callbacks passed into useGPSPoller are stable:
+  - Wrap onError in useCallback (or pass nothing if it’s just logging).
+- Optional hardening:
+  - Pause polling when document.visibilityState !== "visible" (reduces background churn on mobile).
 
-**File: `supabase/functions/gpsgate-poller/index.ts`**
+B) Fix backend semantics: last_seen_at must mean “device last reported”, not “we checked”
+3. Update supabase/functions/gpsgate-poller/index.ts
+- Remove these “Still update last_seen_at to indicate we checked” writes:
+  - When tracks are empty for today
+  - When currentTrackTime <= last_gpsgate_track_time (duplicate/old point)
+  - When lat/lon cannot be extracted
+- Keep skipped++ counters and logs, but do not mutate last_seen_at in those paths.
+- Outcome: UI will stop bouncing between a real timestamp and a synthetic “now”.
 
-1. ✅ Added debug logging to reveal the GPSgate response structure
-2. ✅ Created flexible helper functions to extract data from multiple formats:
-   - `extractPosition()` - handles nested `position.latitude/longitude` and flat `Lat/Lng`
-   - `extractSpeed()` - handles nested `velocity.groundSpeed` and flat `Speed`
-   - `extractHeading()` - handles nested `velocity.heading` and flat `Heading`
-   - `extractTime()` - handles `utc`, `serverUtc`, `Time`, `Timestamp`
-   - `extractAltitude()` - handles nested `position.altitude` and flat `Altitude`
-   - `extractBattery()` - handles nested `variables.batteryLevel` and flat `Battery`
+C) Add a proper fallback for “no tracks today” (stationary devices / midnight boundary)
+4. Implement a “latest status” fallback in gpsgate-poller
+- Problem: /tracks?Date=YYYY-MM-DD can return empty even though the device has a known last position (especially if it hasn’t moved today).
+- Add a secondary call if tracks are empty OR the latest track is not newer:
+  - Fetch a “latest status / last known position” endpoint (commonly exposed as a users status endpoint).
+- Because we don’t yet have a confirmed response schema in our codebase, implement it defensively:
+  - Log one sample payload (truncated) when available
+  - Reuse the existing extractPosition/extractSpeed/extractTime helpers where possible (or add an equivalent extractor for the status response)
+- Only update traccar_devices when we have a valid lat/lon, and set last_seen_at from the status timestamp (not “now”).
 
-3. ✅ Updated all track parsing to use the helper functions
-4. ✅ Added validation to skip tracks with no valid position (prevents stale data display)
+D) Reduce UI sensitivity to brief gaps (optional, but recommended)
+5. Align connection thresholds across app surfaces
+- Right now:
+  - useGPSConnectionStatus marks “offline” after 120s
+  - InstructorTraccarSession uses 300s when idle
+- Update src/hooks/useGPSConnectionStatus.ts to use a 5-minute “connected” window for the home tile:
+  - active < 30s
+  - recent < 300s
+  - offline otherwise
+- This prevents “false offline” on hardware that reports intermittently.
 
-### Verified Working
+Verification plan (how we’ll confirm it’s fixed)
+1) Confirm frontend is no longer hammering gpsgate-poller
+- Watch network requests: should be one call on mount + one per 15s/30s, not multiple per second.
+- Console should stop showing repeated “[GPSPoller] Skipping - previous poll still running”.
 
-After deployment:
-- **Position**: lat=50.9307449, lon=-1.29483 ✅
-- **Road Name**: "Watkin Road" (from Mapbox) ✅
-- **Speed Limit**: 48 km/h (from OSM) ✅
-- **Battery**: 85% ✅
-- **Speed**: 0 km/h ✅
+2) Confirm last_seen_at stops “bouncing”
+- Inspect the traccar_devices row:
+  - last_seen_at should only move forward when there is a new device timestamp (track/status), not when a poll happens with no new data.
+  - last_seen_at should generally match last_gpsgate_track_time (or the status timestamp), not “now” during skips.
 
-### UI Already Had
+3) End-to-end behavior on mobile
+- Open the mobile home screen and /instructor/traccar:
+  - The badge should remain stable (“Live” when there are recent updates, “Offline” when genuinely stale).
+  - No rapid alternating between states.
 
-The `InstructorTraccarSession.tsx` page already has:
-- Stale data banner showing "Last update X mins ago. Showing last known location." ✅
-- Road name display in the map component ✅
-- Speed limit roundel in the map component ✅
+Risks / edge cases handled
+- If the “latest status” endpoint isn’t available in your GPSgate tenant or responds differently:
+  - We will fail gracefully: no updates, no last_seen_at overwrite, no flicker.
+  - We’ll keep logs to quickly adapt parsing once we see the response structure.
+- If multiple clients are open (two tabs/phones):
+  - Polling frequency will still be controlled per client, and the backend will no longer write “fake activity” timestamps that cause flipping.
+
+Files we expect to change
+- src/hooks/useGPSPoller.ts (stabilize polling, callback refs)
+- src/pages/InstructorTraccarSession.tsx (stable callbacks; optional visibility pause)
+- supabase/functions/gpsgate-poller/index.ts (do not write last_seen_at on skipped; add latest-status fallback)
+- src/hooks/useGPSConnectionStatus.ts (optional: widen “recent” window for home tile stability)
