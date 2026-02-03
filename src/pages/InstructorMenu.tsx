@@ -138,6 +138,14 @@ export default function InstructorMenu() {
           iconBg: "bg-sky-100 dark:bg-sky-900/30",
         },
         {
+          icon: Car,
+          label: "Mileage Tracker",
+          description: "HMRC tax deductions & trip log",
+          path: "/instructor/mileage",
+          iconColor: "text-green-600",
+          iconBg: "bg-green-100 dark:bg-green-900/30",
+        },
+        {
           icon: Calculator,
           label: "Tax Summary",
           path: "/instructor/tax",

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   MapPin, 
@@ -12,18 +11,38 @@ import {
   Route, 
   AlertTriangle,
   TrendingUp,
-  RefreshCw
+  RefreshCw,
+  Download,
+  User,
+  Check
 } from "lucide-react";
 import { useGPSgateTrips, GPSgateTripSummary } from "@/hooks/useGPSgateTrips";
 import { kmToMiles, kmhToMph } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface GPSgateTripsTabContentProps {
   instructorId: string;
 }
 
+interface Pupil {
+  id: string;
+  name: string;
+}
+
 export function GPSgateTripsTabContent({ instructorId }: GPSgateTripsTabContentProps) {
   const { trips, meta, loading, error, fetchTrips } = useGPSgateTrips(instructorId);
   const [selectedRange, setSelectedRange] = useState<"7d" | "14d" | "30d">("7d");
+  const [syncing, setSyncing] = useState(false);
+  const [pupils, setPupils] = useState<Pupil[]>([]);
+  const [selectedPupil, setSelectedPupil] = useState<string>("");
 
   useEffect(() => {
     const days = selectedRange === "7d" ? 7 : selectedRange === "14d" ? 14 : 30;
@@ -31,11 +50,57 @@ export function GPSgateTripsTabContent({ instructorId }: GPSgateTripsTabContentP
     fetchTrips(fromDate, new Date());
   }, [instructorId, selectedRange, fetchTrips]);
 
+  useEffect(() => {
+    // Fetch pupils for assignment
+    const fetchPupils = async () => {
+      const { data } = await supabase
+        .from("pupils")
+        .select("id, name")
+        .eq("instructor_id", instructorId)
+        .eq("status", "active")
+        .order("name");
+      setPupils(data || []);
+    };
+    fetchPupils();
+  }, [instructorId]);
+
   const formatDuration = (minutes: number) => {
     if (minutes < 60) return `${Math.round(minutes)} min`;
     const hours = Math.floor(minutes / 60);
     const remainingMins = Math.round(minutes % 60);
     return `${hours}h ${remainingMins}m`;
+  };
+
+  const handleSyncToMileage = async () => {
+    setSyncing(true);
+    try {
+      const days = selectedRange === "7d" ? 7 : selectedRange === "14d" ? 14 : 30;
+      const fromDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      
+      const { data, error: syncError } = await supabase.functions.invoke("gpsgate-trips", {
+        body: {
+          instructorId,
+          fromDate: fromDate.toISOString(),
+          toDate: new Date().toISOString(),
+          syncToMileage: true,
+          pupilId: selectedPupil || null,
+        },
+      });
+
+      if (syncError) throw syncError;
+
+      const syncedCount = data?.meta?.syncedCount || 0;
+      if (syncedCount > 0) {
+        toast.success(`Synced ${syncedCount} trips to mileage log`);
+      } else {
+        toast.info("All trips are already synced");
+      }
+    } catch (err) {
+      console.error("Sync error:", err);
+      toast.error("Failed to sync trips");
+    } finally {
+      setSyncing(false);
+    }
   };
 
   return (
@@ -68,6 +133,55 @@ export function GPSgateTripsTabContent({ instructorId }: GPSgateTripsTabContentP
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
         </Button>
       </div>
+
+      {/* Sync to Mileage Section */}
+      {trips.length > 0 && (
+        <Card>
+          <CardContent className="p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Sync to Mileage Log</span>
+              <Badge variant="secondary" className="text-xs">
+                For Tax Records
+              </Badge>
+            </div>
+            <div className="flex gap-2">
+              <Select value={selectedPupil} onValueChange={setSelectedPupil}>
+                <SelectTrigger className="flex-1 h-9">
+                  <SelectValue placeholder="Assign to pupil (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No pupil (personal)</SelectItem>
+                  {pupils.map((pupil) => (
+                    <SelectItem key={pupil.id} value={pupil.id}>
+                      <div className="flex items-center gap-2">
+                        <User className="h-3 w-3" />
+                        {pupil.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button 
+                size="sm" 
+                onClick={handleSyncToMileage}
+                disabled={syncing}
+              >
+                {syncing ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-1" />
+                    Sync
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {selectedPupil ? "Trips will be marked as business (tax deductible)" : "Trips will be marked as personal"}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Stats */}
       {meta && !loading && (

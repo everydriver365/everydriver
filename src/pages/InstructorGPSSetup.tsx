@@ -19,6 +19,7 @@ import {
   Trash2
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
+import { GPSgateUserIdSettings } from "@/components/instructor/GPSgateUserIdSettings";
 import { formatDistanceToNow } from "date-fns";
 import {
   AlertDialog,
@@ -248,6 +249,11 @@ export default function InstructorTraccarSetup() {
       </div>
 
       <div className="p-4 space-y-6 max-w-2xl mx-auto">
+        {/* GPSgate User ID Settings */}
+        {instructor?.id && (
+          <GPSgateUserIdSettings instructorId={instructor.id} />
+        )}
+
         {/* Hardware Tracker Setup - Primary focus */}
         <HardwareTrackerSetup supabaseHost={supabaseHost} />
 
