@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Clock, 
@@ -139,7 +139,7 @@ const getGreeting = (firstName: string, period: TimePeriod) => {
     case "evening":
       return `Good evening, ${firstName}!`;
     case "night":
-      return `Ready to plan, ${firstName}?`;
+      return `Ready to teach, ${firstName}?`;
   }
 };
 
@@ -158,6 +158,7 @@ export function ContextualHomeHero({
   motivationSubtitle,
 }: ContextualHomeHeroProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [rotatingStatIndex, setRotatingStatIndex] = useState(0);
   const timePeriod = getTimePeriod();
   const TimeIcon = getTimeIcon(timePeriod);
   
@@ -165,6 +166,45 @@ export function ContextualHomeHero({
   const { durationMinutes, durationText, isLoading: etaLoading } = useTrafficETA(
     timePeriod === "morning" && nextLesson?.pickupPostcode ? nextLesson.pickupPostcode : null
   );
+
+  // Rotating stats for the summary section
+  const rotatingStats = [
+    todayOverview?.lessonCount !== undefined && {
+      icon: BookOpen,
+      value: todayOverview.lessonCount,
+      label: "lessons today",
+      color: "text-violet-600 dark:text-violet-400"
+    },
+    todayOverview?.totalHours !== undefined && {
+      icon: Clock,
+      value: todayOverview.totalHours,
+      label: "hours today",
+      color: "text-blue-600 dark:text-blue-400"
+    },
+    todayOverview?.expectedEarnings !== undefined && {
+      icon: PoundSterling,
+      value: todayOverview.expectedEarnings,
+      label: "expected",
+      color: "text-emerald-600 dark:text-emerald-400"
+    },
+    weeklyStats && {
+      icon: TrendingUp,
+      value: weeklyStats.progressPercent,
+      label: "% weekly goal",
+      color: "text-primary"
+    },
+  ].filter(Boolean) as Array<{ icon: React.ElementType; value: number; label: string; color: string }>;
+
+  // Auto-rotate stats every 3 seconds
+  useEffect(() => {
+    if (rotatingStats.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setRotatingStatIndex((prev) => (prev + 1) % rotatingStats.length);
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [rotatingStats.length]);
 
   const handleCardTap = () => {
     setIsExpanded(!isExpanded);
@@ -379,33 +419,57 @@ export function ContextualHomeHero({
             </motion.p>
           </AnimatePresence>
           
-          {/* Row 5: Contextual Stats */}
-          {stats.primary && (
+          {/* Row 5: Rotating Stats Carousel */}
+          {rotatingStats.length > 0 && (
             <motion.div 
-              className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50"
+              className="flex items-center justify-between mt-3 pt-3 border-t border-border/50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center gap-1.5">
-                <stats.primary.icon className={`h-4 w-4 ${stats.primary.color}`} />
-                <span className={`text-base font-bold ${stats.primary.color}`}>
-                  <AnimatedCounter value={stats.primary.value} />
-                </span>
-                <span className="text-xs text-muted-foreground">{stats.primary.label}</span>
-              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={rotatingStatIndex}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-1.5"
+                >
+                  {(() => {
+                    const stat = rotatingStats[rotatingStatIndex];
+                    const StatIcon = stat.icon;
+                    return (
+                      <>
+                        <StatIcon className={`h-4 w-4 ${stat.color}`} />
+                        <span className={`text-base font-bold ${stat.color}`}>
+                          <AnimatedCounter value={stat.value} />
+                        </span>
+                        <span className="text-xs text-muted-foreground">{stat.label}</span>
+                      </>
+                    );
+                  })()}
+                </motion.div>
+              </AnimatePresence>
               
-              {stats.secondary && (
-                <>
-                  <div className="w-px h-5 bg-border/50" />
-                  <div className="flex items-center gap-1.5">
-                    <stats.secondary.icon className={`h-4 w-4 ${stats.secondary.color}`} />
-                    <span className={`text-base font-bold ${stats.secondary.color}`}>
-                      <AnimatedCounter value={stats.secondary.value} />
-                    </span>
-                    <span className="text-xs text-muted-foreground">{stats.secondary.label}</span>
-                  </div>
-                </>
+              {/* Dot indicators */}
+              {rotatingStats.length > 1 && (
+                <div className="flex gap-1">
+                  {rotatingStats.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRotatingStatIndex(idx);
+                      }}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${
+                        idx === rotatingStatIndex 
+                          ? 'bg-primary w-3' 
+                          : 'bg-muted-foreground/30'
+                      }`}
+                    />
+                  ))}
+                </div>
               )}
             </motion.div>
           )}

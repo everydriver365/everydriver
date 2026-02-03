@@ -142,7 +142,7 @@ const getGreeting = (firstName: string) => {
   if (hour >= 5 && hour < 12) return `Good morning, ${firstName}!`;
   if (hour >= 12 && hour < 17) return `Good afternoon, ${firstName}!`;
   if (hour >= 17 && hour < 21) return `Good evening, ${firstName}!`;
-  return `Ready to plan, ${firstName}?`;
+  return `Ready to teach, ${firstName}?`;
 };
 
 export function InstructorMobileHome({ 
