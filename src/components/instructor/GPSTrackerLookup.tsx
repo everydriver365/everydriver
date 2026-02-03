@@ -63,7 +63,21 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
         onSelect(match.id, match.username || "", match.name || "");
         toast.success(`Linked to GPSgate user #${match.id} (${match.name || match.username})`);
       } else if (validCandidates.length === 0) {
-        toast.error("No matching tracker found. Check you're viewing the correct GPSgate application.");
+        // No matches - fetch all trackers to show selection
+        toast.info("No exact match found. Loading all available trackers...");
+        const { data: allData } = await supabase.functions.invoke("gpsgate-user-lookup", {
+          body: { query: "" }
+        });
+        const allCandidates = (allData?.candidates || []).filter(
+          (c: GPSGateCandidate) => c && typeof c.id === 'number'
+        );
+        setCandidates(allCandidates);
+        setTotal(allData?.total || 0);
+        if (allCandidates.length > 0) {
+          toast.info(`Select from ${allCandidates.length} available trackers below.`);
+        } else {
+          toast.error("No trackers found in GPSgate. Check your GPSgate App ID.");
+        }
       } else {
         toast.info(`Found ${validCandidates.length} matching trackers. Please select one.`);
       }
@@ -124,7 +138,7 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
       {searched && candidates.length > 1 && (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            Found {candidates.length} trackers{total > candidates.length ? ` (of ${total} total)` : ''}. Select one:
+            {total > 0 ? `${candidates.length} of ${total} trackers available` : `${candidates.length} trackers found`}. Select one:
           </p>
           <Select onValueChange={handleSelect}>
             <SelectTrigger>
@@ -144,9 +158,9 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
         </div>
       )}
 
-      {searched && candidates.length === 0 && !error && (
+      {searched && candidates.length === 0 && !error && !loading && (
         <p className="text-xs text-muted-foreground">
-          No trackers found matching "{searchQuery}". Make sure the GPSgate App ID matches the application shown in your GPSgate dashboard.
+          No trackers found in GPSgate. Make sure the GPSgate App ID is configured correctly.
         </p>
       )}
     </div>
