@@ -36,7 +36,7 @@ export function MoneyHeroCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/90 p-6 text-primary-foreground"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/90 p-4 text-primary-foreground"
     >
       {/* Animated background patterns */}
       <div className="absolute inset-0 overflow-hidden">
@@ -89,15 +89,15 @@ export function MoneyHeroCard({
         </div>
 
         {/* Center - Big earnings with progress ring */}
-        <div className="flex items-center gap-6 my-4">
+        <div className="flex items-center gap-4 my-3">
           {/* Progress ring */}
-          <div className="relative w-[130px] h-[130px] flex-shrink-0">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
+          <div className="relative w-[100px] h-[100px] flex-shrink-0">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
               {/* Background ring */}
               <circle
-                cx="64"
-                cy="64"
-                r="58"
+                cx="50"
+                cy="50"
+                r="45"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="8"
@@ -112,9 +112,9 @@ export function MoneyHeroCard({
                 </linearGradient>
               </defs>
               <motion.circle
-                cx="64"
-                cy="64"
-                r="58"
+                cx="50"
+                cy="50"
+                r="45"
                 fill="none"
                 stroke="url(#moneyGradient)"
                 strokeWidth="8"
