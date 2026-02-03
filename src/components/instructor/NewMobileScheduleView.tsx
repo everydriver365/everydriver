@@ -18,6 +18,8 @@ import { ExpandableLessonCard } from "./ExpandableLessonCard";
 import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
+import { TravelTimeIndicator } from "./TravelTimeIndicator";
+import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 
 interface ScheduledLesson {
   id: string;
@@ -225,6 +227,17 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
 
   const lessonCount = lessons.length;
 
+  // Get travel times between lessons
+  const { getTravelTime } = useLessonTravelTimes(
+    lessons.map((l) => ({
+      id: l.id,
+      start_time: l.start_time,
+      duration_minutes: l.duration_minutes,
+      pickup_postcode: l.pickup_postcode,
+      pupil: l.pupil ? { postcode: l.pupil.postcode } : undefined,
+    }))
+  );
+
   return (
     <div className="space-y-4">
       {/* Day Tabs */}
@@ -269,24 +282,42 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1">
           <AnimatePresence mode="popLayout">
-            {lessons.map((lesson) => (
-              <ExpandableLessonCard
-                key={lesson.id}
-                lesson={lesson}
-                onNavigate={handleNavigate}
-                onCall={handleCall}
-                onText={handleText}
-                onOnWay={handleOnWay}
-                onCancel={handleCancelLesson}
-                onReschedule={handleRescheduleLesson}
-                sendingMessage={sendingMessage}
-                cardColor={lessonColors[lesson.id] || "bg-card"}
-                onColorChange={(color) => handleColorChange(lesson.id, color)}
-                onDelete={handleDeleteLesson}
-              />
-            ))}
+            {lessons.map((lesson, index) => {
+              const nextLesson = lessons[index + 1];
+              const travelTime = nextLesson
+                ? getTravelTime(lesson.id, nextLesson.id)
+                : null;
+
+              return (
+                <div key={lesson.id}>
+                  <ExpandableLessonCard
+                    lesson={lesson}
+                    onNavigate={handleNavigate}
+                    onCall={handleCall}
+                    onText={handleText}
+                    onOnWay={handleOnWay}
+                    onCancel={handleCancelLesson}
+                    onReschedule={handleRescheduleLesson}
+                    sendingMessage={sendingMessage}
+                    cardColor={lessonColors[lesson.id] || "bg-card"}
+                    onColorChange={(color) => handleColorChange(lesson.id, color)}
+                    onDelete={handleDeleteLesson}
+                  />
+                  {/* Travel time indicator to next lesson */}
+                  {travelTime && (
+                    <TravelTimeIndicator
+                      durationMinutes={travelTime.durationMinutes}
+                      durationText={travelTime.durationText}
+                      gapMinutes={travelTime.gapMinutes}
+                      status={travelTime.status}
+                      isLoading={travelTime.isLoading}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </AnimatePresence>
         </div>
       )}
