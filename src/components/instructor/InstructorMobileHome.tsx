@@ -163,7 +163,7 @@ export function InstructorMobileHome({
   const instructorId = authInstructor?.id || instructor?.id;
   
   // GPS connection status and today's overview
-  const { isConnected: isGPSConnected } = useGPSConnectionStatus(instructorId || null);
+  const { isConnected: isGPSConnected, deviceName: gpsDeviceName } = useGPSConnectionStatus(instructorId || null);
   const { data: todayOverview, isLoading: todayLoading } = useTodayOverview(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: unreadCount } = useUnreadMessagesCount(instructorId);
@@ -386,6 +386,7 @@ export function InstructorMobileHome({
       <ContextualHomeHero
         firstName={firstName}
         isGPSConnected={isGPSConnected}
+        gpsDeviceName={gpsDeviceName}
         displayLocation={displayLocation}
         currentWeather={currentWeather}
         alerts={alerts}

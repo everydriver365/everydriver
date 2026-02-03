@@ -6,11 +6,13 @@ interface GPSConnectionStatus {
   lastSeenAt: string | null;
   status: "active" | "recent" | "offline";
   isLoading: boolean;
+  deviceName: string | null;
   manualReconnect: () => void;
 }
 
 export function useGPSConnectionStatus(instructorId: string | null): GPSConnectionStatus {
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
+  const [deviceName, setDeviceName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Calculate status based on last_seen_at
@@ -34,12 +36,15 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     try {
       const { data } = await supabase
         .from("gps_devices")
-        .select("last_seen_at")
+        .select("last_seen_at, device_name, device_identifier")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
+      if (data) {
+        setDeviceName(data.device_name || data.device_identifier || null);
+      }
       return data?.last_seen_at || null;
     } catch (err) {
       console.error("Error checking GPS connection:", err);
@@ -75,9 +80,12 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
           filter: `instructor_id=eq.${instructorId}`,
         },
         (payload) => {
-          const newData = payload.new as { last_seen_at?: string };
+          const newData = payload.new as { last_seen_at?: string; device_name?: string; device_identifier?: string };
           if (newData.last_seen_at) {
             setLastSeenAt(newData.last_seen_at);
+          }
+          if (newData.device_name || newData.device_identifier) {
+            setDeviceName(newData.device_name || newData.device_identifier || null);
           }
         }
       )
@@ -95,7 +103,8 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     isConnected, 
     lastSeenAt, 
     status, 
-    isLoading, 
+    isLoading,
+    deviceName,
     manualReconnect 
   };
 }

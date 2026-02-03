@@ -30,6 +30,7 @@ import { haptics } from "@/lib/haptics";
 interface ContextualHomeHeroProps {
   firstName: string;
   isGPSConnected: boolean;
+  gpsDeviceName?: string | null;
   displayLocation?: string | null;
   currentWeather?: {
     temperature: number | null;
@@ -145,6 +146,7 @@ const getGreeting = (firstName: string, period: TimePeriod) => {
 export function ContextualHomeHero({
   firstName,
   isGPSConnected,
+  gpsDeviceName,
   displayLocation,
   currentWeather,
   alerts = [],
@@ -322,8 +324,8 @@ export function ContextualHomeHero({
                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
                 : 'bg-destructive/10 text-destructive'
             }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-destructive'}`} />
-              {isGPSConnected ? 'Live' : 'Offline'}
+              <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500 animate-pulse' : 'bg-destructive'}`} />
+              {isGPSConnected ? (gpsDeviceName || 'Live') : 'Offline'}
             </span>
             <div className="ml-auto flex items-center gap-1">
               <TimeIcon className="h-3.5 w-3.5 text-muted-foreground" />
