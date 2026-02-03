@@ -19,8 +19,8 @@ export function WeeklyGoalRing({
   className = "",
 }: WeeklyGoalRingProps) {
   const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
-  const radius = 40;
-  const strokeWidth = 6;
+  const radius = 28;
+  const strokeWidth = 5;
   const circumference = 2 * Math.PI * radius;
   const clampedProgress = Math.min(progressPercent, 100);
   const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
@@ -57,7 +57,7 @@ export function WeeklyGoalRing({
 
   return (
     <div className={`relative flex flex-col items-center ${className}`}>
-      <svg width="100" height="100" className="transform -rotate-90">
+      <svg width="70" height="70" className="transform -rotate-90">
         <defs>
           {/* Gradient definition */}
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -76,8 +76,8 @@ export function WeeklyGoalRing({
         
         {/* Background circle */}
         <circle
-          cx="50"
-          cy="50"
+          cx="35"
+          cy="35"
           r={radius}
           fill="none"
           stroke="currentColor"
@@ -86,8 +86,8 @@ export function WeeklyGoalRing({
         />
         {/* Progress circle with gradient */}
         <motion.circle
-          cx="50"
-          cy="50"
+          cx="35"
+          cy="35"
           r={radius}
           fill="none"
           strokeWidth={strokeWidth}
@@ -105,8 +105,8 @@ export function WeeklyGoalRing({
         {/* Shimmer effect for 100% */}
         {progressPercent >= 100 && (
           <motion.circle
-            cx="50"
-            cy="50"
+            cx="35"
+            cy="35"
             r={radius}
             fill="none"
             strokeWidth={strokeWidth + 2}
@@ -137,33 +137,22 @@ export function WeeklyGoalRing({
             animate={{ scale: 1 }}
             className="flex items-center gap-0.5"
           >
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">Done!</span>
+            <Sparkles className="h-3 w-3 text-amber-500" />
+            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Done!</span>
           </motion.div>
         ) : (
           <>
-            <span className="text-xl font-bold text-foreground">{hoursThisWeek}h</span>
-            <span className="text-[10px] text-muted-foreground">of {hoursGoal}h</span>
+            <span className="text-base font-bold text-foreground">{hoursThisWeek}h</span>
+            <span className="text-[9px] text-muted-foreground">of {hoursGoal}h</span>
           </>
         )}
       </div>
 
-      {/* Trend indicator */}
-      <div className="flex items-center gap-1 mt-2">
+      <div className="flex items-center gap-0.5 mt-1">
         {isAheadOfLastWeek ? (
-          <>
-            <TrendingUp className="h-3 w-3 text-emerald-500" />
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-              Ahead of last week
-            </span>
-          </>
+          <TrendingUp className="h-2.5 w-2.5 text-emerald-500" />
         ) : (
-          <>
-            <TrendingDown className="h-3 w-3 text-amber-500" />
-            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
-              Behind last week
-            </span>
-          </>
+          <TrendingDown className="h-2.5 w-2.5 text-amber-500" />
         )}
       </div>
     </div>
