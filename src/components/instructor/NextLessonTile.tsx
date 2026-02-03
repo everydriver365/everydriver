@@ -105,41 +105,47 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
       className="block"
     >
       <div className={cn(
-        "bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl border border-primary/20 p-4",
-        "hover:from-primary/15 hover:to-primary/10 transition-colors"
+        "bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-2xl p-4 text-primary-foreground",
+        "hover:shadow-lg transition-all duration-200"
       )}>
         <div className="flex items-center gap-3">
-          {/* Avatar */}
-          <PupilAvatar
-            name={nextLesson.pupil.name}
-            imageUrl={nextLesson.pupil.profile_image_url}
-            size="lg"
-          />
+          {/* Avatar with ring */}
+          <div className="relative">
+            <div className="ring-2 ring-white/30 ring-offset-2 ring-offset-primary rounded-full">
+              <PupilAvatar
+                name={nextLesson.pupil.name}
+                imageUrl={nextLesson.pupil.profile_image_url}
+                size="lg"
+              />
+            </div>
+          </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-primary font-medium uppercase tracking-wide mb-0.5">
+            <p className="text-xs text-primary-foreground/70 font-medium uppercase tracking-wide mb-0.5">
               Next Lesson
             </p>
-            <h3 className="font-semibold text-foreground truncate">
+            <h3 className="font-semibold text-primary-foreground truncate text-lg">
               {nextLesson.pupil.name}
             </h3>
-            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-3 mt-1.5">
+              <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-2.5 py-1">
                 <Clock className="h-3.5 w-3.5" />
-                <span className={cn(isLessonToday && "text-primary font-medium")}>
-                  {getDateLabel()} at {getTimeLabel()}
+                <span className="text-sm font-medium">
+                  {getDateLabel()} · {getTimeLabel()}
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-1 mt-0.5 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5 mt-1.5 text-sm text-primary-foreground/80">
               <MapPin className="h-3.5 w-3.5" />
               <span className="truncate">{nextLesson.pupil.postcode}</span>
             </div>
           </div>
 
           {/* Arrow */}
-          <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+          <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+            <ChevronRight className="h-5 w-5" />
+          </div>
         </div>
       </div>
     </Link>
