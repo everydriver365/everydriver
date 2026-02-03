@@ -1146,6 +1146,207 @@ export type Database = {
           },
         ]
       }
+      followup_log: {
+        Row: {
+          booked_lesson_at: string | null
+          channel: string
+          clicked_at: string | null
+          delivered_at: string | null
+          error: string | null
+          id: string
+          instructor_id: string
+          message_content: string | null
+          opened_at: string | null
+          pupil_id: string
+          sent_at: string
+          template_id: string | null
+          trigger_type: string
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          booked_lesson_at?: string | null
+          channel: string
+          clicked_at?: string | null
+          delivered_at?: string | null
+          error?: string | null
+          id?: string
+          instructor_id: string
+          message_content?: string | null
+          opened_at?: string | null
+          pupil_id: string
+          sent_at?: string
+          template_id?: string | null
+          trigger_type: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          booked_lesson_at?: string | null
+          channel?: string
+          clicked_at?: string | null
+          delivered_at?: string | null
+          error?: string | null
+          id?: string
+          instructor_id?: string
+          message_content?: string | null
+          opened_at?: string | null
+          pupil_id?: string
+          sent_at?: string
+          template_id?: string | null
+          trigger_type?: string
+          unsubscribed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followup_log_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followup_log_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "followup_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      followup_templates: {
+        Row: {
+          created_at: string
+          delay_hours: number
+          email_subject: string | null
+          email_template: string | null
+          id: string
+          instructor_id: string
+          is_enabled: boolean | null
+          send_email: boolean | null
+          send_sms: boolean | null
+          sms_template: string | null
+          trigger_name: string
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delay_hours?: number
+          email_subject?: string | null
+          email_template?: string | null
+          id?: string
+          instructor_id: string
+          is_enabled?: boolean | null
+          send_email?: boolean | null
+          send_sms?: boolean | null
+          sms_template?: string | null
+          trigger_name: string
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delay_hours?: number
+          email_subject?: string | null
+          email_template?: string | null
+          id?: string
+          instructor_id?: string
+          is_enabled?: boolean | null
+          send_email?: boolean | null
+          send_sms?: boolean | null
+          sms_template?: string | null
+          trigger_name?: string
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fuel_log: {
+        Row: {
+          calculated_mpg: number | null
+          created_at: string
+          fill_date: string
+          id: string
+          instructor_id: string
+          is_full_tank: boolean | null
+          litres: number
+          notes: string | null
+          odometer_reading_km: number | null
+          price_per_litre: number
+          receipt_url: string | null
+          station_address: string | null
+          station_name: string | null
+          total_cost: number | null
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          calculated_mpg?: number | null
+          created_at?: string
+          fill_date?: string
+          id?: string
+          instructor_id: string
+          is_full_tank?: boolean | null
+          litres: number
+          notes?: string | null
+          odometer_reading_km?: number | null
+          price_per_litre: number
+          receipt_url?: string | null
+          station_address?: string | null
+          station_name?: string | null
+          total_cost?: number | null
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          calculated_mpg?: number | null
+          created_at?: string
+          fill_date?: string
+          id?: string
+          instructor_id?: string
+          is_full_tank?: boolean | null
+          litres?: number
+          notes?: string | null
+          odometer_reading_km?: number | null
+          price_per_litre?: number
+          receipt_url?: string | null
+          station_address?: string | null
+          station_name?: string | null
+          total_cost?: number | null
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fuel_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuel_log_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gap_offers: {
         Row: {
           batch_id: string | null
@@ -3689,6 +3890,96 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          created_at: string
+          currency: string | null
+          due_date: string
+          id: string
+          instructor_details: Json | null
+          instructor_id: string
+          invoice_date: string
+          invoice_number: string
+          items: Json
+          notes: string | null
+          paid_at: string | null
+          payment_terms: string | null
+          pdf_url: string | null
+          pupil_details: Json | null
+          pupil_id: string | null
+          sent_at: string | null
+          status: string
+          subtotal: number
+          tax_amount: number | null
+          total: number
+          updated_at: string
+          viewed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          due_date: string
+          id?: string
+          instructor_details?: Json | null
+          instructor_id: string
+          invoice_date?: string
+          invoice_number: string
+          items?: Json
+          notes?: string | null
+          paid_at?: string | null
+          payment_terms?: string | null
+          pdf_url?: string | null
+          pupil_details?: Json | null
+          pupil_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          total?: number
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          due_date?: string
+          id?: string
+          instructor_details?: Json | null
+          instructor_id?: string
+          invoice_date?: string
+          invoice_number?: string
+          items?: Json
+          notes?: string | null
+          paid_at?: string | null
+          payment_terms?: string | null
+          pdf_url?: string | null
+          pupil_details?: Json | null
+          pupil_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          total?: number
+          updated_at?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_cancellation_requests: {
         Row: {
           charge_amount: number | null
@@ -4723,6 +5014,105 @@ export type Database = {
           },
         ]
       }
+      pre_lesson_checklist_completions: {
+        Row: {
+          all_required_completed: boolean | null
+          completed_at: string | null
+          completed_items: Json
+          created_at: string
+          id: string
+          lesson_id: string
+          pupil_id: string
+          reminder_sent_at: string | null
+          template_id: string | null
+        }
+        Insert: {
+          all_required_completed?: boolean | null
+          completed_at?: string | null
+          completed_items?: Json
+          created_at?: string
+          id?: string
+          lesson_id: string
+          pupil_id: string
+          reminder_sent_at?: string | null
+          template_id?: string | null
+        }
+        Update: {
+          all_required_completed?: boolean | null
+          completed_at?: string | null
+          completed_items?: Json
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          pupil_id?: string
+          reminder_sent_at?: string | null
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pre_lesson_checklist_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pre_lesson_checklist_completions_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pre_lesson_checklist_completions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "pre_lesson_checklist_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pre_lesson_checklist_templates: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean | null
+          is_first_lesson: boolean
+          items: Json
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean | null
+          is_first_lesson?: boolean
+          items?: Json
+          template_name?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean | null
+          is_first_lesson?: boolean
+          items?: Json
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pre_lesson_checklist_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotional_messages: {
         Row: {
           created_at: string
@@ -4928,6 +5318,69 @@ export type Database = {
             columns: ["tier_id"]
             isOneToOne: false
             referencedRelation: "reward_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pupil_churn_scores: {
+        Row: {
+          calculated_at: string
+          cancellation_rate: number | null
+          created_at: string
+          days_since_last_lesson: number | null
+          id: string
+          instructor_id: string
+          lesson_frequency_trend: number | null
+          pupil_id: string
+          recommended_actions: Json
+          risk_factors: Json
+          risk_level: string | null
+          risk_score: number
+          updated_at: string
+        }
+        Insert: {
+          calculated_at?: string
+          cancellation_rate?: number | null
+          created_at?: string
+          days_since_last_lesson?: number | null
+          id?: string
+          instructor_id: string
+          lesson_frequency_trend?: number | null
+          pupil_id: string
+          recommended_actions?: Json
+          risk_factors?: Json
+          risk_level?: string | null
+          risk_score?: number
+          updated_at?: string
+        }
+        Update: {
+          calculated_at?: string
+          cancellation_rate?: number | null
+          created_at?: string
+          days_since_last_lesson?: number | null
+          id?: string
+          instructor_id?: string
+          lesson_frequency_trend?: number | null
+          pupil_id?: string
+          recommended_actions?: Json
+          risk_factors?: Json
+          risk_level?: string | null
+          risk_score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pupil_churn_scores_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_churn_scores_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: true
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
         ]
@@ -6350,6 +6803,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      speed_limit_cache: {
+        Row: {
+          expires_at: string
+          fetched_at: string
+          grid_lat: number
+          grid_lng: number
+          id: string
+          road_name: string | null
+          road_type: string | null
+          source: string | null
+          speed_limit_kmh: number
+        }
+        Insert: {
+          expires_at?: string
+          fetched_at?: string
+          grid_lat: number
+          grid_lng: number
+          id?: string
+          road_name?: string | null
+          road_type?: string | null
+          source?: string | null
+          speed_limit_kmh: number
+        }
+        Update: {
+          expires_at?: string
+          fetched_at?: string
+          grid_lat?: number
+          grid_lng?: number
+          id?: string
+          road_name?: string | null
+          road_type?: string | null
+          source?: string | null
+          speed_limit_kmh?: number
+        }
+        Relationships: []
       }
       subscription_plans: {
         Row: {

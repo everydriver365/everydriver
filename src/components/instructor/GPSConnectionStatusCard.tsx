@@ -1,4 +1,4 @@
-import { Smartphone, Wifi, WifiOff, ExternalLink, Gauge, MapPin } from "lucide-react";
+import { Smartphone, Wifi, WifiOff, ExternalLink, Gauge, MapPin, RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatMph } from "@/lib/utils";
 
@@ -8,6 +8,9 @@ interface GPSConnectionStatusCardProps {
   lastSeenLabel: string;
   speedKmh: number | null;
   roadName: string | null;
+  isReconnecting?: boolean;
+  retryCount?: number;
+  onManualReconnect?: () => void;
 }
 
 // Open GPSgate Tracker app with fallback to app store
@@ -33,33 +36,47 @@ export function GPSConnectionStatusCard({
   lastSeenLabel,
   speedKmh,
   roadName,
+  isReconnecting = false,
+  retryCount = 0,
+  onManualReconnect,
 }: GPSConnectionStatusCardProps) {
+  // Determine display state
+  const showReconnecting = isReconnecting && !isConnected;
+  
   return (
     <div className={`rounded-2xl border-2 backdrop-blur shadow-lg ${
-      isConnected 
-        ? "bg-emerald-50/95 border-emerald-300 dark:bg-emerald-950/80 dark:border-emerald-700" 
-        : "bg-amber-50/95 border-amber-300 dark:bg-amber-950/80 dark:border-amber-700"
+      showReconnecting
+        ? "bg-blue-50/95 border-blue-300 dark:bg-blue-950/80 dark:border-blue-700"
+        : isConnected 
+          ? "bg-emerald-50/95 border-emerald-300 dark:bg-emerald-950/80 dark:border-emerald-700" 
+          : "bg-amber-50/95 border-amber-300 dark:bg-amber-950/80 dark:border-amber-700"
     }`}>
       <div className="p-4 space-y-3">
         {/* Header with icon and device name */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-full ${
-              isConnected 
-                ? "bg-emerald-100 dark:bg-emerald-900/50" 
-                : "bg-amber-100 dark:bg-amber-900/50"
+              showReconnecting
+                ? "bg-blue-100 dark:bg-blue-900/50"
+                : isConnected 
+                  ? "bg-emerald-100 dark:bg-emerald-900/50" 
+                  : "bg-amber-100 dark:bg-amber-900/50"
             }`}>
               <Smartphone className={`h-5 w-5 ${
-                isConnected 
-                  ? "text-emerald-600 dark:text-emerald-400" 
-                  : "text-amber-600 dark:text-amber-400"
+                showReconnecting
+                  ? "text-blue-600 dark:text-blue-400"
+                  : isConnected 
+                    ? "text-emerald-600 dark:text-emerald-400" 
+                    : "text-amber-600 dark:text-amber-400"
               }`} />
             </div>
             <div>
               <h3 className={`font-semibold ${
-                isConnected 
-                  ? "text-emerald-900 dark:text-emerald-100" 
-                  : "text-amber-900 dark:text-amber-100"
+                showReconnecting
+                  ? "text-blue-900 dark:text-blue-100"
+                  : isConnected 
+                    ? "text-emerald-900 dark:text-emerald-100" 
+                    : "text-amber-900 dark:text-amber-100"
               }`}>
                 GPSgate Tracker
               </h3>
@@ -69,35 +86,47 @@ export function GPSConnectionStatusCard({
             </div>
           </div>
 
-          {/* Pulsing status indicator */}
+          {/* Status indicator */}
           <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
-              {isConnected && (
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              )}
-              <span className={`relative inline-flex rounded-full h-3 w-3 ${
-                isConnected 
-                  ? "bg-emerald-500" 
-                  : "bg-amber-500"
-              }`}></span>
-            </span>
+            {showReconnecting ? (
+              <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+            ) : (
+              <span className="relative flex h-3 w-3">
+                {isConnected && (
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                )}
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${
+                  isConnected 
+                    ? "bg-emerald-500" 
+                    : "bg-amber-500"
+                }`}></span>
+              </span>
+            )}
           </div>
         </div>
         
         {/* Connection details */}
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-1.5">
-            {isConnected ? (
+            {showReconnecting ? (
+              <RefreshCw className="h-4 w-4 text-blue-600 dark:text-blue-400 animate-spin" />
+            ) : isConnected ? (
               <Wifi className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
             ) : (
               <WifiOff className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             )}
             <span className={`font-medium ${
-              isConnected 
-                ? "text-emerald-700 dark:text-emerald-300" 
-                : "text-amber-700 dark:text-amber-300"
+              showReconnecting
+                ? "text-blue-700 dark:text-blue-300"
+                : isConnected 
+                  ? "text-emerald-700 dark:text-emerald-300" 
+                  : "text-amber-700 dark:text-amber-300"
             }`}>
-              {isConnected ? "Connected" : "Offline"}
+              {showReconnecting 
+                ? `Reconnecting... (${retryCount}/5)`
+                : isConnected 
+                  ? "Connected" 
+                  : "Offline"}
             </span>
           </div>
           <span className="text-muted-foreground">
@@ -126,15 +155,27 @@ export function GPSConnectionStatusCard({
           </div>
         )}
         
-        {/* Open app button when offline */}
+        {/* Action buttons when offline or reconnecting */}
         {!isConnected && (
-          <Button 
-            onClick={openTrackerApp} 
-            className="w-full bg-amber-600 hover:bg-amber-700 text-white"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Open GPSgate Tracker
-          </Button>
+          <div className="flex gap-2">
+            {onManualReconnect && !showReconnecting && (
+              <Button 
+                onClick={onManualReconnect}
+                variant="outline"
+                className="flex-1 border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            )}
+            <Button 
+              onClick={openTrackerApp} 
+              className={`flex-1 ${onManualReconnect && !showReconnecting ? '' : 'w-full'} bg-amber-600 hover:bg-amber-700 text-white`}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open GPSgate Tracker
+            </Button>
+          </div>
         )}
       </div>
     </div>
