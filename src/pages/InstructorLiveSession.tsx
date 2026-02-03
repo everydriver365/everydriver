@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useGPSPoller } from "@/hooks/useGPSPoller";
+import { useGPSAutoReconnect } from "@/hooks/useGPSAutoReconnect";
 import { 
   ArrowLeft, 
   Play, 
@@ -23,7 +24,8 @@ import {
   Navigation,
   Zap,
   Flag,
-  CheckCircle
+  CheckCircle,
+  Loader2
 } from "lucide-react";
 import {
   Select,
@@ -134,6 +136,26 @@ export default function InstructorLiveSession() {
     enabled: !!device?.id && isPageVisible,
     intervalMs: isSessionActive ? 2000 : 10000,
     onError: handlePollerError,
+  });
+
+  // Auto-reconnect when connection is lost
+  const { isReconnecting, retryCount, manualReconnect } = useGPSAutoReconnect({
+    instructorId: instructor?.id ?? null,
+    enabled: isPageVisible && !!device?.id,
+    maxRetries: 10, // More retries for persistent reconnection
+    onReconnected: () => {
+      toast({
+        title: "Connection Restored",
+        description: "GPS tracking reconnected successfully",
+      });
+    },
+    onMaxRetriesReached: () => {
+      toast({
+        title: "Connection Lost",
+        description: "Unable to reconnect. Tap to retry manually.",
+        variant: "destructive",
+      });
+    },
   });
 
   useEffect(() => {
@@ -801,7 +823,12 @@ export default function InstructorLiveSession() {
               />
             </div>
             <div className="flex items-center gap-2">
-              {isConnected ? (
+              {isReconnecting ? (
+                <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs px-2 py-0.5">
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  Reconnecting{retryCount > 0 ? ` (${retryCount})` : ''}
+                </Badge>
+              ) : isConnected ? (
                 <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-2 py-0.5">
                   <span className="relative flex h-2 w-2 mr-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -810,7 +837,11 @@ export default function InstructorLiveSession() {
                   Live
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-muted-foreground text-xs px-2 py-0.5">
+                <Badge 
+                  variant="outline" 
+                  className="text-muted-foreground text-xs px-2 py-0.5 cursor-pointer hover:bg-muted"
+                  onClick={manualReconnect}
+                >
                   <WifiOff className="h-3 w-3 mr-1" />
                   Offline
                 </Badge>
@@ -825,20 +856,33 @@ export default function InstructorLiveSession() {
 
       {/* Full Screen Map or Pupil Selection */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Stale data banner */}
+        {/* Stale data banner with reconnect option */}
         {!isConnected && (
           <div className="absolute top-4 left-4 right-4 z-30">
-            <div className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg">
+            <div 
+              className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={manualReconnect}
+            >
               <div className="flex items-start gap-2">
-                <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                <div className="min-w-0">
+                {isReconnecting ? (
+                  <Loader2 className="h-4 w-4 mt-0.5 text-primary animate-spin" />
+                ) : (
+                  <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                )}
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground">
-                    No recent GPS updates
+                    {isReconnecting ? `Reconnecting...` : 'No recent GPS updates'}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Last update {lastSeenLabel}. Showing last known location.
+                    {isReconnecting 
+                      ? `Attempt ${retryCount + 1}. Tap to retry now.`
+                      : `Last update ${lastSeenLabel}. Tap to reconnect.`
+                    }
                   </p>
                 </div>
+                {!isReconnecting && (
+                  <RefreshCw className="h-4 w-4 mt-0.5 text-primary" />
+                )}
               </div>
             </div>
           </div>
