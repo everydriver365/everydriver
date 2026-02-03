@@ -1,175 +1,296 @@
 
-# UI Enhancement Plan - Comprehensive Mobile Experience Upgrade
-
-**STATUS: ✅ IMPLEMENTED**
+# Comprehensive UI Enhancement Plan - 10 Feature Upgrade
 
 ## Overview
-This plan implements all proposed UI suggestions plus a redesign of the "Fill My Gaps" tile on the instructor home page. The changes focus on improving mobile usability, visual polish, and interaction design.
+This plan implements all 10 proposed UI enhancements for the instructor mobile portal, focusing on contextual intelligence, visual polish, and interaction design improvements.
 
 ---
 
-## Part 1: Redesign "Fill My Gaps" Tile (GapFillerCard) ✅ DONE
+## Part 1: Contextual Home Hero
 
-### Current State
-The existing `GapFillerCard.tsx` uses an amber/orange gradient design with an expandable interface. It works but could be more visually appealing and actionable.
+### Description
+Transform the hero section to display time-of-day and situation-aware content.
 
-### Proposed Design
-Transform into a cleaner, more modern tile with:
-- **Violet/purple gradient** to match the "Fill Gaps" quick action styling
-- **Compact summary header** showing gap count and next available slot
-- **Quick action button** visible without expansion
-- **Streamlined slot selection** with better touch targets
-- **Animated pulse indicator** when gaps are available
+### Design Logic
+| Time Period | Content Focus |
+|-------------|---------------|
+| Morning (5am-10am) | ETA to first pickup, weather, traffic conditions |
+| Mid-day (10am-4pm) | Today's progress (lessons done/remaining), earnings so far |
+| Evening (4pm-9pm) | Day's summary stats, tomorrow preview |
+| Night (9pm-5am) | Tomorrow's first lesson, weekly progress |
 
 ### Technical Changes
-**File: `src/components/instructor/GapFillerCard.tsx`**
-- Update gradient from amber to violet (`from-violet-500/10 to-purple-500/10`)
-- Add prominent CTA button in collapsed state
-- Show first available slot time in header
-- Add pulsing indicator for urgent gaps (same day/tomorrow)
-- Improve time slot pills with better contrast
-- Add quick "View All" link to full Gaps page
+**File: `src/components/instructor/ContextualHomeHero.tsx`** (New)
+- Create component with time-based content switching
+- Import existing hooks: `useTodayOverview`, `useTomorrowPreview`, `useNextLessonDetails`, `useTrafficETA`
+- Animated transitions between content states using `framer-motion`
+
+**File: `src/components/instructor/InstructorMobileHome.tsx`**
+- Replace static hero card with `ContextualHomeHero` component
+- Pass required data (instructor, weather, GPS connection status)
 
 ---
 
-## Part 2: Swipe Actions on Pupil Cards ✅ DONE
+## Part 2: Quick Stats Animation
+
+### Description
+Add spring animations to number counters in stats cards for visual feedback.
 
 ### Implementation
-Add swipe-to-reveal actions on `ExpandablePupilCard.tsx`:
+**File: `src/components/ui/AnimatedCounter.tsx`** (New)
+```typescript
+// Animated number component using framer-motion useSpring
+interface AnimatedCounterProps {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  duration?: number;
+}
+```
 
-**Left swipe reveals:**
-- **Call button** (green) - Direct phone call
-- **Message button** (blue) - Opens SMS or in-app message
-
-### Technical Approach
-- Use existing `framer-motion` drag pattern (already used in `ExpandableLessonCard.tsx`)
-- Add `drag="x"` with constraints
-- Reveal action buttons on swipe with smooth animations
-- Add haptic feedback on action trigger
-
-**Files to modify:**
-- `src/components/instructor/ExpandablePupilCard.tsx`
-  - Add motion.div wrapper with drag props
-  - Add action button reveal layer behind card
-  - Add drag state tracking and gesture handling
+**Components to Update:**
+- `WeeklyGoalRing.tsx` - Animate hours and percentage
+- `QuickActionTiles.tsx` - Animate badge counts
+- Stats cards in `InstructorMobileHome.tsx`
 
 ---
 
-## Part 3: Travel Time Indicators Between Lessons ✅ DONE
+## Part 3: Slide to Start Gesture
 
-### Implementation
-Add visual travel time indicators in schedule views showing estimated drive time between consecutive lessons.
+### Description
+Add swipe-right interaction on `NextLessonCard` to initiate navigation or start tracking.
+
+### Technical Changes
+**File: `src/components/instructor/NextLessonCard.tsx`**
+- Add `motion.div` wrapper with `drag="x"` and right-only constraints
+- Add hidden action layer on left side (Navigation icon, "Slide to Navigate")
+- On successful swipe (>100px), trigger Google Maps navigation
+- Add haptic feedback on threshold reach
+- Visual indicator: gradient reveal + arrow animation
+
+### UX Flow
+```text
+[◀ Navigate] ← Drag left to reveal → [NextLessonCard Content]
+```
+
+---
+
+## Part 4: Smart Pupil Avatars with Status Rings
+
+### Description
+Enhance pupil avatars with status indicator rings and contextual badges.
+
+### Status Ring Colors
+| Status | Ring Color | Badge |
+|--------|------------|-------|
+| Today's lesson | Emerald green | Clock icon |
+| Owes money | Red | Currency icon |
+| Test date within 7 days | Amber pulsing | Calendar icon |
+| High progress (>85%) | Blue | Graduation cap |
+| Inactive/On hold | Gray | Pause icon |
+
+### Technical Changes
+**File: `src/components/ui/SmartAvatar.tsx`** (New)
+- Wrapper component around Avatar with ring styling
+- Props: `status`, `hasLessonToday`, `owesAmount`, `testDateSoon`, `progressPercent`
+- Animated ring using CSS border-gradient or SVG ring
+
+**File: `src/components/instructor/ExpandablePupilCard.tsx`**
+- Replace standard Avatar with SmartAvatar
+- Pass computed status props from pupil data
+
+---
+
+## Part 5: Radial FAB Menu
+
+### Description
+Expand the Floating Action Button into a radial menu for secondary actions.
+
+### Menu Items (4 options)
+1. **Quick Note** - Add note to current/next lesson
+2. **Navigate** - Open maps to next pickup
+3. **Quick Message** - SMS templates
+4. **Log Break** - Record break time
+
+### Technical Changes
+**File: `src/components/instructor/RadialFAB.tsx`** (New)
+- Main FAB button (Plus icon)
+- On tap: expand 4 buttons in semi-circle above
+- Use framer-motion `stagger` for sequential reveal
+- Haptic feedback on open/close
+
+**File: `src/components/instructor/InstructorMobileHome.tsx`**
+- Replace simple FAB with RadialFAB component
+- Pass action handlers for each menu item
+
+### Animation Pattern
+```text
+         [Note]     [Navigate]
+              \     /
+        [Message] [Break]
+                |
+              [+]  ← Main FAB
+```
+
+---
+
+## Part 6: Branded Pull-to-Refresh
+
+### Description
+Custom driving-themed animation for pull-to-refresh instead of generic spinner.
 
 ### Design
-- Small chip between lesson cards showing: `~15 min drive`
-- Color coded: green (plenty of time), amber (tight), red (likely late)
-- Uses postcode-to-postcode estimation via existing `useTrafficETA` hook
-
-**Files to modify:**
-- `src/components/instructor/NewMobileScheduleView.tsx`
-  - Add travel time chips between lesson blocks
-  - Calculate time gap vs estimated travel time
-
-**New hook:**
-- `src/hooks/useLessonTravelTimes.ts`
-  - Batch calculate travel times between consecutive lessons
-
----
-
-## Part 4: Improved Empty States with Illustrations ✅ DONE
-
-### Current Empty States
-Various components show basic "No X found" text. We'll enhance these with:
-- Subtle illustrations/icons
-- Encouraging messaging
-- Clear call-to-action buttons
-
-### Components to Update
-1. **QuietDayEmpty.tsx** - Already good, minor polish
-2. **GapsFiller.tsx** - Add illustration for "fully booked" state
-3. **Pupils list** - Add empty state for no pupils
-4. **Schedule empty days** - Add visual empty state
-5. **Messages inbox** - Add empty inbox state
-
-**New file:** `src/components/ui/EmptyState.tsx`
-- Reusable empty state component with icon, title, description, and CTA
-
----
-
-## Part 5: Bottom Navigation Badges ✅ DONE
-
-### Implementation
-Add notification/count badges to bottom navigation items:
-
-| Nav Item | Badge Type |
-|----------|-----------|
-| Messages | Unread message count |
-| Schedule | Today's lesson count |
-| Live | Active tracking indicator (already exists) |
-| More | Combined pending items dot |
+- Replace `Loader2` spinner with animated car icon
+- Car drives along a road path as user pulls down
+- At threshold: car reaches destination (checkered flag)
+- During refresh: car bounces/idles
 
 ### Technical Changes
-**File: `src/components/instructor/InstructorBottomNav.tsx`**
-- Import `useUnreadMessagesCount` hook
-- Import `useTodayOverview` hook
-- Add badge rendering for Messages tab
-- Add optional lesson count for Schedule tab
-- Add pending items indicator for More menu
+**File: `src/components/ui/pull-to-refresh.tsx`**
+- Create `DrivingRefreshAnimation` component
+- SVG animation with car moving on curved path
+- Use `pullDistance` to control car position
+- Add haptic feedback on threshold reach
 
 ---
 
-## Part 6: Glanceable Tracking Dashboard Mode ✅ DONE
+## Part 7: OLED Dark Mode ("True Black")
 
-### Implementation
-Create an optional "glanceable" view for the Live Tracking screen with:
-- **Extra-large speed display** (edge-to-edge)
-- **Current road name** in large text
-- **Minimal controls** - just stop button
-- **Voice/haptic feedback** for speed warnings
+### Description
+Add battery-efficient true black theme option for OLED screens.
 
-### Technical Approach
-Add toggle button on existing tracking interface to switch to glanceable mode.
+### Technical Changes
+**File: `src/index.css`**
+- Add `.dark.oled` class with pure black backgrounds:
+```css
+.dark.oled {
+  --background: 0 0% 0%;
+  --card: 0 0% 4%;
+  --popover: 0 0% 4%;
+  --muted: 0 0% 8%;
+  --border: 0 0% 12%;
+}
+```
 
-**Files to modify:**
-- `src/components/instructor/LiveTrackingMap.tsx` or equivalent
-- Add `isGlanceMode` state
-- Render alternative simplified UI when active
-- Large speed roundel (80px+)
-- Road name in 24px+ font
-- Vibration on speed limit breach
+**File: `src/context/ThemeContext.tsx`**
+- Extend Theme type: `'light' | 'dark' | 'oled' | 'system'`
+- Add OLED mode toggle
+
+**File: `src/components/instructor/InstructorMobileHome.tsx`**
+- Add "OLED Dark" option in theme dropdown
 
 ---
 
-## Part 7: Visual Polish - Skeleton Loaders
+## Part 8: Vertical Schedule Timeline
 
-### Current State
-Some components use skeleton loaders (`Skeleton` from shadcn), but coverage is inconsistent.
+### Description
+Alternative timeline view showing lessons and travel gaps as a continuous vertical track.
 
-### Enhancement
-Ensure all async-loading sections have proper skeleton states:
-- `QuickActionTiles` - Already has skeleton (verify)
-- `NextLessonCard` - Add skeleton
-- `GapFillerCard` - Add skeleton
-- `Today's Stats` section - Add skeleton
+### Design
+```text
+09:00 ●━━━━━━━━━━━━━━━━━━━━━━━●
+      │ John Smith - 2hr      │
+11:00 ●━━━━━━━━━━━━━━━━━━━━━━━●
+      ┃ ~15 min drive (green) ┃
+11:15 ┃                       ┃
+      ●━━━━━━━━━━━━━━━━━━━━━━━●
+      │ Sarah Jones - 1.5hr   │
+12:45 ●━━━━━━━━━━━━━━━━━━━━━━━●
+```
 
-**Approach:** Create skeleton variants that match component dimensions for smooth transitions.
+### Technical Changes
+**File: `src/components/instructor/VerticalTimelineView.tsx`** (New)
+- Timeline track with time markers on left
+- Lesson blocks as cards positioned by time
+- Travel gaps as connecting segments with status colors
+- Toggle button in schedule header to switch views
+
+**File: `src/components/instructor/NewMobileScheduleView.tsx`**
+- Add `viewMode` state: `'list' | 'timeline'`
+- Toggle button in header
+- Conditional render of list vs timeline view
+
+---
+
+## Part 9: Voice Control
+
+### Description
+Basic hands-free voice commands for driving safety on the live tracking screen.
+
+### Supported Commands
+| Voice Command | Action |
+|---------------|--------|
+| "Start tracking" | Begin recording session |
+| "Stop tracking" | End current session |
+| "Running late" | Open late message sheet |
+| "Navigate" | Open maps to next pickup |
+| "Show speed" | Announce current speed (TTS) |
+
+### Technical Changes
+**File: `src/components/instructor/VoiceControlButton.tsx`** (New)
+- Microphone button with listening indicator
+- Uses existing `useVoiceRecognition` hook
+- Command parsing and action dispatch
+- Visual feedback: pulsing border when listening
+
+**File: `src/pages/InstructorLiveSession.tsx`**
+- Add VoiceControlButton to tracking interface
+- Wire up commands to existing handlers
+- Text-to-speech feedback using `window.speechSynthesis`
+
+**File: `src/hooks/useVoiceCommands.ts`** (New)
+- Command parsing logic
+- Fuzzy matching for natural variations
+- Action callbacks mapping
+
+---
+
+## Part 10: Today's Route Map Preview
+
+### Description
+Embedded map on home screen showing connected route for all daily pickups.
+
+### Design
+- Small map card (h-40) showing all pickup points
+- Connected polyline in route order
+- Tapping opens full schedule/navigation view
+- Shows total drive time estimate
+
+### Technical Changes
+**File: `src/components/instructor/TodayRoutePreview.tsx`** (New)
+- Leaflet map with pickup markers
+- Polyline connecting pickups in time order
+- Geocoding postcodes using existing patterns
+- Display stats: X stops, ~Y mins total drive
+
+**File: `src/hooks/useTodayRoute.ts`** (New)
+- Fetch today's lessons with pickup postcodes
+- Geocode postcodes to coordinates (batch)
+- Calculate approximate total route distance/time
+
+**File: `src/components/instructor/InstructorMobileHome.tsx`**
+- Add TodayRoutePreview tile to customizable grid
+- Only show when user has 2+ lessons with pickup locations
 
 ---
 
 ## Implementation Order
 
-### Phase 1: High Impact (Complete First)
-1. Redesign GapFillerCard.tsx - Immediate visual improvement
-2. Bottom nav badges - High visibility improvement
-3. Swipe actions on pupil cards - Better interaction
+### Phase 1: High Impact, Quick Wins
+1. **Contextual Home Hero** - Immediate personalization
+2. **Smart Pupil Avatars** - Visual polish
+3. **OLED Dark Mode** - Battery efficiency
 
 ### Phase 2: Interaction Improvements
-4. Travel time indicators - Practical utility
-5. Glanceable tracking mode - Driving safety
+4. **Radial FAB Menu** - Better secondary actions
+5. **Slide to Start Gesture** - Natural mobile interaction
+6. **Branded Pull-to-Refresh** - Brand reinforcement
 
-### Phase 3: Polish
-6. Empty states improvement - Visual consistency
-7. Skeleton loader audit - Loading polish
+### Phase 3: Advanced Features
+7. **Quick Stats Animation** - Visual polish
+8. **Vertical Schedule Timeline** - Alternative view
+9. **Today's Route Map Preview** - Route planning
+10. **Voice Control** - Hands-free safety
 
 ---
 
@@ -177,61 +298,49 @@ Ensure all async-loading sections have proper skeleton states:
 
 | File | Change Type | Description |
 |------|-------------|-------------|
-| `src/components/instructor/GapFillerCard.tsx` | Major update | Redesign with violet theme, compact layout, pulse indicator |
-| `src/components/instructor/ExpandablePupilCard.tsx` | Feature add | Swipe-to-reveal call/message actions |
-| `src/components/instructor/InstructorBottomNav.tsx` | Enhancement | Add message count and lesson count badges |
-| `src/components/instructor/NewMobileScheduleView.tsx` | Feature add | Travel time chips between lessons |
-| `src/components/ui/EmptyState.tsx` | New file | Reusable empty state component |
-| `src/components/instructor/GapsFiller.tsx` | Enhancement | Improved empty state |
-| `src/hooks/useLessonTravelTimes.ts` | New file | Calculate travel times between lessons |
-| `src/components/instructor/LiveTrackingMap.tsx` | Feature add | Glanceable mode toggle |
+| `src/components/instructor/ContextualHomeHero.tsx` | New | Time-aware hero content |
+| `src/components/ui/AnimatedCounter.tsx` | New | Spring-animated numbers |
+| `src/components/instructor/NextLessonCard.tsx` | Enhancement | Slide-to-navigate gesture |
+| `src/components/ui/SmartAvatar.tsx` | New | Status ring avatars |
+| `src/components/instructor/ExpandablePupilCard.tsx` | Enhancement | Use SmartAvatar |
+| `src/components/instructor/RadialFAB.tsx` | New | Radial action menu |
+| `src/components/ui/pull-to-refresh.tsx` | Enhancement | Driving animation |
+| `src/index.css` | Enhancement | OLED dark mode variables |
+| `src/context/ThemeContext.tsx` | Enhancement | OLED theme option |
+| `src/components/instructor/VerticalTimelineView.tsx` | New | Timeline schedule view |
+| `src/components/instructor/NewMobileScheduleView.tsx` | Enhancement | View mode toggle |
+| `src/components/instructor/VoiceControlButton.tsx` | New | Voice input UI |
+| `src/hooks/useVoiceCommands.ts` | New | Command parsing |
+| `src/pages/InstructorLiveSession.tsx` | Enhancement | Voice control integration |
+| `src/components/instructor/TodayRoutePreview.tsx` | New | Route map preview |
+| `src/hooks/useTodayRoute.ts` | New | Route data fetching |
+| `src/components/instructor/InstructorMobileHome.tsx` | Enhancement | Integrate all new components |
 
 ---
 
 ## Technical Considerations
 
 ### Performance
-- Travel time calculations are expensive - cache results and batch requests
-- Swipe gestures should use `will-change: transform` for GPU acceleration
-- Badge counts should use existing hooks to avoid duplicate queries
+- Route geocoding should be batched and cached
+- Voice recognition pauses when session inactive
+- Timeline view uses virtualization for 10+ lessons
+- OLED mode uses minimal gradients for true blacks
 
 ### Accessibility
-- Swipe actions should have tap alternatives (current buttons remain)
-- Badges should have aria-labels for screen readers
-- Glanceable mode should announce speed changes
+- Voice commands have visual alternatives (buttons)
+- Animated counters respect `prefers-reduced-motion`
+- Radial FAB has keyboard navigation support
+- Status rings have aria-labels
 
-### Existing Patterns Used
-- `framer-motion` for animations (consistent with codebase)
+### Mobile Optimization
+- All gestures have minimum touch target sizes (44px)
+- Voice control only active when screen is on
+- Wake lock during voice listening
+- Haptic feedback on all gesture completions
+
+### Existing Patterns Leveraged
+- `framer-motion` for all animations
 - `haptics.ts` for tactile feedback
-- Existing color scheme from `QuickActionTiles` and design system
-- Badge component from shadcn/ui
-
----
-
-## Visual Examples
-
-### GapFillerCard Redesign
-```text
-+------------------------------------------+
-|  [Violet Icon] Fill Your Gaps            |
-|  3 slots available tomorrow              |
-|  [First: Wed 5 Feb 10:00] [View All →]   |
-+------------------------------------------+
-```
-
-### Travel Time Indicator
-```text
-+------------------------------------------+
-|  [Lesson Card: 9:00 - 10:00 John]        |
-+------------------------------------------+
-         ↓ ~12 min drive (green)
-+------------------------------------------+
-|  [Lesson Card: 10:30 - 11:30 Sarah]      |
-+------------------------------------------+
-```
-
-### Swipe Action on Pupil Card
-```text
-<-- Swipe left
-[Call] [Message] [Pupil Card Content     →]
-```
+- `useVoiceRecognition` hook already exists
+- Leaflet map patterns from `HomeMapHero`
+- Theme context patterns for OLED mode
