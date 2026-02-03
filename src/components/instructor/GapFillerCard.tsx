@@ -280,34 +280,19 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       {gap.slots.map((slot) => {
                         const isSelected = selectedSlot?.id === slot.id;
-                        // Calculate duration
-                        const [startH, startM] = slot.startTime.split(":").map(Number);
-                        const [endH, endM] = slot.endTime.split(":").map(Number);
-                        const durationMins = (endH * 60 + endM) - (startH * 60 + startM);
-                        const hours = Math.floor(durationMins / 60);
-                        const mins = durationMins % 60;
-                        const duration = mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
                         
                         return (
                           <button
                             key={slot.id}
                             onClick={() => handleSlotSelect(slot)}
                             className={cn(
-                              "px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex flex-col items-center gap-1",
+                              "px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-center",
                               isSelected
                                 ? "bg-primary text-primary-foreground shadow-md"
                                 : "bg-card border border-border hover:border-primary/50 hover:bg-primary/5 text-foreground"
                             )}
                           >
-                            <span className="text-xs">{slot.startTime} - {slot.endTime}</span>
-                            <span className={cn(
-                              "text-[10px] px-1.5 py-0.5 rounded-full",
-                              isSelected
-                                ? "bg-primary-foreground/20"
-                                : "bg-primary/10 text-primary"
-                            )}>
-                              {duration}
-                            </span>
+                            {slot.startTime} - {slot.endTime}
                           </button>
                         );
                       })}
