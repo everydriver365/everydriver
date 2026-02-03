@@ -959,9 +959,9 @@ export default function InstructorLiveSession() {
 
                   {/* Offline warning */}
                   {!isConnected && (
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800">
-                      <WifiOff className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border">
+                      <WifiOff className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <p className="text-xs text-muted-foreground">
                         GPS offline. Start anyway to record when it reconnects.
                       </p>
                     </div>
@@ -972,9 +972,7 @@ export default function InstructorLiveSession() {
                     {/* Main Start Button */}
                     <Button 
                       size="lg"
-                      className={`flex-1 h-12 text-base font-semibold rounded-xl ${
-                        !selectedPupilId ? "bg-amber-600 hover:bg-amber-700" : ""
-                      }`}
+                      className="flex-1 h-12 text-base font-semibold rounded-xl"
                       onClick={() => startSession(selectedPupilId ? "practice" : "test")}
                       disabled={isStarting}
                     >
@@ -994,7 +992,7 @@ export default function InstructorLiveSession() {
                     {/* Driving Test Button */}
                     <Button 
                       size="lg"
-                      className="h-12 px-4 font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700"
+                      className="h-12 px-4 font-semibold rounded-xl"
                       onClick={() => setShowDrivingTestDialog(true)}
                       disabled={isStarting}
                     >
