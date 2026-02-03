@@ -1,120 +1,68 @@
 
-# Add GPSgate User ID to Instructor Profile Settings
+# Fix GPSgate Instructor Username Matching
 
-## Overview
-Add a new "GPS Tracking" tab to the existing InstructorDetailsEditor component, allowing instructors to configure their GPSgate User ID directly in their profile settings. This links the instructor's account to their GPSgate Tracker app.
+## Problem Identified
+The poller only matches instructors who have a numeric `gpsgate_user_id` set. However, the UI allows entering a `gpsgate_username` (which you did - the UUID `d0208b56-7d25-4cd6-a828-9fedba7a29c2`). The poller ignores the username field, resulting in "0 instructors with GPSgate IDs".
 
-## Database Changes
+## Solution
+Update the `gpsgate-poller` edge function to:
+1. Also fetch instructors with `gpsgate_username` (not just `gpsgate_user_id`)
+2. Match the username against GPSgate users to auto-discover the numeric User ID
+3. Persist the discovered User ID back to the database for future runs
+4. Process the instructor's GPS data once matched
 
-Add two new columns to the `instructors` table:
+## Code Changes
 
-| Column | Type | Purpose |
-|--------|------|---------|
-| `gpsgate_user_id` | INTEGER | The GPSgate User ID from the instructor's tracker |
-| `gpsgate_username` | TEXT | The GPSgate username (for display reference) |
+### File: `supabase/functions/gpsgate-poller/index.ts`
 
-## Frontend Changes
+**Change 1**: Update the instructor query (around line 473-477)
+```typescript
+// Current (broken):
+.not("gpsgate_user_id", "is", null);
 
-### Update InstructorDetailsEditor Component
-
-Add a 4th tab called "GPS Tracking" to the existing tabbed interface:
-
-**Current tabs:**
-- Vehicle
-- Qualifications  
-- Social Links
-
-**Updated tabs:**
-- Vehicle
-- Qualifications
-- Social Links
-- GPS Tracking (new)
-
-### GPS Tracking Tab Content
-
-The new tab will include:
-
-1. **GPSgate Username field**
-   - Text input for the instructor's GPSgate username
-   - Helper text: "Your GPSgate Tracker app username"
-
-2. **GPSgate User ID field**
-   - Numeric input for the User ID (optional - can be auto-discovered)
-   - Helper text: "Leave blank to auto-discover from username"
-
-3. **Connection Status indicator**
-   - Shows if the instructor's tracker is currently online
-   - Displays last position timestamp if available
-   - Uses the existing useGPSConnectionStatus hook logic
-
-4. **Test Connection button**
-   - Triggers a poll to verify the credentials work
-   - Shows success/error feedback
-
-### Update Edge Function
-
-Modify the `gpsgate-poller` to also check the `instructors` table for GPSgate mappings:
-
-```text
-Current flow:
-GPSgate API -> Match to traccar_devices -> Update positions
-
-New flow:
-GPSgate API -> Match to instructors (by gpsgate_user_id)
-           -> Match to traccar_devices (existing)
-           -> Update positions accordingly
+// Fixed:
+.or("gpsgate_user_id.not.is.null,gpsgate_username.not.is.null");
 ```
 
-This allows instructors to be tracked directly without needing a separate device registration.
+**Change 2**: Add username-based matching logic (around line 480-490)
+```typescript
+// Build lookup by GPSgate user ID for instructors
+const instructorsByGpsGateId = new Map<number, InstructorGPS>();
+for (const i of instructorsWithGPS || []) {
+  // If instructor has numeric ID, use it directly
+  if (i.gpsgate_user_id) {
+    instructorsByGpsGateId.set(i.gpsgate_user_id, i as InstructorGPS);
+  } else if (i.gpsgate_username) {
+    // Auto-discover numeric ID from username
+    const normalizedUsername = normalizeText(i.gpsgate_username);
+    const discoveredUserId = usernameToUserId.get(normalizedUsername);
+    if (discoveredUserId) {
+      instructorsByGpsGateId.set(discoveredUserId, i as InstructorGPS);
+      // Persist discovered ID to database
+      supabase
+        .from("instructors")
+        .update({ gpsgate_user_id: discoveredUserId })
+        .eq("id", i.id);
+      console.log(`[GPSgate-Poller] Auto-linked instructor ${i.id} username ${i.gpsgate_username} -> GPSgate user ${discoveredUserId}`);
+    } else {
+      console.log(`[GPSgate-Poller] Instructor ${i.id} username ${i.gpsgate_username} not found in GPSgate`);
+    }
+  }
+}
+```
+
+## Expected Result After Fix
+
+When you click "Test Connection" or the poller runs:
+1. Poller finds your instructor record with `gpsgate_username = 'd0208b56-7d25-4cd6-a828-9fedba7a29c2'`
+2. Matches it against GPSgate users to find the numeric User ID
+3. Updates your instructor record with the discovered `gpsgate_user_id`
+4. Fetches your latest GPS position from GPSgate
+5. Updates `traccar_devices` table with your position (enabling "Connected" status)
 
 ## Implementation Steps
 
-### Phase 1: Database Migration
-1. Add `gpsgate_user_id` (INTEGER) column to instructors table
-2. Add `gpsgate_username` (TEXT) column to instructors table
-
-### Phase 2: Update InstructorDetailsEditor
-1. Add GPS tracking fields to the InstructorDetails interface
-2. Update the SELECT query to include new fields
-3. Add new "GPS Tracking" tab with input fields
-4. Add connection status display using useGPSConnectionStatus
-5. Add Save button for GPS settings
-
-### Phase 3: Update Edge Function
-1. Modify gpsgate-poller to also query instructors table for GPSgate mappings
-2. When a match is found via instructor, update that instructor's last_seen_at or a dedicated position field
-3. Continue supporting existing device-based tracking for vehicles
-
-## UI Preview
-
-```text
-+----------------------------------------------------------+
-| Vehicle | Qualifications | Social Links | GPS Tracking   |
-+----------------------------------------------------------+
-|                                                          |
-|  GPSgate Username                                        |
-|  [_____________________________]                         |
-|  Your GPSgate Tracker app username                       |
-|                                                          |
-|  GPSgate User ID (optional)                              |
-|  [___________]                                           |
-|  Leave blank to auto-discover from username              |
-|                                                          |
-|  +----------------------------------------------------+  |
-|  |  Connection Status                                 |  |
-|  |  [●] Connected - Last update: 2 minutes ago        |  |
-|  +----------------------------------------------------+  |
-|                                                          |
-|  [        Test Connection        ]                       |
-|                                                          |
-|  [       Save GPS Settings       ]                       |
-|                                                          |
-+----------------------------------------------------------+
-```
-
-## Technical Notes
-
-- The GPSgate User ID in the instructors table works independently from the traccar_devices table
-- Instructors using the iOS GPSgate Tracker app on their phone will be matched via this setting
-- Vehicle hardware trackers (OBD-II devices) continue using the traccar_devices table
-- Both can coexist - an instructor can have their phone tracked AND a vehicle tracker
+1. Update edge function query to include instructors with username only
+2. Add username-to-ID resolution logic before the instructor processing loop
+3. Persist auto-discovered IDs back to the database
+4. Deploy updated edge function
