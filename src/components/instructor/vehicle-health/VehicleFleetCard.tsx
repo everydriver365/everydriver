@@ -1,6 +1,7 @@
-import { Car, Gauge, Wrench, Wifi, Star, Camera } from "lucide-react";
+import { Car, Gauge, Wrench, Wifi, Star, Camera, Pencil } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { differenceInDays } from "date-fns";
 
@@ -25,6 +26,7 @@ export interface InstructorVehicleExtended {
 
 interface VehicleFleetCardProps {
   vehicle: InstructorVehicleExtended;
+  onEdit?: (vehicle: InstructorVehicleExtended) => void;
 }
 
 function getDaysUntil(dateStr: string | null): number | null {
@@ -60,7 +62,7 @@ function getExpiryBadge(label: string, days: number | null) {
   );
 }
 
-export function VehicleFleetCard({ vehicle }: VehicleFleetCardProps) {
+export function VehicleFleetCard({ vehicle, onEdit }: VehicleFleetCardProps) {
   const motDays = getDaysUntil(vehicle.mot_expiry);
   const insuranceDays = getDaysUntil(vehicle.insurance_expiry);
   const taxDays = getDaysUntil(vehicle.tax_expiry);
@@ -72,19 +74,33 @@ export function VehicleFleetCard({ vehicle }: VehicleFleetCardProps) {
   return (
     <Card className="overflow-hidden">
       {/* Vehicle Image - Compact on mobile */}
-      {vehicle.image_url ? (
-        <div className="aspect-[16/9] sm:aspect-video bg-muted max-h-32 sm:max-h-none">
-          <img
-            src={vehicle.image_url}
-            alt={vehicle.registration}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ) : (
-        <div className="h-20 sm:aspect-video sm:h-auto bg-muted/50 flex items-center justify-center">
-          <Camera className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/30" />
-        </div>
-      )}
+      <div className="relative">
+        {vehicle.image_url ? (
+          <div className="aspect-[16/9] sm:aspect-video bg-muted max-h-32 sm:max-h-none">
+            <img
+              src={vehicle.image_url}
+              alt={vehicle.registration}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="h-20 sm:aspect-video sm:h-auto bg-muted/50 flex items-center justify-center">
+            <Camera className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/30" />
+          </div>
+        )}
+        
+        {/* Edit Button */}
+        {onEdit && (
+          <Button
+            variant="secondary"
+            size="icon"
+            className="absolute top-2 right-2 h-8 w-8 shadow-md"
+            onClick={() => onEdit(vehicle)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
       
       <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
         {/* Header */}

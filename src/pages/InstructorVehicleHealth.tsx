@@ -8,10 +8,11 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { EnhancedDeviceStatusCard } from "@/components/instructor/vehicle-health/EnhancedDeviceStatusCard";
 import { BatteryHistoryChart } from "@/components/instructor/vehicle-health/BatteryHistoryChart";
 import { IgnitionEventsLog } from "@/components/instructor/vehicle-health/IgnitionEventsLog";
-import { VehicleFleetCard } from "@/components/instructor/vehicle-health/VehicleFleetCard";
+import { VehicleFleetCard, InstructorVehicleExtended } from "@/components/instructor/vehicle-health/VehicleFleetCard";
 import { AutoMileageLog } from "@/components/instructor/vehicle-health/AutoMileageLog";
 import { LinkDeviceDialog } from "@/components/instructor/vehicle-health/LinkDeviceDialog";
 import { AddVehicleDialog } from "@/components/instructor/vehicle-health/AddVehicleDialog";
+import { EditVehicleDialog, VehicleToEdit } from "@/components/instructor/vehicle-health/EditVehicleDialog";
 import { ComplianceOverview } from "@/components/instructor/vehicle-health/ComplianceOverview";
 import { SecurityAlertsTab } from "@/components/instructor/vehicle-health/SecurityAlertsTab";
 import { ServiceRemindersTab } from "@/components/instructor/vehicle-health/ServiceRemindersTab";
@@ -33,6 +34,7 @@ export default function InstructorVehicleHealth() {
   const [activeTab, setActiveTab] = useState("compliance");
   const [linkingDevice, setLinkingDevice] = useState<TraccarDeviceHealth | null>(null);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<VehicleToEdit | null>(null);
 
   const handleRefresh = () => {
     refetch();
@@ -186,7 +188,11 @@ export default function InstructorVehicleHealth() {
               </div>
             ) : (
               vehicles.map(vehicle => (
-                <VehicleFleetCard key={vehicle.id} vehicle={vehicle} />
+                <VehicleFleetCard 
+                  key={vehicle.id} 
+                  vehicle={vehicle} 
+                  onEdit={(v) => setEditingVehicle(v)}
+                />
               ))
             )}
           </TabsContent>
@@ -236,6 +242,14 @@ export default function InstructorVehicleHealth() {
       <AddVehicleDialog
         open={showAddVehicle}
         onOpenChange={setShowAddVehicle}
+        onSuccess={() => refetch()}
+      />
+
+      {/* Edit Vehicle Dialog */}
+      <EditVehicleDialog
+        vehicle={editingVehicle}
+        open={!!editingVehicle}
+        onOpenChange={(open) => !open && setEditingVehicle(null)}
         onSuccess={() => refetch()}
       />
     </InstructorPortalLayout>
