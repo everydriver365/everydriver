@@ -13,9 +13,10 @@ import {
   Receipt,
   Wallet,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Users
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,7 +27,15 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths } from "date-fns";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+
+// New redesigned components
+import { MoneyHeroCard } from "@/components/instructor/money/MoneyHeroCard";
+import { MoneyActionGrid } from "@/components/instructor/money/MoneyActionGrid";
+import { MoneyQuickStats } from "@/components/instructor/money/MoneyQuickStats";
+import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
+import { RecentPaymentsCard } from "@/components/instructor/money/RecentPaymentsCard";
+import { GlassCard } from "@/components/ui/GlassCard";
 
 interface EarningsSummary {
   thisWeek: number;
@@ -47,6 +56,8 @@ export default function InstructorPay() {
   const { instructor: authInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   const isMobile = useIsMobile();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "overview";
   
   const [earnings, setEarnings] = useState<EarningsSummary>({
     thisWeek: 0,
@@ -150,11 +161,6 @@ export default function InstructorPay() {
     }
   };
 
-  // Calculate month-over-month change
-  const monthChange = earnings.lastMonth > 0 
-    ? Math.round(((earnings.thisMonth - earnings.lastMonth) / earnings.lastMonth) * 100)
-    : earnings.thisMonth > 0 ? 100 : 0;
-
   if (!instructorId) {
     return (
       <InstructorPortalLayout>
@@ -165,235 +171,128 @@ export default function InstructorPay() {
     );
   }
 
-  // Mobile Layout
+  // Mobile Layout - Completely redesigned
   if (isMobile) {
     return (
       <InstructorPortalLayout>
-        <div className="space-y-4 pb-4">
-          {/* Hero Stats Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/80 p-5 text-primary-foreground shadow-lg"
-          >
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-            
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-xs text-primary-foreground/70 uppercase tracking-wider">This Month</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">£{earnings.thisMonth}</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  {monthChange !== 0 && (
-                    <Badge 
-                      variant="secondary" 
-                      className={`text-xs ${monthChange >= 0 ? 'bg-emerald-500/20 text-emerald-100' : 'bg-red-500/20 text-red-100'}`}
-                    >
-                      {monthChange >= 0 ? <ArrowUpRight className="h-3 w-3 mr-0.5" /> : <ArrowDownRight className="h-3 w-3 mr-0.5" />}
-                      {Math.abs(monthChange)}%
-                    </Badge>
-                  )}
-                  <span className="text-xs text-primary-foreground/60">vs last month</span>
-                </div>
-              </div>
-              
-              {/* Mini stats row */}
-              <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/10">
-                <div>
-                  <p className="text-[10px] text-primary-foreground/60 uppercase">This Week</p>
-                  <p className="text-lg font-semibold">£{earnings.thisWeek}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-primary-foreground/60 uppercase">Hours</p>
-                  <p className="text-lg font-semibold">{earnings.hoursThisMonth}h</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-primary-foreground/60 uppercase">Rate</p>
-                  <p className="text-lg font-semibold">£{hourlyRate}</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+        <div className="space-y-4 pb-24">
+          {/* Hero Card with animated progress ring */}
+          <MoneyHeroCard
+            thisMonth={earnings.thisMonth}
+            lastMonth={earnings.lastMonth}
+            thisWeek={earnings.thisWeek}
+            hoursThisMonth={earnings.hoursThisMonth}
+            hourlyRate={hourlyRate}
+            isLoading={loading}
+          />
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button
-                onClick={() => setPaymentModalOpen(true)}
-                className="w-full h-auto p-4 flex flex-col items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg"
-              >
-                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                  <QrCode className="h-5 w-5" />
-                </div>
-                <span className="text-sm font-medium">Take Payment</span>
-              </Button>
-            </motion.div>
+          {/* Quick Stats Chips */}
+          <MoneyQuickStats
+            thisWeek={earnings.thisWeek}
+            thisMonth={earnings.thisMonth}
+            lastMonth={earnings.lastMonth}
+            hoursThisMonth={earnings.hoursThisMonth}
+            hourlyRate={hourlyRate}
+          />
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link to="/instructor/accounts">
-                <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-md transition-shadow">
-                  <CardContent className="p-4 flex flex-col items-center gap-2">
-                    <div className="h-10 w-10 rounded-full bg-violet-500/15 flex items-center justify-center">
-                      <Wallet className="h-5 w-5 text-violet-600" />
-                    </div>
-                    <span className="text-sm font-medium text-foreground">Accounts</span>
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link to="/instructor/expenses">
-                <Card className="h-full bg-card/80 backdrop-blur-sm border-border/50 hover:shadow-md transition-shadow">
-                  <CardContent className="p-4 flex flex-col items-center gap-2">
-                    <div className="h-10 w-10 rounded-full bg-rose-500/15 flex items-center justify-center">
-                      <Receipt className="h-5 w-5 text-rose-500" />
-                    </div>
-                    <span className="text-sm font-medium text-foreground">Expenses</span>
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Card className="h-full bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0 shadow-lg">
-                <CardContent className="p-4 flex flex-col items-center gap-2">
-                  <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center">
-                    <Gift className="h-5 w-5" />
-                  </div>
-                  <span className="text-sm font-medium">£{earnings.bonusEarned}</span>
-                  <span className="text-[10px] text-white/70">Bonus Earned</span>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
+          {/* Bento Action Grid */}
+          <MoneyActionGrid
+            bonusEarned={earnings.bonusEarned}
+            onTakePayment={() => setPaymentModalOpen(true)}
+          />
 
           {/* Tabbed Content */}
-          <Tabs defaultValue="history" className="w-full">
-            <TabsList className="w-full grid grid-cols-2 h-11">
-              <TabsTrigger value="history" className="gap-1.5 text-sm">
+          <Tabs defaultValue={defaultTab} className="w-full">
+            <TabsList className="w-full grid grid-cols-3 h-12 bg-muted/50 backdrop-blur-sm">
+              <TabsTrigger value="overview" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <TrendingUp className="h-4 w-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-1.5 text-xs data-[state=active]:bg-background">
                 <History className="h-4 w-4" />
                 History
               </TabsTrigger>
-              <TabsTrigger value="details" className="gap-1.5 text-sm">
-                <TrendingUp className="h-4 w-4" />
-                Details
+              <TabsTrigger value="balances" className="gap-1.5 text-xs data-[state=active]:bg-background">
+                <Users className="h-4 w-4" />
+                Balances
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="history" className="mt-3">
-              <PaymentHistory instructorId={instructorId} limit={15} />
+            <TabsContent value="overview" className="mt-4 space-y-4">
+              {/* Recent Payments */}
+              <GlassCard className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <Receipt className="h-4 w-4 text-primary" />
+                    Recent Payments
+                  </h3>
+                  <Link 
+                    to="/instructor/pay?tab=history"
+                    className="text-xs text-primary font-medium"
+                  >
+                    See all
+                  </Link>
+                </div>
+                <RecentPaymentsCard instructorId={instructorId} limit={4} />
+              </GlassCard>
+
+              {/* Earnings Breakdown */}
+              <GlassCard className="p-4">
+                <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
+                  <PoundSterling className="h-4 w-4 text-primary" />
+                  Earnings Breakdown
+                </h3>
+                
+                <div className="space-y-2.5">
+                  {[
+                    { label: "This Week", value: earnings.thisWeek, icon: Calendar },
+                    { label: "This Month", value: earnings.thisMonth, icon: TrendingUp, highlight: true },
+                    { label: "Last Month", value: earnings.lastMonth, icon: History },
+                    { label: "Hours This Month", value: `${earnings.hoursThisMonth}h`, icon: Clock, isHours: true },
+                    { label: "Hourly Rate", value: `£${hourlyRate}/hr`, icon: CreditCard, isRate: true },
+                  ].map((item, index) => (
+                    <motion.div
+                      key={item.label}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center justify-between py-2.5 border-b border-border/50 last:border-0"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-lg bg-muted/50 flex items-center justify-center">
+                          <item.icon className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <span className="text-sm text-muted-foreground">{item.label}</span>
+                      </div>
+                      <span className={`font-semibold ${item.highlight ? 'text-primary' : ''}`}>
+                        {item.isHours || item.isRate ? item.value : `£${item.value}`}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </GlassCard>
             </TabsContent>
 
-            <TabsContent value="details" className="mt-3 space-y-3">
-              {/* Earnings Breakdown */}
-              <Card>
-                <CardContent className="p-4 space-y-3">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <PoundSterling className="h-4 w-4 text-primary" />
-                    Earnings Breakdown
-                  </h3>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between py-2.5 border-b">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">This Week</span>
-                      </div>
-                      <span className="font-semibold">£{earnings.thisWeek}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2.5 border-b">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">This Month</span>
-                      </div>
-                      <span className="font-semibold text-primary">£{earnings.thisMonth}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2.5 border-b">
-                      <div className="flex items-center gap-2">
-                        <History className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">Last Month</span>
-                      </div>
-                      <span className="font-semibold">£{earnings.lastMonth}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2.5 border-b">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">Hours This Month</span>
-                      </div>
-                      <span className="font-semibold">{earnings.hoursThisMonth}h</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2.5">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">Hourly Rate</span>
-                      </div>
-                      <span className="font-semibold">£{hourlyRate}/hr</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="history" className="mt-4">
+              <PaymentHistory instructorId={instructorId} limit={20} />
+            </TabsContent>
 
-              {/* Quick Links */}
-              <Card>
-                <CardContent className="p-0">
+            <TabsContent value="balances" className="mt-4">
+              <GlassCard className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    Pupil Balances
+                  </h3>
                   <Link 
-                    to="/instructor/accounts" 
-                    className="flex items-center justify-between p-4 border-b hover:bg-muted/50 transition-colors"
+                    to="/instructor/accounts"
+                    className="text-xs text-primary font-medium"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-violet-500/15 flex items-center justify-center">
-                        <Wallet className="h-4 w-4 text-violet-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">Income & Expenses</p>
-                        <p className="text-xs text-muted-foreground">View full accounts breakdown</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    Full accounts
                   </Link>
-                  <Link 
-                    to="/instructor/expenses" 
-                    className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-rose-500/15 flex items-center justify-center">
-                        <Receipt className="h-4 w-4 text-rose-500" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">Expense Tracker</p>
-                        <p className="text-xs text-muted-foreground">Log fuel, insurance & more</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </Link>
-                </CardContent>
-              </Card>
+                </div>
+                <PupilBalancesList pupils={pupils} limit={10} />
+              </GlassCard>
             </TabsContent>
           </Tabs>
         </div>
@@ -411,77 +310,130 @@ export default function InstructorPay() {
     );
   }
 
-  // Desktop Layout (existing)
+  // Desktop Layout (keep existing)
   return (
     <InstructorPortalLayout>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <CreditCard className="h-5 w-5 text-primary" />
-            Earnings & Payments
+            Payments & Earnings
           </h1>
+          <Button onClick={() => setPaymentModalOpen(true)}>
+            <QrCode className="mr-2 h-4 w-4" />
+            Take Payment
+          </Button>
         </div>
 
-        <Button 
-          className="w-full gap-2" 
-          size="lg"
-          onClick={() => setPaymentModalOpen(true)}
-        >
-          <CreditCard className="h-5 w-5" />
-          Take Payment (Show QR)
-        </Button>
-
-        <div className="grid grid-cols-2 gap-3">
+        {/* Desktop Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Calendar className="h-4 w-4" />
-                <span className="text-xs">This Week</span>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <PoundSterling className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">This Month</p>
+                  <p className="text-xl font-bold">£{earnings.thisMonth}</p>
+                </div>
               </div>
-              <div className="text-2xl font-bold">£{earnings.thisWeek}</div>
             </CardContent>
           </Card>
-          <Card className="bg-primary text-primary-foreground">
+          <Card>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-primary-foreground/70 mb-1">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-xs">This Month</span>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">This Week</p>
+                  <p className="text-xl font-bold">£{earnings.thisWeek}</p>
+                </div>
               </div>
-              <div className="text-2xl font-bold">£{earnings.thisMonth}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Hours This Month</p>
+                  <p className="text-xl font-bold">{earnings.hoursThisMonth}h</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <Gift className="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Bonus Earned</p>
+                  <p className="text-xl font-bold">£{earnings.bonusEarned}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-white/80 mb-1">
-              <Gift className="h-4 w-4" />
-              <span className="text-xs">Bonus Earned</span>
-            </div>
-            <div className="text-2xl font-bold">£{earnings.bonusEarned}</div>
-            <p className="text-xs text-white/70 mt-1">£50 per completed course</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <h3 className="font-semibold">Earnings Details</h3>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground">Hourly Rate</span>
-              <span className="font-semibold">£{hourlyRate}/hr</span>
-            </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground">Hours This Month</span>
-              <span className="font-semibold">{earnings.hoursThisMonth} hrs</span>
-            </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="text-muted-foreground">Last Month</span>
-              <span className="font-semibold">£{earnings.lastMonth}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <PaymentHistory instructorId={instructorId} limit={15} />
+        {/* Desktop Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Payment History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PaymentHistory instructorId={instructorId} limit={10} />
+              </CardContent>
+            </Card>
+          </div>
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Pupil Balances
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PupilBalancesList pupils={pupils} limit={5} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 space-y-2">
+                <Link 
+                  to="/instructor/accounts"
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Wallet className="h-5 w-5 text-violet-600" />
+                    <span className="font-medium">Full Accounts</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </Link>
+                <Link 
+                  to="/instructor/expenses"
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Receipt className="h-5 w-5 text-rose-500" />
+                    <span className="font-medium">Expenses</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       <PaymentQRModal 
