@@ -562,35 +562,6 @@ export function InstructorMobileHome({
       )}
 
 
-      {/* Radial FAB Menu */}
-      <RadialFAB
-        onAddNote={() => {
-          triggerHaptic("selection");
-          navigate("/instructor/pupils");
-        }}
-        onNavigate={() => {
-          triggerHaptic("selection");
-          if (nextLesson?.pickupPostcode) {
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nextLesson.pickupPostcode)}`;
-            window.open(mapsUrl, "_blank");
-          } else {
-            navigate("/instructor/traccar");
-          }
-        }}
-        onMessage={() => {
-          triggerHaptic("selection");
-          if (nextLesson?.pupilPhone) {
-            window.location.href = `sms:${nextLesson.pupilPhone}`;
-          } else {
-            navigate("/instructor/messages");
-          }
-        }}
-        onLogBreak={() => {
-          triggerHaptic("selection");
-          navigate("/instructor/mileage");
-        }}
-      />
-
       {/* Floating Session Bar - shows during active tracking */}
       <FloatingSessionBar instructorId={instructorId} />
 
