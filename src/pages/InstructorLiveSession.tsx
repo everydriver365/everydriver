@@ -816,11 +816,18 @@ export default function InstructorLiveSession() {
               <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2" onClick={() => navigate("/instructor")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <img 
-                src="/everydriver-logo-instructor.png"
-                alt="EveryDriver" 
-                className="h-6 object-contain"
-              />
+              <div className="flex flex-col">
+                <img 
+                  src="/everydriver-logo-instructor.png"
+                  alt="EveryDriver" 
+                  className="h-6 object-contain"
+                />
+                {device?.device_name && (
+                  <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
+                    Tracking: {device.device_name}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {isReconnecting ? (
