@@ -205,7 +205,8 @@ export default function InstructorLiveSession() {
 
   // Store device ID in a ref to avoid re-creating subscriptions when device object updates
   const deviceIdRef = React.useRef<string | null>(null);
-  // Track last seen time to prevent duplicate updates causing flickering
+  // Track a snapshot of key fields to prevent duplicate updates causing flickering,
+  // while still updating when speed/road/coords change.
   const lastSeenRef = React.useRef<string | null>(null);
 
   // Realtime subscription to gps_devices for instant updates
@@ -233,9 +234,11 @@ export default function InstructorLiveSession() {
       if (data) {
         const typedDevice = data as GPSDevice;
         
+        const snapshot = `${typedDevice.last_seen_at ?? ""}|${typedDevice.last_latitude ?? ""}|${typedDevice.last_longitude ?? ""}|${typedDevice.last_speed_kmh ?? ""}|${typedDevice.last_road_name ?? ""}|${typedDevice.last_speed_limit_kmh ?? ""}`;
+
         // Only update state if data actually changed (prevents flickering)
-        if (typedDevice.last_seen_at !== lastSeenRef.current) {
-          lastSeenRef.current = typedDevice.last_seen_at;
+        if (snapshot !== lastSeenRef.current) {
+          lastSeenRef.current = snapshot;
           setDevice(typedDevice);
           if (typedDevice.last_speed_limit_kmh !== undefined) {
             setSpeedLimitKmh(typedDevice.last_speed_limit_kmh);
@@ -273,9 +276,11 @@ export default function InstructorLiveSession() {
         },
         (payload) => {
           const newDevice = payload.new as GPSDevice;
+          const snapshot = `${newDevice.last_seen_at ?? ""}|${newDevice.last_latitude ?? ""}|${newDevice.last_longitude ?? ""}|${newDevice.last_speed_kmh ?? ""}|${newDevice.last_road_name ?? ""}|${newDevice.last_speed_limit_kmh ?? ""}`;
+
           // Only update if data actually changed (prevents flickering)
-          if (newDevice.last_seen_at !== lastSeenRef.current) {
-            lastSeenRef.current = newDevice.last_seen_at;
+          if (snapshot !== lastSeenRef.current) {
+            lastSeenRef.current = snapshot;
             setDevice(newDevice);
             if (newDevice.last_speed_limit_kmh !== undefined) {
               setSpeedLimitKmh(newDevice.last_speed_limit_kmh);
