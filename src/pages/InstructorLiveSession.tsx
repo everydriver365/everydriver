@@ -957,6 +957,16 @@ export default function InstructorLiveSession() {
                     </div>
                   </div>
 
+                  {/* Offline warning */}
+                  {!isConnected && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800">
+                      <WifiOff className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        GPS offline. Start anyway to record when it reconnects.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Action Buttons - Side by Side */}
                   <div className="flex gap-2">
                     {/* Main Start Button */}
@@ -966,7 +976,7 @@ export default function InstructorLiveSession() {
                         !selectedPupilId ? "bg-amber-600 hover:bg-amber-700" : ""
                       }`}
                       onClick={() => startSession(selectedPupilId ? "practice" : "test")}
-                      disabled={isStarting || !isConnected}
+                      disabled={isStarting}
                     >
                       {isStarting ? (
                         <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
@@ -986,7 +996,7 @@ export default function InstructorLiveSession() {
                       size="lg"
                       className="h-12 px-4 font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700"
                       onClick={() => setShowDrivingTestDialog(true)}
-                      disabled={isStarting || !isConnected}
+                      disabled={isStarting}
                     >
                       <CheckCircle className="h-5 w-5" />
                     </Button>
