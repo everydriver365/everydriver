@@ -124,16 +124,15 @@ export default function InstructorLiveSession() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // Poll GPS server while this page is open so we can keep `last_seen_at`
-  // fresh and accurately reflect connectivity even before a session starts.
+  // Poll GPS server aggressively while this page is open for instant tracking
   // Only poll when page is visible to reduce background churn on mobile
   const isSessionActive = !!device?.current_session_id;
   
-  // Use fast 3-second polling during active sessions for near real-time tracking
-  // Use slower 15-second polling when idle to check connection status
+  // Use aggressive 2-second polling during active sessions for instant tracking
+  // Poll immediately when session starts, use slower polling when idle
   useGPSPoller({
     enabled: !!device?.id && isPageVisible,
-    intervalMs: isSessionActive ? 3000 : 15000,
+    intervalMs: isSessionActive ? 2000 : 10000,
     onError: handlePollerError,
   });
 
