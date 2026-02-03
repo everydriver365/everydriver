@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
@@ -677,12 +677,24 @@ export default function InstructorSettings() {
           <CategoryHeader category={settingsCategories[4]} />
           <Collapsible open={isCategoryOpen("tracking")}>
             <CollapsibleContent className="space-y-3 pt-1">
-              {/* Traccar GPS Tracking Section */}
+              {/* Mobile GPS Tracking Section */}
+              <SettingsTile 
+                id="gps-mobile" 
+                icon={Satellite} 
+                title="Mobile GPS Tracking" 
+                description="Link your GPSgate Tracker app"
+                iconColor="text-cyan-600"
+                iconBg="bg-cyan-100 dark:bg-cyan-900/30"
+              >
+                <InstructorDetailsEditor instructorId={instructorId} defaultTab="gps" />
+              </SettingsTile>
+
+              {/* Hardware GPS Tracking Section */}
               <SettingsTile 
                 id="traccar" 
                 icon={Navigation} 
-                title="GPS Tracker Setup" 
-                description="Configure Traccar for background tracking"
+                title="Vehicle GPS Device" 
+                description="OBD-II hardware tracker setup"
                 iconColor="text-amber-600"
                 iconBg="bg-amber-100 dark:bg-amber-900/30"
               >

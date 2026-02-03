@@ -40,9 +40,10 @@ interface InstructorDetails {
 
 interface InstructorDetailsEditorProps {
   instructorId: string;
+  defaultTab?: "vehicle" | "qualifications" | "social" | "gps";
 }
 
-export function InstructorDetailsEditor({ instructorId }: InstructorDetailsEditorProps) {
+export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }: InstructorDetailsEditorProps) {
   const [details, setDetails] = useState<InstructorDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -180,8 +181,93 @@ export function InstructorDetailsEditor({ instructorId }: InstructorDetailsEdito
 
   if (!details) return null;
 
+  // If defaultTab is gps, hide the tabs and just show the GPS content
+  if (defaultTab === "gps") {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Satellite className="h-4 w-4" />
+            GPSgate Username
+          </Label>
+          <Input
+            placeholder="e.g. instructor_john"
+            value={details.gpsgate_username || ""}
+            onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Your GPSgate Tracker app username
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>GPSgate User ID (optional)</Label>
+          <Input
+            type="number"
+            placeholder="e.g. 12345"
+            value={details.gpsgate_user_id || ""}
+            onChange={(e) => setDetails({ 
+              ...details, 
+              gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null 
+            })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Leave blank to auto-discover from username
+          </p>
+        </div>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium">Connection Status</Label>
+                <div className="flex items-center gap-2">
+                  {gpsStatus.isConnected ? (
+                    <>
+                      <Wifi className="h-4 w-4 text-primary" />
+                      <span className="text-sm text-primary">Connected</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Offline</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              {gpsStatus.lastSeenAt && (
+                <p className="text-xs text-muted-foreground">
+                  Last update: {formatDistanceToNow(new Date(gpsStatus.lastSeenAt), { addSuffix: true })}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Button 
+          variant="outline" 
+          onClick={testConnection} 
+          disabled={testingConnection}
+          className="w-full"
+        >
+          {testingConnection ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4 mr-2" />
+          )}
+          Test Connection
+        </Button>
+
+        <Button onClick={handleSave} disabled={saving} className="w-full">
+          {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          Save GPS Settings
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <Tabs defaultValue="vehicle" className="w-full">
+    <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="vehicle">Vehicle</TabsTrigger>
         <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
