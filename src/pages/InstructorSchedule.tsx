@@ -222,8 +222,6 @@ export default function InstructorSchedule() {
         }}
       />
 
-      {/* Floating Action Button for mobile quick-add */}
-      <ScheduleFAB onClick={() => setFabLessonSheetOpen(true)} />
 
       {/* FAB Add Lesson Sheet */}
       <AddLessonSheet
