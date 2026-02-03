@@ -55,7 +55,7 @@ import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal
 import { PupilPickerDialog } from "@/components/instructor/PupilPickerDialog";
 import { TestResultsHistory, DrivingTestReportForm } from "@/components/instructor/driving-test";
 import { useActiveTrackingPupils } from "@/hooks/useActiveTrackingPupils";
-import { UpcomingLessonMap } from "@/components/instructor/UpcomingLessonMap";
+import { NextLessonTile } from "@/components/instructor/NextLessonTile";
 
 interface Pupil {
   id: string;
@@ -449,7 +449,8 @@ export default function InstructorPupils() {
           </div>
         </div>
 
-
+        {/* Next Lesson Tile */}
+        <NextLessonTile instructorId={instructorId} />
         {/* Search and Add Button Row - Matching reference */}
         <div className="flex gap-2">
           <Select value={activeTab} onValueChange={(v) => setActiveTab(v as "all" | PupilStatus)}>
