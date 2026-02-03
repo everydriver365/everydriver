@@ -24,6 +24,25 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  const processData = useCallback((data: any) => {
+    if (!data) return;
+    
+    const lastSeen = data.last_seen_at ? new Date(data.last_seen_at) : null;
+    const now = new Date();
+    // Use 5 minute threshold (300000ms) to match useGPSConnectionStatus
+    const isRecent = lastSeen ? (now.getTime() - lastSeen.getTime()) < 300000 : false;
+
+    setPosition({
+      latitude: data.last_latitude ? Number(data.last_latitude) : null,
+      longitude: data.last_longitude ? Number(data.last_longitude) : null,
+      heading: data.last_heading ? Number(data.last_heading) : null,
+      speedKmh: data.last_speed_kmh ? Number(data.last_speed_kmh) : null,
+      roadName: data.last_road_name || null,
+      lastSeenAt: data.last_seen_at || null,
+      isActive: isRecent && data.is_active,
+    });
+  }, []);
+
   const fetchPosition = useCallback(async () => {
     if (!instructorId) {
       setIsLoading(false);
@@ -40,34 +59,41 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
         .maybeSingle();
 
       if (data) {
-        const lastSeen = data.last_seen_at ? new Date(data.last_seen_at) : null;
-        const now = new Date();
-        // Use 5 minute threshold (300000ms) to match useGPSConnectionStatus
-        const isRecent = lastSeen ? (now.getTime() - lastSeen.getTime()) < 300000 : false;
-
-        setPosition({
-          latitude: data.last_latitude ? Number(data.last_latitude) : null,
-          longitude: data.last_longitude ? Number(data.last_longitude) : null,
-          heading: data.last_heading ? Number(data.last_heading) : null,
-          speedKmh: data.last_speed_kmh ? Number(data.last_speed_kmh) : null,
-          roadName: data.last_road_name || null,
-          lastSeenAt: data.last_seen_at || null,
-          isActive: isRecent && data.is_active,
-        });
+        processData(data);
       }
     } catch (err) {
       console.error("Error fetching instructor position:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [instructorId]);
+  }, [instructorId, processData]);
 
   useEffect(() => {
     fetchPosition();
-    // Poll every 1 second for real-time updates
-    const interval = setInterval(fetchPosition, 1000);
-    return () => clearInterval(interval);
-  }, [fetchPosition]);
+
+    if (!instructorId) return;
+
+    // Subscribe to realtime updates for instant tracking
+    const channel = supabase
+      .channel(`gps-position-${instructorId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "gps_devices",
+          filter: `instructor_id=eq.${instructorId}`,
+        },
+        (payload) => {
+          processData(payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [instructorId, fetchPosition, processData]);
 
   return { ...position, isLoading };
 }
