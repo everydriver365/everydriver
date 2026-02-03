@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, subMonths, parseISO } from "date-fns";
-import { TrendingUp, Calendar, PoundSterling, ChevronLeft, ChevronRight, Users, Clock } from "lucide-react";
+import { format, startOfMonth, endOfMonth, subMonths, parseISO, startOfYear } from "date-fns";
+import { TrendingUp, Calendar, PoundSterling, ChevronLeft, ChevronRight, Users, Clock, Banknote } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,31 @@ interface MonthlyStats {
   paymentCount: number;
 }
 
+interface YearlyStats {
+  financialYearTotal: number;
+  yearToDateTotal: number;
+  financialYearLabel: string;
+}
+
+// Get UK financial year start (April 6th)
+function getFinancialYearStart(date: Date): Date {
+  const year = date.getFullYear();
+  const april6th = new Date(year, 3, 6); // April is month 3 (0-indexed)
+  
+  if (date >= april6th) {
+    return april6th;
+  } else {
+    return new Date(year - 1, 3, 6);
+  }
+}
+
+function getFinancialYearLabel(date: Date): string {
+  const fyStart = getFinancialYearStart(date);
+  const startYear = fyStart.getFullYear();
+  const endYear = startYear + 1;
+  return `${startYear}/${endYear.toString().slice(-2)}`;
+}
+
 export default function InstructorIncome() {
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id;
@@ -31,13 +56,58 @@ export default function InstructorIncome() {
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [incomeRecords, setIncomeRecords] = useState<IncomeRecord[]>([]);
   const [stats, setStats] = useState<MonthlyStats | null>(null);
+  const [yearlyStats, setYearlyStats] = useState<YearlyStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (instructorId) {
       fetchIncomeData();
+      fetchYearlyData();
     }
   }, [instructorId, selectedMonth]);
+
+  const fetchYearlyData = async () => {
+    if (!instructorId) return;
+
+    try {
+      const now = new Date();
+      
+      // Financial year (April 6 - April 5)
+      const fyStart = getFinancialYearStart(now);
+      const fyStartStr = format(fyStart, "yyyy-MM-dd");
+      
+      // Calendar year to date (Jan 1)
+      const calendarYearStart = format(startOfYear(now), "yyyy-MM-dd");
+      const today = format(now, "yyyy-MM-dd");
+
+      // Fetch financial year payments
+      const { data: fyPayments } = await supabase
+        .from("payment_history")
+        .select("amount")
+        .eq("instructor_id", instructorId)
+        .gte("recorded_at", `${fyStartStr}T00:00:00`)
+        .lte("recorded_at", `${today}T23:59:59`);
+
+      // Fetch calendar year payments
+      const { data: ytdPayments } = await supabase
+        .from("payment_history")
+        .select("amount")
+        .eq("instructor_id", instructorId)
+        .gte("recorded_at", `${calendarYearStart}T00:00:00`)
+        .lte("recorded_at", `${today}T23:59:59`);
+
+      const financialYearTotal = fyPayments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+      const yearToDateTotal = ytdPayments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
+
+      setYearlyStats({
+        financialYearTotal,
+        yearToDateTotal,
+        financialYearLabel: getFinancialYearLabel(now),
+      });
+    } catch (error) {
+      console.error("Error fetching yearly data:", error);
+    }
+  };
 
   const fetchIncomeData = async () => {
     if (!instructorId) return;
@@ -132,6 +202,43 @@ export default function InstructorIncome() {
             <h1 className="text-xl font-bold">Income</h1>
           </div>
           <p className="text-sm text-muted-foreground mt-1">Track your earnings</p>
+        </div>
+
+        {/* Financial Year & YTD Stats */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/30">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Banknote className="h-4 w-4 text-amber-600" />
+                <span className="text-xs text-muted-foreground">FY {yearlyStats?.financialYearLabel}</span>
+              </div>
+              {yearlyStats ? (
+                <p className="text-xl font-bold text-amber-600">
+                  {formatCurrency(yearlyStats.financialYearTotal)}
+                </p>
+              ) : (
+                <Skeleton className="h-7 w-24" />
+              )}
+              <p className="text-[10px] text-muted-foreground mt-0.5">Tax Year Total</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border-violet-500/30">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="h-4 w-4 text-violet-600" />
+                <span className="text-xs text-muted-foreground">{format(new Date(), "yyyy")}</span>
+              </div>
+              {yearlyStats ? (
+                <p className="text-xl font-bold text-violet-600">
+                  {formatCurrency(yearlyStats.yearToDateTotal)}
+                </p>
+              ) : (
+                <Skeleton className="h-7 w-24" />
+              )}
+              <p className="text-[10px] text-muted-foreground mt-0.5">Year to Date</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Month Selector */}
