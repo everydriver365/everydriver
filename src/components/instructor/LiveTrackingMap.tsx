@@ -265,6 +265,30 @@ export default function TraccarLiveMap({
     };
   }, [sessionId]);
 
+  // ========== Add points from props for instant tracking line ==========
+  // This catches position updates from polling before they hit the database
+  useEffect(() => {
+    if (!sessionId || latitude === null || longitude === null) return;
+    
+    const point: GPSPoint = {
+      lat: latitude,
+      lng: longitude,
+      speedKmh: speedKmh ?? undefined,
+    };
+    
+    const { isValid } = validatePoint(point, lastValidPointRef.current);
+    
+    if (isValid) {
+      // Check if this point is different from the last one in filteredPoints
+      const lastPoint = filteredPoints[filteredPoints.length - 1];
+      if (!lastPoint || lastPoint.lat !== latitude || lastPoint.lng !== longitude) {
+        setFilteredPoints((prev) => [...prev, point]);
+        lastValidPointRef.current = point;
+        setLivePosition({ lat: latitude, lng: longitude });
+      }
+    }
+  }, [sessionId, latitude, longitude, speedKmh]);
+
   // ========== Compute Marker Position (live > props) ==========
   const markerLat = livePosition?.lat ?? latitude;
   const markerLng = livePosition?.lng ?? longitude;
@@ -346,10 +370,10 @@ export default function TraccarLiveMap({
     ).addTo(map);
   }, [filteredPoints]);
 
-  // ========== Update Display Speed from Props ==========
+  // ========== Update Display Speed from Props - Instant ==========
   useEffect(() => {
-    // Only use prop speed when connected and not receiving realtime updates
-    if (isConnected && speedKmh !== null) {
+    // Use prop speed immediately for instant updates
+    if (speedKmh !== null && speedKmh !== undefined) {
       setDisplaySpeed(processSpeed(speedKmh));
     } else if (!isConnected) {
       setDisplaySpeed(0);
