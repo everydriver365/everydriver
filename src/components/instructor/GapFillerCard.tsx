@@ -287,18 +287,34 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                     <div className="flex flex-wrap gap-2 mb-3">
                       {gap.slots.map((slot) => {
                         const isSelected = selectedSlot?.id === slot.id;
+                        // Calculate duration
+                        const [startH, startM] = slot.startTime.split(":").map(Number);
+                        const [endH, endM] = slot.endTime.split(":").map(Number);
+                        const durationMins = (endH * 60 + endM) - (startH * 60 + startM);
+                        const hours = Math.floor(durationMins / 60);
+                        const mins = durationMins % 60;
+                        const duration = mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
+                        
                         return (
                           <button
                             key={slot.id}
                             onClick={() => handleSlotSelect(slot)}
                             className={cn(
-                              "px-3.5 py-2 rounded-lg text-sm font-medium transition-all",
+                              "px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
                               isSelected
                                 ? "bg-violet-600 text-white shadow-md shadow-violet-500/20"
                                 : "bg-card border border-border hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/30 text-foreground"
                             )}
                           >
-                            {slot.startTime}
+                            <span>{slot.startTime} - {slot.endTime}</span>
+                            <span className={cn(
+                              "text-xs px-1.5 py-0.5 rounded-full",
+                              isSelected
+                                ? "bg-white/20"
+                                : "bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                            )}>
+                              {duration}
+                            </span>
                           </button>
                         );
                       })}
