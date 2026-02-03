@@ -449,8 +449,6 @@ export default function InstructorPupils() {
           </div>
         </div>
 
-        {/* Upcoming Lesson Map */}
-        <UpcomingLessonMap instructorId={instructorId} />
 
         {/* Search and Add Button Row - Matching reference */}
         <div className="flex gap-2">
