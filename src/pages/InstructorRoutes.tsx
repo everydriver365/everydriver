@@ -28,7 +28,10 @@ import {
   Download,
   Share2,
   Building2,
-  Play
+  Play,
+  Satellite,
+  AlertTriangle,
+  TrendingUp
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -47,6 +50,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { GPSgateTripHistory } from "@/components/instructor/GPSgateTripHistory";
+import { GPSgateTripsTabContent } from "@/components/instructor/GPSgateTripsTabContent";
 
 interface SavedRoute {
   id: string;
@@ -498,8 +503,12 @@ export default function InstructorRoutes() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="gpsgate" className="text-blue-600">
+                <Satellite className="h-3 w-3 mr-1" />
+                GPS
+              </TabsTrigger>
               <TabsTrigger value="driving_test" className="text-emerald-600">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Tests
@@ -511,46 +520,55 @@ export default function InstructorRoutes() {
               <TabsTrigger value="practice">Practice</TabsTrigger>
             </TabsList>
 
-            <TabsContent value={activeTab} className="mt-4">
-              {loading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <Card key={i}>
-                      <CardContent className="p-4">
-                        <div className="flex gap-4">
-                          <Skeleton className="w-28 h-16 rounded-md" />
-                          <div className="flex-1 space-y-2">
-                            <Skeleton className="h-5 w-32" />
-                            <Skeleton className="h-4 w-48" />
-                            <Skeleton className="h-4 w-24" />
+            {/* GPSgate Trips Tab Content */}
+            {activeTab === "gpsgate" ? (
+              <div className="mt-4">
+                {instructor?.id && (
+                  <GPSgateTripsTabContent instructorId={instructor.id} />
+                )}
+              </div>
+            ) : (
+              <TabsContent value={activeTab} className="mt-4">
+                {loading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(i => (
+                      <Card key={i}>
+                        <CardContent className="p-4">
+                          <div className="flex gap-4">
+                            <Skeleton className="w-28 h-16 rounded-md" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-5 w-32" />
+                              <Skeleton className="h-4 w-48" />
+                              <Skeleton className="h-4 w-24" />
+                            </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : filteredRoutes.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Route className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <h3 className="font-medium mb-1">No routes found</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {activeTab === "driving_test" 
-                        ? "Use the 'Driving Test' button to record actual driving test routes"
-                        : activeTab === "test" 
-                        ? "Use the 'Test Route' option to save practice test routes"
-                        : "Complete trips to save routes here"}
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-3">
-                  {filteredRoutes.map(route => (
-                    <RouteCard key={route.id} route={route} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : filteredRoutes.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <Route className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                      <h3 className="font-medium mb-1">No routes found</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {activeTab === "driving_test" 
+                          ? "Use the 'Driving Test' button to record actual driving test routes"
+                          : activeTab === "test" 
+                          ? "Use the 'Test Route' option to save practice test routes"
+                          : "Complete trips to save routes here"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredRoutes.map(route => (
+                      <RouteCard key={route.id} route={route} />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </div>
