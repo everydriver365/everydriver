@@ -61,7 +61,7 @@ export function GapFillerCardSkeleton({ className = "" }: { className?: string }
 export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFillerCardProps) {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<GapSlot | null>(null);
+  const [selectedSlots, setSelectedSlots] = useState<Set<string>>(new Set());
   const [selectedPupils, setSelectedPupils] = useState<Map<string, SelectedPupil>>(new Map());
   const [showPreview, setShowPreview] = useState(false);
 
@@ -76,8 +76,18 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
 
   const handleSlotSelect = (slot: GapSlot) => {
     haptics.light();
-    setSelectedSlot(selectedSlot?.id === slot.id ? null : slot);
+    setSelectedSlots(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(slot.id)) {
+        newSet.delete(slot.id);
+      } else {
+        newSet.add(slot.id);
+      }
+      return newSet;
+    });
   };
+
+  const isSlotSelected = (slotId: string) => selectedSlots.has(slotId);
 
   const togglePupilSelection = (pupil: SuggestedPupil, slot: GapSlot, formattedDate: string) => {
     if (!pupil.phone) return;
@@ -279,7 +289,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                     {/* Time slots - 2 per row */}
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       {gap.slots.map((slot) => {
-                        const isSelected = selectedSlot?.id === slot.id;
+                        const isSelected = isSlotSelected(slot.id);
                         
                         return (
                           <button
@@ -298,9 +308,9 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                       })}
                     </div>
 
-                    {/* Pupils for selected slot */}
+                    {/* Pupils for selected slots */}
                     <AnimatePresence>
-                      {selectedSlot && gap.slots.some((s) => s.id === selectedSlot.id) && (
+                      {gap.slots.some((s) => isSlotSelected(s.id)) && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
@@ -308,35 +318,42 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                           className="space-y-2 pt-3 border-t border-border/50"
                         >
                           <p className="text-xs text-muted-foreground font-medium">
-                            Select pupils to message:
+                            Select pupils to message for {selectedSlots.size} slot{selectedSlots.size > 1 ? 's' : ''}:
                           </p>
                           <div className="grid gap-2">
                             {gap.suggestedPupils.map((pupil) => {
-                              const isSelected = isPupilSelected(pupil.id, selectedSlot.id);
+                              // Check if pupil is selected for any of the selected slots
+                              const selectedSlotsForGap = gap.slots.filter(s => isSlotSelected(s.id));
+                              const isAnySelected = selectedSlotsForGap.some(slot => 
+                                isPupilSelected(pupil.id, slot.id)
+                              );
                               return (
                                 <button
                                   key={pupil.id}
-                                  onClick={() =>
-                                    togglePupilSelection(pupil, selectedSlot, gap.formattedDate)
-                                  }
+                                  onClick={() => {
+                                    // Toggle pupil for all selected slots
+                                    selectedSlotsForGap.forEach(slot => {
+                                      togglePupilSelection(pupil, slot, gap.formattedDate);
+                                    });
+                                  }}
                                   disabled={!pupil.phone}
                                   className={cn(
                                     "w-full flex items-center gap-3 rounded-xl p-3 transition-all",
-                                    isSelected
-                                      ? "bg-violet-600 text-white shadow-md"
-                                      : "bg-card border border-border hover:border-violet-300",
+                                    isAnySelected
+                                      ? "bg-primary text-primary-foreground shadow-md"
+                                      : "bg-card border border-border hover:border-primary/50",
                                     !pupil.phone && "opacity-50 cursor-not-allowed"
                                   )}
                                 >
                                   <div
                                     className={cn(
                                       "w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold",
-                                      isSelected
-                                        ? "bg-white/20 text-white"
-                                        : "bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                      isAnySelected
+                                        ? "bg-primary-foreground/20 text-primary-foreground"
+                                        : "bg-primary/10 text-primary"
                                     )}
                                   >
-                                    {isSelected ? (
+                                    {isAnySelected ? (
                                       <Check className="h-4 w-4" />
                                     ) : (
                                       pupil.name
@@ -349,14 +366,14 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                                   <div className="flex-1 min-w-0 text-left">
                                     <p className={cn(
                                       "text-sm font-medium truncate",
-                                      isSelected ? "text-white" : "text-foreground"
+                                      isAnySelected ? "text-primary-foreground" : "text-foreground"
                                     )}>
                                       {pupil.name}
                                     </p>
                                     {pupil.isWaitlisted && (
                                       <span className={cn(
                                         "text-[10px] font-medium",
-                                        isSelected ? "text-white/80" : "text-violet-600 dark:text-violet-400"
+                                        isAnySelected ? "text-primary-foreground/80" : "text-primary"
                                       )}>
                                         On waitlist
                                       </span>
@@ -389,7 +406,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                   {selectedPupils.size > 0 && (
                     <Button
                       onClick={handleShowPreview}
-                      className="flex-1 gap-2 bg-violet-600 hover:bg-violet-700 text-white"
+                      className="flex-1 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       <Send className="h-4 w-4" />
                       Send ({selectedPupils.size})
