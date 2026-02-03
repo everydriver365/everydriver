@@ -26,13 +26,7 @@ export default function InstructorMessages() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Messages</h1>
-          <p className="text-muted-foreground">Chat with your pupils</p>
-        </div>
-        <InstructorInbox instructorId={instructor.id} />
-      </div>
+      <InstructorInbox instructorId={instructor.id} />
     </InstructorPortalLayout>
   );
 }
