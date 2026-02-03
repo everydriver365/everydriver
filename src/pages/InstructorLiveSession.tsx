@@ -533,11 +533,35 @@ export default function InstructorLiveSession() {
 
     setIsStopping(true);
     try {
-      // Update telematics session
+      // Fetch route points for the path and speed calculation
+      const { data: gpsPoints } = await supabase
+        .from("telematics_gps_points")
+        .select("latitude, longitude, speed_kmh")
+        .eq("telematics_id", device.current_session_id)
+        .order("recorded_at", { ascending: true });
+
+      // Calculate avg/max speed from GPS points
+      let avgSpeedKmh: number | null = null;
+      let maxSpeedKmh: number | null = null;
+      
+      if (gpsPoints && gpsPoints.length > 0) {
+        const validSpeeds = gpsPoints
+          .map(p => p.speed_kmh)
+          .filter((s): s is number => s != null && s > 0);
+        
+        if (validSpeeds.length > 0) {
+          avgSpeedKmh = validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length;
+          maxSpeedKmh = Math.max(...validSpeeds);
+        }
+      }
+
+      // Update telematics session with end time and calculated speeds
       const { error: sessionError } = await supabase
         .from("lesson_telematics")
         .update({
           ended_at: new Date().toISOString(),
+          avg_speed_kmh: avgSpeedKmh,
+          max_speed_kmh: maxSpeedKmh,
         })
         .eq("id", device.current_session_id);
 
@@ -549,13 +573,6 @@ export default function InstructorLiveSession() {
         .select("total_distance_km, avg_speed_kmh, max_speed_kmh, started_at, ended_at")
         .eq("id", device.current_session_id)
         .single();
-
-      // Fetch route points for the path
-      const { data: gpsPoints } = await supabase
-        .from("telematics_gps_points")
-        .select("latitude, longitude")
-        .eq("telematics_id", device.current_session_id)
-        .order("recorded_at", { ascending: true });
 
       // Calculate duration
       let durationMinutes = null;
