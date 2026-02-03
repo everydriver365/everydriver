@@ -33,7 +33,7 @@ interface UseDrivingAlertsResult {
   currentWeather: CurrentWeather | null;
 }
 
-const CACHE_KEY = "driving_alerts_cache";
+const CACHE_KEY = "driving_alerts_cache_v2"; // v2: includes currentWeather
 const CACHE_DURATION_MS = 10 * 60 * 1000; // 10 minutes
 const DISMISSED_KEY = "driving_alerts_dismissed";
 
