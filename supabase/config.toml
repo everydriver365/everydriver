@@ -159,6 +159,9 @@ verify_jwt = false
 [functions.traccar-poller]
 verify_jwt = false
 
+[functions.gpsgate-poller]
+verify_jwt = false
+
 [functions.get-driving-alerts]
 verify_jwt = false
 

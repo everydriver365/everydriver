@@ -204,7 +204,7 @@ export default function HardwareTrackerSetup({ supabaseHost }: HardwareTrackerSe
               <div className="flex items-start gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg">
                 <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                 <p className="text-sm text-muted-foreground">
-                  <strong className="text-primary">Success!</strong> Once connected, go to the <strong>Traccar Session</strong> page 
+                  <strong className="text-primary">Success!</strong> Once connected, go to the <strong>GPS Tracking</strong> page 
                   to start tracking lessons with your pupils.
                 </p>
               </div>

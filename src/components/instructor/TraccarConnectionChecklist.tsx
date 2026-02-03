@@ -2,17 +2,17 @@ import { CheckCircle, XCircle, Cpu, Wifi, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-interface TraccarConnectionChecklistProps {
+interface GPSConnectionChecklistProps {
   isConnected: boolean;
   lastSeenAt: string | null;
   deviceName: string;
 }
 
-export function TraccarConnectionChecklist({ 
+export function GPSConnectionChecklist({ 
   isConnected, 
   lastSeenAt, 
   deviceName 
-}: TraccarConnectionChecklistProps) {
+}: GPSConnectionChecklistProps) {
   const navigate = useNavigate();
   
   const getLastSeenText = () => {
@@ -76,7 +76,7 @@ export function TraccarConnectionChecklist({
               To connect your device:
             </p>
             <ol className="text-sm text-amber-700 dark:text-amber-300 space-y-1.5 ml-4 list-decimal">
-              <li>Ensure your <strong>ST-902L</strong> is plugged into the OBD-II port</li>
+              <li>Ensure your GPS tracker is plugged into the OBD-II port</li>
               <li>Check the tracker <strong>LED is on</strong> (power from vehicle)</li>
               <li>Verify <strong>SIM card</strong> has data enabled</li>
             </ol>
@@ -84,7 +84,7 @@ export function TraccarConnectionChecklist({
               variant="outline" 
               size="sm" 
               className="mt-3 w-full border-amber-400 dark:border-amber-600 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900"
-              onClick={() => navigate("/instructor/settings/traccar")}
+              onClick={() => navigate("/instructor/settings/gps-tracking")}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               View Setup Instructions
@@ -106,3 +106,7 @@ export function TraccarConnectionChecklist({
     </div>
   );
 }
+
+// Re-export with old name for backwards compatibility
+export { GPSConnectionChecklist as TraccarConnectionChecklist };
+

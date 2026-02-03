@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useTraccarPoller } from "@/hooks/useTraccarPoller";
+import { useGPSPoller } from "@/hooks/useGPSPoller";
 import { 
   ArrowLeft, 
   Play, 
@@ -107,14 +107,14 @@ export default function InstructorTraccarSession() {
     examinerId: string | null;
   } | null>(null);
 
-  // Poll Traccar server while this page is open so we can keep `last_seen_at`
+  // Poll GPS server while this page is open so we can keep `last_seen_at`
   // fresh and accurately reflect connectivity even before a session starts.
   const isSessionActive = !!device?.current_session_id;
-  useTraccarPoller({
+  useGPSPoller({
     enabled: !!device?.id,
     intervalMs: isSessionActive ? 10000 : 20000,
     onError: (error) => {
-      console.error("[TraccarPoller] Error:", error);
+      console.error("[GPSPoller] Error:", error);
     },
   });
 
@@ -740,7 +740,7 @@ export default function InstructorTraccarSession() {
             <WifiOff className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
             <h3 className="font-semibold text-lg mb-2">No Device Configured</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Set up a Traccar device before starting a session
+              Set up a GPS device before starting a session
             </p>
             <Button size="lg" onClick={() => navigate("/instructor/settings/traccar")}>
               <Settings className="h-5 w-5 mr-2" />
