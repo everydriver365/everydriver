@@ -50,18 +50,22 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
         return;
       }
 
-      setCandidates(data.candidates || []);
+      // Filter out any candidates with missing id
+      const validCandidates = (data.candidates || []).filter(
+        (c: GPSGateCandidate) => c && typeof c.id === 'number'
+      );
+      setCandidates(validCandidates);
       setTotal(data.total || 0);
 
       // Auto-select if exactly one match
-      if (data.candidates?.length === 1) {
-        const match = data.candidates[0];
-        onSelect(match.id, match.username, match.name);
+      if (validCandidates.length === 1) {
+        const match = validCandidates[0];
+        onSelect(match.id, match.username || "", match.name || "");
         toast.success(`Linked to GPSgate user #${match.id} (${match.name || match.username})`);
-      } else if (data.candidates?.length === 0) {
+      } else if (validCandidates.length === 0) {
         toast.error("No matching tracker found. Check you're viewing the correct GPSgate application.");
       } else {
-        toast.info(`Found ${data.candidates.length} matching trackers. Please select one.`);
+        toast.info(`Found ${validCandidates.length} matching trackers. Please select one.`);
       }
     } catch (err) {
       console.error("Lookup error:", err);
@@ -73,16 +77,17 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
   };
 
   const handleSelect = (value: string) => {
-    const selected = candidates.find(c => c.id.toString() === value);
+    const selected = candidates.find(c => c && String(c.id) === value);
     if (selected) {
-      onSelect(selected.id, selected.username, selected.name);
+      onSelect(selected.id, selected.username || "", selected.name || "");
       toast.success(`Linked to GPSgate user #${selected.id} (${selected.name || selected.username})`);
     }
   };
 
   const formatCandidateLabel = (c: GPSGateCandidate) => {
-    const parts = [c.name || c.username];
-    if (c.name && c.username !== c.name) {
+    if (!c) return "Unknown";
+    const parts = [c.name || c.username || `ID: ${c.id}`];
+    if (c.name && c.username && c.username !== c.name) {
       parts.push(`(${c.username})`);
     }
     if (c.description) {
@@ -126,8 +131,8 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
               <SelectValue placeholder="Select a tracker..." />
             </SelectTrigger>
             <SelectContent>
-              {candidates.map((c) => (
-                <SelectItem key={c.id} value={c.id.toString()}>
+              {candidates.filter(c => c && c.id != null).map((c) => (
+                <SelectItem key={String(c.id)} value={String(c.id)}>
                   <div className="flex items-center gap-2">
                     <Check className="h-3 w-3 opacity-0 group-data-[state=checked]:opacity-100" />
                     <span className="truncate">{formatCandidateLabel(c)}</span>
