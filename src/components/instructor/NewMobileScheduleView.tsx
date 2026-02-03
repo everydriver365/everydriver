@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isToday } from "date-fns";
-import { Calendar, Loader2, AlertCircle, Plus } from "lucide-react";
+import { Calendar, Loader2, AlertCircle, Plus, List, GitBranch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -11,6 +11,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ScheduleDayTabs } from "./ScheduleDayTabs";
@@ -19,6 +23,7 @@ import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { AddLessonSheet } from "./AddLessonSheet";
 import { TravelTimeIndicator } from "./TravelTimeIndicator";
+import { VerticalTimelineView } from "./VerticalTimelineView";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 
 interface ScheduledLesson {
@@ -60,6 +65,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const [selectedLesson, setSelectedLesson] = useState<ScheduledLesson | null>(null);
   const [sendingMessage, setSendingMessage] = useState<string | null>(null);
   const [lessonColors, setLessonColors] = useState<Record<string, string>>({});
+  const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
 
   useEffect(() => {
     fetchLessons();
@@ -246,7 +252,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         onSelectDate={setSelectedDate} 
       />
 
-      {/* Header with Lesson Count + Add Button */}
+      {/* Header with Lesson Count + View Toggle + Add Button */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">
@@ -256,17 +262,35 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
             {lessonCount} {lessonCount === 1 ? "lesson" : "lessons"}
           </span>
         </div>
-        <Button 
-          size="sm" 
-          onClick={() => setAddLessonOpen(true)}
-          className="gap-1.5"
-        >
-          <Plus className="h-4 w-4" />
-          Add Lesson
-        </Button>
+        
+        <div className="flex items-center gap-2">
+          {/* View Toggle */}
+          <ToggleGroup 
+            type="single" 
+            value={viewMode} 
+            onValueChange={(v) => v && setViewMode(v as "list" | "timeline")}
+            className="bg-muted rounded-lg p-0.5"
+          >
+            <ToggleGroupItem value="list" size="sm" className="h-7 w-7 p-0">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="timeline" size="sm" className="h-7 w-7 p-0">
+              <GitBranch className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          
+          <Button 
+            size="sm" 
+            onClick={() => setAddLessonOpen(true)}
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            Add
+          </Button>
+        </div>
       </div>
 
-      {/* Lessons List */}
+      {/* Lessons View - List or Timeline */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -281,6 +305,20 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
             </p>
           </CardContent>
         </Card>
+      ) : viewMode === "timeline" ? (
+        <VerticalTimelineView
+          lessons={lessons.map(l => ({
+            ...l,
+            pupil: {
+              ...l.pupil,
+              profile_image_url: null,
+              test_date: null,
+            }
+          }))}
+          onLessonClick={(lesson) => {
+            // Could expand or show details
+          }}
+        />
       ) : (
         <div className="space-y-1">
           <AnimatePresence mode="popLayout">
