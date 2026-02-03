@@ -1,424 +1,235 @@
 
-# Implementation Plan: 8 Major Feature Enhancements
-
-This plan covers the implementation of 8 feature enhancements to transform the driving instructor platform with offline capabilities, AI insights, voice notes, self-booking, fleet management, video clips, theory tracking, and automated referrals.
-
----
+# UI Enhancement Plan - Comprehensive Mobile Experience Upgrade
 
 ## Overview
-
-| Feature | Description | Priority |
-|---------|-------------|----------|
-| 1. Offline Mode & PWA | Cache schedules, pupil data; queue offline changes | High |
-| 2. AI Driving Insights | Analyze telemetry for personalized coaching tips | High |
-| 5. Voice Lesson Notes | Hands-free dictation using Web Speech API | High |
-| 6. Pupil Self-Booking | Pupils book available slots directly | Medium |
-| 7. Multi-Car/Fleet | Assign vehicles to lessons, fleet dashboard | Medium |
-| 8. Video Dashcam | Upload and link video clips to trips | Medium |
-| 9. Theory Test Tracking | Track mock test scores, expanded questions | Medium |
-| 10. Referral Automation | Auto-award points via database triggers | Medium |
+This plan implements all proposed UI suggestions plus a redesign of the "Fill My Gaps" tile on the instructor home page. The changes focus on improving mobile usability, visual polish, and interaction design.
 
 ---
 
-## Phase 1: Core Enhancements
+## Part 1: Redesign "Fill My Gaps" Tile (GapFillerCard)
 
-### Feature 1: Offline Mode & PWA Enhancements
+### Current State
+The existing `GapFillerCard.tsx` uses an amber/orange gradient design with an expandable interface. It works but could be more visually appealing and actionable.
 
-**What it does:** Allows instructors to view schedules, pupil details, and add lesson notes even with no mobile signal.
+### Proposed Design
+Transform into a cleaner, more modern tile with:
+- **Violet/purple gradient** to match the "Fill Gaps" quick action styling
+- **Compact summary header** showing gap count and next available slot
+- **Quick action button** visible without expansion
+- **Streamlined slot selection** with better touch targets
+- **Animated pulse indicator** when gaps are available
 
-**Database Changes:**
-```text
-NEW TABLE: offline_sync_queue
-- id (uuid, primary key)
-- instructor_id (uuid, references instructors)
-- action_type (text) -- 'insert', 'update', 'delete'
-- table_name (text) -- target table
-- record_id (uuid) -- affected record
-- payload (jsonb) -- data to sync
-- created_at (timestamptz)
-- synced_at (timestamptz, nullable)
-- error (text, nullable)
-```
-
-**New Files:**
-- `src/hooks/useOfflineSync.ts` - Queue management, sync on reconnection
-- `src/hooks/useOfflineData.ts` - IndexedDB read/write utilities
-- `src/lib/offlineStorage.ts` - IndexedDB schema and operations
-- `src/components/pwa/OfflineSyncIndicator.tsx` - Shows pending sync count
-
-**Modifications:**
-- `vite.config.ts` - Expand workbox config to precache critical API routes
-- `public/sw.js` - Add background sync and IndexedDB caching
-- `src/components/instructor/OfflineIndicator.tsx` - Show pending changes count
-
-**Data Cached Offline:**
-- Today's and tomorrow's schedule
-- Active pupils list (name, phone, address)
-- Last 7 days of lesson history
-- Instructor profile and settings
+### Technical Changes
+**File: `src/components/instructor/GapFillerCard.tsx`**
+- Update gradient from amber to violet (`from-violet-500/10 to-purple-500/10`)
+- Add prominent CTA button in collapsed state
+- Show first available slot time in header
+- Add pulsing indicator for urgent gaps (same day/tomorrow)
+- Improve time slot pills with better contrast
+- Add quick "View All" link to full Gaps page
 
 ---
 
-### Feature 2: AI-Powered Smart Driving Insights
+## Part 2: Swipe Actions on Pupil Cards
 
-**What it does:** Analyzes GPS telemetry data from `telematics_gps_points` to generate personalized coaching tips for each pupil.
+### Implementation
+Add swipe-to-reveal actions on `ExpandablePupilCard.tsx`:
 
-**New Edge Function:** `generate-driving-insights`
+**Left swipe reveals:**
+- **Call button** (green) - Direct phone call
+- **Message button** (blue) - Opens SMS or in-app message
 
-```text
-Location: supabase/functions/generate-driving-insights/index.ts
+### Technical Approach
+- Use existing `framer-motion` drag pattern (already used in `ExpandableLessonCard.tsx`)
+- Add `drag="x"` with constraints
+- Reveal action buttons on swipe with smooth animations
+- Add haptic feedback on action trigger
 
-Inputs:
-- pupilId (required)
-- instructorId (required)
-- sessionCount (optional, default 5)
-
-Process:
-1. Fetch last N telematics sessions for pupil
-2. Aggregate from telematics_gps_points:
-   - Speed compliance rate (points over limit / total)
-   - Harsh braking events (speed drop > 15 km/h in 2s)
-   - Average speed by road type
-   - Speeding duration totals
-3. Call Lovable AI (gemini-3-flash-preview) with driving data
-4. Return structured coaching insights
-
-Output:
-{
-  overallScore: number,
-  strengths: string[],
-  areasToImprove: string[],
-  coachingTips: [{ priority: "high"|"medium", tip: string, evidence: string }],
-  weeklyTrend: "improving" | "steady" | "declining"
-}
-```
-
-**New Frontend Components:**
-- `src/components/instructor/DrivingInsightsCard.tsx` - Displays AI tips on pupil detail
-- `src/hooks/useDrivingInsights.ts` - Fetches and caches insights
-
-**Integration Points:**
-- Add `DrivingInsightsCard` to pupil detail/tracking pages
-- Show trend indicators on pupil list
+**Files to modify:**
+- `src/components/instructor/ExpandablePupilCard.tsx`
+  - Add motion.div wrapper with drag props
+  - Add action button reveal layer behind card
+  - Add drag state tracking and gesture handling
 
 ---
 
-### Feature 5: Voice-First Lesson Notes
+## Part 3: Travel Time Indicators Between Lessons
 
-**What it does:** Enables hands-free voice dictation of lesson feedback using the browser's Web Speech API.
+### Implementation
+Add visual travel time indicators in schedule views showing estimated drive time between consecutive lessons.
 
-**New Files:**
-- `src/components/instructor/VoiceLessonNotes.tsx` - Main voice input component
-- `src/hooks/useVoiceRecognition.ts` - Web Speech API wrapper
+### Design
+- Small chip between lesson cards showing: `~15 min drive`
+- Color coded: green (plenty of time), amber (tight), red (likely late)
+- Uses postcode-to-postcode estimation via existing `useTrafficETA` hook
 
-**Component Features:**
-- Large microphone button for easy touch
-- Real-time transcription display
-- Edit before saving capability
-- Fallback to text input if Speech API unavailable
+**Files to modify:**
+- `src/components/instructor/NewMobileScheduleView.tsx`
+  - Add travel time chips between lesson blocks
+  - Calculate time gap vs estimated travel time
 
-**Technical Implementation:**
-```text
-VoiceLessonNotes Component:
-- Uses webkitSpeechRecognition / SpeechRecognition API
-- continuous = true for ongoing dictation
-- interimResults = true for real-time feedback
-- Auto-punctuation via AI post-processing (optional)
-```
-
-**Integration Points:**
-- Add to `TripSummarySheet.tsx` as "Add Voice Notes" button
-- Add to lesson completion flow in `InstructorLiveSession.tsx`
-- Store in `lesson_history.notes` field
+**New hook:**
+- `src/hooks/useLessonTravelTimes.ts`
+  - Batch calculate travel times between consecutive lessons
 
 ---
 
-## Phase 2: Booking & Fleet
+## Part 4: Improved Empty States with Illustrations
 
-### Feature 6: Pupil Self-Booking
+### Current Empty States
+Various components show basic "No X found" text. We'll enhance these with:
+- Subtle illustrations/icons
+- Encouraging messaging
+- Clear call-to-action buttons
 
-**What it does:** Allows pupils to view available slots and book lessons directly from their portal.
+### Components to Update
+1. **QuietDayEmpty.tsx** - Already good, minor polish
+2. **GapsFiller.tsx** - Add illustration for "fully booked" state
+3. **Pupils list** - Add empty state for no pupils
+4. **Schedule empty days** - Add visual empty state
+5. **Messages inbox** - Add empty inbox state
 
-**Database Changes:**
-```text
-NEW TABLE: instructor_booking_settings
-- id (uuid, primary key)
-- instructor_id (uuid, unique, references instructors)
-- allow_self_booking (boolean, default false)
-- require_approval (boolean, default true)
-- min_notice_hours (integer, default 24)
-- max_advance_days (integer, default 14)
-- allowed_durations (integer[], default {60, 90, 120})
-- booking_message (text, nullable) -- shown to pupils
-- created_at (timestamptz)
-- updated_at (timestamptz)
-
-MODIFY TABLE: scheduled_lessons
-- ADD COLUMN booking_status (text) -- 'confirmed', 'pending_approval', 'rejected'
-```
-
-**New Files:**
-- `src/components/pupil-portal/SelfBookingCalendar.tsx` - Week view with available slots
-- `src/components/pupil-portal/BookingConfirmation.tsx` - Booking confirmation dialog
-- `src/components/instructor/SelfBookingSettings.tsx` - Enable/configure self-booking
-- `src/components/instructor/PendingBookingsView.tsx` - Approve/reject pending bookings
-- `src/hooks/useAvailableSlots.ts` - Calculate open slots from availability + existing bookings
-
-**Booking Flow:**
-```text
-Pupil opens portal → Book Lesson tab
-  ↓
-Calendar shows available slots (based on instructor availability minus booked)
-  ↓
-Pupil selects slot + duration → Confirm booking
-  ↓
-If require_approval: Creates lesson with booking_status='pending_approval'
-  → Instructor notified → Approve/Reject
-If auto-approve: Creates confirmed lesson immediately
-```
+**New file:** `src/components/ui/EmptyState.tsx`
+- Reusable empty state component with icon, title, description, and CTA
 
 ---
 
-### Feature 7: Multi-Car/Fleet Support
+## Part 5: Bottom Navigation Badges
 
-**What it does:** Extends existing `instructor_vehicles` system to assign vehicles to lessons.
+### Implementation
+Add notification/count badges to bottom navigation items:
 
-**Database Changes:**
-```text
-MODIFY TABLE: scheduled_lessons
-- ADD COLUMN vehicle_id (uuid, nullable, references instructor_vehicles)
+| Nav Item | Badge Type |
+|----------|-----------|
+| Messages | Unread message count |
+| Schedule | Today's lesson count |
+| Live | Active tracking indicator (already exists) |
+| More | Combined pending items dot |
 
-MODIFY TABLE: instructor_vehicles
-- ADD COLUMN assigned_instructor_id (uuid, nullable) -- for multi-instructor schools
-- ADD COLUMN color_code (text) -- for calendar color-coding
-```
-
-**New/Modified Files:**
-- `src/components/instructor/VehicleSelector.tsx` - Dropdown for lesson vehicle selection
-- Modify `AddLessonSheet.tsx` - Add vehicle selector
-- Modify `FleetManager.tsx` - Show vehicle assignments calendar
-- `src/components/instructor/FleetMapView.tsx` - All vehicles on single map
-
-**Features:**
-- Vehicle picker when scheduling lessons
-- Calendar color-coding by vehicle
-- Fleet overview showing all vehicle locations
-- Per-vehicle expense and mileage reports
+### Technical Changes
+**File: `src/components/instructor/InstructorBottomNav.tsx`**
+- Import `useUnreadMessagesCount` hook
+- Import `useTodayOverview` hook
+- Add badge rendering for Messages tab
+- Add optional lesson count for Schedule tab
+- Add pending items indicator for More menu
 
 ---
 
-## Phase 3: Video & Gamification
+## Part 6: Glanceable Tracking Dashboard Mode
 
-### Feature 8: Video Dashcam Integration
+### Implementation
+Create an optional "glanceable" view for the Live Tracking screen with:
+- **Extra-large speed display** (edge-to-edge)
+- **Current road name** in large text
+- **Minimal controls** - just stop button
+- **Voice/haptic feedback** for speed warnings
 
-**What it does:** Allows instructors to upload and link video clips to specific trips for pupil review.
+### Technical Approach
+Add toggle button on existing tracking interface to switch to glanceable mode.
 
-**Database Changes:**
-```text
-NEW TABLE: lesson_video_clips
-- id (uuid, primary key)
-- telematics_id (uuid, references lesson_telematics)
-- instructor_id (uuid, references instructors)
-- pupil_id (uuid, nullable, references pupils)
-- video_url (text, not null) -- Supabase Storage URL
-- thumbnail_url (text, nullable)
-- duration_seconds (integer, nullable)
-- clip_start_seconds (integer, default 0)
-- clip_end_seconds (integer, nullable)
-- instructor_note (text, nullable)
-- clip_type (text, default 'general') -- 'good_practice', 'needs_work', 'highlight'
-- gps_point_id (uuid, nullable, references telematics_gps_points)
-- is_shared_with_pupil (boolean, default false)
-- created_at (timestamptz)
-
-RLS: Instructor can manage own clips; Pupil can view shared clips
-```
-
-**Storage Bucket:**
-- Create `lesson-videos` bucket (private)
-- Path structure: `{instructor_id}/clips/{date}/{clip_id}.mp4`
-- Max upload: 100MB per clip
-- Supported formats: MP4, MOV, WebM
-
-**New Files:**
-- `src/components/instructor/VideoClipUploader.tsx` - Upload with progress
-- `src/components/instructor/VideoClipPlayer.tsx` - Playback with notes overlay
-- `src/components/instructor/VideoClipGallery.tsx` - Browse clips for a trip
-- `src/components/pupil-portal/PupilVideoGallery.tsx` - View shared clips
-
-**Integration:**
-- Add "Add Video" button to `TripSummarySheet.tsx`
-- Show video icons on `TripReplayMap` at clip GPS locations
-- List clips in pupil portal under lesson replay
-
-**How Video Upload Works:**
-```text
-1. Instructor opens Trip Summary after lesson
-2. Taps "Add Video Clip" button
-3. Selects video from device (camera roll or files)
-4. Video uploads to Supabase Storage with progress indicator
-5. On completion: creates lesson_video_clips record
-6. Instructor adds optional note and timestamp marker
-7. Toggles "Share with pupil" if desired
-8. Pupil sees clip in their portal's "Lesson Replay" section
-```
+**Files to modify:**
+- `src/components/instructor/LiveTrackingMap.tsx` or equivalent
+- Add `isGlanceMode` state
+- Render alternative simplified UI when active
+- Large speed roundel (80px+)
+- Road name in 24px+ font
+- Vibration on speed limit breach
 
 ---
 
-### Feature 9: Theory Test Integration
+## Part 7: Visual Polish - Skeleton Loaders
 
-**What it does:** Tracks mock theory test attempts and expands the question bank.
+### Current State
+Some components use skeleton loaders (`Skeleton` from shadcn), but coverage is inconsistent.
 
-**Database Changes:**
-```text
-NEW TABLE: theory_test_attempts
-- id (uuid, primary key)
-- pupil_id (uuid, references pupils)
-- instructor_id (uuid, references instructors)
-- test_type (text) -- 'quick_5', 'mock_50', 'hazard_perception'
-- total_questions (integer)
-- correct_answers (integer)
-- time_taken_seconds (integer, nullable)
-- passed (boolean)
-- weak_categories (jsonb) -- ['road_signs', 'stopping_distances']
-- created_at (timestamptz)
+### Enhancement
+Ensure all async-loading sections have proper skeleton states:
+- `QuickActionTiles` - Already has skeleton (verify)
+- `NextLessonCard` - Add skeleton
+- `GapFillerCard` - Add skeleton
+- `Today's Stats` section - Add skeleton
 
-NEW TABLE: theory_questions
-- id (uuid, primary key)
-- category (text) -- 'road_signs', 'rules', 'hazards', etc.
-- question (text)
-- options (jsonb) -- array of answer options
-- correct_index (integer)
-- explanation (text, nullable)
-- difficulty (text) -- 'easy', 'medium', 'hard'
-- is_active (boolean, default true)
-- created_at (timestamptz)
-```
-
-**Modifications:**
-- Expand `PupilPortalTheory.tsx`:
-  - Load questions from database instead of hardcoded
-  - Show score history chart
-  - Highlight weak categories
-  - Track attempts in `theory_test_attempts`
-
-**New Components:**
-- `src/components/pupil-portal/TheoryProgressChart.tsx` - Score trends
-- `src/components/instructor/PupilTheoryProgress.tsx` - View pupil's theory progress
-
----
-
-### Feature 10: Referral & Loyalty Automation
-
-**What it does:** Automates the existing referral system with database triggers for instant reward points.
-
-**Database Changes:**
-```text
-NEW TABLE: reward_redemptions
-- id (uuid, primary key)
-- pupil_id (uuid, references pupils)
-- instructor_id (uuid, references instructors)
-- points_spent (integer)
-- reward_type (text) -- 'free_lesson', 'discount', 'merchandise'
-- reward_value (numeric) -- monetary value
-- status (text) -- 'pending', 'approved', 'redeemed', 'rejected'
-- notes (text, nullable)
-- created_at (timestamptz)
-- processed_at (timestamptz, nullable)
-
-DATABASE FUNCTION: award_referral_bonus()
-- Triggers when pupil_referrals.status changes to 'completed'
-- Awards 100 points to referrer_pupil_id
-- Updates bonus_points_awarded on the referral record
-- Creates notification for referrer
-
-DATABASE TRIGGER: on pupil_referrals UPDATE
-- Calls award_referral_bonus() when status changes
-```
-
-**Modifications:**
-- `ReferralCard.tsx` - Add "Redeem Points" button
-- `RewardTiersDisplay.tsx` - Show redeemable rewards
-
-**New Components:**
-- `src/components/pupil-portal/RedeemPointsSheet.tsx` - Redemption flow
-- `src/components/instructor/PendingRedemptions.tsx` - Approve redemptions
-
-**Trigger Logic:**
-```sql
-CREATE OR REPLACE FUNCTION award_referral_bonus()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.status = 'completed' AND OLD.status = 'pending' THEN
-    -- Award points to referrer
-    UPDATE pupils 
-    SET reward_points = COALESCE(reward_points, 0) + 100
-    WHERE id = NEW.referrer_pupil_id;
-    
-    -- Record points awarded
-    NEW.bonus_points_awarded := 100;
-    
-    -- Create notification (via separate notify table or function)
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_referral_complete
-BEFORE UPDATE ON pupil_referrals
-FOR EACH ROW
-WHEN (OLD.status IS DISTINCT FROM NEW.status)
-EXECUTE FUNCTION award_referral_bonus();
-```
+**Approach:** Create skeleton variants that match component dimensions for smooth transitions.
 
 ---
 
 ## Implementation Order
 
-```text
-Week 1-2: Phase 1
-├── Feature 5: Voice Lesson Notes (uses existing browser APIs)
-├── Feature 10: Referral Automation (database triggers only)
-└── Feature 1: Offline Mode (PWA/IndexedDB)
+### Phase 1: High Impact (Complete First)
+1. Redesign GapFillerCard.tsx - Immediate visual improvement
+2. Bottom nav badges - High visibility improvement
+3. Swipe actions on pupil cards - Better interaction
 
-Week 3-4: Phase 2
-├── Feature 2: AI Driving Insights (edge function + component)
-├── Feature 9: Theory Test Tracking (database + UI expansion)
-└── Feature 7: Fleet Support (add vehicle_id to lessons)
+### Phase 2: Interaction Improvements
+4. Travel time indicators - Practical utility
+5. Glanceable tracking mode - Driving safety
 
-Week 5-6: Phase 3
-├── Feature 6: Pupil Self-Booking (new booking flow)
-└── Feature 8: Video Dashcam (storage + upload UI)
-```
+### Phase 3: Polish
+6. Empty states improvement - Visual consistency
+7. Skeleton loader audit - Loading polish
+
+---
+
+## File Changes Summary
+
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `src/components/instructor/GapFillerCard.tsx` | Major update | Redesign with violet theme, compact layout, pulse indicator |
+| `src/components/instructor/ExpandablePupilCard.tsx` | Feature add | Swipe-to-reveal call/message actions |
+| `src/components/instructor/InstructorBottomNav.tsx` | Enhancement | Add message count and lesson count badges |
+| `src/components/instructor/NewMobileScheduleView.tsx` | Feature add | Travel time chips between lessons |
+| `src/components/ui/EmptyState.tsx` | New file | Reusable empty state component |
+| `src/components/instructor/GapsFiller.tsx` | Enhancement | Improved empty state |
+| `src/hooks/useLessonTravelTimes.ts` | New file | Calculate travel times between lessons |
+| `src/components/instructor/LiveTrackingMap.tsx` | Feature add | Glanceable mode toggle |
 
 ---
 
 ## Technical Considerations
 
-**Storage & Costs:**
-- Video clips: Recommend 720p compression before upload
-- Retention policy: Auto-delete clips after 90 days unless starred
-- IndexedDB for offline: ~50MB limit, prioritize schedules
+### Performance
+- Travel time calculations are expensive - cache results and batch requests
+- Swipe gestures should use `will-change: transform` for GPU acceleration
+- Badge counts should use existing hooks to avoid duplicate queries
 
-**Security:**
-- All new tables include RLS policies
-- Video clips inherit instructor_id/pupil_id access rules
-- Offline queue validates data on sync
+### Accessibility
+- Swipe actions should have tap alternatives (current buttons remain)
+- Badges should have aria-labels for screen readers
+- Glanceable mode should announce speed changes
 
-**Performance:**
-- AI insights cached for 24 hours per pupil
-- Theory questions loaded in batches
-- Video thumbnails generated on upload
+### Existing Patterns Used
+- `framer-motion` for animations (consistent with codebase)
+- `haptics.ts` for tactile feedback
+- Existing color scheme from `QuickActionTiles` and design system
+- Badge component from shadcn/ui
 
 ---
 
-## Summary
+## Visual Examples
 
-This plan delivers 8 interconnected features that enhance the platform with:
-- **Reliability**: Offline mode ensures instructors always have access
-- **Intelligence**: AI coaching tips based on real driving data
-- **Efficiency**: Voice notes and self-booking reduce admin time
-- **Engagement**: Video clips and gamified referrals increase pupil involvement
-- **Scalability**: Fleet support enables growth for driving schools
+### GapFillerCard Redesign
+```text
++------------------------------------------+
+|  [Violet Icon] Fill Your Gaps            |
+|  3 slots available tomorrow              |
+|  [First: Wed 5 Feb 10:00] [View All →]   |
++------------------------------------------+
+```
 
-Each feature builds on the existing architecture, reusing established patterns for Supabase, edge functions, and React components.
+### Travel Time Indicator
+```text
++------------------------------------------+
+|  [Lesson Card: 9:00 - 10:00 John]        |
++------------------------------------------+
+         ↓ ~12 min drive (green)
++------------------------------------------+
+|  [Lesson Card: 10:30 - 11:30 Sarah]      |
++------------------------------------------+
+```
+
+### Swipe Action on Pupil Card
+```text
+<-- Swipe left
+[Call] [Message] [Pupil Card Content     →]
+```
