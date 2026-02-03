@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { GPSTrackerLookup } from "./GPSTrackerLookup";
 
 interface InstructorDetails {
   home_postcode: string | null;
@@ -139,7 +140,11 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
       await fetchGpsStatus();
       
       if (data?.success) {
-        toast.success(`GPS poll complete: ${data.processed} devices updated`);
+        const parts = [];
+        if (data.processed > 0) parts.push(`${data.processed} devices updated`);
+        if (data.instructors_processed > 0) parts.push(`${data.instructors_processed} instructor(s) updated`);
+        if (parts.length === 0) parts.push("No updates - check your tracker is online");
+        toast.success(`GPS poll complete: ${parts.join(", ")}`);
       } else {
         toast.info("Poll completed - check your GPSgate credentials");
       }
@@ -149,6 +154,15 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     } finally {
       setTestingConnection(false);
     }
+  };
+
+  const handleTrackerSelect = (userId: number, username: string, name: string) => {
+    if (!details) return;
+    setDetails({ 
+      ...details, 
+      gpsgate_user_id: userId,
+      gpsgate_username: name || username 
+    });
   };
 
   const handleSave = async () => {
@@ -188,31 +202,40 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Satellite className="h-4 w-4" />
-            GPSgate Username
+            GPSgate Username / Tracker Name
           </Label>
           <Input
-            placeholder="e.g. instructor_john"
+            placeholder="e.g. Tracker iOS, instructor_john"
             value={details.gpsgate_username || ""}
             onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
           />
           <p className="text-xs text-muted-foreground">
-            Your GPSgate Tracker app username
+            Enter the name shown in GPSgate for your tracker, then click "Find Tracker" below
           </p>
         </div>
 
+        <GPSTrackerLookup 
+          searchQuery={details.gpsgate_username || ""} 
+          onSelect={handleTrackerSelect}
+        />
+
         <div className="space-y-2">
-          <Label>GPSgate User ID (optional)</Label>
+          <Label>GPSgate User ID {details.gpsgate_user_id ? `(#${details.gpsgate_user_id})` : "(auto-filled)"}</Label>
           <Input
             type="number"
-            placeholder="e.g. 12345"
+            placeholder="Auto-filled when you find a tracker"
             value={details.gpsgate_user_id || ""}
             onChange={(e) => setDetails({ 
               ...details, 
               gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null 
             })}
+            readOnly={!!details.gpsgate_user_id}
+            className={details.gpsgate_user_id ? "bg-muted" : ""}
           />
           <p className="text-xs text-muted-foreground">
-            Leave blank to auto-discover from username
+            {details.gpsgate_user_id 
+              ? "Linked! Click 'Find Tracker' again to change." 
+              : "This will be auto-filled when you select a tracker"}
           </p>
         </div>
 
@@ -487,31 +510,40 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Satellite className="h-4 w-4" />
-            GPSgate Username
+            GPSgate Username / Tracker Name
           </Label>
           <Input
-            placeholder="e.g. instructor_john"
+            placeholder="e.g. Tracker iOS, instructor_john"
             value={details.gpsgate_username || ""}
             onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
           />
           <p className="text-xs text-muted-foreground">
-            Your GPSgate Tracker app username
+            Enter the name shown in GPSgate for your tracker, then click "Find Tracker" below
           </p>
         </div>
 
+        <GPSTrackerLookup 
+          searchQuery={details.gpsgate_username || ""} 
+          onSelect={handleTrackerSelect}
+        />
+
         <div className="space-y-2">
-          <Label>GPSgate User ID (optional)</Label>
+          <Label>GPSgate User ID {details.gpsgate_user_id ? `(#${details.gpsgate_user_id})` : "(auto-filled)"}</Label>
           <Input
             type="number"
-            placeholder="e.g. 12345"
+            placeholder="Auto-filled when you find a tracker"
             value={details.gpsgate_user_id || ""}
             onChange={(e) => setDetails({ 
               ...details, 
               gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null 
             })}
+            readOnly={!!details.gpsgate_user_id}
+            className={details.gpsgate_user_id ? "bg-muted" : ""}
           />
           <p className="text-xs text-muted-foreground">
-            Leave blank to auto-discover from username
+            {details.gpsgate_user_id 
+              ? "Linked! Click 'Find Tracker' again to change." 
+              : "This will be auto-filled when you select a tracker"}
           </p>
         </div>
 
