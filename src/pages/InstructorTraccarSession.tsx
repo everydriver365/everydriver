@@ -681,11 +681,12 @@ export default function InstructorTraccarSession() {
   };
 
   // Use a SHORT timeout for active sessions (to quickly zero-out speed when GPS stops),
-  // but a more forgiving timeout when not recording (we just care if the device is reachable).
+  // but a more forgiving timeout when not recording (GPS hardware may have gaps).
+  // 30s for active sessions (we need fresh data), 5 minutes for idle (just showing device is known)
   const secondsSinceUpdate = device?.last_seen_at
     ? Math.floor((Date.now() - new Date(device.last_seen_at).getTime()) / 1000)
     : 9999;
-  const isConnected = secondsSinceUpdate < (isSessionActive ? 10 : 30);
+  const isConnected = secondsSinceUpdate < (isSessionActive ? 30 : 300);
 
   const lastSeenAtDate = device?.last_seen_at ? new Date(device.last_seen_at) : null;
   const secondsSinceLastSeen = lastSeenAtDate
