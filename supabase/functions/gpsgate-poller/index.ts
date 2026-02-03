@@ -370,11 +370,21 @@ function extractHeading(track: GPSGateTrackPoint): number {
 
 // Helper to extract time from track point
 function extractTime(track: GPSGateTrackPoint): string | null {
+  const anyTrack = track as any;
   // 1. Try utc (GPSgate Cloud format) - both casings
   if (track.utc) return track.utc;
   if (track.Utc) return track.Utc;
   if (track.serverUtc) return track.serverUtc;
   if (track.ServerUtc) return track.ServerUtc;
+  // 1b. Common variants on other endpoints (e.g. Users/TripInfos)
+  if (anyTrack.LastPositionUtc) return String(anyTrack.LastPositionUtc);
+  if (anyTrack.lastPositionUtc) return String(anyTrack.lastPositionUtc);
+  if (anyTrack.LastUtc) return String(anyTrack.LastUtc);
+  if (anyTrack.lastUtc) return String(anyTrack.lastUtc);
+  if (anyTrack.EndUtc) return String(anyTrack.EndUtc);
+  if (anyTrack.endUtc) return String(anyTrack.endUtc);
+  if (anyTrack.StartUtc) return String(anyTrack.StartUtc);
+  if (anyTrack.startUtc) return String(anyTrack.startUtc);
   // 2. Try direct fields
   if (track.Time) return track.Time;
   if (track.time) return track.time;
@@ -741,6 +751,9 @@ serve(async (req) => {
       : [];
     console.log(`[GPSgate-Poller] Found ${gpsGateUsers.length} users on GPSgate server`);
 
+    // Fast lookup for validating stored mappings
+    const gpsGateUserIdSet = new Set<number>(gpsGateUsers.map((u) => u.Id));
+
     // Build username to user ID mapping (case-insensitive)
     const usernameToUserId = new Map<string, number>();
     for (const u of gpsGateUsers) {
@@ -781,10 +794,13 @@ serve(async (req) => {
 
     // Build lookup by GPSgate user ID for instructors
     const instructorsByGpsGateId = new Map<number, InstructorGPS>();
+    // Also keep an instructorId -> gpsGateUserId mapping for device fallback
+    const instructorIdToGpsGateUserId = new Map<string, number>();
     for (const i of instructorsWithGPS || []) {
-      // If instructor has numeric ID, use it directly
-      if (i.gpsgate_user_id) {
+      // If instructor has numeric ID, only trust it if it exists in GPSgate
+      if (i.gpsgate_user_id && gpsGateUserIdSet.has(i.gpsgate_user_id)) {
         instructorsByGpsGateId.set(i.gpsgate_user_id, i as InstructorGPS);
+        instructorIdToGpsGateUserId.set(i.id, i.gpsgate_user_id);
       } else if (i.gpsgate_username) {
         // Use the same smart matching logic as device resolution
         // This handles exact username, Name, Description substring matches and digit patterns
@@ -797,6 +813,7 @@ serve(async (req) => {
         
         if (resolved.userId) {
           instructorsByGpsGateId.set(resolved.userId, i as InstructorGPS);
+          instructorIdToGpsGateUserId.set(i.id, resolved.userId);
           // Persist discovered ID to database (fire and forget)
           supabase
             .from("instructors")
@@ -811,6 +828,8 @@ serve(async (req) => {
         } else {
           console.log(`[GPSgate-Poller] Instructor ${i.id} (${i.gpsgate_username}) not found in GPSgate users (${resolved.reason})`);
         }
+      } else if (i.gpsgate_user_id && !gpsGateUserIdSet.has(i.gpsgate_user_id)) {
+        console.log(`[GPSgate-Poller] Instructor ${i.id} has invalid gpsgate_user_id=${i.gpsgate_user_id} (not present in GPSgate users list)`);
       }
     }
 
@@ -828,11 +847,18 @@ serve(async (req) => {
         device.device_name,
       ].filter((v): v is string => typeof v === "string" && v.trim().length > 0);
 
-      let resolved = { userId: device.gpsgate_user_id ?? null, reason: device.gpsgate_user_id ? "explicit_gpsgate_user_id" : "no_match" };
+      const explicitDeviceUserId = (device.gpsgate_user_id && gpsGateUserIdSet.has(device.gpsgate_user_id))
+        ? device.gpsgate_user_id
+        : null;
+
+      let resolved = {
+        userId: explicitDeviceUserId,
+        reason: explicitDeviceUserId ? "explicit_gpsgate_user_id" : (device.gpsgate_user_id ? "invalid_explicit_gpsgate_user_id" : "no_match"),
+      };
       for (const candidate of matchCandidates) {
         resolved = resolveGpsGateUserIdForDevice(
           candidate,
-          device.gpsgate_user_id,
+          explicitDeviceUserId,
           gpsGateUsers,
           usernameToUserId
         );
@@ -840,8 +866,19 @@ serve(async (req) => {
       }
 
       const gpsGateUserId = resolved.userId;
-      
+
+      // Fallback: if we still can't resolve from device fields, use instructor mapping
+      // (most instructors will have exactly one tracker linked).
       if (!gpsGateUserId) {
+        const fallbackId = instructorIdToGpsGateUserId.get(device.instructor_id);
+        if (fallbackId) {
+          resolved = { userId: fallbackId, reason: "instructor_fallback" };
+        }
+      }
+
+      const gpsGateUserIdFinal = resolved.userId;
+      
+      if (!gpsGateUserIdFinal) {
         console.log(
           `[GPSgate-Poller] Device ${identifier} not linked in GPSgate (${resolved.reason}). Candidates tried: ${matchCandidates.join(", ")}`
         );
@@ -853,13 +890,13 @@ serve(async (req) => {
       if (!device.gpsgate_user_id) {
         const { error: mapErr } = await supabase
           .from("gps_devices")
-          .update({ gpsgate_user_id: gpsGateUserId })
+          .update({ gpsgate_user_id: gpsGateUserIdFinal })
           .eq("id", device.id);
 
         if (mapErr) {
           console.warn(`[GPSgate-Poller] Failed to persist gpsgate_user_id mapping for ${identifier}:`, mapErr);
         } else {
-          console.log(`[GPSgate-Poller] Linked device ${identifier} -> GPSgate user ${gpsGateUserId} (${resolved.reason})`);
+          console.log(`[GPSgate-Poller] Linked device ${identifier} -> GPSgate user ${gpsGateUserIdFinal} (${resolved.reason})`);
         }
       }
 
@@ -873,7 +910,7 @@ serve(async (req) => {
       // Try /status endpoint first (returns latest position and variables for a user)
       try {
         const statusRes = await fetch(
-          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/status?_=${cacheBuster}`,
+          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserIdFinal}/status?_=${cacheBuster}`,
           { 
             headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" }
           }
@@ -882,7 +919,7 @@ serve(async (req) => {
         if (statusRes.ok) {
           const statusData = await statusRes.json();
           // Log only on first few polls or when debugging
-          console.log(`[GPSgate-Poller] /status for user ${gpsGateUserId}: ${JSON.stringify(statusData).substring(0, 400)}`);
+          console.log(`[GPSgate-Poller] /status for user ${gpsGateUserIdFinal}: ${JSON.stringify(statusData).substring(0, 400)}`);
           
           // Check if status data has position info
           const testPos = extractPosition(statusData);
@@ -890,15 +927,45 @@ serve(async (req) => {
             latestTrack = statusData;
             trackTime = extractTime(statusData);
             dataSource = "status";
-            console.log(`[GPSgate-Poller] Using /status data for user ${gpsGateUserId}`);
+            console.log(`[GPSgate-Poller] Using /status data for user ${gpsGateUserIdFinal}`);
           } else {
-            console.log(`[GPSgate-Poller] /status has no valid position for user ${gpsGateUserId}, keys: ${Object.keys(statusData).join(',')}`);
+            console.log(`[GPSgate-Poller] /status has no valid position for user ${gpsGateUserIdFinal}, keys: ${Object.keys(statusData).join(',')}`);
           }
         } else {
-          console.log(`[GPSgate-Poller] /status returned ${statusRes.status} for user ${gpsGateUserId}`);
+          console.log(`[GPSgate-Poller] /status returned ${statusRes.status} for user ${gpsGateUserIdFinal}`);
+
+          // Some GPSgate deployments don't expose /status. If we get a 404,
+          // fall back to fetching the user object (Users > Id), which can include
+          // latest known position.
+          if (statusRes.status === 404) {
+            try {
+              const userRes = await fetch(
+                `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserIdFinal}?_=${cacheBuster}`,
+                { headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" } }
+              );
+
+              if (userRes.ok) {
+                const userData = await userRes.json();
+                const userPos = extractPosition(userData);
+                if (userPos.lat !== null && userPos.lng !== null) {
+                  latestTrack = userData;
+                  trackTime = extractTime(userData);
+                  dataSource = "user";
+                  console.log(`[GPSgate-Poller] Using /users data for user ${gpsGateUserIdFinal}`);
+                } else {
+                  console.log(`[GPSgate-Poller] /users has no valid position for user ${gpsGateUserIdFinal}, keys: ${Object.keys(userData).join(',')}`);
+                }
+              } else {
+                const text = await userRes.text().catch(() => "");
+                console.log(`[GPSgate-Poller] /users returned ${userRes.status} for user ${gpsGateUserIdFinal}: ${text.substring(0, 300)}`);
+              }
+            } catch (userErr) {
+              console.log(`[GPSgate-Poller] /users fallback failed for user ${gpsGateUserIdFinal}:`, userErr);
+            }
+          }
         }
       } catch (statusErr) {
-        console.log(`[GPSgate-Poller] /status failed for user ${gpsGateUserId}:`, statusErr);
+        console.log(`[GPSgate-Poller] /status failed for user ${gpsGateUserIdFinal}:`, statusErr);
       }
       
       // Fallback to /tracks endpoint if /status didn't work
@@ -908,7 +975,7 @@ serve(async (req) => {
         
         // Try today first
         const tracksRes = await fetch(
-          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${today}&_=${cacheBuster}`,
+          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserIdFinal}/tracks?Date=${today}&_=${cacheBuster}`,
           { 
             headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" }
           }
@@ -917,37 +984,85 @@ serve(async (req) => {
         let tracks: GPSGateTrackPoint[] = [];
         if (tracksRes.ok) {
           tracks = await tracksRes.json();
+        } else {
+          const text = await tracksRes.text().catch(() => "");
+          console.log(`[GPSgate-Poller] /tracks (today) returned ${tracksRes.status} for user ${gpsGateUserIdFinal}: ${text.substring(0, 300)}`);
         }
         
         // If no tracks today, try yesterday (timezone boundary handling)
         if (!tracks || tracks.length === 0) {
-          console.log(`[GPSgate-Poller] No tracks today for user ${gpsGateUserId}, trying yesterday`);
+          console.log(`[GPSgate-Poller] No tracks today for user ${gpsGateUserIdFinal}, trying yesterday`);
           const yesterdayRes = await fetch(
-            `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${yesterday}&_=${cacheBuster}`,
+            `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserIdFinal}/tracks?Date=${yesterday}&_=${cacheBuster}`,
             { 
               headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" }
             }
           );
           if (yesterdayRes.ok) {
             tracks = await yesterdayRes.json();
+          } else {
+            const text = await yesterdayRes.text().catch(() => "");
+            console.log(`[GPSgate-Poller] /tracks (yesterday) returned ${yesterdayRes.status} for user ${gpsGateUserIdFinal}: ${text.substring(0, 300)}`);
           }
         }
         
         if (!tracks || tracks.length === 0) {
-          console.log(`[GPSgate-Poller] No tracks for user ${gpsGateUserId}`);
+          // Some setups don't expose /tracks. Fall back to /tripinfos and use the
+          // last known position from the most recent trip.
+          try {
+            const fromIso = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+            const toIso = new Date().toISOString();
+            const tripRes = await fetch(
+              `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserIdFinal}/tripinfos?from=${encodeURIComponent(fromIso)}&to=${encodeURIComponent(toIso)}`,
+              { headers: { ...authHeaders, "Cache-Control": "no-cache, no-store" } }
+            );
+
+            if (tripRes.ok) {
+              const tripInfos = await tripRes.json();
+              const trips = Array.isArray(tripInfos) ? tripInfos : [tripInfos];
+              const lastTrip = trips.length > 0 ? trips[trips.length - 1] : null;
+
+              const endPos = lastTrip?.EndPosition ?? lastTrip?.endPosition ?? null;
+              const startPos = lastTrip?.StartPosition ?? lastTrip?.startPosition ?? null;
+              const pos = endPos ?? startPos;
+
+              const lat = pos?.Lat ?? pos?.lat ?? pos?.latitude ?? null;
+              const lng = pos?.Lng ?? pos?.lng ?? pos?.longitude ?? null;
+              const t = lastTrip?.EndUtc ?? lastTrip?.endUtc ?? lastTrip?.StartUtc ?? lastTrip?.startUtc ?? null;
+
+              if (typeof lat === "number" && typeof lng === "number") {
+                const synthesized = { Lat: lat, Lng: lng, Utc: t ?? new Date().toISOString() } as unknown as GPSGateTrackPoint;
+                latestTrack = synthesized;
+                trackTime = extractTime(synthesized);
+                dataSource = "tripinfos";
+                console.log(`[GPSgate-Poller] Fallback to /tripinfos for user ${gpsGateUserIdFinal}`);
+              }
+            } else {
+              const text = await tripRes.text().catch(() => "");
+              console.log(`[GPSgate-Poller] /tripinfos returned ${tripRes.status} for user ${gpsGateUserIdFinal}: ${text.substring(0, 300)}`);
+            }
+          } catch (tripErr) {
+            console.log(`[GPSgate-Poller] /tripinfos fallback failed for user ${gpsGateUserIdFinal}:`, tripErr);
+          }
+        }
+
+        if (!latestTrack) {
+          console.log(`[GPSgate-Poller] No tracks for user ${gpsGateUserIdFinal}`);
           skipped++;
           continue;
         }
         
         // Get the latest track point
-        latestTrack = tracks[tracks.length - 1];
-        trackTime = extractTime(latestTrack);
-        dataSource = "tracks";
-        console.log(`[GPSgate-Poller] Fallback to /tracks for user ${gpsGateUserId}`);
+        if (!latestTrack) {
+          latestTrack = tracks[tracks.length - 1];
+          trackTime = extractTime(latestTrack);
+          dataSource = "tracks";
+          console.log(`[GPSgate-Poller] Fallback to /tracks for user ${gpsGateUserIdFinal}`);
+        }
       }
       
       if (!latestTrack) {
-        console.log(`[GPSgate-Poller] No position data for user ${gpsGateUserId}`);
+        console.log(`[GPSgate-Poller] No position data for user ${gpsGateUserIdFinal}`);
         skipped++;
         continue;
       }
@@ -1058,7 +1173,7 @@ serve(async (req) => {
       
       try {
         const accumulatorsRes = await fetch(
-          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/accumulators`,
+          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserIdFinal}/accumulators`,
           { headers: authHeaders }
         );
         
@@ -1081,7 +1196,7 @@ serve(async (req) => {
           }
         }
       } catch (accErr) {
-        console.log(`[GPSgate-Poller] Failed to fetch accumulators for user ${gpsGateUserId}:`, accErr);
+        console.log(`[GPSgate-Poller] Failed to fetch accumulators for user ${gpsGateUserIdFinal}:`, accErr);
       }
 
       // Calculate daily tracking
@@ -1111,7 +1226,7 @@ serve(async (req) => {
           last_gpsgate_track_time: trackTime || now.toISOString(),
           last_battery_percent: batteryPercent,
           last_ignition_status: ignitionStatus,
-          gpsgate_user_id: gpsGateUserId,
+          gpsgate_user_id: gpsGateUserIdFinal,
           gpsgate_odometer_m: odometerMeters,
           gpsgate_engine_hours_s: engineHoursSeconds,
           daily_start_odometer_m: dailyStartOdometer,
