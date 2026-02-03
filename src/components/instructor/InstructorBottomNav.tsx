@@ -14,6 +14,8 @@ import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { motion } from "framer-motion";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NavItem {
@@ -23,6 +25,8 @@ interface NavItem {
   showBadge?: boolean;
   isMessages?: boolean;
   isTrack?: boolean;
+  isSchedule?: boolean;
+  isMore?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -34,7 +38,8 @@ const navItems: NavItem[] = [
   { 
     label: "Schedule", 
     icon: CalendarDays, 
-    path: "/instructor/schedule"
+    path: "/instructor/schedule",
+    isSchedule: true
   },
   { 
     label: "Live", 
@@ -55,7 +60,8 @@ const navItems: NavItem[] = [
   { 
     label: "More", 
     icon: Grid3X3, 
-    path: "/instructor/menu"
+    path: "/instructor/menu",
+    isMore: true
   },
 ];
 
@@ -65,6 +71,13 @@ export function InstructorBottomNav() {
   const pendingJobsCount = usePendingJobsCount();
   const { instructor } = useInstructorAuth();
   const [isTrackingActive, setIsTrackingActive] = useState(false);
+  
+  // Get unread messages count
+  const { data: unreadCount = 0 } = useUnreadMessagesCount(instructor?.id);
+  
+  // Get today's lesson count
+  const { data: todayOverview } = useTodayOverview(instructor?.id);
+  const todayLessonCount = todayOverview?.lessonCount || 0;
 
   // Check if there's an active tracking session
   useEffect(() => {
@@ -115,7 +128,19 @@ export function InstructorBottomNav() {
           const isActive = location.pathname === item.path;
           const showNotification = item.showBadge && pendingJobsCount > 0;
           const isTrack = item.isTrack;
+          const isSchedule = item.isSchedule;
+          const isMore = item.isMore;
           const iconColor = getIconColor(item, isActive);
+          
+          // Calculate badge count for this item
+          const getBadgeCount = () => {
+            if (isSchedule && todayLessonCount > 0) return todayLessonCount;
+            return 0;
+          };
+          const badgeCount = getBadgeCount();
+          
+          // Check if More menu needs a dot indicator
+          const showMoreDot = isMore && (pendingJobsCount > 0 || unreadCount > 0);
           
           return (
             <button
@@ -159,6 +184,16 @@ export function InstructorBottomNav() {
                 )}
                 {isTrack && isTrackingActive && (
                   <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-background animate-pulse" />
+                )}
+                {/* Schedule badge - today's lesson count */}
+                {isSchedule && badgeCount > 0 && !isActive && (
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-violet-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-background">
+                    {badgeCount > 9 ? "9+" : badgeCount}
+                  </span>
+                )}
+                {/* More menu dot indicator */}
+                {showMoreDot && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-background" />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${

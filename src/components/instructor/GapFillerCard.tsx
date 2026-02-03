@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarPlus, ChevronDown, ChevronUp, Clock, Users, Check, Send, X } from "lucide-react";
+import { CalendarPlus, ChevronRight, Clock, Users, Check, Send, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { haptics } from "@/lib/haptics";
+import { useNavigate } from "react-router-dom";
+import { format, isToday, isTomorrow, parseISO } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface GapSlot {
   id: string;
@@ -29,6 +32,7 @@ interface RealGapSuggestion {
 interface GapFillerCardProps {
   gaps: RealGapSuggestion[];
   className?: string;
+  isLoading?: boolean;
 }
 
 interface SelectedPupil extends SuggestedPupil {
@@ -36,11 +40,33 @@ interface SelectedPupil extends SuggestedPupil {
   formattedDate: string;
 }
 
-export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
+export function GapFillerCardSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div className={`mx-4 ${className}`}>
+      <div className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-xl border border-violet-500/20 p-3">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-10 h-10 rounded-lg" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+          <Skeleton className="h-8 w-20 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFillerCardProps) {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<GapSlot | null>(null);
   const [selectedPupils, setSelectedPupils] = useState<Map<string, SelectedPupil>>(new Map());
   const [showPreview, setShowPreview] = useState(false);
+
+  if (isLoading) {
+    return <GapFillerCardSkeleton className={className} />;
+  }
 
   const handleToggle = () => {
     haptics.selection();
@@ -105,10 +131,42 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
     setShowPreview(true);
   };
 
+  const handleViewAll = () => {
+    haptics.light();
+    navigate("/instructor/gaps");
+  };
+
   if (gaps.length === 0) return null;
 
   const totalSlots = gaps.reduce((acc, gap) => acc + gap.slots.length, 0);
   const totalPupils = gaps[0]?.suggestedPupils?.length || 0;
+  
+  // Find first available slot for display
+  const firstGap = gaps[0];
+  const firstSlot = firstGap?.slots[0];
+  
+  // Check if any gaps are urgent (today or tomorrow)
+  const hasUrgentGaps = gaps.some(gap => {
+    try {
+      const date = parseISO(gap.date);
+      return isToday(date) || isTomorrow(date);
+    } catch {
+      return false;
+    }
+  });
+  
+  // Get urgency label
+  const getUrgencyLabel = () => {
+    if (!firstGap) return "";
+    try {
+      const date = parseISO(firstGap.date);
+      if (isToday(date)) return "Today";
+      if (isTomorrow(date)) return "Tomorrow";
+      return format(date, "EEE d MMM");
+    } catch {
+      return firstGap.formattedDate;
+    }
+  };
 
   return (
     <motion.div
@@ -116,42 +174,67 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
       animate={{ opacity: 1, y: 0 }}
       className={`mx-4 ${className}`}
     >
-      <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/15 dark:to-orange-500/15 rounded-xl border border-amber-500/20 overflow-hidden">
+      <div className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 dark:from-violet-500/15 dark:to-purple-500/15 rounded-xl border border-violet-500/20 overflow-hidden">
         {/* Header - Always visible */}
         <button
           onClick={handleToggle}
-          className="w-full p-3 flex items-center justify-between text-left"
+          className="w-full p-3 flex items-center gap-3 text-left"
         >
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-              <CalendarPlus className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          {/* Icon with pulse for urgent gaps */}
+          <div className="relative">
+            <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center">
+              <CalendarPlus className="h-5 w-5 text-violet-600 dark:text-violet-400" />
             </div>
-            <div>
-              <span className="font-semibold text-foreground text-sm">Fill Your Gaps</span>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {totalSlots} empty slots
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {gaps.length} {gaps.length === 1 ? "day" : "days"}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium">
-              {totalPupils} pupils
-            </span>
-            {isExpanded ? (
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            {hasUrgentGaps && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-violet-500 rounded-full animate-pulse ring-2 ring-background" />
             )}
           </div>
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground text-sm">Fill Your Gaps</span>
+              {hasUrgentGaps && (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/20 px-1.5 py-0.5 rounded-full">
+                  <Sparkles className="h-2.5 w-2.5" />
+                  {getUrgencyLabel()}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+              <Clock className="h-3 w-3" />
+              <span>{totalSlots} slots</span>
+              <span className="text-violet-400">•</span>
+              <Users className="h-3 w-3" />
+              <span>{totalPupils} pupils available</span>
+            </div>
+          </div>
+
+          {/* Quick action */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewAll();
+            }}
+            className="flex items-center gap-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors shrink-0"
+          >
+            View All
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
         </button>
+
+        {/* First slot quick preview */}
+        {!isExpanded && firstSlot && (
+          <div className="px-3 pb-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-background/60 rounded-lg px-2.5 py-2">
+              <span className="text-foreground font-medium">
+                {getUrgencyLabel()} {firstSlot.startTime}
+              </span>
+              <span className="text-violet-400">→</span>
+              <span>Tap to fill</span>
+            </div>
+          </div>
+        )}
 
         {/* Expandable content */}
         <AnimatePresence>
@@ -172,11 +255,11 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
                         {gap.formattedDate}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {gap.slots.length} {gap.slots.length === 1 ? "slot" : "slots"} available
+                        {gap.slots.length} {gap.slots.length === 1 ? "slot" : "slots"}
                       </span>
                     </div>
 
-                    {/* Time slots - always visible */}
+                    {/* Time slots - improved styling */}
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {gap.slots.map((slot) => {
                         const isSelected = selectedSlot?.id === slot.id;
@@ -184,10 +267,10 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
                           <button
                             key={slot.id}
                             onClick={() => handleSlotSelect(slot)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            className={`px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
                               isSelected
-                                ? "bg-emerald-500 text-white shadow-sm"
-                                : "bg-muted hover:bg-muted/80 text-foreground"
+                                ? "bg-violet-500 text-white border-violet-600 shadow-sm"
+                                : "bg-background border-border hover:border-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/30 text-foreground"
                             }`}
                           >
                             {slot.startTime} - {slot.endTime}
@@ -217,18 +300,18 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
                                   togglePupilSelection(pupil, selectedSlot, gap.formattedDate)
                                 }
                                 disabled={!pupil.phone}
-                                className={`w-full flex items-center justify-between rounded-lg p-2 transition-colors ${
+                                className={`w-full flex items-center justify-between rounded-lg p-2.5 transition-all border ${
                                   isSelected
-                                    ? "bg-emerald-500/20 border border-emerald-500/40"
-                                    : "bg-background hover:bg-muted"
+                                    ? "bg-violet-500/10 border-violet-500/40"
+                                    : "bg-background border-transparent hover:bg-muted"
                                 } ${!pupil.phone ? "opacity-50 cursor-not-allowed" : ""}`}
                               >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2.5">
                                   <div
-                                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
                                       isSelected
-                                        ? "bg-emerald-500 text-white"
-                                        : "bg-primary/10 text-primary"
+                                        ? "bg-violet-500 text-white"
+                                        : "bg-violet-500/10 text-violet-600 dark:text-violet-400"
                                     }`}
                                   >
                                     {isSelected ? (
@@ -246,7 +329,7 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
                                       {pupil.name}
                                     </p>
                                     {pupil.isWaitlisted && (
-                                      <span className="text-[10px] text-amber-600 dark:text-amber-400">
+                                      <span className="text-[10px] text-violet-600 dark:text-violet-400 font-medium">
                                         Waitlisted
                                       </span>
                                     )}
@@ -275,7 +358,7 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
                   >
                     <Button
                       onClick={handleShowPreview}
-                      className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="w-full gap-2 bg-violet-600 hover:bg-violet-700 text-white"
                     >
                       <Send className="h-4 w-4" />
                       Preview Message ({selectedPupils.size}{" "}
@@ -317,7 +400,7 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
                   {Array.from(selectedPupils.values()).map((pupil) => (
                     <div key={`${pupil.id}-${pupil.slot.id}`} className="bg-muted rounded-lg p-3">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                        <div className="w-6 h-6 rounded-full bg-violet-500/10 flex items-center justify-center text-xs font-semibold text-violet-600 dark:text-violet-400">
                           {pupil.name
                             .split(" ")
                             .map((n) => n[0])
@@ -339,7 +422,7 @@ export function GapFillerCard({ gaps, className = "" }: GapFillerCardProps) {
                     Cancel
                   </Button>
                   <Button
-                    className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="flex-1 gap-2 bg-violet-600 hover:bg-violet-700 text-white"
                     onClick={handleSendMessages}
                   >
                     <Send className="h-4 w-4" />
