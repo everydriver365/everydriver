@@ -42,7 +42,8 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
       if (data) {
         const lastSeen = data.last_seen_at ? new Date(data.last_seen_at) : null;
         const now = new Date();
-        const isRecent = lastSeen ? (now.getTime() - lastSeen.getTime()) < 30000 : false;
+        // Use 5 minute threshold (300000ms) to match useGPSConnectionStatus
+        const isRecent = lastSeen ? (now.getTime() - lastSeen.getTime()) < 300000 : false;
 
         setPosition({
           latitude: data.last_latitude ? Number(data.last_latitude) : null,
