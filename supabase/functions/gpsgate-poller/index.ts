@@ -646,9 +646,9 @@ serve(async (req) => {
       usernameToUserId.set(normalizeText(u.Username), u.Id);
     }
 
-    // 2. Get registered devices from our database (now using traccar_devices table - will rename later)
+    // 2. Get registered devices from our database
     const { data: registeredDevices, error: devicesError } = await supabase
-      .from("traccar_devices")
+      .from("gps_devices")
       .select("*");
 
     if (devicesError) {
@@ -751,7 +751,7 @@ serve(async (req) => {
       // Persist mapping once discovered (helps future runs and UI)
       if (!device.gpsgate_user_id) {
         const { error: mapErr } = await supabase
-          .from("traccar_devices")
+          .from("gps_devices")
           .update({ gpsgate_user_id: gpsGateUserId })
           .eq("id", device.id);
 
@@ -933,7 +933,7 @@ serve(async (req) => {
 
       // Update device record with telemetry
       const { error: updateError } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .update({
           last_speed_kmh: speedKmh,
           last_latitude: lat,
@@ -962,7 +962,7 @@ serve(async (req) => {
       if (batteryPercent !== null) {
         const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
         const { data: recentBattery } = await supabase
-          .from("traccar_battery_history")
+          .from("gps_battery_history")
           .select("id")
           .eq("device_id", device.id)
           .gte("recorded_at", fiveMinutesAgo.toISOString())
@@ -970,7 +970,7 @@ serve(async (req) => {
 
         if (!recentBattery || recentBattery.length === 0) {
           await supabase
-            .from("traccar_battery_history")
+            .from("gps_battery_history")
             .insert({
               device_id: device.id,
               instructor_id: device.instructor_id,
@@ -983,7 +983,7 @@ serve(async (req) => {
       // Log ignition state changes
       if (ignitionStatus !== null && ignitionStatus !== device.last_ignition_status) {
         await supabase
-          .from("traccar_ignition_events")
+          .from("gps_ignition_events")
           .insert({
             device_id: device.id,
             instructor_id: device.instructor_id,
@@ -1165,14 +1165,14 @@ serve(async (req) => {
         if (!tracks || tracks.length === 0) {
           // No tracks but connection is working - update last_seen_at to now
           const { data: updateData } = await supabase
-            .from("traccar_devices")
+            .from("gps_devices")
             .update({ last_seen_at: now, gpsgate_user_id: gpsGateUserId })
             .eq("instructor_id", instructor.id)
             .select("id");
             
           if (!updateData || updateData.length === 0) {
             // Create virtual device with current time
-            await supabase.from("traccar_devices").insert({
+            await supabase.from("gps_devices").insert({
               instructor_id: instructor.id,
               device_identifier: `gpsgate-${gpsGateUserId}`,
               device_name: `GPSgate Tracker`,
@@ -1202,10 +1202,10 @@ serve(async (req) => {
 
         console.log(`[GPSgate-Poller] Instructor ${instructor.id}: ${speedKmh.toFixed(1)}km/h at ${lat},${lon}`);
 
-        // Update the traccar_devices table for this instructor (if they have any device)
+        // Update the gps_devices table for this instructor (if they have any device)
         // This updates last_seen_at so the connection status works
         const { data: updateData, error: updateErr } = await supabase
-          .from("traccar_devices")
+          .from("gps_devices")
           .update({
             last_seen_at: instructorTrackTime || now,
             last_speed_kmh: speedKmh,
@@ -1221,7 +1221,7 @@ serve(async (req) => {
         if (!updateData || updateData.length === 0) {
           console.log(`[GPSgate-Poller] No device for instructor ${instructor.id}, inserting virtual device`);
           const { error: insertErr } = await supabase
-            .from("traccar_devices")
+            .from("gps_devices")
             .insert({
               instructor_id: instructor.id,
               device_identifier: `gpsgate-${gpsGateUserId}`,
