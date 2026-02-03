@@ -388,15 +388,19 @@ export default function TraccarLiveMap({
         </Button>
       )}
 
-      {/* Speed display panel */}
-      {markerLat !== null && markerLng !== null && (
+      {/* Speed display panel - always visible when connected or has position */}
+      {(isConnected || markerLat !== null) && (
         <div className="absolute bottom-4 left-4 right-4 z-20">
-          <div className="bg-background/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg border">
+          <div className={`backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg border ${
+            isSpeeding 
+              ? "bg-destructive/10 border-destructive/50" 
+              : "bg-background/95"
+          }`}>
             <div className="flex items-center justify-between gap-3">
               {/* Current Speed */}
               <div className="flex items-baseline gap-1 shrink-0">
                 <span
-                  className={`text-4xl font-bold ${
+                  className={`text-4xl font-bold transition-colors ${
                     isSpeeding ? "text-destructive" : "text-foreground"
                   }`}
                 >
@@ -415,10 +419,12 @@ export default function TraccarLiveMap({
                 )}
               </div>
 
-              {/* Speed Limit */}
-              <div className="w-12 h-12 shrink-0 rounded-full bg-background border-4 border-destructive flex items-center justify-center">
+              {/* Speed Limit Roundel */}
+              <div className={`w-12 h-12 shrink-0 rounded-full bg-background border-4 flex items-center justify-center transition-colors ${
+                isSpeeding ? "border-destructive" : "border-destructive"
+              }`}>
                 <span
-                  className={`text-lg font-bold ${
+                  className={`text-lg font-bold transition-colors ${
                     isSpeeding ? "text-destructive" : "text-foreground"
                   }`}
                 >
@@ -426,6 +432,15 @@ export default function TraccarLiveMap({
                 </span>
               </div>
             </div>
+            
+            {/* Overspeeding warning banner */}
+            {isSpeeding && (
+              <div className="mt-2 pt-2 border-t border-destructive/30 text-center">
+                <p className="text-sm font-semibold text-destructive animate-pulse">
+                  ⚠️ OVER SPEED LIMIT
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
