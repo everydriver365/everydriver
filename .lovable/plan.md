@@ -1,79 +1,88 @@
 
 
-## Plan: Add GPSgate Tracker Search to Account Linking
+## Plan: Add Search Box and Rename to Every Driver GPS Gate
 
-### Problem
-The GPS Tracker Setup page has a "GPSgate Account Link" section that requires you to manually enter a numeric User ID. This is frustrating because:
-1. You don't know your GPSgate User ID off the top of your head
-2. There's already a "Find Tracker in GPSgate" component that works well - it just isn't being used here
-
-### Solution
-Integrate the existing `GPSTrackerLookup` component into the `GPSgateUserIdSettings` card, so you can search and select from available GPSgate trackers instead of typing a number manually.
+### Overview
+Two changes needed:
+1. Add a text search box so you can type to filter the list of trackers
+2. Rename all user-facing "GPSgate" references to "Every Driver GPS Gate"
 
 ---
 
-### What Will Change
+### Changes
 
-**Before:**
-- Manual numeric input field for GPSgate User ID
-- Have to know/find your ID somewhere else
+#### 1. Add Search Box to Tracker Lookup
+**File: `src/components/instructor/GPSTrackerLookup.tsx`**
 
-**After:**
-- "Find in GPSgate" button that searches all trackers
-- Shows list of available trackers with names/usernames
-- Tap to select and link in one step
-- Still allows manual ID entry as fallback
+Currently, the component has a `searchQuery` prop passed from the parent but no input field for the user to type in. We'll add:
 
----
+- A text input field for typing a search query
+- Real-time filtering of the tracker list as you type
+- The search will filter locally after loading all trackers (faster UX)
 
-### Technical Changes
+**UI Flow:**
+1. Click "Find Tracker in Every Driver GPS Gate"
+2. All trackers load into a list
+3. Type in the search box to filter by name/username
+4. Tap to select
 
-**File: `src/components/instructor/GPSgateUserIdSettings.tsx`**
+#### 2. Rename GPSgate → Every Driver GPS Gate
+Update user-facing text in these files:
 
-1. **Import GPSTrackerLookup component**
-   ```typescript
-   import { GPSTrackerLookup } from "./GPSTrackerLookup";
-   ```
-
-2. **Add state for showing tracker search**
-   ```typescript
-   const [showSearch, setShowSearch] = useState(!savedUserId);
-   ```
-
-3. **Add handler for when a tracker is selected**
-   ```typescript
-   const handleTrackerSelected = async (userId: number, username: string, name: string) => {
-     setGpsGateUserId(userId.toString());
-     // Auto-save the selected tracker
-     await handleVerifyAndSave();
-   };
-   ```
-
-4. **Add GPSTrackerLookup component to the UI**
-   - Show below the alert when not linked
-   - Pass empty search query (shows all trackers)
-   - On selection, auto-verify and link
-
-5. **Keep manual entry as secondary option**
-   - Add "Or enter manually" toggle/section
-   - Existing input field remains available
+| File | Changes |
+|------|---------|
+| `GPSTrackerLookup.tsx` | Button text, toast messages, error messages |
+| `GPSgateUserIdSettings.tsx` | Card title, description, labels, alert text |
+| `InstructorSettings.tsx` | Settings tile description |
+| `GPSgateTripsTabContent.tsx` | Empty state message |
 
 ---
 
-### Updated UI Flow
+### Technical Details
 
-1. Open GPS Tracker Setup page
-2. See "GPSgate Account Link" card
-3. Click "Find Tracker in GPSgate" button
-4. See list of all available trackers (tracker iOS, Roller Skate, etc.)
-5. Tap on "tracker iOS" (your phone)
-6. Automatically linked - shows green "Linked" badge
+**GPSTrackerLookup.tsx changes:**
+```tsx
+// Add local state for search filter
+const [filterText, setFilterText] = useState("");
+
+// Filter candidates locally
+const filteredCandidates = candidates.filter(c => {
+  const searchLower = filterText.toLowerCase();
+  return (
+    c.name?.toLowerCase().includes(searchLower) ||
+    c.username?.toLowerCase().includes(searchLower) ||
+    c.id.toString().includes(filterText)
+  );
+});
+
+// Add input field above the tracker list
+<Input
+  placeholder="Search trackers..."
+  value={filterText}
+  onChange={(e) => setFilterText(e.target.value)}
+/>
+```
+
+**Text replacements:**
+- "GPSgate" → "Every Driver GPS Gate" (titles, descriptions)
+- "Find Tracker in GPSgate" → "Find Tracker"
+- Toast messages updated to use new branding
 
 ---
 
-### Benefits
-- No need to manually find/enter numeric IDs
-- See all available trackers at once
-- Clear names to identify which is your phone vs hardware trackers
-- One-tap linking instead of type-and-click
+### Files to Modify
+
+1. **`src/components/instructor/GPSTrackerLookup.tsx`**
+   - Add search input field with filter state
+   - Rename button and messages
+
+2. **`src/components/instructor/GPSgateUserIdSettings.tsx`**
+   - Rename card title to "Every Driver GPS Gate Account Link"
+   - Update description and alert text
+
+3. **`src/pages/InstructorSettings.tsx`** (line 685)
+   - Change "Link your GPSgate Tracker app" → "Link your Every Driver GPS Gate account"
+
+4. **`src/components/instructor/GPSgateTripsTabContent.tsx`** (line 241)
+   - Change "Trips from your GPSgate tracker" → "Trips from your Every Driver GPS Gate tracker"
 
