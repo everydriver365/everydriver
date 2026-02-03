@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Loader2, Globe, Facebook, Instagram, Link as LinkIcon } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Loader2, Globe, Facebook, Instagram, Link as LinkIcon, Satellite, Wifi, WifiOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
 interface InstructorDetails {
   home_postcode: string | null;
@@ -33,6 +34,8 @@ interface InstructorDetails {
   instagram_url: string | null;
   twitter_url: string | null;
   linkedin_url: string | null;
+  gpsgate_user_id: number | null;
+  gpsgate_username: string | null;
 }
 
 interface InstructorDetailsEditorProps {
@@ -43,6 +46,11 @@ export function InstructorDetailsEditor({ instructorId }: InstructorDetailsEdito
   const [details, setDetails] = useState<InstructorDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [gpsStatus, setGpsStatus] = useState<{
+    isConnected: boolean;
+    lastSeenAt: string | null;
+  }>({ isConnected: false, lastSeenAt: null });
 
   useEffect(() => {
     fetchDetails();
@@ -67,7 +75,9 @@ export function InstructorDetailsEditor({ instructorId }: InstructorDetailsEdito
           facebook_url,
           instagram_url,
           twitter_url,
-          linkedin_url
+          linkedin_url,
+          gpsgate_user_id,
+          gpsgate_username
         `)
         .eq("id", instructorId)
         .single();
@@ -79,6 +89,64 @@ export function InstructorDetailsEditor({ instructorId }: InstructorDetailsEdito
       toast.error("Failed to load details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchGpsStatus = useCallback(async () => {
+    if (!instructorId) return;
+    
+    try {
+      // Check traccar_devices for this instructor's last_seen_at
+      const { data } = await supabase
+        .from("traccar_devices")
+        .select("last_seen_at")
+        .eq("instructor_id", instructorId)
+        .order("last_seen_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data?.last_seen_at) {
+        const lastSeen = new Date(data.last_seen_at);
+        const now = new Date();
+        const diffSeconds = (now.getTime() - lastSeen.getTime()) / 1000;
+        
+        setGpsStatus({
+          isConnected: diffSeconds < 120,
+          lastSeenAt: data.last_seen_at,
+        });
+      }
+    } catch (err) {
+      console.error("Error checking GPS status:", err);
+    }
+  }, [instructorId]);
+
+  useEffect(() => {
+    fetchGpsStatus();
+    const interval = setInterval(fetchGpsStatus, 30000);
+    return () => clearInterval(interval);
+  }, [fetchGpsStatus]);
+
+  const testConnection = async () => {
+    setTestingConnection(true);
+    try {
+      // Trigger a poll to check if credentials work
+      const { data, error } = await supabase.functions.invoke("gpsgate-poller");
+      
+      if (error) throw error;
+      
+      // Refresh status after poll
+      await fetchGpsStatus();
+      
+      if (data?.success) {
+        toast.success(`GPS poll complete: ${data.processed} devices updated`);
+      } else {
+        toast.info("Poll completed - check your GPSgate credentials");
+      }
+    } catch (err) {
+      console.error("Test connection error:", err);
+      toast.error("Failed to test connection");
+    } finally {
+      setTestingConnection(false);
     }
   };
 
@@ -114,10 +182,11 @@ export function InstructorDetailsEditor({ instructorId }: InstructorDetailsEdito
 
   return (
     <Tabs defaultValue="vehicle" className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="vehicle">Vehicle</TabsTrigger>
         <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
-        <TabsTrigger value="social">Social Links</TabsTrigger>
+        <TabsTrigger value="social">Social</TabsTrigger>
+        <TabsTrigger value="gps">GPS</TabsTrigger>
       </TabsList>
 
       {/* Vehicle Tab */}
@@ -324,6 +393,87 @@ export function InstructorDetailsEditor({ instructorId }: InstructorDetailsEdito
         <Button onClick={handleSave} disabled={saving} className="w-full">
           {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           Save Social Links
+        </Button>
+      </TabsContent>
+
+      {/* GPS Tracking Tab */}
+      <TabsContent value="gps" className="space-y-4 mt-4">
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Satellite className="h-4 w-4" />
+            GPSgate Username
+          </Label>
+          <Input
+            placeholder="e.g. instructor_john"
+            value={details.gpsgate_username || ""}
+            onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Your GPSgate Tracker app username
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>GPSgate User ID (optional)</Label>
+          <Input
+            type="number"
+            placeholder="e.g. 12345"
+            value={details.gpsgate_user_id || ""}
+            onChange={(e) => setDetails({ 
+              ...details, 
+              gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null 
+            })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Leave blank to auto-discover from username
+          </p>
+        </div>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium">Connection Status</Label>
+                <div className="flex items-center gap-2">
+                  {gpsStatus.isConnected ? (
+                    <>
+                      <Wifi className="h-4 w-4 text-primary" />
+                      <span className="text-sm text-primary">Connected</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Offline</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              {gpsStatus.lastSeenAt && (
+                <p className="text-xs text-muted-foreground">
+                  Last update: {formatDistanceToNow(new Date(gpsStatus.lastSeenAt), { addSuffix: true })}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Button 
+          variant="outline" 
+          onClick={testConnection} 
+          disabled={testingConnection}
+          className="w-full"
+        >
+          {testingConnection ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4 mr-2" />
+          )}
+          Test Connection
+        </Button>
+
+        <Button onClick={handleSave} disabled={saving} className="w-full">
+          {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          Save GPS Settings
         </Button>
       </TabsContent>
     </Tabs>
