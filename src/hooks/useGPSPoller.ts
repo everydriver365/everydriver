@@ -19,7 +19,7 @@ interface GPSPollerResult {
 
 export function useGPSPoller({
   enabled,
-  intervalMs = 10000, // 10 seconds default
+  intervalMs = 5000, // 5 seconds default for faster map updates
   onData,
   onError,
 }: UseGPSPollerOptions) {

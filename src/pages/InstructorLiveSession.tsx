@@ -130,7 +130,7 @@ export default function InstructorLiveSession() {
   const isSessionActive = !!device?.current_session_id;
   useGPSPoller({
     enabled: !!device?.id && isPageVisible,
-    intervalMs: isSessionActive ? 15000 : 30000, // 15s active, 30s inactive
+    intervalMs: isSessionActive ? 5000 : 30000, // 5s active for faster updates, 30s inactive
     onError: handlePollerError,
   });
 
@@ -290,8 +290,8 @@ export default function InstructorLiveSession() {
       )
       .subscribe();
     
-    // Fallback polling every 15s (realtime handles most updates)
-    const interval = setInterval(pollDevice, 15000);
+    // Fallback polling every 5s for faster map updates
+    const interval = setInterval(pollDevice, 5000);
     
     return () => {
       deviceIdRef.current = null;
