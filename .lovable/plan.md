@@ -1,183 +1,178 @@
 
-# Remove Traccar from Application
+# Enhance Greeting Tile with Weather, Road & Nearby Alerts
 
 ## Overview
 
-This plan removes all Traccar-specific code and references from the application while preserving the GPSgate integration that has replaced it. The system has already migrated to GPSgate Cloud for GPS tracking, making Traccar functionality obsolete.
+This plan enhances the "Good morning" greeting tile on the instructor mobile home page to display:
+- Current road name (from GPS tracking)
+- Current weather conditions (temperature and icon)
+- Nearby weather/traffic warnings within 3 miles
 
-## Current State Analysis
+The design will be compact and non-scrolling, integrating seamlessly into the existing card.
 
-### Files Containing Traccar References (48+ files found)
+## Current Architecture
 
-**Edge Functions to Delete:**
-| Function | Lines | Purpose |
-|----------|-------|---------|
-| `supabase/functions/traccar-poller/` | 788 | Legacy Traccar API polling |
-| `supabase/functions/traccar-webhook/` | 532 | Legacy Traccar webhook handler |
+The greeting tile is in `InstructorMobileHome.tsx` (lines 328-359). Relevant data sources:
 
-**Frontend Pages:**
-| File | Action |
-|------|--------|
-| `src/pages/InstructorTraccarSession.tsx` | Rename to `InstructorLiveSession.tsx` |
-| `src/pages/InstructorTraccarSetup.tsx` | Rename to `InstructorGPSSetup.tsx` |
-
-**Components:**
-| File | Action |
-|------|--------|
-| `src/components/instructor/TraccarLiveMap.tsx` | Rename to `LiveTrackingMap.tsx` |
-| `src/components/instructor/TraccarConnectionChecklist.tsx` | Rename to `GPSConnectionChecklist.tsx` |
-
-**Hooks (Compatibility Wrappers):**
-| File | Action |
-|------|--------|
-| `src/hooks/useTraccarPoller.ts` | Delete (re-exports `useGPSPoller`) |
-| `src/hooks/useTraccarConnectionStatus.ts` | Delete (re-exports `useGPSConnectionStatus`) |
-
-**Database Tables (currently named with "traccar" prefix):**
-- `traccar_devices` - GPS device registrations
-- `traccar_battery_history` - Battery telemetry history
-- `traccar_ignition_events` - Ignition event logs
-
-**Secrets to Remove:**
-- `TRACCAR_EMAIL`
-- `TRACCAR_PASSWORD`
-- `TRACCAR_SERVER_URL`
-
----
+| Hook/Source | Data Available |
+|-------------|----------------|
+| `useInstructorLastPosition` | `roadName`, `latitude`, `longitude` |
+| `useDrivingAlerts` | `alerts[]`, `location` |
+| `get-driving-alerts` edge function | Weather + traffic (already fetches current temp, weather code) |
 
 ## Implementation Plan
 
-### Phase 1: Delete Legacy Edge Functions
+### 1. Enhance Edge Function to Return Current Weather
 
-1. **Delete `supabase/functions/traccar-poller/`** - The entire directory (788 lines)
-   - This legacy function polled the Traccar API
-   - Replaced by `gpsgate-poller` edge function
+Modify `supabase/functions/get-driving-alerts/index.ts` to return current weather data alongside alerts:
 
-2. **Delete `supabase/functions/traccar-webhook/`** - The entire directory (532 lines)
-   - This legacy function handled Traccar webhooks
-   - No longer needed with GPSgate integration
-
-### Phase 2: Rename Database Tables
-
-Create a migration to rename tables from `traccar_*` to `gps_*`:
-
-```sql
--- Rename tables
-ALTER TABLE public.traccar_devices RENAME TO gps_devices;
-ALTER TABLE public.traccar_battery_history RENAME TO gps_battery_history;
-ALTER TABLE public.traccar_ignition_events RENAME TO gps_ignition_events;
-
--- Update indexes
-ALTER INDEX idx_traccar_devices_identifier RENAME TO idx_gps_devices_identifier;
-ALTER INDEX idx_traccar_devices_instructor RENAME TO idx_gps_devices_instructor;
-
--- Update foreign key constraints (auto-renamed with table)
+```typescript
+// Add to response:
+{
+  alerts: [...],
+  location: "Birmingham",
+  currentWeather: {
+    temperature: 12,
+    weatherCode: 3,
+    description: "Overcast",
+    icon: "Cloud",
+    windSpeed: 15  // mph
+  }
+}
 ```
 
-### Phase 3: Rename Frontend Files
+This data is already being fetched - we just need to include it in the response.
 
-| Original | New Name |
-|----------|----------|
-| `src/pages/InstructorTraccarSession.tsx` | `src/pages/InstructorLiveSession.tsx` |
-| `src/pages/InstructorTraccarSetup.tsx` | `src/pages/InstructorGPSSetup.tsx` |
-| `src/components/instructor/TraccarLiveMap.tsx` | `src/components/instructor/LiveTrackingMap.tsx` |
-| `src/components/instructor/TraccarConnectionChecklist.tsx` | `src/components/instructor/GPSConnectionChecklist.tsx` |
+### 2. Update `useDrivingAlerts` Hook
 
-### Phase 4: Delete Compatibility Hooks
+Extend the hook to expose `currentWeather`:
 
-Delete these files (they only re-export GPS hooks):
-- `src/hooks/useTraccarPoller.ts`
-- `src/hooks/useTraccarConnectionStatus.ts`
+```typescript
+interface UseDrivingAlertsResult {
+  alerts: DrivingAlert[];
+  loading: boolean;
+  currentWeather: {
+    temperature: number;
+    description: string;
+    icon: string;
+  } | null;
+  // ... existing fields
+}
+```
 
-### Phase 5: Update Routing & Imports
+### 3. Add Radius Filter for Nearby Alerts (3 miles)
 
-**Update `src/App.tsx`:**
-- Change import from `InstructorTraccarSession` to `InstructorLiveSession`
-- Change import from `InstructorTraccarSetup` to `InstructorGPSSetup`
-- Update routes:
-  - `/instructor/traccar` → `/instructor/live` (keep old path as redirect)
-  - `/instructor/settings/traccar` → `/instructor/settings/gps`
+Modify the edge function to add distance calculation and filter traffic incidents to 3-mile radius (currently 10km ~ 6 miles):
 
-**Update Navigation:**
-- `src/components/instructor/InstructorBottomNav.tsx` - Update path references
-- `src/components/layout/InstructorPortalLayout.tsx` - Update sidebar links
-- `src/components/instructor/InstructorMobileHome.tsx` - Update dropdown links
+```typescript
+// Change from 10km to ~5km (3 miles)
+const radiusKm = 5; // 3 miles ≈ 4.8km
+```
 
-### Phase 6: Update All Database References
+### 4. Redesign Greeting Tile Component
 
-Search and replace across ~26 files:
-- `traccar_devices` → `gps_devices`
-- `traccar_battery_history` → `gps_battery_history`
-- `traccar_ignition_events` → `gps_ignition_events`
+Transform the existing greeting card to show contextual information:
 
-**Files requiring updates:**
-- `src/hooks/useVehicleHealth.ts`
-- `src/hooks/useGPSConnectionStatus.ts`
-- `src/hooks/useInstructorLastPosition.ts`
-- `src/hooks/useRunningCosts.ts`
-- `src/hooks/useDeviceTelemetryHistory.ts`
-- `src/components/instructor/InstructorDetailsEditor.tsx`
-- `src/components/instructor/InstructorBottomNav.tsx`
-- `supabase/functions/gpsgate-poller/index.ts`
-- And ~18 more files...
+**New Layout:**
 
-### Phase 7: Update Interface/Type Names
+```text
+┌─────────────────────────────────────────┐
+│ TODAY              🟢 Live              │
+│                                         │
+│ Good morning, John!         ☁️ 12°C    │
+│ 📍 High Street, Birmingham              │
+│                                         │
+│ ⚠️ Heavy rain warning nearby            │ (if alerts exist)
+└─────────────────────────────────────────┘
+```
 
-Rename TypeScript interfaces:
-- `TraccarDevice` → `GPSDevice`
-- `TraccarDeviceHealth` → `GPSDeviceHealth`
-- `TraccarLiveMapProps` → `LiveTrackingMapProps`
+**Design Details:**
+- Weather icon + temperature displayed on the right of the greeting
+- Current road shown below greeting with location pin icon
+- If alerts exist within 3 miles, show a compact single-line warning
+- All content fits without scrolling
 
-### Phase 8: Clean Up Secrets
+### 5. Create Compact Alert Indicator
 
-Remove unused Traccar secrets (via Lovable Cloud settings):
-- `TRACCAR_EMAIL`
-- `TRACCAR_PASSWORD`
-- `TRACCAR_SERVER_URL`
+Instead of showing full alert cards in the greeting, show a condensed summary:
+- Show count of nearby warnings
+- Tapping expands to the full `DrivingAlertsStrip`
+- Use color coding: amber for moderate, red for severe
 
----
+## Files to Modify
 
-## Files Summary
+| File | Changes |
+|------|---------|
+| `supabase/functions/get-driving-alerts/index.ts` | Add `currentWeather` to response, reduce radius to 3 miles |
+| `src/hooks/useDrivingAlerts.ts` | Add `currentWeather` to return type and state |
+| `src/components/instructor/InstructorMobileHome.tsx` | Redesign greeting tile with weather/road/alerts |
 
-### Files to Delete (4 files/folders)
-1. `supabase/functions/traccar-poller/` (entire directory)
-2. `supabase/functions/traccar-webhook/` (entire directory)
-3. `src/hooks/useTraccarPoller.ts`
-4. `src/hooks/useTraccarConnectionStatus.ts`
+## Technical Details
 
-### Files to Rename (4 files)
-1. `InstructorTraccarSession.tsx` → `InstructorLiveSession.tsx`
-2. `InstructorTraccarSetup.tsx` → `InstructorGPSSetup.tsx`
-3. `TraccarLiveMap.tsx` → `LiveTrackingMap.tsx`
-4. `TraccarConnectionChecklist.tsx` → `GPSConnectionChecklist.tsx`
+### Weather Icon Mapping
 
-### Files to Modify (~35 files)
-All files referencing:
-- `traccar_devices` table
-- `TraccarDevice` types
-- `/instructor/traccar` routes
-- Traccar component imports
+```typescript
+const WEATHER_ICONS: Record<number, string> = {
+  0: "Sun",       // Clear
+  1: "Sun",       // Mainly clear
+  2: "CloudSun",  // Partly cloudy
+  3: "Cloud",     // Overcast
+  45: "CloudFog", // Fog
+  // ... existing mapping in useTomorrowWeather.ts
+};
+```
 
-### Database Migration
-- Rename 3 tables from `traccar_*` to `gps_*`
-- Update associated indexes and constraints
+### Compact Alert Display Logic
 
----
+```typescript
+// Show at most 1 line for alerts in greeting tile
+const compactAlertText = alerts.length > 0 
+  ? alerts[0].severity === 'severe'
+    ? `⚠️ ${alerts[0].title}`
+    : `⚠️ ${alerts.length} warning${alerts.length > 1 ? 's' : ''} nearby`
+  : null;
+```
 
-## Risk Mitigation
+### Road Name Source Priority
 
-1. **URL Redirects**: Keep `/instructor/traccar` as a redirect to `/instructor/live` for existing bookmarks
-2. **Staged Rollout**: Database rename migration runs first, then code updates
-3. **Type Safety**: TypeScript will catch any missed references during compilation
+1. GPS device `last_road_name` (real-time from tracking)
+2. Fall back to `location` from alerts (area name from postcode)
 
-## Estimated Scope
+## Visual Mockup
 
-| Category | Count |
-|----------|-------|
-| Edge functions deleted | 2 |
-| Hook files deleted | 2 |
-| Files renamed | 4 |
-| Files modified | ~35 |
-| Database tables renamed | 3 |
-| Secrets removed | 3 |
-| Total lines removed | ~1,400 |
+```text
+Before:
+┌────────────────────────────────┐
+│ TODAY              🟢 Live     │
+│ Good morning, John!            │
+│ Enjoy your lessons today...    │
+└────────────────────────────────┘
+
+After:
+┌────────────────────────────────┐
+│ TODAY              🟢 Live     │
+│ Good morning, John!    ⛅ 14°C │
+│ 📍 Bristol Road, Edgbaston     │
+│ 🔶 Strong winds - 28mph       │
+└────────────────────────────────┘
+```
+
+## Data Flow
+
+```text
+InstructorMobileHome
+  │
+  ├── useDrivingAlerts(instructorId)
+  │     └── calls get-driving-alerts edge function
+  │           └── Returns: { alerts, currentWeather, location }
+  │
+  └── useInstructorLastPosition(instructorId)
+        └── Returns: { roadName, latitude, longitude }
+```
+
+## Benefits
+
+1. **At-a-glance context**: Instructors immediately see weather, location, and any warnings
+2. **No extra API calls**: Current weather is already fetched by alerts function
+3. **Compact design**: All info in existing tile, no additional scrolling
+4. **Actionable**: Warnings help instructors plan their day better
