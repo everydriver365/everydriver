@@ -125,6 +125,7 @@ export default function TraccarLiveMap({
   const [filteredPoints, setFilteredPoints] = useState<GPSPoint[]>([]);
   const [displaySpeed, setDisplaySpeed] = useState(0);
   const [userDragged, setUserDragged] = useState(false);
+  const [livePosition, setLivePosition] = useState<{lat: number; lng: number} | null>(null);
   const lastValidPointRef = useRef<GPSPoint | null>(null);
 
   // ========== Initialize Map ==========
@@ -169,6 +170,7 @@ export default function TraccarLiveMap({
     if (!sessionId) {
       setFilteredPoints([]);
       lastValidPointRef.current = null;
+      setLivePosition(null);
       polylineRef.current?.remove();
       polylineRef.current = null;
       return;
@@ -247,8 +249,9 @@ export default function TraccarLiveMap({
           if (isValid) {
             setFilteredPoints((prev) => [...prev, point]);
             lastValidPointRef.current = point;
-            // Update speed from validated point
             setDisplaySpeed(processSpeed(point.speedKmh));
+            // Update live position for marker (real-time movement)
+            setLivePosition({ lat: point.lat, lng: point.lng });
           } else {
             // Point rejected - set speed to 0 (stationary)
             setDisplaySpeed(0);
@@ -262,12 +265,16 @@ export default function TraccarLiveMap({
     };
   }, [sessionId]);
 
-  // ========== Update Marker from Props ==========
+  // ========== Compute Marker Position (live > props) ==========
+  const markerLat = livePosition?.lat ?? latitude;
+  const markerLng = livePosition?.lng ?? longitude;
+
+  // ========== Update Marker ==========
   useEffect(() => {
     const map = mapInstance.current;
     if (!map) return;
 
-    if (latitude === null || longitude === null) {
+    if (markerLat === null || markerLng === null) {
       markerRef.current?.remove();
       markerRef.current = null;
       return;
@@ -315,17 +322,17 @@ export default function TraccarLiveMap({
     });
 
     if (!markerRef.current) {
-      markerRef.current = L.marker([latitude, longitude], { icon }).addTo(map);
+      markerRef.current = L.marker([markerLat, markerLng], { icon }).addTo(map);
     } else {
-      markerRef.current.setLatLng([latitude, longitude]);
+      markerRef.current.setLatLng([markerLat, markerLng]);
       markerRef.current.setIcon(icon);
     }
 
     // Auto-center unless user dragged
     if (!userDragged) {
-      map.setView([latitude, longitude], map.getZoom(), { animate: true });
+      map.setView([markerLat, markerLng], map.getZoom(), { animate: true });
     }
-  }, [latitude, longitude, heading, userDragged]);
+  }, [markerLat, markerLng, heading, userDragged]);
 
   // ========== Update Polyline ==========
   useEffect(() => {
@@ -352,12 +359,12 @@ export default function TraccarLiveMap({
   // ========== Re-center Handler ==========
   const handleRecenter = useCallback(() => {
     setUserDragged(false);
-    if (mapInstance.current && latitude !== null && longitude !== null) {
-      mapInstance.current.setView([latitude, longitude], mapInstance.current.getZoom(), {
+    if (mapInstance.current && markerLat !== null && markerLng !== null) {
+      mapInstance.current.setView([markerLat, markerLng], mapInstance.current.getZoom(), {
         animate: true,
       });
     }
-  }, [latitude, longitude]);
+  }, [markerLat, markerLng]);
 
   // ========== Speed Display Calculations ==========
   const speedMph = Math.round(displaySpeed * 0.621371);
@@ -369,7 +376,7 @@ export default function TraccarLiveMap({
       <div ref={mapRef} className="absolute inset-0" />
 
       {/* Re-center button - shows when user has dragged */}
-      {userDragged && latitude !== null && longitude !== null && (
+      {userDragged && markerLat !== null && markerLng !== null && (
         <Button
           variant="secondary"
           size="sm"
@@ -382,7 +389,7 @@ export default function TraccarLiveMap({
       )}
 
       {/* Speed display panel */}
-      {latitude !== null && longitude !== null && (
+      {markerLat !== null && markerLng !== null && (
         <div className="absolute bottom-4 left-4 right-4 z-20">
           <div className="bg-background/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg border">
             <div className="flex items-center justify-between gap-3">
