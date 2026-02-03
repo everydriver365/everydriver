@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/dialog";
 import { GPSgateTripHistory } from "@/components/instructor/GPSgateTripHistory";
 import { GPSgateTripsTabContent } from "@/components/instructor/GPSgateTripsTabContent";
+import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 
 interface SavedRoute {
   id: string;
@@ -447,6 +448,11 @@ export default function InstructorRoutes() {
             <p className="text-muted-foreground text-sm">Your recorded driving routes</p>
           </div>
         </div>
+
+        {/* Mobile GPS Tracking Banner */}
+        {instructor?.id && (
+          <MobileTrackingSettingsBanner instructorId={instructor.id} />
+        )}
 
         {/* Test Route Mode Card */}
         <Card className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/20">
