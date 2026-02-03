@@ -36,7 +36,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import LiveTrackingMap from "@/components/instructor/LiveTrackingMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
-// GPSConnectionChecklist removed - using inline status bar for compact UI
+import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 
 interface GPSDevice {
@@ -874,27 +874,15 @@ export default function InstructorLiveSession() {
         ) : (
           /* Pre-session: Compact Start controls overlay - no scrolling */
           <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
-            {/* Connection Status Bar - Top */}
+            {/* Enhanced Connection Status Card */}
             <div className="pointer-events-auto flex-shrink-0 p-3 pb-0">
-              <div className={`flex items-center justify-between px-3 py-2 rounded-xl border backdrop-blur ${
-                isConnected 
-                  ? "bg-emerald-500/10 border-emerald-500/30" 
-                  : "bg-destructive/10 border-destructive/30"
-              }`}>
-                <div className="flex items-center gap-2">
-                  {isConnected ? (
-                    <Wifi className="h-4 w-4 text-emerald-600" />
-                  ) : (
-                    <WifiOff className="h-4 w-4 text-destructive" />
-                  )}
-                  <span className="text-sm font-medium">
-                    {device.device_name || "GPS Device"}
-                  </span>
-                </div>
-                <span className={`text-xs ${isConnected ? "text-emerald-600" : "text-destructive"}`}>
-                  {isConnected ? "Connected" : `Last: ${lastSeenLabel}`}
-                </span>
-              </div>
+              <GPSConnectionStatusCard
+                deviceName={device.device_name}
+                isConnected={isConnected}
+                lastSeenLabel={lastSeenLabel}
+                speedKmh={device.last_speed_kmh}
+                roadName={device.last_road_name}
+              />
             </div>
 
             {/* Spacer to push content to bottom */}
