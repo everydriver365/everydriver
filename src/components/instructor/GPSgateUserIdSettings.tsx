@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Link2, CheckCircle, AlertCircle, HelpCircle } from "lucide-react";
+import { Loader2, Link2, CheckCircle, AlertCircle, HelpCircle, Keyboard } from "lucide-react";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { GPSTrackerLookup } from "./GPSTrackerLookup";
 
 interface GPSgateUserIdSettingsProps {
   instructorId: string;
@@ -27,6 +28,7 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
   const [saving, setSaving] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
 
   useEffect(() => {
     fetchCurrentUserId();
@@ -121,6 +123,30 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
     }
   };
 
+  const handleTrackerSelected = async (userId: number, username: string, name: string) => {
+    setGpsGateUserId(userId.toString());
+    
+    // Save directly since we're selecting from GPSgate API results
+    setSaving(true);
+    try {
+      const updateQuery = deviceId
+        ? supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("id", deviceId)
+        : supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("instructor_id", instructorId);
+
+      const { error: saveError } = await updateQuery;
+      if (saveError) throw saveError;
+
+      setSavedUserId(userId);
+      setIsVerified(true);
+      setShowManualEntry(false);
+    } catch (error) {
+      console.error("Error saving GPSgate user ID:", error);
+      toast.error("Failed to save GPSgate User ID");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -159,68 +185,103 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
           </AlertDescription>
         </Alert>
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="gpsgate-user-id">GPSgate User ID</Label>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>Find your User ID in GPSgate under User Settings. This is a numeric ID assigned to your tracker.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex gap-2">
-            <Input
-              id="gpsgate-user-id"
-              type="number"
-              placeholder="e.g., 12345"
-              value={gpsGateUserId}
-              onChange={(e) => {
-                setGpsGateUserId(e.target.value);
-                if (savedUserId && e.target.value !== savedUserId.toString()) {
-                  setIsVerified(false);
-                }
-              }}
-              disabled={saving || verifying}
+        {/* Show tracker search when not linked */}
+        {!savedUserId && !showManualEntry && (
+          <div className="space-y-3">
+            <GPSTrackerLookup 
+              searchQuery="" 
+              onSelect={handleTrackerSelected}
             />
-            {savedUserId ? (
-              <Button 
-                variant="outline" 
-                onClick={handleRemove}
-                disabled={saving}
-              >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Unlink"}
-              </Button>
-            ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowManualEntry(true)}
+              className="w-full text-muted-foreground"
+            >
+              <Keyboard className="h-4 w-4 mr-2" />
+              Enter ID manually
+            </Button>
           </div>
-        </div>
+        )}
 
-        <Button
-          onClick={handleVerifyAndSave}
-          disabled={!gpsGateUserId || saving || verifying || (isVerified && gpsGateUserId === savedUserId?.toString())}
-          className="w-full"
-        >
-          {verifying || saving ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {verifying ? "Verifying..." : "Saving..."}
-            </>
-          ) : isVerified ? (
-            <>
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Linked
-            </>
-          ) : (
-            <>
-              <Link2 className="h-4 w-4 mr-2" />
-              Link Account
-            </>
-          )}
-        </Button>
+        {/* Manual entry section */}
+        {(showManualEntry || savedUserId) && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="gpsgate-user-id">GPSgate User ID</Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <p>Find your User ID in GPSgate under User Settings. This is a numeric ID assigned to your tracker.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                id="gpsgate-user-id"
+                type="number"
+                placeholder="e.g., 12345"
+                value={gpsGateUserId}
+                onChange={(e) => {
+                  setGpsGateUserId(e.target.value);
+                  if (savedUserId && e.target.value !== savedUserId.toString()) {
+                    setIsVerified(false);
+                  }
+                }}
+                disabled={saving || verifying}
+              />
+              {savedUserId ? (
+                <Button 
+                  variant="outline" 
+                  onClick={handleRemove}
+                  disabled={saving}
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Unlink"}
+                </Button>
+              ) : null}
+            </div>
+
+            {!savedUserId && showManualEntry && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowManualEntry(false)}
+                className="w-full text-muted-foreground"
+              >
+                Back to tracker search
+              </Button>
+            )}
+
+            <Button
+              onClick={handleVerifyAndSave}
+              disabled={!gpsGateUserId || saving || verifying || (isVerified && gpsGateUserId === savedUserId?.toString())}
+              className="w-full"
+            >
+              {verifying || saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {verifying ? "Verifying..." : "Saving..."}
+                </>
+              ) : isVerified ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Linked
+                </>
+              ) : (
+                <>
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Link Account
+                </>
+              )}
+            </Button>
+          </div>
+        )}
 
         {savedUserId && (
           <p className="text-xs text-muted-foreground text-center">
