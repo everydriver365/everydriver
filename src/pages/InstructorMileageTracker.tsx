@@ -28,6 +28,7 @@ import { useMileageLogs, MileageLog } from "@/hooks/useMileageLogs";
 import { AddMileageDialog } from "@/components/instructor/vehicle-health/AddMileageDialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 
 // HMRC mileage rates
 const HMRC_FIRST_10K_RATE = 0.45; // 45p per mile for first 10,000 miles
@@ -117,7 +118,7 @@ export default function InstructorMileageTracker() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Car className="h-5 w-5 text-green-600" />
+              <Car className="h-5 w-5 text-primary" />
               <h1 className="text-xl font-bold">Mileage Tracker</h1>
             </div>
             <p className="text-sm text-muted-foreground mt-1">Track miles for HMRC tax deductions</p>
@@ -126,6 +127,11 @@ export default function InstructorMileageTracker() {
             + Add Entry
           </Button>
         </div>
+
+        {/* Mobile GPS Tracking Banner */}
+        {instructorId && (
+          <MobileTrackingSettingsBanner instructorId={instructorId} />
+        )}
 
         {/* View Mode Toggle */}
         <div className="flex gap-2">
