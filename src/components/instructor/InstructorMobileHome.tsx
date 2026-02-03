@@ -33,7 +33,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
-import { useTraccarConnectionStatus } from "@/hooks/useTraccarConnectionStatus";
+import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
@@ -102,8 +102,8 @@ export function InstructorMobileHome({
   // Use auth context for instructor ID
   const instructorId = authInstructor?.id || instructor?.id;
   
-  // Traccar connection status and today's overview
-  const { isConnected: isTraccarConnected } = useTraccarConnectionStatus(instructorId || null);
+  // GPS connection status and today's overview
+  const { isConnected: isGPSConnected } = useGPSConnectionStatus(instructorId || null);
   const { data: todayOverview, isLoading: todayLoading } = useTodayOverview(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: unreadCount } = useUnreadMessagesCount(instructorId);
@@ -335,12 +335,12 @@ export function InstructorMobileHome({
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    isTraccarConnected 
+                    isGPSConnected 
                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
                       : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                   }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isTraccarConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                    {isTraccarConnected ? 'Live' : 'Offline'}
+                    <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    {isGPSConnected ? 'Live' : 'Offline'}
                   </span>
                 </div>
                 

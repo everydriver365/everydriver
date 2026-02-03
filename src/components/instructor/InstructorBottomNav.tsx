@@ -72,7 +72,7 @@ export function InstructorBottomNav() {
 
     const checkActiveSession = async () => {
       const { data } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("current_session_id")
         .eq("instructor_id", instructor.id)
         .not("current_session_id", "is", null)

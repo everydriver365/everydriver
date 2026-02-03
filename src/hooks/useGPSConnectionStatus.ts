@@ -20,7 +20,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
 
     try {
       const { data } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("last_seen_at")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false })

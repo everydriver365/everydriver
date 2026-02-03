@@ -34,12 +34,12 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
-import TraccarLiveMap from "@/components/instructor/TraccarLiveMap";
+import LiveTrackingMap from "@/components/instructor/LiveTrackingMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
-import { TraccarConnectionChecklist } from "@/components/instructor/TraccarConnectionChecklist";
+import { GPSConnectionChecklist } from "@/components/instructor/GPSConnectionChecklist";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 
-interface TraccarDevice {
+interface GPSDevice {
   id: string;
   device_identifier: string;
   device_name: string;
@@ -78,12 +78,12 @@ interface DrivingEvent {
   created_at: string;
 }
 
-export default function InstructorTraccarSession() {
+export default function InstructorLiveSession() {
   const { instructor, loading } = useInstructorAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [device, setDevice] = useState<TraccarDevice | null>(null);
+  const [device, setDevice] = useState<GPSDevice | null>(null);
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [selectedPupilId, setSelectedPupilId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
@@ -153,7 +153,7 @@ export default function InstructorTraccarSession() {
     try {
       // Fetch first active device
       const { data: devices, error: deviceError } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("*")
         .eq("instructor_id", instructor.id)
         .eq("is_active", true)
@@ -162,7 +162,7 @@ export default function InstructorTraccarSession() {
       if (deviceError) throw deviceError;
       
       if (devices && devices.length > 0) {
-        setDevice(devices[0] as TraccarDevice);
+        setDevice(devices[0] as GPSDevice);
         
         // If session is active, restore timer and distance
         if (devices[0].current_session_id) {
@@ -220,7 +220,7 @@ export default function InstructorTraccarSession() {
 
     const pollDevice = async () => {
       const { data, error } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("*")
         .eq("id", currentDeviceId)
         .single();
@@ -231,7 +231,7 @@ export default function InstructorTraccarSession() {
       }
       
       if (data) {
-        const typedDevice = data as TraccarDevice;
+        const typedDevice = data as GPSDevice;
         
         // Only update state if data actually changed (prevents flickering)
         if (typedDevice.last_seen_at !== lastSeenRef.current) {
@@ -272,7 +272,7 @@ export default function InstructorTraccarSession() {
           filter: `id=eq.${currentDeviceId}`,
         },
         (payload) => {
-          const newDevice = payload.new as TraccarDevice;
+          const newDevice = payload.new as GPSDevice;
           // Only update if data actually changed (prevents flickering)
           if (newDevice.last_seen_at !== lastSeenRef.current) {
             lastSeenRef.current = newDevice.last_seen_at;
@@ -471,7 +471,7 @@ export default function InstructorTraccarSession() {
 
       // Update device with session, pupil (if any), and test route mode
       const { error: deviceError } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .update({
           current_session_id: session.id,
           current_pupil_id: effectivePupilId,
@@ -643,7 +643,7 @@ export default function InstructorTraccarSession() {
 
       // Clear device session (also reset test route mode)
       const { error: deviceError } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .update({
           current_session_id: null,
           current_pupil_id: null,
@@ -821,7 +821,7 @@ export default function InstructorTraccarSession() {
         )}
 
         {/* Live Map - always visible so speed/road updates show instantly */}
-        <TraccarLiveMap
+        <LiveTrackingMap
           latitude={device.last_latitude}
           longitude={device.last_longitude}
           heading={device.last_heading}
@@ -893,10 +893,10 @@ export default function InstructorTraccarSession() {
                   </div>
 
                   {/* Connection Checklist */}
-                  <TraccarConnectionChecklist
+                  <GPSConnectionChecklist
                     isConnected={isConnected}
                     lastSeenAt={device.last_seen_at}
-                    deviceName={device.device_name || "Traccar Device"}
+                    deviceName={device.device_name || "GPS Device"}
                   />
 
                   {/* Pupil Selection */}
@@ -937,7 +937,7 @@ export default function InstructorTraccarSession() {
                           if (!device) return;
                           if (selectedPupilId) {
                             await supabase
-                              .from("traccar_devices")
+                              .from("gps_devices")
                               .update({ is_test_route_mode: checked })
                               .eq("id", device.id);
                             setDevice({ ...device, is_test_route_mode: checked });

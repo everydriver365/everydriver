@@ -1,6 +1,6 @@
 import { Toaster } from "@/components/ui/toaster";
-import InstructorTraccarSetup from "./pages/InstructorTraccarSetup";
-import InstructorTraccarSession from "./pages/InstructorTraccarSession";
+import InstructorGPSSetup from "./pages/InstructorGPSSetup";
+import InstructorLiveSession from "./pages/InstructorLiveSession";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -171,8 +171,10 @@ const App = () => (
               <Route path="/instructor/availability" element={<InstructorQuickAvailability />} />
               <Route path="/instructor/gaps" element={<InstructorGaps />} />
               <Route path="/instructor/expenses" element={<InstructorExpenses />} />
-              <Route path="/instructor/traccar" element={<InstructorTraccarSession />} />
-              <Route path="/instructor/settings/traccar" element={<InstructorTraccarSetup />} />
+              <Route path="/instructor/live" element={<InstructorLiveSession />} />
+              <Route path="/instructor/traccar" element={<InstructorLiveSession />} />
+              <Route path="/instructor/settings/gps" element={<InstructorGPSSetup />} />
+              <Route path="/instructor/settings/traccar" element={<InstructorGPSSetup />} />
               <Route path="/instructor/satnav" element={<InstructorSatNav />} />
               <Route path="/instructor/find-my-car" element={<InstructorFindMyCar />} />
               <Route path="/instructor/accounts" element={<InstructorAccounts />} />

@@ -1218,6 +1218,228 @@ export type Database = {
           },
         ]
       }
+      gps_battery_history: {
+        Row: {
+          battery_percent: number
+          device_id: string
+          id: string
+          instructor_id: string
+          recorded_at: string
+        }
+        Insert: {
+          battery_percent: number
+          device_id: string
+          id?: string
+          instructor_id: string
+          recorded_at?: string
+        }
+        Update: {
+          battery_percent?: number
+          device_id?: string
+          id?: string
+          instructor_id?: string
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traccar_battery_history_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_battery_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gps_devices: {
+        Row: {
+          created_at: string | null
+          current_pupil_id: string | null
+          current_session_id: string | null
+          daily_start_date: string | null
+          daily_start_odometer_m: number | null
+          device_identifier: string
+          device_name: string | null
+          gpsgate_engine_hours_s: number | null
+          gpsgate_odometer_m: number | null
+          gpsgate_user_id: number | null
+          id: string
+          instructor_id: string
+          is_active: boolean | null
+          is_test_route_mode: boolean
+          last_battery_percent: number | null
+          last_gpsgate_odometer_m: number | null
+          last_gpsgate_track_time: string | null
+          last_heading: number | null
+          last_ignition_status: boolean | null
+          last_latitude: number | null
+          last_longitude: number | null
+          last_road_name: string | null
+          last_seen_at: string | null
+          last_speed_kmh: number | null
+          last_speed_limit_kmh: number | null
+          last_traccar_fix_time: string | null
+          last_traccar_position_id: number | null
+          updated_at: string | null
+          vehicle_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_pupil_id?: string | null
+          current_session_id?: string | null
+          daily_start_date?: string | null
+          daily_start_odometer_m?: number | null
+          device_identifier: string
+          device_name?: string | null
+          gpsgate_engine_hours_s?: number | null
+          gpsgate_odometer_m?: number | null
+          gpsgate_user_id?: number | null
+          id?: string
+          instructor_id: string
+          is_active?: boolean | null
+          is_test_route_mode?: boolean
+          last_battery_percent?: number | null
+          last_gpsgate_odometer_m?: number | null
+          last_gpsgate_track_time?: string | null
+          last_heading?: number | null
+          last_ignition_status?: boolean | null
+          last_latitude?: number | null
+          last_longitude?: number | null
+          last_road_name?: string | null
+          last_seen_at?: string | null
+          last_speed_kmh?: number | null
+          last_speed_limit_kmh?: number | null
+          last_traccar_fix_time?: string | null
+          last_traccar_position_id?: number | null
+          updated_at?: string | null
+          vehicle_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_pupil_id?: string | null
+          current_session_id?: string | null
+          daily_start_date?: string | null
+          daily_start_odometer_m?: number | null
+          device_identifier?: string
+          device_name?: string | null
+          gpsgate_engine_hours_s?: number | null
+          gpsgate_odometer_m?: number | null
+          gpsgate_user_id?: number | null
+          id?: string
+          instructor_id?: string
+          is_active?: boolean | null
+          is_test_route_mode?: boolean
+          last_battery_percent?: number | null
+          last_gpsgate_odometer_m?: number | null
+          last_gpsgate_track_time?: string | null
+          last_heading?: number | null
+          last_ignition_status?: boolean | null
+          last_latitude?: number | null
+          last_longitude?: number | null
+          last_road_name?: string | null
+          last_seen_at?: string | null
+          last_speed_kmh?: number | null
+          last_speed_limit_kmh?: number | null
+          last_traccar_fix_time?: string | null
+          last_traccar_position_id?: number | null
+          updated_at?: string | null
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traccar_devices_current_pupil_id_fkey"
+            columns: ["current_pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_devices_current_session_id_fkey"
+            columns: ["current_session_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_devices_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_devices_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gps_ignition_events: {
+        Row: {
+          device_id: string
+          event_type: string
+          id: string
+          instructor_id: string
+          latitude: number | null
+          longitude: number | null
+          recorded_at: string
+          road_name: string | null
+          vehicle_id: string | null
+        }
+        Insert: {
+          device_id: string
+          event_type: string
+          id?: string
+          instructor_id: string
+          latitude?: number | null
+          longitude?: number | null
+          recorded_at?: string
+          road_name?: string | null
+          vehicle_id?: string | null
+        }
+        Update: {
+          device_id?: string
+          event_type?: string
+          id?: string
+          instructor_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          recorded_at?: string
+          road_name?: string | null
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traccar_ignition_events_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_ignition_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_ignition_events_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_tips: {
         Row: {
           category: string
@@ -6259,228 +6481,6 @@ export type Database = {
         }
         Relationships: []
       }
-      traccar_battery_history: {
-        Row: {
-          battery_percent: number
-          device_id: string
-          id: string
-          instructor_id: string
-          recorded_at: string
-        }
-        Insert: {
-          battery_percent: number
-          device_id: string
-          id?: string
-          instructor_id: string
-          recorded_at?: string
-        }
-        Update: {
-          battery_percent?: number
-          device_id?: string
-          id?: string
-          instructor_id?: string
-          recorded_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "traccar_battery_history_device_id_fkey"
-            columns: ["device_id"]
-            isOneToOne: false
-            referencedRelation: "traccar_devices"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traccar_battery_history_instructor_id_fkey"
-            columns: ["instructor_id"]
-            isOneToOne: false
-            referencedRelation: "instructors"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      traccar_devices: {
-        Row: {
-          created_at: string | null
-          current_pupil_id: string | null
-          current_session_id: string | null
-          daily_start_date: string | null
-          daily_start_odometer_m: number | null
-          device_identifier: string
-          device_name: string | null
-          gpsgate_engine_hours_s: number | null
-          gpsgate_odometer_m: number | null
-          gpsgate_user_id: number | null
-          id: string
-          instructor_id: string
-          is_active: boolean | null
-          is_test_route_mode: boolean
-          last_battery_percent: number | null
-          last_gpsgate_odometer_m: number | null
-          last_gpsgate_track_time: string | null
-          last_heading: number | null
-          last_ignition_status: boolean | null
-          last_latitude: number | null
-          last_longitude: number | null
-          last_road_name: string | null
-          last_seen_at: string | null
-          last_speed_kmh: number | null
-          last_speed_limit_kmh: number | null
-          last_traccar_fix_time: string | null
-          last_traccar_position_id: number | null
-          updated_at: string | null
-          vehicle_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          current_pupil_id?: string | null
-          current_session_id?: string | null
-          daily_start_date?: string | null
-          daily_start_odometer_m?: number | null
-          device_identifier: string
-          device_name?: string | null
-          gpsgate_engine_hours_s?: number | null
-          gpsgate_odometer_m?: number | null
-          gpsgate_user_id?: number | null
-          id?: string
-          instructor_id: string
-          is_active?: boolean | null
-          is_test_route_mode?: boolean
-          last_battery_percent?: number | null
-          last_gpsgate_odometer_m?: number | null
-          last_gpsgate_track_time?: string | null
-          last_heading?: number | null
-          last_ignition_status?: boolean | null
-          last_latitude?: number | null
-          last_longitude?: number | null
-          last_road_name?: string | null
-          last_seen_at?: string | null
-          last_speed_kmh?: number | null
-          last_speed_limit_kmh?: number | null
-          last_traccar_fix_time?: string | null
-          last_traccar_position_id?: number | null
-          updated_at?: string | null
-          vehicle_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          current_pupil_id?: string | null
-          current_session_id?: string | null
-          daily_start_date?: string | null
-          daily_start_odometer_m?: number | null
-          device_identifier?: string
-          device_name?: string | null
-          gpsgate_engine_hours_s?: number | null
-          gpsgate_odometer_m?: number | null
-          gpsgate_user_id?: number | null
-          id?: string
-          instructor_id?: string
-          is_active?: boolean | null
-          is_test_route_mode?: boolean
-          last_battery_percent?: number | null
-          last_gpsgate_odometer_m?: number | null
-          last_gpsgate_track_time?: string | null
-          last_heading?: number | null
-          last_ignition_status?: boolean | null
-          last_latitude?: number | null
-          last_longitude?: number | null
-          last_road_name?: string | null
-          last_seen_at?: string | null
-          last_speed_kmh?: number | null
-          last_speed_limit_kmh?: number | null
-          last_traccar_fix_time?: string | null
-          last_traccar_position_id?: number | null
-          updated_at?: string | null
-          vehicle_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "traccar_devices_current_pupil_id_fkey"
-            columns: ["current_pupil_id"]
-            isOneToOne: false
-            referencedRelation: "pupils"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traccar_devices_current_session_id_fkey"
-            columns: ["current_session_id"]
-            isOneToOne: false
-            referencedRelation: "lesson_telematics"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traccar_devices_instructor_id_fkey"
-            columns: ["instructor_id"]
-            isOneToOne: false
-            referencedRelation: "instructors"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traccar_devices_vehicle_id_fkey"
-            columns: ["vehicle_id"]
-            isOneToOne: false
-            referencedRelation: "instructor_vehicles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      traccar_ignition_events: {
-        Row: {
-          device_id: string
-          event_type: string
-          id: string
-          instructor_id: string
-          latitude: number | null
-          longitude: number | null
-          recorded_at: string
-          road_name: string | null
-          vehicle_id: string | null
-        }
-        Insert: {
-          device_id: string
-          event_type: string
-          id?: string
-          instructor_id: string
-          latitude?: number | null
-          longitude?: number | null
-          recorded_at?: string
-          road_name?: string | null
-          vehicle_id?: string | null
-        }
-        Update: {
-          device_id?: string
-          event_type?: string
-          id?: string
-          instructor_id?: string
-          latitude?: number | null
-          longitude?: number | null
-          recorded_at?: string
-          road_name?: string | null
-          vehicle_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "traccar_ignition_events_device_id_fkey"
-            columns: ["device_id"]
-            isOneToOne: false
-            referencedRelation: "traccar_devices"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traccar_ignition_events_instructor_id_fkey"
-            columns: ["instructor_id"]
-            isOneToOne: false
-            referencedRelation: "instructors"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traccar_ignition_events_vehicle_id_fkey"
-            columns: ["vehicle_id"]
-            isOneToOne: false
-            referencedRelation: "instructor_vehicles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -6592,7 +6592,7 @@ export type Database = {
             foreignKeyName: "vehicle_security_alerts_device_id_fkey"
             columns: ["device_id"]
             isOneToOne: false
-            referencedRelation: "traccar_devices"
+            referencedRelation: "gps_devices"
             referencedColumns: ["id"]
           },
           {

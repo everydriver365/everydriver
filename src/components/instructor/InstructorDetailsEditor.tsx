@@ -98,9 +98,9 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     if (!instructorId) return;
     
     try {
-      // Check traccar_devices for this instructor's last_seen_at
+      // Check gps_devices for this instructor's last_seen_at
       const { data } = await supabase
-        .from("traccar_devices")
+        .from("gps_devices")
         .select("last_seen_at")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false })
