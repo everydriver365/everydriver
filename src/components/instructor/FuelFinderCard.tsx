@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Fuel, Navigation, MapPin, ChevronRight, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFuelPrices, FuelStation } from "@/hooks/useFuelPrices";
@@ -36,7 +37,10 @@ function formatPrice(price: number | undefined): string {
 
 export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps) {
   const navigate = useNavigate();
-  const { cheapest, loading, error, refetch, location } = useFuelPrices(instructorId);
+  const { cheapest, nearest, loading, error, refetch } = useFuelPrices(instructorId);
+  const [mode, setMode] = useState<"cheapest" | "nearest">("cheapest");
+
+  const displayStation = mode === "cheapest" ? cheapest : nearest;
 
   const handleNavigate = (station: FuelStation) => {
     const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`;
@@ -65,7 +69,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   }
 
   // Error or no data state
-  if (error || !cheapest) {
+  if (error || (!cheapest && !nearest)) {
     return (
       <div className={cn("px-4", className)}>
         <div 
@@ -78,7 +82,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
                 <Fuel className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-foreground">Cheapest Fuel</h3>
+                <h3 className="font-semibold text-sm text-foreground">Fuel Finder</h3>
                 <p className="text-xs text-muted-foreground">
                   {error ? "Unable to load prices" : "No stations found nearby"}
                 </p>
@@ -101,8 +105,8 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
     );
   }
 
-  const brandInfo = getBrandInfo(cheapest.brand);
-  const primaryPrice = cheapest.prices.E10 || cheapest.prices.E5;
+  const brandInfo = displayStation ? getBrandInfo(displayStation.brand) : null;
+  const primaryPrice = displayStation?.prices.E10 || displayStation?.prices.E5;
 
   return (
     <div className={cn("px-4", className)}>
@@ -110,67 +114,124 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
         className="bg-card rounded-xl border border-border overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
         onClick={handleCardClick}
       >
-        {/* Header */}
+        {/* Header with Mode Toggle */}
         <div className="px-4 py-2 border-b border-border/50 bg-muted/30 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded bg-amber-500/20 flex items-center justify-center">
               <Fuel className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
             </div>
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Cheapest Fuel Nearby</span>
+            {/* Mode Toggle Buttons */}
+            <div className="flex rounded-md overflow-hidden border border-border/50">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMode("cheapest");
+                }}
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide transition-colors",
+                  mode === "cheapest" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-transparent text-muted-foreground hover:bg-muted"
+                )}
+              >
+                Cheapest
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMode("nearest");
+                }}
+                className={cn(
+                  "px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide transition-colors",
+                  mode === "nearest" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-transparent text-muted-foreground hover:bg-muted"
+                )}
+              >
+                Nearest
+              </button>
+            </div>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </div>
 
         {/* Main Content */}
-        <div className="p-4">
-          <div className="flex items-center gap-3">
-            {/* Brand Badge */}
-            <div className={cn(
-              "w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm",
-              brandInfo.bg
-            )}>
-              {brandInfo.text}
-            </div>
-
-            {/* Station Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-bold text-foreground">
-                  {formatPrice(primaryPrice)}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {cheapest.prices.E10 ? "E10" : "E5"}
-                </span>
+        {displayStation && brandInfo && (
+          <div className="p-4">
+            <div className="flex items-center gap-3">
+              {/* Brand Badge */}
+              <div className={cn(
+                "w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm",
+                brandInfo.bg
+              )}>
+                {brandInfo.text}
               </div>
-              <p className="text-sm font-medium text-foreground truncate">
-                {cheapest.name}
-              </p>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                <MapPin className="h-3 w-3 shrink-0" />
-                <span>{cheapest.distance_miles.toFixed(1)} miles away</span>
-                {cheapest.prices.B7 && (
-                  <>
-                    <span className="mx-1">•</span>
-                    <span>Diesel {formatPrice(cheapest.prices.B7)}</span>
-                  </>
-                )}
-              </div>
-            </div>
 
-            {/* Navigate Button */}
-            <Button
-              size="sm"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shrink-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleNavigate(cheapest);
-              }}
-            >
-              <Navigation className="h-4 w-4" />
-              Go
-            </Button>
+              {/* Station Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2">
+                  {mode === "cheapest" ? (
+                    <>
+                      <span className="text-xl font-bold text-foreground">
+                        {formatPrice(primaryPrice)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {displayStation.prices.E10 ? "E10" : "E5"}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-xl font-bold text-foreground">
+                        {displayStation.distance_miles.toFixed(1)} mi
+                      </span>
+                      <span className="text-xs text-muted-foreground">away</span>
+                    </>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-foreground truncate">
+                  {displayStation.name}
+                </p>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  {mode === "cheapest" ? (
+                    <>
+                      <span>{displayStation.distance_miles.toFixed(1)} miles away</span>
+                      {displayStation.prices.B7 && (
+                        <>
+                          <span className="mx-1">•</span>
+                          <span>Diesel {formatPrice(displayStation.prices.B7)}</span>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span>{formatPrice(primaryPrice)} {displayStation.prices.E10 ? "E10" : "E5"}</span>
+                      {displayStation.prices.B7 && (
+                        <>
+                          <span className="mx-1">•</span>
+                          <span>Diesel {formatPrice(displayStation.prices.B7)}</span>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Navigate Button */}
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNavigate(displayStation);
+                }}
+              >
+                <Navigation className="h-4 w-4" />
+                Go
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
