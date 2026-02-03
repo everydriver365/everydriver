@@ -11,7 +11,8 @@ import {
   Calendar,
   CreditCard,
   Mail,
-  Headphones
+  Headphones,
+  MapPin
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -334,6 +335,13 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       value: dashboardStats.coursesBooked.toString(),
       color: "bg-orange-500/10 text-orange-600",
       onClick: () => onNavigate("courses"),
+    },
+    {
+      icon: MapPin,
+      label: "Live Map",
+      value: "View",
+      color: "bg-cyan-500/10 text-cyan-600",
+      onClick: () => onNavigate("live-map"),
     },
   ];
 
