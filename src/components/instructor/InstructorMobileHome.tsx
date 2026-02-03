@@ -91,6 +91,31 @@ const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) 
   return <IconComponent className={className} />;
 };
 
+// Get weather icon color based on type
+const getWeatherIconColor = (icon: string): string => {
+  switch (icon) {
+    case "Sun":
+      return "text-amber-500";
+    case "CloudSun":
+      return "text-amber-400";
+    case "Cloud":
+      return "text-slate-400";
+    case "CloudRain":
+    case "CloudDrizzle":
+      return "text-blue-500";
+    case "CloudFog":
+      return "text-slate-500";
+    case "CloudLightning":
+      return "text-purple-500";
+    case "Snowflake":
+      return "text-sky-400";
+    case "Wind":
+      return "text-teal-500";
+    default:
+      return "text-slate-400";
+  }
+};
+
 interface InstructorMobileHomeProps {
   instructor: {
     id?: string;
@@ -360,27 +385,17 @@ export function InstructorMobileHome({
         {/* Overlapping Motivation Card */}
         <div className="relative -mt-16 mx-3">
           <div className="bg-card rounded-2xl shadow-lg p-4 border border-border/50">
-            {/* Row 1: TODAY label + Status + Weather */}
-            <div className="flex items-center justify-between gap-2 mb-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                  isGPSConnected 
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                    : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                  {isGPSConnected ? 'Live' : 'Offline'}
-                </span>
-              </div>
-              
-              {/* Weather display */}
-              {currentWeather && currentWeather.temperature !== null && (
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <WeatherIcon icon={currentWeather.icon} className="h-4 w-4" />
-                  <span className="text-sm font-medium">{currentWeather.temperature}°C</span>
-                </div>
-              )}
+            {/* Row 1: TODAY label + Status */}
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                isGPSConnected 
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                  : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                {isGPSConnected ? 'Live' : 'Offline'}
+              </span>
             </div>
             
             {/* Row 2: Greeting */}
@@ -388,15 +403,35 @@ export function InstructorMobileHome({
               {getGreeting(firstName)}
             </h1>
             
-            {/* Row 3: Location */}
-            {displayLocation && (
-              <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
-                <MapPin className="h-3 w-3 flex-shrink-0" />
-                <span className="text-xs truncate">{displayLocation}</span>
-              </div>
-            )}
+            {/* Row 3: Location + Weather */}
+            <div className="flex items-center justify-between gap-2 mt-0.5">
+              {displayLocation ? (
+                <div className="flex items-center gap-1 text-muted-foreground min-w-0">
+                  <MapPin className="h-3 w-3 flex-shrink-0 text-primary" />
+                  <span className="text-xs truncate">{displayLocation}</span>
+                </div>
+              ) : (
+                <div />
+              )}
+              
+              {/* Weather display with colored icon */}
+              {currentWeather && currentWeather.temperature !== null && (
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <WeatherIcon 
+                    icon={currentWeather.icon} 
+                    className={`h-4 w-4 ${getWeatherIconColor(currentWeather.icon)}`} 
+                  />
+                  <span className="text-sm font-medium text-foreground">{currentWeather.temperature}°C</span>
+                </div>
+              )}
+            </div>
             
-            {/* Row 4: Compact Alert Indicator (if alerts exist) */}
+            {/* Row 4: Subtitle */}
+            <p className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2">
+              {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help!"}
+            </p>
+            
+            {/* Row 5: Compact Alert Indicator (if alerts exist) */}
             {alerts.length > 0 && (
               <div 
                 className={`flex items-center gap-1.5 mt-2 px-2 py-1 rounded-md text-xs font-medium ${
