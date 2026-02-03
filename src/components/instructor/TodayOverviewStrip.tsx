@@ -37,54 +37,44 @@ export function TodayOverviewStrip({ instructorId }: TodayOverviewStripProps) {
             </div>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-between gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {/* Lessons */}
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-violet-500/15 dark:bg-violet-500/20">
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-violet-500/15 dark:bg-violet-500/20 mb-1">
                   <CalendarCheck className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-foreground">{overview.lessonCount}</span>
-                  <span className="text-[9px] text-muted-foreground -mt-0.5">Lessons</span>
-                </div>
+                <span className="text-sm font-bold text-foreground">{overview.lessonCount}</span>
+                <span className="text-[9px] text-muted-foreground -mt-0.5">Lessons</span>
               </div>
 
               {/* Hours */}
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-blue-500/15 dark:bg-blue-500/20">
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-blue-500/15 dark:bg-blue-500/20 mb-1">
                   <Clock className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-foreground">{overview.totalHours}h</span>
-                  <span className="text-[9px] text-muted-foreground -mt-0.5">Hours</span>
-                </div>
+                <span className="text-sm font-bold text-foreground">{overview.totalHours}h</span>
+                <span className="text-[9px] text-muted-foreground -mt-0.5">Hours</span>
               </div>
 
               {/* Earnings */}
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-emerald-500/15 dark:bg-emerald-500/20">
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-emerald-500/15 dark:bg-emerald-500/20 mb-1">
                   <PoundSterling className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-foreground">£{overview.expectedEarnings}</span>
-                  <span className="text-[9px] text-muted-foreground -mt-0.5">Earn</span>
-                </div>
+                <span className="text-sm font-bold text-foreground">£{overview.expectedEarnings}</span>
+                <span className="text-[9px] text-muted-foreground -mt-0.5">Earn</span>
               </div>
 
               {/* First Pickup */}
-              {(overview.firstPickupPostcode || firstLessonTimeFormatted) && (
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-rose-500/15 dark:bg-rose-500/20">
-                    <MapPin className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-foreground truncate max-w-[60px]">
-                      {overview.firstPickupPostcode || firstLessonTimeFormatted}
-                    </span>
-                    <span className="text-[9px] text-muted-foreground -mt-0.5">First</span>
-                  </div>
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-rose-500/15 dark:bg-rose-500/20 mb-1">
+                  <MapPin className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400" />
                 </div>
-              )}
+                <span className="text-sm font-bold text-foreground truncate max-w-[60px]">
+                  {overview.firstPickupPostcode || firstLessonTimeFormatted || "—"}
+                </span>
+                <span className="text-[9px] text-muted-foreground -mt-0.5">First</span>
+              </div>
             </div>
           </div>
         </Link>
