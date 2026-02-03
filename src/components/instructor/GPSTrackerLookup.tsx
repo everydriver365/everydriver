@@ -1,15 +1,9 @@
 import { useState } from "react";
-import { Search, Loader2, Check, AlertCircle } from "lucide-react";
+import { Search, Loader2, CheckCircle2, AlertCircle, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface GPSGateCandidate {
   id: number;
@@ -29,6 +23,7 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
   const [total, setTotal] = useState(0);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const handleLookup = async () => {
     setLoading(true);
@@ -90,24 +85,27 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
     }
   };
 
-  const handleSelect = (value: string) => {
-    const selected = candidates.find(c => c && String(c.id) === value);
-    if (selected) {
-      onSelect(selected.id, selected.username || "", selected.name || "");
-      toast.success(`Linked to GPSgate user #${selected.id} (${selected.name || selected.username})`);
-    }
+  const handleSelectTracker = (c: GPSGateCandidate) => {
+    setSelectedId(c.id);
+    onSelect(c.id, c.username || "", c.name || "");
+    toast.success(`Linked to GPSgate user #${c.id} (${c.name || c.username})`);
   };
 
   const formatCandidateLabel = (c: GPSGateCandidate) => {
     if (!c) return "Unknown";
-    const parts = [c.name || c.username || `ID: ${c.id}`];
+    return c.name || c.username || `User #${c.id}`;
+  };
+
+  const formatCandidateSubtitle = (c: GPSGateCandidate) => {
+    const parts: string[] = [];
     if (c.name && c.username && c.username !== c.name) {
-      parts.push(`(${c.username})`);
+      parts.push(c.username);
     }
     if (c.description) {
-      parts.push(`- ${c.description.slice(0, 30)}${c.description.length > 30 ? '...' : ''}`);
+      parts.push(c.description.slice(0, 50));
     }
-    return parts.join(' ');
+    parts.push(`ID: ${c.id}`);
+    return parts.join(' • ');
   };
 
   return (
@@ -135,26 +133,36 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
         </div>
       )}
 
-      {searched && candidates.length > 1 && (
+      {searched && candidates.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            {total > 0 ? `${candidates.length} of ${total} trackers available` : `${candidates.length} trackers found`}. Select one:
+            {total > 0 ? `${candidates.length} of ${total} trackers` : `${candidates.length} trackers`} — tap to select:
           </p>
-          <Select onValueChange={handleSelect}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a tracker..." />
-            </SelectTrigger>
-            <SelectContent>
-              {candidates.filter(c => c && c.id != null).map((c) => (
-                <SelectItem key={String(c.id)} value={String(c.id)}>
-                  <div className="flex items-center gap-2">
-                    <Check className="h-3 w-3 opacity-0 group-data-[state=checked]:opacity-100" />
-                    <span className="truncate">{formatCandidateLabel(c)}</span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="border rounded-lg divide-y max-h-64 overflow-y-auto bg-background">
+            {candidates.filter(c => c && c.id != null).map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => handleSelectTracker(c)}
+                className={cn(
+                  "w-full px-3 py-2.5 text-left flex items-center gap-3 hover:bg-muted/50 transition-colors",
+                  selectedId === c.id && "bg-primary/10"
+                )}
+              >
+                {selectedId === c.id ? (
+                  <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                ) : (
+                  <Radio className="h-5 w-5 text-muted-foreground shrink-0" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium truncate">{formatCandidateLabel(c)}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {formatCandidateSubtitle(c)}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
