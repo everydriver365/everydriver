@@ -1203,11 +1203,13 @@ serve(async (req) => {
         console.log(`[GPSgate-Poller] Instructor ${instructor.id}: ${speedKmh.toFixed(1)}km/h at ${lat},${lon}`);
 
         // Update the gps_devices table for this instructor (if they have any device)
-        // This updates last_seen_at so the connection status works
+        // Use current time for last_seen_at (shows we successfully polled) while 
+        // the track time is stored in last_gpsgate_track_time for data freshness
         const { data: updateData, error: updateErr } = await supabase
           .from("gps_devices")
           .update({
-            last_seen_at: instructorTrackTime || now,
+            last_seen_at: now, // Use poll time, not GPS timestamp
+            last_gpsgate_track_time: instructorTrackTime || now,
             last_speed_kmh: speedKmh,
             last_latitude: lat,
             last_longitude: lon,
@@ -1227,7 +1229,8 @@ serve(async (req) => {
               device_identifier: `gpsgate-${gpsGateUserId}`,
               device_name: `GPSgate Tracker`,
               gpsgate_user_id: gpsGateUserId,
-              last_seen_at: instructorTrackTime || now,
+              last_seen_at: now, // Use poll time
+              last_gpsgate_track_time: instructorTrackTime || now,
               last_speed_kmh: speedKmh,
               last_latitude: lat,
               last_longitude: lon,
