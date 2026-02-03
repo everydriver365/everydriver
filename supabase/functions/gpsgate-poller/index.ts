@@ -470,10 +470,11 @@ serve(async (req) => {
     console.log(`[GPSgate-Poller] ${devicesByIdentifier.size} devices registered in database`);
 
     // 2b. Get instructors with GPSgate mappings
+    // Get instructors with GPSgate mappings (either user_id OR username)
     const { data: instructorsWithGPS, error: instructorsError } = await supabase
       .from("instructors")
       .select("id, gpsgate_user_id, gpsgate_username")
-      .not("gpsgate_user_id", "is", null);
+      .or("gpsgate_user_id.not.is.null,gpsgate_username.not.is.null");
 
     if (instructorsError) {
       console.error(`[GPSgate-Poller] Instructors query error:`, instructorsError);
@@ -482,12 +483,33 @@ serve(async (req) => {
     // Build lookup by GPSgate user ID for instructors
     const instructorsByGpsGateId = new Map<number, InstructorGPS>();
     for (const i of instructorsWithGPS || []) {
+      // If instructor has numeric ID, use it directly
       if (i.gpsgate_user_id) {
         instructorsByGpsGateId.set(i.gpsgate_user_id, i as InstructorGPS);
+      } else if (i.gpsgate_username) {
+        // Auto-discover numeric ID from username
+        const normalizedUsername = normalizeText(i.gpsgate_username);
+        const discoveredUserId = usernameToUserId.get(normalizedUsername);
+        if (discoveredUserId) {
+          instructorsByGpsGateId.set(discoveredUserId, i as InstructorGPS);
+          // Persist discovered ID to database (fire and forget)
+          supabase
+            .from("instructors")
+            .update({ gpsgate_user_id: discoveredUserId })
+            .eq("id", i.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error(`[GPSgate-Poller] Failed to persist discovered ID for instructor ${i.id}:`, error);
+              }
+            });
+          console.log(`[GPSgate-Poller] Auto-linked instructor ${i.id} username ${i.gpsgate_username} -> GPSgate user ${discoveredUserId}`);
+        } else {
+          console.log(`[GPSgate-Poller] Instructor ${i.id} username ${i.gpsgate_username} not found in GPSgate users`);
+        }
       }
     }
 
-    console.log(`[GPSgate-Poller] ${instructorsByGpsGateId.size} instructors with GPSgate IDs`);
+    console.log(`[GPSgate-Poller] ${instructorsByGpsGateId.size} instructors with GPSgate IDs (including auto-discovered)`);
 
     let processed = 0;
     let skipped = 0;
