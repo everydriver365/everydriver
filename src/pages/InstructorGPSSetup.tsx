@@ -236,8 +236,8 @@ export default function InstructorTraccarSetup() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="text-primary-foreground">
-              <h1 className="text-lg font-semibold">GPS Tracker Setup</h1>
-              <p className="text-sm text-primary-foreground/70">Configure your ST-902L hardware tracker</p>
+              <h1 className="text-lg font-semibold">Connect Your Tracker</h1>
+              <p className="text-sm text-primary-foreground/70">Link your GPS device for automatic trip logging</p>
             </div>
           </div>
           <Button 
