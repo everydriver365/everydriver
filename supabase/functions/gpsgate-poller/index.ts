@@ -39,6 +39,17 @@ interface GPSDevice {
   vehicle_id: string | null;
   last_ignition_status: boolean | null;
   gpsgate_user_id: number | null;
+  gpsgate_odometer_m: number | null;
+  gpsgate_engine_hours_s: number | null;
+  daily_start_odometer_m: number | null;
+  daily_start_date: string | null;
+}
+
+interface GPSGateAccumulator {
+  AccumulatorId: number;
+  Name: string;
+  Value: number;
+  Unit: string;
 }
 
 interface InstructorGPS {
@@ -699,6 +710,50 @@ serve(async (req) => {
         ? latestTrack.Ignition 
         : null;
 
+      // Fetch accumulators (odometer, engine hours) from GPSgate
+      let odometerMeters: number | null = null;
+      let engineHoursSeconds: number | null = null;
+      
+      try {
+        const accumulatorsRes = await fetch(
+          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/accumulators`,
+          { headers: authHeaders }
+        );
+        
+        if (accumulatorsRes.ok) {
+          const accumulators: GPSGateAccumulator[] = await accumulatorsRes.json();
+          
+          for (const acc of accumulators) {
+            const name = acc.Name?.toLowerCase() || "";
+            if (name.includes("odometer") || name.includes("distance")) {
+              // GPSgate returns odometer in meters
+              odometerMeters = acc.Value;
+            } else if (name.includes("engine") && name.includes("hour")) {
+              // GPSgate returns engine hours in seconds
+              engineHoursSeconds = Math.round(acc.Value);
+            }
+          }
+          
+          if (odometerMeters !== null) {
+            console.log(`[GPSgate-Poller] Odometer for ${identifier}: ${(odometerMeters / 1000).toFixed(1)} km`);
+          }
+        }
+      } catch (accErr) {
+        console.log(`[GPSgate-Poller] Failed to fetch accumulators for user ${gpsGateUserId}:`, accErr);
+      }
+
+      // Calculate daily tracking
+      const todayDate = new Date().toISOString().split('T')[0];
+      let dailyStartOdometer = device.daily_start_odometer_m;
+      let dailyStartDate = device.daily_start_date;
+      
+      // Reset daily counter if it's a new day or not set
+      if (odometerMeters !== null && dailyStartDate !== todayDate) {
+        dailyStartOdometer = odometerMeters;
+        dailyStartDate = todayDate;
+        console.log(`[GPSgate-Poller] Reset daily odometer for ${identifier}: ${(odometerMeters / 1000).toFixed(1)} km`);
+      }
+
       // Update device record with telemetry
       const { error: updateError } = await supabase
         .from("traccar_devices")
@@ -715,6 +770,10 @@ serve(async (req) => {
           last_battery_percent: batteryPercent,
           last_ignition_status: ignitionStatus,
           gpsgate_user_id: gpsGateUserId,
+          gpsgate_odometer_m: odometerMeters,
+          gpsgate_engine_hours_s: engineHoursSeconds,
+          daily_start_odometer_m: dailyStartOdometer,
+          daily_start_date: dailyStartDate,
         })
         .eq("id", device.id);
 

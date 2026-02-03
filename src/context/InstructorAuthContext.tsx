@@ -28,6 +28,8 @@ interface InstructorProfile {
   cpd_hours_logged: number | null;
   cpd_year_target: number | null;
   cpd_certified: boolean | null;
+  vehicle_mpg: number | null;
+  fuel_cost_per_litre: number | null;
 }
 
 interface Subscription {
@@ -100,7 +102,7 @@ export function InstructorAuthProvider({ children }: { children: React.ReactNode
       // Fetch instructor profile linked to this auth user
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
-        .select('id, name, email, phone, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active, website_theme, website_font, website_header_style, website_button_color, website_footer_bg, payment_qr_url, booking_mode, adi_badge_expiry, dbs_certificate_expiry, car_insurance_expiry, car_mot_expiry, car_tax_expiry, cpd_hours_logged, cpd_year_target, cpd_certified')
+        .select('id, name, email, phone, app_slug, profile_image_url, brand_colour, secondary_colour, logo_url, is_active, website_theme, website_font, website_header_style, website_button_color, website_footer_bg, payment_qr_url, booking_mode, adi_badge_expiry, dbs_certificate_expiry, car_insurance_expiry, car_mot_expiry, car_tax_expiry, cpd_hours_logged, cpd_year_target, cpd_certified, vehicle_mpg, fuel_cost_per_litre')
         .eq('auth_user_id', userId)
         .maybeSingle();
 

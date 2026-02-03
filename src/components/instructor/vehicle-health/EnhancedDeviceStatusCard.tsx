@@ -1,4 +1,4 @@
-import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation } from "lucide-react";
+import { Battery, BatteryLow, BatteryMedium, BatteryFull, Key, Wifi, WifiOff, Car, Link, Gauge, MapPin, Navigation, Timer } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
-import { formatMph } from "@/lib/utils";
+import { formatMph, kmToMiles } from "@/lib/utils";
 
 interface EnhancedDeviceStatusCardProps {
   device: TraccarDeviceHealth;
@@ -20,6 +20,25 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
   const speedKmh = device.last_speed_kmh;
   const speedLimitKmh = device.last_speed_limit_kmh;
   const roadName = device.last_road_name;
+  
+  // Calculate odometer in miles
+  const odometerMiles = device.gpsgate_odometer_m 
+    ? Math.round((device.gpsgate_odometer_m / 1000) * 0.621371) 
+    : null;
+  
+  // Calculate today's distance if we have daily tracking
+  const today = new Date().toISOString().split("T")[0];
+  const todayDistanceMiles = (
+    device.daily_start_date === today && 
+    device.gpsgate_odometer_m != null && 
+    device.daily_start_odometer_m != null
+  ) ? Math.round(((device.gpsgate_odometer_m - device.daily_start_odometer_m) / 1000) * 0.621371) 
+    : null;
+  
+  // Format engine hours
+  const engineHoursFormatted = device.gpsgate_engine_hours_s 
+    ? `${Math.floor(device.gpsgate_engine_hours_s / 3600)}h ${Math.floor((device.gpsgate_engine_hours_s % 3600) / 60)}m`
+    : null;
 
   const getBatteryColor = (level: number | null) => {
     if (level === null) return "text-muted-foreground";
@@ -160,6 +179,29 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
             </span>
           </div>
         </div>
+
+        {/* Odometer & Engine Hours row */}
+        {(odometerMiles !== null || engineHoursFormatted !== null) && (
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {odometerMiles !== null && (
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-muted/50">
+                <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+                <div>
+                  <span className="font-medium">{odometerMiles.toLocaleString()} mi</span>
+                  {todayDistanceMiles !== null && todayDistanceMiles > 0 && (
+                    <span className="text-primary ml-1">(+{todayDistanceMiles} today)</span>
+                  )}
+                </div>
+              </div>
+            )}
+            {engineHoursFormatted !== null && (
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-muted/50">
+                <Timer className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-medium">{engineHoursFormatted}</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Heading indicator */}
         {isOnline && device.last_heading !== undefined && device.last_heading !== null && (

@@ -4016,6 +4016,8 @@ export type Database = {
           distance_km: number
           end_location: string | null
           end_odometer_km: number | null
+          estimated_fuel_cost_gbp: number | null
+          fuel_litres_used: number | null
           id: string
           instructor_id: string
           is_auto_logged: boolean
@@ -4034,6 +4036,8 @@ export type Database = {
           distance_km?: number
           end_location?: string | null
           end_odometer_km?: number | null
+          estimated_fuel_cost_gbp?: number | null
+          fuel_litres_used?: number | null
           id?: string
           instructor_id: string
           is_auto_logged?: boolean
@@ -4052,6 +4056,8 @@ export type Database = {
           distance_km?: number
           end_location?: string | null
           end_odometer_km?: number | null
+          estimated_fuel_cost_gbp?: number | null
+          fuel_litres_used?: number | null
           id?: string
           instructor_id?: string
           is_auto_logged?: boolean
@@ -6297,14 +6303,19 @@ export type Database = {
           created_at: string | null
           current_pupil_id: string | null
           current_session_id: string | null
+          daily_start_date: string | null
+          daily_start_odometer_m: number | null
           device_identifier: string
           device_name: string | null
+          gpsgate_engine_hours_s: number | null
+          gpsgate_odometer_m: number | null
           gpsgate_user_id: number | null
           id: string
           instructor_id: string
           is_active: boolean | null
           is_test_route_mode: boolean
           last_battery_percent: number | null
+          last_gpsgate_odometer_m: number | null
           last_gpsgate_track_time: string | null
           last_heading: number | null
           last_ignition_status: boolean | null
@@ -6323,14 +6334,19 @@ export type Database = {
           created_at?: string | null
           current_pupil_id?: string | null
           current_session_id?: string | null
+          daily_start_date?: string | null
+          daily_start_odometer_m?: number | null
           device_identifier: string
           device_name?: string | null
+          gpsgate_engine_hours_s?: number | null
+          gpsgate_odometer_m?: number | null
           gpsgate_user_id?: number | null
           id?: string
           instructor_id: string
           is_active?: boolean | null
           is_test_route_mode?: boolean
           last_battery_percent?: number | null
+          last_gpsgate_odometer_m?: number | null
           last_gpsgate_track_time?: string | null
           last_heading?: number | null
           last_ignition_status?: boolean | null
@@ -6349,14 +6365,19 @@ export type Database = {
           created_at?: string | null
           current_pupil_id?: string | null
           current_session_id?: string | null
+          daily_start_date?: string | null
+          daily_start_odometer_m?: number | null
           device_identifier?: string
           device_name?: string | null
+          gpsgate_engine_hours_s?: number | null
+          gpsgate_odometer_m?: number | null
           gpsgate_user_id?: number | null
           id?: string
           instructor_id?: string
           is_active?: boolean | null
           is_test_route_mode?: boolean
           last_battery_percent?: number | null
+          last_gpsgate_odometer_m?: number | null
           last_gpsgate_track_time?: string | null
           last_heading?: number | null
           last_ignition_status?: boolean | null
