@@ -1,202 +1,111 @@
 
-# Fuel Finder Feature Implementation Plan
+# Switch from Traccar to GPSgate
 
 ## Overview
-Add a "Cheapest Fuel" tile to the instructor mobile home page that shows the nearest station with the cheapest petrol, including distance, price, and a "Navigate" button to open directions.
+This plan migrates the GPS tracking system from Traccar to GPSgate Cloud. The current Traccar integration includes device registration, real-time position polling, telemetry processing, and vehicle health monitoring. GPSgate offers similar capabilities through their REST API.
 
-## Technical Architecture
+## Scope of Changes
 
-```text
-+------------------+     +--------------------+     +------------------+
-|   Mobile Home    | --> | useFuelPrices Hook | --> | get-fuel-prices  |
-|   FuelCard       |     |   (with caching)   |     | Edge Function    |
-+------------------+     +--------------------+     +------------------+
-                                                           |
-                              +----------------------------+
-                              |
-                    +---------v----------+
-                    | UK Fuel Price APIs |
-                    | (14 retailers)     |
-                    +--------------------+
-```
+### Database Updates
+The existing `traccar_devices` table and related tables will need minor modifications:
+- Rename internal references from "traccar" to be more generic (e.g., "gps_devices")
+- Add new columns for GPSgate-specific identifiers (application ID, device internal ID)
+- Keep all existing telemetry tables unchanged (they store processed data, not raw API data)
 
-## Data Sources (Free, No API Key Required)
+### New Secrets Required
+GPSgate Cloud authentication requires:
+| Secret Name | Purpose |
+|-------------|---------|
+| `GPSGATE_SERVER_URL` | GPSgate Cloud server URL (e.g., `https://yourcompany.gpsgate.com`) |
+| `GPSGATE_APP_ID` | Application ID from your GPSgate account |
+| `GPSGATE_API_TOKEN` | API token or username/password for authentication |
 
-The UK Government's CMA interim scheme provides free JSON endpoints from 14 major retailers:
+### Edge Functions to Modify
 
-| Retailer | Endpoint |
-|----------|----------|
-| Tesco | https://www.tesco.com/fuel_prices/fuel_prices_data.json |
-| Sainsbury's | https://api.sainsburys.co.uk/v1/exports/latest/fuel_prices_data.json |
-| Asda | https://storelocator.asda.com/fuel_prices_data.json |
-| Morrisons | https://www.morrisons.com/fuel-prices/fuel.json |
-| BP | https://www.bp.com/en_gb/united-kingdom/home/fuelprices/fuel_prices_data.json |
-| Esso/Tesco | https://fuelprices.esso.co.uk/latestdata.json |
-| Shell | https://www.shell.co.uk/fuel-prices-data.html |
-| JET | https://jetlocal.co.uk/fuel_prices_data.json |
-| Motor Fuel Group | https://fuel.motorfuelgroup.com/fuel_prices_data.json |
-| Rontec | https://www.rontec-servicestations.co.uk/fuel-prices/data/fuel_prices_data.json |
-| SGN | https://www.sgnretail.uk/files/data/SGN_daily_fuel_prices.json |
-| Moto | https://moto-way.com/fuel-price/fuel_prices.json |
-| Ascona Group | https://fuelprices.asconagroup.co.uk/newfuel.json |
+**1. `traccar-poller` → `gpsgate-poller` (Rewrite)**
+- **Current**: Polls Traccar `/api/positions` and `/api/devices` endpoints with Basic Auth
+- **New**: Polls GPSgate REST API v1 endpoints with Bearer token auth
+- GPSgate API endpoints:
+  - `GET /api/v.1/applications/{appId}/devices` - List devices
+  - `GET /api/v.1/applications/{appId}/devices/{deviceId}/positions` - Get positions
 
-## Implementation Steps
+**2. `traccar-webhook` → `gpsgate-webhook` (Rewrite)**
+- **Current**: Receives OsmAnd protocol data from Traccar Client app
+- **New**: GPSgate uses different protocols; may need webhook for push notifications or continue with polling
+- Note: GPSgate primarily uses polling rather than webhooks for position data
 
-### 1. Create Edge Function: `get-fuel-prices`
-**File:** `supabase/functions/get-fuel-prices/index.ts`
+### Frontend Components to Update
+| Component | Changes |
+|-----------|---------|
+| `InstructorTraccarSetup.tsx` | Rename to `InstructorGPSSetup.tsx`, update device registration UI |
+| `TraccarConnectionChecklist.tsx` | Update branding and setup instructions |
+| All route references `/instructor/traccar` | Change to `/instructor/gps-tracking` |
+| Hooks: `useTraccarConnectionStatus`, `useTraccarPoller` | Rename and update API references |
+| UI text referencing "Traccar" or "ST-902L" | Update to GPSgate-compatible device names |
 
-The edge function will:
-- Accept instructor ID as input
-- Fetch instructor's cached lat/lng from database (same pattern as driving-alerts)
-- Fetch fuel prices from multiple UK retailer JSON endpoints in parallel
-- Calculate distance from instructor's location to each station using Haversine formula
-- Filter to stations within a configurable radius (default 15km / ~10 miles)
-- Sort by price (E10 unleaded by default)
-- Return the cheapest 5 stations with distance
-- Cache results for 30 minutes to avoid excessive API calls
-
-**Response structure:**
-```json
-{
-  "stations": [
-    {
-      "name": "Tesco Extra",
-      "brand": "Tesco",
-      "address": "123 High Street, Birmingham",
-      "postcode": "B1 2CD",
-      "lat": 52.4862,
-      "lng": -1.8904,
-      "distance_km": 2.3,
-      "distance_miles": 1.4,
-      "prices": {
-        "E10": 134.9,
-        "E5": 139.9,
-        "B7": 142.9
-      },
-      "updated_at": "2026-02-02T10:30:00Z"
-    }
-  ],
-  "cheapest": { ... },
-  "nearest": { ... },
-  "fuelType": "E10",
-  "location": "Birmingham"
-}
-```
-
-### 2. Create React Hook: `useFuelPrices`
-**File:** `src/hooks/useFuelPrices.ts`
-
-Following the same pattern as `useDrivingAlerts`:
-- Local storage caching (30 minute TTL)
-- Loading and error states
-- Automatic refresh on mount
-- Manual refetch function
-
-### 3. Create Fuel Finder Card Component
-**File:** `src/components/instructor/FuelFinderCard.tsx`
-
-A compact card showing:
-- Cheapest station name and brand logo
-- Current E10 price in pence per litre (e.g., "134.9p")
-- Distance in miles (e.g., "1.4 mi away")
-- "Navigate" button to open Google Maps directions
-- Tap card to expand/see more options
-
-### 4. Add Tile to QuickActionTiles
-**File:** `src/components/instructor/QuickActionTiles.tsx`
-
-Add to the `additionalTiles` array:
-```typescript
-{ 
-  id: "fuel-finder", 
-  title: "Cheapest Fuel", 
-  icon: "Fuel", 
-  route: "/instructor/fuel", 
-  display_order: 118 
-}
-```
-
-Also add `Fuel` to the `iconMap`.
-
-### 5. Create Full Fuel Finder Page
-**File:** `src/pages/InstructorFuel.tsx`
-
-A dedicated page showing:
-- Map with all nearby fuel stations plotted
-- List of cheapest stations sorted by price
-- Filter by fuel type (E10, E5, Diesel)
-- Price comparison chart
-- "Navigate" button for each station
-
-### 6. Add Route to App.tsx
-**File:** `src/App.tsx`
-
-Add route: `/instructor/fuel` -> `InstructorFuel`
-
-### 7. Add Fuel Card to Mobile Home (Optional Enhancement)
-**File:** `src/components/instructor/InstructorMobileHome.tsx`
-
-As an optional enhancement, add a compact `FuelFinderCard` directly to the home page feed (similar to driving alerts) showing the cheapest nearby fuel at a glance.
+### Hooks to Rename/Update
+- `useTraccarConnectionStatus.ts` → `useGPSConnectionStatus.ts`
+- `useTraccarPoller.ts` → `useGPSPoller.ts`
+- Update all imports across the codebase
 
 ## Technical Details
 
-### Haversine Distance Calculation
-```typescript
-function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLng/2) * Math.sin(dLng/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
+### GPSgate API Authentication
+```text
+Authorization: Bearer {GPSGATE_API_TOKEN}
+```
+
+### GPSgate Response Format (Positions)
+```text
+{
+  "devices": [{
+    "id": 123,
+    "name": "Vehicle 1",
+    "position": {
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "speed": 45,
+      "heading": 180,
+      "timestamp": "2026-02-03T10:00:00Z"
+    }
+  }]
 }
 ```
 
-### Caching Strategy
-- Edge function caches aggregated results for 30 minutes (to reduce API calls)
-- Client-side hook caches per instructor for 30 minutes
-- Prices update automatically via pull-to-refresh
+### Data Mapping
+| Traccar Field | GPSgate Equivalent |
+|---------------|-------------------|
+| `uniqueId` (IMEI) | `device.identifier` |
+| `position.speed` (knots) | `position.speed` (km/h - no conversion needed) |
+| `position.course` | `position.heading` |
+| `attributes.ignition` | `position.ignition` (if available) |
+| `attributes.battery` | `position.battery` (if available) |
 
-### Error Handling
-- If all API calls fail, show "Unable to fetch prices" message
-- If instructor has no location, prompt to set home postcode
-- Gracefully handle individual retailer API failures (continue with available data)
+## Implementation Steps
 
-## UI Design
+### Phase 1: Backend Preparation
+1. Add GPSgate secrets (`GPSGATE_SERVER_URL`, `GPSGATE_APP_ID`, `GPSGATE_API_TOKEN`)
+2. Create new `gpsgate-poller` edge function with GPSgate API integration
+3. Update database columns to support GPSgate device identifiers
+4. Test edge function with your GPSgate account
 
-**Tile Style (following existing patterns):**
-- Uses existing `Fuel` icon from Lucide (already imported in other components)
-- Amber/yellow color theme (matches existing fuel cost styling)
-- Compact oblong shape in the 2-column grid
+### Phase 2: Frontend Migration
+1. Rename all Traccar-related components and hooks
+2. Update setup instructions for GPSgate device configuration
+3. Update route paths from `/traccar` to `/gps-tracking`
+4. Remove Traccar-specific branding (ST-902L references, Traccar Client app mentions)
 
-**Card Design:**
-- Gradient background matching driving alerts style
-- Station logo/brand icon
-- Price prominently displayed
-- Distance shown with appropriate units (miles)
-- CTA button for navigation
+### Phase 3: Cleanup
+1. Delete old `traccar-poller` and `traccar-webhook` edge functions
+2. Remove old Traccar secrets (`TRACCAR_SERVER_URL`, `TRACCAR_EMAIL`, `TRACCAR_PASSWORD`)
+3. Run database migration to rename columns/tables
 
-## Files to Create/Modify
+## Impact Assessment
+- **Breaking Change**: Existing Traccar device registrations will need to be re-registered with GPSgate device IDs
+- **Data Continuity**: Historical telemetry data (GPS points, alerts, ignition events) will be preserved
+- **Downtime**: Minimal - can run both systems in parallel during migration
 
-| File | Action |
-|------|--------|
-| `supabase/functions/get-fuel-prices/index.ts` | Create |
-| `src/hooks/useFuelPrices.ts` | Create |
-| `src/components/instructor/FuelFinderCard.tsx` | Create |
-| `src/pages/InstructorFuel.tsx` | Create |
-| `src/components/instructor/QuickActionTiles.tsx` | Modify (add tile + icon) |
-| `src/App.tsx` | Modify (add route) |
-| `src/components/instructor/InstructorMobileHome.tsx` | Modify (optional - add card to feed) |
-
-## Dependencies
-- No new npm packages required
-- No API keys needed (all UK fuel data is free open data)
-- Uses existing Supabase infrastructure
-
-## Estimated Complexity
-- Edge function: Medium (parallel API fetching, distance calculation)
-- Hook: Low (follows existing pattern)
-- UI components: Medium (card + full page with map)
-- Total: ~4-5 hours of implementation
+## Questions to Consider
+- Do your GPSgate devices use the same IMEI identifiers currently stored in the database?
+- Does your GPSgate account have the REST API enabled?
+- Are there specific GPSgate features (geofences, events) you want to integrate?
