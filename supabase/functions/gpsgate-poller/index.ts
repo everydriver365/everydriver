@@ -41,6 +41,12 @@ interface GPSDevice {
   gpsgate_user_id: number | null;
 }
 
+interface InstructorGPS {
+  id: string;
+  gpsgate_user_id: number | null;
+  gpsgate_username: string | null;
+}
+
 interface VehicleSecuritySettings {
   id: string;
   vehicle_id: string;
@@ -463,8 +469,29 @@ serve(async (req) => {
 
     console.log(`[GPSgate-Poller] ${devicesByIdentifier.size} devices registered in database`);
 
+    // 2b. Get instructors with GPSgate mappings
+    const { data: instructorsWithGPS, error: instructorsError } = await supabase
+      .from("instructors")
+      .select("id, gpsgate_user_id, gpsgate_username")
+      .not("gpsgate_user_id", "is", null);
+
+    if (instructorsError) {
+      console.error(`[GPSgate-Poller] Instructors query error:`, instructorsError);
+    }
+
+    // Build lookup by GPSgate user ID for instructors
+    const instructorsByGpsGateId = new Map<number, InstructorGPS>();
+    for (const i of instructorsWithGPS || []) {
+      if (i.gpsgate_user_id) {
+        instructorsByGpsGateId.set(i.gpsgate_user_id, i as InstructorGPS);
+      }
+    }
+
+    console.log(`[GPSgate-Poller] ${instructorsByGpsGateId.size} instructors with GPSgate IDs`);
+
     let processed = 0;
     let skipped = 0;
+    let instructorsProcessed = 0;
 
     // 3. Process each registered device
     for (const [identifier, device] of devicesByIdentifier) {
@@ -818,13 +845,65 @@ serve(async (req) => {
       processed++;
     }
 
-    console.log(`[GPSgate-Poller] Complete: ${processed} processed, ${skipped} skipped`);
+    // 4. Process instructors with GPSgate IDs (phone tracking)
+    for (const [gpsGateUserId, instructor] of instructorsByGpsGateId) {
+      try {
+        // Fetch latest tracks for today
+        const today = new Date().toISOString().split('T')[0];
+        const tracksRes = await fetch(
+          `${GPSGATE_URL}/comGpsGate/api/v.1/applications/${GPSGATE_APP_ID}/users/${gpsGateUserId}/tracks?Date=${today}`,
+          { headers: authHeaders }
+        );
+
+        if (!tracksRes.ok) {
+          console.log(`[GPSgate-Poller] Failed to fetch tracks for instructor GPSgate user ${gpsGateUserId}`);
+          continue;
+        }
+
+        const tracks: GPSGateTrackPoint[] = await tracksRes.json();
+        
+        if (!tracks || tracks.length === 0) {
+          continue;
+        }
+
+        const latestTrack = tracks[tracks.length - 1];
+        const speedKmh = latestTrack.Speed || 0;
+        const lat = latestTrack.Lat;
+        const lon = latestTrack.Lng;
+
+        console.log(`[GPSgate-Poller] Instructor ${instructor.id}: ${speedKmh.toFixed(1)}km/h at ${lat},${lon}`);
+
+        // Update the traccar_devices table for this instructor (if they have any device)
+        // This updates last_seen_at so the connection status works
+        const { error: updateErr } = await supabase
+          .from("traccar_devices")
+          .update({
+            last_seen_at: latestTrack.Time,
+            last_speed_kmh: speedKmh,
+            last_latitude: lat,
+            last_longitude: lon,
+            last_heading: latestTrack.Heading || 0,
+          })
+          .eq("instructor_id", instructor.id);
+
+        if (updateErr) {
+          console.log(`[GPSgate-Poller] No device to update for instructor ${instructor.id}, creating virtual entry`);
+        }
+
+        instructorsProcessed++;
+      } catch (err) {
+        console.error(`[GPSgate-Poller] Error processing instructor ${instructor.id}:`, err);
+      }
+    }
+
+    console.log(`[GPSgate-Poller] Complete: ${processed} devices, ${instructorsProcessed} instructors, ${skipped} skipped`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         processed, 
         skipped,
+        instructors_processed: instructorsProcessed,
         total_users: gpsGateUsers.length,
         registered_devices: devicesByIdentifier.size
       }),
