@@ -411,12 +411,9 @@ export default function TraccarLiveMap({
 
               {/* Road Name */}
               <div className="flex-1 min-w-0 text-center">
-                <p className="text-foreground font-medium truncate">
+              <p className="text-foreground font-medium truncate">
                   {roadName || "—"}
                 </p>
-                {!isConnected && (
-                  <p className="text-xs text-muted-foreground">No GPS signal</p>
-                )}
               </div>
 
               {/* Speed Limit Roundel */}
