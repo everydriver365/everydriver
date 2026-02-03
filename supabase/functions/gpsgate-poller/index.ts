@@ -28,6 +28,7 @@ interface GPSDevice {
   id: string;
   instructor_id: string;
   device_identifier: string;
+  device_name?: string | null;
   current_pupil_id: string | null;
   current_session_id: string | null;
   last_speed_kmh: number | null;
@@ -55,6 +56,56 @@ interface GPSGateUser {
   Username: string;
   Name: string;
   Description: string;
+}
+
+function normalizeText(v: unknown): string {
+  return String(v ?? "").trim().toLowerCase();
+}
+
+function digitsOnly(v: unknown): string {
+  return String(v ?? "").replace(/\D+/g, "");
+}
+
+function resolveGpsGateUserIdForDevice(
+  deviceIdentifier: string,
+  explicitUserId: number | null,
+  users: GPSGateUser[],
+  usernameToUserId: Map<string, number>
+): { userId: number | null; reason: string } {
+  if (explicitUserId) return { userId: explicitUserId, reason: "explicit_gpsgate_user_id" };
+
+  const identifier = normalizeText(deviceIdentifier);
+  const identifierDigits = digitsOnly(deviceIdentifier);
+
+  // 1) Exact username match (case-insensitive)
+  const byUsername = usernameToUserId.get(identifier);
+  if (byUsername) return { userId: byUsername, reason: "username_exact" };
+
+  // 2) Exact digits match against username digits (helps when usernames embed IMEI)
+  if (identifierDigits.length >= 8) {
+    const matches = users.filter((u) => digitsOnly(u.Username) === identifierDigits);
+    if (matches.length === 1) return { userId: matches[0].Id, reason: "username_digits_exact" };
+    if (matches.length > 1) return { userId: null, reason: "ambiguous_username_digits" };
+  }
+
+  // 3) Substring match in username/name/description
+  const matches = users.filter((u) => {
+    const uUsername = normalizeText(u.Username);
+    const uName = normalizeText(u.Name);
+    const uDesc = normalizeText(u.Description);
+
+    if (identifier && (uUsername.includes(identifier) || uName.includes(identifier) || uDesc.includes(identifier))) {
+      return true;
+    }
+
+    // Also try digits substring matches
+    const uDigits = digitsOnly(`${u.Username} ${u.Name} ${u.Description}`);
+    return identifierDigits.length >= 8 && uDigits.includes(identifierDigits);
+  });
+
+  if (matches.length === 1) return { userId: matches[0].Id, reason: "substring_match" };
+  if (matches.length > 1) return { userId: null, reason: "ambiguous_substring_match" };
+  return { userId: null, reason: "no_match" };
 }
 
 interface GPSGateTrackPoint {
@@ -352,7 +403,7 @@ serve(async (req) => {
     }
 
     // Normalize URL: remove trailing slash and ensure https:// prefix
-    let GPSGATE_URL = GPSGATE_URL_RAW.replace(/\/+$/, "");
+    let GPSGATE_URL = GPSGATE_URL_RAW.trim().replace(/\/+$/, "");
     if (!GPSGATE_URL.startsWith("http://") && !GPSGATE_URL.startsWith("https://")) {
       GPSGATE_URL = `https://${GPSGATE_URL}`;
     }
@@ -385,10 +436,10 @@ serve(async (req) => {
     const gpsGateUsers: GPSGateUser[] = await usersRes.json();
     console.log(`[GPSgate-Poller] Found ${gpsGateUsers.length} users on GPSgate server`);
 
-    // Build username to user ID mapping
+    // Build username to user ID mapping (case-insensitive)
     const usernameToUserId = new Map<string, number>();
     for (const u of gpsGateUsers) {
-      usernameToUserId.set(u.Username, u.Id);
+      usernameToUserId.set(normalizeText(u.Username), u.Id);
     }
 
     // 2. Get registered devices from our database (now using traccar_devices table - will rename later)
@@ -417,13 +468,45 @@ serve(async (req) => {
 
     // 3. Process each registered device
     for (const [identifier, device] of devicesByIdentifier) {
-      // Find matching GPSgate user
-      const gpsGateUserId = device.gpsgate_user_id || usernameToUserId.get(identifier);
+      // Find matching GPSgate user (supports IMEI-in-description and other non-username mappings)
+      const matchCandidates = [
+        device.device_identifier,
+        device.device_name,
+      ].filter((v): v is string => typeof v === "string" && v.trim().length > 0);
+
+      let resolved = { userId: device.gpsgate_user_id ?? null, reason: device.gpsgate_user_id ? "explicit_gpsgate_user_id" : "no_match" };
+      for (const candidate of matchCandidates) {
+        resolved = resolveGpsGateUserIdForDevice(
+          candidate,
+          device.gpsgate_user_id,
+          gpsGateUsers,
+          usernameToUserId
+        );
+        if (resolved.userId) break;
+      }
+
+      const gpsGateUserId = resolved.userId;
       
       if (!gpsGateUserId) {
-        console.log(`[GPSgate-Poller] Device ${identifier} not found in GPSgate`);
+        console.log(
+          `[GPSgate-Poller] Device ${identifier} not linked in GPSgate (${resolved.reason}). Candidates tried: ${matchCandidates.join(", ")}`
+        );
         skipped++;
         continue;
+      }
+
+      // Persist mapping once discovered (helps future runs and UI)
+      if (!device.gpsgate_user_id) {
+        const { error: mapErr } = await supabase
+          .from("traccar_devices")
+          .update({ gpsgate_user_id: gpsGateUserId })
+          .eq("id", device.id);
+
+        if (mapErr) {
+          console.warn(`[GPSgate-Poller] Failed to persist gpsgate_user_id mapping for ${identifier}:`, mapErr);
+        } else {
+          console.log(`[GPSgate-Poller] Linked device ${identifier} -> GPSgate user ${gpsGateUserId} (${resolved.reason})`);
+        }
       }
 
       // Fetch latest tracks for today
@@ -475,7 +558,7 @@ serve(async (req) => {
       const lon = latestTrack.Lng;
       const bearing = latestTrack.Heading || 0;
       const altitude = latestTrack.Altitude || 0;
-      const now = new Date();
+       const now = new Date();
 
       console.log(`[GPSgate-Poller] Processing: device=${identifier}, speed=${speedKmh.toFixed(1)}km/h`);
 
@@ -549,7 +632,8 @@ serve(async (req) => {
           last_latitude: lat,
           last_longitude: lon,
           last_heading: bearing,
-          last_seen_at: now.toISOString(),
+          // Use the actual GPS timestamp, so "online/offline" reflects device activity
+          last_seen_at: latestTrack.Time,
           last_speed_limit_kmh: speedLimitKmh,
           last_road_name: roadName,
           last_gpsgate_track_time: latestTrack.Time,
