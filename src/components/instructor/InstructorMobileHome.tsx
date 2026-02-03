@@ -18,7 +18,17 @@ import {
   Play,
   BookOpen,
   Clock,
-  PoundSterling
+  PoundSterling,
+  MapPin,
+  CloudSun,
+  Cloud,
+  CloudRain,
+  CloudDrizzle,
+  CloudFog,
+  CloudLightning,
+  Snowflake,
+  Wind,
+  AlertTriangle
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -43,6 +53,7 @@ import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
+import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
@@ -62,6 +73,23 @@ import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { triggerHaptic } from "@/lib/haptics";
+
+// Weather icon component
+const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
+  const iconMap: Record<string, React.ElementType> = {
+    Sun,
+    CloudSun,
+    Cloud,
+    CloudRain,
+    CloudDrizzle,
+    CloudFog,
+    CloudLightning,
+    Snowflake,
+    Wind,
+  };
+  const IconComponent = iconMap[icon] || Cloud;
+  return <IconComponent className={className} />;
+};
 
 interface InstructorMobileHomeProps {
   instructor: {
@@ -107,13 +135,17 @@ export function InstructorMobileHome({
   const { data: todayOverview, isLoading: todayLoading } = useTodayOverview(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: unreadCount } = useUnreadMessagesCount(instructorId);
-  const { alerts, dismissAlert, location: alertsLocation } = useDrivingAlerts(instructorId);
+  const { alerts, dismissAlert, location: alertsLocation, currentWeather } = useDrivingAlerts(instructorId);
+  const { roadName: gpsRoadName } = useInstructorLastPosition(instructorId || null);
   
   // New enhancement hooks
   const { data: streak } = useInstructorStreak(instructorId);
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
   const { data: tomorrowPreview } = useTomorrowPreview(instructorId);
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
+  
+  // Derive display location - prefer GPS road name, fallback to alerts location
+  const displayLocation = gpsRoadName || alertsLocation;
   const { data: lastWeekComparison } = useLastWeekComparison(instructorId);
 
   const getInitials = (name: string) => {
@@ -328,33 +360,59 @@ export function InstructorMobileHome({
         {/* Overlapping Motivation Card */}
         <div className="relative -mt-16 mx-3">
           <div className="bg-card rounded-2xl shadow-lg p-4 border border-border/50">
-            <div className="flex items-start justify-between gap-3">
-              {/* Left Content */}
-              <div className="flex-1 min-w-0">
-                {/* TODAY Label with Status */}
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                    isGPSConnected 
-                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                      : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                    {isGPSConnected ? 'Live' : 'Offline'}
-                  </span>
-                </div>
-                
-                {/* Personalized Greeting */}
-                <h1 className="text-lg font-bold text-foreground tracking-tight">
-                  {getGreeting(firstName)}
-                </h1>
-                
-                {/* Subtitle */}
-                <p className="text-muted-foreground text-xs leading-relaxed mt-0.5 line-clamp-2">
-                  {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help!"}
-                </p>
+            {/* Row 1: TODAY label + Status + Weather */}
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                  isGPSConnected 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                    : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                  {isGPSConnected ? 'Live' : 'Offline'}
+                </span>
               </div>
+              
+              {/* Weather display */}
+              {currentWeather && currentWeather.temperature !== null && (
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <WeatherIcon icon={currentWeather.icon} className="h-4 w-4" />
+                  <span className="text-sm font-medium">{currentWeather.temperature}°C</span>
+                </div>
+              )}
             </div>
+            
+            {/* Row 2: Greeting */}
+            <h1 className="text-lg font-bold text-foreground tracking-tight">
+              {getGreeting(firstName)}
+            </h1>
+            
+            {/* Row 3: Location */}
+            {displayLocation && (
+              <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
+                <MapPin className="h-3 w-3 flex-shrink-0" />
+                <span className="text-xs truncate">{displayLocation}</span>
+              </div>
+            )}
+            
+            {/* Row 4: Compact Alert Indicator (if alerts exist) */}
+            {alerts.length > 0 && (
+              <div 
+                className={`flex items-center gap-1.5 mt-2 px-2 py-1 rounded-md text-xs font-medium ${
+                  alerts[0].severity === 'severe' 
+                    ? 'bg-destructive/10 text-destructive' 
+                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                }`}
+              >
+                <AlertTriangle className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">
+                  {alerts[0].severity === 'severe' 
+                    ? alerts[0].title 
+                    : `${alerts.length} warning${alerts.length > 1 ? 's' : ''} nearby`}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -14,6 +14,14 @@ export interface DrivingAlert {
   icon: string;
 }
 
+export interface CurrentWeather {
+  temperature: number | null;
+  weatherCode: number | null;
+  description: string;
+  icon: string;
+  windSpeed: number | null;
+}
+
 interface UseDrivingAlertsResult {
   alerts: DrivingAlert[];
   loading: boolean;
@@ -22,6 +30,7 @@ interface UseDrivingAlertsResult {
   dismissedAlerts: Set<string>;
   dismissAlert: (alertId: string) => void;
   location: string | null;
+  currentWeather: CurrentWeather | null;
 }
 
 const CACHE_KEY = "driving_alerts_cache";
@@ -33,13 +42,14 @@ interface CachedAlerts {
   timestamp: number;
   instructorId: string;
   location: string | null;
+  currentWeather: CurrentWeather | null;
 }
 
 function getAlertId(alert: DrivingAlert): string {
   return `${alert.type}-${alert.title}-${alert.description}`.replace(/\s+/g, "_").toLowerCase();
 }
 
-function getCachedAlerts(instructorId: string): { alerts: DrivingAlert[]; location: string | null } | null {
+function getCachedAlerts(instructorId: string): { alerts: DrivingAlert[]; location: string | null; currentWeather: CurrentWeather | null } | null {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (!cached) return null;
@@ -48,19 +58,20 @@ function getCachedAlerts(instructorId: string): { alerts: DrivingAlert[]; locati
     if (parsed.instructorId !== instructorId) return null;
     if (Date.now() - parsed.timestamp > CACHE_DURATION_MS) return null;
     
-    return { alerts: parsed.alerts, location: parsed.location };
+    return { alerts: parsed.alerts, location: parsed.location, currentWeather: parsed.currentWeather || null };
   } catch {
     return null;
   }
 }
 
-function setCachedAlerts(instructorId: string, alerts: DrivingAlert[], location: string | null): void {
+function setCachedAlerts(instructorId: string, alerts: DrivingAlert[], location: string | null, currentWeather: CurrentWeather | null): void {
   try {
     const cache: CachedAlerts = {
       alerts,
       timestamp: Date.now(),
       instructorId,
       location,
+      currentWeather,
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
   } catch {
@@ -108,6 +119,7 @@ export function useDrivingAlerts(instructorId: string | undefined): UseDrivingAl
   const [error, setError] = useState<string | null>(null);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(getDismissedAlerts);
   const [location, setLocation] = useState<string | null>(null);
+  const [currentWeather, setCurrentWeather] = useState<CurrentWeather | null>(null);
 
   const fetchAlerts = useCallback(async () => {
     if (!instructorId) {
@@ -121,6 +133,7 @@ export function useDrivingAlerts(instructorId: string | undefined): UseDrivingAl
     if (cached) {
       setAlerts(cached.alerts);
       setLocation(cached.location);
+      setCurrentWeather(cached.currentWeather);
       setLoading(false);
       return;
     }
@@ -137,9 +150,11 @@ export function useDrivingAlerts(instructorId: string | undefined): UseDrivingAl
 
       const fetchedAlerts = data?.alerts || [];
       const fetchedLocation = data?.location || null;
+      const fetchedWeather = data?.currentWeather || null;
       setAlerts(fetchedAlerts);
       setLocation(fetchedLocation);
-      setCachedAlerts(instructorId, fetchedAlerts, fetchedLocation);
+      setCurrentWeather(fetchedWeather);
+      setCachedAlerts(instructorId, fetchedAlerts, fetchedLocation, fetchedWeather);
     } catch (err) {
       console.error("Error fetching driving alerts:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch alerts");
@@ -192,6 +207,7 @@ export function useDrivingAlerts(instructorId: string | undefined): UseDrivingAl
     dismissedAlerts,
     dismissAlert,
     location,
+    currentWeather,
   };
 }
 
