@@ -369,13 +369,20 @@ serve(async (req) => {
       }
     }
 
-    // Calculate overall statistics
+    // Calculate overall statistics from GPS points (fallback if session values are null)
     const allSpeeds = gpsPoints.map(p => p.speed_kmh || 0).filter(s => s > 0);
+    const calculatedAvgSpeed = allSpeeds.length > 0 
+      ? allSpeeds.reduce((a, b) => a + b, 0) / allSpeeds.length 
+      : null;
+    const calculatedMaxSpeed = allSpeeds.length > 0 
+      ? Math.max(...allSpeeds) 
+      : null;
+    
     const overallStats = {
       totalPoints: gpsPoints.length,
       distance: session.total_distance_km,
-      avgSpeed: session.avg_speed_kmh,
-      maxSpeed: session.max_speed_kmh,
+      avgSpeed: session.avg_speed_kmh ?? calculatedAvgSpeed,
+      maxSpeed: session.max_speed_kmh ?? calculatedMaxSpeed,
       duration: session.ended_at && session.started_at 
         ? Math.round((new Date(session.ended_at).getTime() - new Date(session.started_at).getTime()) / 60000)
         : null,
