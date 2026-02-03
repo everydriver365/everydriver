@@ -406,13 +406,6 @@ export function InstructorMobileHome({
         motivationSubtitle={content?.motivation_subtitle}
       />
 
-      {/* Quick Stats Chips Row */}
-      <QuickStatsChips
-        lessonCount={currentLessons}
-        hoursToday={todayOverview?.totalHours || 0}
-        expectedEarnings={todayOverview?.expectedEarnings || 0}
-        weeklyProgress={weeklyGoals?.progressPercent}
-      />
 
       {/* Celebration Confetti */}
       <CelebrationConfetti 
