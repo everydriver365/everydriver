@@ -63,8 +63,8 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
 
   useEffect(() => {
     fetchPosition();
-    // Poll every 10 seconds
-    const interval = setInterval(fetchPosition, 10000);
+    // Poll every 1 second for real-time updates
+    const interval = setInterval(fetchPosition, 1000);
     return () => clearInterval(interval);
   }, [fetchPosition]);
 
