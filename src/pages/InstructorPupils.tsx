@@ -48,7 +48,7 @@ import { LessonHistory } from "@/components/instructor/LessonHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
-import { ExpandablePupilCard } from "@/components/instructor/ExpandablePupilCard";
+import { PupilCardStack } from "@/components/instructor/PupilCardStack";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal";
@@ -501,8 +501,8 @@ export default function InstructorPupils() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredPupils.map((pupil, index) => (
-              <ExpandablePupilCard
+            {filteredPupils.map((pupil) => (
+              <PupilCardStack
                 key={pupil.id}
                 pupil={pupil}
                 onEdit={handleEditPupil}
@@ -532,7 +532,6 @@ export default function InstructorPupils() {
                   setIsTestHistoryOpen(true);
                 }}
                 onStatusChange={(pupilId, newStatus) => {
-                  // Update the local state to reflect the status change
                   setPupils(prevPupils => 
                     prevPupils.map(p => 
                       p.id === pupilId ? { ...p, status: newStatus } : p
