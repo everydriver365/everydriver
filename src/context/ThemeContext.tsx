@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark' | 'oled' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resolvedTheme: 'light' | 'dark';
+  resolvedTheme: 'light' | 'dark' | 'oled';
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -16,13 +16,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return (saved as Theme) || 'light';
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark' | 'oled'>('light');
 
   useEffect(() => {
     const root = window.document.documentElement;
 
     const updateTheme = () => {
-      let effectiveTheme: 'light' | 'dark';
+      let effectiveTheme: 'light' | 'dark' | 'oled';
       
       if (theme === 'system') {
         effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -30,8 +30,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         effectiveTheme = theme;
       }
 
-      root.classList.remove('light', 'dark');
-      root.classList.add(effectiveTheme);
+      // Remove all theme classes
+      root.classList.remove('light', 'dark', 'oled');
+      
+      // Add appropriate classes
+      if (effectiveTheme === 'oled') {
+        root.classList.add('dark', 'oled');
+      } else {
+        root.classList.add(effectiveTheme);
+      }
+      
       setResolvedTheme(effectiveTheme);
     };
 

@@ -62,6 +62,9 @@ import { NextLessonCard } from "@/components/instructor/NextLessonCard";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
+import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
+import { RadialFAB } from "@/components/instructor/RadialFAB";
+import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 
 import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { FuelFinderCard } from "@/components/instructor/FuelFinderCard";
@@ -69,6 +72,7 @@ import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -317,6 +321,10 @@ export function InstructorMobileHome({
                 <Moon className="mr-2 h-4 w-4" />
                 Dark Mode
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('oled')}>
+                <Moon className="mr-2 h-4 w-4 fill-current" />
+                OLED Dark
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme('system')}>
                 <Palette className="mr-2 h-4 w-4" />
                 System Default
@@ -371,86 +379,29 @@ export function InstructorMobileHome({
       {/* Spacer for fixed header */}
       <div className="h-16 pt-[env(safe-area-inset-top,0px)]" />
 
-      {/* Hero Section with Overlapping Card */}
-      <div className="relative">
-        {/* Hero Image */}
-        <div className="w-full h-56 overflow-hidden">
-          <img 
-            src={content?.hero_image_url || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"} 
-            alt="Hero" 
-            className="w-full h-full object-cover"
-          />
-        </div>
-        
-        {/* Overlapping Motivation Card */}
-        <div className="relative -mt-16 mx-3">
-          <div className="bg-card rounded-2xl shadow-lg p-4 border border-border/50">
-            {/* Row 1: TODAY label + Status */}
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                isGPSConnected 
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                  : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                {isGPSConnected ? 'Live' : 'Offline'}
-              </span>
-            </div>
-            
-            {/* Row 2: Greeting */}
-            <h1 className="text-lg font-bold text-foreground tracking-tight">
-              {getGreeting(firstName)}
-            </h1>
-            
-            {/* Row 3: Location + Weather */}
-            <div className="flex items-center justify-between gap-2 mt-0.5">
-              {displayLocation ? (
-                <div className="flex items-center gap-1 text-muted-foreground min-w-0">
-                  <MapPin className="h-3 w-3 flex-shrink-0 text-primary" />
-                  <span className="text-xs truncate">{displayLocation}</span>
-                </div>
-              ) : (
-                <div />
-              )}
-              
-              {/* Weather display with colored icon */}
-              {currentWeather && currentWeather.temperature !== null && (
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <WeatherIcon 
-                    icon={currentWeather.icon} 
-                    className={`h-4 w-4 ${getWeatherIconColor(currentWeather.icon)}`} 
-                  />
-                  <span className="text-sm font-medium text-foreground">{currentWeather.temperature}°C</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Row 4: Subtitle */}
-            <p className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2">
-              {content?.motivation_subtitle || "Enjoy your lessons today, get in touch if we can help!"}
-            </p>
-            
-            {/* Row 5: Compact Alert Indicator (if alerts exist) */}
-            {alerts.length > 0 && (
-              <div 
-                className={`flex items-center gap-1.5 mt-2 px-2 py-1 rounded-md text-xs font-medium ${
-                  alerts[0].severity === 'severe' 
-                    ? 'bg-destructive/10 text-destructive' 
-                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                }`}
-              >
-                <AlertTriangle className="h-3 w-3 flex-shrink-0" />
-                <span className="truncate">
-                  {alerts[0].severity === 'severe' 
-                    ? alerts[0].title 
-                    : `${alerts.length} warning${alerts.length > 1 ? 's' : ''} nearby`}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Contextual Home Hero */}
+      <ContextualHomeHero
+        firstName={firstName}
+        isGPSConnected={isGPSConnected}
+        displayLocation={displayLocation}
+        currentWeather={currentWeather}
+        alerts={alerts}
+        todayOverview={todayOverview}
+        tomorrowPreview={tomorrowPreview}
+        nextLesson={nextLesson ? {
+          pupilName: nextLesson.pupilName,
+          pickupPostcode: nextLesson.pickupPostcode,
+          startTime: nextLesson.startTime,
+          minutesUntil: nextLesson.minutesUntil,
+        } : null}
+        weeklyStats={weeklyGoals ? {
+          hoursThisWeek: weeklyGoals.hoursThisWeek,
+          hoursGoal: weeklyGoals.hoursGoal,
+          progressPercent: weeklyGoals.progressPercent,
+        } : null}
+        heroImageUrl={content?.hero_image_url}
+        motivationSubtitle={content?.motivation_subtitle}
+      />
 
       {/* Celebration Confetti */}
       <CelebrationConfetti 
@@ -494,6 +445,12 @@ export function InstructorMobileHome({
         </div>
       )}
 
+      {/* Today's Route Map Preview */}
+      <TodayRoutePreview 
+        instructorId={instructorId}
+        onTap={() => navigate("/instructor/diary")}
+        className="mt-4"
+      />
 
       {/* Gap Filler Suggestions */}
       {gapSuggestions && gapSuggestions.length > 0 && (
@@ -588,6 +545,29 @@ export function InstructorMobileHome({
         />
       )}
 
+
+      {/* Radial FAB Menu */}
+      <RadialFAB
+        onAddNote={() => {
+          triggerHaptic("selection");
+          // TODO: Open quick note modal
+        }}
+        onNavigate={() => {
+          if (nextLesson?.pickupPostcode) {
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nextLesson.pickupPostcode)}`;
+            window.open(mapsUrl, "_blank");
+          }
+        }}
+        onMessage={() => {
+          if (nextLesson?.pupilPhone) {
+            window.location.href = `sms:${nextLesson.pupilPhone}`;
+          }
+        }}
+        onLogBreak={() => {
+          triggerHaptic("selection");
+          // TODO: Open break log modal
+        }}
+      />
 
       {/* Bottom Navigation */}
       <InstructorBottomNav />
