@@ -1,111 +1,120 @@
 
-# Switch from Traccar to GPSgate
+# Add GPSgate User ID to Instructor Profile Settings
 
 ## Overview
-This plan migrates the GPS tracking system from Traccar to GPSgate Cloud. The current Traccar integration includes device registration, real-time position polling, telemetry processing, and vehicle health monitoring. GPSgate offers similar capabilities through their REST API.
+Add a new "GPS Tracking" tab to the existing InstructorDetailsEditor component, allowing instructors to configure their GPSgate User ID directly in their profile settings. This links the instructor's account to their GPSgate Tracker app.
 
-## Scope of Changes
+## Database Changes
 
-### Database Updates
-The existing `traccar_devices` table and related tables will need minor modifications:
-- Rename internal references from "traccar" to be more generic (e.g., "gps_devices")
-- Add new columns for GPSgate-specific identifiers (application ID, device internal ID)
-- Keep all existing telemetry tables unchanged (they store processed data, not raw API data)
+Add two new columns to the `instructors` table:
 
-### New Secrets Required
-GPSgate Cloud authentication requires:
-| Secret Name | Purpose |
-|-------------|---------|
-| `GPSGATE_SERVER_URL` | GPSgate Cloud server URL (e.g., `https://yourcompany.gpsgate.com`) |
-| `GPSGATE_APP_ID` | Application ID from your GPSgate account |
-| `GPSGATE_API_TOKEN` | API token or username/password for authentication |
+| Column | Type | Purpose |
+|--------|------|---------|
+| `gpsgate_user_id` | INTEGER | The GPSgate User ID from the instructor's tracker |
+| `gpsgate_username` | TEXT | The GPSgate username (for display reference) |
 
-### Edge Functions to Modify
+## Frontend Changes
 
-**1. `traccar-poller` → `gpsgate-poller` (Rewrite)**
-- **Current**: Polls Traccar `/api/positions` and `/api/devices` endpoints with Basic Auth
-- **New**: Polls GPSgate REST API v1 endpoints with Bearer token auth
-- GPSgate API endpoints:
-  - `GET /api/v.1/applications/{appId}/devices` - List devices
-  - `GET /api/v.1/applications/{appId}/devices/{deviceId}/positions` - Get positions
+### Update InstructorDetailsEditor Component
 
-**2. `traccar-webhook` → `gpsgate-webhook` (Rewrite)**
-- **Current**: Receives OsmAnd protocol data from Traccar Client app
-- **New**: GPSgate uses different protocols; may need webhook for push notifications or continue with polling
-- Note: GPSgate primarily uses polling rather than webhooks for position data
+Add a 4th tab called "GPS Tracking" to the existing tabbed interface:
 
-### Frontend Components to Update
-| Component | Changes |
-|-----------|---------|
-| `InstructorTraccarSetup.tsx` | Rename to `InstructorGPSSetup.tsx`, update device registration UI |
-| `TraccarConnectionChecklist.tsx` | Update branding and setup instructions |
-| All route references `/instructor/traccar` | Change to `/instructor/gps-tracking` |
-| Hooks: `useTraccarConnectionStatus`, `useTraccarPoller` | Rename and update API references |
-| UI text referencing "Traccar" or "ST-902L" | Update to GPSgate-compatible device names |
+**Current tabs:**
+- Vehicle
+- Qualifications  
+- Social Links
 
-### Hooks to Rename/Update
-- `useTraccarConnectionStatus.ts` → `useGPSConnectionStatus.ts`
-- `useTraccarPoller.ts` → `useGPSPoller.ts`
-- Update all imports across the codebase
+**Updated tabs:**
+- Vehicle
+- Qualifications
+- Social Links
+- GPS Tracking (new)
 
-## Technical Details
+### GPS Tracking Tab Content
 
-### GPSgate API Authentication
+The new tab will include:
+
+1. **GPSgate Username field**
+   - Text input for the instructor's GPSgate username
+   - Helper text: "Your GPSgate Tracker app username"
+
+2. **GPSgate User ID field**
+   - Numeric input for the User ID (optional - can be auto-discovered)
+   - Helper text: "Leave blank to auto-discover from username"
+
+3. **Connection Status indicator**
+   - Shows if the instructor's tracker is currently online
+   - Displays last position timestamp if available
+   - Uses the existing useGPSConnectionStatus hook logic
+
+4. **Test Connection button**
+   - Triggers a poll to verify the credentials work
+   - Shows success/error feedback
+
+### Update Edge Function
+
+Modify the `gpsgate-poller` to also check the `instructors` table for GPSgate mappings:
+
 ```text
-Authorization: Bearer {GPSGATE_API_TOKEN}
+Current flow:
+GPSgate API -> Match to traccar_devices -> Update positions
+
+New flow:
+GPSgate API -> Match to instructors (by gpsgate_user_id)
+           -> Match to traccar_devices (existing)
+           -> Update positions accordingly
 ```
 
-### GPSgate Response Format (Positions)
-```text
-{
-  "devices": [{
-    "id": 123,
-    "name": "Vehicle 1",
-    "position": {
-      "latitude": 51.5074,
-      "longitude": -0.1278,
-      "speed": 45,
-      "heading": 180,
-      "timestamp": "2026-02-03T10:00:00Z"
-    }
-  }]
-}
-```
-
-### Data Mapping
-| Traccar Field | GPSgate Equivalent |
-|---------------|-------------------|
-| `uniqueId` (IMEI) | `device.identifier` |
-| `position.speed` (knots) | `position.speed` (km/h - no conversion needed) |
-| `position.course` | `position.heading` |
-| `attributes.ignition` | `position.ignition` (if available) |
-| `attributes.battery` | `position.battery` (if available) |
+This allows instructors to be tracked directly without needing a separate device registration.
 
 ## Implementation Steps
 
-### Phase 1: Backend Preparation
-1. Add GPSgate secrets (`GPSGATE_SERVER_URL`, `GPSGATE_APP_ID`, `GPSGATE_API_TOKEN`)
-2. Create new `gpsgate-poller` edge function with GPSgate API integration
-3. Update database columns to support GPSgate device identifiers
-4. Test edge function with your GPSgate account
+### Phase 1: Database Migration
+1. Add `gpsgate_user_id` (INTEGER) column to instructors table
+2. Add `gpsgate_username` (TEXT) column to instructors table
 
-### Phase 2: Frontend Migration
-1. Rename all Traccar-related components and hooks
-2. Update setup instructions for GPSgate device configuration
-3. Update route paths from `/traccar` to `/gps-tracking`
-4. Remove Traccar-specific branding (ST-902L references, Traccar Client app mentions)
+### Phase 2: Update InstructorDetailsEditor
+1. Add GPS tracking fields to the InstructorDetails interface
+2. Update the SELECT query to include new fields
+3. Add new "GPS Tracking" tab with input fields
+4. Add connection status display using useGPSConnectionStatus
+5. Add Save button for GPS settings
 
-### Phase 3: Cleanup
-1. Delete old `traccar-poller` and `traccar-webhook` edge functions
-2. Remove old Traccar secrets (`TRACCAR_SERVER_URL`, `TRACCAR_EMAIL`, `TRACCAR_PASSWORD`)
-3. Run database migration to rename columns/tables
+### Phase 3: Update Edge Function
+1. Modify gpsgate-poller to also query instructors table for GPSgate mappings
+2. When a match is found via instructor, update that instructor's last_seen_at or a dedicated position field
+3. Continue supporting existing device-based tracking for vehicles
 
-## Impact Assessment
-- **Breaking Change**: Existing Traccar device registrations will need to be re-registered with GPSgate device IDs
-- **Data Continuity**: Historical telemetry data (GPS points, alerts, ignition events) will be preserved
-- **Downtime**: Minimal - can run both systems in parallel during migration
+## UI Preview
 
-## Questions to Consider
-- Do your GPSgate devices use the same IMEI identifiers currently stored in the database?
-- Does your GPSgate account have the REST API enabled?
-- Are there specific GPSgate features (geofences, events) you want to integrate?
+```text
++----------------------------------------------------------+
+| Vehicle | Qualifications | Social Links | GPS Tracking   |
++----------------------------------------------------------+
+|                                                          |
+|  GPSgate Username                                        |
+|  [_____________________________]                         |
+|  Your GPSgate Tracker app username                       |
+|                                                          |
+|  GPSgate User ID (optional)                              |
+|  [___________]                                           |
+|  Leave blank to auto-discover from username              |
+|                                                          |
+|  +----------------------------------------------------+  |
+|  |  Connection Status                                 |  |
+|  |  [●] Connected - Last update: 2 minutes ago        |  |
+|  +----------------------------------------------------+  |
+|                                                          |
+|  [        Test Connection        ]                       |
+|                                                          |
+|  [       Save GPS Settings       ]                       |
+|                                                          |
++----------------------------------------------------------+
+```
+
+## Technical Notes
+
+- The GPSgate User ID in the instructors table works independently from the traccar_devices table
+- Instructors using the iOS GPSgate Tracker app on their phone will be matched via this setting
+- Vehicle hardware trackers (OBD-II devices) continue using the traccar_devices table
+- Both can coexist - an instructor can have their phone tracked AND a vehicle tracker
