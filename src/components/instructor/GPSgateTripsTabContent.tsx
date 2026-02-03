@@ -238,7 +238,7 @@ export function GPSgateTripsTabContent({ instructorId }: GPSgateTripsTabContentP
             <Route className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
             <h3 className="font-medium mb-1">No trips found</h3>
             <p className="text-sm text-muted-foreground">
-              Trips from your GPSgate tracker will appear here
+              Trips from your Every Driver GPS Gate tracker will appear here
             </p>
           </CardContent>
         </Card>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, Loader2, CheckCircle2, AlertCircle, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [filterText, setFilterText] = useState("");
 
   const handleLookup = async () => {
     setLoading(true);
@@ -56,7 +58,7 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
       if (validCandidates.length === 1) {
         const match = validCandidates[0];
         onSelect(match.id, match.username || "", match.name || "");
-        toast.success(`Linked to GPSgate user #${match.id} (${match.name || match.username})`);
+        toast.success(`Linked to tracker #${match.id} (${match.name || match.username})`);
       } else if (validCandidates.length === 0) {
         // No matches - fetch all trackers to show selection
         toast.info("No exact match found. Loading all available trackers...");
@@ -71,15 +73,15 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
         if (allCandidates.length > 0) {
           toast.info(`Select from ${allCandidates.length} available trackers below.`);
         } else {
-          toast.error("No trackers found in GPSgate. Check your GPSgate App ID.");
+          toast.error("No trackers found. Check your Every Driver GPS Gate configuration.");
         }
       } else {
         toast.info(`Found ${validCandidates.length} matching trackers. Please select one.`);
       }
     } catch (err) {
       console.error("Lookup error:", err);
-      setError("Failed to search GPSgate");
-      toast.error("Failed to search GPSgate");
+      setError("Failed to search trackers");
+      toast.error("Failed to search trackers");
     } finally {
       setLoading(false);
     }
@@ -88,7 +90,7 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
   const handleSelectTracker = (c: GPSGateCandidate) => {
     setSelectedId(c.id);
     onSelect(c.id, c.username || "", c.name || "");
-    toast.success(`Linked to GPSgate user #${c.id} (${c.name || c.username})`);
+    toast.success(`Linked to tracker #${c.id} (${c.name || c.username})`);
   };
 
   const formatCandidateLabel = (c: GPSGateCandidate) => {
@@ -108,6 +110,17 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
     return parts.join(' • ');
   };
 
+  // Filter candidates locally
+  const filteredCandidates = candidates.filter(c => {
+    if (!filterText) return true;
+    const searchLower = filterText.toLowerCase();
+    return (
+      c.name?.toLowerCase().includes(searchLower) ||
+      c.username?.toLowerCase().includes(searchLower) ||
+      c.id.toString().includes(filterText)
+    );
+  });
+
   return (
     <div className="space-y-2">
       <Button
@@ -123,7 +136,7 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
         ) : (
           <Search className="h-4 w-4 mr-2" />
         )}
-        Find Tracker in GPSgate
+        Find Tracker
       </Button>
 
       {error && (
@@ -135,11 +148,17 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
 
       {searched && candidates.length > 0 && (
         <div className="space-y-2">
+          <Input
+            placeholder="Search trackers..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className="h-9"
+          />
           <p className="text-xs text-muted-foreground">
-            {total > 0 ? `${candidates.length} of ${total} trackers` : `${candidates.length} trackers`} — tap to select:
+            {filterText ? `${filteredCandidates.length} of ${candidates.length}` : candidates.length} trackers — tap to select:
           </p>
           <div className="border rounded-lg divide-y max-h-64 overflow-y-auto bg-background">
-            {candidates.filter(c => c && c.id != null).map((c) => (
+            {filteredCandidates.filter(c => c && c.id != null).map((c) => (
               <button
                 key={c.id}
                 type="button"
@@ -168,7 +187,7 @@ export function GPSTrackerLookup({ searchQuery, onSelect }: GPSTrackerLookupProp
 
       {searched && candidates.length === 0 && !error && !loading && (
         <p className="text-xs text-muted-foreground">
-          No trackers found in GPSgate. Make sure the GPSgate App ID is configured correctly.
+          No trackers found. Make sure Every Driver GPS Gate is configured correctly.
         </p>
       )}
     </div>

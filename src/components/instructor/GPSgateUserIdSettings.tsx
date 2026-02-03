@@ -163,7 +163,7 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Link2 className="h-4 w-4" />
-            GPSgate Account Link
+            Every Driver GPS Gate
           </CardTitle>
           {isVerified && savedUserId && (
             <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
@@ -173,14 +173,14 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
           )}
         </div>
         <CardDescription>
-          Link your GPSgate user ID to sync trips and mileage for tax records
+          Link your tracker to sync trips and mileage for tax records
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="text-xs">
-            Your GPSgate User ID connects your hardware tracker to your account for automatic trip logging, 
+            Your tracker connects your GPS device to your account for automatic trip logging, 
             mileage tracking, and tax deductible calculations.
           </AlertDescription>
         </Alert>
@@ -209,14 +209,14 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
         {(showManualEntry || savedUserId) && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Label htmlFor="gpsgate-user-id">GPSgate User ID</Label>
+              <Label htmlFor="gpsgate-user-id">Tracker ID</Label>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
                     <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p>Find your User ID in GPSgate under User Settings. This is a numeric ID assigned to your tracker.</p>
+                    <p>This is your numeric tracker ID. Use the search above to find it automatically.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -285,7 +285,7 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
 
         {savedUserId && (
           <p className="text-xs text-muted-foreground text-center">
-            Trips and mileage from GPSgate will automatically sync to your records
+            Trips and mileage from your tracker will automatically sync to your records
           </p>
         )}
       </CardContent>
