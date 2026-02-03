@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Clock, 
@@ -142,117 +142,6 @@ const getGreeting = (firstName: string, period: TimePeriod) => {
       return `Ready to plan, ${firstName}?`;
   }
 };
-
-// Rotating Facts Tile Component
-interface RotatingFactsTileProps {
-  todayOverview?: {
-    lessonCount: number;
-    totalHours: number;
-    expectedEarnings: number;
-    completedLessons?: number;
-  } | null;
-  weeklyStats?: {
-    hoursThisWeek: number;
-    hoursGoal: number;
-    progressPercent: number;
-  } | null;
-}
-
-function RotatingFactsTile({ todayOverview, weeklyStats }: RotatingFactsTileProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  // Build facts array
-  const facts = useMemo(() => {
-    const items: { icon: React.ElementType; value: string; label: string; sublabel: string }[] = [
-      {
-        icon: BookOpen,
-        value: `${todayOverview?.lessonCount || 0}`,
-        label: "lessons",
-        sublabel: `${todayOverview?.completedLessons || 0} completed`
-      },
-      {
-        icon: Clock,
-        value: `${todayOverview?.totalHours || 0}h`,
-        label: "scheduled",
-        sublabel: "driving today"
-      },
-      {
-        icon: PoundSterling,
-        value: `£${todayOverview?.expectedEarnings || 0}`,
-        label: "expected",
-        sublabel: "today's earnings"
-      }
-    ];
-
-    if (weeklyStats) {
-      items.push({
-        icon: TrendingUp,
-        value: `${weeklyStats.progressPercent}%`,
-        label: "weekly goal",
-        sublabel: `${weeklyStats.hoursThisWeek}h of ${weeklyStats.hoursGoal}h`
-      });
-    }
-
-    return items;
-  }, [todayOverview, weeklyStats]);
-
-  // Rotate every 3 seconds
-  useEffect(() => {
-    if (facts.length <= 1) return;
-    
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % facts.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [facts.length]);
-
-  const currentFact = facts[activeIndex];
-  const IconComponent = currentFact.icon;
-
-  return (
-    <div className="relative overflow-hidden rounded-lg bg-primary/5 p-3">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeIndex}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="flex items-center gap-3"
-        >
-          <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10">
-            <IconComponent className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-bold text-foreground">{currentFact.value}</span>
-              <span className="text-sm text-muted-foreground">{currentFact.label}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">{currentFact.sublabel}</p>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-      
-      {/* Dot indicators */}
-      {facts.length > 1 && (
-        <div className="flex justify-center gap-1.5 mt-2">
-          {facts.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setActiveIndex(idx)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                idx === activeIndex 
-                  ? "w-4 bg-primary" 
-                  : "w-1.5 bg-primary/30"
-              }`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export function ContextualHomeHero({
   firstName,
@@ -534,10 +423,57 @@ export function ContextualHomeHero({
                 <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
                   <h4 className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY'S SUMMARY</h4>
                   
-                  <RotatingFactsTile 
-                    todayOverview={todayOverview}
-                    weeklyStats={weeklyStats}
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Lessons */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {todayOverview?.lessonCount || 0} lessons
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {todayOverview?.completedLessons || 0} completed
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Hours */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                      <Clock className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {todayOverview?.totalHours || 0}h scheduled
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">driving today</p>
+                      </div>
+                    </div>
+                    
+                    {/* Earnings */}
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                      <PoundSterling className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          £{todayOverview?.expectedEarnings || 0}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">expected</p>
+                      </div>
+                    </div>
+                    
+                    {/* Weekly Progress if available */}
+                    {weeklyStats && (
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {weeklyStats.progressPercent}%
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {weeklyStats.hoursThisWeek}h of {weeklyStats.hoursGoal}h
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             )}
