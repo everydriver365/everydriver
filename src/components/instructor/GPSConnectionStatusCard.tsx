@@ -106,16 +106,21 @@ export function GPSConnectionStatusCard({
         </div>
         
         {/* Live data when connected */}
-        {isConnected && speedKmh != null && (
+        {isConnected && (
           <div className="flex items-center gap-4 text-sm pt-1 border-t border-emerald-200 dark:border-emerald-800">
             <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
               <Gauge className="h-4 w-4" />
-              <span className="font-medium">{formatMph(speedKmh)}</span>
+              <span className="font-medium">{speedKmh != null ? formatMph(speedKmh) : "0 mph"}</span>
             </div>
-            {roadName && (
+            {roadName ? (
               <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 min-w-0">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
                 <span className="truncate">{roadName}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
+                <MapPin className="h-4 w-4 flex-shrink-0" />
+                <span className="text-xs">Awaiting location...</span>
               </div>
             )}
           </div>
