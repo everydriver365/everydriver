@@ -251,7 +251,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                   <span className="text-sm font-medium text-foreground">
-                    Next: {getUrgencyLabel()} at {firstSlot.startTime}
+                    Next gap: {getUrgencyLabel()} at {firstSlot.startTime}
                   </span>
                 </div>
                 <ArrowRight className="h-4 w-4 text-violet-600 dark:text-violet-400 group-hover:translate-x-0.5 transition-transform" />
