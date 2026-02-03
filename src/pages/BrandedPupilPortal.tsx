@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
   BookOpen, Car, History, ChevronRight, X, AlertCircle,
-  Loader2, Moon, Sun, MapPin, CheckCircle2
+  Loader2, Moon, Sun, MapPin, CheckCircle2, User
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { PupilPortalGaps } from "@/components/pupil-portal/PupilPortalGaps";
 import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
+import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 
 interface InstructorBranding {
@@ -48,9 +49,10 @@ interface Pupil {
   progress: number | null;
   account_balance: number | null;
   prepaid_hours: number | null;
+  profile_image_url: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -157,7 +159,7 @@ export default function BrandedPupilPortal() {
   const fetchPupil = async (pupilId: string) => {
     const { data, error } = await supabase
       .from("pupils")
-      .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours")
+      .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url")
       .eq("id", pupilId)
       .single();
 
@@ -176,7 +178,7 @@ export default function BrandedPupilPortal() {
       
       const { data, error } = await supabase
         .from("pupils")
-        .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours")
+        .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url")
         .eq("instructor_id", instructor.id)
         .or(`phone.ilike.%${cleanPhone},phone.ilike.%${phoneInput}`)
         .single();
@@ -450,6 +452,7 @@ export default function BrandedPupilPortal() {
                 {/* Navigation Menu */}
                 <div className="space-y-2">
                   {[
+                    { id: 'profile' as const, icon: User, label: 'My Profile', desc: 'Photo & personal details' },
                     { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'View & manage your schedule' },
                     { id: 'gaps' as const, icon: Clock, label: 'Book a Lesson', desc: 'See available slots' },
                     { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with your instructor' },
@@ -676,6 +679,64 @@ export default function BrandedPupilPortal() {
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                 />
+              </motion.div>
+            )}
+
+            {activeSection === 'profile' && (
+              <motion.div
+                key="profile"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="p-4"
+              >
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setActiveSection('home')}
+                  className="mb-4"
+                  style={{ color: 'var(--brand-text)' }}
+                >
+                  ← Back
+                </Button>
+                
+                <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
+                  <CardHeader className="text-center">
+                    <CardTitle style={{ color: 'var(--brand-text)' }}>My Profile</CardTitle>
+                    <CardDescription style={{ color: 'var(--brand-muted)' }}>
+                      Update your profile picture
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <PupilProfilePictureUpload
+                      pupilId={pupil.id}
+                      pupilName={pupil.name}
+                      currentImageUrl={pupil.profile_image_url}
+                      onImageUpdated={(newUrl) => {
+                        setPupil(prev => prev ? { ...prev, profile_image_url: newUrl } : null);
+                      }}
+                    />
+                    
+                    <div className="mt-6 pt-6 border-t space-y-3" style={{ borderColor: 'var(--brand-border)' }}>
+                      <div className="flex justify-between">
+                        <span style={{ color: 'var(--brand-muted)' }}>Name</span>
+                        <span className="font-medium" style={{ color: 'var(--brand-text)' }}>{pupil.name}</span>
+                      </div>
+                      {pupil.email && (
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--brand-muted)' }}>Email</span>
+                          <span className="font-medium" style={{ color: 'var(--brand-text)' }}>{pupil.email}</span>
+                        </div>
+                      )}
+                      {pupil.phone && (
+                        <div className="flex justify-between">
+                          <span style={{ color: 'var(--brand-muted)' }}>Phone</span>
+                          <span className="font-medium" style={{ color: 'var(--brand-text)' }}>{pupil.phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
           </AnimatePresence>
