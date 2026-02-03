@@ -43,6 +43,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
   }, [checkConnection]);
 
   // Calculate status based on last_seen_at
+  // Using wider thresholds to prevent false "offline" for intermittent hardware
   const getStatus = (): "active" | "recent" | "offline" => {
     if (!lastSeenAt) return "offline";
     const lastSeen = new Date(lastSeenAt);
@@ -50,7 +51,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     const diffSeconds = (now.getTime() - lastSeen.getTime()) / 1000;
 
     if (diffSeconds < 30) return "active";   // Green pulsing - actively receiving
-    if (diffSeconds < 120) return "recent";  // Yellow - recently active
+    if (diffSeconds < 300) return "recent";  // Yellow - recently active (5 min window)
     return "offline";                         // Red - offline
   };
 

@@ -25,7 +25,18 @@ export function useGPSPoller({
 }: UseGPSPollerOptions) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isPollingRef = useRef(false);
+  
+  // Store callbacks in refs to prevent effect restarts when they change
+  const onDataRef = useRef(onData);
+  const onErrorRef = useRef(onError);
+  
+  // Keep refs in sync with latest callbacks
+  useEffect(() => {
+    onDataRef.current = onData;
+    onErrorRef.current = onError;
+  }, [onData, onError]);
 
+  // Stable poll function that doesn't depend on callback identity
   const poll = useCallback(async () => {
     if (isPollingRef.current) {
       console.log("[GPSPoller] Skipping - previous poll still running");
@@ -42,21 +53,21 @@ export function useGPSPoller({
 
       if (error) {
         console.error("[GPSPoller] Error:", error);
-        onError?.(new Error(typeof error === 'string' ? error : error.message || 'Unknown error'));
+        onErrorRef.current?.(new Error(typeof error === 'string' ? error : error.message || 'Unknown error'));
         return;
       }
 
       if (data) {
         console.log(`[GPSPoller] Processed: ${data.processed}, Skipped: ${data.skipped}`);
-        onData?.(data);
+        onDataRef.current?.(data);
       }
     } catch (err) {
       console.error("[GPSPoller] Fetch error:", err);
-      onError?.(err instanceof Error ? err : new Error(String(err)));
+      onErrorRef.current?.(err instanceof Error ? err : new Error(String(err)));
     } finally {
       isPollingRef.current = false;
     }
-  }, [onData, onError]);
+  }, []); // No dependencies - uses refs for callbacks
 
   useEffect(() => {
     if (!enabled) {
