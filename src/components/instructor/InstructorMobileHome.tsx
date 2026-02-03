@@ -61,7 +61,7 @@ import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetu
 import { NextLessonCard } from "@/components/instructor/NextLessonCard";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
-
+import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 
 import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { FuelFinderCard } from "@/components/instructor/FuelFinderCard";
@@ -466,6 +466,14 @@ export function InstructorMobileHome({
           onDismiss={dismissAlert}
           location={alertsLocation}
           className="mt-4"
+        />
+      )}
+
+      {/* Tracker Reminder - show when offline and lesson soon */}
+      {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
+        <TrackerReminderBanner 
+          lessonId={nextLesson.lessonId}
+          minutesUntil={nextLesson.minutesUntil}
         />
       )}
 
