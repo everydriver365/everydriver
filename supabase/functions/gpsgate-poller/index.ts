@@ -253,20 +253,33 @@ function extractPosition(track: GPSGateTrackPoint): { lat: number | null; lng: n
 }
 
 // Helper to extract speed from track point
+// GPSgate API returns speed in m/s, we convert to km/h
 function extractSpeed(track: GPSGateTrackPoint): number {
-  // 1. Try nested velocity.groundSpeed (GPSgate Cloud format)
+  const MPS_TO_KMH = 3.6; // Conversion factor: m/s to km/h
+  
+  let speedMps = 0;
+  
+  // 1. Try nested velocity.groundSpeed (GPSgate Cloud format) - in m/s
   if (track.velocity && typeof track.velocity.groundSpeed === 'number' && isFinite(track.velocity.groundSpeed)) {
-    return track.velocity.groundSpeed;
+    speedMps = track.velocity.groundSpeed;
   }
-  // 2. Try nested variables.speed
-  if (track.variables && typeof track.variables.speed === 'number' && isFinite(track.variables.speed)) {
-    return track.variables.speed;
+  // 2. Try nested variables.speed - in m/s
+  else if (track.variables && typeof track.variables.speed === 'number' && isFinite(track.variables.speed)) {
+    speedMps = track.variables.speed;
   }
   // 3. Try direct fields
-  if (typeof track.Speed === 'number' && isFinite(track.Speed)) return track.Speed;
-  if (typeof track.speed === 'number' && isFinite(track.speed)) return track.speed;
-  if (typeof track.Velocity === 'number' && isFinite(track.Velocity)) return track.Velocity;
-  return 0;
+  else if (typeof track.Speed === 'number' && isFinite(track.Speed)) {
+    speedMps = track.Speed;
+  }
+  else if (typeof track.speed === 'number' && isFinite(track.speed)) {
+    speedMps = track.speed;
+  }
+  else if (typeof track.Velocity === 'number' && isFinite(track.Velocity)) {
+    speedMps = track.Velocity;
+  }
+  
+  // Convert m/s to km/h
+  return speedMps * MPS_TO_KMH;
 }
 
 // Helper to extract heading from track point
