@@ -1,109 +1,162 @@
 
-Goal: make “Test Connection” reliably update your device/instructor status instead of returning “0 devices updated” and staying Offline.
+# GPSgate Enhanced Telemetry: Mileage & Fuel Cost Tracking
 
-What the logs/data show right now (root cause)
-- The backend function is successfully reaching GPSgate:
-  - It returns `total_users: 5` from GPSgate (so credentials + app ID are at least valid).
-- But it cannot match your saved instructor setting to any GPSgate “user/asset”:
-  - Log: `Instructor ... username e0f96ee7-... not found in GPSgate users`
-  - Your database row confirms this is what’s stored:
-    - `instructors.gpsgate_username = "e0f96ee7-0ec6-4e0b-907f-36b663f32517"`
-    - `instructors.gpsgate_user_id = null`
-- It also cannot match your registered device to any GPSgate user:
-  - Device in DB: `device_identifier = 7018524391`, `device_name = "My Phone"`, `gpsgate_user_id = null`
-  - Log: `Device 7018524391 not linked in GPSgate (no_match). Candidates tried: 7018524391, My Phone`
+## Overview
 
-So the system is working, but it’s missing a reliable “picker/lookup” to link your instructor/device to the correct GPSgate entity (numeric user ID).
+This plan extends the current GPSgate integration to pull more data from the API and display it in the app, specifically focusing on **automatic mileage tracking** and **fuel cost estimation**.
 
-High-level fix
-1) Make instructor auto-linking smarter (match against GPSgate Username OR Name OR Description, not just exact Username).
-2) Add a small “Lookup” helper in Settings so you can search GPSgate and select the correct tracker, and we store the numeric `gpsgate_user_id` automatically.
-3) (Optional but recommended) Improve the “Test Connection” result message so it tells you whether it updated a device, updated an instructor, or found no tracks for today.
+## What Data Can GPSgate Provide?
 
-Planned code changes
+Based on the GPSgate REST API v1, we can access:
 
-A) Backend function: improve instructor matching in `gpsgate-poller`
-File: `supabase/functions/gpsgate-poller/index.ts`
+| Data Type | Endpoint | Currently Used |
+|-----------|----------|----------------|
+| Position & Speed | `/users/{id}/tracks` | Yes |
+| Battery & Ignition | `/users/{id}/tracks` | Yes |
+| **Odometer (meters)** | `/accumulators` | No |
+| **Engine Hours** | `/accumulators` | No |
+| **Fuel Consumption Events** | `/fuelconsumption` | No |
+| **Trip Summaries** | `/tripinfos` | No |
+| **User Status (bulk)** | `/usersstatus` | No |
 
-Change:
-- Replace the current instructor username → ID mapping logic that only does:
-  - `usernameToUserId.get(normalizedUsername)`
-- With a call to the existing helper already in this file:
-  - `resolveGpsGateUserIdForDevice(...)`
-  - That helper already supports:
-    - exact username match
-    - digit-based match
-    - substring match across Username / Name / Description
+## Implementation Plan
 
-Result:
-- If you type something like “Tracker iOS” (which might be the GPSgate Name) it can still resolve the correct numeric user ID.
-- If it resolves a user ID, it will persist it back into `instructors.gpsgate_user_id` (as intended), so future polling is fast and stable.
+### Phase 1: Database Schema Updates
 
-B) Add a dedicated “GPSgate user lookup” backend function (so the UI can show you the right tracker)
-New backend function (name suggestion): `gpsgate-user-lookup`
-Purpose:
-- When you click a button in Settings, it fetches the GPSgate users list and returns matching candidates so you can pick one.
+Add new columns to track GPSgate-provided odometer and accumulator data:
 
-Behavior:
-- Requires you to be logged in (validate the Authorization header inside the function, following existing patterns in `supabase/functions/google-oauth/index.ts` / `calendar-sync/index.ts`).
-- Input: `{ query: string }`
-- Output: a small list (max ~20) of candidates:
-  - `{ id: number, username: string, name: string, description: string }`
-- Matching rules:
-  - case-insensitive substring match on Username / Name / Description
-  - digit-only matching for identifiers like IMEI/phone-number patterns
+```sql
+-- Add odometer and accumulator tracking to traccar_devices
+ALTER TABLE traccar_devices ADD COLUMN IF NOT EXISTS 
+  gpsgate_odometer_m numeric;  -- Total meters from GPSgate
 
-Why this is needed:
-- Right now, if your GPSgate UI shows identifiers that don’t exactly equal the API’s `Username`, you have no way to know what the backend expects.
-- This makes linking “self-service”: you search, pick, we store the correct numeric ID.
+ALTER TABLE traccar_devices ADD COLUMN IF NOT EXISTS 
+  gpsgate_engine_hours_s integer;  -- Engine seconds from GPSgate
 
-C) Update the instructor Settings UI to auto-fill the numeric ID
-File: `src/components/instructor/InstructorDetailsEditor.tsx`
+ALTER TABLE traccar_devices ADD COLUMN IF NOT EXISTS 
+  last_gpsgate_odometer_m numeric;  -- Previous reading for delta calc
 
-Additions in the GPS section:
-- Add a button: “Find tracker”
-  - Calls `gpsgate-user-lookup` with whatever you typed into “GPSgate Username”
-  - If exactly 1 match:
-    - auto-fill `gpsgate_user_id` in the form
-    - optionally replace the text field with the matched GPSgate `Username` for consistency
-    - show a success toast like “Linked to GPSgate user #123 (Tracker iOS)”
-  - If multiple matches:
-    - show a small selection list (Radix Select or a simple list of buttons)
-    - user chooses, then we fill `gpsgate_user_id`
-  - If 0 matches:
-    - show a clear error: “No matching tracker found in GPSgate for this application. Check you’re looking at the same GPSgate application as the configured App ID.”
+-- Add fuel cost tracking to mileage_logs
+ALTER TABLE mileage_logs ADD COLUMN IF NOT EXISTS 
+  estimated_fuel_cost_gbp numeric;  -- Calculated fuel cost
 
-Also improve “Test Connection” toast:
-- Instead of only `processed` (devices), include instructor processing too:
-  - e.g. “Poll complete: 0 devices updated, 1 instructor updated” (once working)
-  - This avoids confusion because right now the UI says “0 devices updated” even though instructor-updates are a separate pathway.
+ALTER TABLE mileage_logs ADD COLUMN IF NOT EXISTS 
+  fuel_litres_used numeric;  -- Estimated fuel consumption
+```
 
-D) (Optional) Make instructor tracking work even if no device row exists
-File: `supabase/functions/gpsgate-poller/index.ts`
+### Phase 2: Update GPSgate Poller Edge Function
 
-Currently:
-- If the instructor has GPSgate data but there is no `traccar_devices` row, it logs:
-  - “creating virtual entry”
-- But it does not actually insert one.
+Enhance `gpsgate-poller` to fetch additional data:
 
-Change:
-- If `.update(...).eq("instructor_id", instructor.id)` affects 0 rows, insert a minimal “virtual device” row so the UI connection status can work for instructors who didn’t register a device yet.
+1. **Fetch Accumulators (Odometer/Engine Hours)**
+   - Call `/applications/{appId}/users/{userId}/accumulators`
+   - Store the raw odometer value (in meters)
+   - Calculate distance delta since last poll
+   - Calculate estimated fuel consumption using instructor's MPG setting
 
-Testing / verification steps (end-to-end)
-1) Go to Instructor Settings → GPS.
-2) Enter something you recognize (e.g. “Tracker iOS”) and click “Find tracker”.
-3) Select the correct tracker; confirm the numeric “GPSgate User ID” field is filled.
-4) Click “Save GPS Settings”.
-5) Click “Test Connection”.
-6) Confirm:
-   - Poll response shows at least 1 instructor updated (or 1 device updated if you’re using device mapping).
-   - Connection Status changes to Connected once `last_seen_at` is updated with a recent GPS timestamp.
+2. **Calculate Trip Distance Automatically**
+   - When tracks show ignition OFF after being ON, log a trip
+   - Use odometer delta OR sum of GPS distances
+   - Auto-create `mileage_logs` entry with fuel cost estimate
 
-Edge cases handled
-- If GPSgate returns users but none match your query, we’ll clearly indicate it’s likely the wrong GPSgate application (App ID mismatch) or you’re viewing a different entity list in GPSgate than the API’s `/users` endpoint.
-- If tracks are empty for “today”, we can optionally also try “yesterday” as a fallback (timezone/day-boundary safety) so first-time setup is less confusing.
+3. **Fuel Cost Formula**
+   ```
+   distance_km = odometer_delta_m / 1000
+   distance_miles = distance_km * 0.621371
+   gallons_used = distance_miles / vehicle_mpg
+   litres_used = gallons_used * 4.546
+   fuel_cost_gbp = litres_used * fuel_cost_per_litre
+   ```
 
-Scope note
-- This plan does not change your database schema; it uses existing columns:
-  - `instructors.gpsgate_username`, `instructors.gpsgate_user_id`
-  - `traccar_devices.gpsgate_user_id`, `traccar_devices.last_seen_at`, etc.
+### Phase 3: New UI Components
+
+#### 3.1 Enhanced Live Telemetry Card
+Update `EnhancedDeviceStatusCard` to show:
+- **Current Odometer** (in miles, from GPSgate)
+- **Engine Hours** (formatted as HH:MM)
+- **Today's Distance** (auto-calculated from odometer delta)
+- **Estimated Fuel Cost Today** (based on instructor settings)
+
+#### 3.2 New "Running Costs" Dashboard Tab
+Add a new tab to Vehicle Health page:
+
+```
+┌─────────────────────────────────────────────────┐
+│  📊 Running Costs                               │
+├─────────────────────────────────────────────────┤
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐   │
+│  │ This Week │  │This Month │  │ Tax Year  │   │
+│  │  £47.20   │  │  £183.50  │  │ £1,847.00 │   │
+│  │  142 mi   │  │   551 mi  │  │  5,541 mi │   │
+│  └───────────┘  └───────────┘  └───────────┘   │
+│                                                 │
+│  ┌─────────────────────────────────────────┐   │
+│  │ Fuel Cost Breakdown (Chart)             │   │
+│  │ [=============================]         │   │
+│  │ £/mile: 0.33  |  MPG: 40  |  £1.45/L   │   │
+│  └─────────────────────────────────────────┘   │
+│                                                 │
+│  ┌─────────────────────────────────────────┐   │
+│  │ Recent Trips                            │   │
+│  │ • Today 9:15am - 12.3 mi - £4.07       │   │
+│  │ • Yesterday 2pm - 28.1 mi - £9.27      │   │
+│  │ • Yesterday 9am - 15.6 mi - £5.15      │   │
+│  └─────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────┘
+```
+
+#### 3.3 Auto-Trip Detection in Mileage Log
+Update `AutoMileageLog` to show trips auto-detected from GPSgate:
+- Trip start/end times
+- Distance (auto from GPS)
+- Fuel cost estimate
+- Business/Personal toggle (defaults to business if during scheduled lesson)
+
+### Phase 4: Fuel Cost Settings
+
+Ensure instructor settings include:
+- **Vehicle MPG** (already exists: `vehicle_mpg`)
+- **Fuel Cost Per Litre** (already exists: `fuel_cost_per_litre`)
+
+These are already in the database and used in earnings calculations.
+
+---
+
+## Technical Implementation Details
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/components/instructor/vehicle-health/RunningCostsTab.tsx` | New tab for fuel costs dashboard |
+| `src/components/instructor/vehicle-health/TripCostCard.tsx` | Individual trip with fuel cost |
+| `src/hooks/useRunningCosts.ts` | Hook to fetch mileage + calculate costs |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `supabase/functions/gpsgate-poller/index.ts` | Add accumulators fetch, trip detection, auto-mileage logging |
+| `src/pages/InstructorVehicleHealth.tsx` | Add "Costs" tab |
+| `src/components/instructor/vehicle-health/EnhancedDeviceStatusCard.tsx` | Show odometer, today's distance, fuel cost |
+| `src/components/instructor/vehicle-health/AutoMileageLog.tsx` | Show fuel cost column |
+| `src/hooks/useMileageLogs.ts` | Include fuel cost in summary |
+
+### Database Migrations
+
+1. Add `gpsgate_odometer_m` and `gpsgate_engine_hours_s` to `traccar_devices`
+2. Add `estimated_fuel_cost_gbp` and `fuel_litres_used` to `mileage_logs`
+
+---
+
+## Summary
+
+This implementation will:
+1. Pull odometer readings automatically from GPSgate
+2. Calculate fuel costs based on distance and instructor MPG/fuel settings
+3. Auto-log trips when ignition cycles are detected
+4. Display running costs in a new dashboard tab
+5. Show real-time odometer and estimated daily fuel spend on device cards
+6. Integrate with existing HMRC mileage allowance calculations
+
+All distances will be displayed in **miles** (Imperial) per the existing system preference.
