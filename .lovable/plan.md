@@ -1,190 +1,121 @@
 
-# Enhance GPS Tracker Connection Status on Mobile Tracking Page
+# Fix: Live Tracking Map Not Moving
 
-## Overview
+## Problem Identified
 
-This plan improves the visibility of the GPSgate Tracker app connection status on the mobile tracking page (`/instructor/live`). Currently, the status is shown as a small inline bar - we'll make it more prominent with clearer visual indicators, real-time updates, and actionable troubleshooting guidance when offline.
+The live tracking map marker does not move during an active session because of a data flow mismatch:
 
-## Current State
+| Data Source | Used For | Update Frequency |
+|-------------|----------|------------------|
+| `device.last_latitude/longitude` (props) | **Marker position** | ~15s (polling `gps_devices`) |
+| `telematics_gps_points` (realtime) | **Polyline only** | Real-time (~1-5s) |
 
-The connection status bar (lines 877-898) is:
-- A small single-line bar at the top of the map
-- Shows "Connected" or "Last: Xm Xs ago"
-- Uses subtle color coding (emerald/destructive)
-- No troubleshooting guidance or actionable steps
+The marker is controlled by props from the parent component, which polls the `gps_devices` table every 15 seconds. Meanwhile, the realtime subscription to `telematics_gps_points` in `LiveTrackingMap` only adds points to the polyline - it never updates the marker position!
 
-## Proposed Design
+## Root Cause in Code
 
-### 1. Enhanced Connection Status Card (Pre-Session)
+In `LiveTrackingMap.tsx`:
 
-Replace the simple status bar with an expanded, more prominent status card:
-
-```text
-When Connected:
-┌────────────────────────────────────────────────┐
-│  📡  GPSgate Tracker                           │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━           │
-│  ● Connected • Updated 5s ago        [Pulsing] │
-│                                                │
-│  Speed: 32 mph  •  Road: High Street           │
-└────────────────────────────────────────────────┘
-
-When Offline:
-┌────────────────────────────────────────────────┐
-│  📵  GPSgate Tracker                    ⚠️     │
-│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━           │
-│  ✕ Offline • Last seen 3m ago                  │
-│                                                │
-│  Tap to open GPSgate Tracker app →             │
-│  [Open Tracker App]                            │
-└────────────────────────────────────────────────┘
+**Realtime subscription (lines 214-263)** - Only updates polyline:
+```typescript
+.on("postgres_changes", { event: "INSERT", table: "telematics_gps_points" }, (payload) => {
+  const point = { lat: row.latitude, lng: row.longitude, ... };
+  if (isValid) {
+    setFilteredPoints((prev) => [...prev, point]);  // ← Only updates polyline
+    // Marker position NOT updated here!
+  }
+})
 ```
 
-### 2. Key Visual Improvements
+**Marker update (lines 265-328)** - Only reacts to prop changes:
+```typescript
+useEffect(() => {
+  markerRef.current.setLatLng([latitude, longitude]);  // ← Only from props
+}, [latitude, longitude, heading, userDragged]);  // ← latitude/longitude are props
+```
 
-| Element | Before | After |
-|---------|--------|-------|
-| Size | Single line, 48px height | Expanded card, ~100px height |
-| Status Indicator | Small text badge | Large animated dot with label |
-| Device Name | Small text | Prominent heading |
-| Last Update | "Last: 3m 20s ago" | "Updated 5s ago" or "Last seen 3m ago" |
-| Troubleshooting | None | "Open Tracker App" button when offline |
-| Real-time Data | Not shown | Speed + Road name when connected |
+## Solution
 
-### 3. Deep Link Integration
+Update the marker position from the realtime GPS subscription, not just the props. We'll add a local state for the "live" position that overrides props when realtime data arrives.
 
-When offline, include a prominent button to open the GPSgate Tracker app (reusing logic from `TrackerReminderBanner`):
-- Attempts deep link to `gpsgate://`
-- Falls back to App Store/Play Store
+### Changes to LiveTrackingMap.tsx
 
-### 4. Active Session Status
+1. **Add local state for live position** that can be updated from realtime data
+2. **Update the realtime subscription handler** to set the live position when new points arrive
+3. **Modify marker effect** to use live position when available, falling back to props
 
-During an active session, show a more prominent floating status indicator:
-- Larger pulsing dot when connected
-- Prominent warning banner with countdown when offline
-- Clear visual feedback for data freshness
+### Implementation
 
-## Implementation Details
+**Step 1: Add local state for live position**
+```typescript
+// New state for realtime position (overrides props when available)
+const [livePosition, setLivePosition] = useState<{lat: number; lng: number; heading?: number} | null>(null);
+```
 
-### Files to Modify
+**Step 2: Update realtime subscription to update live position**
+```typescript
+// In the realtime subscription handler
+if (isValid) {
+  setFilteredPoints((prev) => [...prev, point]);
+  lastValidPointRef.current = point;
+  setDisplaySpeed(processSpeed(point.speedKmh));
+  
+  // NEW: Update live position for marker
+  setLivePosition({ lat: point.lat, lng: point.lng });
+}
+```
+
+**Step 3: Use live position for marker**
+```typescript
+// Compute actual marker position
+const markerLat = livePosition?.lat ?? latitude;
+const markerLng = livePosition?.lng ?? longitude;
+
+useEffect(() => {
+  // Use markerLat/markerLng instead of latitude/longitude directly
+  if (markerLat === null || markerLng === null) { ... }
+  markerRef.current.setLatLng([markerLat, markerLng]);
+}, [markerLat, markerLng, heading, userDragged]);
+```
+
+**Step 4: Reset live position when session ends**
+```typescript
+// In the session ID effect
+useEffect(() => {
+  if (!sessionId) {
+    setFilteredPoints([]);
+    lastValidPointRef.current = null;
+    setLivePosition(null);  // Reset on session end
+    // ...
+  }
+}, [sessionId]);
+```
+
+### Data Flow After Fix
+
+```text
+Pre-session:
+  gps_devices (polling) → props → marker position ✓
+
+During session:
+  telematics_gps_points (realtime) → livePosition state → marker position ✓
+                                   → filteredPoints → polyline ✓
+```
+
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/InstructorLiveSession.tsx` | Replace inline status bar with enhanced status card component |
-
-### New UI Components Within Page
-
-Create inline components/sections in `InstructorLiveSession.tsx`:
-
-**1. Pre-Session Status Card**
-```tsx
-{/* Enhanced Connection Status Card */}
-<div className="pointer-events-auto flex-shrink-0 p-3 pb-0">
-  <div className={`rounded-2xl border-2 backdrop-blur shadow-lg ${
-    isConnected 
-      ? "bg-emerald-50/95 border-emerald-300" 
-      : "bg-amber-50/95 border-amber-300"
-  }`}>
-    <div className="p-4 space-y-3">
-      {/* Header with icon and device name */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-full ${...}`}>
-            <Smartphone className="h-5 w-5" />
-          </div>
-          <div>
-            <h3 className="font-semibold">GPSgate Tracker</h3>
-            <p className="text-xs text-muted-foreground">{device.device_name}</p>
-          </div>
-        </div>
-        {/* Pulsing status indicator */}
-        <StatusDot isConnected={isConnected} />
-      </div>
-      
-      {/* Connection details */}
-      <div className="flex items-center justify-between text-sm">
-        <span>{isConnected ? "Connected" : "Offline"}</span>
-        <span className="text-muted-foreground">{lastSeenLabel}</span>
-      </div>
-      
-      {/* Live data when connected */}
-      {isConnected && device.last_speed_kmh != null && (
-        <div className="flex items-center gap-4 text-sm">
-          <span>🏎️ {speedMph} mph</span>
-          {device.last_road_name && <span>📍 {device.last_road_name}</span>}
-        </div>
-      )}
-      
-      {/* Open app button when offline */}
-      {!isConnected && (
-        <Button onClick={openTrackerApp} className="w-full">
-          <ExternalLink className="h-4 w-4 mr-2" />
-          Open GPSgate Tracker
-        </Button>
-      )}
-    </div>
-  </div>
-</div>
-```
-
-**2. Active Session Status Badge**
-```tsx
-{/* Enhanced session status - top left */}
-<div className="absolute top-4 left-4 z-30">
-  <div className={`flex items-center gap-2 px-3 py-2 rounded-xl backdrop-blur shadow-lg ${
-    isConnected 
-      ? "bg-emerald-500/90 text-white" 
-      : "bg-amber-500/90 text-white"
-  }`}>
-    <span className="relative flex h-3 w-3">
-      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-        isConnected ? "bg-white" : "bg-red-300"
-      }`}></span>
-      <span className={`relative inline-flex rounded-full h-3 w-3 ${
-        isConnected ? "bg-white" : "bg-red-400"
-      }`}></span>
-    </span>
-    <span className="text-sm font-semibold">
-      {isConnected ? "Recording" : "Signal Lost"}
-    </span>
-  </div>
-</div>
-```
-
-### Deep Link Function
-
-```typescript
-const openTrackerApp = () => {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const deepLink = "gpsgate://";
-  const appStoreLink = isIOS 
-    ? "https://apps.apple.com/app/gpsgate-tracker/id434645675"
-    : "https://play.google.com/store/apps/details?id=com.gpsgate.tracker";
-  
-  window.location.href = deepLink;
-  setTimeout(() => {
-    window.location.href = appStoreLink;
-  }, 1500);
-};
-```
-
-## Visual Comparison
-
-### Before
-- Small inline bar, easy to miss
-- No troubleshooting when offline
-- No live data preview
-
-### After
-- Prominent card with clear visual hierarchy
-- Actionable "Open Tracker" button when offline
-- Shows live speed and road when connected
-- Animated status indicators for visual feedback
-- Consistent with existing UI patterns (GPSConnectionChecklist styling)
+| `src/components/instructor/LiveTrackingMap.tsx` | Add `livePosition` state, update realtime handler, modify marker effect |
 
 ## Benefits
 
-1. **Immediate visibility**: Instructors can instantly see if tracking is active
-2. **Actionable**: One-tap to open GPSgate Tracker when offline
-3. **Contextual data**: Shows live speed/road when connected (confirms data is flowing)
-4. **Consistent design**: Matches the amber/emerald styling used elsewhere in the app
+1. **Smooth real-time movement**: Marker updates instantly as GPS points arrive (~1-5s)
+2. **Backwards compatible**: Falls back to props when no realtime data (pre-session)
+3. **Minimal changes**: Only modifies the internal state management, no API changes
+
+## Technical Notes
+
+- The `telematics_gps_points` table already has realtime enabled
+- The subscription filter uses `telematics_id=eq.${sessionId}` which is correct
+- Heading data may not be in `telematics_gps_points` - we'll use the prop heading as fallback
