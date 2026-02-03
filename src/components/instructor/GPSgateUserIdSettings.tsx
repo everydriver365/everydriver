@@ -82,13 +82,32 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
       // Save to database
       setSaving(true);
       
-      const updateQuery = deviceId
-        ? supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("id", deviceId)
-        : supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("instructor_id", instructorId);
-
-      const { error: saveError } = await updateQuery;
-
-      if (saveError) throw saveError;
+      if (deviceId) {
+        // Update specific device
+        await supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("id", deviceId);
+      } else {
+        // Try to update existing device for this instructor
+        const { data: existingDevices } = await supabase
+          .from("gps_devices")
+          .select("id")
+          .eq("instructor_id", instructorId)
+          .limit(1);
+        
+        if (existingDevices && existingDevices.length > 0) {
+          // Update existing device
+          await supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("id", existingDevices[0].id);
+        } else {
+          // Create a virtual device with the GPSgate user ID
+          const { error: insertError } = await supabase.from("gps_devices").insert({
+            instructor_id: instructorId,
+            device_identifier: `gpsgate-${userId}`,
+            device_name: "GPSgate Tracker",
+            gpsgate_user_id: userId,
+            is_active: true,
+          });
+          if (insertError) throw insertError;
+        }
+      }
 
       setSavedUserId(userId);
       setIsVerified(true);
@@ -130,12 +149,32 @@ export function GPSgateUserIdSettings({ instructorId, deviceId }: GPSgateUserIdS
     // Save directly since we're selecting from GPSgate API results
     setSaving(true);
     try {
-      const updateQuery = deviceId
-        ? supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("id", deviceId)
-        : supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("instructor_id", instructorId);
-
-      const { error: saveError } = await updateQuery;
-      if (saveError) throw saveError;
+      if (deviceId) {
+        // Update specific device
+        await supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("id", deviceId);
+      } else {
+        // Try to update existing device for this instructor
+        const { data: existingDevices } = await supabase
+          .from("gps_devices")
+          .select("id")
+          .eq("instructor_id", instructorId)
+          .limit(1);
+        
+        if (existingDevices && existingDevices.length > 0) {
+          // Update existing device
+          await supabase.from("gps_devices").update({ gpsgate_user_id: userId }).eq("id", existingDevices[0].id);
+        } else {
+          // Create a virtual device with the GPSgate user ID
+          const { error: insertError } = await supabase.from("gps_devices").insert({
+            instructor_id: instructorId,
+            device_identifier: `gpsgate-${userId}`,
+            device_name: "GPSgate Tracker",
+            gpsgate_user_id: userId,
+            is_active: true,
+          });
+          if (insertError) throw insertError;
+        }
+      }
 
       setSavedUserId(userId);
       setIsVerified(true);

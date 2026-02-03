@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
 import { GPSgateUserIdSettings } from "@/components/instructor/GPSgateUserIdSettings";
+import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
+import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { formatDistanceToNow } from "date-fns";
 import {
   AlertDialog,
@@ -56,6 +58,9 @@ export default function InstructorTraccarSetup() {
   const [deviceId, setDeviceId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Get live GPS position data
+  const position = useInstructorLastPosition(instructor?.id ?? null);
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseHost = supabaseUrl?.replace('https://', '') || 'qyqeibovdhyohkfagujv.supabase.co';
@@ -256,6 +261,17 @@ export default function InstructorTraccarSetup() {
         {/* GPSgate User ID Settings */}
         {instructor?.id && (
           <GPSgateUserIdSettings instructorId={instructor.id} />
+        )}
+
+        {/* Live connection status when tracker is active */}
+        {position.isActive && (
+          <GPSConnectionStatusCard
+            deviceName="GPSgate Tracker"
+            isConnected={position.isActive}
+            lastSeenLabel={position.lastSeenAt ? formatDistanceToNow(new Date(position.lastSeenAt), { addSuffix: true }) : "Never"}
+            speedKmh={position.speedKmh}
+            roadName={position.roadName}
+          />
         )}
 
         {/* Hardware Tracker Setup - Primary focus */}
