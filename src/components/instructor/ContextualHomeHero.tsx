@@ -457,34 +457,21 @@ export function ContextualHomeHero({
                       </div>
                     </div>
                     
-                    {/* Tomorrow Preview */}
-                    {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+                    {/* Weekly Progress if available */}
+                    {weeklyStats && (
                       <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
-                        <Calendar className="h-4 w-4 text-primary" />
+                        <TrendingUp className="h-4 w-4 text-primary" />
                         <div>
                           <p className="text-sm font-semibold text-foreground">
-                            {tomorrowPreview.lessonCount} tomorrow
+                            {weeklyStats.progressPercent}%
                           </p>
                           <p className="text-[10px] text-muted-foreground">
-                            starts {tomorrowPreview.firstLessonTime || 'TBD'}
+                            {weeklyStats.hoursThisWeek}h of {weeklyStats.hoursGoal}h
                           </p>
                         </div>
                       </div>
                     )}
                   </div>
-                  
-                  {/* Weekly Progress if available */}
-                  {weeklyStats && (
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-primary/5">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="text-xs text-muted-foreground">Weekly goal</span>
-                      </div>
-                      <span className="text-sm font-semibold text-foreground">
-                        {weeklyStats.progressPercent}% ({weeklyStats.hoursThisWeek}h of {weeklyStats.hoursGoal}h)
-                      </span>
-                    </div>
-                  )}
                 </div>
               </motion.div>
             )}
