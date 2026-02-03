@@ -194,20 +194,8 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
         {/* Compact Header */}
         <button
           onClick={handleToggle}
-          className="w-full p-4 flex items-center gap-3.5 text-left active:bg-muted/50 transition-colors"
+          className="w-full p-4 flex items-center gap-3 text-left active:bg-muted/50 transition-colors"
         >
-          {/* Icon container with gradient */}
-          <div className="relative">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-              <Zap className="h-6 w-6 text-white" />
-            </div>
-            {hasUrgentGaps && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center ring-2 ring-card">
-                <span className="text-[9px] font-bold text-white">{totalSlots}</span>
-              </span>
-            )}
-          </div>
-          
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -219,6 +207,11 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
               )}>
                 {getUrgencyLabel()}
               </span>
+              {hasUrgentGaps && (
+                <span className="w-5 h-5 bg-destructive rounded-full flex items-center justify-center">
+                  <span className="text-[9px] font-bold text-destructive-foreground">{totalSlots}</span>
+                </span>
+              )}
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
               {totalSlots} {totalSlots === 1 ? "slot" : "slots"} • {totalPupils} pupils ready
@@ -283,8 +276,8 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                       </span>
                     </div>
 
-                    {/* Time slots */}
-                    <div className="flex flex-wrap gap-2 mb-3">
+                    {/* Time slots - 2 per row */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
                       {gap.slots.map((slot) => {
                         const isSelected = selectedSlot?.id === slot.id;
                         // Calculate duration
@@ -300,18 +293,18 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                             key={slot.id}
                             onClick={() => handleSlotSelect(slot)}
                             className={cn(
-                              "px-3.5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
+                              "px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex flex-col items-center gap-1",
                               isSelected
-                                ? "bg-violet-600 text-white shadow-md shadow-violet-500/20"
-                                : "bg-card border border-border hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/30 text-foreground"
+                                ? "bg-primary text-primary-foreground shadow-md"
+                                : "bg-card border border-border hover:border-primary/50 hover:bg-primary/5 text-foreground"
                             )}
                           >
-                            <span>{slot.startTime} - {slot.endTime}</span>
+                            <span className="text-xs">{slot.startTime} - {slot.endTime}</span>
                             <span className={cn(
-                              "text-xs px-1.5 py-0.5 rounded-full",
+                              "text-[10px] px-1.5 py-0.5 rounded-full",
                               isSelected
-                                ? "bg-white/20"
-                                : "bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                ? "bg-primary-foreground/20"
+                                : "bg-primary/10 text-primary"
                             )}>
                               {duration}
                             </span>
