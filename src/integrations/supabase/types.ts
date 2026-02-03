@@ -2040,6 +2040,53 @@ export type Database = {
           },
         ]
       }
+      instructor_booking_settings: {
+        Row: {
+          allow_self_booking: boolean
+          allowed_durations: number[]
+          booking_message: string | null
+          created_at: string
+          id: string
+          instructor_id: string
+          max_advance_days: number
+          min_notice_hours: number
+          require_approval: boolean
+          updated_at: string
+        }
+        Insert: {
+          allow_self_booking?: boolean
+          allowed_durations?: number[]
+          booking_message?: string | null
+          created_at?: string
+          id?: string
+          instructor_id: string
+          max_advance_days?: number
+          min_notice_hours?: number
+          require_approval?: boolean
+          updated_at?: string
+        }
+        Update: {
+          allow_self_booking?: boolean
+          allowed_durations?: number[]
+          booking_message?: string | null
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          max_advance_days?: number
+          min_notice_hours?: number
+          require_approval?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_booking_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_calendar_events: {
         Row: {
           end_time: string
@@ -3102,6 +3149,8 @@ export type Database = {
       }
       instructor_vehicles: {
         Row: {
+          assigned_instructor_id: string | null
+          color_code: string | null
           created_at: string | null
           current_odometer_km: number | null
           id: string
@@ -3123,6 +3172,8 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          assigned_instructor_id?: string | null
+          color_code?: string | null
           created_at?: string | null
           current_odometer_km?: number | null
           id?: string
@@ -3144,6 +3195,8 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          assigned_instructor_id?: string | null
+          color_code?: string | null
           created_at?: string | null
           current_odometer_km?: number | null
           id?: string
@@ -3165,6 +3218,13 @@ export type Database = {
           year?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "instructor_vehicles_assigned_instructor_id_fkey"
+            columns: ["assigned_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "instructor_vehicles_instructor_id_fkey"
             columns: ["instructor_id"]
@@ -3872,6 +3932,79 @@ export type Database = {
           },
         ]
       }
+      lesson_video_clips: {
+        Row: {
+          clip_end_seconds: number | null
+          clip_start_seconds: number | null
+          clip_type: string
+          created_at: string
+          duration_seconds: number | null
+          gps_point_id: string | null
+          id: string
+          instructor_id: string
+          instructor_note: string | null
+          is_shared_with_pupil: boolean
+          pupil_id: string | null
+          telematics_id: string | null
+          thumbnail_url: string | null
+          video_url: string
+        }
+        Insert: {
+          clip_end_seconds?: number | null
+          clip_start_seconds?: number | null
+          clip_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          gps_point_id?: string | null
+          id?: string
+          instructor_id: string
+          instructor_note?: string | null
+          is_shared_with_pupil?: boolean
+          pupil_id?: string | null
+          telematics_id?: string | null
+          thumbnail_url?: string | null
+          video_url: string
+        }
+        Update: {
+          clip_end_seconds?: number | null
+          clip_start_seconds?: number | null
+          clip_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          gps_point_id?: string | null
+          id?: string
+          instructor_id?: string
+          instructor_note?: string | null
+          is_shared_with_pupil?: boolean
+          pupil_id?: string | null
+          telematics_id?: string | null
+          thumbnail_url?: string | null
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_video_clips_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_video_clips_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_video_clips_telematics_id_fkey"
+            columns: ["telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_waitlist: {
         Row: {
           created_at: string | null
@@ -4320,6 +4453,50 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offline_sync_queue: {
+        Row: {
+          action_type: string
+          created_at: string
+          error: string | null
+          id: string
+          instructor_id: string
+          payload: Json
+          record_id: string
+          synced_at: string | null
+          table_name: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          instructor_id: string
+          payload?: Json
+          record_id: string
+          synced_at?: string | null
+          table_name: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          instructor_id?: string
+          payload?: Json
+          record_id?: string
+          synced_at?: string | null
+          table_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offline_sync_queue_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -5678,6 +5855,60 @@ export type Database = {
           },
         ]
       }
+      reward_redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          notes: string | null
+          points_spent: number
+          processed_at: string | null
+          pupil_id: string
+          reward_type: string
+          reward_value: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          points_spent: number
+          processed_at?: string | null
+          pupil_id: string
+          reward_type: string
+          reward_value: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          points_spent?: number
+          processed_at?: string | null
+          pupil_id?: string
+          reward_type?: string
+          reward_value?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_tiers: {
         Row: {
           badge_image_url: string | null
@@ -5859,6 +6090,7 @@ export type Database = {
       scheduled_lessons: {
         Row: {
           amount_due: number | null
+          booking_status: string | null
           created_at: string
           dropoff_postcode: string | null
           duration_minutes: number
@@ -5884,6 +6116,7 @@ export type Database = {
         }
         Insert: {
           amount_due?: number | null
+          booking_status?: string | null
           created_at?: string
           dropoff_postcode?: string | null
           duration_minutes?: number
@@ -5909,6 +6142,7 @@ export type Database = {
         }
         Update: {
           amount_due?: number | null
+          booking_status?: string | null
           created_at?: string
           dropoff_postcode?: string | null
           duration_minutes?: number
@@ -6480,6 +6714,96 @@ export type Database = {
           tips?: string | null
         }
         Relationships: []
+      }
+      theory_questions: {
+        Row: {
+          category: string
+          correct_index: number
+          created_at: string
+          difficulty: string
+          explanation: string | null
+          id: string
+          is_active: boolean
+          options: Json
+          question: string
+        }
+        Insert: {
+          category: string
+          correct_index: number
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          id?: string
+          is_active?: boolean
+          options: Json
+          question: string
+        }
+        Update: {
+          category?: string
+          correct_index?: number
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question?: string
+        }
+        Relationships: []
+      }
+      theory_test_attempts: {
+        Row: {
+          correct_answers: number
+          created_at: string
+          id: string
+          instructor_id: string
+          passed: boolean
+          pupil_id: string
+          test_type: string
+          time_taken_seconds: number | null
+          total_questions: number
+          weak_categories: Json | null
+        }
+        Insert: {
+          correct_answers: number
+          created_at?: string
+          id?: string
+          instructor_id: string
+          passed?: boolean
+          pupil_id: string
+          test_type?: string
+          time_taken_seconds?: number | null
+          total_questions: number
+          weak_categories?: Json | null
+        }
+        Update: {
+          correct_answers?: number
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          passed?: boolean
+          pupil_id?: string
+          test_type?: string
+          time_taken_seconds?: number | null
+          total_questions?: number
+          weak_categories?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "theory_test_attempts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "theory_test_attempts_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
