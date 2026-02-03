@@ -115,15 +115,15 @@ export function RadialFAB({
 
   // Calculate positions for semi-circle above the FAB
   const getPosition = (index: number, total: number) => {
-    // Spread items in a 140-degree arc above the button
-    const startAngle = -160; // Start angle in degrees (left side)
-    const endAngle = -20; // End angle in degrees (right side)
+    // Spread items in a 120-degree arc above the button
+    const startAngle = -150; // Start angle in degrees (left side)
+    const endAngle = -30; // End angle in degrees (right side)
     const angleRange = endAngle - startAngle;
     const angleStep = angleRange / (total - 1);
     const angle = startAngle + index * angleStep;
     const angleRad = (angle * Math.PI) / 180;
     
-    const radius = 80; // Distance from center
+    const radius = 90; // Distance from center - increased for better spacing
     const x = Math.cos(angleRad) * radius;
     const y = Math.sin(angleRad) * radius;
     
@@ -133,7 +133,7 @@ export function RadialFAB({
   return (
     <div
       className={cn(
-        "fixed bottom-24 right-4 z-50 md:hidden",
+        "fixed bottom-24 right-4 z-[60] md:hidden",
         className
       )}
     >
@@ -144,7 +144,7 @@ export function RadialFAB({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-[2px]"
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[59]"
             onClick={() => setIsOpen(false)}
           />
         )}
@@ -175,7 +175,7 @@ export function RadialFAB({
                     damping: 25,
                     delay: index * 0.05,
                   }}
-                  className="absolute bottom-0 right-0"
+                  className="absolute bottom-0 right-0 z-[61]"
                   style={{
                     transformOrigin: "center center",
                   }}
