@@ -378,8 +378,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               </Button>
             </div>
             <Button 
-              variant="ghost" 
-              className="w-full justify-start text-sm text-muted-foreground hover:text-foreground h-9"
+              variant="outline" 
+              className="w-full justify-start text-sm text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30 h-9"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4 mr-2" />
