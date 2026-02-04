@@ -56,7 +56,10 @@ export function SessionStartPanel({
           <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
             Select Pupil
           </label>
-          <Select value={selectedPupilId} onValueChange={onPupilChange}>
+          <Select 
+            value={selectedPupilId || "__none__"} 
+            onValueChange={(val) => onPupilChange(val === "__none__" ? "" : val)}
+          >
             <SelectTrigger className="h-12 bg-muted/50 border-border/50 hover:bg-muted transition-colors">
               <div className="flex items-center gap-3">
                 <div className="p-1.5 rounded-lg bg-primary/10">
@@ -66,14 +69,16 @@ export function SessionStartPanel({
               </div>
             </SelectTrigger>
             <SelectContent className="bg-popover">
-              <SelectItem value="">
+              <SelectItem value="__none__">
                 <span className="text-muted-foreground">No pupil (Test Route)</span>
               </SelectItem>
-              {pupils.map((pupil) => (
-                <SelectItem key={pupil.id} value={pupil.id}>
-                  {pupil.name}
-                </SelectItem>
-              ))}
+              {pupils
+                .filter((pupil) => pupil.id && pupil.id.trim() !== "")
+                .map((pupil) => (
+                  <SelectItem key={pupil.id} value={pupil.id}>
+                    {pupil.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
