@@ -27,12 +27,20 @@ import {
   Radio,
   Menu,
   X,
-  Plus
+  Plus,
+  Car,
+  PoundSterling
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -248,15 +256,40 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   >
                     <Calendar className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate("/instructor?openQuickActions=true")}
-                    className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white"
-                    title="Quick Actions"
-                  >
-                    <Plus className="h-4 w-4" strokeWidth={3} />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white"
+                        title="Quick Actions"
+                      >
+                        <Plus className="h-4 w-4" strokeWidth={3} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
+                      <DropdownMenuItem onClick={() => navigate("/instructor/pupils/new")} className="cursor-pointer">
+                        <Users className="h-4 w-4 mr-2" />
+                        Add Pupil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/instructor/schedule?action=add")} className="cursor-pointer">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Add Lesson
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/instructor/find-my-car")} className="cursor-pointer">
+                        <Car className="h-4 w-4 mr-2" />
+                        Find My Car
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/instructor/availability")} className="cursor-pointer">
+                        <CalendarClock className="h-4 w-4 mr-2" />
+                        Availability
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/instructor/pay")} className="cursor-pointer">
+                        <PoundSterling className="h-4 w-4 mr-2" />
+                        Pay
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Avatar
                     className="h-8 w-8 border-2 border-border cursor-pointer"
                     onClick={() => navigate("/instructor/settings")}
