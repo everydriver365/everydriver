@@ -188,7 +188,7 @@ export default function InstructorLiveSession() {
       if (devices && devices.length > 0) {
         setDevice(devices[0] as GPSDevice);
         
-        // If session is active, restore timer and distance
+        // If session is active, restore timer and distance, and enter fullscreen
         if (devices[0].current_session_id) {
           const { data: session } = await supabase
             .from("lesson_telematics")
@@ -201,6 +201,12 @@ export default function InstructorLiveSession() {
           }
           if (session?.total_distance_km) {
             setTotalDistance(session.total_distance_km);
+          }
+          
+          // Auto-enter fullscreen mode if session is active
+          const searchParams = new URLSearchParams(window.location.search);
+          if (searchParams.get("fullscreen") !== "true") {
+            navigate("/instructor/traccar?fullscreen=true", { replace: true });
           }
         }
       }
@@ -519,6 +525,9 @@ export default function InstructorLiveSession() {
       setSessionStartTime(new Date());
       setTotalDistance(0);
 
+      // Enter fullscreen mode for tracking
+      navigate("/instructor/traccar?fullscreen=true", { replace: true });
+
       // Close dialog if open
       setShowDrivingTestDialog(false);
 
@@ -709,6 +718,9 @@ export default function InstructorLiveSession() {
       setCompletedSessionId(sessionId);
       setShowReport(true);
       setDrivingTestDetails(null); // Clear driving test details
+
+      // Exit fullscreen mode
+      navigate("/instructor/traccar", { replace: true });
 
       const toastDescription = pendingRouteType === "driving_test" 
         ? "Driving test route saved" 

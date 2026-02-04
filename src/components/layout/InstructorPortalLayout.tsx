@@ -93,6 +93,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isTrackingPage = location.pathname.startsWith("/instructor/traccar");
+  
+  // Check for fullscreen mode (used when tracking is active)
+  const searchParams = new URLSearchParams(location.search);
+  const isFullscreenMode = isTrackingPage && searchParams.get("fullscreen") === "true";
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -125,10 +129,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       <div
         className={cn(
           "min-h-screen overflow-x-hidden",
-          isTrackingPage ? "h-[100dvh] overflow-hidden bg-background" : "pb-20 bg-[#f0f0f0]"
+          isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-20 bg-[#f0f0f0]"
         )}
       >
-        {!isTrackingPage && (
+        {!isFullscreenMode && (
           <>
             {/* iOS Install Banner */}
             <IOSInstallBanner />
@@ -314,7 +318,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </>
         )}
 
-        {isTrackingPage ? (
+        {isFullscreenMode ? (
           <main className="h-[100dvh] overflow-hidden">{children}</main>
         ) : (
           <>
