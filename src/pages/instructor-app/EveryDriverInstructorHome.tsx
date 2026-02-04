@@ -7,7 +7,6 @@ const mainLogo = "/everydriver-logo-v2.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Drive365InstallBanner } from "@/components/pwa/Drive365InstallBanner";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
-import { DeviceShowcase } from "@/components/instructor-app/DeviceShowcase";
 
 export default function EveryDriverInstructorHome() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -178,15 +177,12 @@ export default function EveryDriverInstructorHome() {
             </motion.div>
           </motion.div>
 
-          {/* Device Showcase - Mobile & Desktop Mockups */}
-          <DeviceShowcase />
-
           {/* Stats Grid */}
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12 max-w-4xl mx-auto"
+            transition={{ delay: 0.6 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto"
           >
             {[
               { icon: Users, value: "500+", label: "Active Instructors" },
@@ -198,7 +194,7 @@ export default function EveryDriverInstructorHome() {
                 key={stat.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 + index * 0.1 }}
+                transition={{ delay: 0.7 + index * 0.1 }}
                 className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 text-center"
               >
                 <stat.icon className="w-6 h-6 text-amber-400 mx-auto mb-2" />
