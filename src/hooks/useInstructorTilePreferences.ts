@@ -153,12 +153,19 @@ export function useInstructorTilePreferences(instructorId: string | undefined) {
 
   // Merge saved order with global tiles (handles admin adding new tiles)
   // Also filters out hidden tiles
-  const getOrderedTiles = useCallback((globalTiles: QuickAction[]): QuickAction[] => {
-    // Create a map for quick lookup
+  // additionalTilesLookup is used to find tiles that user added from the "Add Tiles" section
+  const getOrderedTiles = useCallback((globalTiles: QuickAction[], additionalTilesLookup?: QuickAction[]): QuickAction[] => {
+    // Create a map for quick lookup - globalTiles are the "default" tiles
     const tileMap = new Map<string, QuickAction>();
     globalTiles.forEach(tile => tileMap.set(tile.id, tile));
+    
+    // Also add additional tiles for lookup (but they won't show by default)
+    const additionalMap = new Map<string, QuickAction>();
+    if (additionalTilesLookup) {
+      additionalTilesLookup.forEach(tile => additionalMap.set(tile.id, tile));
+    }
 
-    // Filter out hidden tiles first
+    // Filter out hidden tiles first (only from global tiles for default view)
     const visibleTileIds = new Set(
       globalTiles
         .map(t => t.id)
@@ -167,24 +174,33 @@ export function useInstructorTilePreferences(instructorId: string | undefined) {
 
     if (!tileOrder || tileOrder.length === 0) {
       // No custom order - use default display_order, but exclude hidden
+      // Only show globalTiles by default (not additional tiles)
       return [...globalTiles]
         .filter(tile => visibleTileIds.has(tile.id))
         .sort((a, b) => a.display_order - b.display_order);
     }
 
-    // Build ordered array from saved order (excluding hidden tiles)
+    // Build ordered array from saved order
     const orderedTiles: QuickAction[] = [];
     tileOrder.forEach(id => {
-      if (visibleTileIds.has(id)) {
-        const tile = tileMap.get(id);
+      // Skip if hidden
+      if (hiddenTiles.includes(id)) return;
+      
+      // Try to find in global tiles first
+      let tile = tileMap.get(id);
+      if (tile) {
+        orderedTiles.push(tile);
+        tileMap.delete(id);
+      } else {
+        // Try additional tiles (user explicitly added this)
+        tile = additionalMap.get(id);
         if (tile) {
           orderedTiles.push(tile);
-          tileMap.delete(id);
         }
       }
     });
 
-    // Append any new tiles not in saved order (admin added new ones) - excluding hidden
+    // Append any new global tiles not in saved order (admin added new ones) - excluding hidden
     const remainingTiles = Array.from(tileMap.values())
       .filter(tile => visibleTileIds.has(tile.id))
       .sort((a, b) => a.display_order - b.display_order);
