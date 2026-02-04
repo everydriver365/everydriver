@@ -227,7 +227,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   />
                 </div>
 
-                {/* Right: QR, ADD, Schedule, Avatar */}
+                {/* Right: QR, Schedule, ADD, Avatar */}
                 <div className="flex items-center gap-0.5">
                   {instructor?.payment_qr_url && (
                     <Button
@@ -242,20 +242,20 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate("/instructor?openQuickActions=true")}
-                    className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white"
-                    title="Quick Actions"
-                  >
-                    <Plus className="h-4 w-4" strokeWidth={3} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
                     onClick={() => navigate("/instructor/schedule")}
                     className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
                     title="Schedule"
                   >
                     <Calendar className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate("/instructor?openQuickActions=true")}
+                    className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white"
+                    title="Quick Actions"
+                  >
+                    <Plus className="h-4 w-4" strokeWidth={3} />
                   </Button>
                   <Avatar
                     className="h-8 w-8 border-2 border-border cursor-pointer"
