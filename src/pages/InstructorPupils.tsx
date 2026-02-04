@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   Users,
@@ -41,6 +42,7 @@ import {
   Loader2,
   ArrowLeft,
   History,
+  Globe,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -94,10 +96,31 @@ const courseTypeLabels: Record<string, string> = {
 };
 
 export default function InstructorPupils() {
-  const { instructor } = useInstructorAuth();
+  const { instructor, refreshInstructor } = useInstructorAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const instructorId = instructor?.id;
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
+
+  const handleVisibilityToggle = async (isVisible: boolean) => {
+    if (!instructorId) return;
+    setUpdatingVisibility(true);
+    try {
+      const { error } = await supabase
+        .from("instructors")
+        .update({ is_active: isVisible })
+        .eq("id", instructorId);
+
+      if (error) throw error;
+      await refreshInstructor();
+      toast.success(isVisible ? "You're now visible online" : "You're now hidden online");
+    } catch (error) {
+      console.error("Error updating visibility:", error);
+      toast.error("Failed to update visibility");
+    } finally {
+      setUpdatingVisibility(false);
+    }
+  };
   
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [loading, setLoading] = useState(true);
@@ -424,9 +447,18 @@ export default function InstructorPupils() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 pb-6">
-        {/* Page Header */}
-        <div className="flex items-center gap-2">
+        {/* Page Header with Visibility Toggle */}
+        <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Pupils</h1>
+          <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Online</span>
+            <Switch
+              checked={instructor?.is_active ?? false}
+              onCheckedChange={handleVisibilityToggle}
+              disabled={updatingVisibility}
+            />
+          </div>
         </div>
 
         {/* Stats Row - Matching reference design */}
