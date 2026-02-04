@@ -1106,6 +1106,7 @@ export type Database = {
           name: string
           notes: string | null
           postcode: string | null
+          pupil_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1120,6 +1121,7 @@ export type Database = {
           name: string
           notes?: string | null
           postcode?: string | null
+          pupil_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1134,6 +1136,7 @@ export type Database = {
           name?: string
           notes?: string | null
           postcode?: string | null
+          pupil_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1142,6 +1145,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favourite_locations_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
         ]

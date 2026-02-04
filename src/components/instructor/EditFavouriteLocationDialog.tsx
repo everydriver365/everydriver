@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MapPin, Loader2, Search } from "lucide-react";
+import { PupilSelector } from "./PupilSelector";
 
 interface FavouriteLocation {
   id: string;
@@ -20,6 +21,8 @@ interface FavouriteLocation {
   longitude: number;
   notes: string | null;
   is_favorite: boolean | null;
+  pupil_id?: string | null;
+  instructor_id?: string;
 }
 
 interface EditFavouriteLocationDialogProps {
@@ -41,6 +44,7 @@ export function EditFavouriteLocationDialog({
   const [address, setAddress] = useState(location.address || "");
   const [notes, setNotes] = useState(location.notes || "");
   const [isFavorite, setIsFavorite] = useState(location.is_favorite || false);
+  const [pupilId, setPupilId] = useState<string | null>(location.pupil_id || null);
   const [saving, setSaving] = useState(false);
   const [lookingUp, setLookingUp] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number }>({ 
@@ -56,8 +60,16 @@ export function EditFavouriteLocationDialog({
     setAddress(location.address || "");
     setNotes(location.notes || "");
     setIsFavorite(location.is_favorite || false);
+    setPupilId(location.pupil_id || null);
     setCoords({ lat: location.latitude, lng: location.longitude });
   }, [location]);
+
+  // Reset pupilId when category changes away from pupil_home
+  useEffect(() => {
+    if (category !== "pupil_home") {
+      setPupilId(null);
+    }
+  }, [category]);
 
   const lookupPostcode = async () => {
     if (!postcode.trim()) {
@@ -129,7 +141,8 @@ export function EditFavouriteLocationDialog({
           latitude: coords.lat,
           longitude: coords.lng,
           notes: notes.trim() || null,
-          is_favorite: isFavorite
+          is_favorite: isFavorite,
+          pupil_id: category === "pupil_home" ? pupilId : null
         })
         .eq("id", location.id);
 
@@ -146,9 +159,12 @@ export function EditFavouriteLocationDialog({
     }
   };
 
+  // Get instructor ID from location for pupil selector
+  const instructorId = location.instructor_id;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
@@ -182,6 +198,18 @@ export function EditFavouriteLocationDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Pupil selector - only show for pupil_home category */}
+          {category === "pupil_home" && instructorId && (
+            <div className="space-y-2">
+              <Label>Link to Pupil (optional)</Label>
+              <PupilSelector
+                instructorId={instructorId}
+                value={pupilId}
+                onChange={setPupilId}
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="edit-postcode">Postcode</Label>
