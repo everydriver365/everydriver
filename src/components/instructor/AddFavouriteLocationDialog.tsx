@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,19 +9,27 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MapPin, Loader2, Search } from "lucide-react";
+import { PupilSelector } from "./PupilSelector";
+
+interface PrefilledData {
+  coords?: { lat: number; lng: number };
+  postcode?: string;
+}
 
 interface AddFavouriteLocationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   instructorId: string;
   onSaved?: () => void;
+  prefilled?: PrefilledData;
 }
 
 export function AddFavouriteLocationDialog({
   open,
   onOpenChange,
   instructorId,
-  onSaved
+  onSaved,
+  prefilled
 }: AddFavouriteLocationDialogProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("other");
@@ -29,9 +37,27 @@ export function AddFavouriteLocationDialog({
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
+  const [pupilId, setPupilId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [lookingUp, setLookingUp] = useState(false);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Handle prefilled data from GPS
+  useEffect(() => {
+    if (prefilled?.coords) {
+      setCoords(prefilled.coords);
+    }
+    if (prefilled?.postcode) {
+      setPostcode(prefilled.postcode);
+    }
+  }, [prefilled]);
+
+  // Reset pupilId when category changes away from pupil_home
+  useEffect(() => {
+    if (category !== "pupil_home") {
+      setPupilId(null);
+    }
+  }, [category]);
 
   const lookupPostcode = async () => {
     if (!postcode.trim()) {
@@ -104,7 +130,8 @@ export function AddFavouriteLocationDialog({
           latitude: coords.lat,
           longitude: coords.lng,
           notes: notes.trim() || null,
-          is_favorite: isFavorite
+          is_favorite: isFavorite,
+          pupil_id: category === "pupil_home" ? pupilId : null
         });
 
       if (error) throw error;
@@ -128,12 +155,13 @@ export function AddFavouriteLocationDialog({
     setAddress("");
     setNotes("");
     setIsFavorite(false);
+    setPupilId(null);
     setCoords(null);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
@@ -167,6 +195,18 @@ export function AddFavouriteLocationDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Pupil selector - only show for pupil_home category */}
+          {category === "pupil_home" && (
+            <div className="space-y-2">
+              <Label>Link to Pupil (optional)</Label>
+              <PupilSelector
+                instructorId={instructorId}
+                value={pupilId}
+                onChange={setPupilId}
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="postcode">Postcode *</Label>
@@ -214,7 +254,7 @@ export function AddFavouriteLocationDialog({
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="is-favorite">Mark as favorite</Label>
+            <Label htmlFor="is-favorite">Mark as favourite</Label>
             <Switch
               id="is-favorite"
               checked={isFavorite}
