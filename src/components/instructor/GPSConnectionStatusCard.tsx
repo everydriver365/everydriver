@@ -1,4 +1,4 @@
-import { Smartphone, Wifi, WifiOff, ExternalLink, Gauge, MapPin, RefreshCw, Loader2 } from "lucide-react";
+import { Smartphone, Wifi, WifiOff, ExternalLink, Gauge, MapPin, RefreshCw, Loader2, PauseCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatMph } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ interface GPSConnectionStatusCardProps {
   roadName: string | null;
   isReconnecting?: boolean;
   retryCount?: number;
+  isStationary?: boolean;
   onManualReconnect?: () => void;
 }
 
@@ -38,46 +39,91 @@ export function GPSConnectionStatusCard({
   roadName,
   isReconnecting = false,
   retryCount = 0,
+  isStationary = false,
   onManualReconnect,
 }: GPSConnectionStatusCardProps) {
   // Determine display state
   const showReconnecting = isReconnecting && !isConnected;
+  const showStationary = isConnected && isStationary && !showReconnecting;
+  
+  // Color scheme based on state
+  const getColorScheme = () => {
+    if (showReconnecting) {
+      return {
+        bg: "bg-blue-50/95 border-blue-300 dark:bg-blue-950/80 dark:border-blue-700",
+        iconBg: "bg-blue-100 dark:bg-blue-900/50",
+        iconColor: "text-blue-600 dark:text-blue-400",
+        textColor: "text-blue-900 dark:text-blue-100",
+        statusColor: "text-blue-700 dark:text-blue-300",
+      };
+    }
+    if (showStationary) {
+      return {
+        bg: "bg-sky-50/95 border-sky-300 dark:bg-sky-950/80 dark:border-sky-700",
+        iconBg: "bg-sky-100 dark:bg-sky-900/50",
+        iconColor: "text-sky-600 dark:text-sky-400",
+        textColor: "text-sky-900 dark:text-sky-100",
+        statusColor: "text-sky-700 dark:text-sky-300",
+      };
+    }
+    if (isConnected) {
+      return {
+        bg: "bg-emerald-50/95 border-emerald-300 dark:bg-emerald-950/80 dark:border-emerald-700",
+        iconBg: "bg-emerald-100 dark:bg-emerald-900/50",
+        iconColor: "text-emerald-600 dark:text-emerald-400",
+        textColor: "text-emerald-900 dark:text-emerald-100",
+        statusColor: "text-emerald-700 dark:text-emerald-300",
+      };
+    }
+    return {
+      bg: "bg-amber-50/95 border-amber-300 dark:bg-amber-950/80 dark:border-amber-700",
+      iconBg: "bg-amber-100 dark:bg-amber-900/50",
+      iconColor: "text-amber-600 dark:text-amber-400",
+      textColor: "text-amber-900 dark:text-amber-100",
+      statusColor: "text-amber-700 dark:text-amber-300",
+    };
+  };
+
+  const colors = getColorScheme();
+  
+  // Status icon and text
+  const getStatusIcon = () => {
+    if (showReconnecting) {
+      return <RefreshCw className={`h-4 w-4 ${colors.iconColor} animate-spin`} />;
+    }
+    if (showStationary) {
+      return <PauseCircle className={`h-4 w-4 ${colors.iconColor}`} />;
+    }
+    if (isConnected) {
+      return <Wifi className={`h-4 w-4 ${colors.iconColor}`} />;
+    }
+    return <WifiOff className={`h-4 w-4 ${colors.iconColor}`} />;
+  };
+
+  const getStatusText = () => {
+    if (showReconnecting) {
+      return `Reconnecting... (${retryCount}/5)`;
+    }
+    if (showStationary) {
+      return "Connected (Stationary)";
+    }
+    if (isConnected) {
+      return "Connected";
+    }
+    return "Offline";
+  };
   
   return (
-    <div className={`rounded-2xl border-2 backdrop-blur shadow-lg ${
-      showReconnecting
-        ? "bg-blue-50/95 border-blue-300 dark:bg-blue-950/80 dark:border-blue-700"
-        : isConnected 
-          ? "bg-emerald-50/95 border-emerald-300 dark:bg-emerald-950/80 dark:border-emerald-700" 
-          : "bg-amber-50/95 border-amber-300 dark:bg-amber-950/80 dark:border-amber-700"
-    }`}>
+    <div className={`rounded-2xl border-2 backdrop-blur shadow-lg ${colors.bg}`}>
       <div className="p-4 space-y-3">
         {/* Header with icon and device name */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${
-              showReconnecting
-                ? "bg-blue-100 dark:bg-blue-900/50"
-                : isConnected 
-                  ? "bg-emerald-100 dark:bg-emerald-900/50" 
-                  : "bg-amber-100 dark:bg-amber-900/50"
-            }`}>
-              <Smartphone className={`h-5 w-5 ${
-                showReconnecting
-                  ? "text-blue-600 dark:text-blue-400"
-                  : isConnected 
-                    ? "text-emerald-600 dark:text-emerald-400" 
-                    : "text-amber-600 dark:text-amber-400"
-              }`} />
+            <div className={`p-2 rounded-full ${colors.iconBg}`}>
+              <Smartphone className={`h-5 w-5 ${colors.iconColor}`} />
             </div>
             <div>
-              <h3 className={`font-semibold ${
-                showReconnecting
-                  ? "text-blue-900 dark:text-blue-100"
-                  : isConnected 
-                    ? "text-emerald-900 dark:text-emerald-100" 
-                    : "text-amber-900 dark:text-amber-100"
-              }`}>
+              <h3 className={`font-semibold ${colors.textColor}`}>
                 GPSgate Tracker
               </h3>
               <p className="text-xs text-muted-foreground">
@@ -92,13 +138,15 @@ export function GPSConnectionStatusCard({
               <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
             ) : (
               <span className="relative flex h-3 w-3">
-                {isConnected && (
+                {(isConnected && !showStationary) && (
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 )}
                 <span className={`relative inline-flex rounded-full h-3 w-3 ${
-                  isConnected 
-                    ? "bg-emerald-500" 
-                    : "bg-amber-500"
+                  showStationary
+                    ? "bg-sky-500"
+                    : isConnected 
+                      ? "bg-emerald-500" 
+                      : "bg-amber-500"
                 }`}></span>
               </span>
             )}
@@ -108,25 +156,9 @@ export function GPSConnectionStatusCard({
         {/* Connection details */}
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-1.5">
-            {showReconnecting ? (
-              <RefreshCw className="h-4 w-4 text-blue-600 dark:text-blue-400 animate-spin" />
-            ) : isConnected ? (
-              <Wifi className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <WifiOff className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            )}
-            <span className={`font-medium ${
-              showReconnecting
-                ? "text-blue-700 dark:text-blue-300"
-                : isConnected 
-                  ? "text-emerald-700 dark:text-emerald-300" 
-                  : "text-amber-700 dark:text-amber-300"
-            }`}>
-              {showReconnecting 
-                ? `Reconnecting... (${retryCount}/5)`
-                : isConnected 
-                  ? "Connected" 
-                  : "Offline"}
+            {getStatusIcon()}
+            <span className={`font-medium ${colors.statusColor}`}>
+              {getStatusText()}
             </span>
           </div>
           <span className="text-muted-foreground">
@@ -134,8 +166,8 @@ export function GPSConnectionStatusCard({
           </span>
         </div>
         
-        {/* Live data when connected */}
-        {isConnected && (
+        {/* Live data when connected (not stationary) */}
+        {isConnected && !showStationary && (
           <div className="flex items-center gap-4 text-sm pt-1 border-t border-emerald-200 dark:border-emerald-800">
             <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
               <Gauge className="h-4 w-4" />
@@ -152,6 +184,16 @@ export function GPSConnectionStatusCard({
                 <span className="text-xs">Awaiting location...</span>
               </div>
             )}
+          </div>
+        )}
+        
+        {/* Stationary info when connected but parked */}
+        {showStationary && (
+          <div className="flex items-center gap-2 text-sm pt-1 border-t border-sky-200 dark:border-sky-800">
+            <div className="flex items-center gap-1.5 text-sky-700 dark:text-sky-300 min-w-0">
+              <MapPin className="h-4 w-4 flex-shrink-0" />
+              <span className="truncate">{roadName || "Vehicle parked"}</span>
+            </div>
           </div>
         )}
         
