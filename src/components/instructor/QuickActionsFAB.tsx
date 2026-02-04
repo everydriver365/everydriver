@@ -170,7 +170,7 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
           )}
           aria-label={isOpen ? "Close quick actions" : "Open quick actions"}
         >
-          <Plus className="h-6 w-6" strokeWidth={2.5} />
+          <Plus className="h-8 w-8" strokeWidth={3} />
         </Button>
       </motion.div>
     </div>
