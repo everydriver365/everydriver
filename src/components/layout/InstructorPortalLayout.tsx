@@ -135,15 +135,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
             {/* Mobile Header - White background with dark icons */}
             <header className="sticky top-0 z-40 bg-background border-b border-border shadow-sm">
-              <div className="flex items-center justify-between px-4 h-14">
+              <div className="flex items-center justify-between px-3 sm:px-4 h-14">
                 {/* Left: Hamburger Menu + Logo */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                     <SheetTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2 h-9 w-9"
+                        className="text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0"
                       >
                         <Menu className="h-5 w-5" />
                       </Button>
@@ -231,18 +231,27 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   <img 
                     src={instructorLogo}
                     alt="EveryDriver" 
-                    className="h-6 object-contain"
+                    className="h-5 sm:h-6 object-contain"
                   />
                 </div>
 
-                {/* Right: QR, Schedule, ADD, Avatar */}
+                {/* Right: Settings, QR, Schedule, ADD, Avatar */}
                 <div className="flex items-center gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate("/instructor/settings")}
+                    className="text-foreground bg-muted/40 border border-border hover:text-foreground hover:bg-muted h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                    title="Settings"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
                   {instructor?.payment_qr_url && (
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowQRModal(true)}
-                      className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
+                      className="text-primary/80 hover:text-primary hover:bg-primary/10 h-7 w-7 sm:h-8 sm:w-8"
                     >
                       <span className="text-[10px] font-bold border border-current rounded px-0.5">QR</span>
                     </Button>
@@ -251,7 +260,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate("/instructor/schedule")}
-                    className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
+                    className="text-primary/80 hover:text-primary hover:bg-primary/10 h-7 w-7 sm:h-8 sm:w-8"
                     title="Schedule"
                   >
                     <Calendar className="h-4 w-4" />
@@ -261,10 +270,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white"
+                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white shrink-0"
                         title="Quick Actions"
                       >
-                        <Plus className="h-4 w-4" strokeWidth={3} />
+                        <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
@@ -291,7 +300,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Avatar
-                    className="h-8 w-8 border-2 border-border cursor-pointer"
+                    className="h-7 w-7 sm:h-8 sm:w-8 border-2 border-border cursor-pointer shrink-0"
                     onClick={() => navigate("/instructor/settings")}
                   >
                     <AvatarImage src={instructor?.profile_image_url || undefined} />
