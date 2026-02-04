@@ -98,6 +98,14 @@ export function InstructorMobileHeader({
         <Button
           variant="ghost"
           size="icon"
+          onClick={() => navigate("/instructor/settings")}
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={toggleTheme}
           className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
         >
@@ -106,14 +114,6 @@ export function InstructorMobileHeader({
           ) : (
             <Sun className="h-5 w-5" />
           )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/instructor/settings")}
-          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
-        >
-          <Settings className="h-5 w-5" />
         </Button>
         <Avatar className="h-9 w-9 border-2 border-primary-foreground/20">
           <AvatarImage src={profileImageUrl || undefined} alt={instructorName} />
