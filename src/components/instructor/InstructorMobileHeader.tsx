@@ -63,25 +63,25 @@ export function InstructorMobileHeader({
       </div>
       
       {/* QR, Add, Availability, Settings, and avatar on the right */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         {paymentLink && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowQRModal(true)}
-            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
+            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-1.5"
           >
-            <span className="text-xs font-bold border border-current rounded px-1">QR</span>
+            <span className="text-[10px] font-bold border border-current rounded px-1">QR</span>
           </Button>
         )}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate("/instructor?openQuickActions=true")}
-          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-1.5"
           title="Quick Actions"
         >
-          <span className="text-xs font-bold border border-current rounded px-1 flex items-center gap-0.5">
+          <span className="text-[10px] font-bold border border-current rounded px-1 flex items-center gap-0.5">
             <Plus className="h-3 w-3" strokeWidth={3} />
             ADD
           </span>
@@ -90,34 +90,36 @@ export function InstructorMobileHeader({
           variant="ghost"
           size="icon"
           onClick={() => navigate("/instructor/availability")}
-          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-7 w-7"
           title="Quick Availability"
         >
-          <CalendarClock className="h-5 w-5" />
+          <CalendarClock className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate("/instructor/settings")}
-          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-7 w-7"
+          title="Settings"
         >
-          <Settings className="h-5 w-5" />
+          <Settings className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-7 w-7"
+          title={resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}
         >
           {resolvedTheme === 'dark' ? (
-            <Moon className="h-5 w-5" />
+            <Moon className="h-4 w-4" />
           ) : (
-            <Sun className="h-5 w-5" />
+            <Sun className="h-4 w-4" />
           )}
         </Button>
-        <Avatar className="h-9 w-9 border-2 border-primary-foreground/20">
+        <Avatar className="h-8 w-8 border-2 border-primary-foreground/20 ml-0.5">
           <AvatarImage src={profileImageUrl || undefined} alt={instructorName} />
-          <AvatarFallback className="bg-white text-primary font-semibold text-sm">
+          <AvatarFallback className="bg-white text-primary font-semibold text-xs">
             {getInitials(instructorName)}
           </AvatarFallback>
         </Avatar>
