@@ -187,7 +187,7 @@ export default function InstructorPortal() {
   // Mobile Layout
   if (isMobile) {
     return (
-      <>
+      <InstructorPortalLayout>
         <InstructorMobileHome 
           instructor={instructorData}
           todaysLessonCount={todaysLessonCount}
@@ -202,7 +202,7 @@ export default function InstructorPortal() {
           instructorName={instructorData?.name}
           onPaymentRecorded={fetchPupils}
         />
-      </>
+      </InstructorPortalLayout>
     );
   }
 
