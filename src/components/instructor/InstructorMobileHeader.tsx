@@ -62,17 +62,8 @@ export function InstructorMobileHeader({
         />
       </div>
       
-      {/* QR, Quick Add, Availability, Settings, and avatar on the right */}
+      {/* QR, Add, Availability, Settings, and avatar on the right */}
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/instructor?openQuickActions=true")}
-          className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white shadow-sm"
-          title="Quick Actions"
-        >
-          <Plus className="h-4 w-4" strokeWidth={3} />
-        </Button>
         {paymentLink && (
           <Button
             variant="ghost"
@@ -83,6 +74,18 @@ export function InstructorMobileHeader({
             <span className="text-xs font-bold border border-current rounded px-1">QR</span>
           </Button>
         )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/instructor?openQuickActions=true")}
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 px-2"
+          title="Quick Actions"
+        >
+          <span className="text-xs font-bold border border-current rounded px-1 flex items-center gap-0.5">
+            <Plus className="h-3 w-3" strokeWidth={3} />
+            ADD
+          </span>
+        </Button>
         <Button
           variant="ghost"
           size="icon"
