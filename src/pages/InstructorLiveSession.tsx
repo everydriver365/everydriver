@@ -5,41 +5,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useGPSPoller } from "@/hooks/useGPSPoller";
 import { useGPSAutoReconnect } from "@/hooks/useGPSAutoReconnect";
 import { 
-  ArrowLeft, 
-  Play, 
   Square,
-  Wifi, 
   WifiOff,
   RefreshCw,
-  Gauge,
   AlertTriangle,
   Clock,
-  User,
   Settings,
-  Navigation,
-  Zap,
-  Flag,
-  CheckCircle,
   Loader2
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import LiveTrackingMap from "@/components/instructor/LiveTrackingMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
-import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
+import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
+import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
 
 interface GPSDevice {
   id: string;
@@ -948,39 +930,8 @@ export default function InstructorLiveSession() {
           </Button>
         </div>
 
-        {/* Full Screen Map or Pupil Selection */}
+        {/* Full Screen Map */}
         <div className="flex-1 relative overflow-hidden">
-          {/* Stale data banner with reconnect option */}
-          {!isConnected && (
-            <div className="absolute top-4 left-4 right-4 z-30">
-              <div 
-                className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={manualReconnect}
-              >
-                <div className="flex items-start gap-2">
-                  {isReconnecting ? (
-                    <Loader2 className="h-4 w-4 mt-0.5 text-primary animate-spin" />
-                  ) : (
-                    <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">
-                      {isReconnecting ? `Reconnecting...` : 'No recent GPS updates'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {isReconnecting 
-                        ? `Attempt ${retryCount + 1}. Tap to retry now.`
-                        : `Last update ${lastSeenLabel}. Tap to reconnect.`
-                      }
-                    </p>
-                  </div>
-                  {!isReconnecting && (
-                    <RefreshCw className="h-4 w-4 mt-0.5 text-primary" />
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Live Map */}
           <LiveTrackingMap
@@ -995,113 +946,36 @@ export default function InstructorLiveSession() {
             className="absolute inset-0"
           />
 
-          {/* Pre-session: Compact Start controls overlay */}
+          {/* Pre-session: Polished Setup UI */}
           <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
-            {/* Enhanced Connection Status Card */}
-            <div className="pointer-events-auto flex-shrink-0 p-3 pb-0">
-              <GPSConnectionStatusCard
+            {/* GPS Status Hero Card */}
+            <div className="pointer-events-auto flex-shrink-0 p-4">
+              <GPSStatusHero
                 deviceName={device.device_name}
                 isConnected={isConnected}
                 lastSeenLabel={lastSeenLabel}
                 speedKmh={device.last_speed_kmh}
                 roadName={device.last_road_name}
+                isReconnecting={isReconnecting}
+                retryCount={retryCount}
+                onManualReconnect={manualReconnect}
               />
             </div>
 
             {/* Spacer to push content to bottom */}
             <div className="flex-1" />
 
-            {/* Bottom Controls Panel */}
-            <div className="pointer-events-auto px-3 pb-20">
-              <div className="rounded-2xl border border-border bg-background/95 backdrop-blur shadow-lg">
-                <div className="p-3 space-y-3">
-                  {/* Pupil Selection Row */}
-                  <div className="flex items-center gap-2">
-                    <Select value={selectedPupilId} onValueChange={setSelectedPupilId}>
-                      <SelectTrigger className="flex-1 h-11">
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <SelectValue placeholder="Select pupil..." />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {pupils.map((pupil) => (
-                          <SelectItem key={pupil.id} value={pupil.id}>
-                            {pupil.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    {/* Test Route Toggle */}
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                      device?.is_test_route_mode || !selectedPupilId 
-                        ? "bg-amber-500/10 border-amber-500/30" 
-                        : "bg-muted/50 border-border"
-                    }`}>
-                      <Flag className={`h-4 w-4 ${device?.is_test_route_mode || !selectedPupilId ? "text-amber-600" : "text-muted-foreground"}`} />
-                      <Switch 
-                        checked={device?.is_test_route_mode || !selectedPupilId}
-                        onCheckedChange={async (checked) => {
-                          if (!device) return;
-                          if (selectedPupilId) {
-                            await supabase
-                              .from("gps_devices")
-                              .update({ is_test_route_mode: checked })
-                              .eq("id", device.id);
-                            setDevice({ ...device, is_test_route_mode: checked });
-                          }
-                        }}
-                        disabled={!selectedPupilId}
-                        className="scale-90"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Offline warning */}
-                  {!isConnected && (
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border">
-                      <WifiOff className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <p className="text-xs text-muted-foreground">
-                        GPS offline. Start anyway to record when it reconnects.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Action Buttons - Side by Side */}
-                  <div className="flex gap-2">
-                    {/* Main Start Button */}
-                    <Button 
-                      size="lg"
-                      className="flex-1 h-12 text-base font-semibold rounded-xl"
-                      onClick={() => startSession(selectedPupilId ? "practice" : "test")}
-                      disabled={isStarting}
-                    >
-                      {isStarting ? (
-                        <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                      ) : selectedPupilId ? (
-                        <Play className="h-5 w-5 mr-2" />
-                      ) : (
-                        <Flag className="h-5 w-5 mr-2" />
-                      )}
-                      {selectedPupilId 
-                        ? (device?.is_test_route_mode ? "Test Route" : "Start") 
-                        : "Test Route"
-                      }
-                    </Button>
-
-                    {/* Driving Test Button */}
-                    <Button 
-                      size="lg"
-                      className="h-12 px-4 font-semibold rounded-xl"
-                      onClick={() => setShowDrivingTestDialog(true)}
-                      disabled={isStarting}
-                    >
-                      <CheckCircle className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+            {/* Session Start Panel */}
+            <div className="pointer-events-auto px-4 pb-20">
+              <SessionStartPanel
+                pupils={pupils}
+                selectedPupilId={selectedPupilId}
+                onPupilChange={setSelectedPupilId}
+                onStartSession={(type) => startSession(type)}
+                onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
+                isStarting={isStarting}
+                isConnected={isConnected}
+              />
             </div>
           </div>
         </div>
