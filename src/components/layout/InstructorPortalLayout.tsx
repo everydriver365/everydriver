@@ -39,6 +39,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
+import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
 
 const instructorLogo = "/everydriver-logo-instructor.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
@@ -267,6 +268,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             <main className="px-4 py-4 overflow-x-hidden">{children}</main>
             <InstructorBottomNav />
+            <QuickActionsFAB />
           </>
         )}
 
@@ -394,6 +396,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             {children}
           </div>
         </main>
+
+        {/* Quick Actions FAB */}
+        <QuickActionsFAB />
       </div>
     </>
   );
