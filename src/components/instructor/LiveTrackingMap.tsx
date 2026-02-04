@@ -412,8 +412,8 @@ export default function TraccarLiveMap({
         </Button>
       )}
 
-      {/* Speed display panel - always visible when connected or has position */}
-      {(isConnected || markerLat !== null) && (
+      {/* Speed display panel - only visible during active session */}
+      {sessionId && (isConnected || markerLat !== null) && (
         <div className="absolute bottom-4 left-4 right-4 z-20">
           <div className={`backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg border ${
             isSpeeding 
