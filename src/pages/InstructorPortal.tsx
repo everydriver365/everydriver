@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +44,7 @@ interface InstructorData {
 }
 
 export default function InstructorPortal() {
-  const { instructor: authInstructor, loading: authLoading, user } = useInstructorAuth();
+  const { instructor: authInstructor, loading: authLoading, user, refreshInstructor } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   const navigate = useNavigate();
   
@@ -51,8 +53,29 @@ export default function InstructorPortal() {
   const [pupilsLoading, setPupilsLoading] = useState(true);
   const [todaysLessonCount, setTodaysLessonCount] = useState(0);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const isMobile = useIsMobile();
   const { hoursThisWeek, monthEarnings, loading: statsLoading } = useInstructorLiveStats(instructorId);
+
+  const handleVisibilityToggle = async (isVisible: boolean) => {
+    if (!instructorId) return;
+    setUpdatingVisibility(true);
+    try {
+      const { error } = await supabase
+        .from("instructors")
+        .update({ is_active: isVisible })
+        .eq("id", instructorId);
+
+      if (error) throw error;
+      await refreshInstructor();
+      toast.success(isVisible ? "You're now visible online" : "You're now hidden online");
+    } catch (error) {
+      console.error("Error updating visibility:", error);
+      toast.error("Failed to update visibility");
+    } finally {
+      setUpdatingVisibility(false);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -185,18 +208,29 @@ export default function InstructorPortal() {
     <InstructorPortalLayout>
       <div className="space-y-6">
         
-        {/* Welcome Section - Larger title */}
+        {/* Welcome Section with Online Toggle */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-1"
+          className="flex items-start justify-between gap-4"
         >
-          <h1 className="text-3xl font-bold text-foreground">
-            {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
-          </h1>
-          <p className="text-muted-foreground">
-            Here's what's happening with your business today.
-          </p>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-bold text-foreground">
+              {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
+            </h1>
+            <p className="text-muted-foreground">
+              Here's what's happening with your business today.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2 shrink-0">
+            <Globe className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Online</span>
+            <Switch
+              checked={authInstructor?.is_active ?? false}
+              onCheckedChange={handleVisibilityToggle}
+              disabled={updatingVisibility}
+            />
+          </div>
         </motion.div>
 
         {/* Setup Checklist for new instructors */}
