@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, Plus, PoundSterling } from "lucide-react";
+import { Calendar, MapPin, Plus, PoundSterling, Car, Heart } from "lucide-react";
 
 interface HomeQuickActionsProps {
   onTakePayment?: () => void;
@@ -46,10 +46,28 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
       borderColor: "border-rose-200 dark:border-rose-800",
       onClick: onTakePayment,
     },
+    {
+      id: "find-my-car",
+      label: "Find My Car",
+      icon: Car,
+      iconColor: "text-sky-600 dark:text-sky-400",
+      bgColor: "bg-sky-50 dark:bg-sky-900/30",
+      borderColor: "border-sky-200 dark:border-sky-800",
+      route: "/instructor/find-my-car",
+    },
+    {
+      id: "health-hub",
+      label: "Health Hub",
+      icon: Heart,
+      iconColor: "text-pink-600 dark:text-pink-400",
+      bgColor: "bg-pink-50 dark:bg-pink-900/30",
+      borderColor: "border-pink-200 dark:border-pink-800",
+      route: "/instructor/health",
+    },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-3 gap-2">
       {actions.map((action, index) => {
         const Icon = action.icon;
         const content = (
