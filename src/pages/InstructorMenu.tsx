@@ -24,13 +24,10 @@ import {
   QrCode,
   CalendarPlus,
   Navigation,
-  ArrowLeft,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { QuickTestResultForm } from "@/components/instructor/QuickTestResultForm";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { cn } from "@/lib/utils";
 
 interface MenuItem {
@@ -52,11 +49,6 @@ export default function InstructorMenu() {
     await signOut();
     navigate("/instructor-app/login");
   };
-
-  const getInitials = (name: string) => {
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
-
   const menuSections: { title: string; items: MenuItem[] }[] = [
     {
       title: "Quick Actions",
@@ -278,84 +270,63 @@ export default function InstructorMenu() {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background border-b border-border px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 -ml-2"
-              onClick={() => navigate("/instructor")}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold">Menu</h1>
-              <p className="text-xs text-muted-foreground">
-                Quick access to all features
-              </p>
-            </div>
-          </div>
-          <Avatar 
-            className="h-10 w-10 border-2 border-border cursor-pointer"
-            onClick={() => navigate("/instructor/settings")}
-          >
-            <AvatarImage src={instructor?.profile_image_url || undefined} alt={instructor?.name} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-              {instructor?.name ? getInitials(instructor.name) : "?"}
-            </AvatarFallback>
-          </Avatar>
+    <InstructorPortalLayout>
+      <div className="space-y-5 -mx-4 md:mx-0">
+        {/* Page Title */}
+        <div className="px-4 md:px-0">
+          <h1 className="text-xl font-bold">Menu</h1>
+          <p className="text-sm text-muted-foreground">
+            Quick access to all features
+          </p>
         </div>
-      </div>
 
-      {/* Menu Sections */}
-      <div className="px-4 py-4 space-y-5">
-        {menuSections.map((section) => (
-          <div key={section.title} className="space-y-2">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
-              {section.title}
-            </h2>
-            <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden divide-y divide-border/50">
-              {section.items.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    if (item.action) {
-                      item.action();
-                    } else if (item.path) {
-                      navigate(item.path);
-                    }
-                  }}
-                  className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-muted/50 transition-colors text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
-                        item.iconBg || "bg-primary/10"
-                      )}
-                    >
-                      <item.icon
-                        className={cn("h-5 w-5", item.iconColor || "text-primary")}
-                      />
+        {/* Menu Sections */}
+        <div className="px-4 md:px-0 space-y-5">
+          {menuSections.map((section) => (
+            <div key={section.title} className="space-y-2">
+              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                {section.title}
+              </h2>
+              <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden divide-y divide-border/50">
+                {section.items.map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      if (item.action) {
+                        item.action();
+                      } else if (item.path) {
+                        navigate(item.path);
+                      }
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-muted/50 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
+                          item.iconBg || "bg-primary/10"
+                        )}
+                      >
+                        <item.icon
+                          className={cn("h-5 w-5", item.iconColor || "text-primary")}
+                        />
+                      </div>
+                      <div>
+                        <div className="font-medium text-sm text-foreground">{item.label}</div>
+                        {item.description && (
+                          <div className="text-xs text-muted-foreground">
+                            {item.description}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium text-sm text-foreground">{item.label}</div>
-                      {item.description && (
-                        <div className="text-xs text-muted-foreground">
-                          {item.description}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
-                </button>
-              ))}
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Quick Test Result Form */}
@@ -366,9 +337,6 @@ export default function InstructorMenu() {
           instructorId={instructor.id}
         />
       )}
-
-      {/* Bottom Navigation */}
-      <InstructorBottomNav />
-    </div>
+    </InstructorPortalLayout>
   );
 }
