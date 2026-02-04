@@ -1,206 +1,152 @@
 
-## Locations Page Enhancements
 
-Upgrading the Locations page with premium visual polish, inline map previews, GPS quick-add, category navigation pills, a favourites quick-access section, GlassCard styling with category accent colours, and optional pupil linking.
+# Plan: Redesign Instructor Desktop Portal to Match Reference Design
 
----
+## Overview
 
-### Features to Implement
+The reference image shows a clean, professional dashboard layout with:
+- A simplified left sidebar with logo at top and user profile at bottom
+- Simple text navigation links with icons (no heavy styling on active states)
+- Large, bold page title in the main content area
+- Content organized in categorized card sections (e.g., "Business", "Scheduling & Booking")
+- Two-column grid layout for settings-style cards with icons, titles, and descriptions
+- Clean white/light background with subtle borders
 
-| Feature | Description |
-|---------|-------------|
-| Map Preview | Expandable inline mini-map when tapping a location card |
-| GPS Quick-Add | Button to save current GPS position as a new location |
-| Category Pills | Horizontal scrolling filter chips instead of vertical collapsibles |
-| Favourites Section | Dedicated top section showing starred locations |
-| GlassCard Styling | Premium glass-morphism cards with category accent colours |
-| Pupil Linking | Associate "Pupil Home" locations with specific pupils |
+## Current State Analysis
 
----
+The current instructor portal layout (`InstructorPortalLayout.tsx`) has:
+- Fixed 256px (w-64) sidebar with avatar at top
+- Active navigation items use a solid primary background (too heavy)
+- Breadcrumb bar below the header
+- Main content in a container with 6xl max-width
 
-### Visual Design
+## Design Changes
 
-```text
-+----------------------------------+
-|  <- Back     Locations    [+ Add]|
-+----------------------------------+
-|  [GPS icon] Use Current Location |
-+----------------------------------+
-|  [Search locations...]           |
-+----------------------------------+
-|  [All] [Test] [School] [Home] >> |  <- Scrollable pills
-+----------------------------------+
-|                                  |
-|  FAVOURITES (2)                  |
-|  +----------------------------+  |
-|  | [Glass Card - Teal glow]   |  |
-|  | Building2  Tolworth Test ★ |  |
-|  |   KT6 7NF                  |  |
-|  |  [Mini Map Preview]        |  |  <- Expandable
-|  +----------------------------+  |
-|                                  |
-|  ALL LOCATIONS                   |
-|  +----------------------------+  |
-|  | [Glass Card - Emerald]     |  |
-|  | School  Holy Cross Primary |  |
-|  |   KT6 5EJ                  |  |
-|  +----------------------------+  |
-|  +----------------------------+  |
-|  | [Glass Card - Amber]       |  |
-|  | Home  John Smith           |  |
-|  |   SW15 5PU · Linked: John  |  |  <- Pupil link shown
-|  +----------------------------+  |
-|                                  |
-+----------------------------------+
-```
+### 1. Sidebar Redesign
+
+| Element | Current | New (Matching Reference) |
+|---------|---------|--------------------------|
+| Logo | Avatar + user info at top | EveryDriver logo at top, user at bottom |
+| Nav items | Rounded with heavy active background | Simple text links, minimal styling |
+| Active state | `bg-primary text-primary-foreground` | Light left border accent, subtle text highlight |
+| Spacing | Compact (py-2.5) | More breathing room |
+| User profile | At top | At bottom of sidebar |
+| Width | 256px | Keep similar (~240-256px) |
+
+### 2. Main Content Area
+
+| Element | Current | New |
+|---------|---------|-----|
+| Breadcrumb | Small breadcrumb bar | Remove or simplify |
+| Page titles | Varies by page | Large, bold title (text-3xl font-bold) |
+| Background | bg-background | Lighter (bg-muted/30 or similar) |
+| Container | max-w-6xl centered | Full width with padding |
+
+### 3. Card-Based Content Layout (for pages like Settings, Dashboard)
+
+Create reusable components for the categorized card layout seen in the reference:
+- Section headers (e.g., "Business", "Scheduling & Booking")
+- Two-column grid of navigation/action cards
+- Each card has: colored icon, title, description, chevron indicator
 
 ---
 
-### Implementation Details
+## Technical Implementation
 
-**1. GPS Quick-Add Button**
-- Add button below header: "Use Current Location"
-- On tap, request geolocation permission
-- Get current coords, reverse geocode to postcode
-- Pre-populate Add Location dialog with coords/postcode
-
-**2. Category Pill Navigation**
-- Horizontal scrolling row of filter chips
-- Options: All, Test Centres, Schools, Pupil Homes, Meeting Points, Other
-- Uses existing `GlassChip` component from `GlassCard.tsx`
-- Selecting a pill filters the displayed locations
-
-**3. Favourites Quick-Access Section**
-- Dedicated section at top showing only `is_favorite = true` locations
-- Always visible (not affected by category filter)
-- Shows count badge
-
-**4. GlassCard Styling with Category Accents**
-- Replace `Card` with `GlassCard` component
-- Category-specific accent colours:
-  - Test Centres: Teal (`text-teal-500`, `bg-teal-500/10`)
-  - Schools: Emerald (`text-emerald-500`, `bg-emerald-500/10`)
-  - Pupil Homes: Amber (`text-amber-500`, `bg-amber-500/10`)
-  - Meeting Points: Violet (`text-violet-500`, `bg-violet-500/10`)
-  - Other: Primary colour
-
-**5. Inline Map Preview**
-- Expandable map on each location card
-- Uses existing `PostcodeMapPreview` component (accepts lat/lng)
-- Create new variant that accepts coords directly (not just postcode)
-- Tapping map opens external navigation
-
-**6. Pupil Linking (for Pupil Home category)**
-- Add `pupil_id` column to `favourite_locations` table (nullable, foreign key to pupils)
-- When category is "pupil_home", show pupil selector dropdown
-- Display linked pupil name on the card
-- Filter pupils by instructor_id
-
----
-
-### Technical Changes
-
-**Database Migration**
-```sql
-ALTER TABLE favourite_locations
-ADD COLUMN pupil_id uuid REFERENCES pupils(id) ON DELETE SET NULL;
-```
-
-**New Component: `CoordsMapPreview.tsx`**
-- Similar to `PostcodeMapPreview` but accepts lat/lng directly
-- No geocoding needed since coords are already stored
-
-**Modified Files**
+### Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/pages/InstructorLocations.tsx` | Add GPS button, category pills, favourites section, GlassCard styling, expand/collapse map |
-| `src/components/instructor/CoordsMapPreview.tsx` | New - Map preview using coordinates |
-| `src/components/instructor/AddFavouriteLocationDialog.tsx` | Add pupil selector for "pupil_home" category, GPS pre-fill support |
-| `src/components/instructor/EditFavouriteLocationDialog.tsx` | Add pupil selector for "pupil_home" category |
+| `src/components/layout/InstructorPortalLayout.tsx` | Redesign desktop sidebar and main content wrapper |
+| `src/pages/InstructorPortal.tsx` | Update dashboard layout for desktop |
+| Create `src/components/instructor/DesktopNavigationCard.tsx` | Reusable card component for nav tiles |
+| Create `src/components/instructor/DesktopSectionLayout.tsx` | Layout wrapper for categorized card sections |
 
----
+### Sidebar Changes (InstructorPortalLayout.tsx)
 
-### Category Accent Colours
+```text
+Current Structure:
+├── Sidebar Header (avatar + user info)
+├── Navigation (scrollable)
+└── Sidebar Footer (sign out)
 
-```typescript
-const categoryAccents: Record<string, { 
-  text: string; 
-  bg: string; 
-  glow: string 
-}> = {
-  test_centre: { 
-    text: "text-teal-500", 
-    bg: "bg-teal-500/10", 
-    glow: "ring-teal-500/20" 
-  },
-  school: { 
-    text: "text-emerald-500", 
-    bg: "bg-emerald-500/10", 
-    glow: "ring-emerald-500/20" 
-  },
-  pupil_home: { 
-    text: "text-amber-500", 
-    bg: "bg-amber-500/10", 
-    glow: "ring-amber-500/20" 
-  },
-  meeting_point: { 
-    text: "text-violet-500", 
-    bg: "bg-violet-500/10", 
-    glow: "ring-violet-500/20" 
-  },
-  other: { 
-    text: "text-primary", 
-    bg: "bg-primary/10", 
-    glow: "ring-primary/20" 
-  },
-};
+New Structure:
+├── Sidebar Header (logo only)
+├── Navigation (scrollable, simplified styling)
+└── Sidebar Footer (user profile + sign out)
 ```
 
----
+**Navigation Link Styling:**
+- Remove heavy background on active items
+- Add subtle left border indicator (2-3px primary color)
+- Use muted foreground for inactive, foreground for active
+- Keep icons but make them slightly more muted
 
-### GPS Quick-Add Flow
+### New Card Component Pattern
 
-```typescript
-const handleUseCurrentLocation = () => {
-  if (!navigator.geolocation) {
-    toast.error("Geolocation not supported");
-    return;
-  }
-  
-  setGpsLoading(true);
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const { latitude, longitude } = position.coords;
-      // Reverse geocode to get postcode
-      const response = await fetch(
-        `https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}`
-      );
-      const data = await response.json();
-      const postcode = data.result?.[0]?.postcode;
-      
-      // Open add dialog with pre-filled data
-      setPrefilledCoords({ lat: latitude, lng: longitude });
-      setPrefilledPostcode(postcode);
-      setAddDialogOpen(true);
-      setGpsLoading(false);
-    },
-    (error) => {
-      toast.error("Could not get location");
-      setGpsLoading(false);
-    }
-  );
-};
+For settings-style pages, create a consistent card pattern:
+
+```text
+DesktopNavigationCard
+├── Left: Colored icon in rounded container (40x40px)
+├── Center: Title (font-medium) + Description (text-muted-foreground)
+└── Right: Chevron indicator (optional)
 ```
 
+Icon colors should match the reference (teal, yellow-green, etc.):
+- Profile: Blue
+- Billing: Red/Warning
+- Business Details: Teal
+- Availability: Yellow-green
+- etc.
+
+### Dashboard Page Updates (InstructorPortal.tsx)
+
+The current dashboard already has a good structure with:
+- Welcome section
+- Stats grid
+- Schedule tabs
+- Quick actions sidebar
+
+Updates needed:
+- Increase page title size
+- Adjust spacing to match cleaner aesthetic
+- Ensure cards use consistent border styling
+
 ---
 
-### Files Summary
+## Visual Specifications
 
-| File | Action |
-|------|--------|
-| `src/pages/InstructorLocations.tsx` | Major update - all UI enhancements |
-| `src/components/instructor/CoordsMapPreview.tsx` | Create new |
-| `src/components/instructor/AddFavouriteLocationDialog.tsx` | Update - GPS prefill, pupil selector |
-| `src/components/instructor/EditFavouriteLocationDialog.tsx` | Update - pupil selector |
-| Database migration | Add `pupil_id` column |
+### Typography
+- Page title: `text-2xl md:text-3xl font-bold`
+- Section headers: `text-lg font-semibold`
+- Card titles: `text-sm font-medium`
+- Card descriptions: `text-xs text-muted-foreground`
+
+### Colors
+- Background: `bg-background` (main) / `bg-muted/20` (secondary areas)
+- Sidebar: `bg-card` with right border
+- Active nav: `text-foreground` with `border-l-2 border-primary`
+- Card icons: Various accent colors in light background containers
+
+### Spacing
+- Sidebar padding: `p-4` for header/footer, `p-2` for nav items
+- Main content padding: `p-6 md:p-8`
+- Card grid gap: `gap-4`
+
+---
+
+## Implementation Order
+
+1. **Update sidebar structure** - Move user profile to bottom, simplify nav styling
+2. **Refine navigation link styles** - Lighter active states, left border accent
+3. **Update main content wrapper** - Larger title area, cleaner background
+4. **Create reusable card components** - For consistent card-based layouts
+5. **Update dashboard page** - Apply new patterns to the main dashboard
+
+---
+
+## Mobile Considerations
+
+These changes are **desktop-only**. The mobile layout already has its own optimized design and will remain unchanged. The `isMobile` conditional rendering in `InstructorPortalLayout.tsx` ensures mobile users continue to see the mobile-specific layout.
+
