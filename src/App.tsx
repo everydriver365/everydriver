@@ -77,6 +77,7 @@ import InstructorVehicleHealth from "./pages/InstructorVehicleHealth";
 import InstructorTripReplay from "./pages/InstructorTripReplay";
 import InstructorFuel from "./pages/InstructorFuel";
 import InstructorMileageTracker from "./pages/InstructorMileageTracker";
+import InstructorLocations from "./pages/InstructorLocations";
 import InstallPupil from "./pages/InstallPupil";
 import InstallParent from "./pages/InstallParent";
 import PublicAvailability from "./pages/PublicAvailability";
@@ -199,6 +200,7 @@ const App = () => (
               <Route path="/instructor/vehicle-health" element={<InstructorVehicleHealth />} />
               <Route path="/instructor/fuel" element={<InstructorFuel />} />
               <Route path="/instructor/mileage" element={<InstructorMileageTracker />} />
+              <Route path="/instructor/locations" element={<InstructorLocations />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />
