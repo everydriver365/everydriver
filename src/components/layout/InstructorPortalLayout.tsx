@@ -40,7 +40,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Check, Monitor, Contrast } from "lucide-react";
 
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -88,7 +90,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { resolvedTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [showQRModal, setShowQRModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -98,9 +100,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const searchParams = new URLSearchParams(location.search);
   const isFullscreenMode = isTrackingPage && searchParams.get("fullscreen") === "true";
 
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
-  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -241,15 +240,45 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                 {/* Right: Settings, QR, Schedule, ADD, Avatar */}
                 <div className="flex items-center gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate("/instructor/settings")}
-                    className="text-foreground bg-muted/40 border border-border hover:text-foreground hover:bg-muted h-7 w-7 sm:h-8 sm:w-8 shrink-0"
-                    title="Settings"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-foreground bg-muted/40 border border-border hover:text-foreground hover:bg-muted h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                        title="Settings"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-popover border shadow-lg z-50">
+                      <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
+                        <Sun className="h-4 w-4 mr-2" />
+                        Light Mode
+                        {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
+                        <Moon className="h-4 w-4 mr-2" />
+                        Dark Mode
+                        {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTheme('oled')} className="cursor-pointer">
+                        <Contrast className="h-4 w-4 mr-2" />
+                        OLED Dark Mode
+                        {theme === 'oled' && <Check className="ml-auto h-4 w-4" />}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTheme('system')} className="cursor-pointer">
+                        <Monitor className="h-4 w-4 mr-2" />
+                        System
+                        {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   {instructor?.payment_qr_url && (
                     <Button
                       variant="ghost"
@@ -425,14 +454,39 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 <p className="text-sm font-medium truncate">{instructor?.name || "Instructor"}</p>
                 <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
-              >
-                {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                  >
+                    {resolvedTheme === 'oled' ? <Contrast className="h-4 w-4" /> : resolvedTheme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44 bg-popover border shadow-lg z-50">
+                  <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
+                    <Sun className="h-4 w-4 mr-2" />
+                    Light Mode
+                    {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
+                    <Moon className="h-4 w-4 mr-2" />
+                    Dark Mode
+                    {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('oled')} className="cursor-pointer">
+                    <Contrast className="h-4 w-4 mr-2" />
+                    OLED Dark Mode
+                    {theme === 'oled' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('system')} className="cursor-pointer">
+                    <Monitor className="h-4 w-4 mr-2" />
+                    System
+                    {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <Button 
               variant="outline" 
