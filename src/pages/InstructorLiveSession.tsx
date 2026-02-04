@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -39,7 +40,6 @@ import TripSummarySheet from "@/components/instructor/TripSummarySheet";
 import LiveTrackingMap from "@/components/instructor/LiveTrackingMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 
 interface GPSDevice {
   id: string;
@@ -775,19 +775,7 @@ export default function InstructorLiveSession() {
 
   if (!device) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="sticky top-0 z-50 bg-background border-b border-border shadow-sm px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor")} className="text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <img 
-              src="/everydriver-logo-instructor.png"
-              alt="EveryDriver" 
-              className="h-6 object-contain"
-            />
-          </div>
-        </div>
+      <InstructorPortalLayout>
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
             <WifiOff className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -801,146 +789,201 @@ export default function InstructorLiveSession() {
             </Button>
           </div>
         </div>
+      </InstructorPortalLayout>
+    );
+  }
+
+  // When session is active, show fullscreen map without standard layout
+  if (isSessionActive) {
+    return (
+      <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
+        <div className="flex-1 relative overflow-hidden">
+          {/* Stale data banner with reconnect option */}
+          {!isConnected && (
+            <div className="absolute top-4 left-4 right-4 z-30">
+              <div 
+                className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={manualReconnect}
+              >
+                <div className="flex items-start gap-2">
+                  {isReconnecting ? (
+                    <Loader2 className="h-4 w-4 mt-0.5 text-primary animate-spin" />
+                  ) : (
+                    <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground">
+                      {isReconnecting ? `Reconnecting...` : 'No recent GPS updates'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isReconnecting 
+                        ? `Attempt ${retryCount + 1}. Tap to retry now.`
+                        : `Last update ${lastSeenLabel}. Tap to reconnect.`
+                      }
+                    </p>
+                  </div>
+                  {!isReconnecting && (
+                    <RefreshCw className="h-4 w-4 mt-0.5 text-primary" />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Live Map */}
+          <LiveTrackingMap
+            latitude={device.last_latitude}
+            longitude={device.last_longitude}
+            heading={device.last_heading}
+            speedKmh={isConnected ? device.last_speed_kmh : null}
+            speedLimitKmh={isConnected ? (device.last_speed_limit_kmh ?? speedLimitKmh) : null}
+            isConnected={isConnected}
+            sessionId={device.current_session_id}
+            roadName={device.last_road_name}
+            className="absolute inset-0"
+          />
+
+          {/* Floating Stop Button */}
+          <div className="absolute bottom-[140px] left-4 right-4 z-30">
+            <Button 
+              variant="destructive" 
+              size="lg"
+              className="w-full h-12 text-base font-semibold rounded-xl shadow-lg"
+              onClick={stopSession}
+              disabled={isStopping}
+            >
+              {isStopping ? (
+                <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <Square className="h-5 w-5 mr-2" />
+              )}
+              End Trip
+            </Button>
+          </div>
+
+          {/* Session info badge */}
+          {alertCounts.total > 0 && (
+            <div className="absolute top-24 left-4 z-30">
+              <Badge variant="destructive" className="text-xs px-2 py-1">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                {alertCounts.total} alert{alertCounts.total !== 1 ? 's' : ''}
+              </Badge>
+            </div>
+          )}
+
+          {/* Timer badge */}
+          <div className="absolute top-24 right-4 z-30">
+            <Badge variant="secondary" className="text-xs px-2 py-1 bg-[#1c1c1e]/90 text-white border-0">
+              <Clock className="h-3 w-3 mr-1" />
+              {formatElapsedTime(elapsedTime)}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Trip Summary Sheet */}
+        {completedSessionId && (
+          <TripSummarySheet
+            open={showReport}
+            onOpenChange={setShowReport}
+            telematicsId={completedSessionId}
+          />
+        )}
+
+        {/* Driving Test Start Dialog */}
+        <DrivingTestStartDialog
+          open={showDrivingTestDialog}
+          onOpenChange={setShowDrivingTestDialog}
+          instructorId={instructor?.id || ""}
+          pupils={pupils}
+          onStart={handleDrivingTestStart}
+          isStarting={isStarting}
+        />
       </div>
     );
   }
 
+  // When no session, use standard layout with hamburger menu
   return (
-    <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
-
-      {/* Header - Matches other pages */}
-      {!isSessionActive && (
-        <div className="flex-shrink-0 z-50 bg-background border-b border-border shadow-sm px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2" onClick={() => navigate("/instructor")}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <img 
-                src="/everydriver-logo-instructor.png"
-                alt="EveryDriver" 
-                className="h-6 object-contain"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              {isReconnecting ? (
-                <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs px-2 py-0.5">
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  Reconnecting{retryCount > 0 ? ` (${retryCount})` : ''}
-                </Badge>
-              ) : isConnected ? (
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-2 py-0.5">
-                  <span className="relative flex h-2 w-2 mr-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                  </span>
-                  Live
-                </Badge>
-              ) : (
-                <Badge 
-                  variant="outline" 
-                  className="text-muted-foreground text-xs px-2 py-0.5 cursor-pointer hover:bg-muted"
-                  onClick={manualReconnect}
-                >
-                  <WifiOff className="h-3 w-3 mr-1" />
-                  Offline
-                </Badge>
-              )}
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10" onClick={() => navigate("/instructor/settings/gps")}>
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Full Screen Map or Pupil Selection */}
-      <div className="flex-1 relative overflow-hidden">
-        {/* Stale data banner with reconnect option */}
-        {!isConnected && (
-          <div className="absolute top-4 left-4 right-4 z-30">
-            <div 
-              className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
+    <InstructorPortalLayout>
+      <div className="h-[calc(100dvh-120px)] flex flex-col bg-background overflow-hidden -mx-4 md:mx-0 -mt-4 md:mt-0">
+        {/* Connection status header */}
+        <div className="flex-shrink-0 z-50 px-4 py-2 flex items-center justify-end gap-2">
+          {isReconnecting ? (
+            <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs px-2 py-0.5">
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              Reconnecting{retryCount > 0 ? ` (${retryCount})` : ''}
+            </Badge>
+          ) : isConnected ? (
+            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-2 py-0.5">
+              <span className="relative flex h-2 w-2 mr-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              Live
+            </Badge>
+          ) : (
+            <Badge 
+              variant="outline" 
+              className="text-muted-foreground text-xs px-2 py-0.5 cursor-pointer hover:bg-muted"
               onClick={manualReconnect}
             >
-              <div className="flex items-start gap-2">
-                {isReconnecting ? (
-                  <Loader2 className="h-4 w-4 mt-0.5 text-primary animate-spin" />
-                ) : (
-                  <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground">
-                    {isReconnecting ? `Reconnecting...` : 'No recent GPS updates'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {isReconnecting 
-                      ? `Attempt ${retryCount + 1}. Tap to retry now.`
-                      : `Last update ${lastSeenLabel}. Tap to reconnect.`
-                    }
-                  </p>
-                </div>
-                {!isReconnecting && (
-                  <RefreshCw className="h-4 w-4 mt-0.5 text-primary" />
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+              <WifiOff className="h-3 w-3 mr-1" />
+              Offline
+            </Badge>
+          )}
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10" onClick={() => navigate("/instructor/settings/gps")}>
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
 
-        {/* Live Map - always visible so speed/road updates show instantly */}
-        <LiveTrackingMap
-          latitude={device.last_latitude}
-          longitude={device.last_longitude}
-          heading={device.last_heading}
-          speedKmh={isConnected ? device.last_speed_kmh : null}
-          speedLimitKmh={isConnected ? (device.last_speed_limit_kmh ?? speedLimitKmh) : null}
-          isConnected={isConnected}
-          sessionId={isSessionActive ? device.current_session_id : null}
-          roadName={device.last_road_name}
-          className="absolute inset-0"
-        />
-
-        {isSessionActive ? (
-          <>
-            {/* Floating Stop Button - positioned above the map's bottom panel */}
-            <div className="absolute bottom-[140px] left-4 right-4 z-30">
-              <Button 
-                variant="destructive" 
-                size="lg"
-                className="w-full h-12 text-base font-semibold rounded-xl shadow-lg"
-                onClick={stopSession}
-                disabled={isStopping}
+        {/* Full Screen Map or Pupil Selection */}
+        <div className="flex-1 relative overflow-hidden">
+          {/* Stale data banner with reconnect option */}
+          {!isConnected && (
+            <div className="absolute top-4 left-4 right-4 z-30">
+              <div 
+                className="rounded-xl border border-border bg-background/95 backdrop-blur px-3 py-2 shadow-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={manualReconnect}
               >
-                {isStopping ? (
-                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                ) : (
-                  <Square className="h-5 w-5 mr-2" />
-                )}
-                End Trip
-              </Button>
-            </div>
-
-            {/* Session info badge */}
-            {alertCounts.total > 0 && (
-              <div className="absolute top-24 left-4 z-30">
-                <Badge variant="destructive" className="text-xs px-2 py-1">
-                  <AlertTriangle className="h-3 w-3 mr-1" />
-                  {alertCounts.total} alert{alertCounts.total !== 1 ? 's' : ''}
-                </Badge>
+                <div className="flex items-start gap-2">
+                  {isReconnecting ? (
+                    <Loader2 className="h-4 w-4 mt-0.5 text-primary animate-spin" />
+                  ) : (
+                    <WifiOff className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground">
+                      {isReconnecting ? `Reconnecting...` : 'No recent GPS updates'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isReconnecting 
+                        ? `Attempt ${retryCount + 1}. Tap to retry now.`
+                        : `Last update ${lastSeenLabel}. Tap to reconnect.`
+                      }
+                    </p>
+                  </div>
+                  {!isReconnecting && (
+                    <RefreshCw className="h-4 w-4 mt-0.5 text-primary" />
+                  )}
+                </div>
               </div>
-            )}
-
-            {/* Timer badge */}
-            <div className="absolute top-24 right-4 z-30">
-              <Badge variant="secondary" className="text-xs px-2 py-1 bg-[#1c1c1e]/90 text-white border-0">
-                <Clock className="h-3 w-3 mr-1" />
-                {formatElapsedTime(elapsedTime)}
-              </Badge>
             </div>
-          </>
-        ) : (
-          /* Pre-session: Compact Start controls overlay - no scrolling */
+          )}
+
+          {/* Live Map */}
+          <LiveTrackingMap
+            latitude={device.last_latitude}
+            longitude={device.last_longitude}
+            heading={device.last_heading}
+            speedKmh={isConnected ? device.last_speed_kmh : null}
+            speedLimitKmh={isConnected ? (device.last_speed_limit_kmh ?? speedLimitKmh) : null}
+            isConnected={isConnected}
+            sessionId={null}
+            roadName={device.last_road_name}
+            className="absolute inset-0"
+          />
+
+          {/* Pre-session: Compact Start controls overlay */}
           <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
             {/* Enhanced Connection Status Card */}
             <div className="pointer-events-auto flex-shrink-0 p-3 pb-0">
@@ -957,7 +1000,7 @@ export default function InstructorLiveSession() {
             <div className="flex-1" />
 
             {/* Bottom Controls Panel */}
-            <div className="pointer-events-auto px-3 pb-[calc(70px+env(safe-area-inset-bottom))]">
+            <div className="pointer-events-auto px-3 pb-20">
               <div className="rounded-2xl border border-border bg-background/95 backdrop-blur shadow-lg">
                 <div className="p-3 space-y-3">
                   {/* Pupil Selection Row */}
@@ -1049,29 +1092,27 @@ export default function InstructorLiveSession() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Trip Summary Sheet */}
+        {completedSessionId && (
+          <TripSummarySheet
+            open={showReport}
+            onOpenChange={setShowReport}
+            telematicsId={completedSessionId}
+          />
         )}
-      </div>
 
-      {/* Trip Summary Sheet */}
-      {completedSessionId && (
-        <TripSummarySheet
-          open={showReport}
-          onOpenChange={setShowReport}
-          telematicsId={completedSessionId}
+        {/* Driving Test Start Dialog */}
+        <DrivingTestStartDialog
+          open={showDrivingTestDialog}
+          onOpenChange={setShowDrivingTestDialog}
+          instructorId={instructor?.id || ""}
+          pupils={pupils}
+          onStart={handleDrivingTestStart}
+          isStarting={isStarting}
         />
-      )}
-
-      {/* Driving Test Start Dialog */}
-      <DrivingTestStartDialog
-        open={showDrivingTestDialog}
-        onOpenChange={setShowDrivingTestDialog}
-        instructorId={instructor?.id || ""}
-        pupils={pupils}
-        onStart={handleDrivingTestStart}
-        isStarting={isStarting}
-      />
-
-      {!device?.current_session_id && <InstructorBottomNav />}
-    </div>
+      </div>
+    </InstructorPortalLayout>
   );
 }
