@@ -103,12 +103,22 @@ export function QuickActionTiles({
   const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
   const { data: todayOverview } = useTodayOverview(instructorId);
   
-  // Get tiles in user's preferred order (only system tiles by default)
-  const orderedTiles = getOrderedTiles(quickActions);
+  // Merge quickActions (from DB) with additionalTiles for full tile lookup
+  const allTiles = [...quickActions, ...additionalTiles];
+  // Dedupe by id (DB tiles take precedence)
+  const allTilesMap = new Map<string, QuickAction>();
+  allTiles.forEach(tile => {
+    if (!allTilesMap.has(tile.id)) {
+      allTilesMap.set(tile.id, tile);
+    }
+  });
+  const mergedTiles = Array.from(allTilesMap.values());
   
-  // Combine hidden system tiles + additional tiles not yet added
-  const allPossibleAdditions = [...quickActions, ...additionalTiles];
-  const availableTilesToAdd = allPossibleAdditions.filter(
+  // Get tiles in user's preferred order (from merged list)
+  const orderedTiles = getOrderedTiles(mergedTiles);
+  
+  // Available tiles to add = tiles not currently visible
+  const availableTilesToAdd = mergedTiles.filter(
     tile => !orderedTiles.some(t => t.id === tile.id)
   );
   const [localTiles, setLocalTiles] = useState<QuickAction[]>(orderedTiles);
