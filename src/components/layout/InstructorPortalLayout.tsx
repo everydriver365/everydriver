@@ -228,28 +228,25 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 </div>
 
                 {/* Right: QR, ADD, Schedule, Avatar */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   {instructor?.payment_qr_url && (
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
                       onClick={() => setShowQRModal(true)}
-                      className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 px-2"
+                      className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
                     >
-                      <span className="text-xs font-bold border border-current rounded px-1">QR</span>
+                      <span className="text-[10px] font-bold border border-current rounded px-0.5">QR</span>
                     </Button>
                   )}
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={() => navigate("/instructor?openQuickActions=true")}
-                    className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 px-2"
+                    className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white"
                     title="Quick Actions"
                   >
-                    <span className="text-xs font-bold border border-current rounded px-1 flex items-center gap-0.5">
-                      <Plus className="h-3 w-3" strokeWidth={3} />
-                      ADD
-                    </span>
+                    <Plus className="h-4 w-4" strokeWidth={3} />
                   </Button>
                   <Button
                     variant="ghost"
@@ -258,10 +255,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     className="text-primary/80 hover:text-primary hover:bg-primary/10 h-8 w-8"
                     title="Schedule"
                   >
-                    <Calendar className="h-5 w-5" />
+                    <Calendar className="h-4 w-4" />
                   </Button>
                   <Avatar
-                    className="h-9 w-9 border-2 border-border cursor-pointer"
+                    className="h-8 w-8 border-2 border-border cursor-pointer"
                     onClick={() => navigate("/instructor/settings")}
                   >
                     <AvatarImage src={instructor?.profile_image_url || undefined} />
