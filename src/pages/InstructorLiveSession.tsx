@@ -900,12 +900,6 @@ export default function InstructorLiveSession() {
   return (
     <InstructorPortalLayout>
       <div className="h-[calc(100dvh-120px)] flex flex-col bg-background overflow-hidden -mx-4 md:mx-0 -mt-4 md:mt-0">
-        {/* Settings shortcut */}
-        <div className="flex-shrink-0 z-50 px-4 py-2 flex items-center justify-end">
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10" onClick={() => navigate("/instructor/settings/gps")}>
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
 
         {/* Full Screen Map */}
         <div className="flex-1 relative overflow-hidden">
