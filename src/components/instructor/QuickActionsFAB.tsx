@@ -161,7 +161,7 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
           size="lg"
           className={cn(
             "h-14 w-14 rounded-full shadow-lg",
-            "bg-primary hover:bg-primary/90 text-primary-foreground",
+            "bg-[#00C853] hover:bg-[#00B84D] text-white",
             "flex items-center justify-center p-0",
             "touch-manipulation active:scale-95 transition-all",
             isOpen && "bg-muted-foreground hover:bg-muted-foreground/90"
