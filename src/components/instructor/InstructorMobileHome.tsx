@@ -44,6 +44,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
+import { useGPSAutoReconnect } from "@/hooks/useGPSAutoReconnect";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
@@ -164,7 +165,31 @@ export function InstructorMobileHome({
   const instructorId = authInstructor?.id || instructor?.id;
   
   // GPS connection status and today's overview
-  const { isConnected: isGPSConnected, deviceName: gpsDeviceName } = useGPSConnectionStatus(instructorId || null);
+  const { 
+    isConnected: isGPSConnected, 
+    deviceName: gpsDeviceName,
+    isStationary: isGPSStationary,
+    manualReconnect: manualGPSReconnect 
+  } = useGPSConnectionStatus(instructorId || null);
+  
+  // Auto-reconnect when GPS drops
+  const { 
+    isReconnecting: isGPSReconnecting, 
+    retryCount: gpsRetryCount,
+    manualReconnect: triggerManualReconnect 
+  } = useGPSAutoReconnect({
+    instructorId: instructorId || null,
+    enabled: true,
+    maxRetries: 5,
+    onReconnected: () => {
+      console.log("[Home] GPS auto-reconnected successfully");
+      manualGPSReconnect(); // Refresh the status hook
+    },
+    onMaxRetriesReached: () => {
+      console.log("[Home] GPS auto-reconnect max retries reached");
+    },
+  });
+  
   const { data: todayOverview, isLoading: todayLoading } = useTodayOverview(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: unreadCount } = useUnreadMessagesCount(instructorId);

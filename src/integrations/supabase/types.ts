@@ -1478,6 +1478,7 @@ export type Database = {
           last_gpsgate_odometer_m: number | null
           last_gpsgate_track_time: string | null
           last_heading: number | null
+          last_heartbeat_at: string | null
           last_ignition_status: boolean | null
           last_latitude: number | null
           last_longitude: number | null
@@ -1509,6 +1510,7 @@ export type Database = {
           last_gpsgate_odometer_m?: number | null
           last_gpsgate_track_time?: string | null
           last_heading?: number | null
+          last_heartbeat_at?: string | null
           last_ignition_status?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null
@@ -1540,6 +1542,7 @@ export type Database = {
           last_gpsgate_odometer_m?: number | null
           last_gpsgate_track_time?: string | null
           last_heading?: number | null
+          last_heartbeat_at?: string | null
           last_ignition_status?: boolean | null
           last_latitude?: number | null
           last_longitude?: number | null

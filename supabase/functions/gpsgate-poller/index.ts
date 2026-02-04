@@ -1101,10 +1101,17 @@ serve(async (req) => {
       
       const hasMoved = distanceMeters >= MOVEMENT_THRESHOLD_METERS;
       
-      // Skip if no new timestamp AND no meaningful movement - this prevents "fake live"
+      // Skip position update if no new timestamp AND no meaningful movement - but still update heartbeat
       if (!hasNewerTimestamp && !hasMoved) {
-        // Position hasn't changed and timestamp is the same/older - don't update last_seen_at
-        console.log(`[GPSgate-Poller] Device ${identifier}: no movement (${distanceMeters.toFixed(1)}m) and no newer timestamp, skipping`);
+        // Position hasn't changed and timestamp is the same/older - update heartbeat only
+        console.log(`[GPSgate-Poller] Device ${identifier}: no movement (${distanceMeters.toFixed(1)}m), updating heartbeat only`);
+        
+        // Always update heartbeat to show the device is responding even when stationary
+        await supabase
+          .from("gps_devices")
+          .update({ last_heartbeat_at: now.toISOString() })
+          .eq("id", device.id);
+        
         skipped++;
         continue;
       }
@@ -1211,7 +1218,7 @@ serve(async (req) => {
         console.log(`[GPSgate-Poller] Reset daily odometer for ${identifier}: ${(odometerMeters / 1000).toFixed(1)} km`);
       }
 
-      // Update device record with telemetry
+      // Update device record with telemetry and heartbeat
       const { error: updateError } = await supabase
         .from("gps_devices")
         .update({
@@ -1231,6 +1238,8 @@ serve(async (req) => {
           gpsgate_engine_hours_s: engineHoursSeconds,
           daily_start_odometer_m: dailyStartOdometer,
           daily_start_date: dailyStartDate,
+          // Always update heartbeat on every successful poll
+          last_heartbeat_at: now.toISOString(),
         })
         .eq("id", device.id);
 
