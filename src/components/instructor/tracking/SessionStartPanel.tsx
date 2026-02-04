@@ -83,43 +83,6 @@ export function SessionStartPanel({
           </Select>
         </div>
 
-        {/* Session Type Selector - Only show when pupil is selected */}
-        {selectedPupilId && (
-          <motion.div 
-            className="space-y-2"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Session Type
-            </label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSessionType("practice")}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-                  sessionType === "practice"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
-                }`}
-              >
-                <Play className="h-4 w-4" />
-                <span className="font-medium">Practice</span>
-              </button>
-              <button
-                onClick={() => setSessionType("test")}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
-                  sessionType === "test"
-                    ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                    : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
-                }`}
-              >
-                <Flag className="h-4 w-4" />
-                <span className="font-medium">Test Route</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
 
         {/* Offline Warning */}
         {!isConnected && (
