@@ -26,7 +26,8 @@ import {
   ChevronRight,
   Radio,
   Menu,
-  X
+  X,
+  Plus
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -226,8 +227,17 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   />
                 </div>
 
-                {/* Right: QR, Availability, Avatar */}
+                {/* Right: Quick Add, QR, Availability, Avatar */}
                 <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate("/instructor?openQuickActions=true")}
+                    className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white shadow-sm"
+                    title="Quick Actions"
+                  >
+                    <Plus className="h-4 w-4" strokeWidth={3} />
+                  </Button>
                   {instructor?.payment_qr_url && (
                     <Button
                       variant="ghost"
