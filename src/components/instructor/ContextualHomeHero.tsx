@@ -111,9 +111,9 @@ type TimePeriod = "morning" | "midday" | "evening" | "night";
 
 const getTimePeriod = (): TimePeriod => {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 10) return "morning";
-  if (hour >= 10 && hour < 16) return "midday";
-  if (hour >= 16 && hour < 21) return "evening";
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "midday";
+  if (hour >= 17 && hour < 21) return "evening";
   return "night";
 };
 
