@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Settings, Moon, Sun, CalendarClock } from "lucide-react";
+import { ArrowLeft, Settings, Moon, Sun, CalendarClock, Plus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context/ThemeContext";
@@ -62,8 +62,17 @@ export function InstructorMobileHeader({
         />
       </div>
       
-      {/* QR, Availability, Settings, and avatar on the right */}
+      {/* QR, Quick Add, Availability, Settings, and avatar on the right */}
       <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/instructor?openQuickActions=true")}
+          className="h-8 w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white shadow-sm"
+          title="Quick Actions"
+        >
+          <Plus className="h-4 w-4" strokeWidth={3} />
+        </Button>
         {paymentLink && (
           <Button
             variant="ghost"
