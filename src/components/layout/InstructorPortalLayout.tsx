@@ -284,9 +284,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <CalendarClock className="h-4 w-4 mr-2" />
                         Availability
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/instructor/pay")} className="cursor-pointer">
+                      <DropdownMenuItem onClick={() => setShowQRModal(true)} className="cursor-pointer">
                         <PoundSterling className="h-4 w-4 mr-2" />
-                        Pay
+                        Payment QR
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
