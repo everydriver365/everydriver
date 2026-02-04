@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isToday } from "date-fns";
 import { Calendar, Loader2, AlertCircle, Plus, List, GitBranch } from "lucide-react";
@@ -233,16 +233,21 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
 
   const lessonCount = lessons.length;
 
-  // Get travel times between lessons
-  const { getTravelTime } = useLessonTravelTimes(
-    lessons.map((l) => ({
-      id: l.id,
-      start_time: l.start_time,
-      duration_minutes: l.duration_minutes,
-      pickup_postcode: l.pickup_postcode,
-      pupil: l.pupil ? { postcode: l.pupil.postcode } : undefined,
-    }))
+  // Memoize lessons for travel time calculation to prevent infinite loop
+  const lessonsForTravel = useMemo(
+    () =>
+      lessons.map((l) => ({
+        id: l.id,
+        start_time: l.start_time,
+        duration_minutes: l.duration_minutes,
+        pickup_postcode: l.pickup_postcode,
+        pupil: l.pupil ? { postcode: l.pupil.postcode } : undefined,
+      })),
+    [lessons]
   );
+
+  // Get travel times between lessons
+  const { getTravelTime } = useLessonTravelTimes(lessonsForTravel);
 
   return (
     <div className="space-y-4">
