@@ -900,31 +900,8 @@ export default function InstructorLiveSession() {
   return (
     <InstructorPortalLayout>
       <div className="h-[calc(100dvh-120px)] flex flex-col bg-background overflow-hidden -mx-4 md:mx-0 -mt-4 md:mt-0">
-        {/* Connection status header */}
-        <div className="flex-shrink-0 z-50 px-4 py-2 flex items-center justify-end gap-2">
-          {isReconnecting ? (
-            <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-xs px-2 py-0.5">
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              Reconnecting{retryCount > 0 ? ` (${retryCount})` : ''}
-            </Badge>
-          ) : isConnected ? (
-            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-2 py-0.5">
-              <span className="relative flex h-2 w-2 mr-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              Live
-            </Badge>
-          ) : (
-            <Badge 
-              variant="outline" 
-              className="text-muted-foreground text-xs px-2 py-0.5 cursor-pointer hover:bg-muted"
-              onClick={manualReconnect}
-            >
-              <WifiOff className="h-3 w-3 mr-1" />
-              Offline
-            </Badge>
-          )}
+        {/* Settings shortcut */}
+        <div className="flex-shrink-0 z-50 px-4 py-2 flex items-center justify-end">
           <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10" onClick={() => navigate("/instructor/settings/gps")}>
             <Settings className="h-4 w-4" />
           </Button>
