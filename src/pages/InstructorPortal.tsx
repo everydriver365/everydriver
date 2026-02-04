@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe, CalendarCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { JobOfferAlert } from "@/components/instructor/JobOfferAlert";
 import { TodayScheduleView } from "@/components/instructor/TodayScheduleView";
 import { TomorrowScheduleView } from "@/components/instructor/TomorrowScheduleView";
@@ -19,6 +20,7 @@ import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
+import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -53,6 +55,7 @@ export default function InstructorPortal() {
   const [pupilsLoading, setPupilsLoading] = useState(true);
   const [todaysLessonCount, setTodaysLessonCount] = useState(0);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [availabilityModalOpen, setAvailabilityModalOpen] = useState(false);
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const isMobile = useIsMobile();
   const { hoursThisWeek, monthEarnings, loading: statsLoading } = useInstructorLiveStats(instructorId);
@@ -359,7 +362,7 @@ export default function InstructorPortal() {
                   { label: "Add Lesson", icon: Calendar, to: "/instructor/schedule" },
                   { label: "Take Payment", icon: CreditCard, onClick: () => setPaymentModalOpen(true) },
                   { label: "New Pupil", icon: Users, to: "/instructor/pupils" },
-                  { label: "Track Live", icon: Car, to: "/instructor/traccar" },
+                  { label: "Availability", icon: CalendarCheck, onClick: () => setAvailabilityModalOpen(true) },
                 ].map((action, i) => (
                   action.to ? (
                     <Link key={i} to={action.to}>
@@ -450,6 +453,19 @@ export default function InstructorPortal() {
           instructorName={instructorData?.name}
           onPaymentRecorded={fetchPupils}
         />
+
+        {/* Availability Calendar Modal */}
+        <Dialog open={availabilityModalOpen} onOpenChange={setAvailabilityModalOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Update Availability</DialogTitle>
+            </DialogHeader>
+            <AvailabilityCalendar 
+              instructorId={instructorId} 
+              onClose={() => setAvailabilityModalOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </InstructorPortalLayout>
   );
