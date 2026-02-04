@@ -287,28 +287,22 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   return (
     <>
       <CommandPalette variant="instructor" />
-      <div className="min-h-screen bg-background flex overflow-x-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 border-r bg-card fixed h-full">
-        <div className="flex flex-col h-full">
-          {/* Sidebar Header */}
+      <div className="min-h-screen bg-muted/30 flex overflow-x-hidden w-full">
+        {/* Sidebar - Clean minimal design */}
+        <aside className="w-60 border-r bg-card fixed h-full flex flex-col">
+          {/* Logo Header */}
           <div className="p-4 border-b">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={instructor?.profile_image_url || undefined} />
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {instructor?.name?.charAt(0) || "I"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{instructor?.name || "Instructor"}</p>
-                <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
-              </div>
-            </div>
+            <Link to="/instructor" className="flex items-center gap-2">
+              <img 
+                src={instructorLogo}
+                alt="EveryDriver" 
+                className="h-7 object-contain"
+              />
+            </Link>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {/* Navigation - Simplified styling */}
+          <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
             {sidebarLinks.map((link) => {
               const isActive = location.pathname === link.href;
               const isMessages = link.href === "/instructor/messages";
@@ -321,22 +315,22 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   key={link.href}
                   to={link.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                    "flex items-center gap-3 px-3 py-2 text-sm transition-all rounded-md",
                     isActive
-                      ? "bg-primary text-primary-foreground"
+                      ? "text-foreground font-medium bg-muted border-l-2 border-primary ml-0 pl-[10px]"
                       : isHighlighted
-                      ? "bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:from-emerald-500/30 hover:to-cyan-500/30"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      ? "text-emerald-600 dark:text-emerald-400 hover:bg-muted/50"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                   )}
                 >
                   <span className="relative">
                     <link.icon className={cn(
-                      "h-5 w-5",
-                      isHighlighted && !isActive && "text-emerald-500"
+                      "h-4 w-4",
+                      isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
                     )} />
                     {isAdminChat && !isActive && <AdminMessageBadge />}
                   </span>
-                  {link.label}
+                  <span className="flex-1">{link.label}</span>
                   {isVisitorChats && !isActive && (
                     <VisitorChatBadge 
                       instructorId={instructor?.id} 
@@ -360,42 +354,45 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             })}
           </nav>
 
-          {/* Sidebar Footer */}
-          <div className="p-3 border-t">
+          {/* User Profile & Sign Out - Now at bottom */}
+          <div className="border-t p-3 space-y-2">
+            <div className="flex items-center gap-3 px-2 py-2">
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={instructor?.profile_image_url || undefined} />
+                <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                  {instructor?.name?.charAt(0) || "I"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{instructor?.name || "Instructor"}</p>
+                <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+              >
+                {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </div>
             <Button 
               variant="ghost" 
-              className="w-full justify-start text-muted-foreground hover:text-foreground"
+              className="w-full justify-start text-sm text-muted-foreground hover:text-foreground h-9"
               onClick={handleSignOut}
             >
-              <LogOut className="h-5 w-5 mr-3" />
+              <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
           </div>
-        </div>
-      </aside>
+        </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 ml-64">
-        {/* Breadcrumb - Desktop */}
-        <div className="border-b bg-muted/30 px-6 py-2">
-          <nav className="flex items-center text-sm text-muted-foreground">
-            <Link to="/instructor" className="hover:text-foreground transition-colors">
-              Dashboard
-            </Link>
-            {location.pathname !== "/instructor" && (
-              <>
-                <ChevronRight className="h-4 w-4 mx-2" />
-                <span className="text-foreground font-medium">
-                  {sidebarLinks.find(l => l.href === location.pathname)?.label || "Page"}
-                </span>
-              </>
-            )}
-          </nav>
-        </div>
-        <div className="container py-6 max-w-6xl">
-          {children}
-        </div>
-      </main>
+        {/* Main Content - Cleaner layout */}
+        <main className="flex-1 ml-60">
+          <div className="p-6 lg:p-8">
+            {children}
+          </div>
+        </main>
       </div>
     </>
   );
