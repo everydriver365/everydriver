@@ -1,70 +1,125 @@
 
-## Enable Automatic GPS Reconnection
 
-This plan will make GPS connection more reliable by automatically reconnecting when the signal drops and reducing false "offline" warnings when the vehicle is parked.
+## Create Locations Page
 
----
-
-### What You'll Get
-
-1. **Auto-reconnect everywhere** - The home screen will now automatically try to reconnect if GPS drops
-2. **Fewer false alarms** - The system will distinguish between "truly offline" and "parked/stationary"  
-3. **Heartbeat tracking** - Even when not moving, the system will know the tracker is responding
+A dedicated page to manage all your saved locations (test centres, schools, pupil homes, meeting points) with a clean interface for viewing, adding, editing, and navigating to them.
 
 ---
 
-### Changes Overview
+### Features
 
-**Database**
-- Add a `last_heartbeat_at` column to track when we last heard from the device (separate from position updates)
+1. **View all saved locations** - List grouped by category with search/filter
+2. **Add new locations** - Reuse existing postcode lookup dialog  
+3. **Edit locations** - Update name, category, address, notes
+4. **Navigate** - Tap to open in Google Maps / Apple Maps
+5. **Quick actions** - Toggle favourite, delete with confirmation
+6. **Map preview** - Optional mini-map showing location
 
-**Backend Function (gpsgate-poller)**
-- Update the heartbeat timestamp on EVERY poll, even when skipping position updates
-- This means a parked vehicle will still show as "connected"
+---
 
-**Home Screen**
-- Add auto-reconnect capability (currently only on Live Session page)
-- Show reconnection status when attempting to restore connection
+### Page Design
 
-**Connection Status Logic**
-- Relax the "active" threshold from 30 seconds to 60 seconds
-- Use heartbeat time for connectivity, position time for freshness
-- New "stationary" state for parked vehicles with live connection
+```text
++----------------------------------+
+|  <- Back     Locations    [+ Add]|
++----------------------------------+
+|  [Search locations...]           |
++----------------------------------+
+|                                  |
+|  TEST CENTRES                    |
+|  +----------------------------+  |
+|  | [icon] Tolworth Test    ★  |  |
+|  |   KT6 7NF · Kingston      |  |
+|  |             [Nav] [Edit]   |  |
+|  +----------------------------+  |
+|                                  |
+|  SCHOOLS                         |
+|  +----------------------------+  |
+|  | [icon] Holy Cross Primary  |  |
+|  |   KT6 5EJ · Surbiton       |  |
+|  |             [Nav] [Edit]   |  |
+|  +----------------------------+  |
+|                                  |
+|  PUPIL HOMES                     |
+|  +----------------------------+  |
+|  | [icon] John Smith          |  |
+|  |   SW15 5PU · Putney        |  |
+|  |             [Nav] [Edit]   |  |
+|  +----------------------------+  |
+|                                  |
++----------------------------------+
+```
+
+---
+
+### Implementation
+
+**1. Create New Page** (`src/pages/InstructorLocations.tsx`)
+- Uses `InstructorPortalLayout` for consistent header/navigation
+- Fetches locations from `favourite_locations` table
+- Groups by category with collapsible sections
+- Search bar to filter locations
+- Reuses `AddFavouriteLocationDialog` for adding new locations
+- Creates new `EditFavouriteLocationDialog` for editing
+
+**2. Add Route** (`src/App.tsx`)
+- Add route: `/instructor/locations` → `<InstructorLocations />`
+
+**3. Create Edit Dialog** (`src/components/instructor/EditFavouriteLocationDialog.tsx`)
+- Similar to Add dialog but pre-populated with existing data
+- Updates database on save
+
+**4. Navigation Actions**
+- Tapping "Navigate" opens Google Maps (Android) or Apple Maps (iOS)
+- Same pattern used in Find My Car page
 
 ---
 
 ### Technical Details
 
-#### 1. Database Migration
-```sql
-ALTER TABLE gps_devices 
-ADD COLUMN last_heartbeat_at TIMESTAMPTZ;
-```
-
-#### 2. Edge Function Update
-When the poller decides to skip a position update (no movement), it will still update `last_heartbeat_at`:
+**Database Query:**
 ```typescript
-if (!hasMoved && !hasNewerTimestamp) {
-  // Still update heartbeat to show device is responding
-  await supabase.from("gps_devices")
-    .update({ last_heartbeat_at: now.toISOString() })
-    .eq("id", device.id);
-}
+const { data } = await supabase
+  .from("favourite_locations")
+  .select("*")
+  .eq("instructor_id", instructorId)
+  .order("category")
+  .order("is_favorite", { ascending: false })
+  .order("name");
 ```
 
-#### 3. Connection Status Hook
-Modify `useGPSConnectionStatus.ts` to:
-- Read both `last_heartbeat_at` and `last_seen_at`
-- Return `isStationary` boolean when heartbeat is fresh but position is stale
-- Base "connected" status on heartbeat (2 min threshold)
+**Grouping by Category:**
+```typescript
+const groupedLocations = locations.reduce((acc, loc) => {
+  const cat = loc.category || 'other';
+  if (!acc[cat]) acc[cat] = [];
+  acc[cat].push(loc);
+  return acc;
+}, {} as Record<string, FavouriteLocation[]>);
+```
 
-#### 4. Home Screen Integration
-Add `useGPSAutoReconnect` to `InstructorMobileHome.tsx` with visual feedback when reconnecting.
+**Navigation to External Maps:**
+```typescript
+const openNavigation = (lat: number, lng: number, name: string) => {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const googleUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  const appleUrl = `maps://maps.apple.com/?daddr=${lat},${lng}`;
+  
+  if (isIOS) {
+    window.location.href = appleUrl;
+  } else {
+    window.open(googleUrl, "_blank");
+  }
+};
+```
 
 ---
 
-### Expected Outcome
-- Connection will stay "green" when parked
-- Automatic retry attempts when truly offline
-- Less flickering between connected/offline states
-- Clearer indication of what's actually happening
+### Files to Create/Edit
+
+| File | Action |
+|------|--------|
+| `src/pages/InstructorLocations.tsx` | Create (new page) |
+| `src/components/instructor/EditFavouriteLocationDialog.tsx` | Create (edit dialog) |
+| `src/App.tsx` | Edit (add route) |
+
