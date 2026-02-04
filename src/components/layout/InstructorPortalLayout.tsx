@@ -50,6 +50,7 @@ import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulin
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
   { href: "/instructor/schedule", label: "Schedule", icon: Calendar },
+  { href: "/instructor/availability", label: "Availability", icon: CalendarClock },
   { href: "/instructor/pending-scheduling", label: "Pending Scheduling", icon: ClipboardList },
   { href: "/instructor/pupils", label: "Pupils", icon: Users },
   { href: "/instructor/test-results", label: "Test Results", icon: Award },
