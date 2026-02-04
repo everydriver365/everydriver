@@ -62,8 +62,17 @@ export function InstructorMobileHeader({
         />
       </div>
       
-      {/* QR, Add, Availability, Settings, and avatar on the right */}
+      {/* Settings, QR, Add, Availability, Theme, and avatar on the right */}
       <div className="flex items-center gap-0.5">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/instructor/settings")}
+          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-7 w-7"
+          title="Settings"
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
         {paymentLink && (
           <Button
             variant="ghost"
@@ -94,15 +103,6 @@ export function InstructorMobileHeader({
           title="Quick Availability"
         >
           <CalendarClock className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate("/instructor/settings")}
-          className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-7 w-7"
-          title="Settings"
-        >
-          <Settings className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"
