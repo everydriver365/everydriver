@@ -278,7 +278,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <>
             <main className="px-4 py-4 overflow-x-hidden">{children}</main>
             <InstructorBottomNav />
-            <QuickActionsFAB />
           </>
         )}
 
