@@ -165,7 +165,7 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
             "shadow-[0_4px_20px_rgba(0,200,83,0.5)] hover:shadow-[0_6px_25px_rgba(0,200,83,0.6)]",
             "flex items-center justify-center p-0",
             "touch-manipulation active:scale-95 transition-all",
-            !isOpen && "animate-pulse ring-4 ring-[#00C853]/30",
+            !isOpen && "ring-4 ring-[#00C853]/30",
             isOpen && "bg-muted-foreground hover:bg-muted-foreground/90 shadow-lg"
           )}
           aria-label={isOpen ? "Close quick actions" : "Open quick actions"}
