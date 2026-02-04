@@ -57,6 +57,7 @@ const additionalTiles: QuickAction[] = [
   { id: "cpd-log", title: "CPD Log", icon: "Award", route: "/instructor/cpd", display_order: 104 },
   { id: "settings", title: "Settings", icon: "Settings", route: "/instructor/settings", display_order: 105 },
   { id: "availability", title: "Availability", icon: "Clock", route: "/instructor/availability", display_order: 106 },
+  { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 107 },
 ];
 
 interface QuickActionTilesProps {
