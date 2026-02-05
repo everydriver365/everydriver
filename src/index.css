@@ -68,10 +68,13 @@
     --sidebar-accent-foreground: 220 52% 16%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 220 52% 16%;
+     
+     --hero-background: 218 53% 17%;
   }
 
   .dark {
     --background: 220 52% 8%;
+     --hero-background: 218 53% 17%;
     --foreground: 210 40% 98%;
 
     --card: 220 52% 12%;
@@ -108,6 +111,7 @@
     --sidebar-border: 220 45% 18%;
     --sidebar-ring: 220 52% 16%;
   }
+
 
   /* OLED Dark Mode - True Black for battery efficiency */
   .dark.oled {
