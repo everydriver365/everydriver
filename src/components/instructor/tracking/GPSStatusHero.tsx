@@ -1,5 +1,5 @@
  import { motion, AnimatePresence } from "framer-motion";
- import { Wifi, WifiOff, MapPin, Gauge, RefreshCw, ExternalLink, Radio, Navigation } from "lucide-react";
+ import { WifiOff, RefreshCw, ExternalLink, Radio } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import { formatMph } from "@/lib/utils";
  
@@ -135,37 +135,26 @@
          <AnimatePresence>
            {isConnected && (
              <motion.div 
-               className="p-4"
+                className="p-5"
                initial={{ opacity: 0, height: 0 }}
                animate={{ opacity: 1, height: "auto" }}
                exit={{ opacity: 0, height: 0 }}
                transition={{ duration: 0.3 }}
              >
-               <div className="grid grid-cols-2 gap-3">
-                 {/* Speed Card */}
-                 <div className="bg-slate-50 dark:bg-muted/50 rounded-2xl p-4">
-                   <div className="flex items-center gap-2 mb-2">
-                     <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                       <Gauge className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                     </div>
-                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Speed</span>
-                   </div>
-                   <p className="text-3xl font-bold text-foreground">
-                     {speedKmh != null ? formatMph(speedKmh) : "0 mph"}
-                   </p>
+                <div className="flex items-center justify-between">
+                  {/* Speed Display */}
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Current Speed</p>
+                    <p className="text-4xl font-bold text-foreground">{speedKmh != null ? formatMph(speedKmh) : "0 mph"}</p>
                  </div>
                  
-                 {/* Location Card */}
-                 <div className="bg-slate-50 dark:bg-muted/50 rounded-2xl p-4">
-                   <div className="flex items-center gap-2 mb-2">
-                     <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
-                       <Navigation className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                     </div>
-                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</span>
-                   </div>
-                   <p className="text-sm font-semibold text-foreground truncate">
-                     {roadName || "Awaiting..."}
-                   </p>
+                  {/* Divider */}
+                  <div className="h-12 w-px bg-border mx-4" />
+                  
+                  {/* Location Display */}
+                  <div className="flex-1 min-w-0 text-right">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Location</p>
+                    <p className="text-lg font-semibold text-foreground truncate">{roadName || "Awaiting location..."}</p>
                  </div>
                </div>
              </motion.div>
