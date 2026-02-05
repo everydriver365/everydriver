@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { 
   Play,
   Clock,
@@ -137,6 +137,17 @@ export function InstructorMobileHome({
   const [showFAB, setShowFAB] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Listen for editTiles URL parameter
+  useEffect(() => {
+    if (searchParams.get("editTiles") === "true") {
+      setIsTileEditMode(true);
+      // Clear the param from URL
+      searchParams.delete("editTiles");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   // Use auth context for instructor ID
   const instructorId = authInstructor?.id || instructor?.id;
