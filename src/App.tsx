@@ -11,6 +11,7 @@ import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
 import { DynamicPWAMeta } from "@/components/pwa/DynamicPWAMeta";
 import { DomainRouter } from "@/components/DomainRouter";
 import { ConditionalHome } from "@/components/ConditionalHome";
+import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import BookingSummary from "./pages/BookingSummary";
 import BookingConfirmation from "./pages/BookingConfirmation";
@@ -112,6 +113,8 @@ const App = () => (
             <Routes>
               {/* Root route - conditional based on domain */}
               <Route path="/" element={<ConditionalHome />} />
+              {/* Drive365 learner homepage preview (bypasses domain routing) */}
+              <Route path="/drive365" element={<Index />} />
               {/* Learner-facing routes (EveryDriver branding) */}
               <Route path="/courses" element={<Courses />} />
               <Route path="/book/:instructorId" element={<BookingSummary />} />
