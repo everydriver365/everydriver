@@ -26,6 +26,38 @@ import { TravelTimeIndicator } from "./TravelTimeIndicator";
 import { VerticalTimelineView } from "./VerticalTimelineView";
 import { useLessonTravelTimes } from "@/hooks/useLessonTravelTimes";
 
+// Decorative tyre track SVG pattern
+function TyreTrackPattern() {
+  return (
+    <svg
+      className="absolute right-0 top-0 h-full w-32 md:w-48 opacity-[0.05] pointer-events-none text-primary"
+      viewBox="0 0 200 600"
+      preserveAspectRatio="xMaxYMid slice"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Left track */}
+      <g>
+        {Array.from({ length: 20 }).map((_, i) => (
+          <g key={`left-${i}`} transform={`translate(40, ${i * 30})`}>
+            <polygon points="0,0 25,8 25,18 0,10" />
+            <polygon points="30,0 55,8 55,18 30,10" />
+          </g>
+        ))}
+      </g>
+      {/* Right track */}
+      <g>
+        {Array.from({ length: 20 }).map((_, i) => (
+          <g key={`right-${i}`} transform={`translate(110, ${i * 30 + 15})`}>
+            <polygon points="0,0 25,8 25,18 0,10" />
+            <polygon points="30,0 55,8 55,18 30,10" />
+          </g>
+        ))}
+      </g>
+    </svg>
+  );
+}
+
 interface ScheduledLesson {
   id: string;
   lesson_date: string;
@@ -250,7 +282,8 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
   const { getTravelTime } = useLessonTravelTimes(lessonsForTravel);
 
   return (
-    <div className="space-y-4">
+    <div className="relative space-y-4 overflow-hidden">
+      <TyreTrackPattern />
       {/* Day Tabs */}
       <ScheduleDayTabs 
         selectedDate={selectedDate} 
