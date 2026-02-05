@@ -16,6 +16,9 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required").max(128),
 });
 
+// Build marker for cache verification
+const BUILD_MARKER = "2026-02-05 08:00";
+
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
@@ -333,6 +336,7 @@ export default function InstructorLogin() {
               ? "Enter your email to receive a reset link"
               : "Sign in to your EveryDriver account"}
           </p>
+          <p className="text-white/40 text-[10px] mt-2">Build: {BUILD_MARKER}</p>
         </motion.div>
 
         {/* Login Card */}
