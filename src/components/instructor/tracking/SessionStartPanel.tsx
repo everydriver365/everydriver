@@ -162,32 +162,75 @@
          <AnimatePresence>
            {selectedPupilId && (
              <motion.div 
-               className="flex gap-2 p-1.5 bg-slate-100 dark:bg-muted/50 rounded-2xl"
+               className="grid grid-cols-2 gap-3"
                initial={{ opacity: 0, height: 0 }}
                animate={{ opacity: 1, height: "auto" }}
                exit={{ opacity: 0, height: 0 }}
              >
+               {/* Practice Card */}
                <button
                  onClick={() => setSessionType("practice")}
-                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all ${
+                 className={`relative p-4 rounded-2xl text-left transition-all ${
                    sessionType === "practice"
-                     ? "bg-white dark:bg-card shadow-md text-emerald-600 dark:text-emerald-400"
-                     : "text-muted-foreground hover:text-foreground"
+                     ? "bg-emerald-50 dark:bg-emerald-500/10 ring-2 ring-emerald-500 shadow-md"
+                     : "bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted"
                  }`}
                >
-                 <Car className="h-4 w-4" />
-                 Practice
+                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
+                   sessionType === "practice"
+                     ? "bg-emerald-500 text-white"
+                     : "bg-slate-200 dark:bg-muted text-muted-foreground"
+                 }`}>
+                   <Car className="h-5 w-5" />
+                 </div>
+                 <p className={`font-semibold mb-1 ${
+                   sessionType === "practice"
+                     ? "text-emerald-700 dark:text-emerald-400"
+                     : "text-foreground"
+                 }`}>
+                   Practice
+                 </p>
+                 <p className="text-xs text-muted-foreground leading-tight">
+                   Regular lesson with progress tracking
+                 </p>
+                 {sessionType === "practice" && (
+                   <div className="absolute top-3 right-3">
+                     <CheckCircle className="h-5 w-5 text-emerald-500" />
+                   </div>
+                 )}
                </button>
+
+               {/* Test Route Card */}
                <button
                  onClick={() => setSessionType("test")}
-                 className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all ${
+                 className={`relative p-4 rounded-2xl text-left transition-all ${
                    sessionType === "test"
-                     ? "bg-white dark:bg-card shadow-md text-amber-600 dark:text-amber-400"
-                     : "text-muted-foreground hover:text-foreground"
+                     ? "bg-amber-50 dark:bg-amber-500/10 ring-2 ring-amber-500 shadow-md"
+                     : "bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted"
                  }`}
                >
-                 <Flag className="h-4 w-4" />
-                 Test Route
+                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
+                   sessionType === "test"
+                     ? "bg-amber-500 text-white"
+                     : "bg-slate-200 dark:bg-muted text-muted-foreground"
+                 }`}>
+                   <Flag className="h-5 w-5" />
+                 </div>
+                 <p className={`font-semibold mb-1 ${
+                   sessionType === "test"
+                     ? "text-amber-700 dark:text-amber-400"
+                     : "text-foreground"
+                 }`}>
+                   Test Route
+                 </p>
+                 <p className="text-xs text-muted-foreground leading-tight">
+                   Record route for test preparation
+                 </p>
+                 {sessionType === "test" && (
+                   <div className="absolute top-3 right-3">
+                     <CheckCircle className="h-5 w-5 text-amber-500" />
+                   </div>
+                 )}
                </button>
              </motion.div>
            )}
