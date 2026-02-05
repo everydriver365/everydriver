@@ -54,34 +54,36 @@
            isConnected 
              ? "bg-gradient-to-br from-emerald-500 to-emerald-600" 
              : showReconnecting 
-               ? "bg-gradient-to-br from-slate-500 to-slate-600"
+               ? "bg-gradient-to-br from-slate-400 to-slate-500"
                : "bg-gradient-to-br from-amber-500 to-amber-600"
          }`}>
-           {/* Animated background pattern */}
-           <div className="absolute inset-0 overflow-hidden">
-             <div className={`absolute -top-4 -right-4 w-32 h-32 rounded-full ${
-               isConnected ? "bg-emerald-400/20" : showReconnecting ? "bg-slate-400/20" : "bg-amber-400/20"
-             }`} />
-             <div className={`absolute -bottom-8 -left-8 w-40 h-40 rounded-full ${
-               isConnected ? "bg-emerald-400/10" : showReconnecting ? "bg-slate-400/10" : "bg-amber-400/10"
-             }`} />
-           </div>
+           {/* Animated background pattern - hide during reconnecting for cleaner look */}
+           {!showReconnecting && (
+             <div className="absolute inset-0 overflow-hidden">
+               <div className={`absolute -top-4 -right-4 w-32 h-32 rounded-full ${
+                 isConnected ? "bg-emerald-400/20" : "bg-amber-400/20"
+               }`} />
+               <div className={`absolute -bottom-8 -left-8 w-40 h-40 rounded-full ${
+                 isConnected ? "bg-emerald-400/10" : "bg-amber-400/10"
+               }`} />
+             </div>
+           )}
            
-           <div className="relative flex items-center justify-between">
-             <div className="flex items-center gap-4">
+           <div className={`relative flex items-center ${showReconnecting ? "justify-center gap-3" : "justify-between"}`}>
+             <div className={`flex items-center ${showReconnecting ? "gap-3" : "gap-4"}`}>
                {/* Status Icon with Animation */}
-               <div className="relative">
-                 <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
+               <div className={`relative ${showReconnecting ? "" : ""}`}>
+                 <div className={`flex items-center justify-center ${
                    isConnected 
-                     ? "bg-white/20" 
+                     ? "w-16 h-16 rounded-2xl bg-white/20" 
                      : showReconnecting 
-                       ? "bg-white/15" 
-                       : "bg-white/20"
+                       ? "w-10 h-10 rounded-xl bg-white/20" 
+                       : "w-16 h-16 rounded-2xl bg-white/20"
                  }`}>
                    {isConnected ? (
                      <Radio className="h-8 w-8 text-white" />
                    ) : showReconnecting ? (
-                     <RefreshCw className="h-8 w-8 text-white animate-spin" />
+                     <RefreshCw className="h-5 w-5 text-white animate-spin" />
                    ) : (
                      <WifiOff className="h-8 w-8 text-white" />
                    )}
@@ -100,22 +102,24 @@
                </div>
                
                <div className="text-white">
-                 <h2 className="text-2xl font-bold">
+                 <h2 className={`font-bold ${showReconnecting ? "text-lg" : "text-2xl"}`}>
                    {isConnected ? "Connected" : showReconnecting ? "Reconnecting" : "Offline"}
                  </h2>
-                 <p className="text-white/80 text-sm font-medium">
-                   {deviceName || "GPS Tracker"}
-                 </p>
+                 {!showReconnecting && (
+                   <p className="text-white/80 text-sm font-medium">
+                     {deviceName || "GPS Tracker"}
+                   </p>
+                 )}
                </div>
              </div>
              
              {/* Live indicator badge */}
-             <div className={`px-4 py-2 rounded-full font-semibold text-sm ${
+             <div className={`rounded-full font-semibold ${
                isConnected 
-                 ? "bg-white text-emerald-600" 
+                 ? "px-4 py-2 text-sm bg-white text-emerald-600" 
                  : showReconnecting 
-                   ? "bg-white/20 text-white"
-                   : "bg-white text-amber-600"
+                   ? "px-3 py-1 text-xs bg-white/20 text-white"
+                   : "px-4 py-2 text-sm bg-white text-amber-600"
              }`}>
                {isConnected ? (
                  <span className="flex items-center gap-2">
@@ -123,7 +127,7 @@
                    LIVE
                  </span>
                ) : showReconnecting ? (
-                 `Attempt ${retryCount + 1}`
+                 `#${retryCount + 1}`
                ) : (
                  lastSeenLabel
                )}
