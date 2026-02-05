@@ -350,54 +350,54 @@ export function InstructorMobileHome({
 
       {/* Today's Stats - Glass Card */}
       <div className="px-4 mt-4">
-        <GlassCard intensity="medium" className="p-4">
-          <h3 className="font-semibold text-foreground text-sm mb-3">Today's Stats</h3>
+         <div className="bg-white rounded-2xl shadow-lg p-4">
+           <h3 className="font-semibold text-gray-900 text-sm mb-3">Today's Stats</h3>
           <div className="flex items-center justify-around">
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-primary">
+               <div className="flex items-center gap-1 text-violet-600">
                 <BookOpen className="h-4 w-4" />
                 <span className="text-lg font-bold">
                   <AnimatedCounter value={currentLessons} />
                 </span>
               </div>
-              <span className="text-[10px] text-muted-foreground font-medium">Lessons</span>
+               <span className="text-[10px] text-gray-500 font-medium">Lessons</span>
             </div>
-            <div className="w-px h-8 bg-border/50" />
+             <div className="w-px h-8 bg-gray-200" />
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-primary">
+               <div className="flex items-center gap-1 text-blue-600">
                 <Clock className="h-4 w-4" />
                 <span className="text-lg font-bold">
                   <AnimatedCounter value={todayOverview?.totalHours || 0} />
                 </span>
               </div>
-              <span className="text-[10px] text-muted-foreground font-medium">Hours</span>
+               <span className="text-[10px] text-gray-500 font-medium">Hours</span>
             </div>
-            <div className="w-px h-8 bg-border/50" />
+             <div className="w-px h-8 bg-gray-200" />
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-primary">
+               <div className="flex items-center gap-1 text-emerald-600">
                 <PoundSterling className="h-4 w-4" />
                 <span className="text-lg font-bold">
                   <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
                 </span>
               </div>
-              <span className="text-[10px] text-muted-foreground font-medium">Expected</span>
+               <span className="text-[10px] text-gray-500 font-medium">Expected</span>
             </div>
           </div>
-        </GlassCard>
+         </div>
       </div>
 
       {/* Weekly Goal Progress - Glass Card */}
       {weeklyGoals && (
         <div className="px-4 mt-4">
-          <GlassCard intensity="medium" glow={weeklyGoals.progressPercent >= 75} className="p-4">
+           <div className="bg-white rounded-2xl shadow-lg p-4">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <h3 className="font-semibold text-foreground text-sm mb-1">Weekly Progress</h3>
-                <p className="text-xs text-muted-foreground">
+                 <h3 className="font-semibold text-gray-900 text-sm mb-1">Weekly Progress</h3>
+                 <p className="text-xs text-gray-500">
                   {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
                 </p>
                 {lastWeekComparison && (
-                  <p className={`text-[10px] mt-1 ${lastWeekComparison.isImprovement ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                   <p className={`text-[10px] mt-1 ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-amber-600'}`}>
                     {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
                   </p>
                 )}
@@ -409,7 +409,7 @@ export function InstructorMobileHome({
                 isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
               />
             </div>
-          </GlassCard>
+           </div>
         </div>
       )}
 

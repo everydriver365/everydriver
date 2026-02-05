@@ -179,7 +179,7 @@ export function NextLessonCard({
             onDrag={handleDrag}
             onDragEnd={handleDragEnd}
             style={{ x }}
-            className="relative glass rounded-xl border border-primary/20 p-3 cursor-grab active:cursor-grabbing"
+             className="relative bg-white rounded-xl p-3 cursor-grab active:cursor-grabbing shadow-lg"
           >
             <div className="flex items-center gap-3">
               {/* Avatar */}
