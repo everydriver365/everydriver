@@ -13,7 +13,7 @@ import { useTheme } from "@/context/ThemeContext";
 import drive365Logo from "@/assets/drive365-logo.png";
 
 const navLinks = [
-  { href: "/", label: "Home" },
+  { href: "/drive365", label: "Home" },
   { href: "/courses", label: "Courses" },
   { href: "/about", label: "About" },
   { href: "/faqs", label: "FAQs" },
@@ -45,7 +45,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full overflow-x-hidden">
       <div className="border-b border-nav/20 bg-primary overflow-x-hidden">
       <nav className="container max-w-7xl flex h-16 items-center justify-between relative">
-        <Link to="/" className="flex items-center">
+        <Link to="/drive365" className="flex items-center">
           <img src={drive365Logo} alt="Drive365" className="h-9" />
         </Link>
 
