@@ -899,56 +899,31 @@ export default function InstructorLiveSession() {
   // When no session, use standard layout with hamburger menu
   return (
     <InstructorPortalLayout>
-      <div className="h-[calc(100dvh-120px)] flex flex-col bg-[#EDEDED] dark:bg-background overflow-hidden -mx-4 md:mx-0 -mt-4 md:mt-0">
-
-        {/* Full Screen Map */}
-        <div className="flex-1 relative overflow-hidden">
-
-          {/* Live Map */}
-          <LiveTrackingMap
-            latitude={device.last_latitude}
-            longitude={device.last_longitude}
-            heading={device.last_heading}
-            speedKmh={isConnected ? device.last_speed_kmh : null}
-            speedLimitKmh={isConnected ? (device.last_speed_limit_kmh ?? speedLimitKmh) : null}
-            isConnected={isConnected}
-            sessionId={null}
-            roadName={device.last_road_name}
-            className="absolute inset-0"
-          />
-
-          {/* Pre-session: Polished Setup UI */}
-          <div className="absolute inset-0 z-30 flex flex-col pointer-events-none bg-[#EDEDED] dark:bg-background">
-            {/* GPS Status Hero Card */}
-            <div className="pointer-events-auto flex-shrink-0 p-4">
-              <GPSStatusHero
-                deviceName={device.device_name}
-                isConnected={isConnected}
-                lastSeenLabel={lastSeenLabel}
-                speedKmh={device.last_speed_kmh}
-                roadName={device.last_road_name}
-                isReconnecting={isReconnecting}
-                retryCount={retryCount}
-                onManualReconnect={manualReconnect}
-              />
-            </div>
-
-            {/* Spacer to push content to bottom */}
-            <div className="flex-1" />
-
-            {/* Session Start Panel */}
-            <div className="pointer-events-auto px-4 pb-20">
-              <SessionStartPanel
-                pupils={pupils}
-                selectedPupilId={selectedPupilId}
-                onPupilChange={setSelectedPupilId}
-                onStartSession={(type) => startSession(type)}
-                onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
-                isStarting={isStarting}
-                isConnected={isConnected}
-              />
-            </div>
-          </div>
+       <div className="min-h-[calc(100dvh-120px)] bg-slate-100 dark:bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
+         {/* Modern card-based layout */}
+         <div className="p-4 pb-24 space-y-4">
+           {/* GPS Status Hero Card */}
+           <GPSStatusHero
+             deviceName={device.device_name}
+             isConnected={isConnected}
+             lastSeenLabel={lastSeenLabel}
+             speedKmh={device.last_speed_kmh}
+             roadName={device.last_road_name}
+             isReconnecting={isReconnecting}
+             retryCount={retryCount}
+             onManualReconnect={manualReconnect}
+           />
+ 
+           {/* Session Start Panel */}
+           <SessionStartPanel
+             pupils={pupils}
+             selectedPupilId={selectedPupilId}
+             onPupilChange={setSelectedPupilId}
+             onStartSession={(type) => startSession(type)}
+             onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
+             isStarting={isStarting}
+             isConnected={isConnected}
+           />
         </div>
 
         {/* Trip Summary Sheet */}
