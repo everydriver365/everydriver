@@ -246,7 +246,7 @@ export function InstructorMobileHome({
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="min-h-screen bg-background overflow-x-hidden relative">
+       <div className="min-h-screen bg-[#142542] overflow-x-hidden relative">
 
       {/* Contextual Home Hero */}
       <ContextualHomeHero
@@ -331,7 +331,7 @@ export function InstructorMobileHome({
       )}
 
       {/* Quick Action Tiles */}
-       <div className="bg-[#142542] -mx-4 px-8 pt-6 pb-6 mt-4">
+        <div className="px-4 pt-6 pb-6">
         <QuickActionTiles
           quickActions={content?.quick_actions || []}
           pendingJobsCount={pendingJobsCount}
