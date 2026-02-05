@@ -396,40 +396,41 @@ export function GoogleStyleScheduleView({
         className="flex-1 overflow-y-auto overscroll-contain"
         onScroll={handleScroll}
       >
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-          </div>
-        ) : (
-          <div className="overflow-hidden">
-            {groupedByMonth.map((group) => (
-              <div key={group.month.toISOString()}>
-                <MonthBanner month={group.month} />
-                {group.days.map((dayEvents) => (
-                  <DayRow
-                    key={dayEvents.date.toISOString()}
-                    dayEvents={dayEvents}
-                    colors={calendarColors}
-                    onEventClick={onEventClick}
-                    onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
-                    onDeleteEvent={onDeleteEvent}
-                    onEventColorChange={(eventId, color) =>
-                      setEventColorOverrides((prev) => ({ ...prev, [eventId]: color }))
-                    }
-                    eventColorOverrides={eventColorOverrides}
-                    todayRef={todayRef}
-                  />
-                ))}
-              </div>
-            ))}
-            
-            {groupedByMonth.length === 0 && (
-              <div className="py-12 text-center text-muted-foreground">
-                No events
-              </div>
-            )}
+        {/* Show loading indicator overlay without hiding content */}
+        {loading && (
+          <div className="sticky top-0 z-20 flex items-center justify-center py-2 bg-background/80 backdrop-blur-sm">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
           </div>
         )}
+        
+        <div className="overflow-hidden">
+          {groupedByMonth.map((group) => (
+            <div key={group.month.toISOString()}>
+              <MonthBanner month={group.month} />
+              {group.days.map((dayEvents) => (
+                <DayRow
+                  key={dayEvents.date.toISOString()}
+                  dayEvents={dayEvents}
+                  colors={calendarColors}
+                  onEventClick={onEventClick}
+                  onDayClick={(date) => onAddEvent?.(addHours(startOfDay(date), 9))}
+                  onDeleteEvent={onDeleteEvent}
+                  onEventColorChange={(eventId, color) =>
+                    setEventColorOverrides((prev) => ({ ...prev, [eventId]: color }))
+                  }
+                  eventColorOverrides={eventColorOverrides}
+                  todayRef={todayRef}
+                />
+              ))}
+            </div>
+          ))}
+          
+          {groupedByMonth.length === 0 && !loading && (
+            <div className="py-12 text-center text-muted-foreground">
+              No events
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Color legend */}
