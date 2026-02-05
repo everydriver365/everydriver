@@ -1,8 +1,8 @@
  import { useState, useEffect } from "react";
  import { motion, AnimatePresence } from "framer-motion";
- import { CalendarClock, Clock, Route, TrendingUp, CreditCard, BookOpen } from "lucide-react";
+ import { CalendarClock, Clock, CreditCard, BookOpen, Navigation, History } from "lucide-react";
  import { supabase } from "@/integrations/supabase/client";
- import { format, differenceInDays } from "date-fns";
+ import { format, differenceInDays, formatDistanceToNow } from "date-fns";
  
  interface PupilStats {
    totalTrackedHours: number;
@@ -13,6 +13,7 @@
    prepaidHoursRemaining: number;
    accountBalance: number;
    paymentStatus: string | null;
+   lastSessionDate: Date | null;
  }
  
  interface PupilQuickInfoProps {
@@ -41,6 +42,7 @@
          thisMonth.setDate(1);
          thisMonth.setHours(0, 0, 0, 0);
          let sessionsThisMonth = 0;
+         let lastSessionDate: Date | null = null;
  
          (sessions || []).forEach((s: any) => {
            const started = new Date(s.started_at);
@@ -48,6 +50,9 @@
            totalMinutes += (ended.getTime() - started.getTime()) / 60000;
            totalDistanceKm += s.total_distance_km || 0;
            if (started >= thisMonth) sessionsThisMonth++;
+           if (!lastSessionDate || started > lastSessionDate) {
+             lastSessionDate = started;
+           }
          });
  
        // Fetch pupil payment info and lesson hours
@@ -97,6 +102,7 @@
          prepaidHoursRemaining: prepaidHours - totalLessonHours,
          accountBalance: (pupilData as any)?.account_balance || 0,
          paymentStatus: null,
+           lastSessionDate,
          });
        } catch (err) {
          console.error("Error fetching pupil stats:", err);
@@ -129,32 +135,33 @@
    return (
      <AnimatePresence>
        <motion.div
-         className="bg-slate-50 dark:bg-muted/30 rounded-xl p-3 mt-3"
+         className="bg-slate-50 dark:bg-muted/30 rounded-xl p-3"
          initial={{ opacity: 0, height: 0 }}
          animate={{ opacity: 1, height: "auto" }}
          exit={{ opacity: 0, height: 0 }}
          transition={{ duration: 0.2 }}
        >
-         <div className="grid grid-cols-3 gap-2">
-           {/* Total Lesson Hours */}
+         {/* Row 1: Core stats */}
+         <div className="grid grid-cols-3 gap-2 mb-2">
+           {/* Lesson Hours */}
            <div className="flex items-center gap-2">
              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
                <BookOpen className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
              </div>
              <div>
-               <p className="text-[10px] text-muted-foreground">Hours</p>
+               <p className="text-[10px] text-muted-foreground">Lessons</p>
                <p className="text-sm font-semibold text-foreground">{stats.totalLessonHours}h</p>
              </div>
            </div>
  
-           {/* Prepaid Hours */}
+           {/* Tracked Hours */}
            <div className="flex items-center gap-2">
-             <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-               <Clock className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+             <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+               <Navigation className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
              </div>
              <div>
-               <p className="text-[10px] text-muted-foreground">Prepaid</p>
-               <p className="text-sm font-semibold text-foreground">{stats.prepaidHoursRemaining}h</p>
+               <p className="text-[10px] text-muted-foreground">Tracked</p>
+               <p className="text-sm font-semibold text-foreground">{stats.totalTrackedHours}h</p>
              </div>
            </div>
  
@@ -172,30 +179,49 @@
            </div>
          </div>
  
-         {/* Upcoming Test - Full width row if present */}
-         {stats.upcomingTest && daysUntilTest !== null && (
-           <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50">
-             <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-               daysUntilTest <= 7 
-                 ? "bg-red-100 dark:bg-red-500/20" 
-                 : "bg-amber-100 dark:bg-amber-500/20"
-             }`}>
-               <CalendarClock className={`h-3.5 w-3.5 ${
-                 daysUntilTest <= 7 
-                   ? "text-red-600 dark:text-red-400" 
-                   : "text-amber-600 dark:text-amber-400"
-               }`} />
+         {/* Row 2: Last session & Test date */}
+         <div className="flex items-center gap-4 pt-2 border-t border-border/50">
+           {/* Last Session */}
+           <div className="flex items-center gap-2 flex-1">
+             <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-muted flex items-center justify-center">
+               <History className="h-3.5 w-3.5 text-muted-foreground" />
              </div>
-             <div className="flex-1">
-               <p className="text-[10px] text-muted-foreground">Driving Test</p>
-               <p className={`text-sm font-semibold ${
-                 daysUntilTest <= 7 ? "text-red-600 dark:text-red-400" : "text-foreground"
-               }`}>
-                 {daysUntilTest === 0 ? "Today!" : daysUntilTest === 1 ? "Tomorrow" : `In ${daysUntilTest} days`}
+             <div>
+               <p className="text-[10px] text-muted-foreground">Last Session</p>
+               <p className="text-sm font-semibold text-foreground">
+                 {stats.lastSessionDate 
+                   ? formatDistanceToNow(stats.lastSessionDate, { addSuffix: true })
+                   : "No sessions"
+                 }
                </p>
              </div>
            </div>
-         )}
+ 
+           {/* Test Date */}
+           {stats.upcomingTest && daysUntilTest !== null && (
+             <div className="flex items-center gap-2">
+               <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                 daysUntilTest <= 7 
+                   ? "bg-red-100 dark:bg-red-500/20" 
+                   : "bg-amber-100 dark:bg-amber-500/20"
+               }`}>
+                 <CalendarClock className={`h-3.5 w-3.5 ${
+                   daysUntilTest <= 7 
+                     ? "text-red-600 dark:text-red-400" 
+                     : "text-amber-600 dark:text-amber-400"
+                 }`} />
+               </div>
+               <div>
+                 <p className="text-[10px] text-muted-foreground">Test</p>
+                 <p className={`text-sm font-semibold ${
+                   daysUntilTest <= 7 ? "text-red-600 dark:text-red-400" : "text-foreground"
+                 }`}>
+                   {daysUntilTest === 0 ? "Today!" : daysUntilTest === 1 ? "Tomorrow" : `${daysUntilTest}d`}
+                 </p>
+               </div>
+             </div>
+           )}
+         </div>
        </motion.div>
      </AnimatePresence>
    );
