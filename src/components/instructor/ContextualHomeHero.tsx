@@ -24,7 +24,7 @@ import {
    BookOpen,
 } from "lucide-react";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
- import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { haptics } from "@/lib/haptics";
 
 interface ContextualHomeHeroProps {
@@ -332,13 +332,15 @@ export function ContextualHomeHero({
 
   const stats = getContextualStats();
 
-  // Build marker for cache verification
-  const BUILD_MARKER = "2026-02-05 08:00";
+   // Weekly progress for circular indicator
+   const weeklyProgress = weeklyStats?.progressPercent || 0;
+   const weeklyGoalDays = 6; // Target days per week
+   const daysWorked = Math.min(Math.round((weeklyProgress / 100) * weeklyGoalDays), weeklyGoalDays);
 
   return (
     <div className="relative -mx-4">
       {/* Hero Image - Full Bleed */}
-      <div className="w-full h-56 overflow-hidden">
+       <div className="w-full h-64 overflow-hidden">
         <img 
           src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"} 
           alt="Hero" 
@@ -346,10 +348,10 @@ export function ContextualHomeHero({
         />
       </div>
       
-      {/* Overlapping Contextual Card - Full Bleed Glass Background */}
-      <div className="relative -mt-16">
+       {/* Overlapping Card - David Lloyd Style */}
+       <div className="relative -mt-20 mx-4">
         <motion.div 
-           className="bg-hero rounded-none shadow-lg cursor-pointer"
+           className="bg-card rounded-2xl shadow-xl cursor-pointer border border-border/50"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
@@ -359,125 +361,79 @@ export function ContextualHomeHero({
           }}
           whileTap={{ scale: 0.98 }}
         >
-          {/* Inner content wrapper for inset padding */}
-          <div className="px-4 py-4">
-            {/* Row 1: TODAY label + Status + Time Icon + Expand indicator */}
-            <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-              isGPSConnected 
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                : 'bg-destructive/10 text-destructive'
-            }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500 animate-pulse' : 'bg-destructive'}`} />
-              {isGPSConnected ? (gpsDeviceName || 'Live') : 'Offline'}
-            </span>
-            <div className="ml-auto flex items-center gap-1">
-              <TimeIcon className="h-3.5 w-3.5 text-muted-foreground" />
-              <motion.div
-                animate={{ rotate: isExpanded ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              </motion.div>
-            </div>
-            </div>
-            
-            {/* Row 2: Greeting */}
-            <h1 className="text-lg font-bold text-foreground tracking-tight">
-            {getGreeting(firstName, timePeriod)}
-            </h1>
-            
-            {/* Row 3: Location + Weather */}
-            <div className="flex items-center justify-between gap-2 mt-0.5">
-            {displayLocation ? (
-              <div className="flex items-center gap-1 text-muted-foreground min-w-0">
-                <MapPin className="h-3 w-3 flex-shrink-0 text-primary" />
-                <span className="text-xs truncate">{displayLocation}</span>
-              </div>
-            ) : (
-              <div />
-            )}
-            
-              {/* Weather display with colored icon */}
-              {currentWeather && currentWeather.temperature !== null && (
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <WeatherIcon 
-                    icon={currentWeather.icon} 
-                    className={`h-4 w-4 ${getWeatherIconColor(currentWeather.icon)}`} 
-                  />
-                  <span className="text-sm font-medium text-foreground">{currentWeather.temperature}°C</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Row 4: Contextual Subtitle with animation */}
-            <AnimatePresence mode="wait">
-              <motion.p 
-                key={timePeriod}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2"
-              >
-                {getContextualSubtitle()}
-              </motion.p>
-            </AnimatePresence>
-         
-         {/* Row 5: Rotating Stats Carousel */}
-         {rotatingStats.length > 0 && (
-           <motion.div 
-             className="flex items-center justify-between mt-3 pt-3 border-t border-border/50"
-             initial={{ opacity: 0 }}
-             animate={{ opacity: 1 }}
-             transition={{ delay: 0.2 }}
-           >
-             <AnimatePresence mode="wait">
-               <motion.div
-                 key={rotatingStatIndex}
-                 initial={{ opacity: 0, y: 10 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 exit={{ opacity: 0, y: -10 }}
-                 transition={{ duration: 0.3 }}
-                 className="flex items-center gap-1.5"
-               >
-                 {(() => {
-                   const stat = rotatingStats[rotatingStatIndex];
-                   const StatIcon = stat.icon;
-                   return (
-                     <>
-                       <StatIcon className={`h-4 w-4 ${stat.color}`} />
-                       <span className={`text-base font-bold ${stat.color}`}>
-                         <AnimatedCounter value={stat.value} />
-                       </span>
-                       <span className="text-xs text-muted-foreground">{stat.label}</span>
-                     </>
-                   );
-                 })()}
-               </motion.div>
-             </AnimatePresence>
-             
-             {/* Dot indicators */}
-             {rotatingStats.length > 1 && (
-               <div className="flex gap-1">
-                 {rotatingStats.map((_, idx) => (
-                   <button
-                     key={idx}
-                     onClick={(e) => {
-                       e.stopPropagation();
-                       setRotatingStatIndex(idx);
-                     }}
-                     className={`w-1.5 h-1.5 rounded-full transition-all ${
-                       idx === rotatingStatIndex 
-                         ? 'bg-primary w-3' 
-                         : 'bg-muted-foreground/30'
-                     }`}
-                   />
-                 ))}
+           {/* Main content - David Lloyd layout */}
+           <div className="p-5 flex items-start justify-between gap-4">
+             {/* Left side: Text content */}
+             <div className="flex-1 min-w-0">
+               {/* Bold headline */}
+               <h2 className="text-xl font-bold text-foreground uppercase tracking-wide leading-tight">
+                 {getGreeting(firstName, timePeriod).replace(/,.*/, '...')}
+               </h2>
+               
+               {/* Subtitle */}
+               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                 {getContextualSubtitle()}
+               </p>
+               
+               {/* Location & Weather row */}
+               <div className="flex items-center gap-3 mt-2">
+                 {displayLocation && (
+                   <div className="flex items-center gap-1 text-muted-foreground">
+                     <MapPin className="h-3 w-3 text-primary" />
+                     <span className="text-xs">{displayLocation}</span>
+                   </div>
+                 )}
+                 {currentWeather && currentWeather.temperature !== null && (
+                   <div className="flex items-center gap-1">
+                     <WeatherIcon 
+                       icon={currentWeather.icon} 
+                       className={`h-3.5 w-3.5 ${getWeatherIconColor(currentWeather.icon)}`} 
+                     />
+                     <span className="text-xs font-medium text-foreground">{currentWeather.temperature}°C</span>
+                   </div>
+                 )}
                </div>
-             )}
-           </motion.div>
-         )}
+             </div>
+             
+             {/* Right side: Circular progress indicator */}
+             <div className="flex-shrink-0">
+               <div className="relative w-16 h-16">
+                 {/* Background circle */}
+                 <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+                   <circle
+                     cx="32"
+                     cy="32"
+                     r="28"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="4"
+                     className="text-muted/30"
+                   />
+                   {/* Progress arc */}
+                   <circle
+                     cx="32"
+                     cy="32"
+                     r="28"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="4"
+                     strokeLinecap="round"
+                     className="text-primary"
+                     strokeDasharray={`${(weeklyProgress / 100) * 176} 176`}
+                   />
+                 </svg>
+                 {/* Center text */}
+                 <div className="absolute inset-0 flex flex-col items-center justify-center">
+                   <span className="text-xl font-bold text-foreground leading-none">
+                     {todayOverview?.lessonCount || 0}
+                   </span>
+                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                     {todayOverview?.lessonCount === 1 ? 'lesson' : 'lessons'}
+                   </span>
+                 </div>
+               </div>
+             </div>
+           </div>
             
             {/* Expanded Content - Today's Summary */}
             <AnimatePresence>
@@ -489,8 +445,26 @@ export function ContextualHomeHero({
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
-                    <h4 className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY'S SUMMARY</h4>
+                   <div className="px-5 pb-5 pt-0 border-t border-border/50 space-y-3">
+                     <div className="flex items-center justify-between pt-3">
+                       <h4 className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">Today's Summary</h4>
+                       <div className="flex items-center gap-1">
+                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                           isGPSConnected 
+                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                             : 'bg-destructive/10 text-destructive'
+                         }`}>
+                           <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500 animate-pulse' : 'bg-destructive'}`} />
+                           {isGPSConnected ? 'Live' : 'Offline'}
+                         </span>
+                         <motion.div
+                           animate={{ rotate: isExpanded ? 180 : 0 }}
+                           transition={{ duration: 0.2 }}
+                         >
+                           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                         </motion.div>
+                       </div>
+                     </div>
                     
                     <div className="grid grid-cols-2 gap-2">
                       {/* Lessons */}
@@ -558,16 +532,10 @@ export function ContextualHomeHero({
                         </span>
                       </div>
                     )}
-                    
-                    {/* Build marker for debugging */}
-                    <p className="text-[9px] text-muted-foreground/50 text-center pt-1">
-                      Build: {BUILD_MARKER}
-                    </p>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
         </motion.div>
       </div>
       
