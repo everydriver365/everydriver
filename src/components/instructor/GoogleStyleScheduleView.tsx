@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
-import { format, eachDayOfInterval, isSameDay, isToday, startOfDay, addHours, addDays, startOfMonth, getMonth } from 'date-fns';
+import { format, eachDayOfInterval, isSameDay, isToday, startOfDay, addHours, addDays, startOfMonth, getMonth, addMonths } from 'date-fns';
 import { Palette, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -357,14 +357,19 @@ export function GoogleStyleScheduleView({
     <div className="h-full flex flex-col bg-background rounded-lg border overflow-hidden">
       {/* Minimal header */}
       <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-card gap-2 flex-shrink-0">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={scrollToToday}
-          className="h-8 px-3 text-xs"
-        >
-          Today
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={scrollToToday}
+            className="h-8 px-3 text-xs"
+          >
+            Today
+          </Button>
+          <span className="text-[10px] text-muted-foreground hidden sm:inline">
+            {format(today, 'MMM yyyy')} – {format(addMonths(today, 12), 'MMM yyyy')}
+          </span>
+        </div>
         
         <div className="flex items-center gap-1">
           {onColorSettingsClick && (
