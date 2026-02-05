@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Smartphone, Wifi, WifiOff, MapPin, Gauge, RefreshCw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { formatMph } from "@/lib/utils";
 
 interface GPSStatusHeroProps {
@@ -42,7 +41,7 @@ export function GPSStatusHero({
   const showReconnecting = isReconnecting && !isConnected;
 
   return (
-    <GlassCard className="relative overflow-hidden">
+    <div className="relative overflow-hidden bg-white dark:bg-card rounded-2xl shadow-lg border border-border">
       {/* Animated glow effect when connected */}
       {isConnected && (
         <motion.div
@@ -196,6 +195,6 @@ export function GPSStatusHero({
           </motion.div>
         )}
       </div>
-    </GlassCard>
+    </div>
   );
 }

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Play, Flag, CheckCircle, User, WifiOff, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/GlassCard";
 import {
   Select,
   SelectContent,
@@ -49,7 +48,7 @@ export function SessionStartPanel({
   };
 
   return (
-    <GlassCard className="shadow-xl">
+    <div className="bg-white dark:bg-card rounded-2xl shadow-lg border border-border">
       <div className="p-4 space-y-4">
         {/* Pupil Selection */}
         <div className="space-y-2">
@@ -190,6 +189,6 @@ export function SessionStartPanel({
           }
         </p>
       </div>
-    </GlassCard>
+    </div>
   );
 }
