@@ -349,7 +349,7 @@ export function ContextualHomeHero({
       </div>
       
        {/* Overlapping Card - David Lloyd Style */}
-       <div className="relative -mt-20 mx-4">
+       <div className="relative -mt-10 mx-4">
         <motion.div 
             className="bg-white rounded-2xl shadow-xl cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
@@ -362,55 +362,55 @@ export function ContextualHomeHero({
           whileTap={{ scale: 0.98 }}
         >
            {/* Main content - David Lloyd layout */}
-            <div className="p-4 pb-3">
+            <div className="p-3 pb-2">
              {/* Top row: Headline + Circular indicator */}
              <div className="flex items-start justify-between gap-4">
              {/* Left side: Text content */}
              <div className="flex-1 min-w-0">
                {/* Bold headline */}
-                <h2 className="text-lg font-bold text-foreground tracking-tight leading-tight">
+                <h2 className="text-base font-bold text-foreground tracking-tight leading-tight">
                   {getGreeting(firstName, timePeriod)}
                </h2>
                
                {/* Subtitle */}
-               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+               <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                  {getContextualSubtitle()}
                </p>
              </div>
              
              {/* Right side: Circular progress indicator */}
              <div className="flex-shrink-0">
-               <div className="relative w-16 h-16">
+               <div className="relative w-14 h-14">
                  {/* Background circle */}
-                 <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+                 <svg className="w-full h-full -rotate-90" viewBox="0 0 56 56">
                    <circle
-                     cx="32"
-                     cy="32"
-                     r="28"
+                     cx="28"
+                     cy="28"
+                     r="24"
                      fill="none"
                      stroke="currentColor"
-                     strokeWidth="4"
+                     strokeWidth="3"
                      className="text-muted/30"
                    />
                    {/* Progress arc */}
                    <circle
-                     cx="32"
-                     cy="32"
-                     r="28"
+                     cx="28"
+                     cy="28"
+                     r="24"
                      fill="none"
                      stroke="currentColor"
-                     strokeWidth="4"
+                     strokeWidth="3"
                      strokeLinecap="round"
                      className="text-primary"
-                     strokeDasharray={`${(weeklyProgress / 100) * 176} 176`}
+                     strokeDasharray={`${(weeklyProgress / 100) * 151} 151`}
                    />
                  </svg>
                  {/* Center text */}
                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                   <span className="text-xl font-bold text-foreground leading-none">
+                   <span className="text-lg font-bold text-foreground leading-none">
                      {todayOverview?.lessonCount || 0}
                    </span>
-                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                   <span className="text-[9px] text-muted-foreground uppercase tracking-wide">
                      {todayOverview?.lessonCount === 1 ? 'lesson' : 'lessons'}
                    </span>
                  </div>
@@ -419,7 +419,7 @@ export function ContextualHomeHero({
            </div>
              
              {/* Location, Weather & Traffic row */}
-             <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2">
+             <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mt-1.5">
                {displayLocation && (
                  <div className="flex items-center gap-1 text-muted-foreground">
                    <MapPin className="h-3 w-3 text-primary" />
