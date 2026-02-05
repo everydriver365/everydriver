@@ -237,10 +237,10 @@
          </AnimatePresence>
  
          {/* Start Button */}
-         <div className="flex gap-3">
+         <div className="space-y-3">
            <Button 
              size="lg"
-             className={`flex-1 h-16 text-lg font-bold rounded-2xl shadow-lg transition-all ${
+             className={`w-full h-14 text-lg font-bold rounded-2xl shadow-lg transition-all ${
                effectiveSessionType === "test" 
                  ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white" 
                  : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
@@ -266,12 +266,13 @@
            <Button 
              size="lg"
              variant="outline"
-             className="h-16 w-16 rounded-2xl border-2 border-dashed hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+             className="w-full h-12 rounded-xl border-2 border-dashed text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5"
              onClick={onOpenDrivingTestDialog}
              disabled={isStarting}
              title="Record Official Driving Test"
            >
-             <CheckCircle className="h-7 w-7 text-muted-foreground" />
+             <CheckCircle className="h-5 w-5 mr-2" />
+             Record Official Driving Test
            </Button>
          </div>
  
