@@ -110,11 +110,11 @@ export function MobileHomepage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Hamburger + Logo + Location */}
-      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-border/50">
+      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-10 w-10"
+          className="h-10 w-10 text-primary-foreground hover:bg-primary-foreground/10"
           onClick={() => setIsMenuOpen(true)}
         >
           <Menu className="h-5 w-5" />
@@ -123,7 +123,7 @@ export function MobileHomepage() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-8 px-3 rounded-full text-xs font-semibold border-2 gap-1.5"
+          className="h-8 px-3 rounded-full text-xs font-semibold border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 gap-1.5"
           onClick={handleGetLocation}
           disabled={isLocating}
         >
