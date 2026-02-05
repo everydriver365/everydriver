@@ -1,48 +1,56 @@
 
-# Add Tyre Track Design to Footer
+# Add Tyre Track Design to Instructor Mobile Schedule View
 
 ## Overview
-Add a decorative tyre track pattern to the footer, styled in the brand's navy blue color. The pattern will be created as an inline SVG for flexibility and color control, positioned as a subtle background element.
+Add the same decorative tyre track SVG pattern (in the brand's navy blue) to the instructor mobile schedule view, providing visual consistency with the main footer.
 
-## Design Approach
-- Create an SVG-based tyre track pattern inspired by the uploaded image
-- Use `primary-foreground` with reduced opacity so it's visible on the navy blue footer background
-- Position it as a decorative element on one side of the footer (similar to the reference image)
-- Keep it subtle so it doesn't interfere with footer content readability
+## Implementation Approach
 
-## Technical Implementation
+### File to Modify: `src/components/instructor/NewMobileScheduleView.tsx`
 
-### File: `src/components/layout/Footer.tsx`
+Since the instructor mobile layout uses a light gray (`#EDEDED`) background, the tyre track will use the **primary color (navy blue)** with low opacity to be visible against the light background.
 
-**Changes:**
-1. Add a decorative SVG tyre track pattern component
-2. Position it absolutely on the right side of the footer
-3. Use white color with low opacity (~10-15%) for subtlety
-4. Make it responsive - hide or reduce on mobile for cleaner appearance
+### Changes
 
-### SVG Pattern Design
-The tyre track will be created as an inline SVG with:
-- Chevron/arrow-shaped tread blocks arranged in a diagonal pattern
-- Slight curve to give it a natural tyre appearance
-- Rendered in `primary-foreground` (white) with opacity
+1. **Add TyreTrackPattern component** (same SVG as footer, but navy colored for light background)
+2. **Wrap the main container** with `relative overflow-hidden`
+3. **Position the pattern** absolutely on the right side
+4. **Use `text-primary` with ~5-8% opacity** for subtle navy blue effect on light background
 
-### Layout Changes
-```text
-┌──────────────────────────────────────────────────────────┐
-│  Footer (bg-primary = navy blue)                         │
-│  ┌────────────────────────────────┐    ┌───────────────┐ │
-│  │                                │    │   Tyre Track  │ │
-│  │  Logo, Links, Contact info    │    │   Pattern SVG │ │
-│  │  (existing content)           │    │   (decorative)│ │
-│  │                                │    │               │ │
-│  └────────────────────────────────┘    └───────────────┘ │
-│  Copyright line                                          │
-└──────────────────────────────────────────────────────────┘
+### Code Structure
+```tsx
+// Add at top of file
+function TyreTrackPattern() {
+  return (
+    <svg
+      className="absolute right-0 top-0 h-full w-32 md:w-48 opacity-[0.05] pointer-events-none text-primary"
+      viewBox="0 0 200 600"
+      preserveAspectRatio="xMaxYMid slice"
+      fill="currentColor"
+      ...
+    >
+      {/* Same chevron pattern as footer */}
+    </svg>
+  );
+}
+
+// Wrap outer div
+<div className="relative space-y-4 overflow-hidden">
+  <TyreTrackPattern />
+  {/* existing content */}
+</div>
 ```
 
-## Responsive Behavior
-- **Desktop**: Full tyre track visible on right side
-- **Mobile**: Hidden or reduced opacity to maintain readability
+### Visual Result
+A subtle navy blue tyre track pattern will appear on the right edge of the schedule view, adding visual interest while maintaining readability of lesson cards and content.
 
-## Visual Result
-A subtle white tyre track pattern will appear on the right side of the navy blue footer, adding visual interest while maintaining the professional look and content legibility.
+---
+
+## Technical Notes
+| Aspect | Detail |
+|--------|--------|
+| File | `src/components/instructor/NewMobileScheduleView.tsx` |
+| Pattern color | `text-primary` (navy blue) |
+| Opacity | 5% for light background visibility |
+| Position | Right side, full height |
+| Responsive | Slightly smaller width on mobile |
