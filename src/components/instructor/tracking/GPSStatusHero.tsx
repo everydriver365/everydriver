@@ -116,14 +116,14 @@
              {/* Live indicator badge */}
              <div className={`rounded-full font-semibold ${
                isConnected 
-                 ? "px-4 py-2 text-sm bg-white text-emerald-600" 
+                 ? "px-4 py-2 text-sm bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500/30" 
                  : showReconnecting 
                    ? "px-3 py-1.5 text-xs bg-white/90 text-slate-700 font-bold shadow-sm"
                    : "px-4 py-2 text-sm bg-white text-amber-600"
              }`}>
                {isConnected ? (
                  <span className="flex items-center gap-2">
-                   <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                   <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
                    LIVE
                  </span>
                ) : showReconnecting ? (
