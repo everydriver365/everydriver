@@ -249,29 +249,31 @@ export function InstructorMobileHome({
        <div className="min-h-screen bg-[#f7f7f7] overflow-x-hidden relative">
 
       {/* Contextual Home Hero */}
-      <ContextualHomeHero
-        firstName={firstName}
-        isGPSConnected={isGPSConnected}
-        gpsDeviceName={gpsDeviceName}
-        displayLocation={displayLocation}
-        currentWeather={currentWeather}
-        alerts={alerts}
-        todayOverview={todayOverview}
-        tomorrowPreview={tomorrowPreview}
-        nextLesson={nextLesson ? {
-          pupilName: nextLesson.pupilName,
-          pickupPostcode: nextLesson.pickupPostcode,
-          startTime: nextLesson.startTime,
-          minutesUntil: nextLesson.minutesUntil,
-        } : null}
-        weeklyStats={weeklyGoals ? {
-          hoursThisWeek: weeklyGoals.hoursThisWeek,
-          hoursGoal: weeklyGoals.hoursGoal,
-          progressPercent: weeklyGoals.progressPercent,
-        } : null}
-        heroImageUrl={content?.hero_image_url}
-        motivationSubtitle={content?.motivation_subtitle}
-      />
+      <div className="px-4 pt-4">
+        <ContextualHomeHero
+          firstName={firstName}
+          isGPSConnected={isGPSConnected}
+          gpsDeviceName={gpsDeviceName}
+          displayLocation={displayLocation}
+          currentWeather={currentWeather}
+          alerts={alerts}
+          todayOverview={todayOverview}
+          tomorrowPreview={tomorrowPreview}
+          nextLesson={nextLesson ? {
+            pupilName: nextLesson.pupilName,
+            pickupPostcode: nextLesson.pickupPostcode,
+            startTime: nextLesson.startTime,
+            minutesUntil: nextLesson.minutesUntil,
+          } : null}
+          weeklyStats={weeklyGoals ? {
+            hoursThisWeek: weeklyGoals.hoursThisWeek,
+            hoursGoal: weeklyGoals.hoursGoal,
+            progressPercent: weeklyGoals.progressPercent,
+          } : null}
+          heroImageUrl={content?.hero_image_url}
+          motivationSubtitle={content?.motivation_subtitle}
+        />
+      </div>
 
 
       {/* Celebration Confetti */}
