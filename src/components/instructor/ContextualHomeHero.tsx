@@ -401,13 +401,13 @@ export function ContextualHomeHero({
                      stroke="currentColor"
                      strokeWidth="4"
                      strokeLinecap="round"
-                     className="text-primary"
+                      className="text-red-500"
                      strokeDasharray={`${(weeklyProgress / 100) * 176} 176`}
                    />
                  </svg>
                  {/* Center text */}
                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                   <span className="text-xl font-bold text-foreground leading-none">
+                    <span className="text-xl font-bold text-blue-600 leading-none">
                      {todayOverview?.lessonCount || 0}
                    </span>
                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
