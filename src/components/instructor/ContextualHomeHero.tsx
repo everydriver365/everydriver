@@ -338,18 +338,18 @@ export function ContextualHomeHero({
    const daysWorked = Math.min(Math.round((weeklyProgress / 100) * weeklyGoalDays), weeklyGoalDays);
 
   return (
-    <div className="relative">
+    <div className="relative -mx-4">
       {/* Hero Image - Full Bleed */}
-       <div className="w-full h-44 overflow-hidden rounded-2xl">
+       <div className="w-full h-44 overflow-hidden">
         <img 
           src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"} 
           alt="Hero" 
-          className="w-full h-full object-cover rounded-2xl"
+          className="w-full h-full object-cover"
         />
       </div>
       
        {/* Overlapping Card - David Lloyd Style */}
-       <div className="relative -mt-10">
+       <div className="relative -mt-10 mx-4">
         <motion.div 
             className="bg-white rounded-2xl shadow-xl cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
