@@ -308,7 +308,7 @@ export function ContextualHomeHero({
       {/* Overlapping Contextual Card - Full Bleed Glass Background */}
       <div className="relative -mt-16">
         <motion.div 
-          className="glass-strong rounded-none shadow-lg cursor-pointer"
+           className="bg-hero rounded-none shadow-lg cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
