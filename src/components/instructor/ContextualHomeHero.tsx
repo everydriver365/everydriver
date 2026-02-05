@@ -362,7 +362,9 @@ export function ContextualHomeHero({
           whileTap={{ scale: 0.98 }}
         >
            {/* Main content - David Lloyd layout */}
-           <div className="p-5 flex items-start justify-between gap-4">
+            <div className="p-4 pb-3">
+             {/* Top row: Headline + Circular indicator */}
+             <div className="flex items-start justify-between gap-4">
              {/* Left side: Text content */}
              <div className="flex-1 min-w-0">
                {/* Bold headline */}
@@ -374,25 +376,6 @@ export function ContextualHomeHero({
                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                  {getContextualSubtitle()}
                </p>
-               
-               {/* Location & Weather row */}
-               <div className="flex items-center gap-3 mt-2">
-                 {displayLocation && (
-                   <div className="flex items-center gap-1 text-muted-foreground">
-                     <MapPin className="h-3 w-3 text-primary" />
-                     <span className="text-xs">{displayLocation}</span>
-                   </div>
-                 )}
-                 {currentWeather && currentWeather.temperature !== null && (
-                   <div className="flex items-center gap-1">
-                     <WeatherIcon 
-                       icon={currentWeather.icon} 
-                       className={`h-3.5 w-3.5 ${getWeatherIconColor(currentWeather.icon)}`} 
-                     />
-                     <span className="text-xs font-medium text-foreground">{currentWeather.temperature}°C</span>
-                   </div>
-                 )}
-               </div>
              </div>
              
              {/* Right side: Circular progress indicator */}
@@ -433,6 +416,90 @@ export function ContextualHomeHero({
                  </div>
                </div>
              </div>
+           </div>
+             
+             {/* Location, Weather & Traffic row */}
+             <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2">
+               {displayLocation && (
+                 <div className="flex items-center gap-1 text-muted-foreground">
+                   <MapPin className="h-3 w-3 text-primary" />
+                   <span className="text-xs">{displayLocation}</span>
+                 </div>
+               )}
+               {currentWeather && currentWeather.temperature !== null && (
+                 <div className="flex items-center gap-1">
+                   <WeatherIcon 
+                     icon={currentWeather.icon} 
+                     className={`h-3.5 w-3.5 ${getWeatherIconColor(currentWeather.icon)}`} 
+                   />
+                   <span className="text-xs font-medium text-foreground">{currentWeather.temperature}°C</span>
+                 </div>
+               )}
+               {/* Traffic ETA */}
+               {durationMinutes > 0 && nextLesson && (
+                 <div className="flex items-center gap-1">
+                   <Car className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                   <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                     {durationText} to {nextLesson.pupilName.split(' ')[0]}
+                   </span>
+                 </div>
+               )}
+             </div>
+             
+             {/* Rotating Stats Carousel */}
+             {rotatingStats.length > 0 && (
+               <motion.div 
+                 className="flex items-center justify-between mt-3 pt-3 border-t border-border/50"
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 1 }}
+                 transition={{ delay: 0.2 }}
+               >
+                 <AnimatePresence mode="wait">
+                   <motion.div
+                     key={rotatingStatIndex}
+                     initial={{ opacity: 0, y: 10 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     exit={{ opacity: 0, y: -10 }}
+                     transition={{ duration: 0.3 }}
+                     className="flex items-center gap-1.5"
+                   >
+                     {(() => {
+                       const stat = rotatingStats[rotatingStatIndex];
+                       const StatIcon = stat.icon;
+                       return (
+                         <>
+                           <StatIcon className={`h-4 w-4 ${stat.color}`} />
+                           <span className={`text-base font-bold ${stat.color}`}>
+                             <AnimatedCounter value={stat.value} />
+                           </span>
+                           <span className="text-xs text-muted-foreground">{stat.label}</span>
+                         </>
+                       );
+                     })()}
+                   </motion.div>
+                 </AnimatePresence>
+                 
+                 {/* Dot indicators */}
+                 {rotatingStats.length > 1 && (
+                   <div className="flex gap-1">
+                     {rotatingStats.map((_, idx) => (
+                       <button
+                         key={idx}
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           setRotatingStatIndex(idx);
+                         }}
+                         className={`w-1.5 h-1.5 rounded-full transition-all ${
+                           idx === rotatingStatIndex 
+                             ? 'bg-primary w-3' 
+                             : 'bg-muted-foreground/30'
+                         }`}
+                       />
+                     ))}
+                   </div>
+                 )}
+               </motion.div>
+             )}
            </div>
             
             {/* Expanded Content - Today's Summary */}
