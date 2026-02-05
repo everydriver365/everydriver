@@ -340,7 +340,7 @@ export function ContextualHomeHero({
   return (
     <div className="relative -mx-4">
       {/* Hero Image - Full Bleed */}
-       <div className="w-full h-44 overflow-hidden px-4">
+       <div className="w-full h-44 overflow-hidden rounded-2xl mx-4" style={{ width: 'calc(100% - 2rem)' }}>
         <img 
           src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"} 
           alt="Hero" 
