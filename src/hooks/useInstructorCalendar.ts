@@ -78,10 +78,10 @@ export function useInstructorCalendar(instructorId: string) {
   }, [instructorId]);
 
   const getDateRange = useCallback((date: Date, viewType: CalendarView, extendedRange = false) => {
-    // For schedule view, load 365 days of data (6 months before + 6 months after)
+    // For schedule view, load 365 days of data starting from today
     if (extendedRange) {
-      const start = subMonths(startOfMonth(date), 6);
-      const end = addMonths(endOfMonth(date), 6);
+      const start = startOfDay(new Date()); // Always start from today
+      const end = addDays(start, 365); // Full year ahead
       return { start, end };
     }
     switch (viewType) {
