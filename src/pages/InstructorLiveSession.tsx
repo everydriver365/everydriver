@@ -918,7 +918,7 @@ export default function InstructorLiveSession() {
           />
 
           {/* Pre-session: Polished Setup UI */}
-          <div className="absolute inset-0 z-30 flex flex-col pointer-events-none">
+          <div className="absolute inset-0 z-30 flex flex-col pointer-events-none bg-[#EDEDED] dark:bg-background">
             {/* GPS Status Hero Card */}
             <div className="pointer-events-auto flex-shrink-0 p-4">
               <GPSStatusHero
