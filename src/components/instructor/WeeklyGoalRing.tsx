@@ -45,10 +45,8 @@ export function WeeklyGoalRing({
 
   // Gradient colors based on progress
   const getGradientColors = () => {
-    if (progressPercent >= 100) return { start: "#10b981", end: "#fbbf24" }; // emerald → gold
-    if (progressPercent >= 75) return { start: "#3b82f6", end: "#10b981" }; // blue → emerald
-    if (progressPercent >= 50) return { start: "#f59e0b", end: "#3b82f6" }; // amber → blue
-    return { start: "#f43f5e", end: "#f59e0b" }; // rose → amber
+    if (progressPercent >= 100) return { start: "#ef4444", end: "#dc2626" }; // red
+    return { start: "#ef4444", end: "#f87171" }; // red gradient
   };
 
   const gradientColors = getGradientColors();
@@ -142,7 +140,7 @@ export function WeeklyGoalRing({
           </motion.div>
         ) : (
           <>
-            <span className="text-base font-bold text-foreground">{hoursThisWeek}h</span>
+            <span className="text-base font-bold text-blue-600">{hoursThisWeek}h</span>
             <span className="text-[9px] text-muted-foreground">of {hoursGoal}h</span>
           </>
         )}
