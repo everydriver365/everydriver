@@ -333,7 +333,7 @@ export function ContextualHomeHero({
   const stats = getContextualStats();
 
   return (
-    <div className="relative">
+    <div className="relative -mx-4">
       {/* Hero Image */}
       <div className="w-full h-56 overflow-hidden">
         <img 
@@ -344,7 +344,7 @@ export function ContextualHomeHero({
       </div>
       
       {/* Overlapping Contextual Card - Tappable */}
-      <div className="relative -mt-16 mx-3">
+      <div className="relative -mt-16 mx-4">
         <motion.div 
           className="glass-strong rounded-2xl shadow-lg p-4 cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
