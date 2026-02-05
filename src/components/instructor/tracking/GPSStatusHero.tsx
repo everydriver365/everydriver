@@ -54,7 +54,7 @@
            isConnected 
              ? "bg-gradient-to-br from-emerald-500 to-emerald-600" 
              : showReconnecting 
-               ? "bg-gradient-to-br from-slate-400 to-slate-500"
+               ? "bg-gradient-to-br from-slate-600 to-slate-700"
                : "bg-gradient-to-br from-amber-500 to-amber-600"
          }`}>
            {/* Animated background pattern - hide during reconnecting for cleaner look */}
@@ -102,7 +102,7 @@
                </div>
                
                <div className="text-white">
-                 <h2 className={`font-bold ${showReconnecting ? "text-lg" : "text-2xl"}`}>
+                 <h2 className={`font-bold ${showReconnecting ? "text-xl drop-shadow-md" : "text-2xl"}`}>
                    {isConnected ? "Connected" : showReconnecting ? "Reconnecting" : "Offline"}
                  </h2>
                  {!showReconnecting && (
@@ -118,7 +118,7 @@
                isConnected 
                  ? "px-4 py-2 text-sm bg-white text-emerald-600" 
                  : showReconnecting 
-                   ? "px-3 py-1 text-xs bg-white/20 text-white"
+                   ? "px-3 py-1.5 text-xs bg-white/90 text-slate-700 font-bold shadow-sm"
                    : "px-4 py-2 text-sm bg-white text-amber-600"
              }`}>
                {isConnected ? (
