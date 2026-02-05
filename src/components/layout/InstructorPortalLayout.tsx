@@ -129,7 +129,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       <div
         className={cn(
           "min-h-screen overflow-x-hidden",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-20 bg-[#f7f7f7]"
+           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-20 bg-muted dark:bg-background"
         )}
       >
         {!isFullscreenMode && (
@@ -272,11 +272,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <Contrast className="h-4 w-4 mr-2" />
                         OLED Dark Mode
                         {theme === 'oled' && <Check className="ml-auto h-4 w-4" />}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme('system')} className="cursor-pointer">
-                        <Monitor className="h-4 w-4 mr-2" />
-                        System
-                        {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
                       </DropdownMenuItem>
                       {location.pathname === "/instructor" && (
                         <>
