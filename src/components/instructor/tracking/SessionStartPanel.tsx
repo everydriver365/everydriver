@@ -2,6 +2,7 @@
  import { motion, AnimatePresence } from "framer-motion";
  import { Play, Flag, CheckCircle, User, ChevronDown, Car, Route } from "lucide-react";
  import { Button } from "@/components/ui/button";
+ import { PupilQuickInfo } from "./PupilQuickInfo";
  
  interface Pupil {
    id: string;
@@ -146,6 +147,16 @@
              )}
            </AnimatePresence>
          </div>
+ 
+         {/* Pupil Quick Info - Shows when pupil is selected */}
+         <AnimatePresence>
+           {selectedPupilId && selectedPupil && (
+             <PupilQuickInfo
+               pupilId={selectedPupilId}
+               pupilName={selectedPupil.name}
+             />
+           )}
+         </AnimatePresence>
  
          {/* Session Type Toggle - Only show when pupil is selected */}
          <AnimatePresence>
