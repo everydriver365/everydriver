@@ -332,9 +332,12 @@ export function ContextualHomeHero({
 
   const stats = getContextualStats();
 
+  // Build marker for cache verification
+  const BUILD_MARKER = "2026-02-05 08:00";
+
   return (
     <div className="relative -mx-4">
-      {/* Hero Image */}
+      {/* Hero Image - Full Bleed */}
       <div className="w-full h-56 overflow-hidden">
         <img 
           src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"} 
@@ -343,10 +346,10 @@ export function ContextualHomeHero({
         />
       </div>
       
-      {/* Overlapping Contextual Card - Tappable */}
-      <div className="relative -mt-16 mx-4">
+      {/* Overlapping Contextual Card - Full Bleed Glass Background */}
+      <div className="relative -mt-16">
         <motion.div 
-          className="glass-strong rounded-2xl shadow-lg p-4 cursor-pointer"
+          className="glass-strong rounded-none shadow-lg cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
@@ -356,8 +359,10 @@ export function ContextualHomeHero({
           }}
           whileTap={{ scale: 0.98 }}
         >
-          {/* Row 1: TODAY label + Status + Time Icon + Expand indicator */}
-          <div className="flex items-center gap-2 mb-1">
+          {/* Inner content wrapper for inset padding */}
+          <div className="px-4 py-4">
+            {/* Row 1: TODAY label + Status + Time Icon + Expand indicator */}
+            <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY</span>
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
               isGPSConnected 
@@ -376,15 +381,15 @@ export function ContextualHomeHero({
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </motion.div>
             </div>
-          </div>
-          
-          {/* Row 2: Greeting */}
-          <h1 className="text-lg font-bold text-foreground tracking-tight">
+            </div>
+            
+            {/* Row 2: Greeting */}
+            <h1 className="text-lg font-bold text-foreground tracking-tight">
             {getGreeting(firstName, timePeriod)}
-          </h1>
-          
-          {/* Row 3: Location + Weather */}
-          <div className="flex items-center justify-between gap-2 mt-0.5">
+            </h1>
+            
+            {/* Row 3: Location + Weather */}
+            <div className="flex items-center justify-between gap-2 mt-0.5">
             {displayLocation ? (
               <div className="flex items-center gap-1 text-muted-foreground min-w-0">
                 <MapPin className="h-3 w-3 flex-shrink-0 text-primary" />
@@ -394,176 +399,197 @@ export function ContextualHomeHero({
               <div />
             )}
             
-            {/* Weather display with colored icon */}
-            {currentWeather && currentWeather.temperature !== null && (
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <WeatherIcon 
-                  icon={currentWeather.icon} 
-                  className={`h-4 w-4 ${getWeatherIconColor(currentWeather.icon)}`} 
-                />
-                <span className="text-sm font-medium text-foreground">{currentWeather.temperature}°C</span>
-              </div>
-            )}
-          </div>
-          
-          {/* Row 4: Contextual Subtitle with animation */}
-          <AnimatePresence mode="wait">
-            <motion.p 
-              key={timePeriod}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2"
-            >
-              {getContextualSubtitle()}
-            </motion.p>
-          </AnimatePresence>
-          
-          {/* Row 5: Rotating Stats Carousel */}
-          {rotatingStats.length > 0 && (
-            <motion.div 
-              className="flex items-center justify-between mt-3 pt-3 border-t border-border/50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={rotatingStatIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center gap-1.5"
-                >
-                  {(() => {
-                    const stat = rotatingStats[rotatingStatIndex];
-                    const StatIcon = stat.icon;
-                    return (
-                      <>
-                        <StatIcon className={`h-4 w-4 ${stat.color}`} />
-                        <span className={`text-base font-bold ${stat.color}`}>
-                          <AnimatedCounter value={stat.value} />
-                        </span>
-                        <span className="text-xs text-muted-foreground">{stat.label}</span>
-                      </>
-                    );
-                  })()}
-                </motion.div>
-              </AnimatePresence>
-              
-              {/* Dot indicators */}
-              {rotatingStats.length > 1 && (
-                <div className="flex gap-1">
-                  {rotatingStats.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setRotatingStatIndex(idx);
-                      }}
-                      className={`w-1.5 h-1.5 rounded-full transition-all ${
-                        idx === rotatingStatIndex 
-                          ? 'bg-primary w-3' 
-                          : 'bg-muted-foreground/30'
-                      }`}
-                    />
-                  ))}
+              {/* Weather display with colored icon */}
+              {currentWeather && currentWeather.temperature !== null && (
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <WeatherIcon 
+                    icon={currentWeather.icon} 
+                    className={`h-4 w-4 ${getWeatherIconColor(currentWeather.icon)}`} 
+                  />
+                  <span className="text-sm font-medium text-foreground">{currentWeather.temperature}°C</span>
                 </div>
               )}
-            </motion.div>
-          )}
-          
-          {/* Expanded Content - Today's Summary */}
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
+            </div>
+            
+            {/* Row 4: Contextual Subtitle with animation */}
+            <AnimatePresence mode="wait">
+              <motion.p 
+                key={timePeriod}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="text-muted-foreground text-xs leading-relaxed mt-1 line-clamp-2"
               >
-                <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
-                  <h4 className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY'S SUMMARY</h4>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Lessons */}
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
-                      <BookOpen className="h-4 w-4 text-primary" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {todayOverview?.lessonCount || 0} lessons
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {todayOverview?.completedLessons || 0} completed
-                        </p>
-                      </div>
-                    </div>
+                {getContextualSubtitle()}
+              </motion.p>
+            </AnimatePresence>
+            
+            {/* Row 5: Rotating Stats Carousel */}
+            {rotatingStats.length > 0 && (
+              <motion.div 
+                className="flex items-center justify-between mt-3 pt-3 border-t border-border/50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={rotatingStatIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    {(() => {
+                      const stat = rotatingStats[rotatingStatIndex];
+                      const StatIcon = stat.icon;
+                      return (
+                        <>
+                          <StatIcon className={`h-4 w-4 ${stat.color}`} />
+                          <span className={`text-base font-bold ${stat.color}`}>
+                            <AnimatedCounter value={stat.value} />
+                          </span>
+                          <span className="text-xs text-muted-foreground">{stat.label}</span>
+                        </>
+                      );
+                    })()}
+                  </motion.div>
+                </AnimatePresence>
+                
+                {/* Dot indicators */}
+                {rotatingStats.length > 1 && (
+                  <div className="flex gap-1">
+                    {rotatingStats.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRotatingStatIndex(idx);
+                        }}
+                        className={`w-1.5 h-1.5 rounded-full transition-all ${
+                          idx === rotatingStatIndex 
+                            ? 'bg-primary w-3' 
+                            : 'bg-muted-foreground/30'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+            
+            {/* Expanded Content - Today's Summary */}
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+                    <h4 className="text-xs font-semibold text-muted-foreground tracking-wide">TODAY'S SUMMARY</h4>
                     
-                    {/* Hours */}
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
-                      <Clock className="h-4 w-4 text-primary" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {todayOverview?.totalHours || 0}h scheduled
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">driving today</p>
-                      </div>
-                    </div>
-                    
-                    {/* Earnings */}
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
-                      <PoundSterling className="h-4 w-4 text-primary" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          £{todayOverview?.expectedEarnings || 0}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">expected</p>
-                      </div>
-                    </div>
-                    
-                    {/* Weekly Progress if available */}
-                    {weeklyStats && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* Lessons */}
                       <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
-                        <TrendingUp className="h-4 w-4 text-primary" />
+                        <BookOpen className="h-4 w-4 text-primary" />
                         <div>
                           <p className="text-sm font-semibold text-foreground">
-                            {weeklyStats.progressPercent}%
+                            {todayOverview?.lessonCount || 0} lessons
                           </p>
                           <p className="text-[10px] text-muted-foreground">
-                            {weeklyStats.hoursThisWeek}h of {weeklyStats.hoursGoal}h
+                            {todayOverview?.completedLessons || 0} completed
                           </p>
                         </div>
                       </div>
+                      
+                      {/* Hours */}
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/5">
+                        <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {todayOverview?.totalHours || 0}h
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            teaching time
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Earnings */}
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/5">
+                        <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            £{todayOverview?.expectedEarnings || 0}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            expected
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Weekly Progress */}
+                      {weeklyStats && (
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-violet-500/5">
+                          <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {weeklyStats.progressPercent}%
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              weekly goal
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Tomorrow Preview */}
+                    {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 mt-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          Tomorrow: {tomorrowPreview.lessonCount} lesson{tomorrowPreview.lessonCount > 1 ? 's' : ''} 
+                          {tomorrowPreview.firstLessonTime && ` starting ${tomorrowPreview.firstLessonTime}`}
+                        </span>
+                      </div>
                     )}
+                    
+                    {/* Build marker for debugging */}
+                    <p className="text-[9px] text-muted-foreground/50 text-center pt-1">
+                      Build: {BUILD_MARKER}
+                    </p>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          {/* Row 6: Compact Alert Indicator (if alerts exist) */}
-          {alerts.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className={`flex items-center gap-1.5 mt-2 px-2 py-1 rounded-md text-xs font-medium ${
-                alerts[0].severity === 'severe' 
-                  ? 'bg-destructive/10 text-destructive' 
-                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-              }`}
-            >
-              <AlertTriangle className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">
-                {alerts[0].severity === 'severe' 
-                  ? alerts[0].title 
-                  : `${alerts.length} warning${alerts.length > 1 ? 's' : ''} nearby`}
-              </span>
-            </motion.div>
-          )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       </div>
+      
+      {/* Alert indicator (if alerts exist) */}
+      {alerts.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className={`mx-4 mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium ${
+            alerts[0].severity === 'severe' 
+              ? 'bg-destructive/10 text-destructive' 
+              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+          }`}
+        >
+          <AlertTriangle className="h-3 w-3 flex-shrink-0" />
+          <span className="truncate">
+            {alerts[0].severity === 'severe' 
+              ? alerts[0].title 
+              : `${alerts.length} warning${alerts.length > 1 ? 's' : ''} nearby`}
+          </span>
+        </motion.div>
+      )}
     </div>
   );
 }
