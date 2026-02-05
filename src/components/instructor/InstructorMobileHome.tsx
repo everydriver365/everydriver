@@ -356,7 +356,7 @@ export function InstructorMobileHome({
            <h3 className="font-semibold text-gray-900 text-sm mb-3">Today's Stats</h3>
           <div className="flex items-center justify-around">
             <div className="flex flex-col items-center gap-0.5">
-               <div className="flex items-center gap-1 text-violet-600">
+               <div className="flex items-center gap-1 text-rose-500">
                 <BookOpen className="h-4 w-4" />
                 <span className="text-lg font-bold">
                   <AnimatedCounter value={currentLessons} />
