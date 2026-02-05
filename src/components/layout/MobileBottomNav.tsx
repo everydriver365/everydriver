@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, Search, BookOpen, HelpCircle, MessageCircle, Gift } from "lucide-react";
 
 const navItems = [
-  { label: "Home", icon: Home, path: "/" },
+  { label: "Home", icon: Home, path: "/drive365" },
   { label: "Search", icon: Search, path: "/courses" },
   { label: "Theory", icon: BookOpen, path: "/theory" },
   { label: "FAQs", icon: HelpCircle, path: "/faqs" },
