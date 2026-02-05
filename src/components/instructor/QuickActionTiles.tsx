@@ -210,9 +210,9 @@ export function QuickActionTiles({
 
   // Different accent colors for visual variety
   const tileStyles = [
-    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-violet-500/15 dark:bg-violet-500/20', iconColor: 'text-violet-600 dark:text-violet-400' },
-    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-emerald-500/15 dark:bg-emerald-500/20', iconColor: 'text-emerald-600 dark:text-emerald-400' },
-    { bg: 'bg-card/80 dark:bg-card/60', iconBg: 'bg-rose-500/15 dark:bg-rose-500/20', iconColor: 'text-rose-600 dark:text-rose-400' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-violet-500/15', iconColor: 'text-violet-600' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-rose-500/15', iconColor: 'text-rose-600' },
   ];
 
   return (
@@ -343,7 +343,7 @@ export function QuickActionTiles({
               whileTap={{ scale: 0.98 }}
             >
               <Link to={localTiles[0].route}>
-                <div className="relative overflow-hidden bg-card/80 dark:bg-card/60 backdrop-blur-md rounded-2xl border border-border/50 dark:border-white/10 p-4 shadow-lg active:shadow-md transition-all">
+                 <div className="relative overflow-hidden bg-white rounded-2xl p-4 shadow-lg active:shadow-md transition-all">
                   <div className="flex items-center gap-4">
                     <div className={`relative w-12 h-12 rounded-xl ${tileStyles[0].iconBg} flex items-center justify-center shrink-0`}>
                       {(() => {
@@ -370,13 +370,13 @@ export function QuickActionTiles({
                     </div>
                     <div className="relative flex-1 min-w-0">
                       <span className="font-semibold text-foreground text-lg">{localTiles[0].title}</span>
-                      {/* Simple subtitle */}
-                      <p className="text-muted-foreground text-xs mt-0.5">
-                        {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0
-                          ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount !== 1 ? 's' : ''} today`
-                          : 'Tap to view'
-                        }
-                      </p>
+                       {/* Simple subtitle */}
+                       <p className="text-muted-foreground text-xs mt-0.5">
+                         {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0
+                           ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount !== 1 ? 's' : ''} today`
+                           : 'Tap to view'
+                         }
+                       </p>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground relative shrink-0" />
                   </div>
@@ -419,7 +419,7 @@ export function QuickActionTiles({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + index * 0.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className={`relative overflow-hidden ${style.bg} backdrop-blur-md rounded-xl border border-border/50 dark:border-white/10 px-3 py-2.5 flex items-center gap-2.5 shadow-md hover:shadow-lg active:shadow-sm transition-shadow`}
+                     className={`relative overflow-hidden ${style.bg} rounded-xl px-3 py-2.5 flex items-center gap-2.5 shadow-md hover:shadow-lg active:shadow-sm transition-shadow`}
                   >
                     <div className={`relative w-8 h-8 rounded-lg ${style.iconBg} flex items-center justify-center shrink-0`}>
                       <Icon className={`h-4 w-4 ${style.iconColor}`} />
