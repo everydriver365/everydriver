@@ -22,6 +22,8 @@ import LiveTrackingMap from "@/components/instructor/LiveTrackingMap";
 import { DrivingTestStartDialog } from "@/components/instructor/DrivingTestStartDialog";
 import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
 import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
+ import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
+ import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 
 interface GPSDevice {
   id: string;
@@ -837,23 +839,15 @@ export default function InstructorLiveSession() {
             className="absolute inset-0"
           />
 
-          {/* Floating Stop Button */}
-          <div className="absolute bottom-[140px] left-4 right-4 z-30">
-            <Button 
-              variant="destructive" 
-              size="lg"
-              className="w-full h-12 text-base font-semibold rounded-xl shadow-lg"
-              onClick={stopSession}
-              disabled={isStopping}
-            >
-              {isStopping ? (
-                <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-              ) : (
-                <Square className="h-5 w-5 mr-2" />
-              )}
-              End Trip
-            </Button>
-          </div>
+           {/* Floating Session Timer Card */}
+           <FloatingSessionTimer
+             elapsedSeconds={elapsedTime}
+             distanceMiles={distanceMiles}
+             pupilName={currentPupil?.name || null}
+             isTestRoute={device.is_test_route_mode || !device.current_pupil_id}
+             onStop={stopSession}
+             isStopping={isStopping}
+           />
 
           {/* Session info badge */}
           {alertCounts.total > 0 && (
@@ -924,6 +918,11 @@ export default function InstructorLiveSession() {
              isStarting={isStarting}
              isConnected={isConnected}
            />
+ 
+           {/* Recent Sessions */}
+           {instructor?.id && (
+             <RecentSessionsList instructorId={instructor.id} />
+           )}
         </div>
 
         {/* Trip Summary Sheet */}
