@@ -2,6 +2,38 @@ import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
 
+// Decorative tyre track SVG pattern
+function TyreTrackPattern() {
+  return (
+    <svg
+      className="absolute right-0 top-0 h-full w-48 md:w-72 lg:w-96 opacity-[0.08] pointer-events-none"
+      viewBox="0 0 200 600"
+      preserveAspectRatio="xMaxYMid slice"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Left track */}
+      <g fill="currentColor">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <g key={`left-${i}`} transform={`translate(40, ${i * 30})`}>
+            <polygon points="0,0 25,8 25,18 0,10" />
+            <polygon points="30,0 55,8 55,18 30,10" />
+          </g>
+        ))}
+      </g>
+      {/* Right track */}
+      <g fill="currentColor">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <g key={`right-${i}`} transform={`translate(110, ${i * 30 + 15})`}>
+            <polygon points="0,0 25,8 25,18 0,10" />
+            <polygon points="30,0 55,8 55,18 30,10" />
+          </g>
+        ))}
+      </g>
+    </svg>
+  );
+}
+
 export function Footer() {
   const branding = useDomainBranding();
   const logo = branding.logoPath;
@@ -9,8 +41,13 @@ export function Footer() {
   const homeLink = branding.homeLink;
 
   return (
-    <footer className="border-t bg-primary text-primary-foreground">
-      <div className="container py-12">
+    <footer className="relative border-t bg-primary text-primary-foreground overflow-hidden">
+      {/* Tyre track decoration - hidden on small screens */}
+      <div className="hidden sm:block">
+        <TyreTrackPattern />
+      </div>
+
+      <div className="container relative z-10 py-12">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
