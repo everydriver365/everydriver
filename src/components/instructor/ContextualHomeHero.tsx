@@ -368,8 +368,8 @@ export function ContextualHomeHero({
              {/* Left side: Text content */}
              <div className="flex-1 min-w-0">
                {/* Bold headline */}
-               <h2 className="text-xl font-bold text-foreground uppercase tracking-wide leading-tight">
-                 {getGreeting(firstName, timePeriod).replace(/,.*/, '...')}
+                <h2 className="text-lg font-bold text-foreground tracking-tight leading-tight">
+                  {getGreeting(firstName, timePeriod)}
                </h2>
                
                {/* Subtitle */}
