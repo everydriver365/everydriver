@@ -51,6 +51,7 @@ import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
+import { LayoutGrid } from "lucide-react";
 
 const instructorLogo = "/everydriver-logo-instructor.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
@@ -277,6 +278,15 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         System
                         {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
                       </DropdownMenuItem>
+                      {location.pathname === "/instructor" && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => navigate("/instructor?editTiles=true")} className="cursor-pointer">
+                            <LayoutGrid className="h-4 w-4 mr-2" />
+                            Customize Tiles
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                   {instructor?.payment_qr_url && (
