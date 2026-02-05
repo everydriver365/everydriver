@@ -62,8 +62,8 @@ export function SessionStartPanel({
           >
             <SelectTrigger className="h-12 bg-muted/50 border-border/50 hover:bg-muted transition-colors">
               <div className="flex items-center gap-3">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <User className="h-4 w-4 text-primary" />
+                <div className="p-1.5 rounded-lg bg-muted">
+                  <User className="h-4 w-4 text-foreground" />
                 </div>
                 <SelectValue placeholder="No pupil (Test Route)" />
               </div>
@@ -99,7 +99,7 @@ export function SessionStartPanel({
                 onClick={() => setSessionType("practice")}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
                   sessionType === "practice"
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                     : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
                 }`}
               >
@@ -143,7 +143,7 @@ export function SessionStartPanel({
             className={`flex-1 h-14 text-base font-semibold rounded-xl shadow-lg transition-all ${
               effectiveSessionType === "test" 
                 ? "bg-amber-500 hover:bg-amber-600 text-white" 
-                : "bg-primary hover:bg-primary/90"
+                : "bg-emerald-500 hover:bg-emerald-600 text-white"
             }`}
             onClick={handleStartClick}
             disabled={isStarting}

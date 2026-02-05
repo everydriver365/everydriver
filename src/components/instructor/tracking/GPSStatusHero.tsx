@@ -137,8 +137,8 @@ export function GPSStatusHero({
           >
             {/* Speed */}
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <Gauge className="h-4 w-4 text-primary" />
+              <div className="p-1.5 rounded-lg bg-muted">
+                <Gauge className="h-4 w-4 text-foreground" />
               </div>
               <div>
                 <p className="text-lg font-bold text-foreground leading-none">
@@ -153,8 +153,8 @@ export function GPSStatusHero({
             
             {/* Road Name */}
             <div className="flex-1 min-w-0 flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/10">
-                <MapPin className="h-4 w-4 text-primary" />
+              <div className="p-1.5 rounded-lg bg-muted">
+                <MapPin className="h-4 w-4 text-foreground" />
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground truncate leading-tight">
