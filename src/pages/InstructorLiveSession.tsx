@@ -761,7 +761,7 @@ export default function InstructorLiveSession() {
 
   if (loading || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-screen bg-[#EDEDED] dark:bg-background">
         <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -790,7 +790,7 @@ export default function InstructorLiveSession() {
   // When session is active, show fullscreen map without standard layout
   if (isSessionActive) {
     return (
-      <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
+      <div className="h-[100dvh] flex flex-col bg-[#EDEDED] dark:bg-background overflow-hidden">
         <div className="flex-1 relative overflow-hidden">
           {/* Stale data banner with reconnect option */}
           {!isConnected && (
@@ -899,7 +899,7 @@ export default function InstructorLiveSession() {
   // When no session, use standard layout with hamburger menu
   return (
     <InstructorPortalLayout>
-      <div className="h-[calc(100dvh-120px)] flex flex-col bg-background overflow-hidden -mx-4 md:mx-0 -mt-4 md:mt-0">
+      <div className="h-[calc(100dvh-120px)] flex flex-col bg-[#EDEDED] dark:bg-background overflow-hidden -mx-4 md:mx-0 -mt-4 md:mt-0">
 
         {/* Full Screen Map */}
         <div className="flex-1 relative overflow-hidden">
