@@ -55,12 +55,12 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   if (loading) {
     return (
       <div className={cn("px-4", className)}>
-        <div className="bg-card rounded-xl border border-border p-4 animate-pulse">
+         <div className="bg-white rounded-xl p-4 animate-pulse shadow-lg">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-muted" />
+             <div className="w-10 h-10 rounded-lg bg-gray-200" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-20 bg-muted rounded" />
-              <div className="h-3 w-28 bg-muted rounded" />
+               <div className="h-4 w-20 bg-gray-200 rounded" />
+               <div className="h-3 w-28 bg-gray-200 rounded" />
             </div>
           </div>
         </div>
@@ -73,7 +73,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
     return (
       <div className={cn("px-4", className)}>
         <div 
-          className="bg-card rounded-xl border border-border p-4 cursor-pointer active:scale-[0.99] transition-transform"
+           className="bg-white rounded-xl p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-lg"
           onClick={handleCardClick}
         >
           <div className="flex items-center justify-between">
@@ -111,11 +111,11 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   return (
     <div className={cn("px-4", className)}>
       <div 
-        className="bg-card rounded-xl border border-border overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+           className="bg-white rounded-xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform shadow-lg"
         onClick={handleCardClick}
       >
         {/* Header with Mode Toggle */}
-        <div className="px-4 py-2 border-b border-border/50 bg-muted/30 flex items-center justify-between">
+           <div className="px-4 py-2 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded bg-amber-500/20 flex items-center justify-center">
               <Fuel className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />

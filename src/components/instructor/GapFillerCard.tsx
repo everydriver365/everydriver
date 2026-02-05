@@ -44,14 +44,14 @@ interface SelectedPupil extends SuggestedPupil {
 export function GapFillerCardSkeleton({ className = "" }: { className?: string }) {
   return (
     <div className={`mx-4 ${className}`}>
-      <div className="bg-card rounded-2xl border border-border/50 shadow-sm p-4">
+       <div className="bg-white rounded-2xl shadow-lg p-4">
         <div className="flex items-center gap-3">
-          <Skeleton className="w-12 h-12 rounded-xl" />
+           <Skeleton className="w-12 h-12 rounded-xl bg-gray-200" />
           <div className="flex-1 space-y-2">
-            <Skeleton className="h-5 w-28" />
-            <Skeleton className="h-3 w-40" />
+             <Skeleton className="h-5 w-28 bg-gray-200" />
+             <Skeleton className="h-3 w-40 bg-gray-200" />
           </div>
-          <Skeleton className="h-9 w-9 rounded-full" />
+           <Skeleton className="h-9 w-9 rounded-full bg-gray-200" />
         </div>
       </div>
     </div>
@@ -200,7 +200,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
       animate={{ opacity: 1, y: 0 }}
       className={`mx-4 ${className}`}
     >
-      <div className="bg-card rounded-2xl border border-border/50 shadow-sm overflow-hidden">
+       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Compact Header */}
         <button
           onClick={handleToggle}
