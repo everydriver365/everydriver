@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -267,7 +267,20 @@ export default function AdminPortal() {
       case "overview":
         return (
           <>
-            <div className="flex justify-end mb-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search bookings by pupil or instructor..."
+                  className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setActiveSection("bookings");
+                    }
+                  }}
+                />
+              </div>
               <Button onClick={() => setIsBespokeOpen(true)}>
                 <Plus className="mr-1 h-4 w-4" /> Create Bespoke Booking
               </Button>
