@@ -433,15 +433,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         {/* Navy Blue Header */}
         <header className="sticky top-0 z-50 bg-[#142040]">
           <div className="flex items-center justify-between px-6 h-14">
-            {/* Logo */}
             <div className="flex items-center gap-3">
-              <Link to="/instructor">
-                <img 
-                  src={instructorLogo}
-                  alt="EveryDriver" 
-                  className="h-8 brightness-0 invert"
-                />
-              </Link>
               <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
             </div>
 
