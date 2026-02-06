@@ -101,29 +101,53 @@ export function useInstructorCalendar(instructorId: string) {
 
     try {
       // Fetch scheduled lessons
-      const { data: lessons, error: lessonsError } = await supabase
-        .from('scheduled_lessons')
-        .select(`
-          id, lesson_date, start_time, duration_minutes, lesson_type,
-          pickup_location, status, payment_status,
-          pupils (id, name, phone)
-        `)
-        .eq('instructor_id', instructorId)
-        .gte('lesson_date', startStr)
-        .lte('lesson_date', endStr)
-        .neq('status', 'cancelled');
+      // Fetch all lessons - use range to avoid 1000-row default limit
+      let allLessons: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data: page, error: pageError } = await supabase
+          .from('scheduled_lessons')
+          .select(`
+            id, lesson_date, start_time, duration_minutes, lesson_type,
+            pickup_location, status, payment_status,
+            pupils (id, name, phone)
+          `)
+          .eq('instructor_id', instructorId)
+          .gte('lesson_date', startStr)
+          .lte('lesson_date', endStr)
+          .neq('status', 'cancelled')
+          .range(from, from + pageSize - 1);
 
-      if (lessonsError) throw lessonsError;
+        if (pageError) throw pageError;
+        allLessons = allLessons.concat(page || []);
+        if (!page || page.length < pageSize) break;
+        from += pageSize;
+      }
+      const lessons = allLessons;
 
-      // Fetch external calendar events
-      const { data: externalEvents, error: externalError } = await supabase
-        .from('instructor_calendar_events')
-        .select('id, external_event_id, title, start_time, end_time, is_busy')
-        .eq('instructor_id', instructorId)
-        .gte('start_time', start.toISOString())
-        .lte('end_time', end.toISOString());
+      // Errors handled inside pagination loop
 
-      if (externalError) throw externalError;
+      // Fetch all external calendar events - paginate to avoid 1000-row limit
+      let allExternalEvents: any[] = [];
+      let extFrom = 0;
+      while (true) {
+        const { data: extPage, error: extPageError } = await supabase
+          .from('instructor_calendar_events')
+          .select('id, external_event_id, title, start_time, end_time, is_busy')
+          .eq('instructor_id', instructorId)
+          .gte('start_time', start.toISOString())
+          .lte('end_time', end.toISOString())
+          .range(extFrom, extFrom + pageSize - 1);
+
+        if (extPageError) throw extPageError;
+        allExternalEvents = allExternalEvents.concat(extPage || []);
+        if (!extPage || extPage.length < pageSize) break;
+        extFrom += pageSize;
+      }
+      const externalEvents = allExternalEvents;
+
+      // Errors handled inside pagination loop
 
       // Fetch manual blocks
       const { data: blocks, error: blocksError } = await supabase
