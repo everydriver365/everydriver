@@ -363,7 +363,7 @@ export function InstructorMobileHome({
 
       {/* Today's Stats - Glass Card */}
       <div className="px-4 mt-4">
-         <div className="bg-white rounded-2xl shadow-lg p-4 border border-border">
+         <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
            <h3 className="font-semibold text-gray-900 text-sm mb-3">Today's Stats</h3>
           <div className="flex items-center justify-around">
             <div className="flex flex-col items-center gap-0.5">
@@ -402,7 +402,7 @@ export function InstructorMobileHome({
       {/* Weekly Goal Progress - Glass Card */}
       {weeklyGoals && (
         <div className="px-4 mt-4">
-           <div className="bg-white rounded-2xl shadow-lg p-4 border border-border">
+           <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                  <h3 className="font-semibold text-gray-900 text-sm mb-1">Weekly Progress</h3>

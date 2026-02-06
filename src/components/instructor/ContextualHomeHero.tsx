@@ -351,7 +351,7 @@ export function ContextualHomeHero({
        {/* Overlapping Card - David Lloyd Style */}
        <div className="relative -mt-10 mx-4">
         <motion.div 
-            className="bg-white rounded-2xl shadow-xl border border-border cursor-pointer"
+            className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
