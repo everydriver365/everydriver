@@ -234,12 +234,13 @@ export function NextUpTile({
               Message
             </button>
             <button
-              onClick={() => setCancelOpen(true)}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+              onClick={handleOnMyWay}
+              disabled={!pupilPhone}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
               style={{ backgroundColor: '#f5f5f5' }}
             >
-              <X className="h-4 w-4" />
-              Cancel
+              <Check className="h-4 w-4 text-emerald-600" />
+              On Way
             </button>
           </div>
 
@@ -266,13 +267,12 @@ export function NextUpTile({
               >
                 <div className="px-4 pb-4 grid grid-cols-3 gap-2 border-t border-border pt-3">
                   <button
-                    onClick={handleOnMyWay}
-                    disabled={!pupilPhone}
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border py-3 text-xs font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
+                    onClick={() => setCancelOpen(true)}
+                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border py-3 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
                     style={{ backgroundColor: '#f5f5f5' }}
                   >
-                    <Check className="h-4 w-4 text-emerald-600" />
-                    On My Way
+                    <X className="h-4 w-4" />
+                    Cancel
                   </button>
                   <button
                     onClick={handleViewPupil}
