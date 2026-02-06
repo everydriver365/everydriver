@@ -112,15 +112,29 @@ export function NextUpTile({
       className="mx-4"
     >
       <div className="bg-white rounded-xl border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] overflow-hidden">
+        {/* Accent bar */}
+        <div className={`h-1.5 ${
+          minutesUntil <= 15 
+            ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-red-400' 
+            : 'bg-gradient-to-r from-primary via-blue-400 to-cyan-400'
+        }`} />
+
         {/* Header */}
         <div className="px-4 pt-3 pb-2">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Next up...
+            <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+              <motion.span
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                className={`inline-block h-2 w-2 rounded-full ${
+                  minutesUntil <= 15 ? 'bg-amber-500' : 'bg-emerald-500'
+                }`}
+              />
+              Next up
             </span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
               minutesUntil <= 15 
-                ? 'bg-amber-500/15 text-amber-600' 
+                ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-amber-600' 
                 : 'bg-primary/10 text-primary'
             }`}>
               <Clock className="h-3 w-3 inline mr-1" />
