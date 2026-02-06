@@ -395,9 +395,10 @@ export default function InstructorPortal() {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="today" className="w-full">
-                  <TabsList className="w-full grid grid-cols-3 mb-4">
+                  <TabsList className="w-full grid grid-cols-4 mb-4">
                     <TabsTrigger value="today">Today</TabsTrigger>
                     <TabsTrigger value="tomorrow">Tomorrow</TabsTrigger>
+                    <TabsTrigger value="pupils">Pupils</TabsTrigger>
                     <TabsTrigger value="gaps">Fill Gaps</TabsTrigger>
                   </TabsList>
                   <TabsContent value="today">
@@ -405,6 +406,33 @@ export default function InstructorPortal() {
                   </TabsContent>
                   <TabsContent value="tomorrow">
                     <TomorrowScheduleView instructorId={instructorId} />
+                  </TabsContent>
+                  <TabsContent value="pupils">
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                      {pupils.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">No pupils yet</p>
+                      ) : (
+                        pupils.map((pupil) => (
+                          <div key={pupil.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium">
+                              {pupil.name.split(" ").map(n => n[0]).join("")}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium truncate">{pupil.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {pupil.lessons_completed || 0} lessons
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground">{pupil.progress || 0}%</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <Link to="/instructor/pupils">
+                      <Button variant="ghost" className="w-full mt-3 text-xs h-8">
+                        View All <ChevronRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </Link>
                   </TabsContent>
                   <TabsContent value="gaps">
                     <GapsFiller instructorId={instructorId} />
@@ -428,45 +456,6 @@ export default function InstructorPortal() {
               </CardContent>
             </Card>
 
-            {/* Active Pupils */}
-            <Card className="border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between text-base">
-                  <span className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    Pupils
-                  </span>
-                  <Badge variant="secondary" className="text-xs">{pupils.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                  {pupils.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">No pupils yet</p>
-                  ) : (
-                    pupils.slice(0, 5).map((pupil) => (
-                      <div key={pupil.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium">
-                          {pupil.name.split(" ").map(n => n[0]).join("")}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{pupil.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {pupil.lessons_completed || 0} lessons
-                          </div>
-                        </div>
-                        <div className="text-xs text-muted-foreground">{pupil.progress || 0}%</div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <Link to="/instructor/pupils">
-                  <Button variant="ghost" className="w-full mt-3 text-xs h-8">
-                    View All <ChevronRight className="h-3 w-3 ml-1" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
           </motion.div>
         </div>
 
