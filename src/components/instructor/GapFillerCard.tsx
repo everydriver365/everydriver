@@ -275,10 +275,10 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
             >
               <div className="px-4 pb-4 space-y-3">
                 {gaps.map((gap) => (
-                  <div key={gap.date} className="bg-muted/50 rounded-xl p-3.5">
+                  <div key={gap.date} className="rounded-xl p-3.5" style={{ backgroundColor: '#1877F2' }}>
                     {/* Date header */}
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-semibold text-foreground">
+                      <span className="text-sm font-semibold text-white">
                         {gap.formattedDate}
                       </span>
                       <span className="text-xs text-muted-foreground bg-background px-2 py-0.5 rounded-full">
@@ -317,7 +317,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                           exit={{ height: 0, opacity: 0 }}
                           className="space-y-2 pt-3 border-t border-border/50"
                         >
-                          <p className="text-xs text-muted-foreground font-medium">
+                          <p className="text-xs text-white/80 font-medium">
                             Select pupils to message for {selectedSlots.size} slot{selectedSlots.size > 1 ? 's' : ''}:
                           </p>
                           <div className="grid gap-2">
