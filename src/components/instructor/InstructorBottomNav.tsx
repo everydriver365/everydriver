@@ -42,7 +42,7 @@ const navItems: NavItem[] = [
     isSchedule: true
   },
   { 
-    label: "Live", 
+    label: "Track", 
     icon: Radio, 
     path: "/instructor/traccar",
     isTrack: true
