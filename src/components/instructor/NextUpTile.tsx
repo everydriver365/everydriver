@@ -38,9 +38,8 @@ export function NextUpTile({
   prepaidHours,
 }: NextUpTileProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const isLessonToday = isToday(parseISO(lessonDate));
   const { durationMinutes: etaMinutes, durationText: etaText, isLoading: etaLoading } = useTrafficETA(
-    isLessonToday ? pickupPostcode : null
+    pickupPostcode
   );
 
   const formatTime = (time: string) => {
@@ -159,24 +158,20 @@ export function NextUpTile({
               {pickupPostcode && (
                 <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
                   <span>{pickupPostcode}</span>
-                  {isLessonToday && (
-                    <>
-                      {etaLoading ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : etaMinutes > 0 ? (
-                        <span className={`flex items-center gap-1 font-medium ${
-                          etaMinutes >= minutesUntil 
-                            ? 'text-destructive' 
-                            : etaMinutes >= minutesUntil - 10
-                            ? 'text-amber-600'
-                            : 'text-emerald-600'
-                        }`}>
-                          <Car className="h-3 w-3" />
-                          {etaText}
-                        </span>
-                      ) : null}
-                    </>
-                  )}
+                  {etaLoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : etaMinutes > 0 ? (
+                    <span className={`flex items-center gap-1 font-medium ${
+                      etaMinutes >= minutesUntil 
+                        ? 'text-destructive' 
+                        : etaMinutes >= minutesUntil - 10
+                        ? 'text-amber-600'
+                        : 'text-emerald-600'
+                    }`}>
+                      <Car className="h-3 w-3" />
+                      {etaText}
+                    </span>
+                  ) : null}
                 </p>
               )}
               <div className="mt-1">
