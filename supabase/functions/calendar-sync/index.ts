@@ -250,41 +250,56 @@ async function fetchGoogleEvents(
   start: string;
   end: string;
 }>> {
-  const params = new URLSearchParams({
-    timeMin,
-    timeMax,
-    singleEvents: "true",
-    orderBy: "startTime",
-    maxResults: "250",
-  });
+  const allEvents: Array<{ id: string; summary: string; start: string; end: string }> = [];
+  let pageToken: string | undefined;
 
-  const response = await fetch(
-    `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+  do {
+    const params = new URLSearchParams({
+      timeMin,
+      timeMax,
+      singleEvents: "true",
+      orderBy: "startTime",
+      maxResults: "2500",
+    });
+    if (pageToken) {
+      params.set("pageToken", pageToken);
     }
-  );
 
-  if (!response.ok) {
-    const error = await response.text();
-    console.error("Fetch events failed:", error);
-    throw new Error(`Failed to fetch events: ${error}`);
-  }
+    const response = await fetch(
+      `${CALENDAR_API_BASE}/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
-  const data = await response.json();
-  
-  return (data.items || [])
-    .filter((item: { start?: { dateTime?: string }; end?: { dateTime?: string } }) => 
-      item.start?.dateTime && item.end?.dateTime
-    )
-    .map((item: { id: string; summary?: string; start: { dateTime: string }; end: { dateTime: string } }) => ({
-      id: item.id,
-      summary: item.summary || "Busy",
-      start: item.start.dateTime,
-      end: item.end.dateTime,
-    }));
+    if (!response.ok) {
+      const error = await response.text();
+      console.error("Fetch events failed:", error);
+      throw new Error(`Failed to fetch events: ${error}`);
+    }
+
+    const data = await response.json();
+
+    const pageEvents = (data.items || [])
+      .filter((item: { start?: { dateTime?: string }; end?: { dateTime?: string } }) => 
+        item.start?.dateTime && item.end?.dateTime
+      )
+      .map((item: { id: string; summary?: string; start: { dateTime: string }; end: { dateTime: string } }) => ({
+        id: item.id,
+        summary: item.summary || "Busy",
+        start: item.start.dateTime,
+        end: item.end.dateTime,
+      }));
+
+    allEvents.push(...pageEvents);
+    console.log(`Fetched page: ${pageEvents.length} events (total: ${allEvents.length})`);
+
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+
+  return allEvents;
 }
 
 interface LessonData {
