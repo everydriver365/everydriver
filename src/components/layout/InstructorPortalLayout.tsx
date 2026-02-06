@@ -321,7 +321,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground bg-muted/40 border border-border hover:text-foreground h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-[#D1E4FC]"
+                        className="text-muted-foreground hover:text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
                         title="Settings"
                       >
                         <Settings className="h-4 w-4" />
@@ -363,7 +363,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                    className="text-blue-500 bg-muted/40 border border-border hover:text-blue-600 h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-[#D1E4FC]"
+                    className="text-blue-500 hover:text-blue-600 hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
                     title="Search"
                   >
                     <Search className="h-4 w-4" />
