@@ -1,17 +1,15 @@
 
-## Make "Open App" Button Smaller on GPS Status Card
 
-The offline action buttons ("Retry" and "Open App") in the `GPSStatusHero` component are currently using `size="lg"` with an explicit `h-12` class, making them too tall for the tile.
+## Add Left Accent Border to Quick Action Tiles
+
+Add a `#1877F2` left accent border to the quick action tiles on the instructor mobile home page for visual distinction.
 
 ### Changes
 
-**File: `src/components/instructor/tracking/GPSStatusHero.tsx`**
+**File: `src/components/instructor/QuickActionTiles.tsx`**
+- Add `border-l-4 border-l-[#1877F2]` to the main (first) tile container
+- Add `border-l-4 border-l-[#1877F2]` to the smaller grid tiles
 
-- Change both buttons from `size="lg"` to `size="default"`
-- Reduce height from `h-12` to `h-10`
-- Keep the `rounded-xl` and `flex-1` layout intact
+### Testing
+- Verify the tiles on the instructor home page at mobile viewport size to confirm the accent border looks good against the `#E8F1FE` background
 
-Specifically:
-- Line 184: `size="lg"` -> `size="default"`, `h-12` -> `h-10`
-- Line 193: `size="lg"` -> `size="default"`, `h-12` -> `h-10`
-- Optionally reduce the container padding from `p-4` to `p-3` (line 172) for a tighter fit
