@@ -19,6 +19,7 @@ import {
   BookOpen,
   ChevronRight,
   CheckCircle,
+  Calendar,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -57,6 +58,7 @@ import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { QuickStatsChips } from "@/components/instructor/QuickStatsChips";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { CardSection } from "@/components/ui/CardSection";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -519,12 +521,10 @@ export function InstructorMobileHome({
       )}
 
       {/* PLAN AHEAD section */}
-      {((tomorrowPreview && tomorrowPreview.lessonCount > 0) || instructorId) && (
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">PLAN AHEAD</p>
-      )}
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">PLAN AHEAD</p>
 
       {/* Tomorrow Peek Card */}
-      {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+      {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
           <TomorrowPeekCard
             lessonCount={tomorrowPreview.lessonCount}
@@ -534,7 +534,20 @@ export function InstructorMobileHome({
             className="mt-4"
           />
         </motion.div>
-      )}
+      ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+          <div className="px-4">
+            <EmptyState
+              icon={Calendar}
+              title="Nothing upcoming"
+              description="Your schedule is clear for tomorrow. Enjoy the downtime or check your waitlist!"
+              actionLabel="Check Waitlist"
+              onAction={() => navigate("/instructor/gaps")}
+              compact
+            />
+          </div>
+        </motion.div>
+      ) : null}
 
       {/* Setup Checklist for new instructors */}
       {instructorId && (
