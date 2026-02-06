@@ -108,7 +108,7 @@ export default function InstructorPay() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-5 text-primary-foreground"
+          className="rounded-2xl p-5 text-white" style={{ background: 'linear-gradient(to bottom right, #11877f, #0e6e68)' }}
         >
           <div className="flex items-start justify-between mb-4">
             <div>
