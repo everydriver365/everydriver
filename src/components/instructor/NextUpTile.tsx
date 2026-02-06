@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { Clock, MessageSquare, Phone, Navigation, Check, ChevronDown } from "lucide-react";
+import { Clock, MessageSquare, Phone, Navigation, Check, ChevronDown, Car, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
 
 interface NextUpTileProps {
   lessonId: string;
@@ -37,6 +38,10 @@ export function NextUpTile({
   prepaidHours,
 }: NextUpTileProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const isLessonToday = isToday(parseISO(lessonDate));
+  const { durationMinutes: etaMinutes, durationText: etaText, isLoading: etaLoading } = useTrafficETA(
+    isLessonToday ? pickupPostcode : null
+  );
 
   const formatTime = (time: string) => {
     try {
@@ -138,8 +143,26 @@ export function NextUpTile({
                 </p>
               )}
               {pickupPostcode && (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {pickupPostcode}
+                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                  <span>{pickupPostcode}</span>
+                  {isLessonToday && (
+                    <>
+                      {etaLoading ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : etaMinutes > 0 ? (
+                        <span className={`flex items-center gap-1 font-medium ${
+                          etaMinutes >= minutesUntil 
+                            ? 'text-destructive' 
+                            : etaMinutes >= minutesUntil - 10
+                            ? 'text-amber-600'
+                            : 'text-emerald-600'
+                        }`}>
+                          <Car className="h-3 w-3" />
+                          {etaText}
+                        </span>
+                      ) : null}
+                    </>
+                  )}
                 </p>
               )}
               <div className="mt-1">
