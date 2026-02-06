@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, parse } from "date-fns";
+import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
 import { 
   Clock, MessageSquare, Phone, Navigation, X, CalendarClock, 
   ChevronDown, Send 
@@ -17,6 +17,7 @@ interface NextUpTileProps {
   pupilName: string;
   pupilProfileImage: string | null;
   pupilPhone: string | null;
+  lessonDate: string;
   pickupPostcode: string | null;
   pickupLocation: string | null;
   startTime: string;
@@ -31,7 +32,9 @@ export function NextUpTile({
   pupilName,
   pupilProfileImage,
   pupilPhone,
+  lessonDate,
   pickupPostcode,
+  pickupLocation,
   startTime,
   minutesUntil,
   accountBalance,
@@ -48,13 +51,26 @@ export function NextUpTile({
     }
   };
 
+  const getDateLabel = () => {
+    const date = parseISO(lessonDate);
+    if (isToday(date)) return null;
+    if (isTomorrow(date)) return "Tomorrow";
+    return format(date, "EEE d MMM");
+  };
+
   const getCountdownText = () => {
     if (minutesUntil <= 0) return "Now";
     if (minutesUntil < 60) return `${minutesUntil}m`;
     const hours = Math.floor(minutesUntil / 60);
     const mins = minutesUntil % 60;
+    if (hours >= 24) {
+      const days = Math.floor(hours / 24);
+      return `${days}d`;
+    }
     return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
   };
+
+  const dateLabel = getDateLabel();
 
   const handleNavigate = () => {
     if (pickupPostcode) {
@@ -107,7 +123,7 @@ export function NextUpTile({
                 : 'bg-primary/10 text-primary'
             }`}>
               <Clock className="h-3 w-3 inline mr-1" />
-              {formatTime(startTime)} · {getCountdownText()}
+              {dateLabel ? `${dateLabel} · ` : ''}{formatTime(startTime)} · {getCountdownText()}
             </span>
           </div>
 
