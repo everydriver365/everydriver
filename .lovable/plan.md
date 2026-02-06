@@ -1,44 +1,48 @@
 
 
-# Update Marketing Features Page (`/instructor-app/features`)
+# Make Instructor Mobile Home Page Full Width
 
 ## Overview
-Replace the current hardcoded features page with a comprehensive, CMS-driven showcase of all the app's features. The existing page only lists 6 main features and 6 small ones -- the app now has 30+ features across scheduling, finance, tracking, wellbeing, and more.
+Remove the horizontal padding (`px-4`, `mx-4`) from the instructor mobile home page so that content stretches edge-to-edge, giving a more immersive, app-like feel on mobile devices.
 
-## Approach
-Rewrite `src/pages/instructor-app/InstructorFeatures.tsx` to pull features from the `instructor_app_features` database table (same CMS the homepage uses), with hardcoded fallbacks that reflect the full feature set. The page will be organised into clear categories so visitors can quickly see the breadth of the platform.
+## Current State
+The page content is already inside a full-width container (no `max-width` or `container` class constraining it), but individual sections use `px-4` or `mx-4` Tailwind classes that add 16px padding on each side. This affects:
+- The `ContextualHomeHero` wrapper (`px-4 pt-4`)
+- Section labels (`px-4`)
+- `NextUpTile` (internal `mx-4`)
+- `TodayMiniTimeline`, `TodayRoutePreview`, `GapFillerCard` (internal margins)
+- Quick Action Tiles wrapper (`px-4`)
+- Stats/Insights cards (`px-4`)
+- Tomorrow Peek, Road Alerts, etc.
 
-## Page Structure
+## Plan
 
-1. **Hero Section** -- updated headline and copy reflecting the full platform
-2. **Feature Categories** -- grouped into logical sections:
-   - **Schedule and Diary** -- Smart diary, Google Calendar sync, gap filling, pending bookings
-   - **Pupil Management** -- Pupil profiles, progress tracking, test results (DL25A), lesson history
-   - **Money and Finance** -- Payments/QR codes, income summary, expenses, income vs expenses, mileage tracker (HMRC), tax summary
-   - **Live Tracking and Vehicle** -- GPS live tracking, find my car, vehicle health/telemetry, saved routes, trip replay, sat nav
-   - **Communication** -- Messages, job offers, SMS notifications, visitor chats
-   - **Your Online Presence** -- Mini-website builder, custom domains
-   - **Wellbeing** -- Health hub (weight, water, breaks)
-   - **Smart Alerts** -- Weather alerts, traffic alerts, National Highways road alerts, driving conditions
-3. **"And More" strip** -- smaller tiles for settings, FAQs, install as app, etc.
-4. **Comparison Section** -- kept from existing page (Without/With Drive365)
-5. **CTA Section** -- kept from existing page
+### 1. Remove padding from hero wrapper
+In `InstructorMobileHome.tsx`, change the hero wrapper from `px-4 pt-4` to `pt-4` (or remove padding entirely for a true edge-to-edge hero image).
+
+### 2. Update section-level padding
+Remove or reduce `px-4` from section label paragraphs, Quick Actions wrapper, and Insights card wrappers so tiles can go full-width.
+
+### 3. Update child components
+Adjust internal `mx-4` / `px-4` in components like `NextUpTile`, `TodayMiniTimeline`, `TodayRoutePreview`, `GapFillerCard`, `FuelFinderCard`, `TomorrowPeekCard`, `RoadAlertsRow`, and `DrivingAlertsStrip` to remove side margins.
+
+### 4. Preserve card aesthetics
+Cards themselves will keep their internal padding (the `p-3`/`p-4` inside each card) so text doesn't touch the edge. Only the outer page-level margins are removed, so cards span the full screen width with their borders/shadows touching the edges -- similar to native iOS/Android app layouts.
 
 ## Technical Details
 
-### File changes
-- **`src/pages/instructor-app/InstructorFeatures.tsx`** -- Full rewrite with:
-  - CMS data from `useInstructorAppContent` hook (already exists) for the top-level features
-  - Hardcoded comprehensive fallback features organised by category
-  - Each category rendered as a section with a header and feature cards
-  - Feature cards use the same pattern as the homepage (icon, title, description, highlights)
-  - Keeps the existing `InstructorSaaSLayout` wrapper and animation patterns
-  - Reuses existing `Card`/`CardContent` components
+Files to modify:
+- `src/components/instructor/InstructorMobileHome.tsx` -- Remove `px-4` from wrappers
+- `src/components/instructor/ContextualHomeHero.tsx` -- Remove `mx-4` if present on the overlapping card
+- `src/components/instructor/NextUpTile.tsx` -- Remove `mx-4`
+- `src/components/instructor/TodayMiniTimeline.tsx` -- Remove side margins
+- `src/components/instructor/TodayRoutePreview.tsx` -- Remove side margins
+- `src/components/instructor/GapFillerCard.tsx` -- Remove side margins
+- `src/components/instructor/FuelFinderCard.tsx` -- Remove side margins
+- `src/components/instructor/TomorrowPeekCard.tsx` -- Remove side margins
+- `src/components/instructor/RoadAlertsRow.tsx` -- Remove side margins
+- `src/components/instructor/DrivingAlertsStrip.tsx` -- Remove side margins
+- `src/components/instructor/QuickActionTiles.tsx` -- Verify no constraining margins
 
-### No new files or database changes needed
-- The `instructor_app_features` table and `useInstructorAppContent` hook already exist
-- The layout component `InstructorSaaSLayout` is already in use
-- Route `/instructor-app/features` is already registered in `App.tsx`
+Each component will have its outer `mx-4`/`px-4` removed so they fill the full viewport width while keeping internal card padding intact.
 
-### Feature categories (hardcoded fallback with ~30 features)
-Each feature card includes: icon, title, short description, and 2-3 highlight bullet points. Categories are rendered as alternating white/grey background sections for visual separation.
