@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { 
   Clock, 
   MapPin, 
@@ -24,9 +25,10 @@ import {
   BookOpen,
   MessageCircle,
   Briefcase,
+  Play,
+  Eye,
 } from "lucide-react";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
-import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { haptics } from "@/lib/haptics";
 
 interface ContextualHomeHeroProps {
@@ -71,46 +73,26 @@ interface ContextualHomeHeroProps {
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
   const iconMap: Record<string, React.ElementType> = {
-    Sun,
-    CloudSun,
-    Cloud,
-    CloudRain,
-    CloudDrizzle,
-    CloudFog,
-    CloudLightning,
-    Snowflake,
-    Wind,
+    Sun, CloudSun, Cloud, CloudRain, CloudDrizzle, CloudFog, CloudLightning, Snowflake, Wind,
   };
   const IconComponent = iconMap[icon] || Cloud;
   return <IconComponent className={className} />;
 };
 
-// Get weather icon color based on type
 const getWeatherIconColor = (icon: string): string => {
   switch (icon) {
-    case "Sun":
-      return "text-amber-500";
-    case "CloudSun":
-      return "text-amber-400";
-    case "Cloud":
-      return "text-slate-400";
-    case "CloudRain":
-    case "CloudDrizzle":
-      return "text-blue-500";
-    case "CloudFog":
-      return "text-slate-500";
-    case "CloudLightning":
-      return "text-purple-500";
-    case "Snowflake":
-      return "text-sky-400";
-    case "Wind":
-      return "text-teal-500";
-    default:
-      return "text-slate-400";
+    case "Sun": return "text-amber-500";
+    case "CloudSun": return "text-amber-400";
+    case "Cloud": return "text-slate-400";
+    case "CloudRain": case "CloudDrizzle": return "text-blue-500";
+    case "CloudFog": return "text-slate-500";
+    case "CloudLightning": return "text-purple-500";
+    case "Snowflake": return "text-sky-400";
+    case "Wind": return "text-teal-500";
+    default: return "text-slate-400";
   }
 };
 
-// Get time period for contextual content
 type TimePeriod = "morning" | "midday" | "evening" | "night";
 
 const getTimePeriod = (): TimePeriod => {
@@ -121,29 +103,12 @@ const getTimePeriod = (): TimePeriod => {
   return "night";
 };
 
-const getTimeIcon = (period: TimePeriod) => {
-  switch (period) {
-    case "morning":
-      return Sunrise;
-    case "midday":
-      return Sun;
-    case "evening":
-      return Sunset;
-    case "night":
-      return Moon;
-  }
-};
-
 const getGreeting = (firstName: string, period: TimePeriod) => {
   switch (period) {
-    case "morning":
-      return `Good morning, ${firstName}!`;
-    case "midday":
-      return `Good afternoon, ${firstName}!`;
-    case "evening":
-      return `Good evening, ${firstName}!`;
-    case "night":
-      return `Ready to teach, ${firstName}?`;
+    case "morning": return `Ready to teach, ${firstName}?`;
+    case "midday": return `Keep going, ${firstName}!`;
+    case "evening": return `Great work, ${firstName}!`;
+    case "night": return `Ready to teach, ${firstName}?`;
   }
 };
 
@@ -163,506 +128,314 @@ export function ContextualHomeHero({
   unreadMessages = 0,
   pendingJobs = 0,
 }: ContextualHomeHeroProps) {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
-   const [rotatingStatIndex, setRotatingStatIndex] = useState(0);
   const timePeriod = getTimePeriod();
-  const TimeIcon = getTimeIcon(timePeriod);
-  
-  // Get ETA for morning context
-  const { durationMinutes, durationText, isLoading: etaLoading } = useTrafficETA(
+
+  const { durationMinutes, durationText } = useTrafficETA(
     timePeriod === "morning" && nextLesson?.pickupPostcode ? nextLesson.pickupPostcode : null
   );
 
-   // Rotating stats for the summary section
-   const rotatingStats = [
-     todayOverview?.lessonCount !== undefined && {
-       icon: BookOpen,
-       value: todayOverview.lessonCount,
-       label: "lessons today",
-       color: "text-violet-600 dark:text-violet-400"
-     },
-     todayOverview?.totalHours !== undefined && {
-       icon: Clock,
-       value: todayOverview.totalHours,
-       label: "hours today",
-       color: "text-blue-600 dark:text-blue-400"
-     },
-     todayOverview?.expectedEarnings !== undefined && {
-       icon: PoundSterling,
-       value: todayOverview.expectedEarnings,
-       label: "expected",
-       color: "text-emerald-600 dark:text-emerald-400"
-     },
-     weeklyStats && {
-       icon: TrendingUp,
-       value: weeklyStats.progressPercent,
-       label: "% weekly goal",
-       color: "text-primary"
-     },
-   ].filter(Boolean) as Array<{ icon: React.ElementType; value: number; label: string; color: string }>;
+  // Weekly progress
+  const hoursThisWeek = weeklyStats?.hoursThisWeek || 0;
+  const hoursGoal = weeklyStats?.hoursGoal || 42;
+  const progressPercent = weeklyStats?.progressPercent || 0;
+  const clampedProgress = Math.min(progressPercent, 100);
+  const hoursRemaining = Math.max(hoursGoal - hoursThisWeek, 0);
 
-   // Auto-rotate stats every 3 seconds
-   useEffect(() => {
-     if (rotatingStats.length <= 1) return;
-     
-     const interval = setInterval(() => {
-       setRotatingStatIndex((prev) => (prev + 1) % rotatingStats.length);
-     }, 3000);
-     
-     return () => clearInterval(interval);
-   }, [rotatingStats.length]);
+  // SVG ring math
+  const radius = 28;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
 
-  const handleCardTap = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  // Contextual subtitle based on time of day
-  const getContextualSubtitle = () => {
-    const completedLessons = todayOverview?.completedLessons || 0;
-    const totalLessons = todayOverview?.lessonCount || 0;
-    const remainingLessons = totalLessons - completedLessons;
-    
-    switch (timePeriod) {
-      case "morning":
-        if (nextLesson && durationMinutes > 0) {
-          return `${durationText} drive to ${nextLesson.pupilName}'s pickup`;
-        }
-        if (totalLessons > 0) {
-          return `${totalLessons} lesson${totalLessons > 1 ? 's' : ''} scheduled today`;
-        }
-        return motivationSubtitle || "Ready for a great day!";
-        
-      case "midday":
-        if (remainingLessons > 0) {
-          return `${completedLessons} done, ${remainingLessons} to go`;
-        }
-        if (completedLessons > 0) {
-          return `All ${completedLessons} lessons complete!`;
-        }
-        return motivationSubtitle || "Enjoy your day!";
-        
-      case "evening":
-        if (totalLessons > 0) {
-          return "Great work today!";
-        }
-        if (tomorrowPreview && tomorrowPreview.lessonCount > 0) {
-          return `Tomorrow: ${tomorrowPreview.lessonCount} lessons starting ${tomorrowPreview.firstLessonTime || 'early'}`;
-        }
-        return "Rest up for tomorrow!";
-        
-      case "night":
-        if (tomorrowPreview && tomorrowPreview.lessonCount > 0) {
-          return `Tomorrow: ${tomorrowPreview.lessonCount} lessons at ${tomorrowPreview.firstLessonTime || 'scheduled times'}`;
-        }
-        if (weeklyStats) {
-          const hoursRemaining = weeklyStats.hoursGoal - weeklyStats.hoursThisWeek;
-          if (hoursRemaining > 0) {
-            return `${hoursRemaining.toFixed(1)}h to weekly goal (${weeklyStats.progressPercent}%)`;
-          }
-          return `Weekly goal achieved! ${weeklyStats.hoursThisWeek}h logged`;
-        }
-        return "Plan ahead for success!";
-    }
-  };
-
-  // Contextual stat card content
-  const getContextualStats = () => {
-    switch (timePeriod) {
-      case "morning":
-        return {
-          primary: {
-            icon: Clock,
-            value: nextLesson ? nextLesson.minutesUntil : todayOverview?.totalHours || 0,
-            label: nextLesson ? "min until first" : "hours today",
-            color: "text-primary"
-          },
-          secondary: durationMinutes > 0 ? {
-            icon: Car,
-            value: durationMinutes,
-            label: "min drive",
-            color: "text-emerald-600 dark:text-emerald-400"
-          } : null
-        };
-        
-      case "midday":
-        const completedLessons = todayOverview?.completedLessons || 0;
-        const totalLessons = todayOverview?.lessonCount || 0;
-        return {
-          primary: {
-            icon: TrendingUp,
-            value: completedLessons,
-            label: `of ${totalLessons} done`,
-            color: "text-primary"
-          },
-          secondary: {
-            icon: PoundSterling,
-            value: todayOverview?.expectedEarnings || 0,
-            label: "expected",
-            color: "text-emerald-600 dark:text-emerald-400"
-          }
-        };
-        
-      case "evening":
-        return {
-          primary: {
-            icon: PoundSterling,
-            value: todayOverview?.expectedEarnings || 0,
-            label: "earned today",
-            color: "text-emerald-600 dark:text-emerald-400"
-          },
-          secondary: tomorrowPreview ? {
-            icon: Calendar,
-            value: tomorrowPreview.lessonCount,
-            label: "tomorrow",
-            color: "text-primary"
-          } : null
-        };
-        
-      case "night":
-        return {
-          primary: weeklyStats ? {
-            icon: TrendingUp,
-            value: weeklyStats.progressPercent,
-            label: "% weekly goal",
-            color: "text-primary"
-          } : {
-            icon: Calendar,
-            value: tomorrowPreview?.lessonCount || 0,
-            label: "tomorrow",
-            color: "text-primary"
-          },
-          secondary: null
-        };
-    }
-  };
-
-  const stats = getContextualStats();
-
-   // Weekly progress for circular indicator
-   const weeklyProgress = weeklyStats?.progressPercent || 0;
-   const weeklyGoalDays = 6; // Target days per week
-   const daysWorked = Math.min(Math.round((weeklyProgress / 100) * weeklyGoalDays), weeklyGoalDays);
-
-  // Parallax scroll effect
+  // Parallax
   const { scrollY } = useScroll();
   const cardY = useTransform(scrollY, [0, 200], [0, -12]);
 
+  // Weekly goal subtitle
+  const getSubtitle = () => {
+    if (hoursRemaining > 0) {
+      return `You're ${hoursRemaining.toFixed(1)} hours away from your weekly goal of ${hoursGoal} hours.`;
+    }
+    return `Weekly goal of ${hoursGoal} hours achieved! 🎉`;
+  };
+
   return (
     <div className="relative -mx-4">
-      {/* Hero Image - Full Bleed */}
-       <div className="w-full h-44 overflow-hidden rounded-2xl border border-border">
-        <img 
-          src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"} 
-          alt="Hero" 
+      {/* Hero Image */}
+      <div className="w-full h-44 overflow-hidden rounded-2xl border border-border">
+        <img
+          src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"}
+          alt="Hero"
           className="w-full h-full object-cover"
         />
       </div>
-      
-       {/* Overlapping Card - David Lloyd Style with parallax */}
-       <div className="relative -mt-10 mx-4">
-        <motion.div 
-            className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border cursor-pointer"
+
+      {/* Overlapping Card */}
+      <div className="relative -mt-14 mx-4">
+        <motion.div
+          className="bg-white dark:bg-card rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           style={{ y: cardY }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          onClick={() => {
-            haptics.selection();
-            handleCardTap();
-          }}
-          whileTap={{ scale: 0.98 }}
         >
-           {/* Main content - David Lloyd layout */}
-            <div className="p-4 pb-3">
-             {/* Top row: Headline + Circular indicator */}
+          <div className="p-4 pb-3">
+            {/* Top row: Headline + Ring */}
             <div className="flex items-start justify-between gap-3">
-             {/* Left side: Text content */}
-             <div className="flex-1 min-w-0">
-               {/* Bold headline */}
+              <div className="flex-1 min-w-0">
                 <h2 className="text-xl font-bold text-foreground tracking-tight leading-tight">
                   {getGreeting(firstName, timePeriod)}
-               </h2>
-               
-               {/* Subtitle */}
-               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                 {getContextualSubtitle()}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                  {getSubtitle()}
                 </p>
 
-                {/* Summary badges row */}
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {unreadMessages > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-medium">
-                      <MessageCircle className="h-3 w-3" />
-                      {unreadMessages} Message{unreadMessages !== 1 ? 's' : ''}
+                {/* Badges */}
+                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                  {pendingJobs > 0 && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 text-[11px] font-medium">
+                      <Briefcase className="h-3 w-3" />
+                      {pendingJobs} Job Offer{pendingJobs !== 1 ? "s" : ""}
                     </span>
                   )}
-                  {pendingJobs > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 text-[11px] font-medium">
-                      <Briefcase className="h-3 w-3" />
-                      {pendingJobs} Job Offer{pendingJobs !== 1 ? 's' : ''}
+                  {currentWeather && currentWeather.temperature !== null && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-foreground text-[11px] font-medium">
+                      <WeatherIcon
+                        icon={currentWeather.icon}
+                        className={`h-3 w-3 ${getWeatherIconColor(currentWeather.icon)}`}
+                      />
+                      {currentWeather.temperature}°C{" "}
+                      {currentWeather.description && (
+                        <span className="text-muted-foreground">{currentWeather.description}</span>
+                      )}
+                    </span>
+                  )}
+                  {unreadMessages > 0 && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-medium">
+                      <MessageCircle className="h-3 w-3" />
+                      {unreadMessages} Message{unreadMessages !== 1 ? "s" : ""}
                     </span>
                   )}
                 </div>
               </div>
-             
-             {/* Right side: Circular progress indicator */}
-             <div className="flex-shrink-0">
-               <div className="relative w-16 h-16">
-                 {/* Background circle */}
-                 <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
-                   <circle
-                     cx="32"
-                     cy="32"
-                     r="28"
-                     fill="none"
-                     stroke="currentColor"
-                     strokeWidth="4"
-                     className="text-muted/30"
-                   />
-                   {/* Progress arc */}
-                   <circle
-                     cx="32"
-                     cy="32"
-                     r="28"
-                     fill="none"
-                     stroke="currentColor"
-                     strokeWidth="4"
-                     strokeLinecap="round"
-                      className="text-red-500"
-                     strokeDasharray={`${(weeklyProgress / 100) * 176} 176`}
-                   />
-                 </svg>
-                 {/* Center text */}
-                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-bold text-blue-600 leading-none">
-                     {todayOverview?.lessonCount || 0}
-                   </span>
-                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                     {todayOverview?.lessonCount === 1 ? 'lesson' : 'lessons'}
-                   </span>
-                 </div>
-               </div>
-             </div>
-           </div>
-             
-             {/* Location, Weather & Traffic row */}
-             <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2">
-               {displayLocation && (
-                 <div className="flex items-center gap-1 text-muted-foreground">
-                   <MapPin className="h-3 w-3 text-primary" />
-                   <span className="text-xs">{displayLocation}</span>
-                 </div>
-               )}
-               {currentWeather && currentWeather.temperature !== null && (
-                 <div className="flex items-center gap-1">
-                   <WeatherIcon 
-                     icon={currentWeather.icon} 
-                     className={`h-3.5 w-3.5 ${getWeatherIconColor(currentWeather.icon)}`} 
-                   />
-                    <span className="text-xs font-medium text-foreground">{currentWeather.temperature}°C</span>
-                    {currentWeather.description && (
-                      <span className="text-xs text-muted-foreground">{currentWeather.description}</span>
-                    )}
-                 </div>
-               )}
-               {/* Traffic ETA */}
-               {durationMinutes > 0 && nextLesson && (
-                 <div className="flex items-center gap-1">
-                   <Car className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                   <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                     {durationText} to {nextLesson.pupilName.split(' ')[0]}
-                   </span>
-                 </div>
-               )}
-             </div>
-             
-             {/* Rotating Stats Carousel */}
-             {rotatingStats.length > 0 && (
-                <motion.div 
-                  className="flex items-center justify-between mt-3 pt-3 border-t border-border/50"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={rotatingStatIndex}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                      className="flex items-center gap-1.5"
-                    >
-                      {(() => {
-                        const stat = rotatingStats[rotatingStatIndex];
-                        const StatIcon = stat.icon;
-                        return (
-                          <>
-                            <StatIcon className={`h-4 w-4 ${stat.color}`} />
-                            <span className={`text-base font-bold ${stat.color}`}>
-                              <AnimatedCounter value={stat.value} />
-                            </span>
-                            <span className="text-xs text-muted-foreground">{stat.label}</span>
-                          </>
-                        );
-                      })()}
-                    </motion.div>
-                  </AnimatePresence>
-                  
-                  {/* Dot indicators */}
-                  {rotatingStats.length > 1 && (
-                    <div className="flex gap-1">
-                      {rotatingStats.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setRotatingStatIndex(idx);
-                          }}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${
-                            idx === rotatingStatIndex 
-                              ? 'bg-primary w-3' 
-                              : 'bg-muted-foreground/30'
+
+              {/* Circular progress ring */}
+              <div className="flex-shrink-0">
+                <div className="relative w-[72px] h-[72px]">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 72 72">
+                    <circle
+                      cx="36" cy="36" r={radius}
+                      fill="none" stroke="currentColor" strokeWidth="5"
+                      className="text-muted/20"
+                    />
+                    <motion.circle
+                      cx="36" cy="36" r={radius}
+                      fill="none" strokeWidth="5" strokeLinecap="round"
+                      className="text-emerald-500"
+                      stroke="currentColor"
+                      initial={{ strokeDashoffset: circumference }}
+                      animate={{ strokeDashoffset }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      style={{ strokeDasharray: circumference }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-lg font-bold text-foreground leading-none">
+                      {hoursThisWeek}
+                      <span className="text-sm">h</span>
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      {clampedProgress}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+                {hoursThisWeek}h / {hoursGoal}h
+              </span>
+              <div className="flex-1 h-2 rounded-full bg-muted/40 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${clampedProgress}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                />
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <button
+                onClick={() => {
+                  haptics.selection();
+                  navigate("/instructor/schedule");
+                }}
+                className="flex items-center justify-center gap-1.5 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-semibold active:scale-[0.97] transition-transform"
+              >
+                <Play className="h-4 w-4" />
+                Start lesson
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  haptics.selection();
+                  navigate("/instructor/jobs");
+                }}
+                className="flex items-center justify-center gap-1.5 h-11 rounded-xl border border-border bg-background text-foreground text-sm font-semibold active:scale-[0.97] transition-transform"
+              >
+                <Eye className="h-4 w-4" />
+                View offers
+              </button>
+            </div>
+          </div>
+
+          {/* Expand toggle */}
+          <button
+            onClick={() => {
+              haptics.selection();
+              setIsExpanded(!isExpanded);
+            }}
+            className="w-full flex justify-center py-1.5 border-t border-border/50 hover:bg-muted/30 transition-colors"
+          >
+            <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </motion.div>
+          </button>
+
+          {/* Expanded Content */}
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="px-4 pb-4 space-y-3">
+                  {/* Status + Location */}
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">
+                      Today's Summary
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      {displayLocation && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="h-3 w-3 text-primary" />
+                          {displayLocation}
+                        </span>
+                      )}
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          isGPSConnected
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            : "bg-destructive/10 text-destructive"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            isGPSConnected ? "bg-emerald-500 animate-pulse" : "bg-destructive"
                           }`}
                         />
-                      ))}
+                        {isGPSConnected ? "Live" : "Offline"}
+                      </span>
                     </div>
-                  )}
-                </motion.div>
-              )}
+                  </div>
 
-              {/* Expand hint - bouncing chevron when collapsed */}
-              {!isExpanded && (
-                <motion.div
-                  className="flex justify-center mt-2"
-                  animate={{ y: [0, 3, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                >
-                  <ChevronDown className="h-4 w-4 text-muted-foreground/50" />
-                </motion.div>
-              )}
-           </div>
-            
-            {/* Expanded Content - Today's Summary */}
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="overflow-hidden"
-                >
-                   <div className="px-5 pb-5 pt-0 border-t border-border/50 space-y-3">
-                     <div className="flex items-center justify-between pt-3">
-                       <h4 className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">Today's Summary</h4>
-                       <div className="flex items-center gap-1">
-                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                           isGPSConnected 
-                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                             : 'bg-destructive/10 text-destructive'
-                         }`}>
-                           <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? 'bg-emerald-500 animate-pulse' : 'bg-destructive'}`} />
-                           {isGPSConnected ? 'Live' : 'Offline'}
-                         </span>
-                         <motion.div
-                           animate={{ rotate: isExpanded ? 180 : 0 }}
-                           transition={{ duration: 0.2 }}
-                         >
-                           <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                         </motion.div>
-                       </div>
-                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-2">
-                      {/* Lessons */}
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
-                        <BookOpen className="h-4 w-4 text-primary" />
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {todayOverview?.lessonCount || 0} lessons
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {todayOverview?.completedLessons || 0} completed
-                          </p>
-                        </div>
+                  {/* Stats grid */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {todayOverview?.lessonCount || 0} lessons
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {todayOverview?.completedLessons || 0} completed
+                        </p>
                       </div>
-                      
-                      {/* Hours */}
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/5">
-                        <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {todayOverview?.totalHours || 0}h
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            teaching time
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Earnings */}
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/5">
-                        <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            £{todayOverview?.expectedEarnings || 0}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            expected
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Weekly Progress */}
-                      {weeklyStats && (
-                        <div className="flex items-center gap-2 p-2 rounded-lg bg-violet-500/5">
-                          <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">
-                              {weeklyStats.progressPercent}%
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">
-                              weekly goal
-                            </p>
-                          </div>
-                        </div>
-                      )}
                     </div>
-                    
-                    {/* Tomorrow Preview */}
-                    {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 mt-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">
-                          Tomorrow: {tomorrowPreview.lessonCount} lesson{tomorrowPreview.lessonCount > 1 ? 's' : ''} 
-                          {tomorrowPreview.firstLessonTime && ` starting ${tomorrowPreview.firstLessonTime}`}
-                        </span>
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/5">
+                      <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {todayOverview?.totalHours || 0}h
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">teaching time</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/5">
+                      <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          £{todayOverview?.expectedEarnings || 0}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">expected</p>
+                      </div>
+                    </div>
+                    {weeklyStats && (
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-violet-500/5">
+                        <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {weeklyStats.progressPercent}%
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">weekly goal</p>
+                        </div>
                       </div>
                     )}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+
+                  {/* Traffic ETA */}
+                  {durationMinutes > 0 && nextLesson && (
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                      <Car className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      <span className="text-xs text-muted-foreground">
+                        {durationText} drive to {nextLesson.pupilName.split(" ")[0]}'s pickup
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Tomorrow */}
+                  {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        Tomorrow: {tomorrowPreview.lessonCount} lesson
+                        {tomorrowPreview.lessonCount > 1 ? "s" : ""}
+                        {tomorrowPreview.firstLessonTime &&
+                          ` starting ${tomorrowPreview.firstLessonTime}`}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
-      
-      {/* Alert indicator (if alerts exist) */}
+
+      {/* Alert indicator */}
       {alerts.length > 0 && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           className={`mx-4 mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium ${
-            alerts[0].severity === 'severe' 
-              ? 'bg-destructive/10 text-destructive' 
-              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+            alerts[0].severity === "severe"
+              ? "bg-destructive/10 text-destructive"
+              : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
           }`}
         >
           <AlertTriangle className="h-3 w-3 flex-shrink-0" />
           <span className="truncate">
-            {alerts[0].severity === 'severe' 
-              ? alerts[0].title 
-              : `${alerts.length} warning${alerts.length > 1 ? 's' : ''} nearby`}
+            {alerts[0].severity === "severe"
+              ? alerts[0].title
+              : `${alerts.length} warning${alerts.length > 1 ? "s" : ""} nearby`}
           </span>
         </motion.div>
       )}
