@@ -287,7 +287,7 @@ export default function InstructorMenu() {
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
                 {section.title}
               </h2>
-              <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden divide-y divide-border/50">
+              <div className="bg-white dark:bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden divide-y divide-border/50">
                 {section.items.map((item, idx) => (
                   <button
                     key={idx}
