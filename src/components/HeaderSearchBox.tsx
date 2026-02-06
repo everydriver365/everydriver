@@ -115,19 +115,18 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
   return (
     <div ref={containerRef} className="relative flex items-center gap-2">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
         <input
           type="text"
           placeholder="Search ..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-          className="h-9 w-56 rounded-lg border-0 text-white placeholder:text-white/40 pl-9 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+          className="h-9 w-56 rounded-lg border-0 bg-white text-black placeholder:text-black/50 pl-9 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
         />
         {query && (
           <button
             onClick={() => { setQuery(""); setOpen(false); }}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs transition-colors"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black/40 hover:text-black text-xs transition-colors"
           >
             ✕
           </button>
