@@ -15,15 +15,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
-import { useDomainBranding } from "@/hooks/useDomainBranding";
+import drive365Logo from "@/assets/drive365-logo.png";
 
 export default function Benefits() {
   const location = useLocation();
   const { features, loading } = useIncludedFeatures();
-  const branding = useDomainBranding();
 
   const navItems = [
-    { label: "Home", icon: Home, path: "/" },
+    { label: "Home", icon: Home, path: "/drive365" },
     { label: "Search", icon: Search, path: "/courses" },
     { label: "Theory", icon: TheoryIcon, path: "/theory" },
     { label: "FAQs", icon: HelpCircle, path: "/faqs" },
@@ -35,7 +34,7 @@ export default function Benefits() {
     <div className="min-h-screen bg-background pb-20">
       {/* Header - Primary Blue to match brand */}
       <div className="px-4 py-3 flex items-center justify-start sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
-        <img src={branding.logoPath} alt={branding.brandName} className="h-9" />
+        <img src={drive365Logo} alt="Drive365" className="h-9" />
       </div>
 
       {/* Hero Section */}
