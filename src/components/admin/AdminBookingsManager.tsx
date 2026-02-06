@@ -129,6 +129,20 @@ export function AdminBookingsManager() {
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
+      // If searching, we need to find matching pupil/instructor IDs first
+      let matchingPupilIds: string[] | null = null;
+      let matchingInstructorIds: string[] | null = null;
+
+      if (searchQuery) {
+        const lowerQuery = searchQuery.toLowerCase();
+        const [pupilRes, instrRes] = await Promise.all([
+          supabase.from("pupils").select("id").ilike("name", `%${lowerQuery}%`),
+          supabase.from("instructors").select("id").ilike("name", `%${lowerQuery}%`),
+        ]);
+        matchingPupilIds = (pupilRes.data || []).map((p: any) => p.id);
+        matchingInstructorIds = (instrRes.data || []).map((i: any) => i.id);
+      }
+
       let query = supabase
         .from("scheduled_lessons")
         .select(`
@@ -165,6 +179,27 @@ export function AdminBookingsManager() {
         query = query.or("payment_status.eq.unpaid,payment_status.eq.not_paid");
       }
 
+      // Apply search filter server-side
+      if (searchQuery && matchingPupilIds !== null && matchingInstructorIds !== null) {
+        const allIds = [...matchingPupilIds, ...matchingInstructorIds];
+        if (allIds.length === 0) {
+          // No matches found - return empty
+          setBookings([]);
+          setTotalCount(0);
+          setLoading(false);
+          return;
+        }
+        // Build OR filter for pupil_id and instructor_id
+        const orParts: string[] = [];
+        if (matchingPupilIds.length > 0) {
+          orParts.push(`pupil_id.in.(${matchingPupilIds.join(",")})`);
+        }
+        if (matchingInstructorIds.length > 0) {
+          orParts.push(`instructor_id.in.(${matchingInstructorIds.join(",")})`);
+        }
+        query = query.or(orParts.join(","));
+      }
+
       // Apply pagination
       const from = (currentPage - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
@@ -174,19 +209,7 @@ export function AdminBookingsManager() {
 
       if (error) throw error;
 
-      // Filter by search query client-side
-      let filteredData = data || [];
-      if (searchQuery) {
-        const lowerQuery = searchQuery.toLowerCase();
-        filteredData = filteredData.filter(
-          (b) =>
-            b.instructor?.name?.toLowerCase().includes(lowerQuery) ||
-            b.pupil?.name?.toLowerCase().includes(lowerQuery) ||
-            b.id.toLowerCase().includes(lowerQuery)
-        );
-      }
-
-      setBookings(filteredData);
+      setBookings(data || []);
       setTotalCount(count || 0);
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -288,9 +311,12 @@ export function AdminBookingsManager() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search bookings..."
+              placeholder="Search by pupil or instructor name..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="pl-9"
             />
           </div>
