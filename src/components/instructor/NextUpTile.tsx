@@ -92,13 +92,17 @@ export function NextUpTile({
 
   const handleCall = () => {
     if (pupilPhone) {
-      window.location.href = `tel:${pupilPhone}`;
+      const link = document.createElement("a");
+      link.href = `tel:${pupilPhone}`;
+      link.click();
     }
   };
 
   const handleMessage = () => {
     if (pupilPhone) {
-      window.location.href = `sms:${pupilPhone}`;
+      const link = document.createElement("a");
+      link.href = `sms:${pupilPhone}`;
+      link.click();
     }
   };
 
@@ -106,12 +110,14 @@ export function NextUpTile({
     if (pupilPhone) {
       const firstName = pupilName.split(" ")[0];
       const message = encodeURIComponent(`Hi ${firstName}, I'm on my way to you!`);
-      window.location.href = `sms:${pupilPhone}?body=${message}`;
+      const link = document.createElement("a");
+      link.href = `sms:${pupilPhone}?body=${message}`;
+      link.click();
     }
   };
 
   const handleViewPupil = () => {
-    navigate(`/instructor/pupils?highlight=${pupilId}`);
+    navigate(`/instructor/pupils`);
   };
 
   const handleCancelled = () => {
