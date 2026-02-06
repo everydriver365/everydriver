@@ -167,3 +167,9 @@ verify_jwt = false
 
 [functions.get-fuel-prices]
 verify_jwt = false
+
+[functions.send-campaign]
+verify_jwt = false
+
+[functions.compliance-reminders]
+verify_jwt = false

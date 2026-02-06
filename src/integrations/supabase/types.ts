@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_activity_log: {
+        Row: {
+          action_type: string
+          created_at: string
+          description: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          description: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          description?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
+      admin_campaigns: {
+        Row: {
+          audience_filter: Json | null
+          audience_type: string
+          channel: string
+          created_at: string
+          id: string
+          message: string
+          recipient_count: number
+          sent_at: string | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          audience_filter?: Json | null
+          audience_type: string
+          channel?: string
+          created_at?: string
+          id?: string
+          message: string
+          recipient_count?: number
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          audience_filter?: Json | null
+          audience_type?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          message?: string
+          recipient_count?: number
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
       admin_conversations: {
         Row: {
           created_at: string
