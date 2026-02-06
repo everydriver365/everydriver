@@ -315,7 +315,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
-                      <DropdownMenuItem onClick={() => navigate("/instructor/pupils/new")} className="cursor-pointer">
+                      <DropdownMenuItem onClick={() => navigate("/instructor/pupils?action=add")} className="cursor-pointer">
                         <Users className="h-4 w-4 mr-2" />
                         Add Pupil
                       </DropdownMenuItem>

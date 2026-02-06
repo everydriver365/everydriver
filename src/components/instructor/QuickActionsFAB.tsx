@@ -32,7 +32,7 @@ const quickActions: QuickAction[] = [
     id: "add-pupil",
     icon: Users,
     label: "Add Pupil",
-    route: "/instructor/pupils/new",
+    route: "/instructor/pupils?action=add",
     color: "bg-blue-500 hover:bg-blue-600",
   },
   {

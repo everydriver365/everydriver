@@ -169,6 +169,16 @@ export default function InstructorPupils() {
     }
   }, [instructorId]);
 
+  // Auto-open add pupil dialog when navigated with ?action=add
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("action") === "add") {
+      setIsAddOpen(true);
+      // Clean up the URL
+      navigate("/instructor/pupils", { replace: true });
+    }
+  }, [location.search]);
+
   const requestOpenTerms = () => {
     if (selectedPupil) {
       setIsTermsModalOpen(true);
