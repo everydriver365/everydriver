@@ -324,8 +324,8 @@ export default function InstructorQuickAvailability() {
                 <div
                   key={date.toISOString()}
                   className={cn(
-                    "flex items-center gap-3 p-4 rounded-lg border bg-card",
-                    isToday && "border-primary/50 bg-primary/5",
+                    "flex items-center gap-3 p-4 rounded-lg border bg-white",
+                    isToday && "border-primary/50",
                     isPast && "opacity-60"
                   )}
                 >
