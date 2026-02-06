@@ -169,7 +169,7 @@
          <AnimatePresence>
            {!isConnected && !showReconnecting && (
              <motion.div 
-               className="p-4 space-y-3"
+               className="p-3 space-y-3"
                initial={{ opacity: 0, height: 0 }}
                animate={{ opacity: 1, height: "auto" }}
                exit={{ opacity: 0, height: 0 }}
@@ -180,9 +180,9 @@
                <div className="flex gap-3">
                  {onManualReconnect && (
                    <Button 
-                     variant="outline" 
-                     size="lg" 
-                     className="flex-1 h-12 rounded-xl"
+                      variant="outline" 
+                      size="default" 
+                      className="flex-1 h-10 rounded-xl"
                      onClick={onManualReconnect}
                    >
                      <RefreshCw className="h-4 w-4 mr-2" />
@@ -190,8 +190,8 @@
                    </Button>
                  )}
                  <Button 
-                   size="lg" 
-                   className="flex-1 h-12 rounded-xl bg-amber-500 hover:bg-amber-600"
+                    size="default" 
+                    className="flex-1 h-10 rounded-xl bg-amber-500 hover:bg-amber-600"
                    onClick={openTrackerApp}
                  >
                    <ExternalLink className="h-4 w-4 mr-2" />
