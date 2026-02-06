@@ -10,7 +10,9 @@ import {
   QrCode, BookOpen, ClipboardList, Compass, Radio,
   MonitorSmartphone, Settings, HelpCircle, Download,
   Droplets, Weight, Coffee, Route, Eye, Megaphone,
-  Gauge, Wrench, Star
+  Gauge, Wrench, Star, Video, Camera, FileWarning,
+  GraduationCap, UsersRound, Building2, Layers, Palette,
+  Trophy, Gamepad2, BellRing
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
@@ -276,6 +278,144 @@ const featureCategories: FeatureCategory[] = [
       },
     ],
   },
+  {
+    title: "Telematics & Driving Analysis",
+    subtitle: "Professional-grade driving data to improve every lesson",
+    features: [
+      {
+        icon: Gauge,
+        title: "Live Telematics",
+        description: "Real-time speed, acceleration, braking, and cornering data streamed directly from the vehicle during lessons.",
+        highlights: ["Live speed vs limit", "G-force monitoring", "Road name overlay"],
+      },
+      {
+        icon: Route,
+        title: "Trip Replay & Reports",
+        description: "Play back any lesson on the map with colour-coded speed compliance. Generate detailed PDF reports for pupils.",
+        highlights: ["Animated replay up to 10×", "Speed profile charts", "Roads travelled breakdown"],
+      },
+      {
+        icon: BarChart3,
+        title: "Driver Scoring",
+        description: "Objective driving scores based on speed compliance, smoothness, and hazard response. Track improvement over time.",
+        highlights: ["Per-lesson scores", "Trend analysis", "Comparison benchmarks"],
+      },
+      {
+        icon: Trophy,
+        title: "Lesson Tracking & History",
+        description: "Every journey automatically logged with distance, duration, route, and driving events — building a complete learning record.",
+        highlights: ["Auto-logged trips", "Skill mapping", "Exportable records"],
+      },
+    ],
+  },
+  {
+    title: "Integrated Dashcam",
+    subtitle: "Video evidence and coaching tools built right in",
+    features: [
+      {
+        icon: Camera,
+        title: "In-App Dashcam",
+        description: "Turn any mounted phone or tablet into a lesson dashcam. Record road-facing video with automatic trip linking.",
+        highlights: ["One-tap recording", "Auto-linked to lessons", "Cloud storage"],
+      },
+      {
+        icon: Video,
+        title: "Clip & Share",
+        description: "Clip key moments from recordings — great junctions, tricky manoeuvres — and share with pupils for review.",
+        highlights: ["Trim & save clips", "Share via link", "Pupil review library"],
+      },
+      {
+        icon: FileWarning,
+        title: "Incident Recording",
+        description: "Automatic incident detection with G-force triggers. Video evidence saved and timestamped for insurance or disputes.",
+        highlights: ["G-force triggers", "Timestamped evidence", "Export for insurers"],
+      },
+    ],
+  },
+  {
+    title: "Incident Reporting",
+    subtitle: "Document everything — protect yourself and your pupils",
+    features: [
+      {
+        icon: FileWarning,
+        title: "Incident Log",
+        description: "Record near-misses, accidents, and road rage incidents with location, time, photos, and notes — all in one place.",
+        highlights: ["Photo attachments", "GPS location stamp", "Chronological log"],
+      },
+      {
+        icon: Shield,
+        title: "Insurance Ready Reports",
+        description: "Generate formatted incident reports with dashcam footage links, telematics data, and witness details for insurers.",
+        highlights: ["PDF export", "Video evidence links", "Third-party details"],
+      },
+      {
+        icon: BellRing,
+        title: "Safety Alerts",
+        description: "Flag high-risk areas based on your incident history. Get warnings when approaching known hazard zones.",
+        highlights: ["Hotspot mapping", "Approach warnings", "Community reports"],
+      },
+    ],
+  },
+  {
+    title: "Apps for Pupils & Parents",
+    subtitle: "Keep learners and their families engaged and informed",
+    features: [
+      {
+        icon: GraduationCap,
+        title: "Pupil App",
+        description: "Pupils get their own app to view upcoming lessons, track progress, review trip reports, and make payments.",
+        highlights: ["Lesson schedule", "Progress dashboard", "In-app payments"],
+      },
+      {
+        icon: Gamepad2,
+        title: "Gamification & Rewards",
+        description: "Pupils earn Drive Coins and badges for safe driving, attendance streaks, and milestone achievements.",
+        highlights: ["Drive Coins system", "Achievement badges", "Leaderboards"],
+      },
+      {
+        icon: UsersRound,
+        title: "Parent Portal",
+        description: "Parents can monitor progress, view lesson summaries, receive safety reports, and manage payments on behalf of their learner.",
+        highlights: ["Progress visibility", "Payment management", "Safety reports"],
+      },
+      {
+        icon: Eye,
+        title: "Live Lesson Tracking",
+        description: "Parents can see the live location of the lesson vehicle in real-time — peace of mind while their child is learning.",
+        highlights: ["Real-time map view", "ETA updates", "Lesson completion alerts"],
+      },
+    ],
+  },
+  {
+    title: "White Label & Multi-School",
+    subtitle: "Enterprise solutions for driving school franchises and groups",
+    features: [
+      {
+        icon: Palette,
+        title: "White Label Setup",
+        description: "Your brand, your colours, your domain. EveryDriver disappears — it looks and feels like your own platform.",
+        highlights: ["Custom branding", "Your domain", "Branded emails"],
+      },
+      {
+        icon: Building2,
+        title: "Multi-School Management",
+        description: "Manage multiple branches or franchises from a single admin dashboard. Compare performance across locations.",
+        highlights: ["Central dashboard", "Branch analytics", "Unified billing"],
+      },
+      {
+        icon: Users,
+        title: "Fleet & Instructor Management",
+        description: "Assign vehicles, manage instructor schedules, and track utilisation across your entire fleet from one place.",
+        highlights: ["Instructor rosters", "Vehicle assignment", "Utilisation reports"],
+      },
+      {
+        icon: Layers,
+        title: "Custom Permissions",
+        description: "Role-based access control for admins, managers, and instructors. Each person sees only what they need.",
+        highlights: ["Role-based access", "Branch-level permissions", "Audit trail"],
+      },
+    ],
+  },
 ];
 
 const extraFeatures = [
@@ -311,8 +451,8 @@ export default function InstructorFeatures() {
             className="max-w-3xl mx-auto text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6">
-              30+ Features Built for{" "}
-              <span className="text-emerald-400">Driving Instructors</span>
+              50+ Features Built for{" "}
+              <span className="text-emerald-400">Driving Instructors & Schools</span>
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
               From diary management to GPS tracking, payments to wellbeing — EveryDriver is the most complete platform for running your driving school.
