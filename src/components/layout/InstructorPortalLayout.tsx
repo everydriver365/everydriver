@@ -147,7 +147,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-primary/80 hover:text-primary hover:bg-primary/10 -ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0"
+                        className="text-primary/80 hover:text-primary hover:bg-[#D1E4FC] -ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0"
                       >
                         <Menu className="h-5 w-5" />
                       </Button>
@@ -246,7 +246,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-foreground bg-muted/40 border border-border hover:text-foreground hover:bg-muted h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                        className="text-foreground bg-muted/40 border border-border hover:text-foreground h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-[#D1E4FC]"
                         title="Settings"
                       >
                         <Settings className="h-4 w-4" />
@@ -289,7 +289,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowQRModal(true)}
-                      className="text-primary/80 hover:text-primary hover:bg-primary/10 h-7 w-7 sm:h-8 sm:w-8"
+                      className="text-primary/80 hover:text-primary hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
                     >
                       <span className="text-[10px] font-bold border border-current rounded px-0.5">QR</span>
                     </Button>
@@ -298,7 +298,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate("/instructor/schedule")}
-                    className="text-primary/80 hover:text-primary hover:bg-primary/10 h-7 w-7 sm:h-8 sm:w-8"
+                    className="text-primary/80 hover:text-primary hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
                     title="Schedule"
                   >
                     <Calendar className="h-4 w-4" />
