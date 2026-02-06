@@ -111,7 +111,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
-  const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string }>>([]);
+  const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string; href?: string }>>([]);
 
   const isTrackingPage = location.pathname.startsWith("/instructor/traccar");
   
@@ -119,7 +119,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const searchParams = new URLSearchParams(location.search);
   const isFullscreenMode = isTrackingPage && searchParams.get("fullscreen") === "true";
 
-  // Mobile search - live query
+  // Mobile search - live query (pupils, lessons, pages)
   useEffect(() => {
     if (mobileSearchQuery.length < 2) {
       setMobileSearchResults([]);
@@ -127,19 +127,52 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     }
     const timeout = setTimeout(async () => {
       if (!instructor?.id) return;
+      const items: Array<{ id: string; name: string; subtitle: string; href?: string }> = [];
+      const lowerQ = mobileSearchQuery.toLowerCase();
+
+      // Search pupils
       const { data } = await supabase
         .from("pupils")
         .select("id, name, lessons_completed, progress")
         .eq("instructor_id", instructor.id)
         .ilike("name", `%${mobileSearchQuery}%`)
-        .limit(8);
+        .limit(6);
       if (data) {
-        setMobileSearchResults(data.map(p => ({
+        items.push(...data.map(p => ({
           id: p.id,
           name: p.name,
           subtitle: `${p.lessons_completed || 0} lessons · ${p.progress || 0}%`,
         })));
       }
+
+      // Search upcoming lessons
+      const { data: lessons } = await supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, pupil:pupils!inner(name)")
+        .eq("instructor_id", instructor.id)
+        .ilike("pupils.name", `%${mobileSearchQuery}%`)
+        .gte("lesson_date", new Date().toISOString().split("T")[0])
+        .order("lesson_date", { ascending: true })
+        .limit(4);
+      if (lessons) {
+        items.push(...lessons.map((l: any) => ({
+          id: l.id,
+          name: `Lesson: ${l.pupil?.name || "Unknown"}`,
+          subtitle: `${l.lesson_date} at ${l.start_time || "TBC"}`,
+          href: "/instructor/schedule",
+        })));
+      }
+
+      // Search pages
+      const pages = sidebarLinks.filter(p => p.label.toLowerCase().includes(lowerQ));
+      items.push(...pages.map(p => ({
+        id: p.href,
+        name: p.label,
+        subtitle: "Page",
+        href: p.href,
+      })));
+
+      setMobileSearchResults(items);
     }, 300);
     return () => clearTimeout(timeout);
   }, [mobileSearchQuery, instructor?.id]);
@@ -426,7 +459,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     {mobileSearchResults.length === 0 ? (
                       <div className="flex flex-col items-center gap-1 p-4">
                         <Search className="h-5 w-5 text-muted-foreground/40" />
-                        <p className="text-sm text-muted-foreground">No pupils found</p>
+                        <p className="text-sm text-muted-foreground">No results found</p>
                       </div>
                     ) : (
                       <div className="p-1">
@@ -434,7 +467,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                           <button
                             key={item.id}
                             onClick={() => {
-                              navigate(`/instructor/pupils?pupil=${item.id}`);
+                              navigate(item.href || `/instructor/pupils?pupil=${item.id}`);
                               setMobileSearchOpen(false);
                               setMobileSearchQuery("");
                               setMobileSearchResults([]);

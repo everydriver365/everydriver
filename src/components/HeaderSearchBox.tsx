@@ -7,8 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 interface SearchResult {
   id: string;
   name: string;
-  type: "pupil" | "instructor" | "page";
+  type: "pupil" | "instructor" | "page" | "lesson";
   subtitle?: string;
+  href?: string;
 }
 
 interface HeaderSearchBoxProps {
@@ -46,14 +47,16 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
     const timeout = setTimeout(async () => {
       setLoading(true);
       const items: SearchResult[] = [];
+      const lowerQ = query.toLowerCase();
 
       if (variant === "instructor" && instructorId) {
+        // Search pupils
         const { data: pupils } = await supabase
           .from("pupils")
           .select("id, name, lessons_completed, progress")
           .eq("instructor_id", instructorId)
           .ilike("name", `%${query}%`)
-          .limit(8);
+          .limit(6);
 
         if (pupils) {
           items.push(
@@ -65,6 +68,63 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
             }))
           );
         }
+
+        // Search scheduled lessons by pupil name
+        const { data: lessons } = await supabase
+          .from("scheduled_lessons")
+          .select("id, lesson_date, start_time, pupil:pupils!inner(name)")
+          .eq("instructor_id", instructorId)
+          .ilike("pupils.name", `%${query}%`)
+          .gte("lesson_date", new Date().toISOString().split("T")[0])
+          .order("lesson_date", { ascending: true })
+          .limit(4);
+
+        if (lessons) {
+          items.push(
+            ...lessons.map((l: any) => ({
+              id: l.id,
+              name: `Lesson: ${l.pupil?.name || "Unknown"}`,
+              type: "lesson" as const,
+              subtitle: `${l.lesson_date} at ${l.start_time || "TBC"}`,
+              href: "/instructor/schedule",
+            }))
+          );
+        }
+
+        // Search pages / nav
+        const instructorPages = [
+          { label: "Dashboard", href: "/instructor" },
+          { label: "Schedule", href: "/instructor/schedule" },
+          { label: "Availability", href: "/instructor/availability" },
+          { label: "Pending Scheduling", href: "/instructor/pending-scheduling" },
+          { label: "Pupils", href: "/instructor/pupils" },
+          { label: "Test Results", href: "/instructor/test-results" },
+          { label: "Jobs", href: "/instructor/jobs" },
+          { label: "Payments", href: "/instructor/pay" },
+          { label: "Accounts", href: "/instructor/accounts" },
+          { label: "Expenses", href: "/instructor/expenses" },
+          { label: "Fill Gaps", href: "/instructor/gaps" },
+          { label: "Saved Routes", href: "/instructor/routes" },
+          { label: "Messages", href: "/instructor/messages" },
+          { label: "Contact Admin", href: "/instructor/admin-chat" },
+          { label: "Visitor Chats", href: "/instructor/visitor-chats" },
+          { label: "Mini Website", href: "/instructor/website" },
+          { label: "Domains", href: "/instructor/domains" },
+          { label: "GPS Tracking", href: "/instructor/traccar" },
+          { label: "Settings", href: "/instructor/settings" },
+        ];
+        const matchedPages = instructorPages.filter((p) =>
+          p.label.toLowerCase().includes(lowerQ)
+        );
+        items.push(
+          ...matchedPages.map((p) => ({
+            id: p.href,
+            name: p.label,
+            type: "page" as const,
+            subtitle: "Page",
+            href: p.href,
+          }))
+        );
       }
 
       if (variant === "admin") {
@@ -95,9 +155,11 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
   }, [query, variant, instructorId]);
 
   const handleSelect = (item: SearchResult) => {
-    if (variant === "instructor") {
+    if (item.href) {
+      navigate(item.href);
+    } else if (item.type === "pupil") {
       navigate(`/instructor/pupils?pupil=${item.id}`);
-    } else {
+    } else if (item.type === "instructor") {
       navigate(`/admin?section=instructors&id=${item.id}`);
     }
     setQuery("");
