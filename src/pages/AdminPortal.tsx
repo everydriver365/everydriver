@@ -59,6 +59,7 @@ import { DemoMiniSiteCMS } from "@/components/admin/DemoMiniSiteCMS";
 import { DiscountCodesManager } from "@/components/admin/DiscountCodesManager";
 import { PupilRecordsManager } from "@/components/admin/PupilRecordsManager";
 import { AdminLiveMapView } from "@/components/admin/AdminLiveMapView";
+import { BespokeBookingModal } from "@/components/admin/BespokeBookingModal";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -144,6 +145,7 @@ export default function AdminPortal() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
+  const [isBespokeOpen, setIsBespokeOpen] = useState(false);
   const [pendingEnquiries, setPendingEnquiries] = useState<{ id: string; name: string; course_type: string; created_at: string }[]>([]);
   const { signOut } = useAdminAuth();
   const navigate = useNavigate();
@@ -257,8 +259,13 @@ export default function AdminPortal() {
       case "overview":
         return (
           <>
-            {/* Settings-style Grid with integrated alerts */}
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => setIsBespokeOpen(true)}>
+                <Plus className="mr-1 h-4 w-4" /> Create Bespoke Booking
+              </Button>
+            </div>
             <AdminSettingsGrid onNavigate={setActiveSection} />
+            <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
           </>
         );
 
