@@ -536,15 +536,15 @@ export function InstructorMobileHome({
         </motion.div>
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-          <div className="px-4">
-            <EmptyState
-              icon={Calendar}
-              title="Nothing upcoming"
-              description="Your schedule is clear for tomorrow. Enjoy the downtime or check your waitlist!"
-              actionLabel="Check Waitlist"
-              onAction={() => navigate("/instructor/gaps")}
-              compact
-            />
+          <div className="px-4 mt-2">
+            <div
+              className="flex items-center gap-2.5 py-2 px-3 rounded-xl bg-muted/50 cursor-pointer"
+              onClick={() => navigate("/instructor/gaps")}
+            >
+              <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-xs text-muted-foreground">Nothing upcoming tomorrow</span>
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60 ml-auto flex-shrink-0" />
+            </div>
           </div>
         </motion.div>
       ) : null}
