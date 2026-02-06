@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -34,6 +34,16 @@ import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, CheckCircle, ArrowRight, ArrowLeft, Search } from "lucide-react";
 
+interface AddressSuggestion {
+  label: string;
+  street: string;
+  houseNumber: string;
+  district: string;
+  city: string;
+  county: string;
+  postcode: string;
+}
+
 const formSchema = z.object({
   customerName: z.string().trim().min(1, "Name is required").max(200),
   address: z.string().trim().min(1, "Address is required").max(500),
@@ -64,6 +74,9 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -102,6 +115,8 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
     setPaymentMethod("not_paid");
     setIsSubmitting(false);
     setIsComplete(false);
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
     form.reset();
   };
 
@@ -123,22 +138,67 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
     }
     setIsLookingUp(true);
     try {
-      const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
-      const json = await res.json();
-      if (json.status === 200 && json.result) {
-        const r = json.result;
-        const parts = [r.admin_ward, r.admin_district, r.region].filter(Boolean);
-        form.setValue("address", parts.join(", "), { shouldValidate: true });
-        form.setValue("postcode", r.postcode, { shouldValidate: true });
-        toast.success("Postcode found — add house number/street");
+      const { data, error } = await supabase.functions.invoke("address-lookup", {
+        body: { postcode },
+      });
+      if (error) throw error;
+      const addresses = data?.addresses || [];
+      if (addresses.length > 0) {
+        setAddressSuggestions(addresses);
+        setShowSuggestions(true);
+        // Also normalise the postcode from the first result
+        if (addresses[0].postcode) {
+          form.setValue("postcode", addresses[0].postcode, { shouldValidate: true });
+        }
       } else {
-        toast.error("Postcode not found");
+        // Fallback to postcodes.io for area info
+        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+        const json = await res.json();
+        if (json.status === 200 && json.result) {
+          form.setValue("postcode", json.result.postcode, { shouldValidate: true });
+          toast.info("No specific addresses found — please type the full address");
+        } else {
+          toast.error("Postcode not found");
+        }
       }
     } catch {
       toast.error("Postcode lookup failed");
     } finally {
       setIsLookingUp(false);
     }
+  };
+
+  const handleAddressAutocomplete = useCallback((query: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("address-lookup", {
+          body: { query },
+        });
+        if (error) throw error;
+        const addresses = data?.addresses || [];
+        setAddressSuggestions(addresses);
+        setShowSuggestions(addresses.length > 0);
+      } catch {
+        // Silently fail autocomplete
+      }
+    }, 300);
+  }, []);
+
+  const selectAddress = (addr: AddressSuggestion) => {
+    const parts = [addr.houseNumber, addr.street, addr.district, addr.city, addr.county]
+      .filter(Boolean);
+    form.setValue("address", parts.join(", "), { shouldValidate: true });
+    if (addr.postcode) {
+      form.setValue("postcode", addr.postcode, { shouldValidate: true });
+    }
+    setShowSuggestions(false);
+    setAddressSuggestions([]);
   };
 
   const goToStep3 = () => {
@@ -275,9 +335,41 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
                   )} />
 
                   <FormField control={form.control} name="address" render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="relative">
                       <FormLabel>Full Address</FormLabel>
-                      <FormControl><Input placeholder="House number, street, town..." {...field} /></FormControl>
+                      <FormControl>
+                        <Input
+                          placeholder="Start typing address or use postcode lookup..."
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            handleAddressAutocomplete(e.target.value);
+                          }}
+                          onFocus={() => {
+                            if (addressSuggestions.length > 0) setShowSuggestions(true);
+                          }}
+                          onBlur={() => {
+                            // Delay to allow click on suggestion
+                            setTimeout(() => setShowSuggestions(false), 200);
+                          }}
+                          autoComplete="off"
+                        />
+                      </FormControl>
+                      {showSuggestions && addressSuggestions.length > 0 && (
+                        <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-md border bg-popover shadow-md">
+                          {addressSuggestions.map((addr, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors border-b last:border-b-0 border-border"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => selectAddress(addr)}
+                            >
+                              {addr.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )} />
