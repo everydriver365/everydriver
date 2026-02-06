@@ -130,7 +130,7 @@ export default function InstructorSchedule() {
             <h1 className="text-xl font-bold">Schedule</h1>
           </div>
           
-          <div className="flex rounded-lg border bg-muted p-0.5 sm:p-1">
+          <div className="flex rounded-lg border p-0.5 sm:p-1" style={{ backgroundColor: '#D1E4FC' }}>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
