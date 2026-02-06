@@ -523,36 +523,82 @@ Deno.serve(async (req) => {
         const jwt = await generateJWT(serviceEmail, privateKey, connection.calendar_id);
         const accessToken = await getAccessToken(jwt);
 
-        // Fetch busy times for the next 365 days
+        // Fetch actual events (with stable IDs) for the next 365 days using events.list with pagination
         const now = new Date();
         const oneYearLater = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
         
-        const busyTimes = await fetchBusyTimes(
-          accessToken,
-          connection.calendar_id,
-          now.toISOString(),
-          oneYearLater.toISOString()
-        );
+        const allEvents: Array<{ id: string; summary: string; start: string; end: string }> = [];
+        let pageToken: string | undefined;
 
-        // Clear old events and insert new ones
-        await supabase
+        do {
+          const params = new URLSearchParams({
+            timeMin: now.toISOString(),
+            timeMax: oneYearLater.toISOString(),
+            singleEvents: "true",
+            orderBy: "startTime",
+            maxResults: "2500",
+          });
+          if (pageToken) {
+            params.set("pageToken", pageToken);
+          }
+
+          const response = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(connection.calendar_id)}/events?${params}`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }
+          );
+
+          if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`Failed to fetch events: ${error}`);
+          }
+
+          const data = await response.json();
+          const pageEvents = (data.items || [])
+            .filter((item: { start?: { dateTime?: string }; end?: { dateTime?: string } }) =>
+              item.start?.dateTime && item.end?.dateTime
+            )
+            .map((item: { id: string; summary?: string; start: { dateTime: string }; end: { dateTime: string } }) => ({
+              id: item.id,
+              summary: item.summary || "Busy",
+              start: item.start.dateTime,
+              end: item.end.dateTime,
+            }));
+
+          allEvents.push(...pageEvents);
+          console.log(`Service sync page: ${pageEvents.length} events (total: ${allEvents.length})`);
+          pageToken = data.nextPageToken;
+        } while (pageToken);
+
+        // Delete existing events for this instructor then upsert with stable IDs
+        const { error: deleteError } = await supabase
           .from("instructor_calendar_events")
           .delete()
           .eq("instructor_id", instructorId);
 
-        if (busyTimes.length > 0) {
-          const eventsToInsert = busyTimes.map((busy, index) => ({
+        if (deleteError) {
+          console.error("Delete existing events error:", deleteError);
+        }
+
+        if (allEvents.length > 0) {
+          const eventsToInsert = allEvents.map((event) => ({
             instructor_id: instructorId,
-            external_event_id: `google-busy-${index}-${Date.now()}`,
-            title: "Busy (Google Calendar)",
-            start_time: busy.start,
-            end_time: busy.end,
+            external_event_id: event.id,
+            title: event.summary,
+            start_time: event.start,
+            end_time: event.end,
             is_busy: true,
+            synced_at: new Date().toISOString(),
           }));
 
-          await supabase
+          const { error: upsertError } = await supabase
             .from("instructor_calendar_events")
-            .insert(eventsToInsert);
+            .upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' });
+
+          if (upsertError) {
+            console.error("Upsert events error:", upsertError);
+          }
         }
 
         // Update last sync time
@@ -565,7 +611,7 @@ Deno.serve(async (req) => {
           .eq("instructor_id", instructorId);
 
         return new Response(
-          JSON.stringify({ success: true, synced: busyTimes.length }),
+          JSON.stringify({ success: true, synced: allEvents.length }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       } catch (err) {

@@ -42,7 +42,7 @@ serve(async (req) => {
         console.log(`Syncing calendar for instructor: ${token.instructor_id}`);
 
         // Call the google-calendar-sync function for each instructor
-        const { data, error } = await supabase.functions.invoke("google-calendar-sync", {
+        const { data, error } = await supabase.functions.invoke("google-calendar-service", {
           body: {
             action: "fetchExternalEvents",
             instructorId: token.instructor_id,
