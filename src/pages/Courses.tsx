@@ -861,12 +861,12 @@ export default function Courses() {
                 onSelect={handlePostcodeSelect}
                 placeholder="Enter your postcode"
                 className="flex-1"
-                inputClassName="h-11 border-0 bg-secondary"
+                inputClassName="h-11 border bg-background"
               />
               <select
                 value={radius}
                 onChange={(e) => setRadius(e.target.value)}
-                className="h-11 rounded-lg border-0 bg-secondary px-4 text-foreground"
+                className="h-11 rounded-lg border bg-background px-4 text-foreground"
               >
                 <option value="5">5 miles</option>
                 <option value="10">10 miles</option>
