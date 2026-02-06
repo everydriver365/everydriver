@@ -226,17 +226,25 @@ export default function InstructorPortal() {
                 Here's what's happening with your business today.
               </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search pupils..."
+                  className="h-10 w-56 rounded-lg border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  onFocus={() => navigate("/instructor/pupils")}
+                  readOnly
+                />
+              </div>
               <Button
-                variant="outline"
-                size="sm"
                 onClick={() => navigate("/instructor/pupils")}
-                className="gap-1.5"
+                className="h-10 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                <Search className="h-3.5 w-3.5" />
+                <Search className="h-4 w-4" />
                 Search
               </Button>
-              <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5">
+              <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2.5">
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Online</span>
                 <Switch
