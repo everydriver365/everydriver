@@ -256,7 +256,7 @@ export default function InstructorTraccarSetup() {
         <HardwareTrackerSetup supabaseHost={supabaseHost} />
 
         {/* Register Device */}
-        <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] border-l-2 border-l-[#1877F2] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 space-y-4">
+        <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 space-y-4">
           <div>
             <h3 className="flex items-center gap-2 text-base font-semibold">
               <Cpu className="h-4 w-4" />
@@ -304,14 +304,14 @@ export default function InstructorTraccarSetup() {
           <h2 className="text-lg font-semibold">Your Devices</h2>
           
           {devices.length === 0 ? (
-            <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] border-l-2 border-l-[#1877F2] shadow-[0_2px_8px_rgba(20,37,66,0.08)] py-8 text-center text-muted-foreground">
+            <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] py-8 text-center text-muted-foreground">
               <Cpu className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>No devices configured yet</p>
               <p className="text-sm">Register your ST-902L above to get started</p>
             </div>
           ) : (
             devices.map((device) => (
-              <div key={device.id} className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] border-l-2 border-l-[#1877F2] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4">
+              <div key={device.id} className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
