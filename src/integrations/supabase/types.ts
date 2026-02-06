@@ -411,12 +411,16 @@ export type Database = {
           assigned_instructor_id: string | null
           course_type: string
           created_at: string
+          email: string | null
           id: string
           name: string
+          phone: string | null
           postcode: string
           preferred_timing: string
           requested_hours: number | null
           status: string
+          total_cost: number | null
+          transmission_type: string | null
           updated_at: string
         }
         Insert: {
@@ -425,12 +429,16 @@ export type Database = {
           assigned_instructor_id?: string | null
           course_type: string
           created_at?: string
+          email?: string | null
           id?: string
           name: string
+          phone?: string | null
           postcode: string
           preferred_timing: string
           requested_hours?: number | null
           status?: string
+          total_cost?: number | null
+          transmission_type?: string | null
           updated_at?: string
         }
         Update: {
@@ -439,12 +447,16 @@ export type Database = {
           assigned_instructor_id?: string | null
           course_type?: string
           created_at?: string
+          email?: string | null
           id?: string
           name?: string
+          phone?: string | null
           postcode?: string
           preferred_timing?: string
           requested_hours?: number | null
           status?: string
+          total_cost?: number | null
+          transmission_type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -5908,6 +5920,7 @@ export type Database = {
           total_driving_minutes: number | null
           total_lessons_for_rewards: number | null
           total_trips: number | null
+          transmission_type: string | null
           updated_at: string
           weekly_driving_score: number | null
           what3words: string | null
@@ -5973,6 +5986,7 @@ export type Database = {
           total_driving_minutes?: number | null
           total_lessons_for_rewards?: number | null
           total_trips?: number | null
+          transmission_type?: string | null
           updated_at?: string
           weekly_driving_score?: number | null
           what3words?: string | null
@@ -6038,6 +6052,7 @@ export type Database = {
           total_driving_minutes?: number | null
           total_lessons_for_rewards?: number | null
           total_trips?: number | null
+          transmission_type?: string | null
           updated_at?: string
           weekly_driving_score?: number | null
           what3words?: string | null
