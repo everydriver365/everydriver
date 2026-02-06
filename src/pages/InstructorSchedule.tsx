@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, List, CalendarDays } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
@@ -40,28 +40,14 @@ export default function InstructorSchedule() {
   // Use the calendar hook for schedule view data
   const calendar = useInstructorCalendar(instructorId || '');
 
-  const scheduleInitRef = useRef(false);
-
-  // When entering Schedule, anchor to today + load extended range exactly once.
-  // (Avoid depending on calendar.refetch here, since it changes when currentDate/view changes.)
   useEffect(() => {
-    // IMPORTANT: don't mark schedule as initialized until we actually have an instructorId.
-    // If the page loads directly into Schedule (from localStorage) while instructorId is still
-    // loading, we must run this again once instructorId becomes available.
     if (viewMode === 'schedule') {
-      if (!instructorId) return;
-      if (scheduleInitRef.current) return;
-
-      scheduleInitRef.current = true;
-      const today = new Date();
-      calendar.goToDate(today);
-      calendar.refetch(true);
-      return;
+      calendar.goToDate(new Date());
+      calendar.setExtendedRange(true);
+    } else {
+      calendar.setExtendedRange(false);
     }
-
-    // reset flag when leaving schedule so re-entering snaps to today again
-    scheduleInitRef.current = false;
-  }, [viewMode, instructorId]);
+  }, [viewMode]);
 
   useEffect(() => {
     localStorage.setItem('instructor-schedule-view', viewMode);
@@ -143,11 +129,7 @@ export default function InstructorSchedule() {
             <Button
               variant={viewMode === 'schedule' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => {
-                setViewMode('schedule');
-                // Reset init flag so schedule view scrolls to today
-                scheduleInitRef.current = false;
-              }}
+              onClick={() => setViewMode('schedule')}
               className="gap-1 px-2 sm:px-3 h-8"
             >
               <CalendarDays className="h-4 w-4" />

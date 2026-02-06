@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfDay, endOfDay, format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths, subMonths as dfSubMonths } from 'date-fns';
 import { CalendarColors, DEFAULT_CALENDAR_COLORS } from '@/components/instructor/CalendarColorSettings';
@@ -55,10 +55,7 @@ export function useInstructorCalendar(instructorId: string) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>('week');
   const [calendarColors, setCalendarColors] = useState<CalendarColors>(DEFAULT_CALENDAR_COLORS);
-
-  // Remembers whether the last successful fetch used the extended range.
-  // This prevents actions like delete/update from accidentally shrinking the dataset.
-  const lastExtendedRangeRef = useRef(false);
+  const [extendedRange, setExtendedRange] = useState(false);
 
   // Fetch instructor's calendar color preferences
   useEffect(() => {
@@ -94,14 +91,11 @@ export function useInstructorCalendar(instructorId: string) {
     }
   }, []);
 
-  const fetchEvents = useCallback(async (extendedRange?: boolean) => {
+  const fetchEvents = useCallback(async () => {
     if (!instructorId) return;
-
-    const useExtendedRange = extendedRange ?? lastExtendedRangeRef.current;
-    lastExtendedRangeRef.current = useExtendedRange;
     
     setLoading(true);
-    const { start, end } = getDateRange(currentDate, view, useExtendedRange);
+    const { start, end } = getDateRange(currentDate, view, extendedRange);
     const startStr = format(start, 'yyyy-MM-dd');
     const endStr = format(end, 'yyyy-MM-dd');
 
@@ -195,7 +189,7 @@ export function useInstructorCalendar(instructorId: string) {
     } finally {
       setLoading(false);
     }
-  }, [instructorId, currentDate, view, getDateRange]);
+  }, [instructorId, currentDate, view, extendedRange, getDateRange]);
 
   useEffect(() => {
     fetchEvents();
@@ -339,5 +333,6 @@ export function useInstructorCalendar(instructorId: string) {
     calendarColors,
     setCalendarColors,
     getDateRange,
+    setExtendedRange,
   };
 }
