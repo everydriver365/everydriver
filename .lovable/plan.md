@@ -1,53 +1,80 @@
 
 
-## Bespoke Booking Creator for Admin Portal
+## Revamp Bespoke Booking Form
 
-Add a "Create Bespoke Booking" button at the top of the admin overview page that opens a modal where you can manually create a custom course booking, assign it to an instructor, and take payment.
+### Changes Overview
 
-### What You'll Get
+Update the bespoke booking modal to collect full pupil details, remove the card payment trigger, and add the option to send the booking as a Job Offer instead of assigning a specific instructor.
 
-A prominent button at the top of the admin dashboard that opens a multi-step modal:
+---
 
-**Step 1 - Course Details:**
-- Custom course title (free text, e.g. "30hr Intensive Course")
-- Course length in hours
-- Total course cost (GBP)
-- Customer name, email, phone
-- Optional notes
+### Step 1: Add Missing Columns
 
-**Step 2 - Assign Instructor:**
-- Dropdown of all active instructors (pulled from existing `instructors` table)
-- Shows instructor name and area
+**Database migration** to add fields that `course_enquiries` currently lacks:
 
-**Step 3 - Take Payment:**
-- Payment method selection: Card (online via your existing Cardstream/NPI gateway), Cash, Bank Transfer
-- For card payments, triggers the existing `payment-intent-create` flow to process payment
-- For cash/transfer, records the booking as manually paid
+- `email` (text, nullable) on `course_enquiries`
+- `phone` (text, nullable) on `course_enquiries`
+- `transmission_type` (text, nullable) on `course_enquiries` -- values: 'manual' or 'automatic'
+- `total_cost` (numeric, nullable) on `course_enquiries`
+- `transmission_type` (text, nullable) on `pupils` -- values: 'manual' or 'automatic'
 
-On completion, the booking is saved to `scheduled_lessons` and optionally a payment record is created in `payment_history`.
+---
+
+### Step 2: Revamp the Form (BespokeBookingModal.tsx)
+
+**Step 1 of the wizard -- Pupil and Course Details:**
+
+Add these fields to the form schema and UI:
+
+- Customer name (existing)
+- Full address (text input, required)
+- Postcode (separate field, required)
+- Email (existing, make more prominent)
+- Phone (existing, make more prominent)
+- Transmission type: Manual / Automatic (radio group or select)
+- Course title (existing)
+- Course hours (existing)
+- Total cost (existing)
+- Notes (existing)
+
+**Step 2 -- Assign Instructor OR Send as Job Offer:**
+
+Replace the current "must pick an instructor" step with a choice:
+
+- **Option A: Assign to a specific instructor** -- dropdown as it works now
+- **Option B: Send as Job Offer** -- creates a `course_enquiries` record with status `pending`, which gets picked up by the existing Job Offers system and pushed to instructors covering that postcode
+
+Remove the requirement that an instructor must be selected.
+
+**Step 3 -- Confirm (no card payment):**
+
+- Remove the Card payment option entirely
+- Keep Cash and Bank Transfer as payment recording options
+- Add a "Not yet paid" option for when payment hasn't been taken
+- Show a summary and confirm
+
+---
+
+### Step 3: Update Submit Logic
+
+**If instructor is assigned:**
+1. Create pupil record with full address, postcode, transmission type
+2. Create scheduled lesson
+3. Optionally record payment (cash/bank transfer) or leave as unpaid
+
+**If sent as Job Offer:**
+1. Insert into `course_enquiries` with name, address, postcode, email, phone, course_type (title), requested_hours, total_cost, transmission_type, status = 'pending'
+2. No pupil record created yet (that happens when an instructor accepts the job via the existing flow)
+3. Optionally trigger the `assign-job` edge function to send push notifications to nearby instructors
 
 ---
 
 ### Technical Details
 
-**New Component:** `src/components/admin/BespokeBookingModal.tsx`
-- Multi-step form dialog (Course Details -> Assign Instructor -> Payment)
-- Fetches instructors from `instructors` table for the dropdown
-- Uses zod validation for form inputs
-- For card payments: calls `payment-intent-create` edge function, then renders the existing hosted fields flow
-- For cash/bank transfer: directly records payment via `payment_history` insert
+**Files modified:**
+- `src/components/admin/BespokeBookingModal.tsx` -- complete revamp of form fields, assignment logic, and submit handler
 
-**Modified Files:**
-
-1. **`src/pages/AdminPortal.tsx`** - Add state for the bespoke booking modal and a "Create Bespoke Booking" button at the top of the overview section (before `AdminSettingsGrid`)
-
-2. **`src/components/admin/AdminSettingsGrid.tsx`** (optional) - Could alternatively place the button here in the quick actions area
-
-**Database:** No schema changes needed. Uses existing tables:
-- `scheduled_lessons` - stores the booking with custom `lesson_type` for the course title
-- `payment_history` - records the payment
-- `instructors` - populates the instructor dropdown
-- `payment_intents` - used if card payment is selected
-
-**No new edge functions needed** - reuses existing `payment-intent-create` for card payments.
+**Database migration:**
+- ALTER TABLE `course_enquiries` ADD COLUMN `email` text, `phone` text, `transmission_type` text, `total_cost` numeric
+- ALTER TABLE `pupils` ADD COLUMN `transmission_type` text
 
