@@ -27,10 +27,11 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
   const processData = useCallback((data: any) => {
     if (!data) return;
     
-    const lastSeen = data.last_seen_at ? new Date(data.last_seen_at) : null;
+    // Use last_gpsgate_track_time (actual GPS data) instead of last_seen_at (poller artifact)
+    const trackTime = data.last_gpsgate_track_time ? new Date(data.last_gpsgate_track_time) : null;
     const now = new Date();
-    // Use 5 minute threshold (300000ms) to match useGPSConnectionStatus
-    const isRecent = lastSeen ? (now.getTime() - lastSeen.getTime()) < 300000 : false;
+    // Active if real GPS data received within 60 seconds
+    const isRecent = trackTime ? (now.getTime() - trackTime.getTime()) < 60000 : false;
 
     setPosition({
       latitude: data.last_latitude ? Number(data.last_latitude) : null,
@@ -52,7 +53,7 @@ export function useInstructorLastPosition(instructorId: string | null): Instruct
     try {
       const { data } = await supabase
         .from("gps_devices")
-        .select("last_latitude, last_longitude, last_heading, last_speed_kmh, last_road_name, last_seen_at, is_active")
+        .select("last_latitude, last_longitude, last_heading, last_speed_kmh, last_road_name, last_seen_at, last_gpsgate_track_time, is_active")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false })
         .limit(1)
