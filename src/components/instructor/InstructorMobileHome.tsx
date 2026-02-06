@@ -61,6 +61,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { triggerHaptic } from "@/lib/haptics";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
 
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -201,6 +202,16 @@ export function InstructorMobileHome({
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
   const { data: lastWeekComparison } = useLastWeekComparison(instructorId);
+  // Initialize offline caching for schedules and pupils
+  const { cacheSchedules, cachePupils } = useOfflineSync({ instructorId });
+  
+  useEffect(() => {
+    if (instructorId && navigator.onLine) {
+      cacheSchedules();
+      cachePupils();
+    }
+  }, [instructorId, cacheSchedules, cachePupils]);
+
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructorId);
 
   const getInitials = (name: string) => {

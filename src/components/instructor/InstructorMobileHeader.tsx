@@ -13,7 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/context/ThemeContext";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
+import OfflineSyncIndicator from "@/components/pwa/OfflineSyncIndicator";
 
 interface InstructorMobileHeaderProps {
   title?: string;
@@ -33,6 +35,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, setTheme } = useTheme();
+  const { instructor } = useInstructorAuth();
   const [open, setOpen] = useState(false);
 
   const toggleTheme = () => {
@@ -56,6 +59,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>
         <div className="flex items-center space-x-2">
+          <OfflineSyncIndicator instructorId={instructor?.id} showDetails />
           {showAddButton && (
             <Button variant="ghost" size="icon" onClick={onAddClick}>
               <Plus className="h-6 w-6" />
