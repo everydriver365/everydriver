@@ -27,6 +27,7 @@ import { useInstructorTilePreferences } from "@/hooks/useInstructorTilePreferenc
 import { usePendingJobsPreview } from "@/hooks/usePendingJobsPreview";
 import { useQuickTileActions } from "@/hooks/useQuickTileActions";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
+import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
 
@@ -85,7 +86,7 @@ export function QuickActionTiles({
   const { data: jobPreview } = usePendingJobsPreview(instructorId);
   const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
   const { data: todayOverview } = useTodayOverview(instructorId);
-  
+  const { data: nextLessonDetails } = useNextLessonDetails(instructorId);
   // Get tiles in user's preferred order (from DB tiles, with additionalTiles for lookup)
   const orderedTiles = getOrderedTiles(quickActions, additionalTiles);
   
@@ -390,11 +391,11 @@ export function QuickActionTiles({
                         <span className="text-muted-foreground/40">•</span>
                         <span className="text-xs text-muted-foreground">£{todayOverview.expectedEarnings} expected</span>
                       </div>
-                      {todayOverview.firstPickupPostcode && (
+                      {nextLessonDetails?.pickupPostcode && (
                         <div className="flex items-center gap-2">
                           <MapPin className="h-3.5 w-3.5 text-primary" />
                           <span className="text-xs font-medium text-primary">
-                            Next lesson in {todayOverview.firstPickupPostcode}
+                            Next lesson in {nextLessonDetails.pickupPostcode}
                           </span>
                         </div>
                       )}
