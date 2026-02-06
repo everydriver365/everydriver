@@ -126,7 +126,7 @@ export function MobileHomepage() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-8 px-3 rounded-full text-xs font-semibold border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 gap-1.5"
+          className="h-8 px-3 rounded-full text-xs font-semibold border-white/70 bg-white/15 text-white hover:bg-white/25 gap-1.5"
           onClick={handleGetLocation}
           disabled={isLocating}
         >
