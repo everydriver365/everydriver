@@ -424,7 +424,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return tab?.label || "Home";
   };
 
-  // Desktop Layout - Admin-style top nav
+  // Desktop Layout - Admin-style top nav + sidebar
   return (
     <>
       <CommandPalette variant="instructor" />
@@ -523,9 +523,75 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </nav>
         </div>
 
-        <main className="flex-1 p-6">
-          {children}
-        </main>
+        {/* Content area with sidebar */}
+        <div className="flex flex-1">
+          {/* Sidebar */}
+          <aside className="w-56 border-r bg-card hidden lg:flex flex-col shrink-0">
+            <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
+              {sidebarLinks.map((link) => {
+                const isActive = location.pathname === link.href;
+                const isMessages = link.href === "/instructor/messages";
+                const isAdminChat = link.href === "/instructor/admin-chat";
+                const isVisitorChats = link.href === "/instructor/visitor-chats";
+                const isPendingScheduling = link.href === "/instructor/pending-scheduling";
+                const isHighlighted = 'highlight' in link && link.highlight;
+                return (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 text-sm transition-all rounded-md",
+                      isActive
+                        ? "text-foreground font-medium bg-muted border-l-2 border-primary pl-[10px]"
+                        : isHighlighted
+                        ? "text-emerald-600 dark:text-emerald-400 hover:bg-muted/50"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <span className="relative">
+                      <link.icon className={cn(
+                        "h-4 w-4",
+                        isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
+                      )} />
+                      {isAdminChat && !isActive && <AdminMessageBadge />}
+                    </span>
+                    <span className="flex-1">{link.label}</span>
+                    {isVisitorChats && !isActive && (
+                      <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+                    )}
+                    {isMessages && !isActive && (
+                      <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+                    )}
+                    {isPendingScheduling && !isActive && (
+                      <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* User info at bottom */}
+            <div className="border-t p-3">
+              <div className="flex items-center gap-3 px-2 py-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={instructor?.profile_image_url || undefined} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                    {instructor?.name?.charAt(0) || "I"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{instructor?.name || "Instructor"}</p>
+                  <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1 p-6">
+            {children}
+          </main>
+        </div>
       </div>
     </>
   );
