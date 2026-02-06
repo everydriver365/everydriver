@@ -738,13 +738,16 @@ export default function InstructorLiveSession() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Use a SHORT timeout for active sessions (to quickly zero-out speed when GPS stops),
-  // but a more forgiving timeout when not recording (GPS hardware may have gaps).
-  // 30s for active sessions (we need fresh data), 5 minutes for idle (just showing device is known)
-  const secondsSinceUpdate = device?.last_seen_at
-    ? Math.floor((Date.now() - new Date(device.last_seen_at).getTime()) / 1000)
+  // Use last_gpsgate_track_time (actual GPS data) NOT last_seen_at (poller artifact)
+  // last_seen_at gets refreshed every poll cycle even when device has no real GPS data
+  const trackTime = (device as any)?.last_gpsgate_track_time;
+  const secondsSinceTrack = trackTime
+    ? Math.floor((Date.now() - new Date(trackTime).getTime()) / 1000)
     : 9999;
-  const isConnected = secondsSinceUpdate < (isSessionActive ? 30 : 300);
+  // Active session: need fresh GPS within 30s. Idle: within 60s for "active", 1800s (30min) for "stationary"
+  const isConnected = isSessionActive
+    ? secondsSinceTrack < 30
+    : secondsSinceTrack < 60 || (secondsSinceTrack < 1800 && device?.last_seen_at && Math.floor((Date.now() - new Date(device.last_seen_at).getTime()) / 1000) < 120);
 
   const lastSeenAtDate = device?.last_seen_at ? new Date(device.last_seen_at) : null;
   const secondsSinceLastSeen = lastSeenAtDate
