@@ -174,8 +174,7 @@ export function NextUpTile({
           <div className="px-4 mb-3">
             <button
               onClick={handleNavigate}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-white font-semibold text-base shadow-md hover:shadow-lg transition-all"
-              style={{ background: "linear-gradient(to right, #1877F2, #1466d8)" }}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-primary-foreground font-semibold text-base shadow-md hover:shadow-lg transition-all bg-primary hover:bg-primary/90"
             >
               <Navigation className="h-5 w-5" />
               Start Navigation &rsaquo;
