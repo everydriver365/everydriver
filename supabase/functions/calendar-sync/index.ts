@@ -585,7 +585,6 @@ Deno.serve(async (req) => {
         .from("instructor_calendar_events")
         .delete()
         .eq("instructor_id", instructorId)
-        .eq("source", "google")
         .gte("start_time", defaultTimeMin)
         .lte("end_time", defaultTimeMax);
 
@@ -596,14 +595,13 @@ Deno.serve(async (req) => {
         title: event.summary,
         start_time: event.start,
         end_time: event.end,
-        source: "google",
         is_busy: true,
       }));
 
       if (eventsToInsert.length > 0) {
         const { error: insertError } = await supabase
           .from("instructor_calendar_events")
-          .insert(eventsToInsert);
+          .upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' });
 
         if (insertError) {
           console.error("Error inserting events:", insertError);
@@ -698,7 +696,6 @@ Deno.serve(async (req) => {
         .from("instructor_calendar_events")
         .delete()
         .eq("instructor_id", instructorId)
-        .eq("source", "google")
         .gte("start_time", busyTimeMin)
         .lte("end_time", busyTimeMax);
 
@@ -709,12 +706,11 @@ Deno.serve(async (req) => {
         title: event.summary,
         start_time: event.start,
         end_time: event.end,
-        source: "google",
         is_busy: true,
       }));
 
       if (eventsToInsert.length > 0) {
-        await supabase.from("instructor_calendar_events").insert(eventsToInsert);
+        await supabase.from("instructor_calendar_events").upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' });
       }
 
       // Update last sync time
