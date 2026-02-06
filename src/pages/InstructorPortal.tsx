@@ -57,6 +57,7 @@ export default function InstructorPortal() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [availabilityModalOpen, setAvailabilityModalOpen] = useState(false);
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
+  const [pupilSearch, setPupilSearch] = useState("");
   const isMobile = useIsMobile();
   const { hoursThisWeek, monthEarnings, loading: statsLoading } = useInstructorLiveStats(instructorId);
 
@@ -232,10 +233,41 @@ export default function InstructorPortal() {
                 <input
                   type="text"
                   placeholder="Search pupils..."
-                  className="h-10 w-56 rounded-lg border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  onFocus={() => navigate("/instructor/pupils")}
-                  readOnly
+                  value={pupilSearch}
+                  onChange={(e) => setPupilSearch(e.target.value)}
+                  className="h-10 w-64 rounded-lg border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+                {pupilSearch.length > 0 && (
+                  <div className="absolute top-full left-0 mt-1 w-80 bg-popover border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                    {pupils
+                      .filter(p => p.name.toLowerCase().includes(pupilSearch.toLowerCase()))
+                      .length === 0 ? (
+                        <p className="text-sm text-muted-foreground p-3 text-center">No pupils found</p>
+                      ) : (
+                        pupils
+                          .filter(p => p.name.toLowerCase().includes(pupilSearch.toLowerCase()))
+                          .slice(0, 8)
+                          .map(pupil => (
+                            <button
+                              key={pupil.id}
+                              onClick={() => {
+                                navigate(`/instructor/pupils?pupil=${pupil.id}`);
+                                setPupilSearch("");
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium shrink-0">
+                                {pupil.name.split(" ").map(n => n[0]).join("")}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium truncate">{pupil.name}</div>
+                                <div className="text-xs text-muted-foreground">{pupil.lessons_completed || 0} lessons · {pupil.progress || 0}%</div>
+                              </div>
+                            </button>
+                          ))
+                      )}
+                  </div>
+                )}
               </div>
               <Button
                 onClick={() => navigate("/instructor/pupils")}
