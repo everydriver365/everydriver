@@ -281,7 +281,8 @@ export default function InstructorSettings() {
   const CategoryHeader = ({ category }: { category: SettingsCategory }) => (
     <button
       onClick={() => toggleCategory(category.id)}
-      className="w-full flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+      className="w-full flex items-center justify-between p-3 rounded-lg transition-colors"
+      style={{ backgroundColor: '#D1E4FC' }}
     >
       <div className="flex items-center gap-3">
         <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", category.iconBg)}>
