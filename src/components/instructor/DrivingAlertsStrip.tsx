@@ -86,11 +86,17 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
                 {/* Icon */}
                 <div className={cn(
                   "flex-shrink-0 p-2 rounded-lg",
-                  isSevere 
-                    ? "bg-destructive/20 text-destructive" 
-                    : "bg-warning/20 text-warning-foreground"
+                  isWeather
+                    ? "bg-blue-500/20 text-blue-600"
+                    : isSevere 
+                      ? "bg-destructive/20 text-destructive" 
+                      : "bg-warning/20 text-warning-foreground"
                 )}>
-                  <AlertIcon iconName={alert.icon} className="h-5 w-5" />
+                  {isWeather ? (
+                    <CloudRain className="h-5 w-5" />
+                  ) : (
+                    <AlertIcon iconName={alert.icon} className="h-5 w-5" />
+                  )}
                 </div>
 
                 {/* Content */}
@@ -105,9 +111,11 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
                     )}
                     <span className={cn(
                       "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded",
-                      isSevere 
-                        ? "text-destructive bg-destructive/15" 
-                        : "text-warning-foreground bg-warning/20"
+                      isWeather
+                        ? "text-blue-700 bg-blue-500/20 font-bold text-[11px]"
+                        : isSevere 
+                          ? "text-destructive bg-destructive/15" 
+                          : "text-warning-foreground bg-warning/20"
                     )}>
                       {isWeather ? "Weather" : "Traffic"}
                     </span>
