@@ -322,89 +322,102 @@ serve(async (req) => {
       }
     }
 
-    // Fetch road events from National Highways API (requires free API key)
+    // Fetch road closures from National Highways API (free registration required)
     const nhApiKey = Deno.env.get("NATIONAL_HIGHWAYS_API_KEY");
     if (nhApiKey) {
-    try {
-      const nhUrl = `https://api.nationalhighways.co.uk/v2/closures?status=Active`;
-      const nhResponse = await fetch(nhUrl, {
-        headers: { "Ocp-Apim-Subscription-Key": nhApiKey },
-      });
-      
-      if (nhResponse.ok) {
-        const nhData = await nhResponse.json();
-        const events = nhData?.features || nhData?.events || nhData || [];
-        const eventList = Array.isArray(events) ? events : [];
+      try {
+        // Fetch both planned and unplanned active closures
+        const nhUrl = `https://api.data.nationalhighways.co.uk/roads/v2.0/closures?closureType=unplanned`;
+        const nhResponse = await fetch(nhUrl, {
+          headers: {
+            "Ocp-Apim-Subscription-Key": nhApiKey,
+            "X-Response-MediaType": "application/json",
+          },
+        });
         
-        for (const event of eventList.slice(0, 50)) {
-          // Extract coordinates - try GeoJSON format first
-          let eventLat: number | null = null;
-          let eventLng: number | null = null;
+        if (nhResponse.ok) {
+          const nhData = await nhResponse.json();
+          const situations = nhData?.D2Payload?.situation || [];
           
-          if (event.geometry?.coordinates) {
-            const coords = event.geometry.coordinates;
-            if (Array.isArray(coords) && coords.length >= 2) {
-              // GeoJSON: [lng, lat] or LineString [[lng,lat],...]
-              if (Array.isArray(coords[0])) {
-                eventLng = coords[0][0];
-                eventLat = coords[0][1];
-              } else {
-                eventLng = coords[0];
-                eventLat = coords[1];
+          for (const situation of situations.slice(0, 100)) {
+            const records = situation?.situationRecord || [];
+            
+            for (const recordWrapper of records) {
+              // The record is wrapped in a type key like sitRoadOrCarriagewayOrLaneManagement
+              const record = recordWrapper.sitRoadOrCarriagewayOrLaneManagement || 
+                            recordWrapper.sitAbnormalTraffic ||
+                            recordWrapper.sitNetworkManagement ||
+                            Object.values(recordWrapper)[0];
+              if (!record) continue;
+              
+              // Only show active closures
+              const validityStatus = record.validity?.validityStatus;
+              if (validityStatus !== "active") continue;
+              
+              // Extract coordinates from posList (format: "lat lng lat lng ...")
+              let eventLat: number | null = null;
+              let eventLng: number | null = null;
+              
+              const locationRef = record.locationReference;
+              let posList: string | null = null;
+              let roadName = "";
+              let locationDesc = "";
+              
+              // Handle single vs multiple location formats
+              const group = locationRef?.locLocationGroupByList?.locationContainedInGroup;
+              if (group && Array.isArray(group) && group.length > 0) {
+                posList = group[0]?.locLinearLocation?.gmlLineString?.locGmlLineString?.posList;
+                locationDesc = group[0]?.locLinearLocation?.supplementaryPositionalDescription?.locationDescription || "";
+                roadName = group[0]?.locSingleRoadLinearLocation?.linearWithinLinearElement?.[0]?.linearElement?.locLinearElementByCode?.roadName || "";
+              } else if (locationRef?.locLinearLocation) {
+                posList = locationRef.locLinearLocation.gmlLineString?.locGmlLineString?.posList;
+                locationDesc = locationRef.locLinearLocation.supplementaryPositionalDescription?.locationDescription || "";
+                roadName = locationRef.locSingleRoadLinearLocation?.linearWithinLinearElement?.[0]?.linearElement?.locLinearElementByCode?.roadName || "";
               }
+              
+              if (posList) {
+                const coords = posList.split(" ").map(Number);
+                if (coords.length >= 2) {
+                  eventLat = coords[0];
+                  eventLng = coords[1];
+                }
+              }
+              
+              if (!eventLat || !eventLng) continue;
+              
+              // Haversine distance filter (~25km / 15 miles)
+              const R = 6371;
+              const dLat = (eventLat - lat) * Math.PI / 180;
+              const dLng = (eventLng - lng) * Math.PI / 180;
+              const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat * Math.PI / 180) * Math.cos(eventLat * Math.PI / 180) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+              const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+              
+              if (dist > 25) continue;
+              
+              // Extract description from comment
+              const comment = record.generalPublicComment?.[0]?.comment || locationDesc || "Road closure nearby";
+              const causeType = record.cause?.causeType || "";
+              const isIncident = causeType === "accident" || causeType === "incident";
+              const isClosure = comment.toLowerCase().includes("closed") || comment.toLowerCase().includes("closure");
+              
+              const severity: "moderate" | "severe" = isIncident || isClosure ? "severe" : "moderate";
+              
+              alerts.push({
+                type: "road",
+                severity,
+                title: roadName ? `${roadName}: ${isIncident ? "Incident" : isClosure ? "Road Closed" : "Roadworks"}` : (isIncident ? "Incident" : "Roadworks"),
+                description: comment.slice(0, 120),
+                roadName,
+                icon: isClosure || isIncident ? "Ban" : "Construction",
+              });
             }
           }
-          
-          // Also try properties for lat/lng
-          const props = event.properties || event;
-          if (!eventLat && props.latitude) { eventLat = props.latitude; eventLng = props.longitude; }
-          
-          if (!eventLat || !eventLng) continue;
-          
-          // Haversine distance filter (~25km / 15 miles)
-          const R = 6371;
-          const dLat = (eventLat - lat) * Math.PI / 180;
-          const dLng = (eventLng - lng) * Math.PI / 180;
-          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat * Math.PI / 180) * Math.cos(eventLat * Math.PI / 180) *
-            Math.sin(dLng/2) * Math.sin(dLng/2);
-          const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          
-          if (dist > 25) continue;
-          
-          const category = (props.category || props.type || props.eventType || "").toLowerCase();
-          const roadName = props.road || props.roadName || props.roadNumber || "";
-          const description = props.description || props.summary || props.title || "Road event";
-          const severityStr = (props.severity || props.impact || "").toLowerCase();
-          
-          // Skip minor/informational events
-          if (category === "information" || category === "normal") continue;
-          
-          let severity: "low" | "moderate" | "severe" = "moderate";
-          if (severityStr.includes("severe") || severityStr.includes("high") || category.includes("closure")) {
-            severity = "severe";
-          } else if (severityStr.includes("low") || severityStr.includes("minor")) {
-            severity = "low";
-          }
-          
-          // Skip low severity road alerts
-          if (severity === "low") continue;
-          
-          const isClosureType = category.includes("clos") || description.toLowerCase().includes("closed");
-          
-          alerts.push({
-            type: "road",
-            severity,
-            title: roadName ? `${roadName}: ${isClosureType ? "Road Closed" : "Roadworks"}` : (isClosureType ? "Road Closed" : "Roadworks"),
-            description: typeof description === "string" ? description.slice(0, 120) : "Road event nearby",
-            roadName,
-            icon: isClosureType ? "Ban" : "Construction",
-          });
         }
+      } catch (nhError) {
+        console.error("National Highways API error:", nhError);
       }
-    } catch (nhError) {
-      console.error("National Highways API error:", nhError);
-    }
     }
 
     // Sort by severity
