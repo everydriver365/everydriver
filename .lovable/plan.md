@@ -1,51 +1,76 @@
 
 
-# Offline Mode Integration Plan
+# Enhanced "Next Up" Tile with Mini Map and Expandable Actions
 
-## What This Will Do
+## Overview
 
-Wire up the existing offline infrastructure so the instructor app works without an internet connection. Schedules and pupil data will be cached locally, changes queued for sync, and a visible indicator will show connection and sync status.
+Replace the current `NextLessonCard` with a richer tile that includes a mini map preview of the pickup location and an expandable section with quick actions (text, on-my-way, call, cancel, rearrange).
 
 ## What the Instructor Will See
 
-- A small **cloud/wifi icon** in the mobile header showing online/offline status and pending sync count
-- When offline, the app continues to show cached schedule and pupil data instead of blank screens
-- When back online, queued changes sync automatically
-- A popover with sync details (last synced time, pending changes, manual refresh button)
+- **"Next Up..." header** with pupil name, avatar, and time countdown
+- **Payment status badge** (owes / credit / paid up) -- already exists, kept prominent
+- **Mini map** showing the pickup location with a navigate button overlay
+- **Expandable actions drawer** (tap to expand) with:
+  - Text pupil (opens SMS)
+  - Send "On my way" quick message
+  - Call pupil (opens phone dialer)
+  - Cancel lesson
+  - Rearrange lesson
+- The tile collapses back when tapped again
 
 ## Implementation Steps
 
-### 1. Add OfflineSyncIndicator to the Mobile Header
-- Import and render the existing `OfflineSyncIndicator` component in `InstructorMobileHeader.tsx`
-- Place it next to the settings icon area
-- Pass the instructor ID from context so it can manage caching
+### 1. Create new `NextUpTile` component
+**New file:** `src/components/instructor/NextUpTile.tsx`
 
-### 2. Initialize Offline Caching on App Load
-- In `InstructorMobileHome.tsx`, call the `useOfflineSync` hook to trigger initial caching of schedules and pupils when the app loads and the instructor is online
-- This ensures data is available if the connection drops later
+- Header row: "Next up..." label + countdown badge
+- Pupil row: Avatar (using existing `PupilAvatar`), name, payment status badge
+- Mini map: Geocode the pickup postcode (reuse `geocodePostcode` from `useTodayRoute.ts`), render a small `CoordsMapPreview` (non-expandable, 120px height) with a "Navigate" overlay button
+- Expandable section using `Collapsible` from radix:
+  - Grid of action buttons: Text, On My Way, Call, Cancel, Rearrange
+  - "On My Way" sends a pre-filled SMS like "Hi [name], I'm on my way!"
+  - Call opens `tel:` link
+  - Cancel/Rearrange navigate to relevant pages or open confirmation dialogs
+- Styled with the floating card standard (white bg, border, navy shadow)
 
-### 3. Add Offline Data Fallback to Key Pages
-- Update the schedule list view (`NewMobileScheduleView`) to fall back to cached IndexedDB data when the network fetch fails or the device is offline
-- Use the existing `useOfflineData` hook pattern for this
+### 2. Add postcode geocoding hook
+**New file:** `src/hooks/usePostcodeGeocode.ts`
 
-### 4. Service Worker Already Configured
-- The PWA config in `vite.config.ts` already caches Supabase API responses with a NetworkFirst strategy -- no changes needed here
+- Small hook that takes a postcode string, geocodes it via Nominatim (reusing the cache pattern from `useTodayRoute.ts`), and returns `{ lat, lng, isLoading }`
+- Avoids duplicating geocoding logic
+
+### 3. Update `InstructorMobileHome.tsx`
+- Replace the current `NextLessonCard` usage (lines 332-346) with the new `NextUpTile`
+- Pass all existing `nextLesson` data plus `pupilId` for cancel/rearrange navigation
 
 ---
 
 ## Technical Details
 
-**Files to modify:**
-- `src/components/instructor/InstructorMobileHeader.tsx` -- add sync indicator icon
-- `src/components/instructor/InstructorMobileHome.tsx` -- initialize offline caching via `useOfflineSync`
-
 **Files to create:**
-- None -- all components and hooks already exist
+- `src/hooks/usePostcodeGeocode.ts` -- geocoding hook wrapping Nominatim with cache
+- `src/components/instructor/NextUpTile.tsx` -- the new enhanced tile
 
-**Existing infrastructure being connected:**
-- `src/lib/offlineStorage.ts` -- IndexedDB wrapper
-- `src/hooks/useOfflineSync.ts` -- sync queue, schedule/pupil caching
-- `src/hooks/useOfflineData.ts` -- offline-first data fetching
-- `src/components/pwa/OfflineSyncIndicator.tsx` -- UI indicator
-- Workbox runtime caching in `vite.config.ts`
+**Files to modify:**
+- `src/components/instructor/InstructorMobileHome.tsx` -- swap `NextLessonCard` for `NextUpTile`
+
+**Existing components reused:**
+- `PupilAvatar` -- for avatar with initials fallback
+- `CoordsMapPreview` -- for the mini map (non-expandable mode, 120px)
+- `Collapsible` / `CollapsibleTrigger` / `CollapsibleContent` -- for the expandable actions
+- `Button` -- for action buttons
+- Payment status logic from current `NextLessonCard`
+
+**Data already available** from `useNextLessonDetails`:
+- `pupilName`, `pupilProfileImage`, `pupilPhone`, `pickupPostcode`, `pickupLocation`, `startTime`, `minutesUntil`, `accountBalance`, `prepaidHours`, `pupilId`, `lessonId`
+
+**Actions in expandable section:**
+| Action | Behavior |
+|---|---|
+| Text Pupil | Opens SMS via `sms:` link |
+| On My Way | Opens SMS pre-filled with "Hi [name], I'm on my way to you!" |
+| Call | Opens `tel:` link |
+| Cancel | Navigates to lesson detail or shows confirmation dialog |
+| Rearrange | Navigates to reschedule flow |
 
