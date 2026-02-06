@@ -54,99 +54,86 @@ export function WeeklyGoalRing({
   const glowId = `weeklyGoalGlow-${progressPercent}`;
 
   return (
-    <div className={`relative flex flex-col items-center ${className}`}>
-      <svg width="56" height="56" className="transform -rotate-90">
-        <defs>
-          {/* Gradient definition */}
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={gradientColors.start} />
-            <stop offset="100%" stopColor={gradientColors.end} />
-          </linearGradient>
-          {/* Glow filter */}
-          <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-        
-        {/* Background circle */}
-        <circle
-          cx="28"
-          cy="28"
-          r={radius}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          className="text-muted/30"
-        />
-        {/* Progress circle with gradient */}
-        <motion.circle
-          cx="28"
-          cy="28"
-          r={radius}
-          fill="none"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          stroke={`url(#${gradientId})`}
-          filter={progressPercent >= 50 ? `url(#${glowId})` : undefined}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          style={{
-            strokeDasharray: circumference,
-          }}
-        />
-        
-        {/* Shimmer effect for 100% */}
-        {progressPercent >= 100 && (
+    <div className={`flex flex-col items-center ${className}`}>
+      <div className="relative w-14 h-14">
+        <svg width="56" height="56" className="transform -rotate-90">
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={gradientColors.start} />
+              <stop offset="100%" stopColor={gradientColors.end} />
+            </linearGradient>
+            <filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          
+          <circle
+            cx="28"
+            cy="28"
+            r={radius}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            className="text-muted/30"
+          />
           <motion.circle
             cx="28"
             cy="28"
             r={radius}
             fill="none"
-            strokeWidth={strokeWidth + 2}
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
-            stroke="white"
-            opacity="0.3"
+            stroke={`url(#${gradientId})`}
+            filter={progressPercent >= 50 ? `url(#${glowId})` : undefined}
             initial={{ strokeDashoffset: circumference }}
-            animate={{ 
-              strokeDashoffset: [circumference, 0, circumference],
-            }}
-            transition={{ 
-              duration: 3, 
-              repeat: Infinity, 
-              ease: "easeInOut" 
-            }}
-            style={{
-              strokeDasharray: `${circumference * 0.1} ${circumference * 0.9}`,
-            }}
+            animate={{ strokeDashoffset }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            style={{ strokeDasharray: circumference }}
           />
-        )}
-      </svg>
-      
-      {/* Center content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {progressPercent >= 100 ? (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="flex items-center gap-0.5"
-          >
-            <Sparkles className="h-3 w-3 text-amber-500" />
-            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Done!</span>
-          </motion.div>
-        ) : (
-          <>
-            <span className="text-xs font-bold text-blue-600">{hoursThisWeek}h</span>
-            <span className="text-[8px] text-muted-foreground">of {hoursGoal}h</span>
-          </>
-        )}
+          
+          {progressPercent >= 100 && (
+            <motion.circle
+              cx="28"
+              cy="28"
+              r={radius}
+              fill="none"
+              strokeWidth={strokeWidth + 2}
+              strokeLinecap="round"
+              stroke="white"
+              opacity="0.3"
+              initial={{ strokeDashoffset: circumference }}
+              animate={{ strokeDashoffset: [circumference, 0, circumference] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              style={{ strokeDasharray: `${circumference * 0.1} ${circumference * 0.9}` }}
+            />
+          )}
+        </svg>
+        
+        {/* Center content - positioned within SVG container */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          {progressPercent >= 100 ? (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="flex items-center gap-0.5"
+            >
+              <Sparkles className="h-2.5 w-2.5 text-amber-500" />
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Done!</span>
+            </motion.div>
+          ) : (
+            <>
+              <span className="text-[11px] font-bold leading-none text-blue-600">{hoursThisWeek}h</span>
+              <span className="text-[7px] leading-tight text-muted-foreground">of {hoursGoal}h</span>
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center gap-0.5 mt-1">
+      <div className="flex items-center gap-0.5 mt-0.5">
         {isAheadOfLastWeek ? (
           <TrendingUp className="h-2.5 w-2.5 text-emerald-500" />
         ) : (
