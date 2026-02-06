@@ -321,7 +321,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-foreground bg-muted/40 border border-border hover:text-foreground h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-[#D1E4FC]"
+                        className="text-muted-foreground bg-muted/40 border border-border hover:text-foreground h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-[#D1E4FC]"
                         title="Settings"
                       >
                         <Settings className="h-4 w-4" />
@@ -363,7 +363,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                    className="text-foreground bg-muted/40 border border-border hover:text-foreground h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-[#D1E4FC]"
+                    className="text-blue-500 bg-muted/40 border border-border hover:text-blue-600 h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-[#D1E4FC]"
                     title="Search"
                   >
                     <Search className="h-4 w-4" />
@@ -373,7 +373,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowQRModal(true)}
-                      className="text-primary/80 hover:text-primary hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
+                      className="text-rose-400 hover:text-rose-500 hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
                     >
                       <span className="text-[10px] font-bold border border-current rounded px-0.5">QR</span>
                     </Button>
@@ -382,7 +382,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate("/instructor/availability")}
-                    className="text-primary/80 hover:text-primary hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
+                    className="text-violet-500 hover:text-violet-600 hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
                     title="Availability"
                   >
                     <Calendar className="h-4 w-4" />
