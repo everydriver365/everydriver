@@ -1,12 +1,6 @@
-import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { 
-  Clock, MessageSquare, Phone, Navigation, X, CalendarClock, 
-  ChevronDown, Send 
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Clock, MessageSquare, Phone, Navigation, Check } from "lucide-react";
+import { motion } from "framer-motion";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
@@ -40,7 +34,7 @@ export function NextUpTile({
   accountBalance,
   prepaidHours,
 }: NextUpTileProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  
 
   const formatTime = (time: string) => {
     try {
@@ -161,83 +155,41 @@ export function NextUpTile({
           </div>
         )}
 
-        {/* Expandable actions */}
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors border-t border-border">
-              <motion.div
-                animate={{ rotate: isOpen ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ChevronDown className="h-4 w-4" />
-              </motion.div>
-              {isOpen ? "Close" : "Quick actions"}
-            </button>
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <AnimatePresence>
-              {isOpen && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="px-4 pb-3 grid grid-cols-2 gap-2"
-                >
-                  {pupilPhone && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-10 text-xs gap-1.5"
-                        onClick={handleText}
-                      >
-                        <MessageSquare className="h-3.5 w-3.5" />
-                        Text
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-10 text-xs gap-1.5"
-                        onClick={handleOnMyWay}
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                        On my way
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-10 text-xs gap-1.5"
-                        onClick={handleCall}
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                        Call
-                      </Button>
-                    </>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-10 text-xs gap-1.5 text-destructive hover:text-destructive"
-                    onClick={() => window.location.href = `/instructor/lessons/${lessonId}?action=cancel`}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-10 text-xs gap-1.5"
-                    onClick={() => window.location.href = `/instructor/lessons/${lessonId}?action=reschedule`}
-                  >
-                    <CalendarClock className="h-3.5 w-3.5" />
-                    Rearrange
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </CollapsibleContent>
-        </Collapsible>
+        {/* Quick actions row */}
+        <div className="px-4 pb-3 pt-1 border-t border-border">
+          <div className="flex items-center justify-between gap-2">
+            {pickupPostcode && (
+              <button onClick={handleNavigate} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
+                  <Navigation className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground">Nav</span>
+              </button>
+            )}
+            {pupilPhone && (
+              <>
+                <button onClick={handleCall} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
+                    <Phone className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground">Call</span>
+                </button>
+                <button onClick={handleText} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
+                    <MessageSquare className="h-4 w-4 text-foreground" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground">Text</span>
+                </button>
+                <button onClick={handleOnMyWay} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
+                    <Check className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground">On Way</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </motion.div>
   );
