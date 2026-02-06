@@ -75,8 +75,9 @@ export function useTodayOverview(instructorId: string | undefined) {
       const firstLesson = lessons?.[0];
       const firstPickupLocation = firstLesson?.pickup_location || 
         (firstLesson?.pupils as any)?.address || null;
-      const firstPickupPostcode = firstLesson?.pickup_postcode || 
+      const rawPostcode = firstLesson?.pickup_postcode || 
         (firstLesson?.pupils as any)?.postcode || null;
+      const firstPickupPostcode = rawPostcode && rawPostcode.toLowerCase() !== 'n/a' ? rawPostcode : null;
       const firstLessonTime = firstLesson?.start_time || null;
 
       // Find next upcoming lesson (after current time)
