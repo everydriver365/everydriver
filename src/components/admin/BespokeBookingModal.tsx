@@ -32,7 +32,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { Loader2, CheckCircle, ArrowRight, ArrowLeft, Search } from "lucide-react";
 
 const formSchema = z.object({
   customerName: z.string().trim().min(1, "Name is required").max(200),
@@ -63,6 +63,7 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("not_paid");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [isLookingUp, setIsLookingUp] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -112,6 +113,32 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
   const goToStep2 = async () => {
     const valid = await form.trigger();
     if (valid) setStep(2);
+  };
+
+  const lookupPostcode = async () => {
+    const postcode = form.getValues("postcode").trim();
+    if (!postcode) {
+      toast.error("Enter a postcode first");
+      return;
+    }
+    setIsLookingUp(true);
+    try {
+      const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+      const json = await res.json();
+      if (json.status === 200 && json.result) {
+        const r = json.result;
+        const parts = [r.admin_ward, r.admin_district, r.region].filter(Boolean);
+        form.setValue("address", parts.join(", "), { shouldValidate: true });
+        form.setValue("postcode", r.postcode, { shouldValidate: true });
+        toast.success("Postcode found — add house number/street");
+      } else {
+        toast.error("Postcode not found");
+      }
+    } catch {
+      toast.error("Postcode lookup failed");
+    } finally {
+      setIsLookingUp(false);
+    }
   };
 
   const goToStep3 = () => {
@@ -259,7 +286,12 @@ export function BespokeBookingModal({ open, onOpenChange }: BespokeBookingModalP
                     <FormField control={form.control} name="postcode" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Postcode</FormLabel>
-                        <FormControl><Input placeholder="e.g. B1 1AA" {...field} /></FormControl>
+                        <div className="flex gap-2">
+                          <FormControl><Input placeholder="e.g. B1 1AA" {...field} /></FormControl>
+                          <Button type="button" variant="outline" size="icon" onClick={lookupPostcode} disabled={isLookingUp} title="Lookup postcode">
+                            {isLookingUp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                          </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )} />
