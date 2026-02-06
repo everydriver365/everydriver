@@ -129,7 +129,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
       <div
         className={cn(
           "min-h-screen overflow-x-hidden",
-           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-20 bg-[#6ec1e4] dark:bg-background"
+           isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-20 bg-[#E8F1FE] dark:bg-background"
         )}
       >
         {!isFullscreenMode && (
