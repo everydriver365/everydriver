@@ -1,76 +1,62 @@
 
+# Instructor Mobile Homepage - 5 GUI Enhancements
 
-# Enhanced "Next Up" Tile with Mini Map and Expandable Actions
+## 1. Greeting Card "Tap to Expand" Hint
+Add a bouncing ChevronDown icon at the bottom of the collapsed hero greeting card to signal it is expandable.
 
-## Overview
+**File:** `src/components/instructor/ContextualHomeHero.tsx`
+- Add a small ChevronDown icon centered below the rotating stats carousel (inside the card, before closing div)
+- Apply a gentle bounce animation using framer-motion (`animate={{ y: [0, 3, 0] }}` repeating)
+- Only show when card is NOT expanded
+- Auto-hide after first tap (already handled by existing `isExpanded` state)
 
-Replace the current `NextLessonCard` with a richer tile that includes a mini map preview of the pickup location and an expandable section with quick actions (text, on-my-way, call, cancel, rearrange).
+## 2. Quiet Day Illustration Upgrade
+Enhance the QuietDayEmpty component with a gradient background and a "Book a Lesson" primary CTA.
 
-## What the Instructor Will See
+**File:** `src/components/instructor/QuietDayEmpty.tsx`
+- Replace `glass` class with a soft gradient: `bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20`
+- Remove dashed border, use solid subtle border instead
+- Add a primary "Book a Lesson" button linking to `/instructor/diary` above the existing "View Schedule" button
+- Keep existing animated car, tips, and quotes
 
-- **"Next Up..." header** with pupil name, avatar, and time countdown
-- **Payment status badge** (owes / credit / paid up) -- already exists, kept prominent
-- **Mini map** showing the pickup location with a navigate button overlay
-- **Expandable actions drawer** (tap to expand) with:
-  - Text pupil (opens SMS)
-  - Send "On my way" quick message
-  - Call pupil (opens phone dialer)
-  - Cancel lesson
-  - Rearrange lesson
-- The tile collapses back when tapped again
+## 3. Section Headings for Visual Hierarchy
+Add subtle uppercase section labels to group related cards on the homepage.
 
-## Implementation Steps
+**File:** `src/components/instructor/InstructorMobileHome.tsx`
+- Add "YOUR DAY" label before the Next Up tile / Mini Timeline / Route Preview group
+- Add "QUICK ACTIONS" label before QuickActionTiles
+- Add "INSIGHTS" label before Today's Stats / Weekly Progress
+- Add "PLAN AHEAD" label before Tomorrow Peek / Setup Checklist
+- Style: `text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2`
+- Only show each heading when its section has visible content
 
-### 1. Create new `NextUpTile` component
-**New file:** `src/components/instructor/NextUpTile.tsx`
+## 4. Tappable Today's Stats Card
+Make the Today's Stats card navigate to the earnings/money page on tap.
 
-- Header row: "Next up..." label + countdown badge
-- Pupil row: Avatar (using existing `PupilAvatar`), name, payment status badge
-- Mini map: Geocode the pickup postcode (reuse `geocodePostcode` from `useTodayRoute.ts`), render a small `CoordsMapPreview` (non-expandable, 120px height) with a "Navigate" overlay button
-- Expandable section using `Collapsible` from radix:
-  - Grid of action buttons: Text, On My Way, Call, Cancel, Rearrange
-  - "On My Way" sends a pre-filled SMS like "Hi [name], I'm on my way!"
-  - Call opens `tel:` link
-  - Cancel/Rearrange navigate to relevant pages or open confirmation dialogs
-- Styled with the floating card standard (white bg, border, navy shadow)
+**File:** `src/components/instructor/InstructorMobileHome.tsx`
+- Wrap the Today's Stats card content in a clickable `div` with `onClick={() => navigate("/instructor/money")}` and `cursor-pointer`
+- Add a small ChevronRight icon in the header row next to "Today's Stats" to indicate interactivity
+- Add `whileTap={{ scale: 0.98 }}` via framer-motion for tactile feedback
+- Import `ChevronRight` from lucide-react
 
-### 2. Add postcode geocoding hook
-**New file:** `src/hooks/usePostcodeGeocode.ts`
+## 5. Pull-to-Refresh "Updated" Feedback
+Show a brief animated "Updated" banner after pull-to-refresh completes.
 
-- Small hook that takes a postcode string, geocodes it via Nominatim (reusing the cache pattern from `useTodayRoute.ts`), and returns `{ lat, lng, isLoading }`
-- Avoids duplicating geocoding logic
-
-### 3. Update `InstructorMobileHome.tsx`
-- Replace the current `NextLessonCard` usage (lines 332-346) with the new `NextUpTile`
-- Pass all existing `nextLesson` data plus `pupilId` for cancel/rearrange navigation
+**File:** `src/components/instructor/InstructorMobileHome.tsx`
+- Add a `showRefreshFeedback` state boolean
+- After `handleRefresh` completes, set it to `true`
+- Auto-dismiss after 1.5 seconds via `setTimeout`
+- Render an `AnimatePresence` block at the top of the page content showing a small pill: "Updated just now" with a CheckCircle icon
+- Style: centered, rounded-full, bg-emerald-500 text-white, small text, fades in/out
 
 ---
 
-## Technical Details
+## Technical Summary
 
-**Files to create:**
-- `src/hooks/usePostcodeGeocode.ts` -- geocoding hook wrapping Nominatim with cache
-- `src/components/instructor/NextUpTile.tsx` -- the new enhanced tile
+| File | Changes |
+|------|---------|
+| `src/components/instructor/ContextualHomeHero.tsx` | Add bouncing ChevronDown hint when collapsed |
+| `src/components/instructor/QuietDayEmpty.tsx` | Gradient bg, solid border, "Book a Lesson" CTA |
+| `src/components/instructor/InstructorMobileHome.tsx` | Section headings, tappable stats with ChevronRight + navigation, refresh feedback banner |
 
-**Files to modify:**
-- `src/components/instructor/InstructorMobileHome.tsx` -- swap `NextLessonCard` for `NextUpTile`
-
-**Existing components reused:**
-- `PupilAvatar` -- for avatar with initials fallback
-- `CoordsMapPreview` -- for the mini map (non-expandable mode, 120px)
-- `Collapsible` / `CollapsibleTrigger` / `CollapsibleContent` -- for the expandable actions
-- `Button` -- for action buttons
-- Payment status logic from current `NextLessonCard`
-
-**Data already available** from `useNextLessonDetails`:
-- `pupilName`, `pupilProfileImage`, `pupilPhone`, `pickupPostcode`, `pickupLocation`, `startTime`, `minutesUntil`, `accountBalance`, `prepaidHours`, `pupilId`, `lessonId`
-
-**Actions in expandable section:**
-| Action | Behavior |
-|---|---|
-| Text Pupil | Opens SMS via `sms:` link |
-| On My Way | Opens SMS pre-filled with "Hi [name], I'm on my way to you!" |
-| Call | Opens `tel:` link |
-| Cancel | Navigates to lesson detail or shows confirmation dialog |
-| Rearrange | Navigates to reschedule flow |
-
+No new dependencies needed. All changes use existing framer-motion, lucide-react, and react-router-dom.
