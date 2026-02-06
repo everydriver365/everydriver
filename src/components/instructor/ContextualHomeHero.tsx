@@ -386,7 +386,7 @@ export function ContextualHomeHero({
                 {/* Summary badges row */}
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   {unreadMessages > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-medium">
                       <MessageCircle className="h-3 w-3" />
                       {unreadMessages} Message{unreadMessages !== 1 ? 's' : ''}
                     </span>
