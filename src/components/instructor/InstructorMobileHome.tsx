@@ -304,7 +304,7 @@ export function InstructorMobileHome({
       </AnimatePresence>
 
       {/* Contextual Home Hero */}
-      <div className="px-4 pt-4">
+      <div className="pt-4">
         <ContextualHomeHero
           firstName={firstName}
           isGPSConnected={isGPSConnected}
@@ -363,7 +363,7 @@ export function InstructorMobileHome({
 
       {/* YOUR DAY section */}
       {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">YOUR DAY</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">YOUR DAY</p>
       )}
 
       {/* Next Lesson Card - only show when there's a lesson */}
@@ -415,11 +415,11 @@ export function InstructorMobileHome({
       )}
 
       {/* QUICK ACTIONS section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">QUICK ACTIONS</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">QUICK ACTIONS</p>
 
       {/* Quick Action Tiles */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-        <div className="px-4 pb-6">
+        <div className="pb-6">
           <QuickActionTiles
             quickActions={content?.quick_actions || []}
             pendingJobsCount={pendingJobsCount}
@@ -440,7 +440,7 @@ export function InstructorMobileHome({
       </motion.div>
 
       {/* INSIGHTS section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">INSIGHTS</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">INSIGHTS</p>
 
       {/* Today's Stats - Tappable Glass Card */}
       <motion.div 
@@ -449,7 +449,7 @@ export function InstructorMobileHome({
         transition={{ delay: 0.5 }}
         whileTap={{ scale: 0.98 }}
       >
-        <div className="px-4 mt-2">
+        <div className="mt-2">
           <div 
             className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border cursor-pointer"
             onClick={() => navigate("/instructor/money")}
@@ -496,7 +496,7 @@ export function InstructorMobileHome({
       {/* Weekly Goal Progress - Glass Card */}
       {weeklyGoals && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
-          <div className="px-4 mt-4">
+          <div className="mt-4">
             <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -523,7 +523,7 @@ export function InstructorMobileHome({
       )}
 
       {/* PLAN AHEAD section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">PLAN AHEAD</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">PLAN AHEAD</p>
 
       {/* Tomorrow Peek Card */}
       {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
@@ -538,7 +538,7 @@ export function InstructorMobileHome({
         </motion.div>
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-          <div className="px-4 mt-2">
+          <div className="mt-2">
             <div
               className="flex items-center gap-2.5 py-2 px-3 rounded-xl bg-muted/50 cursor-pointer"
               onClick={() => navigate("/instructor/gaps")}

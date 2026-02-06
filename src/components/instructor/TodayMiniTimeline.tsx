@@ -36,7 +36,7 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
   };
 
   return (
-    <div className={`px-4 ${className}`}>
+    <div className={className}>
       <div className="bg-white rounded-xl border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
           Today's Schedule

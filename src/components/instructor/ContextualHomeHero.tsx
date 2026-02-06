@@ -161,7 +161,7 @@ export function ContextualHomeHero({
   };
 
   return (
-    <div className="relative -mx-4">
+    <div className="relative">
       {/* Hero Image */}
       <div className="w-full h-44 overflow-hidden rounded-2xl border border-border">
         <img
@@ -425,7 +425,7 @@ export function ContextualHomeHero({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className={`mx-4 mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium ${
+          className={`mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium ${
             alerts[0].severity === "severe"
               ? "bg-destructive/10 text-destructive"
               : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"

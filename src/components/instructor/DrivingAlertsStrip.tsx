@@ -52,7 +52,7 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
   if (alerts.length === 0) return null;
 
   return (
-    <div className={cn("px-4 mt-4 space-y-2", className)}>
+    <div className={cn("mt-4 space-y-2", className)}>
       <AnimatePresence mode="popLayout">
         {alerts.map((alert, index) => {
           const alertId = getAlertId(alert);
