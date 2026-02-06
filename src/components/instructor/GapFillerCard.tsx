@@ -338,7 +338,7 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
                                   }}
                                   disabled={!pupil.phone}
                                   className={cn(
-                                    "w-full flex items-center gap-3 rounded-xl p-3 transition-all",
+                                    "w-full flex items-center gap-3 rounded-xl p-3 transition-all overflow-hidden",
                                     isAnySelected
                                       ? "bg-primary text-primary-foreground shadow-md"
                                       : "bg-card border border-border hover:border-primary/50",
