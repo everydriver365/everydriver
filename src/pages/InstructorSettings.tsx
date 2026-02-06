@@ -81,6 +81,7 @@ export default function InstructorSettings() {
   const [uploading, setUploading] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>(["profile"]);
   const [openCategories, setOpenCategories] = useState<string[]>(["profile"]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("profile");
   
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -214,6 +215,7 @@ export default function InstructorSettings() {
   };
 
   const scrollToCategory = (categoryId: string) => {
+    setSelectedCategory(categoryId);
     // Open the category if it's closed
     if (!openCategories.includes(categoryId)) {
       setOpenCategories(prev => [...prev, categoryId]);
@@ -323,8 +325,10 @@ export default function InstructorSettings() {
                 key={category.id}
                 onClick={() => scrollToCategory(category.id)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-                  "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
+                  selectedCategory === category.id
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-transparent text-muted-foreground border-border hover:bg-muted/50 hover:text-foreground"
                 )}
               >
                 <category.icon className="h-3.5 w-3.5" />
