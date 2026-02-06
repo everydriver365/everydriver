@@ -69,7 +69,7 @@ export function QuietDayEmpty({ className = "" }: QuietDayEmptyProps) {
       animate={{ opacity: 1, scale: 1 }}
       className={`mx-4 text-center ${className}`}
     >
-      <div className="glass rounded-2xl border border-dashed border-border p-6 overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-2xl border border-border p-6 overflow-hidden">
         {/* Animated car */}
         <div className="relative h-12 mb-4 overflow-hidden">
           <AnimatedCar className="absolute top-2" />
@@ -127,6 +127,11 @@ export function QuietDayEmpty({ className = "" }: QuietDayEmptyProps) {
         
         {/* Main actions */}
         <div className="flex flex-col gap-2">
+          <Link to="/instructor/diary">
+            <Button className="w-full">
+              Book a Lesson
+            </Button>
+          </Link>
           <Link to="/instructor/schedule">
             <Button variant="outline" className="w-full">
               View Schedule
