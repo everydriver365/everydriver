@@ -53,7 +53,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
 import { LayoutGrid } from "lucide-react";
 
-const instructorLogo = "/everydriver-logo-instructor.png";
+import instructorLogo from "@/assets/ed-black-white-logo.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
