@@ -112,15 +112,17 @@ export function MobileHomepage() {
     <div className="min-h-screen bg-background">
       {/* Header - Hamburger + Logo + Location */}
       <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-10 w-10 text-primary-foreground hover:bg-primary-foreground/10"
-          onClick={() => setIsMenuOpen(true)}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-        <img src={drive365Logo} alt="Drive365" className="h-9 -mx-1" />
+        <div className="flex items-center gap-1">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-10 w-10 text-primary-foreground hover:bg-primary-foreground/10"
+            onClick={() => setIsMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <img src={drive365Logo} alt="Drive365" className="h-8 -mx-1" />
+        </div>
         <Button 
           variant="outline" 
           size="sm" 
