@@ -138,7 +138,7 @@ export function NextUpTile({
                 : 'bg-primary/10 text-primary'
             }`}>
               <Clock className="h-3 w-3 inline mr-1" />
-              {dateLabel ? `${dateLabel} · ` : ''}{formatTime(startTime)} · {getCountdownText()}
+              {dateLabel ? `${dateLabel} · ` : ''}{formatTime(startTime)}
             </span>
           </div>
 
