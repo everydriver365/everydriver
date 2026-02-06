@@ -55,7 +55,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   if (loading) {
     return (
       <div className={cn("px-4", className)}>
-         <div className="bg-white rounded-xl p-4 animate-pulse shadow-lg">
+         <div className="bg-white rounded-xl p-4 animate-pulse shadow-lg border border-border">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-lg bg-gray-200" />
             <div className="flex-1 space-y-2">
@@ -73,7 +73,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
     return (
       <div className={cn("px-4", className)}>
         <div 
-           className="bg-white rounded-xl p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-lg"
+           className="bg-white rounded-xl p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-lg border border-border"
           onClick={handleCardClick}
         >
           <div className="flex items-center justify-between">
@@ -111,7 +111,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   return (
     <div className={cn("px-4", className)}>
       <div 
-           className="bg-white rounded-xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform shadow-lg"
+           className="bg-white rounded-xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform shadow-lg border border-border"
         onClick={handleCardClick}
       >
         {/* Header with Mode Toggle */}
