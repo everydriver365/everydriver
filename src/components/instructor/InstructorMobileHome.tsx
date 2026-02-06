@@ -16,7 +16,9 @@ import {
   AlertTriangle,
   LayoutGrid,
   Sun,
-  BookOpen
+  BookOpen,
+  ChevronRight,
+  CheckCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -141,6 +143,7 @@ export function InstructorMobileHome({
   const { instructor: authInstructor } = useInstructorAuth();
   const [isTileEditMode, setIsTileEditMode] = useState(false);
   const [showFAB, setShowFAB] = useState(false);
+  const [showRefreshFeedback, setShowRefreshFeedback] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -266,6 +269,8 @@ export function InstructorMobileHome({
       queryClient.invalidateQueries({ queryKey: ["gap-suggestions"] }),
       queryClient.invalidateQueries({ queryKey: ["last-week-comparison"] }),
     ]);
+    setShowRefreshFeedback(true);
+    setTimeout(() => setShowRefreshFeedback(false), 1500);
   };
 
   // Show skeleton while loading critical data
@@ -277,6 +282,23 @@ export function InstructorMobileHome({
     <PullToRefresh onRefresh={handleRefresh}>
        <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
        <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative">
+
+      {/* Updated feedback banner */}
+      <AnimatePresence>
+        {showRefreshFeedback && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex items-center justify-center pt-2"
+          >
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-medium">
+              <CheckCircle className="h-3 w-3" />
+              Updated just now
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Contextual Home Hero */}
       <div className="px-4 pt-4">
@@ -336,9 +358,14 @@ export function InstructorMobileHome({
         </motion.div>
       )}
 
+      {/* YOUR DAY section */}
+      {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">YOUR DAY</p>
+      )}
+
       {/* Next Lesson Card - only show when there's a lesson */}
       {nextLesson && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-2">
           <NextUpTile
             lessonId={nextLesson.lessonId}
             pupilId={nextLesson.pupilId}
@@ -382,9 +409,12 @@ export function InstructorMobileHome({
         </motion.div>
       )}
 
+      {/* QUICK ACTIONS section */}
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">QUICK ACTIONS</p>
+
       {/* Quick Action Tiles */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-        <div className="px-4 pt-6 pb-6">
+        <div className="px-4 pb-6">
           <QuickActionTiles
             quickActions={content?.quick_actions || []}
             pendingJobsCount={pendingJobsCount}
@@ -404,11 +434,25 @@ export function InstructorMobileHome({
         />
       </motion.div>
 
-      {/* Today's Stats - Glass Card */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-        <div className="px-4 mt-4">
-          <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
-            <h3 className="font-semibold text-foreground text-sm mb-3">Today's Stats</h3>
+      {/* INSIGHTS section */}
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">INSIGHTS</p>
+
+      {/* Today's Stats - Tappable Glass Card */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ delay: 0.5 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <div className="px-4 mt-2">
+          <div 
+            className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border cursor-pointer"
+            onClick={() => navigate("/instructor/money")}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-foreground text-sm">Today's Stats</h3>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
             <div className="flex items-center justify-around">
               <div className="flex flex-col items-center gap-0.5">
                 <div className="flex items-center gap-1 text-rose-500">
@@ -471,6 +515,11 @@ export function InstructorMobileHome({
             </div>
           </div>
         </motion.div>
+      )}
+
+      {/* PLAN AHEAD section */}
+      {((tomorrowPreview && tomorrowPreview.lessonCount > 0) || instructorId) && (
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 px-4 mt-6 mb-2">PLAN AHEAD</p>
       )}
 
       {/* Tomorrow Peek Card */}

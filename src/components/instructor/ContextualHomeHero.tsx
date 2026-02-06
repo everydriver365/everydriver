@@ -478,58 +478,69 @@ export function ContextualHomeHero({
              
              {/* Rotating Stats Carousel */}
              {rotatingStats.length > 0 && (
-               <motion.div 
-                 className="flex items-center justify-between mt-3 pt-3 border-t border-border/50"
-                 initial={{ opacity: 0 }}
-                 animate={{ opacity: 1 }}
-                 transition={{ delay: 0.2 }}
-               >
-                 <AnimatePresence mode="wait">
-                   <motion.div
-                     key={rotatingStatIndex}
-                     initial={{ opacity: 0, y: 10 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     exit={{ opacity: 0, y: -10 }}
-                     transition={{ duration: 0.3 }}
-                     className="flex items-center gap-1.5"
-                   >
-                     {(() => {
-                       const stat = rotatingStats[rotatingStatIndex];
-                       const StatIcon = stat.icon;
-                       return (
-                         <>
-                           <StatIcon className={`h-4 w-4 ${stat.color}`} />
-                           <span className={`text-base font-bold ${stat.color}`}>
-                             <AnimatedCounter value={stat.value} />
-                           </span>
-                           <span className="text-xs text-muted-foreground">{stat.label}</span>
-                         </>
-                       );
-                     })()}
-                   </motion.div>
-                 </AnimatePresence>
-                 
-                 {/* Dot indicators */}
-                 {rotatingStats.length > 1 && (
-                   <div className="flex gap-1">
-                     {rotatingStats.map((_, idx) => (
-                       <button
-                         key={idx}
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           setRotatingStatIndex(idx);
-                         }}
-                         className={`w-1.5 h-1.5 rounded-full transition-all ${
-                           idx === rotatingStatIndex 
-                             ? 'bg-primary w-3' 
-                             : 'bg-muted-foreground/30'
-                         }`}
-                       />
-                     ))}
-                   </div>
-                 )}
-               </motion.div>
-             )}
+                <motion.div 
+                  className="flex items-center justify-between mt-3 pt-3 border-t border-border/50"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={rotatingStatIndex}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex items-center gap-1.5"
+                    >
+                      {(() => {
+                        const stat = rotatingStats[rotatingStatIndex];
+                        const StatIcon = stat.icon;
+                        return (
+                          <>
+                            <StatIcon className={`h-4 w-4 ${stat.color}`} />
+                            <span className={`text-base font-bold ${stat.color}`}>
+                              <AnimatedCounter value={stat.value} />
+                            </span>
+                            <span className="text-xs text-muted-foreground">{stat.label}</span>
+                          </>
+                        );
+                      })()}
+                    </motion.div>
+                  </AnimatePresence>
+                  
+                  {/* Dot indicators */}
+                  {rotatingStats.length > 1 && (
+                    <div className="flex gap-1">
+                      {rotatingStats.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRotatingStatIndex(idx);
+                          }}
+                          className={`w-1.5 h-1.5 rounded-full transition-all ${
+                            idx === rotatingStatIndex 
+                              ? 'bg-primary w-3' 
+                              : 'bg-muted-foreground/30'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Expand hint - bouncing chevron when collapsed */}
+              {!isExpanded && (
+                <motion.div
+                  className="flex justify-center mt-2"
+                  animate={{ y: [0, 3, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                >
+                  <ChevronDown className="h-4 w-4 text-muted-foreground/50" />
+                </motion.div>
+              )}
            </div>
             
             {/* Expanded Content - Today's Summary */}
