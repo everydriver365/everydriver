@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { Clock, MessageSquare, Phone, Navigation, Check, Car, Loader2, Mail } from "lucide-react";
-import { motion, useMotionValue, useTransform, useAnimation, PanInfo } from "framer-motion";
+import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail } from "lucide-react";
+import { motion } from "framer-motion";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
-import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 
@@ -24,9 +22,6 @@ interface NextUpTileProps {
   instructorId?: string;
 }
 
-const SWIPE_THRESHOLD = 80;
-const ACTION_WIDTH = 240;
-
 export function NextUpTile({
   lessonId,
   pupilId,
@@ -42,11 +37,6 @@ export function NextUpTile({
   prepaidHours,
   instructorId,
 }: NextUpTileProps) {
-  const [isRevealed, setIsRevealed] = useState(false);
-  const x = useMotionValue(0);
-  const controls = useAnimation();
-  const actionOpacity = useTransform(x, [-ACTION_WIDTH, -SWIPE_THRESHOLD, 0], [1, 0.8, 0]);
-
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
 
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(
@@ -64,24 +54,24 @@ export function NextUpTile({
 
   const getDateLabel = () => {
     const date = parseISO(lessonDate);
-    if (isToday(date)) return null;
+    if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
     return format(date, "EEE d MMM");
   };
 
   const getCountdownText = () => {
-    if (minutesUntil <= 0) return "Now";
-    if (minutesUntil < 60) return `${minutesUntil}m`;
+    if (minutesUntil <= 0) return "now";
+    if (minutesUntil < 60) return `in ${minutesUntil} min`;
     const hours = Math.floor(minutesUntil / 60);
     const mins = minutesUntil % 60;
     if (hours >= 24) {
       const days = Math.floor(hours / 24);
-      return `${days}d`;
+      return `in ${days}d`;
     }
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    return mins > 0 ? `in ${hours}h ${mins}m` : `in ${hours}h`;
   };
 
-  const dateLabel = getDateLabel();
+  const effectiveBalance = prepaidHours > 0 ? prepaidHours * 40 : accountBalance;
 
   const handleNavigate = () => {
     if (pickupPostcode) {
@@ -92,42 +82,22 @@ export function NextUpTile({
     }
   };
 
-  const handleText = () => {
-    if (pupilPhone) {
-      window.open(`sms:${pupilPhone}`, "_self");
-    }
-  };
-
-  const handleOnMyWay = () => {
-    if (pupilPhone) {
-      const firstName = pupilName.split(" ")[0];
-      const message = encodeURIComponent(`Hi ${firstName}, I'm on my way to you!`);
-      window.open(`sms:${pupilPhone}?body=${message}`, "_self");
-    }
-  };
-
   const handleCall = () => {
     if (pupilPhone) {
       window.open(`tel:${pupilPhone}`, "_self");
     }
   };
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    if (info.offset.x < -SWIPE_THRESHOLD) {
-      controls.start({ x: -ACTION_WIDTH });
-      setIsRevealed(true);
-    } else {
-      controls.start({ x: 0 });
-      setIsRevealed(false);
+  const handleMessage = () => {
+    if (pupilPhone) {
+      window.open(`sms:${pupilPhone}`, "_self");
     }
   };
 
-  const closeActions = () => {
-    controls.start({ x: 0 });
-    setIsRevealed(false);
+  const handleCancel = () => {
+    // Cancel functionality — could open a confirmation dialog
+    // Keeping as placeholder to retain existing pattern
   };
-
-  const effectiveBalance = prepaidHours > 0 ? prepaidHours * 40 : accountBalance;
 
   return (
     <motion.div
@@ -135,175 +105,108 @@ export function NextUpTile({
       animate={{ opacity: 1, y: 0 }}
       className="mx-4"
     >
-      <div className="relative overflow-hidden rounded-xl border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)]">
-        {/* Action buttons revealed behind */}
-        <motion.div
-          style={{ opacity: actionOpacity }}
-          className="absolute inset-y-0 right-0 flex items-stretch z-0"
-        >
-          <div className="flex items-stretch">
-            {pickupPostcode && (
-              <button
-                onClick={() => { handleNavigate(); closeActions(); }}
-                className="w-[60px] flex flex-col items-center justify-center gap-1 bg-primary text-white"
-              >
-                <Navigation className="h-5 w-5" />
-                <span className="text-[9px] font-medium">Nav</span>
-              </button>
-            )}
-            {pupilPhone && (
-              <>
-                <button
-                  onClick={() => { handleCall(); closeActions(); }}
-                  className="w-[60px] flex flex-col items-center justify-center gap-1 bg-emerald-500 text-white"
-                >
-                  <Phone className="h-5 w-5" />
-                  <span className="text-[9px] font-medium">Call</span>
-                </button>
-                <button
-                  onClick={() => { handleText(); closeActions(); }}
-                  className="w-[60px] flex flex-col items-center justify-center gap-1 bg-slate-600 text-white"
-                >
-                  <MessageSquare className="h-5 w-5" />
-                  <span className="text-[9px] font-medium">Text</span>
-                </button>
-                <button
-                  onClick={() => { handleOnMyWay(); closeActions(); }}
-                  className="w-[60px] flex flex-col items-center justify-center gap-1 bg-amber-500 text-white"
-                >
-                  <Check className="h-5 w-5" />
-                  <span className="text-[9px] font-medium">On Way</span>
-                </button>
-              </>
-            )}
+      <div className="rounded-2xl bg-white border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] overflow-hidden">
+        {/* Header section — date/time + countdown */}
+        <div className="px-5 pt-4 pb-3">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Clock className="h-4 w-4 text-primary" />
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              Next Lesson
+            </span>
           </div>
-        </motion.div>
+          <h2 className="text-xl font-bold text-foreground">
+            {getDateLabel()} · {formatTime(startTime)}
+          </h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            ({getCountdownText()})
+          </p>
+        </div>
 
-        {/* Swipeable foreground card */}
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: -ACTION_WIDTH, right: 0 }}
-          dragElastic={0.1}
-          onDragEnd={handleDragEnd}
-          animate={controls}
-          style={{ x }}
-          className="relative z-10 bg-white touch-pan-y"
-        >
-          {/* Accent bar */}
-          <div className={`h-1.5 ${
-            minutesUntil <= 15 
-              ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-red-400' 
-              : 'bg-gradient-to-r from-primary via-blue-400 to-cyan-400'
-          }`} />
-
-          {/* Header */}
-          <div className="px-4 pt-3 pb-2">
-            <div className="flex items-center justify-between mb-2">
-              <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
-                <motion.span
-                  animate={{ scale: [1, 1.3, 1] }}
-                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                  className={`inline-block h-2 w-2 rounded-full ${
-                    minutesUntil <= 15 ? 'bg-amber-500' : 'bg-emerald-500'
-                  }`}
-                />
-                Next up
-              </span>
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                minutesUntil <= 15 
-                  ? 'bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-amber-600' 
-                  : 'bg-primary/10 text-primary'
-              }`}>
-                <Clock className="h-3 w-3 inline mr-1" />
-                {dateLabel ? `${dateLabel} · ` : ''}{formatTime(startTime)}
-              </span>
-            </div>
-
-            {/* Pupil row */}
-            <div className="flex items-center gap-3">
-              <PupilAvatar 
-                name={pupilName} 
-                imageUrl={pupilProfileImage} 
-                size="md" 
-              />
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground text-sm truncate">{pupilName}</p>
-                {pickupLocation && (
-                  <p className="text-sm text-foreground mt-0.5 truncate">
-                    {pickupLocation}
-                  </p>
-                )}
-                {pickupPostcode && (
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
-                    <span>{pickupPostcode}</span>
-                    {etaLoading ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : etaMinutes > 0 ? (
-                      <span className={`flex items-center gap-1 font-medium ${
-                        etaMinutes >= minutesUntil 
-                          ? 'text-destructive' 
-                          : etaMinutes >= minutesUntil - 10
-                          ? 'text-amber-600'
-                          : 'text-emerald-600'
-                      }`}>
-                        <Car className="h-3 w-3" />
-                        {etaText}
-                        {trafficCondition && trafficCondition !== 'clear' && (
-                          <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            trafficCondition === 'heavy' 
-                              ? 'bg-red-100 text-red-700' 
-                              : trafficCondition === 'moderate'
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-yellow-50 text-yellow-700'
-                          }`}>
-                            {trafficCondition === 'heavy' ? '🔴 Heavy' : trafficCondition === 'moderate' ? '🟡 Moderate' : '🟢 Light'}
-                          </span>
-                        )}
-                        {trafficCondition === 'clear' && (
-                          <span className="ml-1 text-[10px] text-emerald-500 font-medium">✓ Clear</span>
-                        )}
-                      </span>
-                    ) : null}
-                  </p>
-                )}
-                <div className="mt-1">
-                  <PaymentStatusBadge 
-                    balance={effectiveBalance} 
-                    size="sm" 
-                  />
-                </div>
+        {/* Pupil info card */}
+        <div className="mx-4 mb-3 rounded-xl bg-secondary/50 border border-border p-3">
+          <div className="flex items-center gap-3">
+            <PupilAvatar
+              name={pupilName}
+              imageUrl={pupilProfileImage}
+              size="lg"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-foreground text-base truncate">{pupilName}</p>
+              {(pickupLocation || pickupPostcode) && (
+                <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                  {pickupLocation ? `${pickupLocation}, ` : ""}{pickupPostcode || ""}
+                </p>
+              )}
+              {/* Payment + Traffic row */}
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <PaymentStatusBadge balance={effectiveBalance} size="md" />
+                {etaLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                ) : etaMinutes > 0 ? (
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium ${
+                    trafficCondition === 'heavy' ? 'text-destructive'
+                    : trafficCondition === 'moderate' ? 'text-amber-600'
+                    : 'text-emerald-600'
+                  }`}>
+                    <Car className="h-3.5 w-3.5" />
+                    {trafficCondition === 'clear' ? '✓ Clear' : trafficCondition === 'heavy' ? '🔴 Heavy' : trafficCondition === 'moderate' ? '🟡 Moderate' : `✓ ${etaText}`}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Unread message alert */}
-          {pupilUnreadCount > 0 && (
-            <div className="mx-4 mb-2 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 border border-destructive/20">
-              <Mail className="h-4 w-4 text-destructive shrink-0" />
-              <span className="text-xs font-medium text-destructive">
-                {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? 's' : ''} from {pupilName.split(" ")[0]}
-              </span>
-            </div>
-          )}
-
-          {/* Mini map */}
-          {pickupPostcode && (
-            <div className="px-4 pb-2">
-              <PostcodeMapPreview
-                postcode={pickupPostcode}
-                onClick={handleNavigate}
-                className="mt-1"
-              />
-            </div>
-          )}
-
-          {/* Swipe hint */}
-          <div className="flex items-center justify-center py-2 border-t border-border">
-            <span className="text-[10px] text-muted-foreground/60 font-medium">
-              ← Swipe for actions
+        {/* Unread message alert */}
+        {pupilUnreadCount > 0 && (
+          <div className="mx-4 mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 border border-destructive/20">
+            <Mail className="h-4 w-4 text-destructive shrink-0" />
+            <span className="text-xs font-medium text-destructive">
+              {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {pupilName.split(" ")[0]}
             </span>
           </div>
-        </motion.div>
+        )}
+
+        {/* Start Navigation CTA */}
+        {pickupPostcode && (
+          <div className="px-4 mb-3">
+            <button
+              onClick={handleNavigate}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-white font-semibold text-base shadow-md hover:shadow-lg transition-all"
+              style={{ background: "linear-gradient(to right, #1877F2, #1466d8)" }}
+            >
+              <Navigation className="h-5 w-5" />
+              Start Navigation &rsaquo;
+            </button>
+          </div>
+        )}
+
+        {/* Action buttons row */}
+        <div className="px-4 pb-4 grid grid-cols-3 gap-2">
+          <button
+            onClick={handleCall}
+            disabled={!pupilPhone}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/50 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
+          >
+            <Phone className="h-4 w-4" />
+            Call
+          </button>
+          <button
+            onClick={handleMessage}
+            disabled={!pupilPhone}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/50 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Message
+          </button>
+          <button
+            onClick={handleCancel}
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/50 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <X className="h-4 w-4" />
+            Cancel
+          </button>
+        </div>
       </div>
     </motion.div>
   );
