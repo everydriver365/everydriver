@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface DrivingAlert {
-  type: "weather" | "traffic";
+  type: "weather" | "traffic" | "road";
   severity: "low" | "moderate" | "severe";
   title: string;
   description: string;

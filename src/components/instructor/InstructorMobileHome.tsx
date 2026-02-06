@@ -56,6 +56,7 @@ import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
+import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
 import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { QuickStatsChips } from "@/components/instructor/QuickStatsChips";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -548,6 +549,9 @@ export function InstructorMobileHome({
           </div>
         </motion.div>
       ) : null}
+
+      {/* Road Alerts from National Highways */}
+      <RoadAlertsRow alerts={alerts} className="mt-2" />
 
       {/* Setup Checklist for new instructors */}
       {instructorId && (
