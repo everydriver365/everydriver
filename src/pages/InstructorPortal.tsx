@@ -239,7 +239,7 @@ export default function InstructorPortal() {
                   placeholder="Search pupils..."
                   value={pupilSearch}
                   onChange={(e) => setPupilSearch(e.target.value)}
-                  className="h-10 w-64 rounded-lg border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="h-10 w-64 rounded-lg border border-border bg-muted/50 text-foreground placeholder:text-muted-foreground pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:bg-background transition-colors"
                 />
                 {pupilSearch.length > 0 && (
                   <div className="absolute top-full left-0 mt-1 w-80 bg-popover border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
