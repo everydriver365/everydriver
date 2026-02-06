@@ -239,7 +239,7 @@ export default function InstructorPortal() {
                   placeholder="Search pupils..."
                   value={pupilSearch}
                   onChange={(e) => setPupilSearch(e.target.value)}
-                  className="h-10 w-64 rounded-lg border-0 bg-foreground/10 text-foreground placeholder:text-muted-foreground/60 pl-9 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 backdrop-blur-sm transition-all"
+                  className="h-10 w-64 rounded-lg border border-border bg-muted text-foreground placeholder:text-muted-foreground pl-9 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-background transition-all"
                 />
                 {pupilSearch && (
                   <button
