@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { Clock, MessageSquare, Phone, Navigation, Check } from "lucide-react";
+import { Clock, MessageSquare, Phone, Navigation, Check, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
@@ -34,7 +36,7 @@ export function NextUpTile({
   accountBalance,
   prepaidHours,
 }: NextUpTileProps) {
-  
+  const [isOpen, setIsOpen] = useState(false);
 
   const formatTime = (time: string) => {
     try {
@@ -157,41 +159,57 @@ export function NextUpTile({
           </div>
         )}
 
-        {/* Quick actions row */}
-        <div className="px-4 pb-3 pt-1 border-t border-border">
-          <div className="flex items-center justify-between gap-2">
-            {pickupPostcode && (
-              <button onClick={handleNavigate} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
-                <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
-                  <Navigation className="h-4 w-4 text-primary" />
-                </div>
-                <span className="text-[10px] font-medium text-muted-foreground">Nav</span>
-              </button>
-            )}
-            {pupilPhone && (
-              <>
-                <button onClick={handleCall} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
-                    <Phone className="h-4 w-4 text-emerald-600" />
-                  </div>
-                  <span className="text-[10px] font-medium text-muted-foreground">Call</span>
-                </button>
-                <button onClick={handleText} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
-                    <MessageSquare className="h-4 w-4 text-foreground" />
-                  </div>
-                  <span className="text-[10px] font-medium text-muted-foreground">Text</span>
-                </button>
-                <button onClick={handleOnMyWay} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
-                    <Check className="h-4 w-4 text-amber-500" />
-                  </div>
-                  <span className="text-[10px] font-medium text-muted-foreground">On Way</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
+        {/* Expandable quick actions */}
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger asChild>
+            <button className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors border-t border-border">
+              <motion.div
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="h-4 w-4" />
+              </motion.div>
+              {isOpen ? "Close" : "Quick actions"}
+            </button>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <div className="px-4 pb-3">
+              <div className="flex items-center justify-between gap-2">
+                {pickupPostcode && (
+                  <button onClick={handleNavigate} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
+                      <Navigation className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground">Nav</span>
+                  </button>
+                )}
+                {pupilPhone && (
+                  <>
+                    <button onClick={handleCall} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
+                        <Phone className="h-4 w-4 text-emerald-600" />
+                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground">Call</span>
+                    </button>
+                    <button onClick={handleText} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
+                        <MessageSquare className="h-4 w-4 text-foreground" />
+                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground">Text</span>
+                    </button>
+                    <button onClick={handleOnMyWay} className="flex flex-col items-center gap-1.5 flex-1 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="h-10 w-10 rounded-lg border border-border bg-background flex items-center justify-center">
+                        <Check className="h-4 w-4 text-amber-500" />
+                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground">On Way</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </motion.div>
   );
