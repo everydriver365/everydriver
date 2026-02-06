@@ -392,7 +392,7 @@ export function ContextualHomeHero({
                     </span>
                   )}
                   {pendingJobs > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 text-[11px] font-medium">
                       <Briefcase className="h-3 w-3" />
                       {pendingJobs} Job Offer{pendingJobs !== 1 ? 's' : ''}
                     </span>
