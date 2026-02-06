@@ -19,6 +19,7 @@ import {
   Trash2
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
+import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
 import { GPSgateUserIdSettings } from "@/components/instructor/GPSgateUserIdSettings";
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
@@ -232,7 +233,8 @@ export default function InstructorTraccarSetup() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-primary border-b border-primary-foreground/10 px-4 py-3">
         <div className="flex items-center justify-between">
@@ -433,5 +435,7 @@ export default function InstructorTraccarSetup() {
         </div>
       </div>
     </div>
+    <InstructorBottomNav />
+    </>
   );
 }
