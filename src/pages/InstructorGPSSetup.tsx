@@ -19,8 +19,7 @@ import {
   Trash2
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
-import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
-import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
+import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { GPSgateUserIdSettings } from "@/components/instructor/GPSgateUserIdSettings";
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
@@ -234,12 +233,9 @@ export default function InstructorTraccarSetup() {
   }
 
   return (
-    <>
-    <div className="min-h-screen bg-[#E8F1FE] dark:bg-background pb-20">
-      {/* Standard Mobile Header */}
-      <InstructorMobileHeader title="GPS Tracking" showBackButton />
-
-      <div className="p-4 space-y-6 max-w-2xl mx-auto">
+    <InstructorPortalLayout>
+     <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 -mt-4 p-4">
+      <div className="space-y-6 max-w-2xl mx-auto">
         {/* GPSgate User ID Settings */}
         {instructor?.id && (
           <GPSgateUserIdSettings instructorId={instructor.id} />
@@ -415,7 +411,6 @@ export default function InstructorTraccarSetup() {
         </div>
       </div>
     </div>
-    <InstructorBottomNav />
-    </>
+    </InstructorPortalLayout>
   );
 }
