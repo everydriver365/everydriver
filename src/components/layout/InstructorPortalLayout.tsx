@@ -58,6 +58,7 @@ import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
 import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
+import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
 
 const sidebarLinks = [
@@ -441,6 +442,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   className="h-8 brightness-0 invert"
                 />
               </Link>
+              <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
             </div>
 
             {/* Navigation Tabs */}
