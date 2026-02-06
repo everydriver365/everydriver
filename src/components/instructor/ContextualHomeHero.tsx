@@ -234,16 +234,16 @@ export function ContextualHomeHero({
         
       case "midday":
         if (remainingLessons > 0) {
-          return `${completedLessons} done, ${remainingLessons} to go · £${todayOverview?.expectedEarnings || 0} expected`;
+          return `${completedLessons} done, ${remainingLessons} to go`;
         }
         if (completedLessons > 0) {
-          return `All ${completedLessons} lessons complete! £${todayOverview?.expectedEarnings || 0} earned`;
+          return `All ${completedLessons} lessons complete!`;
         }
         return motivationSubtitle || "Enjoy your day!";
         
       case "evening":
         if (totalLessons > 0) {
-          return `Great work! ${totalLessons} lessons · £${todayOverview?.expectedEarnings || 0} earned`;
+          return "Great work today!";
         }
         if (tomorrowPreview && tomorrowPreview.lessonCount > 0) {
           return `Tomorrow: ${tomorrowPreview.lessonCount} lessons starting ${tomorrowPreview.firstLessonTime || 'early'}`;
