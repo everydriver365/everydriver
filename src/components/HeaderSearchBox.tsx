@@ -121,7 +121,8 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
           placeholder="Search ..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="h-9 w-56 rounded-lg border-0 bg-white/10 text-white placeholder:text-white/40 pl-9 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/15 transition-all"
+          style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+          className="h-9 w-56 rounded-lg border-0 text-white placeholder:text-white/40 pl-9 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
         />
         {query && (
           <button
