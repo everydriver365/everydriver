@@ -193,7 +193,7 @@ Deno.serve(async (req) => {
             synced_at: new Date().toISOString(),
           }));
 
-          await supabase.from("instructor_calendar_events").insert(eventsToInsert);
+          await supabase.from("instructor_calendar_events").upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' });
         }
 
         // Update last sync time
