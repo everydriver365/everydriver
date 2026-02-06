@@ -768,7 +768,7 @@ export default function InstructorLiveSession() {
 
   if (loading || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#6ec1e4] dark:bg-background">
+      <div className="flex items-center justify-center min-h-screen bg-[#E8F1FE] dark:bg-background">
         <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -797,7 +797,7 @@ export default function InstructorLiveSession() {
   // When session is active, show fullscreen map without standard layout
   if (isSessionActive) {
     return (
-      <div className="h-[100dvh] flex flex-col bg-[#6ec1e4] dark:bg-background overflow-hidden">
+      <div className="h-[100dvh] flex flex-col bg-[#E8F1FE] dark:bg-background overflow-hidden">
         <div className="flex-1 relative overflow-hidden">
           {/* Stale data banner with reconnect option */}
           {!isConnected && (
@@ -898,7 +898,7 @@ export default function InstructorLiveSession() {
   // When no session, use standard layout with hamburger menu
   return (
     <InstructorPortalLayout>
-       <div className="min-h-[calc(100dvh-120px)] bg-[#6ec1e4] dark:bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
+       <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
          {/* Modern card-based layout */}
          <div className="p-4 pb-24 space-y-4">
            {/* Tracker Selector Tile */}
