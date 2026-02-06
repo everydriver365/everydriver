@@ -69,7 +69,7 @@ export function TodayRoutePreview({
 
   if (isLoading) {
     return (
-      <div className={cn("mx-4 mb-4", className)}>
+      <div className={cn("mb-4", className)}>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -93,7 +93,7 @@ export function TodayRoutePreview({
     : [51.5074, -0.1278] as [number, number];
 
   return (
-    <div className={cn("mx-4 mb-4", className)}>
+    <div className={cn("mb-4", className)}>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

@@ -54,7 +54,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   // Loading state
   if (loading) {
     return (
-      <div className={cn("px-4", className)}>
+      <div className={cn("", className)}>
          <div className="bg-white rounded-xl p-4 animate-pulse shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-lg bg-gray-200" />
@@ -71,7 +71,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   // Error or no data state
   if (error || (!cheapest && !nearest)) {
     return (
-      <div className={cn("px-4", className)}>
+      <div className={cn("", className)}>
         <div 
            className="bg-white rounded-xl p-4 cursor-pointer active:scale-[0.99] transition-transform shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
           onClick={handleCardClick}
@@ -109,7 +109,7 @@ export function FuelFinderCard({ instructorId, className }: FuelFinderCardProps)
   const primaryPrice = displayStation?.prices.E10 || displayStation?.prices.E5;
 
   return (
-    <div className={cn("px-4", className)}>
+    <div className={cn("", className)}>
       <div 
            className="bg-white rounded-xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border"
         onClick={handleCardClick}

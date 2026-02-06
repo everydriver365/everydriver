@@ -141,7 +141,7 @@ export function NextUpTile({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mx-4"
+        className=""
       >
         <div className="rounded-2xl bg-white border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] overflow-hidden">
           {/* Header section — date/time + countdown */}

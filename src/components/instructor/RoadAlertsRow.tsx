@@ -24,7 +24,7 @@ export function RoadAlertsRow({ alerts, className = "" }: RoadAlertsRowProps) {
   if (roadAlerts.length === 0) return null;
 
   return (
-    <div className={`px-4 space-y-2 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       {roadAlerts.map((alert, i) => {
         const Icon = iconMap[alert.icon] || AlertTriangle;
         const colors = severityColor[alert.severity] || severityColor.low;
