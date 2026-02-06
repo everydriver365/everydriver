@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe, CalendarCheck } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe, CalendarCheck, Search, MessageSquare, Plus, PoundSterling } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -225,14 +225,61 @@ export default function InstructorPortal() {
               Here's what's happening with your business today.
             </p>
           </div>
-          <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2 shrink-0">
-            <Globe className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Online</span>
-            <Switch
-              checked={authInstructor?.is_active ?? false}
-              onCheckedChange={handleVisibilityToggle}
-              disabled={updatingVisibility}
-            />
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/instructor/schedule?action=add")}
+              className="gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Lesson
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/instructor/pupils?action=bespoke")}
+              className="gap-1.5"
+            >
+              <Briefcase className="h-3.5 w-3.5" />
+              Bespoke Booking
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPaymentModalOpen(true)}
+              className="gap-1.5"
+            >
+              <PoundSterling className="h-3.5 w-3.5" />
+              Take Payment
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/instructor/messages?action=new")}
+              className="gap-1.5"
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              Send Text
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/instructor/pupils")}
+              className="gap-1.5"
+            >
+              <Search className="h-3.5 w-3.5" />
+              Search
+            </Button>
+            <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Online</span>
+              <Switch
+                checked={authInstructor?.is_active ?? false}
+                onCheckedChange={handleVisibilityToggle}
+                disabled={updatingVisibility}
+              />
+            </div>
           </div>
         </motion.div>
 
