@@ -267,13 +267,13 @@ export default function AdminPortal() {
       case "overview":
         return (
           <>
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <div className="flex items-center gap-3 mb-6 p-4 rounded-xl bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/20 shadow-sm">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary/60" />
                 <input
                   type="text"
                   placeholder="Search bookings by pupil or instructor..."
-                  className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex h-11 w-full rounded-lg border-0 bg-background/80 backdrop-blur-sm pl-9 pr-3 py-2 text-sm shadow-inner ring-1 ring-primary/20 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       setActiveSection("bookings");
@@ -281,7 +281,7 @@ export default function AdminPortal() {
                   }}
                 />
               </div>
-              <Button onClick={() => setIsBespokeOpen(true)}>
+              <Button onClick={() => setIsBespokeOpen(true)} size="lg" className="shadow-md shrink-0">
                 <Plus className="mr-1 h-4 w-4" /> Create Bespoke Booking
               </Button>
             </div>
