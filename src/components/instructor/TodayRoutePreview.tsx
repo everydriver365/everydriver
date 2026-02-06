@@ -73,7 +73,7 @@ export function TodayRoutePreview({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-           className="bg-white rounded-xl overflow-hidden shadow-lg"
+           className="bg-white rounded-xl overflow-hidden shadow-lg border border-border"
         >
            <div className="h-40 flex items-center justify-center bg-gray-50">
              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -97,7 +97,7 @@ export function TodayRoutePreview({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-         className="bg-white rounded-xl overflow-hidden cursor-pointer shadow-lg transition-all"
+         className="bg-white rounded-xl overflow-hidden cursor-pointer shadow-lg transition-all border border-border"
         onClick={onTap}
       >
         {/* Header */}
