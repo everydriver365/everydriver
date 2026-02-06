@@ -104,10 +104,13 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
       to={`/instructor/schedule?date=${nextLesson.lesson_date}`}
       className="block"
     >
-      <div className={cn(
-        "bg-gradient-to-br from-primary via-primary/90 to-primary/80 rounded-2xl p-4 text-primary-foreground",
-        "hover:shadow-lg transition-all duration-200"
-      )}>
+      <div
+        className={cn(
+          "rounded-2xl p-4 text-white",
+          "hover:shadow-lg transition-all duration-200"
+        )}
+        style={{ background: 'linear-gradient(to bottom right, #1877F2, #1466d8)' }}
+      >
         <div className="flex items-center gap-3">
           {/* Avatar with ring */}
           <div className="relative">
