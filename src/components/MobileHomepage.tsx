@@ -111,12 +111,12 @@ export function MobileHomepage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Hamburger + Logo + Location */}
-      <div className="px-4 py-3 flex items-center justify-between sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
+      <div className="px-4 flex items-center justify-between sticky top-0 z-50 bg-primary h-16">
         <div className="flex items-center gap-1">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-10 w-10 text-primary-foreground hover:bg-primary-foreground/10"
+            className="h-9 w-9 text-primary-foreground hover:bg-primary-foreground/10"
             onClick={() => setIsMenuOpen(true)}
           >
             <Menu className="h-5 w-5" />
