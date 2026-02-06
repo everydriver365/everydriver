@@ -276,7 +276,7 @@ export default function InstructorQuickAvailability() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-4">
+      <div className="space-y-4 min-h-screen -m-4 p-4" style={{ backgroundColor: '#D1E4FC' }}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
