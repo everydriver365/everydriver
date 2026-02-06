@@ -1,38 +1,30 @@
 
 
-# Add Notification Badges to Messages & Visitor Chats Tiles
+# Show "Nothing Upcoming" Empty State in Plan Ahead
 
 ## What changes
-Add red unread-count badges to both the **Messages** tile and the **Visitor Chats** tile in Quick Actions, matching the existing pattern used for pending jobs badges.
+When there are no lessons scheduled for tomorrow and the setup checklist has nothing to show, display a friendly empty state graphic in the Plan Ahead section instead of showing nothing.
 
 ## How it works
 
-### 1. Add helper functions to identify the tiles
-In `QuickActionTiles.tsx`, add two new tile-type checkers (following the existing `isJobOffersAction` pattern):
+1. **Always show the PLAN AHEAD heading** -- remove the conditional that hides it when there's nothing to display.
 
-```text
-isMessagesAction(action)  -> matches route "/instructor/messages"
-isVisitorChatsAction(action) -> matches route "/instructor/visitor-chats"
-```
+2. **Add an empty state** using the existing `EmptyState` component when `tomorrowPreview.lessonCount === 0` (and the checklist isn't rendering content). It will show:
+   - A calendar icon
+   - Title: "Nothing upcoming"
+   - Description: "Your schedule is clear for tomorrow. Enjoy the downtime or check your waitlist!"
+   - Optional action button: "Check Waitlist" linking to `/instructor/gaps`
+   - Compact mode so it doesn't dominate the page
 
-### 2. Fetch unread counts
-Import and use the existing hooks:
-- `useUnreadMessagesCount(instructorId)` for pupil messages
-- Create a similar inline query (or lightweight hook) for visitor chat unread count using the same pattern from `VisitorChatBadge.tsx`
-
-### 3. Render badges on tiles
-In both the full-width first tile and the 2-column grid tiles, add badge rendering for Messages and Visitor Chats tiles -- same red destructive badge style already used for job offers.
-
-## Files to modify
+## File to modify
 
 | File | Change |
 |------|--------|
-| `src/components/instructor/QuickActionTiles.tsx` | Import `useUnreadMessagesCount`, add visitor chat count query, add `isMessagesAction`/`isVisitorChatsAction` helpers, render badges on matching tiles in both view modes (edit + normal) |
+| `src/components/instructor/InstructorMobileHome.tsx` | Always render the PLAN AHEAD heading; add an `EmptyState` block (using the existing reusable component) when `tomorrowPreview.lessonCount === 0`, shown between the heading and the setup checklist |
 
 ## Technical details
 
-- Reuse `useUnreadMessagesCount` hook (already exists at `src/hooks/useUnreadMessagesCount.ts`)
-- For visitor chats, add a small `useVisitorChatUnreadCount` hook or inline the query (to keep it consistent, a small hook is cleaner)
-- Badge style matches existing: `bg-destructive text-destructive-foreground text-[8px] font-bold rounded-full`
-- Badges show on both the first (full-width) tile and the smaller grid tiles, just like job offers badges do today
+- Reuses `src/components/ui/EmptyState.tsx` (already in the project) with `compact={true}`, `icon={Calendar}`, and a "Check Waitlist" action button
+- The empty state only appears when `tomorrowPreview` data has loaded and `lessonCount === 0`
+- The setup checklist continues to render independently below it
 
