@@ -219,16 +219,13 @@ export default function InstructorPortal() {
           className="space-y-4"
         >
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img src={edLogo} alt="EveryDriver" className="h-8 -mx-1 object-contain" />
-              <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <h1 className="text-3xl font-bold text-foreground">
                 {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
               </h1>
               <p className="text-muted-foreground">
                 Here's what's happening with your business today.
               </p>
-            </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2.5">
