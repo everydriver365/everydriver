@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
+import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -101,6 +102,7 @@ export function AdminLayout({
               alt="EveryDriver" 
               className="h-8"
             />
+            <HeaderSearchBox variant="admin" />
           </div>
 
           {/* Navigation Tabs */}
