@@ -446,7 +446,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             </div>
 
             {/* Navigation Tabs */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center gap-1 ml-4">
               {desktopNavTabs.map((tab) => (
                 <Link
                   key={tab.id}
