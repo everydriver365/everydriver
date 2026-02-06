@@ -18,6 +18,20 @@ import { motion } from "framer-motion";
 import { useInstructorAppContent } from "@/hooks/useInstructorAppContent";
 import type { LucideIcon } from "lucide-react";
 
+import scheduleDiaryImg from "@/assets/features/schedule-diary.jpg";
+import pupilManagementImg from "@/assets/features/pupil-management.jpg";
+import moneyFinanceImg from "@/assets/features/money-finance.jpg";
+import liveTrackingImg from "@/assets/features/live-tracking.jpg";
+import communicationImg from "@/assets/features/communication.jpg";
+import onlinePresenceImg from "@/assets/features/online-presence.jpg";
+import wellbeingImg from "@/assets/features/wellbeing.jpg";
+import smartAlertsImg from "@/assets/features/smart-alerts.jpg";
+import telematicsImg from "@/assets/features/telematics.jpg";
+import dashcamImg from "@/assets/features/dashcam.jpg";
+import incidentReportingImg from "@/assets/features/incident-reporting.jpg";
+import pupilParentAppImg from "@/assets/features/pupil-parent-app.jpg";
+import whiteLabelImg from "@/assets/features/white-label.jpg";
+
 interface FeatureItem {
   icon: LucideIcon;
   title: string;
@@ -28,6 +42,7 @@ interface FeatureItem {
 interface FeatureCategory {
   title: string;
   subtitle: string;
+  image: string;
   features: FeatureItem[];
 }
 
@@ -35,6 +50,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Schedule & Diary",
     subtitle: "Take control of your time with smart scheduling tools",
+    image: scheduleDiaryImg,
     features: [
       {
         icon: Calendar,
@@ -65,6 +81,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Pupil Management",
     subtitle: "Everything you need to track and support every learner",
+    image: pupilManagementImg,
     features: [
       {
         icon: Users,
@@ -95,6 +112,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Money & Finance",
     subtitle: "Get paid faster, track every penny, and stay HMRC-ready",
+    image: moneyFinanceImg,
     features: [
       {
         icon: CreditCard,
@@ -137,6 +155,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Live Tracking & Vehicle",
     subtitle: "GPS-powered insights for safer, smarter driving instruction",
+    image: liveTrackingImg,
     features: [
       {
         icon: MapPin,
@@ -179,6 +198,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Communication",
     subtitle: "Stay connected with pupils and grow your client base",
+    image: communicationImg,
     features: [
       {
         icon: MessageSquare,
@@ -209,6 +229,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Your Online Presence",
     subtitle: "Get found online and let pupils book directly",
+    image: onlinePresenceImg,
     features: [
       {
         icon: Globe,
@@ -227,6 +248,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Wellbeing",
     subtitle: "Look after yourself — you can't teach well if you don't feel well",
+    image: wellbeingImg,
     features: [
       {
         icon: Heart,
@@ -251,6 +273,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Smart Alerts",
     subtitle: "Real-time conditions so you can plan lessons safely",
+    image: smartAlertsImg,
     features: [
       {
         icon: CloudSun,
@@ -281,6 +304,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Telematics & Driving Analysis",
     subtitle: "Professional-grade driving data to improve every lesson",
+    image: telematicsImg,
     features: [
       {
         icon: Gauge,
@@ -311,6 +335,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Integrated Dashcam",
     subtitle: "Video evidence and coaching tools built right in",
+    image: dashcamImg,
     features: [
       {
         icon: Camera,
@@ -335,6 +360,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Incident Reporting",
     subtitle: "Document everything — protect yourself and your pupils",
+    image: incidentReportingImg,
     features: [
       {
         icon: FileWarning,
@@ -359,6 +385,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "Apps for Pupils & Parents",
     subtitle: "Keep learners and their families engaged and informed",
+    image: pupilParentAppImg,
     features: [
       {
         icon: GraduationCap,
@@ -389,6 +416,7 @@ const featureCategories: FeatureCategory[] = [
   {
     title: "White Label & Multi-School",
     subtitle: "Enterprise solutions for driving school franchises and groups",
+    image: whiteLabelImg,
     features: [
       {
         icon: Palette,
@@ -484,21 +512,38 @@ export default function InstructorFeatures() {
           className={`py-16 md:py-20 ${catIdx % 2 === 0 ? "bg-background" : "bg-secondary"}`}
         >
           <div className="container">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-                {category.title}
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                {category.subtitle}
-              </p>
-            </motion.div>
+            {/* Section header with image */}
+            <div className={`grid md:grid-cols-2 gap-8 items-center mb-12 ${catIdx % 2 === 1 ? "md:[direction:rtl]" : ""}`}>
+              <motion.div
+                initial={{ opacity: 0, x: catIdx % 2 === 0 ? -20 : 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="md:[direction:ltr]"
+              >
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+                  {category.title}
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-lg">
+                  {category.subtitle}
+                </p>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, x: catIdx % 2 === 0 ? 20 : -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="md:[direction:ltr]"
+              >
+                <img
+                  src={category.image}
+                  alt={category.title}
+                  className="w-full rounded-2xl shadow-lg border border-border object-cover aspect-video"
+                  loading="lazy"
+                />
+              </motion.div>
+            </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Feature cards - 2 columns fitting the page */}
+            <div className="grid md:grid-cols-2 gap-5">
               {category.features.map((feature, i) => (
                 <motion.div
                   key={feature.title}
@@ -509,20 +554,25 @@ export default function InstructorFeatures() {
                   viewport={{ once: true }}
                 >
                   <Card className="h-full border-border hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                        <feature.icon className="h-6 w-6 text-primary" />
+                    <CardContent className="p-5 flex gap-4">
+                      <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <feature.icon className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
-                      <p className="text-muted-foreground mb-4">{feature.description}</p>
-                      <ul className="space-y-2">
-                        {feature.highlights.map((h) => (
-                          <li key={h} className="flex items-center gap-2 text-sm">
-                            <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                            <span className="text-foreground">{h}</span>
-                          </li>
-                        ))}
-                      </ul>
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-semibold text-foreground mb-1">{feature.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-3">{feature.description}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {feature.highlights.map((h) => (
+                            <span
+                              key={h}
+                              className="inline-flex items-center gap-1 text-xs bg-primary/5 text-foreground rounded-full px-2.5 py-1"
+                            >
+                              <CheckCircle className="h-3 w-3 text-emerald-500 shrink-0" />
+                              {h}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
