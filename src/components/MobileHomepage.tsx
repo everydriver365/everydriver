@@ -170,7 +170,7 @@ export function MobileHomepage() {
       </div>
       
       {/* Spacer for overlapping search card */}
-      <div className="h-14" />
+      <div className="h-[4.25rem]" />
       
       {/* Course Category Tiles */}
       <div className="px-4 space-y-3">
