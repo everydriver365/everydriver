@@ -82,6 +82,18 @@ const sidebarLinks = [
   { href: "/instructor/settings", label: "Settings", icon: Settings },
 ];
 
+const desktopNavTabs = [
+  { id: "/instructor", label: "Home", icon: Home },
+  { id: "/instructor/schedule", label: "Schedule", icon: Calendar },
+  { id: "/instructor/pupils", label: "Pupils", icon: Users },
+  { id: "/instructor/messages", label: "Messages", icon: MessageCircle },
+  { id: "/instructor/pay", label: "Money", icon: CreditCard },
+  { id: "/instructor/test-results", label: "Tests", icon: Award },
+  { id: "/instructor/traccar", label: "GPS", icon: Radio },
+  { id: "/instructor/website", label: "Website", icon: Globe },
+  { id: "/instructor/settings", label: "Settings", icon: Settings },
+];
+
 interface InstructorPortalLayoutProps {
   children: ReactNode;
 }
@@ -375,144 +387,145 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     );
   }
 
-  // Desktop Layout
+  // Determine active tab based on current path
+  const getActiveTab = () => {
+    const path = location.pathname;
+    // Exact match first
+    const exactMatch = desktopNavTabs.find(tab => tab.id === path);
+    if (exactMatch) return exactMatch.id;
+    // Prefix match for sub-pages
+    const prefixMatch = desktopNavTabs
+      .filter(tab => tab.id !== "/instructor")
+      .find(tab => path.startsWith(tab.id));
+    if (prefixMatch) return prefixMatch.id;
+    // Money group
+    if (["/instructor/expenses", "/instructor/accounts", "/instructor/income", "/instructor/in-out", "/instructor/tax", "/instructor/mileage"].some(p => path.startsWith(p))) return "/instructor/pay";
+    // Schedule group
+    if (["/instructor/availability", "/instructor/pending-scheduling"].some(p => path.startsWith(p))) return "/instructor/schedule";
+    // Pupils group
+    if (["/instructor/jobs", "/instructor/gaps"].some(p => path.startsWith(p))) return "/instructor/pupils";
+    // Messages group
+    if (["/instructor/admin-chat", "/instructor/visitor-chats"].some(p => path.startsWith(p))) return "/instructor/messages";
+    // Website group
+    if (path.startsWith("/instructor/domains")) return "/instructor/website";
+    return "/instructor";
+  };
+
+  const activeTab = getActiveTab();
+
+  // Get page title from current path
+  const getPageTitle = () => {
+    const match = sidebarLinks.find(l => l.href === location.pathname);
+    return match?.label || "Dashboard";
+  };
+
+  const getGroupTitle = () => {
+    const tab = desktopNavTabs.find(t => t.id === activeTab);
+    return tab?.label || "Home";
+  };
+
+  // Desktop Layout - Admin-style top nav
   return (
     <>
       <CommandPalette variant="instructor" />
-      <div className="min-h-screen bg-muted/30 flex overflow-x-hidden w-full">
-        {/* Sidebar - Clean minimal design */}
-        <aside className="w-60 border-r bg-card fixed h-full flex flex-col">
-          {/* Logo Header */}
-          <div className="p-4 border-b">
-            <Link to="/instructor" className="flex items-center gap-2">
-              <img 
-                src={instructorLogo}
-                alt="EveryDriver" 
-                className="h-7 object-contain"
-              />
-            </Link>
-          </div>
+      <div className="min-h-screen flex flex-col w-full bg-background">
+        {/* Navy Blue Header */}
+        <header className="sticky top-0 z-50 bg-[#142040]">
+          <div className="flex items-center justify-between px-6 h-14">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <Link to="/instructor">
+                <img 
+                  src={instructorLogo}
+                  alt="EveryDriver" 
+                  className="h-8 brightness-0 invert"
+                />
+              </Link>
+            </div>
 
-          {/* Navigation - Simplified styling */}
-          <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
-            {sidebarLinks.map((link) => {
-              const isActive = location.pathname === link.href;
-              const isMessages = link.href === "/instructor/messages";
-              const isAdminChat = link.href === "/instructor/admin-chat";
-              const isVisitorChats = link.href === "/instructor/visitor-chats";
-              const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-              const isHighlighted = 'highlight' in link && link.highlight;
-              return (
+            {/* Navigation Tabs */}
+            <nav className="hidden md:flex items-center gap-1">
+              {desktopNavTabs.map((tab) => (
                 <Link
-                  key={link.href}
-                  to={link.href}
+                  key={tab.id}
+                  to={tab.id}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 text-sm transition-all rounded-md",
-                    isActive
-                      ? "text-foreground font-medium bg-muted border-l-2 border-primary ml-0 pl-[10px]"
-                      : isHighlighted
-                      ? "text-emerald-600 dark:text-emerald-400 hover:bg-muted/50"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                    activeTab === tab.id
+                      ? "bg-white/20 text-white"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
                   )}
                 >
-                  <span className="relative">
-                    <link.icon className={cn(
-                      "h-4 w-4",
-                      isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
-                    )} />
-                    {isAdminChat && !isActive && <AdminMessageBadge />}
-                  </span>
-                  <span className="flex-1">{link.label}</span>
-                  {isVisitorChats && !isActive && (
-                    <VisitorChatBadge 
-                      instructorId={instructor?.id} 
-                      className="ml-auto"
-                    />
-                  )}
-                  {isMessages && !isActive && (
-                    <MessageNotificationBadge 
-                      instructorId={instructor?.id} 
-                      className="ml-auto"
-                    />
-                  )}
-                  {isPendingScheduling && !isActive && (
-                    <PendingSchedulingBadge 
-                      instructorId={instructor?.id} 
-                      className="ml-auto"
-                    />
-                  )}
+                  <tab.icon className="h-4 w-4" />
+                  {tab.label}
                 </Link>
-              );
-            })}
-          </nav>
+              ))}
+            </nav>
 
-          {/* User Profile & Sign Out - Now at bottom */}
-          <div className="border-t p-3 space-y-2">
-            <div className="flex items-center gap-3 px-2 py-2">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={instructor?.profile_image_url || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                  {instructor?.name?.charAt(0) || "I"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{instructor?.name || "Instructor"}</p>
-                <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
-              </div>
+            {/* Right: Theme + Logout */}
+            <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                    className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8"
                   >
                     {resolvedTheme === 'oled' ? <Contrast className="h-4 w-4" /> : resolvedTheme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44 bg-popover border shadow-lg z-50">
+                <DropdownMenuContent align="end" className="w-44">
                   <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
-                    <Sun className="h-4 w-4 mr-2" />
-                    Light Mode
+                    <Sun className="h-4 w-4 mr-2" /> Light
                     {theme === 'light' && <Check className="ml-auto h-4 w-4" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
-                    <Moon className="h-4 w-4 mr-2" />
-                    Dark Mode
+                    <Moon className="h-4 w-4 mr-2" /> Dark
                     {theme === 'dark' && <Check className="ml-auto h-4 w-4" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme('oled')} className="cursor-pointer">
-                    <Contrast className="h-4 w-4 mr-2" />
-                    OLED Dark Mode
+                    <Contrast className="h-4 w-4 mr-2" /> OLED
                     {theme === 'oled' && <Check className="ml-auto h-4 w-4" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme('system')} className="cursor-pointer">
-                    <Monitor className="h-4 w-4 mr-2" />
-                    System
+                    <Monitor className="h-4 w-4 mr-2" /> System
                     {theme === 'system' && <Check className="ml-auto h-4 w-4" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-white/70 hover:text-white hover:bg-white/10"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
             </div>
-            <Button 
-              variant="outline" 
-              className="w-full justify-start text-sm text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30 h-9"
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
           </div>
-        </aside>
+        </header>
 
-        {/* Main Content - Cleaner layout */}
-        <main className="flex-1 ml-60">
-          <div className="p-6 lg:p-8">
-            {children}
-          </div>
+        {/* Breadcrumb */}
+        <div className="border-b bg-muted/30 px-6 py-2">
+          <nav className="flex items-center text-sm text-muted-foreground">
+            <Link to="/instructor" className="hover:text-foreground transition-colors">
+              Instructor
+            </Link>
+            <ChevronRight className="h-4 w-4 mx-2" />
+            <span className="text-muted-foreground">{getGroupTitle()}</span>
+            {getPageTitle() !== getGroupTitle() && (
+              <>
+                <ChevronRight className="h-4 w-4 mx-2" />
+                <span className="text-foreground font-medium">{getPageTitle()}</span>
+              </>
+            )}
+          </nav>
+        </div>
+
+        <main className="flex-1 p-6">
+          {children}
         </main>
-
-        {/* Quick Actions FAB */}
-        <QuickActionsFAB />
       </div>
     </>
   );
