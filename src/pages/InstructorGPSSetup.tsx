@@ -234,7 +234,7 @@ export default function InstructorTraccarSetup() {
 
   return (
     <InstructorPortalLayout>
-     <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 -mt-4 p-4">
+     <div className="min-h-[calc(100dvh-120px)] bg-[#6ec1e4] dark:bg-background -mx-4 -mt-4 p-4">
       <div className="space-y-6 max-w-2xl mx-auto">
         {/* GPSgate User ID Settings */}
         {instructor?.id && (
