@@ -125,7 +125,7 @@ export function NextUpTile({
         </div>
 
         {/* Pupil info card */}
-        <div className="mx-4 mb-3 rounded-xl bg-secondary/50 border border-border p-3">
+        <div className="mx-4 mb-3 rounded-xl border border-border p-3" style={{ backgroundColor: '#f5f5f5' }}>
           <div className="flex items-center gap-3">
             <PupilAvatar
               name={pupilName}
@@ -188,7 +188,7 @@ export function NextUpTile({
           <button
             onClick={handleCall}
             disabled={!pupilPhone}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/50 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40" style={{ backgroundColor: '#f5f5f5' }}
           >
             <Phone className="h-4 w-4" />
             Call
@@ -196,14 +196,14 @@ export function NextUpTile({
           <button
             onClick={handleMessage}
             disabled={!pupilPhone}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/50 py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40" style={{ backgroundColor: '#f5f5f5' }}
           >
             <MessageSquare className="h-4 w-4" />
             Message
           </button>
           <button
             onClick={handleCancel}
-            className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-secondary/50 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors" style={{ backgroundColor: '#f5f5f5' }}
           >
             <X className="h-4 w-4" />
             Cancel
