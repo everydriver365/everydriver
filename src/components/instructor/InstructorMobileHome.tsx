@@ -257,7 +257,7 @@ export function InstructorMobileHome({
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-       <div className="min-h-screen bg-[#EDEDED] dark:bg-background overflow-x-hidden relative">
+       <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative">
 
       {/* Contextual Home Hero */}
       <div className="px-4 pt-4">
