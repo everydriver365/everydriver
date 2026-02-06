@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+// Card import removed - using styled divs matching availability page tiles
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -256,15 +256,15 @@ export default function InstructorTraccarSetup() {
         <HardwareTrackerSetup supabaseHost={supabaseHost} />
 
         {/* Register Device */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+        <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] border-l-2 border-l-[#1877F2] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 space-y-4">
+          <div>
+            <h3 className="flex items-center gap-2 text-base font-semibold">
               <Cpu className="h-4 w-4" />
               Register Your Tracker
-            </CardTitle>
-            <CardDescription>Enter your ST-902L device ID to register it</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">Enter your ST-902L device ID to register it</p>
+          </div>
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="deviceName">Device Name</Label>
               <Input
@@ -296,26 +296,23 @@ export default function InstructorTraccarSetup() {
               )}
               Register Device
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Devices List */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Your Devices</h2>
           
           {devices.length === 0 ? (
-            <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                <Cpu className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No devices configured yet</p>
-                <p className="text-sm">Register your ST-902L above to get started</p>
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] border-l-2 border-l-[#1877F2] shadow-[0_2px_8px_rgba(20,37,66,0.08)] py-8 text-center text-muted-foreground">
+              <Cpu className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>No devices configured yet</p>
+              <p className="text-sm">Register your ST-902L above to get started</p>
+            </div>
           ) : (
             devices.map((device) => (
-              <Card key={device.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-start justify-between gap-4">
+              <div key={device.id} className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] border-l-2 border-l-[#1877F2] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4">
+                <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="font-medium">{device.device_name}</span>
@@ -403,9 +400,8 @@ export default function InstructorTraccarSetup() {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))
           )}
         </div>
