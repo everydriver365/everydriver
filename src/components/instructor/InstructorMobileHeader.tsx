@@ -49,7 +49,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
         <div className="flex items-center">
           {showBackButton && (
             <Button variant="ghost" size="icon" onClick={handleBackClick} className="mr-2">
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-6 w-6" />
             </Button>
           )}
             <img src={edLogo} alt="Logo" className="h-8 w-auto mr-2" />
@@ -58,14 +58,14 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
         <div className="flex items-center space-x-2">
           {showAddButton && (
             <Button variant="ghost" size="icon" onClick={onAddClick}>
-              <Plus className="h-5 w-5" />
+              <Plus className="h-6 w-6" />
             </Button>
           )}
           {showSettings && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <Settings className="h-5 w-5" />
+                  <Settings className="h-6 w-6" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
