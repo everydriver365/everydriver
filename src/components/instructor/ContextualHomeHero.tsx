@@ -340,7 +340,7 @@ export function ContextualHomeHero({
   return (
     <div className="relative -mx-4">
       {/* Hero Image - Full Bleed */}
-       <div className="w-full h-44 overflow-hidden rounded-2xl">
+       <div className="w-full h-44 overflow-hidden rounded-2xl border border-border">
         <img 
           src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"} 
           alt="Hero" 
@@ -351,7 +351,7 @@ export function ContextualHomeHero({
        {/* Overlapping Card - David Lloyd Style */}
        <div className="relative -mt-10 mx-4">
         <motion.div 
-            className="bg-white rounded-2xl shadow-xl cursor-pointer"
+            className="bg-white rounded-2xl shadow-xl border border-border cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
