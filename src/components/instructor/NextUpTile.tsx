@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { Clock, MessageSquare, Phone, Navigation, Check, Car, Loader2 } from "lucide-react";
+import { Clock, MessageSquare, Phone, Navigation, Check, Car, Loader2, Mail } from "lucide-react";
 import { motion, useMotionValue, useTransform, useAnimation, PanInfo } from "framer-motion";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
+import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 
 interface NextUpTileProps {
   lessonId: string;
@@ -20,6 +21,7 @@ interface NextUpTileProps {
   minutesUntil: number;
   accountBalance: number;
   prepaidHours: number;
+  instructorId?: string;
 }
 
 const SWIPE_THRESHOLD = 80;
@@ -38,11 +40,14 @@ export function NextUpTile({
   minutesUntil,
   accountBalance,
   prepaidHours,
+  instructorId,
 }: NextUpTileProps) {
   const [isRevealed, setIsRevealed] = useState(false);
   const x = useMotionValue(0);
   const controls = useAnimation();
   const actionOpacity = useTransform(x, [-ACTION_WIDTH, -SWIPE_THRESHOLD, 0], [1, 0.8, 0]);
+
+  const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
 
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(
     pickupPostcode
@@ -270,6 +275,16 @@ export function NextUpTile({
               </div>
             </div>
           </div>
+
+          {/* Unread message alert */}
+          {pupilUnreadCount > 0 && (
+            <div className="mx-4 mb-2 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 border border-destructive/20">
+              <Mail className="h-4 w-4 text-destructive shrink-0" />
+              <span className="text-xs font-medium text-destructive">
+                {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? 's' : ''} from {pupilName.split(" ")[0]}
+              </span>
+            </div>
+          )}
 
           {/* Mini map */}
           {pickupPostcode && (
