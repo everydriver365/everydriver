@@ -45,7 +45,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full overflow-x-hidden">
       <div className="border-b border-nav/20 bg-primary overflow-x-hidden">
       <nav className="container max-w-7xl flex h-16 items-center justify-between relative">
-        <Link to="/drive365" className="flex items-center">
+        <Link to="/drive365" className="hidden md:flex items-center">
           <img src={drive365Logo} alt="Drive365" className="h-9" />
         </Link>
 
@@ -96,6 +96,20 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
+            className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+          <Link to="/drive365" className="flex items-center">
+            <img src={drive365Logo} alt="Drive365" className="h-8" />
+          </Link>
+        </div>
+        {/* Mobile right-side controls */}
+        <div className="flex items-center gap-1 md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={toggleTheme}
             className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
           >
@@ -104,14 +118,6 @@ export function Header() {
             ) : (
               <Sun className="h-5 w-5" />
             )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </nav>
