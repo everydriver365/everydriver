@@ -451,12 +451,12 @@ export function InstructorMobileHome({
             <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground text-sm mb-1">Weekly Progress</h3>
-                  <p className="text-xs text-muted-foreground">
+                  <h3 className="font-semibold text-foreground text-xs mb-1">Weekly Progress</h3>
+                  <p className="text-[11px] text-muted-foreground">
                     {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
                   </p>
                   {lastWeekComparison && (
-                    <p className={`text-[10px] mt-1 ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    <p className={`text-[10px] mt-0.5 ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-amber-600'}`}>
                       {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
                     </p>
                   )}

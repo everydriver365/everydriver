@@ -19,8 +19,8 @@ export function WeeklyGoalRing({
   className = "",
 }: WeeklyGoalRingProps) {
   const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
-  const radius = 28;
-  const strokeWidth = 5;
+  const radius = 22;
+  const strokeWidth = 4;
   const circumference = 2 * Math.PI * radius;
   const clampedProgress = Math.min(progressPercent, 100);
   const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
@@ -55,7 +55,7 @@ export function WeeklyGoalRing({
 
   return (
     <div className={`relative flex flex-col items-center ${className}`}>
-      <svg width="70" height="70" className="transform -rotate-90">
+      <svg width="56" height="56" className="transform -rotate-90">
         <defs>
           {/* Gradient definition */}
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -74,8 +74,8 @@ export function WeeklyGoalRing({
         
         {/* Background circle */}
         <circle
-          cx="35"
-          cy="35"
+          cx="28"
+          cy="28"
           r={radius}
           fill="none"
           stroke="currentColor"
@@ -84,8 +84,8 @@ export function WeeklyGoalRing({
         />
         {/* Progress circle with gradient */}
         <motion.circle
-          cx="35"
-          cy="35"
+          cx="28"
+          cy="28"
           r={radius}
           fill="none"
           strokeWidth={strokeWidth}
@@ -103,8 +103,8 @@ export function WeeklyGoalRing({
         {/* Shimmer effect for 100% */}
         {progressPercent >= 100 && (
           <motion.circle
-            cx="35"
-            cy="35"
+            cx="28"
+            cy="28"
             r={radius}
             fill="none"
             strokeWidth={strokeWidth + 2}
@@ -140,8 +140,8 @@ export function WeeklyGoalRing({
           </motion.div>
         ) : (
           <>
-            <span className="text-base font-bold text-blue-600">{hoursThisWeek}h</span>
-            <span className="text-[9px] text-muted-foreground">of {hoursGoal}h</span>
+            <span className="text-xs font-bold text-blue-600">{hoursThisWeek}h</span>
+            <span className="text-[8px] text-muted-foreground">of {hoursGoal}h</span>
           </>
         )}
       </div>
