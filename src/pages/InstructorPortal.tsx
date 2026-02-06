@@ -226,14 +226,25 @@ export default function InstructorPortal() {
                 Here's what's happening with your business today.
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 shrink-0">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Online</span>
-              <Switch
-                checked={authInstructor?.is_active ?? false}
-                onCheckedChange={handleVisibilityToggle}
-                disabled={updatingVisibility}
-              />
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/instructor/pupils")}
+                className="gap-1.5"
+              >
+                <Search className="h-3.5 w-3.5" />
+                Search
+              </Button>
+              <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Online</span>
+                <Switch
+                  checked={authInstructor?.is_active ?? false}
+                  onCheckedChange={handleVisibilityToggle}
+                  disabled={updatingVisibility}
+                />
+              </div>
             </div>
           </div>
 
@@ -274,15 +285,6 @@ export default function InstructorPortal() {
             >
               <MessageSquare className="h-3.5 w-3.5" />
               Send Text
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/instructor/pupils")}
-              className="gap-1.5"
-            >
-              <Search className="h-3.5 w-3.5" />
-              Search
             </Button>
             <Button
               variant="outline"
