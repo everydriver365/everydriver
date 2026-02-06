@@ -1,57 +1,45 @@
 
 
-## Why the Schedule Only Shows a Week
+# Fix: Google Calendar Sync Not Saving Future Events
 
-**Root cause**: There is a race condition between two effects when entering the Schedule view.
+## Problem
 
-1. When the user switches to Schedule, the init effect (line 62-76 in `InstructorSchedule.tsx`) calls `calendar.goToDate(today)` followed by `calendar.refetch(true)`.
-2. `goToDate` updates `currentDate` state, which causes `fetchEvents` to be recreated (it depends on `currentDate`).
-3. This recreation triggers the auto-fetch effect (`useEffect(() => { fetchEvents(); }, [fetchEvents])`) which calls `fetchEvents()` with **no arguments**.
-4. At that point, `lastExtendedRangeRef.current` is still `false`, so the fetch uses `getDateRange` with `view='week'` and `extendedRange=false` -- fetching only one week of data.
-5. The explicit `refetch(true)` call may also run, but it can be overwritten by the subsequent auto-fetch triggered by the state change.
+The scheduled calendar sync imports 125 events from Google but only 1 future event ends up in the database. The root cause is a **unique constraint violation** on the `instructor_calendar_events` table.
 
-**The fix**: Ensure the `view` state or extended range flag is properly synchronized before any fetch occurs. The cleanest approach:
+## Root Cause (Step by Step)
 
-### Step 1: Add a persistent "extendedRange" mode to `useInstructorCalendar`
+1. The `scheduled-calendar-sync` function first **deletes** events where `start_time >= now` (only future events).
+2. Then it tries to **bulk insert** all fetched Google events (which may include events whose `external_event_id` already exists as a past record).
+3. The table has a **unique constraint** on `(instructor_id, external_event_id)`.
+4. If any Google event shares an `external_event_id` with an existing past record, the entire batch insert fails with a duplicate key error.
+5. Result: zero future events get saved.
 
-In `src/hooks/useInstructorCalendar.ts`:
-- Add an `extendedRange` state (boolean, default `false`).
-- When `extendedRange` is `true`, `getDateRange` always returns the 365-day window regardless of `view`.
-- Include `extendedRange` in the `fetchEvents` dependency list so it naturally triggers a refetch.
-- Remove the `lastExtendedRangeRef` workaround.
-- Expose `setExtendedRange` from the hook.
+## Fix
 
-### Step 2: Set extended range when entering/leaving Schedule
+### 1. Update `scheduled-calendar-sync` to use upsert instead of insert
 
-In `src/pages/InstructorSchedule.tsx`:
-- When `viewMode` changes to `'schedule'`, call `calendar.setExtendedRange(true)`.
-- When `viewMode` changes away from `'schedule'`, call `calendar.setExtendedRange(false)`.
-- Remove the manual `refetch(true)` call and the `scheduleInitRef` workaround -- the state-driven approach handles it automatically.
+Replace the `.insert(eventsToInsert)` call with `.upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' })`. This will:
+- Insert new events normally
+- Update existing events (e.g., if a past event's time changed) instead of failing
 
-### Technical Details
+### 2. Apply the same fix to `calendar-sync` (manual sync)
 
-**`useInstructorCalendar.ts` changes:**
-```text
-- Add: const [extendedRange, setExtendedRange] = useState(false);
-- Modify fetchEvents: remove the extendedRange parameter and lastExtendedRangeRef;
-  always use the extendedRange state value in getDateRange call
-- Add extendedRange to fetchEvents useCallback dependencies
-- Return setExtendedRange from the hook
-```
+The `importBusyTimes` and `fullSync` actions in `calendar-sync/index.ts` also use `.insert()`. These should also be changed to `.upsert()` for consistency.
 
-**`InstructorSchedule.tsx` changes:**
-```text
-- Remove scheduleInitRef and its associated useEffect
-- Add a simpler useEffect:
-    useEffect(() => {
-      if (viewMode === 'schedule') {
-        calendar.goToDate(new Date());
-        calendar.setExtendedRange(true);
-      } else {
-        calendar.setExtendedRange(false);
-      }
-    }, [viewMode]);
-```
+Additionally, the `calendar-sync` function references a `source` column (`.eq("source", "google")` and `source: "google"` in inserts) that does not exist on the table. These references need to be removed to prevent silent failures in the delete step.
 
-This eliminates the race condition because `extendedRange` is part of the reactive state, and the auto-fetch effect will always use the correct range.
+## Technical Details
 
+### File: `supabase/functions/scheduled-calendar-sync/index.ts`
+- Line ~170: Change `.insert(eventsToInsert)` to `.upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' })`
+- Broaden the delete to remove all existing events for the instructor in the time range (already correct)
+
+### File: `supabase/functions/calendar-sync/index.ts`
+- Lines ~588-589: Remove `.eq("source", "google")` from the delete query (column does not exist)
+- Lines ~599: Remove `source: "google"` from the insert objects
+- Line ~606: Change `.insert(eventsToInsert)` to `.upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' })`
+- Lines ~700-701: Remove `.eq("source", "google")` from the delete query
+- Line ~712: Remove `source: "google"` from the insert objects
+- Line ~717: Change `.insert(eventsToInsert)` to `.upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' })`
+
+These changes ensure that recurring events or events that span past-to-future do not cause the entire batch to fail silently.
