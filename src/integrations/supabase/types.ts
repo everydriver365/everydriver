@@ -7391,6 +7391,50 @@ export type Database = {
           },
         ]
       }
+      urgent_alerts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dismissed_at: string | null
+          id: string
+          instructor_id: string | null
+          is_broadcast: boolean
+          message: string
+          severity: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dismissed_at?: string | null
+          id?: string
+          instructor_id?: string | null
+          is_broadcast?: boolean
+          message: string
+          severity?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dismissed_at?: string | null
+          id?: string
+          instructor_id?: string | null
+          is_broadcast?: boolean
+          message?: string
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "urgent_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null

@@ -34,6 +34,7 @@ import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { useGPSPoller } from "@/hooks/useGPSPoller";
+import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
@@ -43,6 +44,7 @@ import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
+import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { FuelFinderCard } from "@/components/instructor/FuelFinderCard";
@@ -199,6 +201,7 @@ export function InstructorMobileHome({
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
   const { data: lastWeekComparison } = useLastWeekComparison(instructorId);
+  const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructorId);
 
   const getInitials = (name: string) => {
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
@@ -257,6 +260,7 @@ export function InstructorMobileHome({
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
+       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
        <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative">
 
       {/* Contextual Home Hero */}

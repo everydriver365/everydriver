@@ -63,6 +63,7 @@ import { BespokeBookingModal } from "@/components/admin/BespokeBookingModal";
 import { ActivityLogViewer } from "@/components/admin/ActivityLogViewer";
 import { CampaignManager } from "@/components/admin/CampaignManager";
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
+import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -154,6 +155,7 @@ export default function AdminPortal() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
   const [isBespokeOpen, setIsBespokeOpen] = useState(false);
+  const [isUrgentAlertOpen, setIsUrgentAlertOpen] = useState(false);
   const [pendingEnquiries, setPendingEnquiries] = useState<{ id: string; name: string; course_type: string; created_at: string }[]>([]);
   const { signOut } = useAdminAuth();
   const navigate = useNavigate();
@@ -287,9 +289,13 @@ export default function AdminPortal() {
               <Button onClick={() => setIsBespokeOpen(true)} size="lg" className="shadow-md shrink-0">
                 <Plus className="mr-1 h-4 w-4" /> Create Bespoke Booking
               </Button>
+              <Button onClick={() => setIsUrgentAlertOpen(true)} size="lg" variant="destructive" className="shadow-md shrink-0">
+                <AlertTriangle className="mr-1 h-4 w-4" /> Urgent Alert
+              </Button>
             </div>
             <AdminSettingsGrid onNavigate={setActiveSection} />
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
+            <SendUrgentAlertDialog open={isUrgentAlertOpen} onOpenChange={setIsUrgentAlertOpen} />
           </>
         );
 
