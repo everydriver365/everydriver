@@ -43,6 +43,7 @@ const settingsCategories: SettingsCategory[] = [
       { key: "email", title: "Email Inbox", description: "View and manage incoming emails.", badgeKey: "emails" },
       { key: "enquiries", title: "Enquiries & Callbacks", description: "Review bespoke course requests and callback requests.", badgeKey: "enquiries" },
       { key: "instructor-messages", title: "Instructor Support", description: "Handle support chats with instructors.", badgeKey: "instructorMessages" },
+      { key: "campaigns", title: "Campaigns", description: "Send bulk SMS or email to instructors and pupils." },
     ],
   },
   {
@@ -114,6 +115,7 @@ const settingsCategories: SettingsCategory[] = [
     links: [
       { key: "pwa-apps", title: "PWA Configuration", description: "Mobile app settings and icons." },
       { key: "site-settings", title: "Site Settings & SEO", description: "Global configuration and metadata." },
+      { key: "activity-log", title: "Activity Log", description: "Track all admin actions and changes." },
     ],
   },
 ];
@@ -342,6 +344,13 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       value: "View",
       color: "bg-cyan-500/10 text-cyan-600",
       onClick: () => onNavigate("live-map"),
+    },
+    {
+      icon: TrendingUp,
+      label: "Analytics",
+      value: "View",
+      color: "bg-indigo-500/10 text-indigo-600",
+      onClick: () => onNavigate("analytics"),
     },
   ];
 

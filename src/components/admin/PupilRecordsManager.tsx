@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X } from "lucide-react";
+import { ChevronDown, ChevronRight, User, Calendar, BookOpen, CreditCard, FileText, GraduationCap, Car, Clock, Plus, Pencil, Trash2, Save, X, Map } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { PupilJourneyTimeline } from "./PupilJourneyTimeline";
 
 interface Instructor {
   id: string;
@@ -415,6 +416,22 @@ export function PupilRecordsManager() {
         ) : (
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
+              {/* Journey Timeline */}
+              <DetailSection
+                title="Journey"
+                icon={<Map className="h-4 w-4" />}
+              >
+                <PupilJourneyTimeline
+                  pupilId={selectedPupil.id}
+                  pupil={{
+                    instructor_id: selectedPupil.instructor_id,
+                    theory_test_date: selectedPupil.theory_test_date,
+                    theory_test_passed: selectedPupil.theory_test_passed,
+                    test_date: selectedPupil.test_date,
+                  }}
+                />
+              </DetailSection>
+
               {/* Lessons Taken Section */}
               <DetailSection
                 title="Lessons Taken"

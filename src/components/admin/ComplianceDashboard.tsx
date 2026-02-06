@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Shield, Car, FileText, AlertTriangle, CheckCircle, Clock, RefreshCw, Lock } from "lucide-react";
+import { Shield, Car, FileText, AlertTriangle, CheckCircle, Clock, RefreshCw, Lock, Bell, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, differenceInDays, isPast, isFuture } from "date-fns";
@@ -58,6 +58,8 @@ export function ComplianceDashboard() {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [resetPassword, setResetPassword] = useState("");
   const [resetting, setResetting] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState<string | null>(null);
+  const [sendingAll, setSendingAll] = useState(false);
 
   const fetchComplianceData = useCallback(async () => {
     try {
@@ -264,9 +266,31 @@ export function ComplianceDashboard() {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-lg font-semibold">Instructor Certifications</h2>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={sendingAll}
+            onClick={async () => {
+              setSendingAll(true);
+              try {
+                const { data, error } = await supabase.functions.invoke("compliance-reminders", {
+                  body: { sendAll: true },
+                });
+                if (error) throw error;
+                toast.success(`Reminders sent to ${data?.sentCount || 0} instructors`);
+              } catch (e: any) {
+                toast.error(e.message || "Failed to send reminders");
+              } finally {
+                setSendingAll(false);
+              }
+            }}
+          >
+            {sendingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bell className="mr-2 h-4 w-4" />}
+            Send All Reminders
+          </Button>
           <Button variant="outline" size="sm" onClick={fetchComplianceData}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
@@ -321,6 +345,7 @@ export function ComplianceDashboard() {
                       DBS
                     </div>
                   </TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -396,12 +421,39 @@ export function ComplianceDashboard() {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={sendingReminder === instructor.id}
+                          onClick={async () => {
+                            setSendingReminder(instructor.id);
+                            try {
+                              const { data, error } = await supabase.functions.invoke("compliance-reminders", {
+                                body: { instructorIds: [instructor.id] },
+                              });
+                              if (error) throw error;
+                              toast.success(data?.sentCount ? "Reminder sent" : "No expiring documents to remind about");
+                            } catch (e: any) {
+                              toast.error(e.message || "Failed to send reminder");
+                            } finally {
+                              setSendingReminder(null);
+                            }
+                          }}
+                        >
+                          {sendingReminder === instructor.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Bell className="h-3 w-3" />
+                          )}
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
                 {instructors.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       No instructors found
                     </TableCell>
                   </TableRow>

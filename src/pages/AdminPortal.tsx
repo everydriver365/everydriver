@@ -60,6 +60,9 @@ import { DiscountCodesManager } from "@/components/admin/DiscountCodesManager";
 import { PupilRecordsManager } from "@/components/admin/PupilRecordsManager";
 import { AdminLiveMapView } from "@/components/admin/AdminLiveMapView";
 import { BespokeBookingModal } from "@/components/admin/BespokeBookingModal";
+import { ActivityLogViewer } from "@/components/admin/ActivityLogViewer";
+import { CampaignManager } from "@/components/admin/CampaignManager";
+import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -134,9 +137,14 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // System Settings
   "pwa-apps": { title: "PWA Configuration", group: "System Settings", icon: Download },
   "site-settings": { title: "Site Settings & SEO", group: "System Settings", icon: Globe },
+  "activity-log": { title: "Activity Log", group: "System Settings", icon: Clock },
   // Products & Booking - Additional
   bookings: { title: "All Bookings", group: "Products & Booking", icon: Calendar },
   payments: { title: "Payment History", group: "Products & Booking", icon: CreditCard },
+  // Communications - Additional
+  campaigns: { title: "Campaigns", group: "Communications", icon: Megaphone },
+  // Analytics
+  analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
 };
 
 export default function AdminPortal() {
@@ -769,6 +777,43 @@ export default function AdminPortal() {
                 <PupilRecordsManager />
               </CardContent>
             </Card>
+          </motion.div>
+        );
+
+      case "activity-log":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="activity-log" className="mb-4" />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-accent" />
+                  Activity Log
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ActivityLogViewer />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "campaigns":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="campaigns" className="mb-4" />
+            <CampaignManager />
+          </motion.div>
+        );
+
+      case "analytics":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="analytics" className="mb-4" />
+            <RevenueAnalytics />
           </motion.div>
         );
 
