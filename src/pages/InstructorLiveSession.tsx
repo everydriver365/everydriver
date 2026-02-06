@@ -25,6 +25,7 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
+import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 
 interface GPSDevice {
   id: string;
@@ -923,6 +924,11 @@ export default function InstructorLiveSession() {
                    });
                }}
              />
+           )}
+
+           {/* Mobile GPS Tracking Settings Banner */}
+           {instructor?.id && (
+             <MobileTrackingSettingsBanner instructorId={instructor.id} />
            )}
 
            {/* GPS Status Hero Card */}
