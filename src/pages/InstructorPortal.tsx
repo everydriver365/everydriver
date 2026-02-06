@@ -215,17 +215,30 @@ export default function InstructorPortal() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-start justify-between gap-4"
+          className="space-y-4"
         >
-          <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-bold text-foreground">
-              {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
-            </h1>
-            <p className="text-muted-foreground">
-              Here's what's happening with your business today.
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-3xl font-bold text-foreground">
+                {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
+              </h1>
+              <p className="text-muted-foreground">
+                Here's what's happening with your business today.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5 shrink-0">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Online</span>
+              <Switch
+                checked={authInstructor?.is_active ?? false}
+                onCheckedChange={handleVisibilityToggle}
+                disabled={updatingVisibility}
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+
+          {/* Action Buttons Bar */}
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant="outline"
               size="sm"
@@ -271,15 +284,24 @@ export default function InstructorPortal() {
               <Search className="h-3.5 w-3.5" />
               Search
             </Button>
-            <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-1.5">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Online</span>
-              <Switch
-                checked={authInstructor?.is_active ?? false}
-                onCheckedChange={handleVisibilityToggle}
-                disabled={updatingVisibility}
-              />
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/instructor/pupils?action=add")}
+              className="gap-1.5"
+            >
+              <Users className="h-3.5 w-3.5" />
+              New Pupil
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAvailabilityModalOpen(true)}
+              className="gap-1.5"
+            >
+              <CalendarCheck className="h-3.5 w-3.5" />
+              Availability
+            </Button>
           </div>
         </motion.div>
 
@@ -399,40 +421,6 @@ export default function InstructorPortal() {
             transition={{ delay: 0.2 }}
             className="space-y-4"
           >
-            {/* Quick Actions */}
-            <Card className="border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-2">
-                {[
-                  { label: "Add Lesson", icon: Calendar, to: "/instructor/schedule" },
-                  { label: "Take Payment", icon: CreditCard, onClick: () => setPaymentModalOpen(true) },
-                  { label: "New Pupil", icon: Users, to: "/instructor/pupils" },
-                  { label: "Availability", icon: CalendarCheck, onClick: () => setAvailabilityModalOpen(true) },
-                ].map((action, i) => (
-                  action.to ? (
-                    <Link key={i} to={action.to}>
-                      <Button variant="outline" className="h-auto py-3 flex-col gap-1 w-full">
-                        <action.icon className="w-5 h-5" />
-                        <span className="text-xs">{action.label}</span>
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Button 
-                      key={i} 
-                      variant="outline" 
-                      className="h-auto py-3 flex-col gap-1"
-                      onClick={action.onClick}
-                    >
-                      <action.icon className="w-5 h-5" />
-                      <span className="text-xs">{action.label}</span>
-                    </Button>
-                  )
-                ))}
-              </CardContent>
-            </Card>
-
             {/* Payment Summary */}
             <Card className="border-border">
               <CardContent className="p-4">
