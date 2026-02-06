@@ -437,24 +437,24 @@ export function PupilCardStack({
         layout
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm"
+        className="bg-card border-b border-border overflow-hidden"
       >
-        {/* Collapsed Card Header */}
+        {/* Collapsed Card — clean list-style tile */}
         <button
           onClick={handleCardClick}
-          className="w-full text-left p-4 flex items-center gap-3"
+          className="w-full text-left px-4 py-3.5 flex items-center gap-3.5"
         >
-          {/* Avatar with status ring */}
+          {/* Circular Avatar */}
           <div className="relative">
-            <Avatar className={cn("h-14 w-14 shrink-0", getAvatarRingColor())}>
+            <Avatar className={cn("h-12 w-12 shrink-0", getAvatarRingColor())}>
               <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-              <AvatarFallback className="text-white text-lg font-semibold" style={{ backgroundColor: '#1877F2' }}>
+              <AvatarFallback className="text-white text-sm font-semibold" style={{ backgroundColor: '#1877F2' }}>
                 {getInitials(pupil.name)}
               </AvatarFallback>
             </Avatar>
             {/* Status dot */}
             <div className={cn(
-              "absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-card",
+              "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card",
               statusConfig[currentStatus].color
             )} />
             {/* Live tracking indicator */}
@@ -468,10 +468,10 @@ export function PupilCardStack({
             )}
           </div>
 
-          {/* Main Info */}
+          {/* Name + Next Lesson */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <h3 className="font-semibold text-foreground truncate">{pupil.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-[15px] text-foreground truncate">{pupil.name}</h3>
               {isTracking && (
                 <Badge className="bg-primary/10 text-primary border-0 text-[10px] px-1.5 py-0">
                   LIVE
@@ -479,39 +479,31 @@ export function PupilCardStack({
               )}
             </div>
             
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1.5">
-              <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate">{pupil.postcode}</span>
-              {pupil.course_type && (
-                <>
-                  <span>•</span>
-                  <span className="truncate">{courseTypeLabels[pupil.course_type] || pupil.course_type}</span>
-                </>
-              )}
-            </div>
-
-            {/* Quick Stats Row */}
-            <div className="flex items-center gap-3 text-xs">
-              <span className="text-muted-foreground">
-                <span className="font-semibold text-foreground">{pupil.lessons_completed || 0}</span> lessons
-              </span>
-              <span className="text-muted-foreground">
-                <span className="font-semibold text-foreground">{pupil.progress || 0}%</span> progress
-              </span>
-              {hasDebt && (
-                <span className="text-rose-600 font-medium">
-                  -£{Math.abs(pupil.account_balance || 0)}
-                </span>
-              )}
-              {hasCredit && (
-                <span className="text-emerald-600 font-medium">
-                  {pupil.prepaid_hours}h credit
-                </span>
-              )}
-            </div>
+            <p className="text-[13px] text-primary mt-0.5 truncate">
+              {pupil.next_lesson
+                ? `Lesson ${format(parseISO(pupil.next_lesson), "dd MMM, HH:mm")}`
+                : `${pupil.lessons_completed || 0} lessons completed`}
+            </p>
           </div>
 
-          {/* Expand Arrow */}
+          {/* Credit / Balance indicator */}
+          <div className="text-right shrink-0">
+            {hasCredit ? (
+              <span className="text-[13px] font-semibold text-emerald-600">
+                {pupil.prepaid_hours} hrs credit
+              </span>
+            ) : hasDebt ? (
+              <span className="text-[13px] font-semibold text-rose-600">
+                -£{Math.abs(pupil.account_balance || 0).toFixed(0)} owed
+              </span>
+            ) : (
+              <span className="text-[13px] font-semibold text-emerald-600">
+                0 hrs credit
+              </span>
+            )}
+          </div>
+
+          {/* Chevron */}
           <motion.div
             animate={{ rotate: isExpanded ? 90 : 0 }}
             transition={{ duration: 0.2 }}
