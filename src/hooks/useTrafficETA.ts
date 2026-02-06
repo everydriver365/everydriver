@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 interface TrafficETA {
   durationMinutes: number;
   durationText: string;
+  trafficCondition: string | null;
+  delayMinutes: number;
   isLoading: boolean;
   error: string | null;
 }
@@ -11,6 +13,8 @@ interface TrafficETA {
 export function useTrafficETA(destinationPostcode: string | null): TrafficETA {
   const [durationMinutes, setDurationMinutes] = useState<number>(0);
   const [durationText, setDurationText] = useState<string>("");
+  const [trafficCondition, setTrafficCondition] = useState<string | null>(null);
+  const [delayMinutes, setDelayMinutes] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,6 +22,8 @@ export function useTrafficETA(destinationPostcode: string | null): TrafficETA {
     if (!destinationPostcode) {
       setDurationMinutes(0);
       setDurationText("");
+      setTrafficCondition(null);
+      setDelayMinutes(0);
       return;
     }
 
@@ -63,6 +69,8 @@ export function useTrafficETA(destinationPostcode: string | null): TrafficETA {
         if (data?.duration_minutes) {
           setDurationMinutes(data.duration_minutes);
           setDurationText(data.duration_text || `${data.duration_minutes} min`);
+          setTrafficCondition(data.traffic_condition || null);
+          setDelayMinutes(data.delay_minutes || 0);
         }
       } catch (err) {
         if (!isCancelled) {
@@ -87,5 +95,5 @@ export function useTrafficETA(destinationPostcode: string | null): TrafficETA {
     };
   }, [destinationPostcode]);
 
-  return { durationMinutes, durationText, isLoading, error };
+  return { durationMinutes, durationText, trafficCondition, delayMinutes, isLoading, error };
 }

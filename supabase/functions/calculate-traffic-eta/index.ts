@@ -67,7 +67,7 @@ serve(async (req) => {
       );
     }
 
-    // Call HERE Routing API v8
+    // Call HERE Routing API v8 with traffic
     const routeUrl = `https://router.hereapi.com/v8/routes?transportMode=car&origin=${origin_lat},${origin_lng}&destination=${destCoords.lat},${destCoords.lng}&return=summary&departureTime=${new Date().toISOString()}&apiKey=${apiKey}`;
 
     const response = await fetch(routeUrl);
@@ -85,9 +85,27 @@ serve(async (req) => {
     const summary = section.summary;
     
     // duration includes live traffic when departureTime=now
+    // baseDuration is the duration without traffic
     const durationSeconds = summary.duration;
+    const baseDurationSeconds = summary.baseDuration || durationSeconds;
     const durationMinutes = Math.round(durationSeconds / 60);
+    const baseDurationMinutes = Math.round(baseDurationSeconds / 60);
     const distanceKm = (summary.length / 1000).toFixed(1);
+    
+    // Calculate traffic delay
+    const delayMinutes = durationMinutes - baseDurationMinutes;
+    
+    // Determine traffic condition
+    let trafficCondition: string;
+    if (delayMinutes <= 1) {
+      trafficCondition = "clear";
+    } else if (delayMinutes <= 5) {
+      trafficCondition = "light";
+    } else if (delayMinutes <= 15) {
+      trafficCondition = "moderate";
+    } else {
+      trafficCondition = "heavy";
+    }
     
     // Format duration text
     let durationText: string;
@@ -106,6 +124,8 @@ serve(async (req) => {
         duration_text: durationText,
         distance_text: `${distanceKm} km`,
         has_traffic: true,
+        traffic_condition: trafficCondition,
+        delay_minutes: delayMinutes,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
