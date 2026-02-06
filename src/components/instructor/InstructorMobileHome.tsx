@@ -382,6 +382,7 @@ export function InstructorMobileHome({
             minutesUntil={nextLesson.minutesUntil}
             accountBalance={nextLesson.accountBalance}
             prepaidHours={nextLesson.prepaidHours}
+            durationMinutes={nextLesson.durationMinutes}
             instructorId={instructorId}
           />
         </motion.div>
