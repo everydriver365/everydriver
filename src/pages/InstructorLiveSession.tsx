@@ -24,6 +24,7 @@ import { GPSStatusHero } from "@/components/instructor/tracking/GPSStatusHero";
 import { SessionStartPanel } from "@/components/instructor/tracking/SessionStartPanel";
  import { RecentSessionsList } from "@/components/instructor/tracking/RecentSessionsList";
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
+import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
 
 interface GPSDevice {
   id: string;
@@ -896,6 +897,31 @@ export default function InstructorLiveSession() {
        <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 md:mx-0 -mt-4 md:mt-0">
          {/* Modern card-based layout */}
          <div className="p-4 pb-24 space-y-4">
+           {/* Tracker Selector Tile */}
+           {instructor?.id && (
+             <TrackerSelectorTile
+               instructorId={instructor.id}
+               currentDeviceId={device.id}
+               currentDeviceName={device.device_name}
+               onDeviceChange={(newDevice) => {
+                 setDevice(prev => prev ? { ...prev, ...newDevice } as typeof prev : prev);
+                 // Re-fetch full device data
+                 supabase
+                   .from("gps_devices")
+                   .select("*")
+                   .eq("id", newDevice.id)
+                   .single()
+                   .then(({ data }) => {
+                     if (data) {
+                       deviceIdRef.current = null;
+                       lastSeenRef.current = null;
+                       setDevice(data as GPSDevice);
+                     }
+                   });
+               }}
+             />
+           )}
+
            {/* GPS Status Hero Card */}
            <GPSStatusHero
              deviceName={device.device_name}
