@@ -321,7 +321,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground hover:text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                        className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
                         title="Settings"
                       >
                         <Settings className="h-4 w-4" />
@@ -363,7 +363,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                    className="text-blue-500 hover:text-blue-600 hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                    className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
                     title="Search"
                   >
                     <Search className="h-4 w-4" />
@@ -373,7 +373,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowQRModal(true)}
-                      className="text-rose-400 hover:text-rose-500 hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
+                      className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
                     >
                       <span className="text-[10px] font-bold border border-current rounded px-0.5">QR</span>
                     </Button>
@@ -382,7 +382,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate("/instructor/availability")}
-                    className="text-violet-500 hover:text-violet-600 hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
+                    className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
                     title="Availability"
                   >
                     <Calendar className="h-4 w-4" />
