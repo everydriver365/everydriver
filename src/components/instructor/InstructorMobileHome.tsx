@@ -38,7 +38,7 @@ import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
-import { NextLessonCard } from "@/components/instructor/NextLessonCard";
+import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
@@ -331,7 +331,9 @@ export function InstructorMobileHome({
       {/* Next Lesson Card - only show when there's a lesson */}
       {nextLesson && (
         <div className="mt-4">
-          <NextLessonCard
+          <NextUpTile
+            lessonId={nextLesson.lessonId}
+            pupilId={nextLesson.pupilId}
             pupilName={nextLesson.pupilName}
             pupilProfileImage={nextLesson.pupilProfileImage}
             pupilPhone={nextLesson.pupilPhone}
