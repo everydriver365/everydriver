@@ -448,7 +448,7 @@ export function PupilCardStack({
           <div className="relative">
             <Avatar className={cn("h-14 w-14 shrink-0", getAvatarRingColor())}>
               <AvatarImage src={pupil.profile_image_url || undefined} alt={pupil.name} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg font-semibold">
+              <AvatarFallback className="text-white text-lg font-semibold" style={{ backgroundColor: '#1877F2' }}>
                 {getInitials(pupil.name)}
               </AvatarFallback>
             </Avatar>
