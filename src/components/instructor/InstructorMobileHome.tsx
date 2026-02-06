@@ -283,6 +283,8 @@ export function InstructorMobileHome({
           } : null}
           heroImageUrl={content?.hero_image_url}
           motivationSubtitle={content?.motivation_subtitle}
+          unreadMessages={unreadCount || 0}
+          pendingJobs={pendingJobsCount}
         />
       </div>
 
