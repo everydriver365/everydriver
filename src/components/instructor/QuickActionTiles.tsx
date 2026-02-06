@@ -28,6 +28,8 @@ import { usePendingJobsPreview } from "@/hooks/usePendingJobsPreview";
 import { useQuickTileActions } from "@/hooks/useQuickTileActions";
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
+import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
+import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
 
@@ -87,6 +89,8 @@ export function QuickActionTiles({
   const { nextPupil, lastContactedPupil } = useQuickTileActions(instructorId);
   const { data: todayOverview } = useTodayOverview(instructorId);
   const { data: nextLessonDetails } = useNextLessonDetails(instructorId);
+  const { data: messagesUnreadCount = 0 } = useUnreadMessagesCount(instructorId);
+  const { data: visitorChatUnreadCount = 0 } = useVisitorChatUnreadCount(instructorId);
   // Get tiles in user's preferred order (from DB tiles, with additionalTiles for lookup)
   const orderedTiles = getOrderedTiles(quickActions, additionalTiles);
   
@@ -125,6 +129,23 @@ export function QuickActionTiles({
   const isPupilsAction = (action: QuickAction) => {
     return action.route === "/instructor/pupils" || 
            action.title.toLowerCase().includes("pupil");
+  };
+
+  const isMessagesAction = (action: QuickAction) => {
+    return action.route === "/instructor/messages" || 
+           action.title.toLowerCase().includes("message");
+  };
+
+  const isVisitorChatsAction = (action: QuickAction) => {
+    return action.route === "/instructor/visitor-chats" || 
+           action.title.toLowerCase().includes("visitor");
+  };
+
+  const getBadgeCount = (action: QuickAction): number => {
+    if (isJobOffersAction(action)) return pendingJobsCount;
+    if (isMessagesAction(action)) return messagesUnreadCount;
+    if (isVisitorChatsAction(action)) return visitorChatUnreadCount;
+    return 0;
   };
 
   const setEditMode = (value: boolean) => {
@@ -247,7 +268,8 @@ export function QuickActionTiles({
               {localTiles.map((action, index) => {
                 const Icon = getIcon(action.icon);
                 const style = tileStyles[index % tileStyles.length];
-                const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
+                const badgeCount = getBadgeCount(action);
+                const showBadge = badgeCount > 0;
 
                 return (
                   <Reorder.Item
@@ -280,7 +302,7 @@ export function QuickActionTiles({
                         <Icon className={`h-5 w-5 ${style.iconColor}`} />
                         {showBadge && (
                           <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
-                            {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                            {badgeCount > 9 ? "9+" : badgeCount}
                           </span>
                         )}
                       </div>
@@ -349,7 +371,8 @@ export function QuickActionTiles({
                     <div className={`relative w-12 h-12 rounded-xl ${tileStyles[0].iconBg} flex items-center justify-center shrink-0`}>
                       {(() => {
                         const Icon = getIcon(localTiles[0].icon);
-                        const showBadge = isJobOffersAction(localTiles[0]) && pendingJobsCount > 0;
+                        const firstTileBadgeCount = getBadgeCount(localTiles[0]);
+                        const showBadge = firstTileBadgeCount > 0;
                         const isSchedule = isScheduleAction(localTiles[0]);
                         const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
                         return (
@@ -357,7 +380,7 @@ export function QuickActionTiles({
                             <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />
                             {showBadge && (
                               <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                                {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                                {firstTileBadgeCount > 9 ? "9+" : firstTileBadgeCount}
                               </span>
                             )}
                             {showLessonBadge && !showBadge && (
@@ -410,7 +433,8 @@ export function QuickActionTiles({
           <div className="grid grid-cols-2 gap-2">
             {localTiles.slice(1).map((action, index) => {
               const Icon = getIcon(action.icon);
-              const showBadge = isJobOffersAction(action) && pendingJobsCount > 0;
+              const badgeCount = getBadgeCount(action);
+              const showBadge = badgeCount > 0;
               const style = tileStyles[(index + 1) % tileStyles.length];
               
               return (
@@ -426,7 +450,7 @@ export function QuickActionTiles({
                       <Icon className={`h-4 w-4 ${style.iconColor}`} />
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
-                          {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                          {badgeCount > 9 ? "9+" : badgeCount}
                         </span>
                       )}
                     </div>
