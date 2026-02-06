@@ -1,13 +1,17 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Home,
   Search,
   BookOpen as TheoryIcon,
   HelpCircle,
   MessageCircle,
-  Gift
+  Gift,
+  Menu,
+  X,
+  MapPin
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Accordion,
   AccordionContent,
@@ -15,11 +19,23 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useIncludedFeatures } from "@/hooks/useIncludedFeatures";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import drive365Logo from "@/assets/drive365-logo.png";
 
 export default function Benefits() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { features, loading } = useIncludedFeatures();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [postcode, setPostcode] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (postcode.trim()) {
+      navigate(`/courses?postcode=${encodeURIComponent(postcode.trim())}`);
+    }
+  };
 
   const navItems = [
     { label: "Home", icon: Home, path: "/drive365" },
@@ -32,9 +48,71 @@ export default function Benefits() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header - Primary Blue to match brand */}
-      <div className="px-4 py-3 flex items-center justify-start sticky top-0 z-50 bg-primary border-b border-primary-foreground/10">
-        <img src={drive365Logo} alt="Drive365" className="h-9" />
+      {/* Header with hamburger */}
+      <div className="sticky top-0 z-50 bg-primary">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-primary-foreground hover:bg-primary-foreground/10 h-9 w-9"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+            <Link to="/drive365">
+              <img src={drive365Logo} alt="Drive365" className="h-8" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="border-t border-primary-foreground/10 bg-background"
+            >
+              <div className="px-4 py-4 flex flex-col gap-2">
+                <form onSubmit={handleSearch} className="mb-2">
+                  <div className="flex items-center rounded-full bg-secondary px-3 py-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground mr-2" />
+                    <Input
+                      type="text"
+                      placeholder="Enter your postcode"
+                      value={postcode}
+                      onChange={(e) => setPostcode(e.target.value)}
+                      className="h-8 flex-1 border-0 bg-transparent p-0 text-sm placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                    <Button type="submit" size="sm" className="h-8 rounded-full px-4 ml-2">
+                      <Search className="h-4 w-4 mr-1" />
+                      Search
+                    </Button>
+                  </div>
+                </form>
+                {[
+                  { href: "/drive365", label: "Home" },
+                  { href: "/courses", label: "Courses" },
+                  { href: "/about", label: "About" },
+                  { href: "/faqs", label: "FAQs" },
+                  { href: "/help", label: "Help" },
+                  { href: "/contact", label: "Contact" },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Hero Section */}
