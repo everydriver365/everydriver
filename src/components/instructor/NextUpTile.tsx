@@ -117,9 +117,11 @@ export function NextUpTile({
           <h2 className="text-xl font-bold text-foreground">
             {getDateLabel()} · {formatTime(startTime)}
           </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            ({getCountdownText()})
-          </p>
+          {minutesUntil < 60 && (
+            <p className="text-sm text-muted-foreground mt-0.5">
+              ({getCountdownText()})
+            </p>
+          )}
         </div>
 
         {/* Pupil info card */}
