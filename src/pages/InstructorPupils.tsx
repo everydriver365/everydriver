@@ -58,6 +58,7 @@ import { PupilPickerDialog } from "@/components/instructor/PupilPickerDialog";
 import { TestResultsHistory, DrivingTestReportForm } from "@/components/instructor/driving-test";
 import { useActiveTrackingPupils } from "@/hooks/useActiveTrackingPupils";
 import { NextLessonTile } from "@/components/instructor/NextLessonTile";
+import { PupilAvatarUpload } from "@/components/instructor/PupilAvatarUpload";
 
 interface Pupil {
   id: string;
@@ -279,6 +280,7 @@ export default function InstructorPupils() {
           parent_phone: editForm.parent_phone,
           parent_name: editForm.parent_name,
           date_of_birth: editForm.date_of_birth,
+          profile_image_url: editForm.profile_image_url,
         })
         .eq("id", selectedPupil.id);
 
@@ -737,6 +739,19 @@ export default function InstructorPupils() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+            {/* Profile Photo Upload */}
+            {selectedPupil && (
+              <div className="flex justify-center pb-2 border-b">
+                <PupilAvatarUpload
+                  pupilId={selectedPupil.id}
+                  pupilName={editForm.name || selectedPupil.name}
+                  currentImageUrl={editForm.profile_image_url}
+                  onImageUploaded={(url) => setEditForm({ ...editForm, profile_image_url: url })}
+                  onImageRemoved={() => setEditForm({ ...editForm, profile_image_url: null })}
+                />
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label>Name</Label>
               <Input
