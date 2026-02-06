@@ -93,6 +93,7 @@ import InstructorSignup from "./pages/instructor-app/InstructorSignup";
 import InstructorAbout from "./pages/instructor-app/InstructorAbout";
 import InstructorContactPage from "./pages/instructor-app/InstructorContact";
 import InstructorDomains from "./pages/instructor-app/InstructorDomains";
+import InstructorDesignDemo from "./pages/instructor-app/DesignDemo";
 import InstructorOnboarding from "./pages/instructor-app/onboarding/InstructorOnboarding";
 import OnboardingPreview from "./pages/instructor-app/onboarding/OnboardingPreview";
 import InstructorPortalLogin from "./pages/InstructorPortalLogin";
@@ -162,6 +163,7 @@ const App = () => (
               <Route path="/instructor-app/signup" element={<InstructorSignup />} />
               <Route path="/instructor-app/onboarding" element={<InstructorOnboarding />} />
               <Route path="/instructor-app/onboarding-preview" element={<OnboardingPreview />} />
+              <Route path="/instructor-app/design-demo" element={<InstructorDesignDemo />} />
 
               {/* Instructor Portal (Authenticated) */}
               <Route path="/instructor/login" element={<InstructorPortalLogin />} />
