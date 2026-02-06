@@ -51,6 +51,9 @@ import { FuelFinderCard } from "@/components/instructor/FuelFinderCard";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
+import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
+import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
+import { useTodayRemainingLessons } from "@/hooks/useTodayRemainingLessons";
 import { QuickStatsChips } from "@/components/instructor/QuickStatsChips";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { CardSection } from "@/components/ui/CardSection";
@@ -198,6 +201,7 @@ export function InstructorMobileHome({
   const { data: weeklyGoals } = useWeeklyGoals(instructorId);
   const { data: tomorrowPreview } = useTomorrowPreview(instructorId);
   const { data: gapSuggestions } = useRealGapSlots(instructorId);
+  const { data: todayLessons } = useTodayRemainingLessons(instructorId);
   
   // Derive display location - prefer GPS road name, fallback to alerts location
   const displayLocation = gpsRoadName || alertsLocation;
@@ -311,26 +315,30 @@ export function InstructorMobileHome({
       />
 
       {/* Weather/Traffic Alerts */}
-      {alerts.length > 0 && (
-        <DrivingAlertsStrip 
-          alerts={alerts} 
-          onDismiss={dismissAlert}
-          location={alertsLocation}
-          className="mt-4"
-        />
-      )}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        {alerts.length > 0 && (
+          <DrivingAlertsStrip 
+            alerts={alerts} 
+            onDismiss={dismissAlert}
+            location={alertsLocation}
+            className="mt-4"
+          />
+        )}
+      </motion.div>
 
       {/* Tracker Reminder - show when offline and lesson soon */}
       {nextLesson && nextLesson.minutesUntil <= 30 && !isGPSConnected && (
-        <TrackerReminderBanner 
-          lessonId={nextLesson.lessonId}
-          minutesUntil={nextLesson.minutesUntil}
-        />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <TrackerReminderBanner 
+            lessonId={nextLesson.lessonId}
+            minutesUntil={nextLesson.minutesUntil}
+          />
+        </motion.div>
       )}
 
       {/* Next Lesson Card - only show when there's a lesson */}
       {nextLesson && (
-        <div className="mt-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-4">
           <NextUpTile
             lessonId={nextLesson.lessonId}
             pupilId={nextLesson.pupilId}
@@ -345,113 +353,147 @@ export function InstructorMobileHome({
             accountBalance={nextLesson.accountBalance}
             prepaidHours={nextLesson.prepaidHours}
           />
-        </div>
+        </motion.div>
+      )}
+
+      {/* Today's Mini Timeline */}
+      {todayLessons && todayLessons.length > 1 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+          <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
+        </motion.div>
       )}
 
       {/* Today's Route Map Preview */}
-      <TodayRoutePreview 
-        instructorId={instructorId}
-        onTap={() => navigate("/instructor/diary")}
-        className="mt-4"
-      />
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <TodayRoutePreview 
+          instructorId={instructorId}
+          onTap={() => navigate("/instructor/diary")}
+          className="mt-4"
+        />
+      </motion.div>
 
       {/* Gap Filler Suggestions */}
       {gapSuggestions && gapSuggestions.length > 0 && (
-        <GapFillerCard
-          gaps={gapSuggestions}
-          className="mt-4"
-        />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+          <GapFillerCard
+            gaps={gapSuggestions}
+            className="mt-4"
+          />
+        </motion.div>
       )}
 
       {/* Quick Action Tiles */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
         <div className="px-4 pt-6 pb-6">
-        <QuickActionTiles
-          quickActions={content?.quick_actions || []}
-          pendingJobsCount={pendingJobsCount}
-          instructorId={instructorId}
-          loading={contentLoading}
-          isEditMode={isTileEditMode}
-          onEditModeChange={setIsTileEditMode}
-        />
-      </div>
+          <QuickActionTiles
+            quickActions={content?.quick_actions || []}
+            pendingJobsCount={pendingJobsCount}
+            instructorId={instructorId}
+            loading={contentLoading}
+            isEditMode={isTileEditMode}
+            onEditModeChange={setIsTileEditMode}
+          />
+        </div>
+      </motion.div>
 
       {/* Fuel Finder Card - Above Today's Stats */}
-      <FuelFinderCard
-        instructorId={instructorId}
-        className="mt-4"
-      />
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+        <FuelFinderCard
+          instructorId={instructorId}
+          className="mt-4"
+        />
+      </motion.div>
 
       {/* Today's Stats - Glass Card */}
-      <div className="px-4 mt-4">
-         <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
-           <h3 className="font-semibold text-gray-900 text-sm mb-3">Today's Stats</h3>
-          <div className="flex items-center justify-around">
-            <div className="flex flex-col items-center gap-0.5">
-               <div className="flex items-center gap-1 text-rose-500">
-                <BookOpen className="h-4 w-4" />
-                <span className="text-lg font-bold">
-                  <AnimatedCounter value={currentLessons} />
-                </span>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        <div className="px-4 mt-4">
+          <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
+            <h3 className="font-semibold text-foreground text-sm mb-3">Today's Stats</h3>
+            <div className="flex items-center justify-around">
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="flex items-center gap-1 text-rose-500">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-lg font-bold">
+                    <AnimatedCounter value={currentLessons} />
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-medium">Lessons</span>
               </div>
-               <span className="text-[10px] text-gray-500 font-medium">Lessons</span>
-            </div>
-             <div className="w-px h-8 bg-gray-200" />
-            <div className="flex flex-col items-center gap-0.5">
-               <div className="flex items-center gap-1 text-blue-600">
-                <Clock className="h-4 w-4" />
-                <span className="text-lg font-bold">
-                  <AnimatedCounter value={todayOverview?.totalHours || 0} />
-                </span>
+              <div className="w-px h-8 bg-border" />
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="flex items-center gap-1 text-blue-600">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-lg font-bold">
+                    <AnimatedCounter value={todayOverview?.totalHours || 0} />
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-medium">Hours</span>
               </div>
-               <span className="text-[10px] text-gray-500 font-medium">Hours</span>
-            </div>
-             <div className="w-px h-8 bg-gray-200" />
-            <div className="flex flex-col items-center gap-0.5">
-               <div className="flex items-center gap-1 text-emerald-600">
-                <PoundSterling className="h-4 w-4" />
-                <span className="text-lg font-bold">
-                  <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
-                </span>
+              <div className="w-px h-8 bg-border" />
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="flex items-center gap-1 text-emerald-600">
+                  <PoundSterling className="h-4 w-4" />
+                  <span className="text-lg font-bold">
+                    <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-medium">Expected</span>
               </div>
-               <span className="text-[10px] text-gray-500 font-medium">Expected</span>
             </div>
           </div>
-         </div>
-      </div>
+        </div>
+      </motion.div>
 
       {/* Weekly Goal Progress - Glass Card */}
       {weeklyGoals && (
-        <div className="px-4 mt-4">
-           <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                 <h3 className="font-semibold text-gray-900 text-sm mb-1">Weekly Progress</h3>
-                 <p className="text-xs text-gray-500">
-                  {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
-                </p>
-                {lastWeekComparison && (
-                   <p className={`text-[10px] mt-1 ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-amber-600'}`}>
-                    {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
+          <div className="px-4 mt-4">
+            <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 border border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground text-sm mb-1">Weekly Progress</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
                   </p>
-                )}
+                  {lastWeekComparison && (
+                    <p className={`text-[10px] mt-1 ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
+                    </p>
+                  )}
+                </div>
+                <WeeklyGoalRing
+                  hoursThisWeek={weeklyGoals.hoursThisWeek}
+                  hoursGoal={weeklyGoals.hoursGoal}
+                  progressPercent={weeklyGoals.progressPercent}
+                  isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
+                />
               </div>
-              <WeeklyGoalRing
-                hoursThisWeek={weeklyGoals.hoursThisWeek}
-                hoursGoal={weeklyGoals.hoursGoal}
-                progressPercent={weeklyGoals.progressPercent}
-                isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
-              />
             </div>
-           </div>
-        </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Tomorrow Peek Card */}
+      {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+          <TomorrowPeekCard
+            lessonCount={tomorrowPreview.lessonCount}
+            totalHours={tomorrowPreview.totalHours}
+            expectedEarnings={tomorrowPreview.expectedEarnings}
+            firstLessonTime={tomorrowPreview.firstLessonTime}
+            className="mt-4"
+          />
+        </motion.div>
       )}
 
       {/* Setup Checklist for new instructors */}
       {instructorId && (
-        <InstructorSetupChecklist 
-          instructorId={instructorId} 
-          variant="mobile"
-        />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}>
+          <InstructorSetupChecklist 
+            instructorId={instructorId} 
+            variant="mobile"
+          />
+        </motion.div>
       )}
 
 

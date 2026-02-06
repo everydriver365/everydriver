@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { 
   Clock, 
   MapPin, 
@@ -343,6 +343,10 @@ export function ContextualHomeHero({
    const weeklyGoalDays = 6; // Target days per week
    const daysWorked = Math.min(Math.round((weeklyProgress / 100) * weeklyGoalDays), weeklyGoalDays);
 
+  // Parallax scroll effect
+  const { scrollY } = useScroll();
+  const cardY = useTransform(scrollY, [0, 200], [0, -12]);
+
   return (
     <div className="relative -mx-4">
       {/* Hero Image - Full Bleed */}
@@ -354,12 +358,13 @@ export function ContextualHomeHero({
         />
       </div>
       
-       {/* Overlapping Card - David Lloyd Style */}
+       {/* Overlapping Card - David Lloyd Style with parallax */}
        <div className="relative -mt-10 mx-4">
         <motion.div 
             className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          style={{ y: cardY }}
           transition={{ duration: 0.4, ease: "easeOut" }}
           onClick={() => {
             haptics.selection();
