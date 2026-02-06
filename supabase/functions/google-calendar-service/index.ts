@@ -556,14 +556,14 @@ Deno.serve(async (req) => {
 
           const data = await response.json();
           const pageEvents = (data.items || [])
-            .filter((item: { start?: { dateTime?: string }; end?: { dateTime?: string } }) =>
-              item.start?.dateTime && item.end?.dateTime
+            .filter((item: { start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string } }) =>
+              (item.start?.dateTime || item.start?.date) && (item.end?.dateTime || item.end?.date)
             )
-            .map((item: { id: string; summary?: string; start: { dateTime: string }; end: { dateTime: string } }) => ({
+            .map((item: { id: string; summary?: string; start: { dateTime?: string; date?: string }; end: { dateTime?: string; date?: string } }) => ({
               id: item.id,
               summary: item.summary || "Busy",
-              start: item.start.dateTime,
-              end: item.end.dateTime,
+              start: item.start.dateTime || `${item.start.date}T00:00:00`,
+              end: item.end.dateTime || `${item.end.date}T23:59:59`,
             }));
 
           allEvents.push(...pageEvents);
