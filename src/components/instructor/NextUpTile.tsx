@@ -132,19 +132,23 @@ export function NextUpTile({
             />
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-foreground text-sm truncate">{pupilName}</p>
-              {(pickupLocation || pickupPostcode) && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                  <Navigation className="h-3 w-3 shrink-0" />
-                  {pickupLocation && <span className="truncate">{pickupLocation}</span>}
-                  {pickupLocation && pickupPostcode && <span className="text-muted-foreground/50">·</span>}
-                  {pickupPostcode && <span className="shrink-0">{pickupPostcode}</span>}
+              {pickupLocation && (
+                <p className="text-sm text-foreground mt-0.5 truncate">
+                  {pickupLocation}
                 </p>
               )}
+              {pickupPostcode && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {pickupPostcode}
+                </p>
+              )}
+              <div className="mt-1">
+                <PaymentStatusBadge 
+                  balance={effectiveBalance} 
+                  size="sm" 
+                />
+              </div>
             </div>
-            <PaymentStatusBadge 
-              balance={effectiveBalance} 
-              size="sm" 
-            />
           </div>
         </div>
 
