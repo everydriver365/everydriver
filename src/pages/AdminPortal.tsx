@@ -281,6 +281,9 @@ export default function AdminPortal() {
                   }}
                 />
               </div>
+              <Button variant="secondary" size="lg" className="shrink-0" onClick={() => setActiveSection("bookings")}>
+                <Search className="mr-1 h-4 w-4" /> Search
+              </Button>
               <Button onClick={() => setIsBespokeOpen(true)} size="lg" className="shadow-md shrink-0">
                 <Plus className="mr-1 h-4 w-4" /> Create Bespoke Booking
               </Button>
