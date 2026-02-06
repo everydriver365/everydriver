@@ -38,7 +38,7 @@ export function NextUpTile({
   prepaidHours,
 }: NextUpTileProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { durationMinutes: etaMinutes, durationText: etaText, isLoading: etaLoading } = useTrafficETA(
+  const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(
     pickupPostcode
   );
 
@@ -170,6 +170,20 @@ export function NextUpTile({
                     }`}>
                       <Car className="h-3 w-3" />
                       {etaText}
+                      {trafficCondition && trafficCondition !== 'clear' && (
+                        <span className={`ml-1 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          trafficCondition === 'heavy' 
+                            ? 'bg-red-100 text-red-700' 
+                            : trafficCondition === 'moderate'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-yellow-50 text-yellow-700'
+                        }`}>
+                          {trafficCondition === 'heavy' ? '🔴 Heavy' : trafficCondition === 'moderate' ? '🟡 Moderate' : '🟢 Light'}
+                        </span>
+                      )}
+                      {trafficCondition === 'clear' && (
+                        <span className="ml-1 text-[10px] text-emerald-500 font-medium">✓ Clear</span>
+                      )}
                     </span>
                   ) : null}
                 </p>
