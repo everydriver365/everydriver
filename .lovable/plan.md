@@ -1,56 +1,57 @@
 
-# Add Tyre Track Design to Instructor Mobile Schedule View
 
-## Overview
-Add the same decorative tyre track SVG pattern (in the brand's navy blue) to the instructor mobile schedule view, providing visual consistency with the main footer.
+## Why the Schedule Only Shows a Week
 
-## Implementation Approach
+**Root cause**: There is a race condition between two effects when entering the Schedule view.
 
-### File to Modify: `src/components/instructor/NewMobileScheduleView.tsx`
+1. When the user switches to Schedule, the init effect (line 62-76 in `InstructorSchedule.tsx`) calls `calendar.goToDate(today)` followed by `calendar.refetch(true)`.
+2. `goToDate` updates `currentDate` state, which causes `fetchEvents` to be recreated (it depends on `currentDate`).
+3. This recreation triggers the auto-fetch effect (`useEffect(() => { fetchEvents(); }, [fetchEvents])`) which calls `fetchEvents()` with **no arguments**.
+4. At that point, `lastExtendedRangeRef.current` is still `false`, so the fetch uses `getDateRange` with `view='week'` and `extendedRange=false` -- fetching only one week of data.
+5. The explicit `refetch(true)` call may also run, but it can be overwritten by the subsequent auto-fetch triggered by the state change.
 
-Since the instructor mobile layout uses a light gray (`#EDEDED`) background, the tyre track will use the **primary color (navy blue)** with low opacity to be visible against the light background.
+**The fix**: Ensure the `view` state or extended range flag is properly synchronized before any fetch occurs. The cleanest approach:
 
-### Changes
+### Step 1: Add a persistent "extendedRange" mode to `useInstructorCalendar`
 
-1. **Add TyreTrackPattern component** (same SVG as footer, but navy colored for light background)
-2. **Wrap the main container** with `relative overflow-hidden`
-3. **Position the pattern** absolutely on the right side
-4. **Use `text-primary` with ~5-8% opacity** for subtle navy blue effect on light background
+In `src/hooks/useInstructorCalendar.ts`:
+- Add an `extendedRange` state (boolean, default `false`).
+- When `extendedRange` is `true`, `getDateRange` always returns the 365-day window regardless of `view`.
+- Include `extendedRange` in the `fetchEvents` dependency list so it naturally triggers a refetch.
+- Remove the `lastExtendedRangeRef` workaround.
+- Expose `setExtendedRange` from the hook.
 
-### Code Structure
-```tsx
-// Add at top of file
-function TyreTrackPattern() {
-  return (
-    <svg
-      className="absolute right-0 top-0 h-full w-32 md:w-48 opacity-[0.05] pointer-events-none text-primary"
-      viewBox="0 0 200 600"
-      preserveAspectRatio="xMaxYMid slice"
-      fill="currentColor"
-      ...
-    >
-      {/* Same chevron pattern as footer */}
-    </svg>
-  );
-}
+### Step 2: Set extended range when entering/leaving Schedule
 
-// Wrap outer div
-<div className="relative space-y-4 overflow-hidden">
-  <TyreTrackPattern />
-  {/* existing content */}
-</div>
+In `src/pages/InstructorSchedule.tsx`:
+- When `viewMode` changes to `'schedule'`, call `calendar.setExtendedRange(true)`.
+- When `viewMode` changes away from `'schedule'`, call `calendar.setExtendedRange(false)`.
+- Remove the manual `refetch(true)` call and the `scheduleInitRef` workaround -- the state-driven approach handles it automatically.
+
+### Technical Details
+
+**`useInstructorCalendar.ts` changes:**
+```text
+- Add: const [extendedRange, setExtendedRange] = useState(false);
+- Modify fetchEvents: remove the extendedRange parameter and lastExtendedRangeRef;
+  always use the extendedRange state value in getDateRange call
+- Add extendedRange to fetchEvents useCallback dependencies
+- Return setExtendedRange from the hook
 ```
 
-### Visual Result
-A subtle navy blue tyre track pattern will appear on the right edge of the schedule view, adding visual interest while maintaining readability of lesson cards and content.
+**`InstructorSchedule.tsx` changes:**
+```text
+- Remove scheduleInitRef and its associated useEffect
+- Add a simpler useEffect:
+    useEffect(() => {
+      if (viewMode === 'schedule') {
+        calendar.goToDate(new Date());
+        calendar.setExtendedRange(true);
+      } else {
+        calendar.setExtendedRange(false);
+      }
+    }, [viewMode]);
+```
 
----
+This eliminates the race condition because `extendedRange` is part of the reactive state, and the auto-fetch effect will always use the correct range.
 
-## Technical Notes
-| Aspect | Detail |
-|--------|--------|
-| File | `src/components/instructor/NewMobileScheduleView.tsx` |
-| Pattern color | `text-primary` (navy blue) |
-| Opacity | 5% for light background visibility |
-| Position | Right side, full height |
-| Responsive | Slightly smaller width on mobile |
