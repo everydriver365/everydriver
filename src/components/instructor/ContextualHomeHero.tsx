@@ -21,7 +21,9 @@ import {
   Snowflake,
   Wind,
   ChevronDown,
-   BookOpen,
+  BookOpen,
+  MessageCircle,
+  Briefcase,
 } from "lucide-react";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
@@ -62,6 +64,8 @@ interface ContextualHomeHeroProps {
   } | null;
   heroImageUrl?: string;
   motivationSubtitle?: string;
+  unreadMessages?: number;
+  pendingJobs?: number;
 }
 
 // Weather icon component
@@ -156,6 +160,8 @@ export function ContextualHomeHero({
   weeklyStats,
   heroImageUrl,
   motivationSubtitle,
+  unreadMessages = 0,
+  pendingJobs = 0,
 }: ContextualHomeHeroProps) {
   const [isExpanded, setIsExpanded] = useState(false);
    const [rotatingStatIndex, setRotatingStatIndex] = useState(0);
@@ -375,8 +381,26 @@ export function ContextualHomeHero({
                {/* Subtitle */}
                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                  {getContextualSubtitle()}
-               </p>
-             </div>
+                </p>
+
+                {/* Alert badges for messages & jobs */}
+                {(unreadMessages > 0 || pendingJobs > 0) && (
+                  <div className="flex items-center gap-2 mt-2">
+                    {unreadMessages > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-medium">
+                        <MessageCircle className="h-3 w-3" />
+                        {unreadMessages} message{unreadMessages !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {pendingJobs > 0 && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-[11px] font-medium">
+                        <Briefcase className="h-3 w-3" />
+                        {pendingJobs} job{pendingJobs !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
              
              {/* Right side: Circular progress indicator */}
              <div className="flex-shrink-0">
