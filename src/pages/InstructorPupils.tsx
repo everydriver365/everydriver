@@ -593,14 +593,14 @@ export default function InstructorPupils() {
 
       {/* Add Pupil Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90dvh] overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>Add New Pupil</DialogTitle>
             <DialogDescription>
               Enter the pupil's details below
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1 -mr-1">
             <div className="space-y-2">
               <Label>Name *</Label>
               <Input
@@ -609,7 +609,7 @@ export default function InstructorPupils() {
                 placeholder="Full name"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Email</Label>
                 <Input
@@ -708,7 +708,7 @@ export default function InstructorPupils() {
                     Parent signature required on T&Cs for pupils under 18
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Parent Name</Label>
                     <Input
