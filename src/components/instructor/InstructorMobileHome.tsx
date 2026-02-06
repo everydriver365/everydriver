@@ -337,6 +337,7 @@ export function InstructorMobileHome({
             pupilName={nextLesson.pupilName}
             pupilProfileImage={nextLesson.pupilProfileImage}
             pupilPhone={nextLesson.pupilPhone}
+            lessonDate={nextLesson.lessonDate}
             pickupPostcode={nextLesson.pickupPostcode}
             pickupLocation={nextLesson.pickupLocation}
             startTime={nextLesson.startTime}
