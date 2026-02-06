@@ -85,7 +85,7 @@ export function MobileHomepage() {
   const navItems = [{
     label: "Home",
     icon: Home,
-    path: "/"
+    path: "/drive365"
   }, {
     label: "Search",
     icon: Search,
