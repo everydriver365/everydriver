@@ -343,7 +343,7 @@ export function QuickActionTiles({
               whileTap={{ scale: 0.98 }}
             >
               <Link to={localTiles[0].route}>
-                 <div className="relative overflow-hidden bg-white rounded-2xl p-4 shadow-lg active:shadow-md transition-all border border-border border-l-4 border-l-[#1877F2]">
+                 <div className="relative overflow-hidden bg-white rounded-2xl p-4 shadow-lg active:shadow-md transition-all border border-border border-l-[3px] border-l-[#1877F2]">
                   <div className="flex items-center gap-4">
                     <div className={`relative w-12 h-12 rounded-xl ${tileStyles[0].iconBg} flex items-center justify-center shrink-0`}>
                       {(() => {
@@ -419,7 +419,7 @@ export function QuickActionTiles({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + index * 0.03 }}
                     whileTap={{ scale: 0.97 }}
-                     className={`relative overflow-hidden ${style.bg} rounded-xl px-3 py-2.5 flex items-center gap-2.5 shadow-md hover:shadow-lg active:shadow-sm transition-shadow border border-border border-l-4 border-l-[#1877F2]`}
+                     className={`relative overflow-hidden ${style.bg} rounded-xl px-3 py-2.5 flex items-center gap-2.5 shadow-md hover:shadow-lg active:shadow-sm transition-shadow border border-border border-l-[3px] border-l-[#1877F2]`}
                   >
                     <div className={`relative w-8 h-8 rounded-lg ${style.iconBg} flex items-center justify-center shrink-0`}>
                       <Icon className={`h-4 w-4 ${style.iconColor}`} />
