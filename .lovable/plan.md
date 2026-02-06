@@ -1,45 +1,62 @@
 
+# Fix: Google Calendar Sync - Complete Reliability Overhaul
 
-# Fix: Google Calendar Sync Not Saving Future Events
+## Current State After Investigation
 
-## Problem
+The upsert fix from the last change **is now working** -- I triggered the scheduled sync and confirmed 124 future events were stored (up to May 2026). However, several critical problems remain that make the sync unreliable and incomplete.
 
-The scheduled calendar sync imports 125 events from Google but only 1 future event ends up in the database. The root cause is a **unique constraint violation** on the `instructor_calendar_events` table.
+## Problems Found
 
-## Root Cause (Step by Step)
+### 1. No Google API Pagination (maxResults: 250)
+All three sync functions (`scheduled-calendar-sync`, `calendar-sync`, `google-calendar-service`) hard-cap at 250 results with **no pagination**. If an instructor has more than 250 events in 365 days, future events are silently dropped. Google Calendar API uses `nextPageToken` for pagination -- this is completely ignored.
 
-1. The `scheduled-calendar-sync` function first **deletes** events where `start_time >= now` (only future events).
-2. Then it tries to **bulk insert** all fetched Google events (which may include events whose `external_event_id` already exists as a past record).
-3. The table has a **unique constraint** on `(instructor_id, external_event_id)`.
-4. If any Google event shares an `external_event_id` with an existing past record, the entire batch insert fails with a duplicate key error.
-5. Result: zero future events get saved.
+### 2. The `google-calendar-service` Function Uses `insert()` Not `upsert()`
+Line 553-555 of `google-calendar-service/index.ts` still uses `.insert(eventsToInsert)`. This will fail on duplicate `external_event_id` values, silently losing events. The `fetchExternalEvents` action also generates fake `external_event_id` values (`google-busy-${index}-${Date.now()}`), meaning every sync creates new rows instead of updating existing ones, causing duplicates.
 
-## Fix
+### 3. The `sync-all-calendars` Function Calls Non-Existent Function
+`sync-all-calendars/index.ts` invokes `google-calendar-sync` (line 45) which does not exist as an edge function. It should call `google-calendar-service` with `fetchExternalEvents`.
 
-### 1. Update `scheduled-calendar-sync` to use upsert instead of insert
+### 4. No Error Logging on Upsert/Insert Failures
+The `scheduled-calendar-sync` function does not check for errors after the upsert call (line 196). Silent failures go undetected.
 
-Replace the `.insert(eventsToInsert)` call with `.upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' })`. This will:
-- Insert new events normally
-- Update existing events (e.g., if a past event's time changed) instead of failing
+## Plan
 
-### 2. Apply the same fix to `calendar-sync` (manual sync)
+### Step 1: Add Google API Pagination to All Sync Functions
 
-The `importBusyTimes` and `fullSync` actions in `calendar-sync/index.ts` also use `.insert()`. These should also be changed to `.upsert()` for consistency.
+In `scheduled-calendar-sync/index.ts` and `calendar-sync/index.ts`, modify the `fetchGoogleEvents` function to loop through `nextPageToken` pages until all events are fetched. Remove the `maxResults: "250"` cap or increase it to 2500 (Google's max per page).
 
-Additionally, the `calendar-sync` function references a `source` column (`.eq("source", "google")` and `source: "google"` in inserts) that does not exist on the table. These references need to be removed to prevent silent failures in the delete step.
+### Step 2: Fix `google-calendar-service` to Use Upsert with Stable IDs
+
+In `google-calendar-service/index.ts`:
+- Change the `fetchExternalEvents` action to fetch actual calendar events (with real Google event IDs) instead of using the freeBusy API which only returns time blocks with no IDs
+- Use `.upsert()` instead of `.insert()` with `onConflict: 'instructor_id,external_event_id'`
+- This gives proper event titles and stable external IDs for deduplication
+
+### Step 3: Fix `sync-all-calendars` to Call the Correct Function
+
+Update `sync-all-calendars/index.ts` to invoke `google-calendar-service` instead of the non-existent `google-calendar-sync`.
+
+### Step 4: Add Error Handling on All DB Write Operations
+
+Add error checking after every upsert/insert/delete in all three sync functions and log failures.
 
 ## Technical Details
 
-### File: `supabase/functions/scheduled-calendar-sync/index.ts`
-- Line ~170: Change `.insert(eventsToInsert)` to `.upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' })`
-- Broaden the delete to remove all existing events for the instructor in the time range (already correct)
+### `supabase/functions/scheduled-calendar-sync/index.ts`
+- Modify `fetchGoogleEvents`: add `nextPageToken` loop, increase `maxResults` to `2500`
+- Add error checking after upsert call on line 196
+- Log event count per page for debugging
 
-### File: `supabase/functions/calendar-sync/index.ts`
-- Lines ~588-589: Remove `.eq("source", "google")` from the delete query (column does not exist)
-- Lines ~599: Remove `source: "google"` from the insert objects
-- Line ~606: Change `.insert(eventsToInsert)` to `.upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' })`
-- Lines ~700-701: Remove `.eq("source", "google")` from the delete query
-- Line ~712: Remove `source: "google"` from the insert objects
-- Line ~717: Change `.insert(eventsToInsert)` to `.upsert(eventsToInsert, { onConflict: 'instructor_id,external_event_id' })`
+### `supabase/functions/calendar-sync/index.ts`
+- Same pagination fix for `fetchGoogleEvents`
+- Add error checking after upsert calls
 
-These changes ensure that recurring events or events that span past-to-future do not cause the entire batch to fail silently.
+### `supabase/functions/google-calendar-service/index.ts`
+- Replace `fetchBusyTimes` call in `fetchExternalEvents` action with a proper `events.list` API call that returns event IDs and titles
+- Change `.insert()` to `.upsert()` with conflict handling
+- Add pagination support
+
+### `supabase/functions/sync-all-calendars/index.ts`
+- Change `google-calendar-sync` to `google-calendar-service` on line 45
+
+All four functions will be redeployed after changes.
