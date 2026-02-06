@@ -287,7 +287,7 @@ export default function InstructorMenu() {
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
                 {section.title}
               </h2>
-              <div className="bg-white dark:bg-card rounded-lg border border-[#E5E7EB] border-l-2 border-l-[#1877F2] shadow-[0_2px_8px_rgba(20,37,66,0.08)] overflow-hidden divide-y divide-border/50">
+              <div className="space-y-2">
                 {section.items.map((item, idx) => (
                   <button
                     key={idx}
@@ -298,7 +298,7 @@ export default function InstructorMenu() {
                         navigate(item.path);
                       }
                     }}
-                    className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-muted/50 transition-colors text-left"
+                    className="w-full flex items-center justify-between px-4 py-3.5 bg-white dark:bg-card rounded-lg border border-[#E5E7EB] border-l-2 border-l-[#1877F2] shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:bg-muted/50 transition-colors text-left"
                   >
                     <div className="flex items-center gap-3">
                       <div
