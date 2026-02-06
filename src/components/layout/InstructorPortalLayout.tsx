@@ -235,7 +235,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   <img 
                     src={instructorLogo}
                     alt="EveryDriver" 
-                    className="h-5 sm:h-6 object-contain"
+                    className="h-4 sm:h-5 object-contain"
                   />
                 </div>
 
