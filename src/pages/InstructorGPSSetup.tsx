@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
 import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav";
+import { InstructorMobileHeader } from "@/components/instructor/InstructorMobileHeader";
 import { GPSgateUserIdSettings } from "@/components/instructor/GPSgateUserIdSettings";
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
@@ -234,30 +235,9 @@ export default function InstructorTraccarSetup() {
 
   return (
     <>
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-primary border-b border-primary-foreground/10 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor/settings")} className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="text-primary-foreground">
-              <h1 className="text-lg font-semibold">Connect Your Tracker</h1>
-              <p className="text-sm text-primary-foreground/70">Link your GPS device for automatic trip logging</p>
-            </div>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={fetchDevices}
-            disabled={isLoading}
-            className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#E8F1FE] dark:bg-background pb-20">
+      {/* Standard Mobile Header */}
+      <InstructorMobileHeader title="GPS Tracking" showBackButton />
 
       <div className="p-4 space-y-6 max-w-2xl mx-auto">
         {/* GPSgate User ID Settings */}
