@@ -454,7 +454,10 @@ export function ContextualHomeHero({
                      icon={currentWeather.icon} 
                      className={`h-3.5 w-3.5 ${getWeatherIconColor(currentWeather.icon)}`} 
                    />
-                   <span className="text-xs font-medium text-foreground">{currentWeather.temperature}°C</span>
+                    <span className="text-xs font-medium text-foreground">{currentWeather.temperature}°C</span>
+                    {currentWeather.description && (
+                      <span className="text-xs text-muted-foreground">{currentWeather.description}</span>
+                    )}
                  </div>
                )}
                {/* Traffic ETA */}
