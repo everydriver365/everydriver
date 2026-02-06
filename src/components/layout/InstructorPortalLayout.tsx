@@ -297,9 +297,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => navigate("/instructor/schedule")}
+                    onClick={() => navigate("/instructor/availability")}
                     className="text-primary/80 hover:text-primary hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
-                    title="Schedule"
+                    title="Availability"
                   >
                     <Calendar className="h-4 w-4" />
                   </Button>
