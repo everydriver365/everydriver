@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface ETARequest {
@@ -50,10 +50,10 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get("GOOGLE_PLACES_API_KEY");
+    const apiKey = Deno.env.get("HERE_API_KEY");
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: "Google API key not configured" }),
+        JSON.stringify({ error: "HERE API key not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -67,40 +67,45 @@ serve(async (req) => {
       );
     }
 
-    // Call Google Directions API with traffic
-    const directionsUrl = new URL("https://maps.googleapis.com/maps/api/directions/json");
-    directionsUrl.searchParams.set("origin", `${origin_lat},${origin_lng}`);
-    directionsUrl.searchParams.set("destination", `${destCoords.lat},${destCoords.lng}`);
-    directionsUrl.searchParams.set("mode", "driving");
-    directionsUrl.searchParams.set("departure_time", "now");
-    directionsUrl.searchParams.set("traffic_model", "best_guess");
-    directionsUrl.searchParams.set("key", apiKey);
+    // Call HERE Routing API v8
+    const routeUrl = `https://router.hereapi.com/v8/routes?transportMode=car&origin=${origin_lat},${origin_lng}&destination=${destCoords.lat},${destCoords.lng}&return=summary&departureTime=${new Date().toISOString()}&apiKey=${apiKey}`;
 
-    const response = await fetch(directionsUrl.toString());
+    const response = await fetch(routeUrl);
     const data = await response.json();
 
-    if (data.status !== "OK") {
-      console.error("Google Directions API error:", data.status, data.error_message);
+    if (!data.routes || data.routes.length === 0) {
+      console.error("HERE Routing API error:", JSON.stringify(data));
       return new Response(
-        JSON.stringify({ error: `Directions API error: ${data.status}` }),
+        JSON.stringify({ error: "No route found" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const route = data.routes[0];
-    const leg = route.legs[0];
+    const section = data.routes[0].sections[0];
+    const summary = section.summary;
     
-    // Use duration_in_traffic if available, otherwise use regular duration
-    const duration = leg.duration_in_traffic || leg.duration;
-    const durationMinutes = Math.round(duration.value / 60);
+    // duration includes live traffic when departureTime=now
+    const durationSeconds = summary.duration;
+    const durationMinutes = Math.round(durationSeconds / 60);
+    const distanceKm = (summary.length / 1000).toFixed(1);
+    
+    // Format duration text
+    let durationText: string;
+    if (durationMinutes < 60) {
+      durationText = `${durationMinutes} min`;
+    } else {
+      const hours = Math.floor(durationMinutes / 60);
+      const mins = durationMinutes % 60;
+      durationText = mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
         duration_minutes: durationMinutes,
-        duration_text: duration.text,
-        distance_text: leg.distance.text,
-        has_traffic: !!leg.duration_in_traffic,
+        duration_text: durationText,
+        distance_text: `${distanceKm} km`,
+        has_traffic: true,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
