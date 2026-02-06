@@ -61,7 +61,7 @@ export default function Benefits() {
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
             <Link to="/drive365">
-              <img src={drive365Logo} alt="Drive365" className="h-8" />
+              <img src={drive365Logo} alt="Drive365" className="h-8 -mx-1" />
             </Link>
           </div>
         </div>

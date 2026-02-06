@@ -51,7 +51,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link to={homeLink} className="flex items-center">
-              <img src={logo} alt={logoAlt} className="h-10" />
+              <img src={logo} alt={logoAlt} className="h-10 -mx-1" />
             </Link>
             <p className="text-sm text-primary-foreground/70">
               Professional driving instruction to help you pass your test with confidence.

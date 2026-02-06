@@ -120,7 +120,7 @@ export function MobileHomepage() {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <img src={drive365Logo} alt="Drive365" className="h-9" />
+        <img src={drive365Logo} alt="Drive365" className="h-9 -mx-1" />
         <Button 
           variant="outline" 
           size="sm" 

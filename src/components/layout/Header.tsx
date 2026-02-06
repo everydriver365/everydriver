@@ -46,7 +46,7 @@ export function Header() {
       <div className="bg-primary overflow-x-hidden">
       <nav className="container max-w-7xl flex h-16 items-center justify-between relative">
         <Link to="/drive365" className="hidden md:flex items-center">
-          <img src={drive365Logo} alt="Drive365" className="h-9" />
+          <img src={drive365Logo} alt="Drive365" className="h-9 -mx-1" />
         </Link>
 
         {/* Desktop Navigation - Centered */}
@@ -102,7 +102,7 @@ export function Header() {
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
           <Link to="/drive365" className="flex items-center">
-            <img src={drive365Logo} alt="Drive365" className="h-8" />
+            <img src={drive365Logo} alt="Drive365" className="h-8 -mx-1" />
           </Link>
         </div>
         {/* Mobile right-side controls */}
