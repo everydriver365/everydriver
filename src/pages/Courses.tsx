@@ -843,7 +843,7 @@ export default function Courses() {
   return (
     <MainLayout>
       {/* Search Header */}
-      <section className="border-b bg-secondary/30 py-8">
+      <section className="border-b bg-background py-8">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
