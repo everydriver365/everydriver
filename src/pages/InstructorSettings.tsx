@@ -327,7 +327,7 @@ export default function InstructorSettings() {
                 className={cn(
                   "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
                   selectedCategory === category.id
-                    ? "bg-accent text-accent-foreground border-accent font-semibold"
+                    ? "bg-blue-100 text-blue-700 border-blue-300 font-semibold dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
                     : "bg-transparent text-muted-foreground border-border hover:bg-muted/50 hover:text-foreground"
                 )}
               >
