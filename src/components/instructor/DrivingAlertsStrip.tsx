@@ -74,10 +74,13 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
               }}
               className={cn(
                 "relative overflow-hidden rounded-xl border shadow-sm",
-                isSevere
-                  ? "bg-gradient-to-r from-destructive/10 to-destructive/5 border-destructive/30 dark:from-destructive/20 dark:to-destructive/10"
-                  : "bg-gradient-to-r from-warning/10 to-warning/5 border-warning/30 dark:from-warning/20 dark:to-warning/10"
+                isWeather
+                  ? "border-blue-200 dark:border-blue-800"
+                  : isSevere
+                    ? "bg-gradient-to-r from-destructive/10 to-destructive/5 border-destructive/30 dark:from-destructive/20 dark:to-destructive/10"
+                    : "bg-gradient-to-r from-warning/10 to-warning/5 border-warning/30 dark:from-warning/20 dark:to-warning/10"
               )}
+              style={isWeather ? { backgroundColor: '#D1E4FC' } : undefined}
             >
               <div className="flex items-start gap-3 p-3">
                 {/* Icon */}
