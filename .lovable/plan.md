@@ -1,57 +1,39 @@
 
 
-# Map Annotation Tool (Doodlepad)
+## Problem
 
-A new interactive tool that lets instructors view their current location on a map, then draw lines, arrows, and annotations directly on it to illustrate vehicle direction of travel, road positioning, and other teaching points.
+The branded pupil portal at `/p/:slug` (`BrandedPupilPortal.tsx`) still uses the old phone number lookup to identify pupils. This was never updated when the login system was changed to email/password. The phone lookup (line 171-198) simply searches by phone number with no password -- it's not real authentication.
 
-## What It Does
+The new email/password login page (`/pupil/login`) works correctly and stores session data, but the branded portal has its own separate, outdated login flow.
 
-- **Shows your current location** on a live map using your phone's GPS (no Google Maps needed -- uses the same mapping system already in the app)
-- **Draw on the map** with your finger or mouse -- lines, arrows, circles, and text
-- **Annotations stay pinned** to real-world locations, so when you pan or zoom, your drawings move with the map
-- **Save and reload** your drawings for reuse in future lessons (e.g., "Roundabout approach", "Parallel parking steps")
-- **Undo/redo** support for easy editing
+## Solution
 
-## How It Works
+Update `BrandedPupilPortal.tsx` to replace the phone number input with a redirect to the email/password login page, while keeping the session-based access for already-authenticated users.
 
-1. Open the Doodlepad from the instructor menu
-2. The map centres on your current GPS position
-3. Tap the pencil icon to start drawing -- select colour, tool type (freehand, arrow, circle, text)
-4. Draw directly on the map to show students vehicle paths, positioning, etc.
-5. Save your annotation with a name for later use
+### Changes
 
-## Technical Details
+**1. Update `BrandedPupilPortal.tsx`**
 
-### New Files
-- `src/pages/InstructorDoodlepad.tsx` -- Page wrapper with geolocation initialisation
-- `src/components/instructor/doodlepad/DoodlepadMap.tsx` -- Full-screen Leaflet map with canvas overlay
-- `src/components/instructor/doodlepad/DoodlepadToolbar.tsx` -- Floating toolbar (tool selection, colour picker, undo/redo, save/load)
-- `src/components/instructor/doodlepad/DoodlepadCanvas.tsx` -- HTML5 Canvas overlay that converts screen coordinates to lat/lng for geo-anchored drawing
-- `src/components/instructor/doodlepad/SavedAnnotationsDrawer.tsx` -- Bottom drawer listing saved doodlepads from the database
+- Remove the `phoneInput` state and `handlePhoneVerify` function (the old phone lookup)
+- Remove the phone number input form UI
+- When no pupil session is found, also check `sessionStorage.getItem("pupil_email_verified")` and look up the pupil by email + instructor ID
+- If still no session, redirect to `/pupil/login` (or show a "Sign In" button that navigates there)
+- Keep the existing session check (`sessionStorage.getItem(\`pupil_\${data.id}\`)`) so users who logged in via `/pupil/login` are recognized
 
-### Database
-- New `doodlepads` table:
-  - `id` (UUID, primary key)
-  - `instructor_id` (UUID, references auth user)
-  - `name` (text)
-  - `center_lat`, `center_lng` (float8 -- map centre when saved)
-  - `zoom_level` (integer)
-  - `annotations` (JSONB -- array of drawing objects with lat/lng anchors)
-  - `created_at`, `updated_at` (timestamps)
-  - RLS policies restricting access to the owning instructor
+**2. No backend changes needed** -- the `pupil-email-auth` edge function already returns the `instructorSlug` and stores the session correctly.
 
-### Drawing Architecture
-- Canvas overlay sits on top of the Leaflet map, sized to the viewport
-- Each drawing stroke records lat/lng anchor points (converted from pixel coordinates using Leaflet's `containerPointToLatLng`)
-- On map pan/zoom, all strokes are re-projected from lat/lng back to screen pixels using `latLngToContainerPoint` and redrawn
-- Tools: Freehand pen, straight line, arrow, circle, text label
-- Colours: Red, blue, green, black, white (with thickness options)
+### Flow After Fix
 
-### Navigation Integration
-- New route: `/instructor/doodlepad`
-- Added to instructor menu, bottom nav, and command palette
-- Uses existing `mapConfig.ts` for consistent tile styling
+1. User visits `/p/kenneth-dufosse`
+2. Portal loads instructor branding
+3. No session found -- user sees a "Sign In" button
+4. Button navigates to `/pupil/login`
+5. User logs in with email/password
+6. On success, redirected back to `/p/kenneth-dufosse` with session stored
+7. Portal loads pupil data from session
 
-### Geolocation
-- Uses the browser's `navigator.geolocation.getCurrentPosition()` (same approach as existing tracking features)
-- Falls back to UK centre coordinates if permission denied
+### Technical Detail
+
+- The `PupilLogin.tsx` `performLogin` already stores `sessionStorage.setItem(\`pupil_\${data.instructorId}\`, data.pupilId)` and navigates to `/p/\${data.instructorSlug}`, so the branded portal's existing session check will pick it up automatically.
+- The phone input UI and `handlePhoneVerify` function (~lines 65, 171-210, and the corresponding JSX) will be removed entirely.
+
