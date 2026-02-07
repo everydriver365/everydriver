@@ -108,41 +108,30 @@ export default function InstructorPay() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-5 text-white bg-gradient-to-br from-primary to-primary/80"
+          className="rounded-2xl p-4 text-white bg-gradient-to-br from-primary to-primary/80"
         >
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-primary-foreground/70 text-sm">This Month</p>
+              <p className="text-primary-foreground/70 text-xs">This Month</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold">
+                <span className="text-3xl font-bold">
                   £{isLoading ? "—" : earnings?.thisMonth || 0}
                 </span>
                 {monthlyChange !== 0 && (
-                  <span className={`text-sm font-medium flex items-center gap-0.5 ${
+                  <span className={`text-xs font-medium flex items-center gap-0.5 ${
                     monthlyChange > 0 ? "text-emerald-300" : "text-rose-300"
                   }`}>
-                    <ArrowUpRight className={`h-3.5 w-3.5 ${monthlyChange < 0 ? "rotate-90" : ""}`} />
+                    <ArrowUpRight className={`h-3 w-3 ${monthlyChange < 0 ? "rotate-90" : ""}`} />
                     {Math.abs(monthlyChange)}%
                   </span>
                 )}
               </div>
             </div>
             <div className="text-right">
-              <p className="text-primary-foreground/70 text-sm">Hours</p>
-              <p className="text-2xl font-bold">{earnings?.hoursThisMonth || 0}h</p>
+              <p className="text-primary-foreground/70 text-xs">Hours</p>
+              <p className="text-xl font-bold">{earnings?.hoursThisMonth || 0}h</p>
             </div>
           </div>
-
-          {/* Mini Chart */}
-          <div className="mt-2 -mx-1">
-            <EarningsChart 
-              data={earnings?.dailyEarnings || []} 
-              isLoading={isLoading} 
-            />
-          </div>
-          <p className="text-xs text-primary-foreground/60 text-center mt-2">
-            Last 14 days
-          </p>
         </motion.div>
 
         {/* Quick Stats Row */}
