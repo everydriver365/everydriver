@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
+import { CalendarIcon } from "@/components/icons/CalendarIcon";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -375,14 +376,25 @@ export function QuickActionTiles({
                   whileTap={{ scale: 0.9 }}
                   className="flex flex-col items-center gap-2"
                 >
-                  <div className={`relative w-[54px] h-[54px] rounded-[13px] ${style.iconBg} flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]`}>
-                    <Icon className={`h-6 w-6 ${style.iconColor}`} />
-                    {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background">
-                        {badgeCount > 9 ? "9+" : badgeCount}
-                      </span>
-                    )}
-                  </div>
+                  {isScheduleAction(action) ? (
+                    <div className="relative w-[54px] h-[54px] rounded-[13px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
+                      <CalendarIcon className="w-full h-full" />
+                      {showBadge && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background z-10">
+                          {badgeCount > 9 ? "9+" : badgeCount}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className={`relative w-[54px] h-[54px] rounded-[13px] ${style.iconBg} flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]`}>
+                      <Icon className={`h-6 w-6 ${style.iconColor}`} />
+                      {showBadge && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background">
+                          {badgeCount > 9 ? "9+" : badgeCount}
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <span className="text-[11px] font-medium text-foreground/80 text-center leading-tight line-clamp-2">
                     {action.title}
                   </span>
