@@ -62,6 +62,7 @@ import { VisitorChatBadge } from "@/components/instructor/VisitorChatBadge";
 import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
+import { PlanBadge } from "@/components/instructor/PlanBadge";
 
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
@@ -102,7 +103,7 @@ interface InstructorPortalLayoutProps {
 }
 
 export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps) {
-  const { instructor, signOut, loading } = useInstructorAuth();
+  const { instructor, subscription, signOut, loading } = useInstructorAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -306,12 +307,13 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     </SheetContent>
                   </Sheet>
 
-                  {/* Logo */}
+                  {/* Logo + Plan Badge */}
                   <img 
                     src={instructorLogo}
                     alt="EveryDriver" 
                     className="h-4 sm:h-5 object-contain"
                   />
+                  <PlanBadge planSlug={subscription?.plan_slug} size="sm" />
                 </div>
 
                 {/* Right: Settings, QR, Schedule, ADD, Avatar */}
@@ -563,6 +565,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <div className="flex items-center justify-between px-6 h-14">
             <div className="flex items-center gap-3">
               <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
+              <PlanBadge planSlug={subscription?.plan_slug} size="md" />
             </div>
 
             {/* Navigation Tabs */}
