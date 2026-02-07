@@ -392,7 +392,7 @@ export function QuickActionTiles({
               <Link to={localTiles[0].route}>
                  <div className="relative overflow-hidden bg-white rounded-none p-4 shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:shadow-sm transition-all border border-border">
                   <div className="flex items-center gap-4">
-                    <div className={`relative w-12 h-12 rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`}>
+                    <div className={`relative w-14 h-14 rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`}>
                       {(() => {
                         const Icon = getIcon(localTiles[0].icon);
                         const firstTileBadgeCount = getBadgeCount(localTiles[0]);
@@ -470,7 +470,7 @@ export function QuickActionTiles({
                     whileTap={{ scale: 0.97 }}
                      className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-shadow border border-border`}
                   >
-                    <div className={`relative w-8 h-8 rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`}>
+                    <div className={`relative w-10 h-10 rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`}>
                       {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
