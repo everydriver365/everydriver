@@ -27,7 +27,7 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + index * 0.05 }}
-            className="flex flex-col items-center justify-center p-3 rounded-xl border border-gray-200 bg-white shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:scale-[0.98] transition-transform"
+            className="flex flex-col items-center justify-center p-3 rounded-none border border-gray-200 bg-white shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:scale-[0.98] transition-transform"
           >
             <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center mb-2">
               <Icon className={`h-4.5 w-4.5 ${action.iconColor}`} />
