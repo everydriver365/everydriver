@@ -339,3 +339,8 @@
 .leaflet-marker-pane {
   z-index: 2 !important;
 }
+
+/* Instructor portal: remove all border-radius except avatars/badges (rounded-full) */
+.instructor-portal *:not([class*="rounded-full"]):not(.rounded-full) {
+  border-radius: 0 !important;
+}
