@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Circle,
   Trash2,
+  ListTodo,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,6 +83,7 @@ export function TodoHomeTile({ instructorId, className }: TodoHomeTileProps) {
       {/* Header */}
       <div className="flex items-center justify-between p-3 pb-2">
         <div className="flex items-center gap-2">
+          <ListTodo className="h-4 w-4 text-violet-600" />
           <h3 className="font-semibold text-sm text-foreground">To Do</h3>
           {totalActive > 0 && (
             <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5">
