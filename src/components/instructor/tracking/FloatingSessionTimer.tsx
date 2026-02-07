@@ -42,16 +42,16 @@
        <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border overflow-hidden">
          {/* Session Info Header */}
          <div className="px-4 py-3 flex items-center gap-3 border-b border-border/50">
-           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-             isTestRoute 
-               ? "bg-amber-100 dark:bg-amber-500/20" 
-               : "bg-emerald-100 dark:bg-emerald-500/20"
-           }`}>
-             {isTestRoute ? (
-               <Route className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-             ) : (
-               <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-             )}
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              isTestRoute 
+                ? "bg-primary/10" 
+                : "bg-primary/10"
+            }`}>
+              {isTestRoute ? (
+                <Route className="h-5 w-5 text-primary" />
+              ) : (
+                <User className="h-5 w-5 text-primary" />
+              )}
            </div>
            <div className="flex-1 min-w-0">
              <p className="font-semibold text-foreground truncate">

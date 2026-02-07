@@ -34,20 +34,19 @@
      selectedPupilId ? "practice" : "test"
    );
    const [showPupilList, setShowPupilList] = useState(false);
- 
-   // Auto-switch to test route when no pupil selected
+
    const effectiveSessionType = selectedPupilId ? sessionType : "test";
    const selectedPupil = pupils.find(p => p.id === selectedPupilId);
- 
+
    const handleStartClick = () => {
      onStartSession(effectiveSessionType);
    };
- 
+
    const handlePupilSelect = (pupilId: string) => {
      onPupilChange(pupilId);
      setShowPupilList(false);
    };
- 
+
    return (
      <motion.div 
        className="bg-white dark:bg-card rounded-3xl shadow-xl overflow-hidden"
@@ -60,9 +59,9 @@
          <h3 className="text-lg font-bold text-foreground">Start Tracking</h3>
          <p className="text-sm text-muted-foreground">Select a pupil or record a test route</p>
        </div>
- 
+
        <div className="px-5 pb-5 space-y-4">
-         {/* Pupil Selector - Custom Dropdown */}
+         {/* Pupil Selector */}
          <div className="relative">
            <button
              onClick={() => setShowPupilList(!showPupilList)}
@@ -70,11 +69,11 @@
            >
              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                selectedPupilId 
-                 ? "bg-emerald-100 dark:bg-emerald-500/20" 
+                 ? "bg-primary/10" 
                  : "bg-slate-200 dark:bg-muted"
              }`}>
                {selectedPupilId ? (
-                 <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                 <span className="text-lg font-bold text-primary">
                    {selectedPupil?.name?.charAt(0) || "?"}
                  </span>
                ) : (
@@ -91,7 +90,7 @@
              </div>
              <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${showPupilList ? "rotate-180" : ""}`} />
            </button>
- 
+
            {/* Pupil List Dropdown */}
            <AnimatePresence>
              {showPupilList && (
@@ -117,10 +116,10 @@
                      <p className="text-xs text-muted-foreground">Record a test route</p>
                    </div>
                    {!selectedPupilId && (
-                     <CheckCircle className="h-5 w-5 text-emerald-500 ml-auto" />
+                     <CheckCircle className="h-5 w-5 text-primary ml-auto" />
                    )}
                  </button>
- 
+
                  {/* Pupil List */}
                  {pupils
                    .filter((pupil) => pupil.id && pupil.id.trim() !== "")
@@ -132,14 +131,14 @@
                          selectedPupilId === pupil.id ? "bg-slate-50 dark:bg-muted/50" : ""
                        }`}
                      >
-                       <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                         <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                         <span className="text-sm font-bold text-primary">
                            {pupil.name?.charAt(0) || "?"}
                          </span>
                        </div>
                        <p className="font-medium text-foreground text-left flex-1">{pupil.name}</p>
                        {selectedPupilId === pupil.id && (
-                         <CheckCircle className="h-5 w-5 text-emerald-500" />
+                         <CheckCircle className="h-5 w-5 text-primary" />
                        )}
                      </button>
                    ))}
@@ -147,8 +146,8 @@
              )}
            </AnimatePresence>
          </div>
- 
-         {/* Pupil Quick Info - Shows when pupil is selected */}
+
+         {/* Pupil Quick Info */}
          <AnimatePresence>
            {selectedPupilId && selectedPupil && (
              <PupilQuickInfo
@@ -157,8 +156,8 @@
              />
            )}
          </AnimatePresence>
- 
-         {/* Session Type Toggle - Only show when pupil is selected */}
+
+         {/* Session Type Toggle */}
          <AnimatePresence>
            {selectedPupilId && (
              <motion.div 
@@ -172,20 +171,20 @@
                  onClick={() => setSessionType("practice")}
                  className={`relative p-4 rounded-2xl text-left transition-all ${
                    sessionType === "practice"
-                     ? "bg-emerald-50 dark:bg-emerald-500/10 ring-2 ring-emerald-500 shadow-md"
+                     ? "bg-primary/5 ring-2 ring-primary shadow-md"
                      : "bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted"
                  }`}
                >
                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
                    sessionType === "practice"
-                     ? "bg-emerald-500 text-white"
+                     ? "bg-primary text-primary-foreground"
                      : "bg-slate-200 dark:bg-muted text-muted-foreground"
                  }`}>
                    <Car className="h-5 w-5" />
                  </div>
                  <p className={`font-semibold mb-1 ${
                    sessionType === "practice"
-                     ? "text-emerald-700 dark:text-emerald-400"
+                     ? "text-primary"
                      : "text-foreground"
                  }`}>
                    Practice
@@ -195,7 +194,7 @@
                  </p>
                  {sessionType === "practice" && (
                    <div className="absolute top-3 right-3">
-                     <CheckCircle className="h-5 w-5 text-emerald-500" />
+                     <CheckCircle className="h-5 w-5 text-primary" />
                    </div>
                  )}
                </button>
@@ -205,20 +204,20 @@
                  onClick={() => setSessionType("test")}
                  className={`relative p-4 rounded-2xl text-left transition-all ${
                    sessionType === "test"
-                     ? "bg-amber-50 dark:bg-amber-500/10 ring-2 ring-amber-500 shadow-md"
+                     ? "bg-primary/5 ring-2 ring-primary shadow-md"
                      : "bg-slate-50 dark:bg-muted/50 hover:bg-slate-100 dark:hover:bg-muted"
                  }`}
                >
                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
                    sessionType === "test"
-                     ? "bg-amber-500 text-white"
+                     ? "bg-primary text-primary-foreground"
                      : "bg-slate-200 dark:bg-muted text-muted-foreground"
                  }`}>
                    <Flag className="h-5 w-5" />
                  </div>
                  <p className={`font-semibold mb-1 ${
                    sessionType === "test"
-                     ? "text-amber-700 dark:text-amber-400"
+                     ? "text-primary"
                      : "text-foreground"
                  }`}>
                    Test Route
@@ -228,23 +227,19 @@
                  </p>
                  {sessionType === "test" && (
                    <div className="absolute top-3 right-3">
-                     <CheckCircle className="h-5 w-5 text-amber-500" />
+                     <CheckCircle className="h-5 w-5 text-primary" />
                    </div>
                  )}
                </button>
              </motion.div>
            )}
          </AnimatePresence>
- 
+
          {/* Start Button */}
          <div className="space-y-3">
            <Button 
              size="lg"
-             className={`w-full h-14 text-lg font-bold rounded-2xl shadow-lg transition-all ${
-               effectiveSessionType === "test" 
-                 ? "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white" 
-                 : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
-             }`}
+             className="w-full h-14 text-lg font-bold rounded-2xl shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground"
              onClick={handleStartClick}
              disabled={isStarting}
            >
@@ -261,7 +256,7 @@
                </>
              )}
            </Button>
- 
+
            {/* Driving Test Button */}
            <Button 
              size="lg"
@@ -275,7 +270,7 @@
              Record Official Driving Test
            </Button>
          </div>
- 
+
          {/* Helper Text */}
          <p className="text-xs text-center text-muted-foreground pt-1">
            {selectedPupilId 
