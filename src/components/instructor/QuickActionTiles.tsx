@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
 import messagesIcon from "@/assets/messages-icon.png";
 import paymentsIcon from "@/assets/payments-icon.png";
+import scheduleIcon from "@/assets/schedule-icon.png";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -59,6 +60,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 const customIconImages: Record<string, string> = {
   messages: messagesIcon,
   "take-payment": paymentsIcon,
+  schedule: scheduleIcon,
 };
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
