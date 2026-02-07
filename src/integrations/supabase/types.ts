@@ -1656,6 +1656,9 @@ export type Database = {
           last_speed_limit_kmh: number | null
           last_traccar_fix_time: string | null
           last_traccar_position_id: number | null
+          quartix_driver_id: string | null
+          quartix_vehicle_id: string | null
+          tracking_provider: string
           updated_at: string | null
           vehicle_id: string | null
         }
@@ -1688,6 +1691,9 @@ export type Database = {
           last_speed_limit_kmh?: number | null
           last_traccar_fix_time?: string | null
           last_traccar_position_id?: number | null
+          quartix_driver_id?: string | null
+          quartix_vehicle_id?: string | null
+          tracking_provider?: string
           updated_at?: string | null
           vehicle_id?: string | null
         }
@@ -1720,6 +1726,9 @@ export type Database = {
           last_speed_limit_kmh?: number | null
           last_traccar_fix_time?: string | null
           last_traccar_position_id?: number | null
+          quartix_driver_id?: string | null
+          quartix_vehicle_id?: string | null
+          tracking_provider?: string
           updated_at?: string | null
           vehicle_id?: string | null
         }
@@ -3581,6 +3590,44 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "instructor_todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instructor_tracking_config: {
+        Row: {
+          created_at: string
+          id: string
+          instructor_id: string
+          provider: string
+          quartix_account_id: string | null
+          quartix_api_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructor_id: string
+          provider?: string
+          quartix_account_id?: string | null
+          quartix_api_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          provider?: string
+          quartix_account_id?: string | null
+          quartix_api_key?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_tracking_config_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -6487,6 +6534,69 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      quartix_driver_scores: {
+        Row: {
+          acceleration_score: number | null
+          braking_score: number | null
+          cornering_score: number | null
+          created_at: string
+          fatigue_score: number | null
+          id: string
+          instructor_id: string
+          overall_score: number | null
+          pupil_id: string | null
+          quartix_driver_id: string
+          raw_data: Json | null
+          score_date: string
+          speed_score: number | null
+        }
+        Insert: {
+          acceleration_score?: number | null
+          braking_score?: number | null
+          cornering_score?: number | null
+          created_at?: string
+          fatigue_score?: number | null
+          id?: string
+          instructor_id: string
+          overall_score?: number | null
+          pupil_id?: string | null
+          quartix_driver_id: string
+          raw_data?: Json | null
+          score_date: string
+          speed_score?: number | null
+        }
+        Update: {
+          acceleration_score?: number | null
+          braking_score?: number | null
+          cornering_score?: number | null
+          created_at?: string
+          fatigue_score?: number | null
+          id?: string
+          instructor_id?: string
+          overall_score?: number | null
+          pupil_id?: string | null
+          quartix_driver_id?: string
+          raw_data?: Json | null
+          score_date?: string
+          speed_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quartix_driver_scores_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quartix_driver_scores_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recurring_expenses: {
         Row: {

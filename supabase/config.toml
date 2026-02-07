@@ -173,3 +173,9 @@ verify_jwt = false
 
 [functions.compliance-reminders]
 verify_jwt = false
+
+[functions.quartix-poller]
+verify_jwt = false
+
+[functions.quartix-trips]
+verify_jwt = false
