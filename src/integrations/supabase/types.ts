@@ -925,6 +925,50 @@ export type Database = {
           },
         ]
       }
+      doodlepads: {
+        Row: {
+          annotations: Json
+          center_lat: number
+          center_lng: number
+          created_at: string
+          id: string
+          instructor_id: string
+          name: string
+          updated_at: string
+          zoom_level: number
+        }
+        Insert: {
+          annotations?: Json
+          center_lat?: number
+          center_lng?: number
+          created_at?: string
+          id?: string
+          instructor_id: string
+          name?: string
+          updated_at?: string
+          zoom_level?: number
+        }
+        Update: {
+          annotations?: Json
+          center_lat?: number
+          center_lng?: number
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          name?: string
+          updated_at?: string
+          zoom_level?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doodlepads_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driving_behavior_events: {
         Row: {
           dismissed_at: string | null
