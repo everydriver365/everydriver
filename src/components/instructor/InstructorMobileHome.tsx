@@ -284,7 +284,7 @@ export function InstructorMobileHome({
   return (
     <PullToRefresh onRefresh={handleRefresh}>
        <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-       <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative -mx-4 -mt-4">
+       <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative">
 
       {/* Updated feedback banner */}
       <AnimatePresence>
