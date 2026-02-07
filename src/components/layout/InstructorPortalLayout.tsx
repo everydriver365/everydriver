@@ -497,7 +497,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <main className="h-[100dvh] overflow-hidden">{children}</main>
         ) : (
           <>
-            <main className="px-4 py-4 overflow-x-hidden">{children}</main>
+            <main className={`overflow-x-hidden ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>{children}</main>
             <InstructorBottomNav />
           </>
         )}
