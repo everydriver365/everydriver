@@ -170,27 +170,17 @@
                <p className="text-sm text-muted-foreground text-center">
                  Your GPS tracker appears to be offline. Check that the tracker app is running.
                </p>
-               <div className="flex gap-3">
-                 {onManualReconnect && (
-                   <Button 
-                      variant="outline" 
-                      size="default" 
-                      className="flex-1 h-10 rounded-xl"
-                     onClick={onManualReconnect}
-                   >
-                     <RefreshCw className="h-4 w-4 mr-2" />
-                     Retry
-                   </Button>
-                 )}
+               {onManualReconnect && (
                  <Button 
+                    variant="outline" 
                     size="default" 
-                    className="flex-1 h-10 rounded-xl"
-                   onClick={openTrackerApp}
+                    className="w-full h-10 rounded-xl"
+                   onClick={onManualReconnect}
                  >
-                   <ExternalLink className="h-4 w-4 mr-2" />
-                   Open App
+                   <RefreshCw className="h-4 w-4 mr-2" />
+                   Retry
                  </Button>
-               </div>
+               )}
              </motion.div>
            )}
          </AnimatePresence>
