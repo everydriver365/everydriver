@@ -4792,6 +4792,45 @@ export type Database = {
           },
         ]
       }
+      menu_feature_gates: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_locked_for_free: boolean
+          menu_item_key: string
+          menu_item_label: string
+          menu_section: string
+          required_feature: string | null
+          updated_at: string
+          upgrade_message: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_locked_for_free?: boolean
+          menu_item_key: string
+          menu_item_label: string
+          menu_section: string
+          required_feature?: string | null
+          updated_at?: string
+          upgrade_message?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_locked_for_free?: boolean
+          menu_item_key?: string
+          menu_item_label?: string
+          menu_section?: string
+          required_feature?: string | null
+          updated_at?: string
+          upgrade_message?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           attachment_type: string | null
