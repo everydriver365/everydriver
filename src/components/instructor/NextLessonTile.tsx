@@ -106,10 +106,9 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
     >
       <div
         className={cn(
-          "rounded-2xl p-4 text-white",
+          "rounded-2xl p-4 text-white bg-gradient-to-br from-primary to-primary/80",
           "hover:shadow-lg transition-all duration-200"
         )}
-        style={{ background: 'linear-gradient(to bottom right, #1877F2, #1466d8)' }}
       >
         <div className="flex items-center gap-3">
           {/* Avatar with ring */}
