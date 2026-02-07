@@ -12,6 +12,7 @@ import jobOffersIcon from "@/assets/job-offers-icon.png";
 import availabilityIcon from "@/assets/availability-icon.png";
 import healthHubIcon from "@/assets/health-hub-icon.png";
 import findFuelIcon from "@/assets/find-fuel-icon.png";
+import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -79,6 +80,7 @@ const customIconImages: Record<string, string> = {
   "availability": availabilityIcon,
   "health-hub": healthHubIcon,
   "find-fuel": findFuelIcon,
+  "vehicle-health": vehicleHealthIcon,
 };
 
 // Tiles with custom icon border-radius (inline style to override global !important)
@@ -90,6 +92,7 @@ const customIconRadius: Record<string, string> = {
   "availability": "7px",
   "health-hub": "7px",
   "find-fuel": "7px",
+  "vehicle-health": "7px",
 };
 
 // Tiles with larger icon size
