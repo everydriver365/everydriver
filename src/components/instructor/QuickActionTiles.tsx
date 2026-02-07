@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
 import messagesIcon from "@/assets/messages-icon.png";
 import paymentsIcon from "@/assets/payments-icon-new.png";
+import takePaymentIcon from "@/assets/take-payment-icon.png";
 import scheduleIcon from "@/assets/schedule-icon.png";
 import pupilsIcon from "@/assets/pupils-icon.png";
 import trackIcon from "@/assets/track-icon.png";
@@ -64,7 +65,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 // Custom image icons for specific tiles (iOS-style)
 const customIconImages: Record<string, string> = {
   messages: messagesIcon,
-  "take-payment": paymentsIcon,
+  "take-payment": takePaymentIcon,
   "payments": paymentsIcon,
   schedule: scheduleIcon,
   pupils: pupilsIcon,
