@@ -50,7 +50,6 @@ import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
 import { GapFillerCard } from "@/components/instructor/GapFillerCard";
-import { FuelFinderCard } from "@/components/instructor/FuelFinderCard";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
@@ -422,11 +421,6 @@ export function InstructorMobileHome({
         />
       </div>
 
-      {/* Fuel Finder Card - Above Today's Stats */}
-      <FuelFinderCard
-        instructorId={instructorId}
-        className="mt-4"
-      />
 
       {/* INSIGHTS section */}
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">INSIGHTS</p>

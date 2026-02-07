@@ -57,6 +57,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 const additionalTiles: QuickAction[] = [
   { id: "todos", title: "To Do", icon: "ListTodo", route: "/instructor/todos", display_order: 99 },
   { id: "vehicle-health", title: "Vehicle Health", icon: "Car", route: "/instructor/vehicle-health", display_order: 100 },
+  { id: "find-fuel", title: "Find Fuel", icon: "Fuel", route: "/instructor/fuel", display_order: 100.5 },
   { id: "test-results", title: "Log Test Result", icon: "Award", route: "/instructor/test-results", display_order: 101 },
   { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages", display_order: 102 },
   { id: "locations", title: "Locations", icon: "MapPin", route: "/instructor/locations", display_order: 103 },
