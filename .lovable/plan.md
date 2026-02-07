@@ -1,74 +1,57 @@
 
-# Making the Instructor App More Professional and Business-Like
 
-## 1. Typography and Spacing Refinements
-- Tighten up font weights: use `font-medium` instead of `font-bold` for secondary text, reserve `font-bold` for page titles only
-- Increase letter-spacing on uppercase labels (e.g., "Lessons", "Hours", "Expected" in the earnings strip) for a more refined look
-- Standardize heading sizes across all pages -- currently inconsistent between pages
+# Map Annotation Tool (Doodlepad)
 
-## 2. Color Palette Discipline
-- Reduce the number of accent colors used simultaneously. Currently the app uses blue, emerald, violet, amber, rose all on the same screens (e.g., MoneyQuickStats, stat cards). Professional SaaS apps typically use 1-2 accent colors max alongside the primary brand color
-- Consolidate to: primary navy (#142542), a single accent blue (#1877F2), and neutral grays. Use color sparingly for status indicators only (green for positive, red for negative)
-- Remove colorful icon background tints (e.g., `bg-blue-50`, `bg-emerald-50`, `bg-violet-50`) and use a single muted gray background for all icon containers
+A new interactive tool that lets instructors view their current location on a map, then draw lines, arrows, and annotations directly on it to illustrate vehicle direction of travel, road positioning, and other teaching points.
 
-## 3. Remove Excessive Motion/Animation
-- Remove or reduce `framer-motion` entrance animations on the home page. Currently every section has staggered `opacity: 0, y: 10` animations which feels playful rather than professional
-- Keep animations only for meaningful state changes (loading, expanding, transitioning between views)
-- Remove the "bounce" hint on the hero chevron
+## What It Does
 
-## 4. Simplify Card Styling
-- Remove `backdrop-blur`, `glass`, and `glass-light` effects -- these are trendy but not business-like
-- Use consistent, simple cards: white background, 1px border, subtle shadow. No gradients on cards
-- Standardize card padding across all components (currently varies between `p-3`, `p-4`, `p-6`)
+- **Shows your current location** on a live map using your phone's GPS (no Google Maps needed -- uses the same mapping system already in the app)
+- **Draw on the map** with your finger or mouse -- lines, arrows, circles, and text
+- **Annotations stay pinned** to real-world locations, so when you pan or zoom, your drawings move with the map
+- **Save and reload** your drawings for reuse in future lessons (e.g., "Roundabout approach", "Parallel parking steps")
+- **Undo/redo** support for easy editing
 
-## 5. Professional Bottom Navigation
-- Use a clean white/dark background with a top border instead of the current styling
-- Remove the oversized "Track" button center icon treatment if it exists
-- Use consistent icon sizing and minimal labels
+## How It Works
 
-## 6. Data-Dense Layout
-- Make stat cards more compact and information-dense rather than spread out
-- Consider using inline key-value pairs instead of large icon+number cards where appropriate
-- Show more data at a glance without requiring scrolling
+1. Open the Doodlepad from the instructor menu
+2. The map centres on your current GPS position
+3. Tap the pencil icon to start drawing -- select colour, tool type (freehand, arrow, circle, text)
+4. Draw directly on the map to show students vehicle paths, positioning, etc.
+5. Save your annotation with a name for later use
 
-## 7. Consistent Component Patterns
-- Standardize all list items (pupils, lessons, payments) to use the same row height, padding, and typography
-- Use a consistent "section header + content" pattern across all pages
+## Technical Details
 
-## 8. Remove Playful Elements
-- Replace emoji-style or overly decorative empty states with simple text + icon
-- Tone down the confetti celebration component
-- Use professional copy: e.g., "No scheduled lessons" instead of playful alternatives
+### New Files
+- `src/pages/InstructorDoodlepad.tsx` -- Page wrapper with geolocation initialisation
+- `src/components/instructor/doodlepad/DoodlepadMap.tsx` -- Full-screen Leaflet map with canvas overlay
+- `src/components/instructor/doodlepad/DoodlepadToolbar.tsx` -- Floating toolbar (tool selection, colour picker, undo/redo, save/load)
+- `src/components/instructor/doodlepad/DoodlepadCanvas.tsx` -- HTML5 Canvas overlay that converts screen coordinates to lat/lng for geo-anchored drawing
+- `src/components/instructor/doodlepad/SavedAnnotationsDrawer.tsx` -- Bottom drawer listing saved doodlepads from the database
 
----
+### Database
+- New `doodlepads` table:
+  - `id` (UUID, primary key)
+  - `instructor_id` (UUID, references auth user)
+  - `name` (text)
+  - `center_lat`, `center_lng` (float8 -- map centre when saved)
+  - `zoom_level` (integer)
+  - `annotations` (JSONB -- array of drawing objects with lat/lng anchors)
+  - `created_at`, `updated_at` (timestamps)
+  - RLS policies restricting access to the owning instructor
 
-## Technical Implementation
+### Drawing Architecture
+- Canvas overlay sits on top of the Leaflet map, sized to the viewport
+- Each drawing stroke records lat/lng anchor points (converted from pixel coordinates using Leaflet's `containerPointToLatLng`)
+- On map pan/zoom, all strokes are re-projected from lat/lng back to screen pixels using `latLngToContainerPoint` and redrawn
+- Tools: Freehand pen, straight line, arrow, circle, text label
+- Colours: Red, blue, green, black, white (with thickness options)
 
-### Files to modify:
+### Navigation Integration
+- New route: `/instructor/doodlepad`
+- Added to instructor menu, bottom nav, and command palette
+- Uses existing `mapConfig.ts` for consistent tile styling
 
-**Phase 1 -- Color consolidation (highest impact)**
-- `src/components/instructor/money/MoneyQuickStats.tsx` -- Replace multi-color scheme with monochrome
-- `src/components/instructor/EarningsSummaryStrip.tsx` -- Unify icon colors
-- `src/pages/InstructorPortal.tsx` -- Simplify stat card colors on desktop
-- `src/components/instructor/QuickActionTiles.tsx` -- Muted icon backgrounds
-- `src/components/instructor/QuickStatsChips.tsx` -- Consistent color treatment
-
-**Phase 2 -- Remove glass/blur effects**
-- `src/components/ui/GlassCard.tsx` -- Simplify to standard card
-- `src/components/instructor/EarningsSummaryStrip.tsx` -- Remove `backdrop-blur-sm`
-- `src/components/instructor/money/MoneyQuickStats.tsx` -- Remove `backdrop-blur-sm`
-- Any component using `.glass`, `.glass-light`, `.glass-strong` utilities
-
-**Phase 3 -- Reduce motion**
-- `src/components/instructor/InstructorMobileHome.tsx` -- Remove staggered entrance animations
-- `src/pages/InstructorPortal.tsx` -- Remove motion wrappers on desktop stat cards
-- `src/components/instructor/ContextualHomeHero.tsx` -- Simplify hero animations
-
-**Phase 4 -- Typography and spacing standardization**
-- Global pass across instructor components to standardize font weights, sizes, and padding
-- Ensure `text-xs` labels use consistent `uppercase tracking-wider` treatment
-- Standardize card content padding to `p-4` everywhere
-
-**Phase 5 -- Simplify empty states and decorative elements**
-- `src/components/instructor/QuietDayEmpty.tsx` -- Professional minimal empty state
-- `src/components/instructor/CelebrationConfetti.tsx` -- Tone down or remove
+### Geolocation
+- Uses the browser's `navigator.geolocation.getCurrentPosition()` (same approach as existing tracking features)
+- Falls back to UK centre coordinates if permission denied
