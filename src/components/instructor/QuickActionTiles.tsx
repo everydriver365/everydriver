@@ -64,7 +64,7 @@ const customIconImages: Record<string, string> = {
   "take-payment": paymentsIcon,
   schedule: scheduleIcon,
   pupils: pupilsIcon,
-  "track-live": trackIcon,
+  "track-lesson": trackIcon,
 };
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
