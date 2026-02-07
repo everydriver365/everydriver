@@ -7,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
+
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: jsonHeaders });
+}
+
 // Simple password hashing using Web Crypto API (PBKDF2)
 async function hashPassword(password: string, salt?: string): Promise<{ hash: string; salt: string }> {
   const encoder = new TextEncoder();
@@ -50,23 +56,16 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     if (!email) {
-      return new Response(
-        JSON.stringify({ error: "Email is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Email is required" });
     }
 
     const cleanEmail = email.trim().toLowerCase();
 
     if (action === "login") {
       if (!password) {
-        return new Response(
-          JSON.stringify({ error: "Password is required" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Password is required" });
       }
 
-      // Find pupil by email
       const { data: pupils, error: pupilError } = await supabase
         .from("pupils")
         .select(`
@@ -79,20 +78,14 @@ serve(async (req) => {
         .limit(1);
 
       if (pupilError || !pupils || pupils.length === 0) {
-        return new Response(
-          JSON.stringify({ error: "Email not found. Please check your email or contact your instructor." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Email not found. Please check your email or contact your instructor." });
       }
 
       const pupil = pupils[0] as any;
       const instructor = Array.isArray(pupil.instructor) ? pupil.instructor[0] : pupil.instructor;
 
       if (!instructor?.pupil_app_enabled || !instructor?.app_slug) {
-        return new Response(
-          JSON.stringify({ error: "Pupil portal not enabled" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Pupil portal is not enabled for your instructor." });
       }
 
       // If no password set yet, this is first login - set the password
@@ -103,41 +96,30 @@ serve(async (req) => {
           .update({ password_hash: hash })
           .eq("id", pupil.id);
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            firstLogin: true,
-            pupilName: pupil.name,
-            pupilId: pupil.id,
-            instructorId: instructor.id,
-            instructorSlug: instructor.app_slug,
-          }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Verify password
-      const valid = await verifyPassword(password, pupil.password_hash);
-      if (!valid) {
-        return new Response(
-          JSON.stringify({ error: "Incorrect password" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({
+        return jsonResponse({
           success: true,
+          firstLogin: true,
           pupilName: pupil.name,
           pupilId: pupil.id,
           instructorId: instructor.id,
           instructorSlug: instructor.app_slug,
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+        });
+      }
+
+      const valid = await verifyPassword(password, pupil.password_hash);
+      if (!valid) {
+        return jsonResponse({ error: "Incorrect password" });
+      }
+
+      return jsonResponse({
+        success: true,
+        pupilName: pupil.name,
+        pupilId: pupil.id,
+        instructorId: instructor.id,
+        instructorSlug: instructor.app_slug,
+      });
 
     } else if (action === "check") {
-      // Check if email exists and if password is set
       const { data: pupils } = await supabase
         .from("pupils")
         .select("id, name, password_hash")
@@ -145,30 +127,20 @@ serve(async (req) => {
         .limit(1);
 
       if (!pupils || pupils.length === 0) {
-        return new Response(
-          JSON.stringify({ exists: false }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ exists: false });
       }
 
-      return new Response(
-        JSON.stringify({
-          exists: true,
-          hasPassword: !!pupils[0].password_hash,
-          name: pupils[0].name.split(" ")[0],
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({
+        exists: true,
+        hasPassword: !!pupils[0].password_hash,
+        name: pupils[0].name.split(" ")[0],
+      });
 
     } else if (action === "register") {
       if (!password || password.length < 6) {
-        return new Response(
-          JSON.stringify({ error: "Password must be at least 6 characters" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Password must be at least 6 characters" });
       }
 
-      // Find pupil by email (must already exist in system)
       const { data: pupils, error: pupilError } = await supabase
         .from("pupils")
         .select("id, name, password_hash, instructor:instructors!inner(id, app_slug, pupil_app_enabled)")
@@ -176,19 +148,13 @@ serve(async (req) => {
         .limit(1);
 
       if (pupilError || !pupils || pupils.length === 0) {
-        return new Response(
-          JSON.stringify({ error: "Email not found. Your instructor must add you to the system first." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Email not found. Your instructor must add you to the system first." });
       }
 
       const pupil = pupils[0] as any;
 
       if (pupil.password_hash) {
-        return new Response(
-          JSON.stringify({ error: "Account already registered. Please sign in instead." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonResponse({ error: "Account already registered. Please sign in instead." });
       }
 
       const { hash } = await hashPassword(password);
@@ -197,22 +163,16 @@ serve(async (req) => {
         .update({ password_hash: hash })
         .eq("id", pupil.id);
 
-      return new Response(
-        JSON.stringify({ success: true, message: "Account registered successfully" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ success: true, message: "Account registered successfully" });
 
     } else {
-      return new Response(
-        JSON.stringify({ error: "Invalid action" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Invalid action" });
     }
   } catch (error) {
     console.error("Error in pupil-email-auth:", error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: jsonHeaders }
     );
   }
 });

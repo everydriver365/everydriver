@@ -80,7 +80,16 @@ export default function PupilLogin() {
         body: { action: "login", email: loginEmail, password: loginPassword },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Parse error body for user-friendly message
+        const errorBody = typeof error === "object" && "context" in error
+          ? await (error as any).context?.json?.().catch(() => null)
+          : null;
+        const msg = errorBody?.error || data?.error || "Something went wrong. Please try again.";
+        toast.error(msg);
+        setAutoLoggingIn(false);
+        return false;
+      }
 
       if (data.error) {
         toast.error(data.error);
