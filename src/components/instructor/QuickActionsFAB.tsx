@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, Calendar, Users, MapPin, PoundSterling, MessageSquare, Settings, FileText, Car } from "lucide-react";
+import { Plus, X, Calendar, Users, MapPin, PoundSterling, MessageSquare, Settings, FileText, Car, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -62,6 +62,13 @@ const quickActions: QuickAction[] = [
     label: "Find My Car",
     route: "/instructor/find-my-car",
     color: "bg-amber-500 hover:bg-amber-600",
+  },
+  {
+    id: "notes",
+    icon: StickyNote,
+    label: "Notes",
+    route: "/instructor/notes",
+    color: "bg-yellow-500 hover:bg-yellow-600",
   },
 ];
 
