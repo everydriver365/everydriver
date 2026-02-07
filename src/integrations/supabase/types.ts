@@ -3199,33 +3199,98 @@ export type Database = {
           },
         ]
       }
+      instructor_referral_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          instructor_id: string
+          is_enabled: boolean | null
+          max_referrals_per_pupil: number | null
+          referee_reward_amount: number | null
+          referee_reward_type: string | null
+          referrer_reward_amount: number | null
+          referrer_reward_type: string | null
+          reward_description: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          instructor_id: string
+          is_enabled?: boolean | null
+          max_referrals_per_pupil?: number | null
+          referee_reward_amount?: number | null
+          referee_reward_type?: string | null
+          referrer_reward_amount?: number | null
+          referrer_reward_type?: string | null
+          reward_description?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          instructor_id?: string
+          is_enabled?: boolean | null
+          max_referrals_per_pupil?: number | null
+          referee_reward_amount?: number | null
+          referee_reward_type?: string | null
+          referrer_reward_amount?: number | null
+          referrer_reward_type?: string | null
+          reward_description?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_referral_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_reminder_preferences: {
         Row: {
+          auto_charge_no_show: boolean | null
           created_at: string | null
           email_enabled: boolean | null
           id: string
           instructor_id: string
+          late_cancel_fee: number | null
+          late_cancel_hours: number | null
+          no_show_fee: number | null
           push_enabled: boolean | null
+          reminder_1h_enabled: boolean | null
           reminder_time: string | null
           sms_enabled: boolean | null
           updated_at: string | null
         }
         Insert: {
+          auto_charge_no_show?: boolean | null
           created_at?: string | null
           email_enabled?: boolean | null
           id?: string
           instructor_id: string
+          late_cancel_fee?: number | null
+          late_cancel_hours?: number | null
+          no_show_fee?: number | null
           push_enabled?: boolean | null
+          reminder_1h_enabled?: boolean | null
           reminder_time?: string | null
           sms_enabled?: boolean | null
           updated_at?: string | null
         }
         Update: {
+          auto_charge_no_show?: boolean | null
           created_at?: string | null
           email_enabled?: boolean | null
           id?: string
           instructor_id?: string
+          late_cancel_fee?: number | null
+          late_cancel_hours?: number | null
+          no_show_fee?: number | null
           push_enabled?: boolean | null
+          reminder_1h_enabled?: boolean | null
           reminder_time?: string | null
           sms_enabled?: boolean | null
           updated_at?: string | null
@@ -4327,6 +4392,56 @@ export type Database = {
             columns: ["pupil_id"]
             isOneToOne: false
             referencedRelation: "pupils"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_cancellation_stats: {
+        Row: {
+          avg_lesson_value: number | null
+          created_at: string | null
+          id: string
+          instructor_id: string
+          month_year: string
+          total_cancelled: number | null
+          total_completed: number | null
+          total_no_show: number | null
+          total_revenue: number | null
+          total_scheduled: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_lesson_value?: number | null
+          created_at?: string | null
+          id?: string
+          instructor_id: string
+          month_year: string
+          total_cancelled?: number | null
+          total_completed?: number | null
+          total_no_show?: number | null
+          total_revenue?: number | null
+          total_scheduled?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_lesson_value?: number | null
+          created_at?: string | null
+          id?: string
+          instructor_id?: string
+          month_year?: string
+          total_cancelled?: number | null
+          total_completed?: number | null
+          total_no_show?: number | null
+          total_revenue?: number | null
+          total_scheduled?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_cancellation_stats_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -7003,6 +7118,8 @@ export type Database = {
           lesson_date: string
           lesson_miles: number | null
           lesson_type: string
+          marked_no_show_at: string | null
+          no_show_fee_charged: number | null
           notes: string | null
           payment_status: string
           pickup_location: string | null
@@ -7012,6 +7129,8 @@ export type Database = {
           pupil_id: string
           recurrence_parent_id: string | null
           recurrence_rule: string | null
+          reminder_1h_sent_at: string | null
+          reminder_24h_sent_at: string | null
           start_time: string
           status: string
           updated_at: string
@@ -7030,6 +7149,8 @@ export type Database = {
           lesson_date: string
           lesson_miles?: number | null
           lesson_type?: string
+          marked_no_show_at?: string | null
+          no_show_fee_charged?: number | null
           notes?: string | null
           payment_status?: string
           pickup_location?: string | null
@@ -7039,6 +7160,8 @@ export type Database = {
           pupil_id: string
           recurrence_parent_id?: string | null
           recurrence_rule?: string | null
+          reminder_1h_sent_at?: string | null
+          reminder_24h_sent_at?: string | null
           start_time: string
           status?: string
           updated_at?: string
@@ -7057,6 +7180,8 @@ export type Database = {
           lesson_date?: string
           lesson_miles?: number | null
           lesson_type?: string
+          marked_no_show_at?: string | null
+          no_show_fee_charged?: number | null
           notes?: string | null
           payment_status?: string
           pickup_location?: string | null
@@ -7066,6 +7191,8 @@ export type Database = {
           pupil_id?: string
           recurrence_parent_id?: string | null
           recurrence_rule?: string | null
+          reminder_1h_sent_at?: string | null
+          reminder_24h_sent_at?: string | null
           start_time?: string
           status?: string
           updated_at?: string

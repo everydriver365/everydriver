@@ -27,6 +27,8 @@ import { useDailyEarnings } from "@/hooks/useDailyEarnings";
 import { EarningsChart } from "@/components/instructor/money/EarningsChart";
 import { WeeklyComparisonBar } from "@/components/instructor/money/WeeklyComparisonBar";
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
+import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
+import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 
 interface Pupil {
   id: string;
@@ -263,6 +265,27 @@ export default function InstructorPay() {
           <div className="p-4">
             <PupilBalancesList pupils={pupils} limit={5} />
           </div>
+        </motion.div>
+
+        {/* Earnings Forecaster */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <EarningsForecaster instructorId={instructorId} />
+        </motion.div>
+
+        {/* Progress Reports */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55 }}
+        >
+          <PupilProgressReportGenerator 
+            instructorId={instructorId} 
+            pupils={pupils.map(p => ({ id: p.id, name: p.name }))} 
+          />
         </motion.div>
       </div>
 
