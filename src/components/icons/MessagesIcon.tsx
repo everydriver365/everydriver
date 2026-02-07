@@ -9,13 +9,12 @@ export function MessagesIcon({ className }: MessagesIconProps) {
       <rect width="120" height="120" rx="26" fill="url(#messages-bg)" />
       
       {/* Chat bubble */}
-      <ellipse cx="60" cy="55" rx="30" ry="24" fill="white" fillOpacity="0.95" />
+      <ellipse cx="60" cy="55" rx="30" ry="24" fill="white" />
       
       {/* Bubble tail */}
       <path
-        d="M38 70 C38 70 30 82 28 86 C28 86 40 78 44 75"
+        d="M38 70 C38 70 30 82 28 86 C28 86 40 78 44 75 Z"
         fill="white"
-        fillOpacity="0.95"
       />
       
       <defs>
