@@ -54,6 +54,7 @@ export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps
           pupils (name)
         `)
         .eq("instructor_id", instructorId)
+        .is("deleted_at", null)
         .order("recorded_at", { ascending: false })
         .limit(limit);
 
@@ -85,12 +86,9 @@ export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps
   const handleDelete = async (paymentId: string) => {
     setDeleting(paymentId);
     try {
-      const { error } = await supabase
-        .from("payment_history")
-        .delete()
-        .eq("id", paymentId);
-
-      if (error) throw error;
+      const { softDelete } = await import("@/lib/auditLogger");
+      const payment = payments.find(p => p.id === paymentId);
+      await softDelete("payment_history", paymentId, instructorId, payment ? { amount: payment.amount, pupil: payment.pupil.name } : null);
 
       setPayments(payments.filter(p => p.id !== paymentId));
       toast({

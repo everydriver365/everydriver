@@ -701,6 +701,39 @@ export type Database = {
           },
         ]
       }
+      data_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          instructor_id: string
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       demo_mini_website: {
         Row: {
           badge_text: string | null
@@ -2660,6 +2693,7 @@ export type Database = {
           amount: number
           category: string
           created_at: string
+          deleted_at: string | null
           description: string | null
           expense_date: string
           id: string
@@ -2673,6 +2707,7 @@ export type Database = {
           amount: number
           category: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           expense_date?: string
           id?: string
@@ -2686,6 +2721,7 @@ export type Database = {
           amount?: number
           category?: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           expense_date?: string
           id?: string
@@ -4251,6 +4287,7 @@ export type Database = {
       lesson_history: {
         Row: {
           created_at: string
+          deleted_at: string | null
           duration_minutes: number
           id: string
           instructor_id: string
@@ -4267,6 +4304,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           duration_minutes?: number
           id?: string
           instructor_id: string
@@ -4283,6 +4321,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           duration_minutes?: number
           id?: string
           instructor_id?: string
@@ -5063,6 +5102,7 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          deleted_at: string | null
           id: string
           instructor_id: string
           notes: string | null
@@ -5073,6 +5113,7 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id: string
           notes?: string | null
@@ -5083,6 +5124,7 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          deleted_at?: string | null
           id?: string
           instructor_id?: string
           notes?: string | null
@@ -6046,6 +6088,7 @@ export type Database = {
           custom_hourly_rate: number | null
           damoov_device_token: string | null
           date_of_birth: string | null
+          deleted_at: string | null
           deposit_forfeited: boolean | null
           deposit_paid: number | null
           drive_coins: number | null
@@ -6115,6 +6158,7 @@ export type Database = {
           custom_hourly_rate?: number | null
           damoov_device_token?: string | null
           date_of_birth?: string | null
+          deleted_at?: string | null
           deposit_forfeited?: boolean | null
           deposit_paid?: number | null
           drive_coins?: number | null
@@ -6184,6 +6228,7 @@ export type Database = {
           custom_hourly_rate?: number | null
           damoov_device_token?: string | null
           date_of_birth?: string | null
+          deleted_at?: string | null
           deposit_forfeited?: boolean | null
           deposit_paid?: number | null
           drive_coins?: number | null
@@ -6758,6 +6803,7 @@ export type Database = {
           amount_due: number | null
           booking_status: string | null
           created_at: string
+          deleted_at: string | null
           dropoff_postcode: string | null
           duration_minutes: number
           google_event_id: string | null
@@ -6784,6 +6830,7 @@ export type Database = {
           amount_due?: number | null
           booking_status?: string | null
           created_at?: string
+          deleted_at?: string | null
           dropoff_postcode?: string | null
           duration_minutes?: number
           google_event_id?: string | null
@@ -6810,6 +6857,7 @@ export type Database = {
           amount_due?: number | null
           booking_status?: string | null
           created_at?: string
+          deleted_at?: string | null
           dropoff_postcode?: string | null
           duration_minutes?: number
           google_event_id?: string | null
