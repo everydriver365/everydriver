@@ -236,9 +236,12 @@ export function QuickActionTiles({
 
   // Different accent colors for visual variety
   const tileStyles = [
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-violet-500/15', iconColor: 'text-violet-600' },
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600' },
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-rose-500/15', iconColor: 'text-rose-600' },
+     { iconBg: 'bg-[#1877F2]', iconColor: 'text-white' },
+     { iconBg: 'bg-emerald-500', iconColor: 'text-white' },
+     { iconBg: 'bg-rose-500', iconColor: 'text-white' },
+     { iconBg: 'bg-amber-500', iconColor: 'text-white' },
+     { iconBg: 'bg-violet-500', iconColor: 'text-white' },
+     { iconBg: 'bg-sky-500', iconColor: 'text-white' },
   ];
 
   return (
@@ -283,10 +286,7 @@ export function QuickActionTiles({
                     layout
                   >
                     <motion.div
-                      className={cn(
-                        "relative overflow-hidden backdrop-blur-md rounded-none border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
-                        style.bg
-                      )}
+                      className="relative overflow-hidden backdrop-blur-md rounded-none border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing bg-card"
                       whileDrag={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
                       exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
                     >
@@ -359,7 +359,7 @@ export function QuickActionTiles({
         </>
       ) : (
         // Normal view mode - App launcher style grid
-        <div className="grid grid-cols-4 gap-y-5 gap-x-2 px-1">
+        <div className="grid grid-cols-4 gap-y-6 gap-x-3 px-2">
           {localTiles.map((action, index) => {
             const Icon = getIcon(action.icon);
             const badgeCount = getBadgeCount(action);
@@ -372,18 +372,18 @@ export function QuickActionTiles({
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.05 + index * 0.03 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex flex-col items-center gap-1.5"
+                  whileTap={{ scale: 0.9 }}
+                  className="flex flex-col items-center gap-2"
                 >
-                  <div className={`relative w-12 h-12 rounded-full ${style.iconBg} flex items-center justify-center`}>
-                    <Icon className={`h-5 w-5 ${style.iconColor}`} />
+                  <div className={`relative w-[54px] h-[54px] rounded-[13px] ${style.iconBg} flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]`}>
+                    <Icon className={`h-6 w-6 ${style.iconColor}`} />
                     {showBadge && (
-                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background">
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background">
                         {badgeCount > 9 ? "9+" : badgeCount}
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] font-medium text-foreground text-center leading-tight line-clamp-2">
+                  <span className="text-[11px] font-medium text-foreground/80 text-center leading-tight line-clamp-2">
                     {action.title}
                   </span>
                 </motion.div>
