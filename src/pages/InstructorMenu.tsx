@@ -26,6 +26,7 @@ import {
   Navigation,
   CheckSquare,
   Lock,
+  StickyNote,
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useMenuFeatureGates } from "@/hooks/useMenuFeatureGates";
@@ -96,6 +97,7 @@ export default function InstructorMenu() {
         { icon: Route, label: "Saved Routes", path: "/instructor/routes", iconColor: "text-rose-600", iconBg: "bg-rose-100 dark:bg-rose-900/30", gateKey: "routes" },
         { icon: MapPin, label: "Jotter", description: "Draw on the map to show vehicle paths", path: "/instructor/doodlepad", iconColor: "text-orange-600", iconBg: "bg-orange-100 dark:bg-orange-900/30", gateKey: "doodlepad" },
         { icon: MapPin, label: "Fill Gaps", path: "/instructor/gaps", iconColor: "text-pink-600", iconBg: "bg-pink-100 dark:bg-pink-900/30", gateKey: "gaps" },
+        { icon: StickyNote, label: "Notes", description: "Apple Notes-style notebook", path: "/instructor/notes", iconColor: "text-yellow-600", iconBg: "bg-yellow-100 dark:bg-yellow-900/30", gateKey: "notes" },
       ],
     },
     {
