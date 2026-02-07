@@ -7,6 +7,7 @@ import pupilsIcon from "@/assets/pupils-icon.png";
 import trackIcon from "@/assets/track-icon.png";
 import satnavIcon from "@/assets/satnav-icon.png";
 import findMyCarIcon from "@/assets/find_car2.png";
+import jobOffersIcon from "@/assets/job-offers-icon.png";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -69,11 +70,13 @@ const customIconImages: Record<string, string> = {
   "track-lesson": trackIcon,
   satnav: satnavIcon,
   "find-my-car": findMyCarIcon,
+  "jobs": jobOffersIcon,
 };
 
 // Tiles with custom icon border-radius (inline style to override global !important)
 const customIconRadius: Record<string, string> = {
   "find-my-car": "7px",
+  "jobs": "7px",
 };
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
