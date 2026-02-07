@@ -10,8 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+
 import { toast } from "@/hooks/use-toast";
 import { PupilPortalLessonCountdown } from "@/components/pupil-portal/PupilPortalLessonCountdown";
 import { PupilPortalSchedule } from "@/components/pupil-portal/PupilPortalSchedule";
@@ -61,8 +60,6 @@ export default function BrandedPupilPortal() {
   const [instructor, setInstructor] = useState<InstructorBranding | null>(null);
   const [pupil, setPupil] = useState<Pupil | null>(null);
   const [loading, setLoading] = useState(true);
-  const [verifying, setVerifying] = useState(false);
-  const [phoneInput, setPhoneInput] = useState("");
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
   const [notFound, setNotFound] = useState(false);
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
@@ -147,6 +144,21 @@ export default function BrandedPupilPortal() {
       const storedPupilId = sessionStorage.getItem(`pupil_${data.id}`);
       if (storedPupilId) {
         fetchPupil(storedPupilId);
+      } else {
+        // Check email-based session from /pupil/login
+        const verifiedEmail = sessionStorage.getItem("pupil_email_verified");
+        if (verifiedEmail) {
+          const { data: pupilData } = await supabase
+            .from("pupils")
+            .select("id")
+            .eq("instructor_id", data.id)
+            .eq("email", verifiedEmail)
+            .single();
+          if (pupilData) {
+            sessionStorage.setItem(`pupil_${data.id}`, pupilData.id);
+            fetchPupil(pupilData.id);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching instructor:", error);
@@ -168,41 +180,6 @@ export default function BrandedPupilPortal() {
     }
   };
 
-  const handlePhoneVerify = async () => {
-    if (!instructor || !phoneInput.trim()) return;
-    
-    setVerifying(true);
-    try {
-      // Clean phone number
-      const cleanPhone = phoneInput.replace(/\s+/g, '').replace(/^0/, '');
-      
-      const { data, error } = await supabase
-        .from("pupils")
-        .select("id, name, phone, email, lessons_completed, progress, account_balance, prepaid_hours, profile_image_url")
-        .eq("instructor_id", instructor.id)
-        .or(`phone.ilike.%${cleanPhone},phone.ilike.%${phoneInput}`)
-        .single();
-
-      if (error || !data) {
-        toast({ 
-          title: "Phone not found", 
-          description: "Please check your phone number or contact your instructor",
-          variant: "destructive" 
-        });
-        return;
-      }
-
-      // Store in session
-      sessionStorage.setItem(`pupil_${instructor.id}`, data.id);
-      setPupil(data);
-      toast({ title: `Welcome back, ${data.name}!` });
-    } catch (error) {
-      console.error("Error verifying phone:", error);
-      toast({ title: "Error", description: "Something went wrong", variant: "destructive" });
-    } finally {
-      setVerifying(false);
-    }
-  };
 
   const handleLogout = () => {
     if (instructor) {
@@ -309,7 +286,7 @@ export default function BrandedPupilPortal() {
       {/* Main Content */}
       <main className="pb-20">
         {!pupil ? (
-          // Phone Verification Screen
+          // Sign In Screen
           <div className="p-4 max-w-md mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -328,42 +305,23 @@ export default function BrandedPupilPortal() {
                     Welcome to {instructor.name}'s Portal
                   </CardTitle>
                   <CardDescription style={{ color: 'var(--brand-muted)' }}>
-                    Enter your phone number to access your lessons and account
+                    Sign in with your email and password to access your lessons and account
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label style={{ color: 'var(--brand-text)' }}>Phone Number</Label>
-                    <Input
-                      type="tel"
-                      placeholder="07xxx xxxxxx"
-                      value={phoneInput}
-                      onChange={(e) => setPhoneInput(e.target.value)}
-                      className="text-lg"
-                      style={{ 
-                        backgroundColor: 'var(--brand-bg)',
-                        borderColor: 'var(--brand-border)',
-                        color: 'var(--brand-text)'
-                      }}
-                      onKeyDown={(e) => e.key === 'Enter' && handlePhoneVerify()}
-                    />
-                  </div>
                   <Button 
-                    className="w-full"
-                    disabled={verifying || !phoneInput.trim()}
-                    onClick={handlePhoneVerify}
+                    className="w-full h-12 text-base"
+                    onClick={() => navigate("/pupil/login")}
                     style={{ 
                       backgroundColor: instructor.brand_colour || '#1e3a5f',
                       color: '#ffffff'
                     }}
                   >
-                    {verifying ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : null}
-                    Continue
+                    Sign In
+                    <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                   <p className="text-xs text-center" style={{ color: 'var(--brand-muted)' }}>
-                    Use the phone number registered with your instructor
+                    Use the email address registered with your instructor
                   </p>
                 </CardContent>
               </Card>
