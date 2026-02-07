@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { haptics } from "@/lib/haptics";
+import instructorHeroImg from "@/assets/instructor-hero.jpeg";
 
 interface ContextualHomeHeroProps {
   firstName: string;
@@ -164,7 +165,7 @@ export function ContextualHomeHero({
       {/* Hero Image — tall, edge-to-edge */}
       <div className="w-full h-[38vh] min-h-[220px] max-h-[320px] overflow-hidden relative">
         <img
-          src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"}
+          src={heroImageUrl || instructorHeroImg}
           alt="Hero"
           className="w-full h-full object-cover"
         />
