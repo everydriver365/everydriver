@@ -1,24 +1,21 @@
 
+# Remove Border Radius From All Quick Action Tiles
 
-# Restyle Quick Action Tiles to Match Reference Design
+## Problem
+The previous changes were applied to the wrong file (`HomeQuickActions.tsx`). The tiles actually displayed on the `/instructor` page come from `QuickActionTiles.tsx`, which still uses `rounded-2xl` and `rounded-xl`.
 
-## What Changes
-Restyle the 6 quick action tiles in `HomeQuickActions.tsx` to match the reference image design while keeping the current 3-column grid layout, sizes, and positions.
+## Changes
 
-## Visual Changes
-- **Background**: Change from colored backgrounds (e.g. `bg-violet-50`) to plain white (`bg-white`)
-- **Border**: Change from colored borders (e.g. `border-violet-200`) to a subtle grey border (`border-gray-200`)
-- **Shadow**: Add a soft shadow matching the floating card standard (`shadow-[0_2px_8px_rgba(20,37,66,0.08)]`)
-- **Icon**: Wrap each icon in a circular background (light purple/grey circle) instead of showing the icon inline
-- **Text**: Keep the label text but make it slightly bolder (`font-semibold`) to match the reference
+**File: `src/components/instructor/QuickActionTiles.tsx`**
 
-## File Modified
-**src/components/instructor/HomeQuickActions.tsx**
-- Update each tile's container: white bg, grey border, soft shadow, rounded-xl
-- Add a circular icon container (`w-9 h-9 rounded-full bg-primary/10`) around each icon
-- Keep the existing grid layout (`grid grid-cols-3 gap-2`), routes, click handlers, and animation unchanged
+Remove all border-radius from tile containers:
 
-## Technical Details
-- Replace per-tile `bgColor` and `borderColor` with unified white card styling
-- Keep per-tile `iconColor` for the icon itself but use a shared light circle background
-- The circular icon container matches the reference: a soft pastel circle behind the icon
+1. **Line 283** (edit mode tiles): `rounded-2xl` to `rounded-none`
+2. **Line 331** (add tiles section): `rounded-xl` to `rounded-none`
+3. **Line 334** (add tile icon): `rounded-lg` to `rounded-none`
+4. **Line 369** (first tile, full-width): `rounded-2xl` to `rounded-none`
+5. **Line 371** (first tile icon container): `rounded-xl` to `rounded-none`
+6. **Line 447** (grid tiles): `rounded-xl` to `rounded-none`
+7. **Line 449** (grid tile icon container): `rounded-lg` to `rounded-none`
+
+Note: The icon containers inside tiles will also be changed to square corners for consistency. The loading skeleton tiles (lines 221-224) will also be updated from `rounded-xl` to `rounded-none`.
