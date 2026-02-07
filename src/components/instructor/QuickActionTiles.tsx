@@ -96,7 +96,7 @@ const customIconRadius: Record<string, string> = {
 };
 
 // Tiles with larger icon size
-const largeIconTiles = new Set(["jobs", "find-fuel"]);
+const largeIconTiles = new Set(["jobs", "find-fuel", "vehicle-health"]);
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
 const additionalTiles: QuickAction[] = [
