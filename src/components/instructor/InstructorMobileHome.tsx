@@ -443,8 +443,8 @@ export function InstructorMobileHome({
           </div>
           <div className="flex items-center justify-around">
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-foreground">
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1 text-rose-500">
+                <BookOpen className="h-4 w-4" />
                 <span className="text-lg font-semibold">
                   <AnimatedCounter value={currentLessons} />
                 </span>
@@ -453,8 +453,8 @@ export function InstructorMobileHome({
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-foreground">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1 text-blue-600">
+                <Clock className="h-4 w-4" />
                 <span className="text-lg font-semibold">
                   <AnimatedCounter value={todayOverview?.totalHours || 0} />
                 </span>
@@ -463,8 +463,8 @@ export function InstructorMobileHome({
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-foreground">
-                <PoundSterling className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-1 text-emerald-600">
+                <PoundSterling className="h-4 w-4" />
                 <span className="text-lg font-semibold">
                   <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
                 </span>
