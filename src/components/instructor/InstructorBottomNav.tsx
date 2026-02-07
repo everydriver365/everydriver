@@ -106,19 +106,8 @@ export function InstructorBottomNav() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Icon colors matching reference design
-  const getIconColor = (item: NavItem, isActive: boolean) => {
-    if (isActive) return "text-primary";
-    // Different colored icons for inactive state
-    switch (item.label) {
-      case "Home": return "text-muted-foreground";
-      case "Schedule": return "text-violet-500";
-      case "Live": return "text-cyan-500";
-      case "Money": return "text-rose-400";
-      case "Pupils": return "text-blue-500";
-      case "More": return "text-muted-foreground";
-      default: return "text-muted-foreground";
-    }
+  const getIconColor = (_item: NavItem, isActive: boolean) => {
+    return isActive ? "text-primary" : "text-muted-foreground";
   };
 
   return (
@@ -187,7 +176,7 @@ export function InstructorBottomNav() {
                 )}
                 {/* Schedule badge - today's lesson count */}
                 {isSchedule && badgeCount > 0 && !isActive && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-violet-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-background">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center shadow-lg ring-2 ring-background">
                     {badgeCount > 9 ? "9+" : badgeCount}
                   </span>
                 )}
@@ -197,7 +186,7 @@ export function InstructorBottomNav() {
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                isActive ? "font-semibold text-primary" : "font-medium text-muted-foreground"
+                isActive ? "font-medium text-primary" : "font-normal text-muted-foreground"
               }`}>
                 {item.label}
               </span>

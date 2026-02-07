@@ -232,9 +232,9 @@ export function QuickActionTiles({
 
   // Different accent colors for visual variety
   const tileStyles = [
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-violet-500/15', iconColor: 'text-violet-600' },
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600' },
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-rose-500/15', iconColor: 'text-rose-600' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-muted/50', iconColor: 'text-muted-foreground' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-muted/50', iconColor: 'text-muted-foreground' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-muted/50', iconColor: 'text-muted-foreground' },
   ];
 
   return (
