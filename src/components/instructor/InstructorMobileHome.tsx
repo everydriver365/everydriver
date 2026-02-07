@@ -284,7 +284,7 @@ export function InstructorMobileHome({
   return (
     <PullToRefresh onRefresh={handleRefresh}>
        <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-       <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative">
+       <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative -mx-4 -mt-4">
 
       {/* Updated feedback banner */}
       <AnimatePresence>
@@ -303,7 +303,7 @@ export function InstructorMobileHome({
         )}
       </AnimatePresence>
 
-      {/* Contextual Home Hero */}
+      {/* Contextual Home Hero — full bleed */}
       <div>
         <ContextualHomeHero
           firstName={firstName}
@@ -333,8 +333,11 @@ export function InstructorMobileHome({
       </div>
 
 
+      {/* Content with horizontal padding */}
+      <div className="px-4">
+
       {/* Celebration Confetti */}
-      <CelebrationConfetti 
+      <CelebrationConfetti
         trigger={showConfetti} 
         onComplete={() => setShowConfetti(false)} 
       />
@@ -567,6 +570,7 @@ export function InstructorMobileHome({
 
       {/* Floating Session Bar - shows during active tracking */}
       <FloatingSessionBar instructorId={instructorId} />
+      </div>{/* end px-4 */}
       </div>
     </PullToRefresh>
   );
