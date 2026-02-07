@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
 import { WorkingHoursEditor } from "@/components/admin/WorkingHoursEditor";
 import { CancellationPolicyEditor } from "@/components/instructor/CancellationPolicyEditor";
+import { NoShowPolicySettings } from "@/components/instructor/NoShowPolicySettings";
+import { ReferralSettingsCard } from "@/components/instructor/ReferralSettingsCard";
 import { PushNotificationSettings } from "@/components/instructor/PushNotificationSettings";
 import { PupilAppBrandingEditor } from "@/components/instructor/PupilAppBrandingEditor";
 import { CalendarConnect } from "@/components/instructor/CalendarConnect";
@@ -673,6 +675,18 @@ export default function InstructorSettings() {
               >
                 <CancellationPolicyEditor instructorId={instructorId} />
               </SettingsTile>
+
+              {/* No-Show Policy Section */}
+              <SettingsTile 
+                id="no-show-policy" 
+                icon={AlertTriangle} 
+                title="No-Show Policy" 
+                description="Set fees for no-shows & late cancellations"
+                iconColor="text-red-600"
+                iconBg="bg-red-100 dark:bg-red-900/30"
+              >
+                <NoShowPolicySettings instructorId={instructorId} />
+              </SettingsTile>
             </CollapsibleContent>
           </Collapsible>
         </div>
@@ -832,6 +846,18 @@ export default function InstructorSettings() {
                   </p>
                   <BulkSMSDialog instructorId={instructorId} />
                 </div>
+              </SettingsTile>
+
+              {/* Referral Programme */}
+              <SettingsTile 
+                id="referrals" 
+                icon={Gift} 
+                title="Referral Programme" 
+                description="Configure pupil referral rewards"
+                iconColor="text-emerald-600"
+                iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+              >
+                <ReferralSettingsCard instructorId={instructorId} />
               </SettingsTile>
 
               {/* Pupil App Branding Section */}
