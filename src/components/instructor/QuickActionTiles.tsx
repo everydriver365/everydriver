@@ -5,6 +5,7 @@ import paymentsIcon from "@/assets/payments-icon.png";
 import scheduleIcon from "@/assets/schedule-icon.png";
 import pupilsIcon from "@/assets/pupils-icon.png";
 import trackIcon from "@/assets/track-icon.png";
+import satnavIcon from "@/assets/satnav-icon.png";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -65,6 +66,7 @@ const customIconImages: Record<string, string> = {
   schedule: scheduleIcon,
   pupils: pupilsIcon,
   "track-lesson": trackIcon,
+  satnav: satnavIcon,
 };
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
