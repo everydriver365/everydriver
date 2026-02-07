@@ -110,40 +110,42 @@ export default function InstructorSchedule() {
   return (
     <InstructorPortalLayout>
       <div className="space-y-4 h-full flex flex-col">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sticky top-0 z-20 bg-background py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
+        <div className="flex items-center justify-between gap-2 sticky top-0 z-20 bg-background py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
             <h1 className="text-xl font-bold">Schedule</h1>
           </div>
           
-          <div className="flex rounded-lg border p-0.5 sm:p-1" style={{ backgroundColor: '#D1E4FC' }}>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="gap-1 px-2 sm:px-3 h-8"
-            >
-              <List className="h-4 w-4" />
-              <span className="text-xs sm:text-sm">List</span>
-            </Button>
-            <Button
-              variant={viewMode === 'schedule' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('schedule')}
-              className="gap-1 px-2 sm:px-3 h-8"
-            >
-              <CalendarDays className="h-4 w-4" />
-              <span className="text-xs sm:text-sm">Schedule</span>
-            </Button>
-            <Button
-              variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('calendar')}
-              className="gap-1 px-2 sm:px-3 h-8"
-            >
-              <Calendar className="h-4 w-4" />
-              <span className="text-xs sm:text-sm">Calendar</span>
-            </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border p-0.5" style={{ backgroundColor: '#D1E4FC' }}>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="gap-1 px-2 h-7 sm:h-8"
+              >
+                <List className="h-3.5 w-3.5" />
+                <span className="text-xs">List</span>
+              </Button>
+              <Button
+                variant={viewMode === 'schedule' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('schedule')}
+                className="gap-1 px-2 h-7 sm:h-8"
+              >
+                <CalendarDays className="h-3.5 w-3.5" />
+                <span className="text-xs">Schedule</span>
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+                className="gap-1 px-2 h-7 sm:h-8"
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                <span className="text-xs">Calendar</span>
+              </Button>
+            </div>
           </div>
         </div>
 
