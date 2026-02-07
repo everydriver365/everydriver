@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
 import { CalendarIcon } from "@/components/icons/CalendarIcon";
 import { SettingsIcon } from "@/components/icons/SettingsIcon";
+import { MessagesIcon } from "@/components/icons/MessagesIcon";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -385,6 +386,15 @@ export function QuickActionTiles({
                   {isScheduleAction(action) ? (
                     <div className="relative w-[54px] h-[54px] rounded-[13px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
                       <CalendarIcon className="w-full h-full" />
+                      {showBadge && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background z-10">
+                          {badgeCount > 9 ? "9+" : badgeCount}
+                        </span>
+                      )}
+                    </div>
+                  ) : isMessagesAction(action) ? (
+                    <div className="relative w-[54px] h-[54px] rounded-[13px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
+                      <MessagesIcon className="w-full h-full" />
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background z-10">
                           {badgeCount > 9 ? "9+" : badgeCount}
