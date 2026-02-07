@@ -384,7 +384,7 @@ export function QuickActionTiles({
                   className="flex flex-col items-center gap-2"
                 >
                   {isScheduleAction(action) ? (
-                    <div className="relative w-[54px] h-[54px] rounded-[13px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
+                    <div className="relative w-[62px] h-[62px] rounded-[14px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
                       <CalendarIcon className="w-full h-full" />
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background z-10">
@@ -393,7 +393,7 @@ export function QuickActionTiles({
                       )}
                     </div>
                   ) : isMessagesAction(action) ? (
-                    <div className="relative w-[54px] h-[54px] rounded-[13px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
+                    <div className="relative w-[62px] h-[62px] rounded-[14px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
                       <MessagesIcon className="w-full h-full" />
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background z-10">
@@ -402,7 +402,7 @@ export function QuickActionTiles({
                       )}
                     </div>
                   ) : isSettingsAction(action) ? (
-                    <div className="relative w-[54px] h-[54px] rounded-[13px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
+                    <div className="relative w-[62px] h-[62px] rounded-[14px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
                       <SettingsIcon className="w-full h-full" />
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background z-10">
@@ -411,8 +411,8 @@ export function QuickActionTiles({
                       )}
                     </div>
                   ) : (
-                    <div className={`relative w-[54px] h-[54px] rounded-[13px] ${style.iconBg} flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]`}>
-                      <Icon className={`h-6 w-6 ${style.iconColor}`} />
+                    <div className={`relative w-[62px] h-[62px] rounded-[14px] ${style.iconBg} flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]`}>
+                      <Icon className={`h-7 w-7 ${style.iconColor}`} />
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background">
                           {badgeCount > 9 ? "9+" : badgeCount}
