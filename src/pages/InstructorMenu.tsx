@@ -24,6 +24,7 @@ import {
   QrCode,
   CalendarPlus,
   Navigation,
+  CheckSquare,
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { QuickTestResultForm } from "@/components/instructor/QuickTestResultForm";
@@ -53,6 +54,13 @@ export default function InstructorMenu() {
     {
       title: "Quick Actions",
       items: [
+        {
+          icon: CheckSquare,
+          label: "To Do",
+          path: "/instructor/todos",
+          iconColor: "text-violet-600",
+          iconBg: "bg-violet-100 dark:bg-violet-900/30",
+        },
         {
           icon: MessageCircle,
           label: "Messages",

@@ -3486,6 +3486,69 @@ export type Database = {
           },
         ]
       }
+      instructor_todos: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          due_date: string | null
+          id: string
+          instructor_id: string
+          is_completed: boolean
+          parent_id: string | null
+          priority: number
+          project: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          due_date?: string | null
+          id?: string
+          instructor_id: string
+          is_completed?: boolean
+          parent_id?: string | null
+          priority?: number
+          project?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          due_date?: string | null
+          id?: string
+          instructor_id?: string
+          is_completed?: boolean
+          parent_id?: string | null
+          priority?: number
+          project?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_todos_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_todos_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "instructor_todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_vehicles: {
         Row: {
           assigned_instructor_id: string | null
