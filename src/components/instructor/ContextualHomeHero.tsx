@@ -25,7 +25,6 @@ import {
   BookOpen,
   MessageCircle,
   Briefcase,
-  Play,
   Eye,
 } from "lucide-react";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
@@ -162,19 +161,21 @@ export function ContextualHomeHero({
 
   return (
     <div className="relative">
-      {/* Hero Image */}
-      <div className="w-full h-44 overflow-hidden rounded-2xl border border-border">
+      {/* Hero Image — tall, edge-to-edge */}
+      <div className="w-full h-[56vh] min-h-[320px] max-h-[480px] overflow-hidden relative">
         <img
           src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"}
           alt="Hero"
           className="w-full h-full object-cover"
         />
+        {/* Bottom gradient for smooth card overlap */}
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent" />
       </div>
 
       {/* Overlapping Card */}
-      <div className="relative -mt-14 mx-4">
+      <div className="relative -mt-16 mx-4">
         <motion.div
-          className="bg-white dark:bg-card rounded-2xl shadow-[0_2px_8px_rgba(20,37,66,0.08)] border border-border overflow-hidden"
+          className="bg-white dark:bg-card rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           style={{ y: cardY }}
@@ -268,30 +269,22 @@ export function ContextualHomeHero({
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <button
-                onClick={() => {
-                  haptics.selection();
-                  navigate("/instructor/schedule");
-                }}
-                className="flex items-center justify-center gap-1.5 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-semibold active:scale-[0.97] transition-transform"
-              >
-                <Play className="h-4 w-4" />
-                Start lesson
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  haptics.selection();
-                  navigate("/instructor/jobs");
-                }}
-                className="flex items-center justify-center gap-1.5 h-11 rounded-xl border border-border bg-background text-foreground text-sm font-semibold active:scale-[0.97] transition-transform"
-              >
-                <Eye className="h-4 w-4" />
-                View offers
-              </button>
-            </div>
+            {/* CTA Button */}
+            {pendingJobs > 0 && (
+              <div className="mt-3">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    haptics.selection();
+                    navigate("/instructor/jobs");
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 h-11 rounded-xl border border-border bg-background text-foreground text-sm font-semibold active:scale-[0.97] transition-transform"
+                >
+                  <Eye className="h-4 w-4" />
+                  View offers
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Expand toggle */}
