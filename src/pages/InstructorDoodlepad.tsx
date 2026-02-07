@@ -98,7 +98,7 @@ export default function InstructorDoodlepad() {
           .update(payload)
           .eq("id", currentDoodlepadId);
         if (error) throw error;
-        toast.success("Doodlepad updated");
+        toast.success("Jotter updated");
       } else {
         const { data, error } = await supabase
           .from("doodlepads")
@@ -107,7 +107,7 @@ export default function InstructorDoodlepad() {
           .single();
         if (error) throw error;
         setCurrentDoodlepadId(data.id);
-        toast.success("Doodlepad saved");
+        toast.success("Jotter saved");
       }
     } catch {
       toast.error("Failed to save");

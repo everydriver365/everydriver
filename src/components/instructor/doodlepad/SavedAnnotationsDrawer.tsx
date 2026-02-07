@@ -58,12 +58,12 @@ export function SavedAnnotationsDrawer({ open, onOpenChange, instructorId, onLoa
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[60vh] z-[700]">
         <SheetHeader>
-          <SheetTitle>Saved Doodlepads</SheetTitle>
+          <SheetTitle>Saved Jotters</SheetTitle>
         </SheetHeader>
         <div className="mt-4 space-y-2 overflow-y-auto max-h-[calc(60vh-80px)]">
           {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
           {!loading && items.length === 0 && (
-            <p className="text-sm text-muted-foreground">No saved doodlepads yet.</p>
+            <p className="text-sm text-muted-foreground">No saved jotters yet.</p>
           )}
           {items.map((item) => (
             <div
