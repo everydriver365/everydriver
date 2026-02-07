@@ -6,7 +6,7 @@ import scheduleIcon from "@/assets/schedule-icon.png";
 import pupilsIcon from "@/assets/pupils-icon.png";
 import trackIcon from "@/assets/track-icon.png";
 import satnavIcon from "@/assets/satnav-icon.png";
-import findMyCarIcon from "@/assets/findmycar-icon.png";
+import findMyCarIcon from "@/assets/find_car2.png";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
