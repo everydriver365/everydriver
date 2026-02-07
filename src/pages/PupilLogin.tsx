@@ -1,165 +1,171 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Phone, Loader2, User, ArrowRight, KeyRound, RotateCcw } from "lucide-react";
+import { Mail, Loader2, User, ArrowRight, Lock, ScanFace } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
 
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-
-type LoginStep = "phone" | "otp";
-
 export default function PupilLogin() {
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<LoginStep>("phone");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [pupilData, setPupilData] = useState<{ name: string; slug: string } | null>(null);
-  const [countdown, setCountdown] = useState(0);
+  const [faceIdAvailable, setFaceIdAvailable] = useState(false);
+  const [autoLoggingIn, setAutoLoggingIn] = useState(false);
   const navigate = useNavigate();
   const branding = useDomainBranding();
 
-  // Check for remembered phone on mount
+  // Check if Web Credentials API is available (Face ID / biometric)
   useEffect(() => {
-    const rememberedPhone = localStorage.getItem("pupil_remembered_phone");
-    if (rememberedPhone) {
-      setPhone(formatPhoneForDisplay(rememberedPhone));
+    if ((window as any).PasswordCredential) {
+      setFaceIdAvailable(true);
+    }
+  }, []);
+
+  // Try auto-login with saved credentials on mount
+  useEffect(() => {
+    const tryAutoLogin = async () => {
+      if (!(window as any).PasswordCredential) return;
+      
+      // Check if we have remembered credentials
+      const remembered = localStorage.getItem("pupil_remembered_email");
+      if (!remembered) return;
+
+      try {
+        const credential = await navigator.credentials.get({
+          password: true,
+          mediation: "optional",
+        } as any);
+
+        if (credential && credential.type === "password") {
+          const pwCred = credential as any;
+          setAutoLoggingIn(true);
+          await performLogin(pwCred.id, pwCred.password || "");
+        }
+      } catch {
+        // Silently fail - user can login manually
+      }
+    };
+
+    tryAutoLogin();
+  }, []);
+
+  // Check for remembered email
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem("pupil_remembered_email");
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
       setRememberMe(true);
     }
   }, []);
 
-  // Countdown timer for resend
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
-  const formatPhoneForDisplay = (value: string) => {
-    const digits = value.replace(/\D/g, "");
-    if (digits.length <= 4) return digits;
-    if (digits.length <= 7) return `${digits.slice(0, 4)} ${digits.slice(4)}`;
-    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 11)}`;
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneForDisplay(e.target.value);
-    setPhone(formatted);
-  };
-
-  const handleSendOtp = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    
-    const cleanPhone = phone.replace(/\D/g, "");
-    
-    if (cleanPhone.length < 10) {
-      toast.error("Please enter a valid phone number");
-      return;
-    }
-
-    setLoading(true);
-
+  const performLogin = async (loginEmail: string, loginPassword: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("send-pupil-otp", {
-        body: { phone: cleanPhone },
-      });
-
-      if (error) throw error;
-
-      if (data.error) {
-        if (data.error === "Phone number not found") {
-          toast.error("Phone number not found", {
-            description: "Please check your number or contact your instructor",
-          });
-        } else {
-          toast.error(data.error);
-        }
-        setLoading(false);
-        return;
-      }
-
-      setPupilData({ name: data.pupilName, slug: data.instructorSlug });
-      setStep("otp");
-      setCountdown(60);
-      toast.success(`Code sent to ${formatPhoneForDisplay(cleanPhone)}`);
-    } catch (error) {
-      console.error("Send OTP error:", error);
-      toast.error("Something went wrong", {
-        description: "Please try again or contact support",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (countdown > 0) return;
-    setResending(true);
-    await handleSendOtp();
-    setResending(false);
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otp.length !== 6) {
-      toast.error("Please enter the 6-digit code");
-      return;
-    }
-
-    const cleanPhone = phone.replace(/\D/g, "");
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("verify-pupil-otp", {
-        body: { phone: cleanPhone, code: otp },
+      const { data, error } = await supabase.functions.invoke("pupil-email-auth", {
+        body: { action: "login", email: loginEmail, password: loginPassword },
       });
 
       if (error) throw error;
 
       if (data.error) {
         toast.error(data.error);
-        setLoading(false);
-        return;
+        setAutoLoggingIn(false);
+        return false;
       }
 
-      // Save to session/local storage
-      sessionStorage.setItem("pupil_phone_verified", cleanPhone);
+      // Store session for both the generic portal and branded portal
+      sessionStorage.setItem("pupil_email_verified", loginEmail);
+      if (data.instructorId) {
+        sessionStorage.setItem(`pupil_${data.instructorId}`, data.pupilId);
+      }
       
-      if (rememberMe) {
-        localStorage.setItem("pupil_remembered_phone", cleanPhone);
-      } else {
-        localStorage.removeItem("pupil_remembered_phone");
+      if (rememberMe || localStorage.getItem("pupil_remembered_email")) {
+        localStorage.setItem("pupil_remembered_email", loginEmail);
       }
 
-      toast.success(`Welcome back, ${data.pupilName.split(" ")[0]}!`);
+      // Save credentials for Face ID
+      if ((window as any).PasswordCredential) {
+        try {
+          const CredCtor = (window as any).PasswordCredential;
+          const cred = new CredCtor({
+            id: loginEmail,
+            password: loginPassword,
+            name: data.pupilName,
+          });
+          await navigator.credentials.store(cred);
+        } catch {
+          // Credentials API not fully supported, continue
+        }
+      }
+
+      const firstName = data.pupilName?.split(" ")[0] || "";
+      if (data.firstLogin) {
+        toast.success(`Welcome ${firstName}! Your password has been set.`);
+      } else {
+        toast.success(`Welcome back, ${firstName}!`);
+      }
+      
       navigate(`/p/${data.instructorSlug}`);
+      return true;
     } catch (error) {
-      console.error("Verify OTP error:", error);
-      toast.error("Something went wrong", {
-        description: "Please try again",
-      });
-    } finally {
-      setLoading(false);
+      console.error("Login error:", error);
+      toast.error("Something went wrong. Please try again.");
+      setAutoLoggingIn(false);
+      return false;
     }
   };
 
-  const handleBack = () => {
-    setStep("phone");
-    setOtp("");
-    setPupilData(null);
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    if (!email.trim()) {
+      toast.error("Please enter your email");
+      return;
+    }
+    if (!password) {
+      toast.error("Please enter your password");
+      return;
+    }
+
+    setLoading(true);
+    await performLogin(email.trim(), password);
+    setLoading(false);
   };
+
+  const handleFaceIdLogin = async () => {
+    if (!(window as any).PasswordCredential) return;
+
+    try {
+      const credential = await navigator.credentials.get({
+        password: true,
+        mediation: "required",
+      } as any);
+
+      if (credential && credential.type === "password") {
+        const pwCred = credential as any;
+        setLoading(true);
+        setEmail(pwCred.id);
+        await performLogin(pwCred.id, pwCred.password || "");
+        setLoading(false);
+      }
+    } catch {
+      toast.error("Biometric login cancelled or not available");
+    }
+  };
+
+  if (autoLoggingIn) {
+    return (
+      <div className="min-h-screen w-full flex flex-col bg-primary items-center justify-center">
+        <Loader2 className="h-8 w-8 text-primary-foreground animate-spin" />
+        <p className="text-primary-foreground/70 text-sm mt-3">Signing you in...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-primary">
@@ -176,128 +182,86 @@ export default function PupilLogin() {
               </div>
               <CardTitle className="text-2xl">Pupil Login</CardTitle>
               <CardDescription>
-                {step === "phone" 
-                  ? "Enter the phone number registered with your instructor"
-                  : `Enter the 6-digit code sent to ${phone}`
-                }
+                Sign in with your email and password
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {step === "phone" ? (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        type="tel"
-                        placeholder="07XX XXX XXXX"
-                        value={phone}
-                        onChange={handlePhoneChange}
-                        className="pl-10 text-lg h-12"
-                        maxLength={14}
-                        autoFocus
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      We'll send you a verification code via SMS
-                    </p>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="remember"
-                      checked={rememberMe}
-                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    />
-                    <label
-                      htmlFor="remember"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Remember me on this device
-                    </label>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full h-12 text-base"
-                    disabled={loading || phone.replace(/\D/g, "").length < 10}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Sending code...
-                      </>
-                    ) : (
-                      <>
-                        Send Verification Code
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              ) : (
-                <div className="space-y-6">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                      <KeyRound className="h-8 w-8 text-primary" />
-                    </div>
-                    
-                    <InputOTP
-                      maxLength={6}
-                      value={otp}
-                      onChange={(value) => setOtp(value)}
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-3">
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 text-lg h-12"
+                      autoComplete="username"
                       autoFocus
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-
-                    <p className="text-sm text-muted-foreground text-center">
-                      Didn't receive the code?{" "}
-                      {countdown > 0 ? (
-                        <span>Resend in {countdown}s</span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleResendOtp}
-                          disabled={resending}
-                          className="text-primary hover:underline font-medium"
-                        >
-                          {resending ? "Sending..." : "Resend code"}
-                        </button>
-                      )}
-                    </p>
+                    />
                   </div>
-
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={handleBack}
-                      className="flex-1"
-                    >
-                      <RotateCcw className="mr-2 h-4 w-4" />
-                      Back
-                    </Button>
-                    <Button
-                      onClick={handleVerifyOtp}
-                      className="flex-1"
-                      disabled={loading || otp.length !== 6}
-                    >
-                      {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Verify & Login"
-                      )}
-                    </Button>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 text-lg h-12"
+                      autoComplete="current-password"
+                    />
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    First time? Enter the email your instructor has on file and choose a password.
+                  </p>
                 </div>
-              )}
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="remember"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <label
+                    htmlFor="remember"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Remember me on this device
+                  </label>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-12 text-base"
+                  disabled={loading || !email.trim() || !password}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      Sign In
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+
+                {/* Face ID / Biometric button */}
+                {faceIdAvailable && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-12 text-base"
+                    onClick={handleFaceIdLogin}
+                    disabled={loading}
+                  >
+                    <ScanFace className="mr-2 h-5 w-5" />
+                    Sign in with Face ID
+                  </Button>
+                )}
+              </form>
 
               <div className="mt-6 pt-6 border-t text-center">
                 <p className="text-sm text-muted-foreground mb-3">

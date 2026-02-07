@@ -6069,6 +6069,7 @@ export type Database = {
           parent_email: string | null
           parent_name: string | null
           parent_phone: string | null
+          password_hash: string | null
           payment_type: string | null
           phone: string | null
           postcode: string
@@ -6135,6 +6136,7 @@ export type Database = {
           parent_email?: string | null
           parent_name?: string | null
           parent_phone?: string | null
+          password_hash?: string | null
           payment_type?: string | null
           phone?: string | null
           postcode: string
@@ -6201,6 +6203,7 @@ export type Database = {
           parent_email?: string | null
           parent_name?: string | null
           parent_phone?: string | null
+          password_hash?: string | null
           payment_type?: string | null
           phone?: string | null
           postcode?: string
