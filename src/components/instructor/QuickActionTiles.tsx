@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
+import messagesIcon from "@/assets/messages-icon.png";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -51,6 +52,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Heart,
   Fuel: Car,
   ListTodo,
+};
+
+// Custom image icons for specific tiles (iOS-style)
+const customIconImages: Record<string, string> = {
+  messages: messagesIcon,
 };
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
@@ -118,6 +124,16 @@ export function QuickActionTiles({
   const getIcon = (iconName: string) => {
     const Icon = iconMap[iconName] || Calendar;
     return Icon;
+  };
+
+  const renderTileIcon = (action: QuickAction, sizeClass: string) => {
+    const customImg = customIconImages[action.id];
+    if (customImg) {
+      return <img src={customImg} alt={action.title} className={`${sizeClass} object-contain`} />;
+    }
+    const Icon = getIcon(action.icon);
+    const style = tileStyles[0]; // fallback, caller should pass correct style
+    return <Icon className={sizeClass} />;
   };
 
   const isJobOffersAction = (action: QuickAction) => {
@@ -303,7 +319,7 @@ export function QuickActionTiles({
 
                       <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
                       <div className={`relative w-10 h-10 rounded-xl ${style.iconBg} flex items-center justify-center shrink-0`}>
-                        <Icon className={`h-5 w-5 ${style.iconColor}`} />
+                        {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="h-5 w-5 object-contain" /> : <Icon className={`h-5 w-5 ${style.iconColor}`} />}
                         {showBadge && (
                           <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
                             {badgeCount > 9 ? "9+" : badgeCount}
@@ -336,7 +352,7 @@ export function QuickActionTiles({
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-none bg-primary/10 flex items-center justify-center">
-                          <Icon className="h-4 w-4 text-primary" />
+                          {customIconImages[tile.id] ? <img src={customIconImages[tile.id]} alt={tile.title} className="h-4 w-4 object-contain" /> : <Icon className="h-4 w-4 text-primary" />}
                         </div>
                         <span className="text-sm font-medium text-muted-foreground">{tile.title}</span>
                       </div>
@@ -381,7 +397,7 @@ export function QuickActionTiles({
                         const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
                         return (
                           <>
-                            <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />
+                            {customIconImages[localTiles[0].id] ? <img src={customIconImages[localTiles[0].id]} alt={localTiles[0].title} className="h-6 w-6 object-contain" /> : <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />}
                             {showBadge && (
                               <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
                                 {firstTileBadgeCount > 9 ? "9+" : firstTileBadgeCount}
@@ -451,7 +467,7 @@ export function QuickActionTiles({
                      className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-shadow border border-border`}
                   >
                     <div className={`relative w-8 h-8 rounded-none ${style.iconBg} flex items-center justify-center shrink-0`}>
-                      <Icon className={`h-4 w-4 ${style.iconColor}`} />
+                      {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="h-4 w-4 object-contain" /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
                           {badgeCount > 9 ? "9+" : badgeCount}
