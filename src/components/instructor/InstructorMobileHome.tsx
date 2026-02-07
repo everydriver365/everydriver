@@ -425,7 +425,7 @@ export function InstructorMobileHome({
       {/* INSIGHTS section */}
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">INSIGHTS</p>
 
-      {/* Today's Stats - Tappable Glass Card */}
+      {/* Today & Weekly Combined Card */}
       <div className="mt-2">
         <div 
           className="bg-white border border-border p-4 cursor-pointer"
@@ -466,18 +466,14 @@ export function InstructorMobileHome({
               <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Expected</span>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Weekly Goal Progress - Glass Card */}
-      {weeklyGoals && (
-          <div className="mt-4">
-            <div className="bg-white border border-border p-4">
+          {/* Weekly Progress inline */}
+          {weeklyGoals && (
+            <div className="mt-3 pt-3 border-t border-border">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h3 className="font-medium text-foreground text-xs mb-1">Weekly Progress</h3>
                   <p className="text-[11px] text-muted-foreground">
-                    {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
+                    Weekly: {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek}
                   </p>
                   {lastWeekComparison && (
                     <p className={`text-[10px] mt-0.5 ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-destructive'}`}>
@@ -493,8 +489,9 @@ export function InstructorMobileHome({
                 />
               </div>
             </div>
-          </div>
-      )}
+          )}
+        </div>
+      </div>
 
       {/* PLAN AHEAD section */}
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">PLAN AHEAD</p>
