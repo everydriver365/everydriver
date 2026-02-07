@@ -20,8 +20,8 @@ interface ActionItem {
   icon: React.ElementType;
   href?: string;
   onClick?: () => void;
-  gradient: string;
   iconColor: string;
+  iconBg: string;
   size?: "normal" | "large";
   value?: string | number;
 }
@@ -39,8 +39,8 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
       sublabel: "QR or manual",
       icon: QrCode,
       onClick: onTakePayment,
-      gradient: "from-emerald-500 to-teal-600",
-      iconColor: "text-white",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
       size: "large",
     },
     {
@@ -49,8 +49,8 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
       sublabel: "Income & outgoings",
       icon: Wallet,
       href: "/instructor/accounts",
-      gradient: "from-violet-500 to-purple-600",
-      iconColor: "text-white",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
     },
     {
       id: "expenses",
@@ -58,8 +58,8 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
       sublabel: "Track costs",
       icon: Receipt,
       href: "/instructor/expenses",
-      gradient: "from-rose-500 to-pink-600",
-      iconColor: "text-white",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
     },
     {
       id: "bonus",
@@ -67,8 +67,8 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
       value: `£${bonusEarned}`,
       icon: Gift,
       href: "/instructor/bonus",
-      gradient: "from-amber-400 to-orange-500",
-      iconColor: "text-white",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
     },
     {
       id: "mileage",
@@ -76,8 +76,8 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
       sublabel: "Tax tracker",
       icon: Car,
       href: "/instructor/mileage",
-      gradient: "from-sky-500 to-blue-600",
-      iconColor: "text-white",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
     },
     {
       id: "tax",
@@ -85,8 +85,8 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
       sublabel: "HMRC ready",
       icon: Calculator,
       href: "/instructor/accounts?tab=tax",
-      gradient: "from-slate-600 to-slate-700",
-      iconColor: "text-white",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
     },
   ];
 
@@ -110,22 +110,19 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
             transition={{ delay: 0.1 + index * 0.05 }}
             whileTap={{ scale: 0.95 }}
             className={cn(
-              "relative overflow-hidden rounded-2xl p-3.5",
-              "bg-gradient-to-br shadow-lg",
+              "relative overflow-hidden rounded-none p-3.5",
+              "bg-card border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)]",
               "active:shadow-md transition-shadow",
-              action.gradient,
               isLarge && "col-span-2 row-span-1"
             )}
           >
-            {/* Shimmer overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer" />
-            
             <div className={cn(
               "relative z-10 flex",
               isLarge ? "flex-row items-center gap-3" : "flex-col items-start gap-2"
             )}>
               <div className={cn(
-                "rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm",
+                "rounded-full flex items-center justify-center",
+                action.iconBg,
                 isLarge ? "h-12 w-12" : "h-9 w-9"
               )}>
                 <Icon className={cn(
@@ -136,17 +133,17 @@ export function MoneyActionGrid({ bonusEarned, onTakePayment }: MoneyActionGridP
               
               <div className={isLarge ? "flex-1" : ""}>
                 {action.value && (
-                  <p className="text-xl font-bold text-white mb-0.5">{action.value}</p>
+                  <p className="text-xl font-bold text-foreground mb-0.5">{action.value}</p>
                 )}
                 <p className={cn(
-                  "font-semibold text-white",
+                  "font-semibold text-foreground",
                   isLarge ? "text-base" : "text-xs"
                 )}>
                   {action.label}
                 </p>
                 {action.sublabel && (
                   <p className={cn(
-                    "text-white/70",
+                    "text-muted-foreground",
                     isLarge ? "text-xs" : "text-[10px]"
                   )}>
                     {action.sublabel}

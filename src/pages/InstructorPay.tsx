@@ -202,8 +202,8 @@ export default function InstructorPay() {
               className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
             >
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
-                  <Wallet className="h-5 w-5 text-violet-600" />
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Wallet className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-sm">Accounts</p>
@@ -221,8 +221,8 @@ export default function InstructorPay() {
               className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
             >
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
-                  <Receipt className="h-5 w-5 text-rose-500" />
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Receipt className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-sm">Expenses</p>
