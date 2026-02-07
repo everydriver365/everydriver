@@ -15,6 +15,7 @@ import findFuelIcon from "@/assets/find-fuel-icon.png";
 import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
 import expensesIcon from "@/assets/expenses-icon.png";
 import todoIcon from "@/assets/todo-icon.png";
+import settingsIcon from "@/assets/settings-icon.png";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -85,6 +86,7 @@ const customIconImages: Record<string, string> = {
   "vehicle-health": vehicleHealthIcon,
   "expenses": expensesIcon,
   "todos": todoIcon,
+  "settings": settingsIcon,
 };
 
 // Tiles with custom icon border-radius (inline style to override global !important)
@@ -99,6 +101,7 @@ const customIconRadius: Record<string, string> = {
   "vehicle-health": "7px",
   "expenses": "7px",
   "todos": "7px",
+  "settings": "7px",
 };
 
 // Tiles with larger icon size
