@@ -72,7 +72,7 @@ const customIconImages: Record<string, string> = {
 };
 
 // Tiles whose icon container + image should be rounded (exempt from sharp-corner override)
-const roundedIconTiles = new Set(["find-my-car"]);
+const roundedIconTiles = new Set<string>([]);
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
 const additionalTiles: QuickAction[] = [
