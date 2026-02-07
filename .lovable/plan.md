@@ -1,39 +1,77 @@
 
 
-## Problem
+## Data Protection and Scalability Improvements
 
-The branded pupil portal at `/p/:slug` (`BrandedPupilPortal.tsx`) still uses the old phone number lookup to identify pupils. This was never updated when the login system was changed to email/password. The phone lookup (line 171-198) simply searches by phone number with no password -- it's not real authentication.
+This plan adds automated backups, soft deletes on critical tables, removes query limits, adds performance indexes, and creates an audit trail -- all to protect your 7,000+ users' data from loss.
 
-The new email/password login page (`/pupil/login`) works correctly and stores session data, but the branded portal has its own separate, outdated login flow.
+---
 
-## Solution
+### 1. Activate Weekly Backup Cron Job
 
-Update `BrandedPupilPortal.tsx` to replace the phone number input with a redirect to the email/password login page, while keeping the session-based access for already-authenticated users.
+The weekly backup email function exists but is never triggered automatically. We'll schedule it to run every Sunday at 2am.
 
-### Changes
+**Database change:** Insert a `pg_cron` schedule that calls the existing `weekly-backup-email` edge function weekly.
 
-**1. Update `BrandedPupilPortal.tsx`**
+---
 
-- Remove the `phoneInput` state and `handlePhoneVerify` function (the old phone lookup)
-- Remove the phone number input form UI
-- When no pupil session is found, also check `sessionStorage.getItem("pupil_email_verified")` and look up the pupil by email + instructor ID
-- If still no session, redirect to `/pupil/login` (or show a "Sign In" button that navigates there)
-- Keep the existing session check (`sessionStorage.getItem(\`pupil_\${data.id}\`)`) so users who logged in via `/pupil/login` are recognized
+### 2. Remove Backup Query Limits
 
-**2. No backend changes needed** -- the `pupil-email-auth` edge function already returns the `instructorSlug` and stores the session correctly.
+The backup function currently caps exports at 500 rows per table. For instructors with thousands of lessons/payments, this silently drops data. We'll remove all `.limit(500)` calls from the backup edge function so every record is included.
 
-### Flow After Fix
+---
 
-1. User visits `/p/kenneth-dufosse`
-2. Portal loads instructor branding
-3. No session found -- user sees a "Sign In" button
-4. Button navigates to `/pupil/login`
-5. User logs in with email/password
-6. On success, redirected back to `/p/kenneth-dufosse` with session stored
-7. Portal loads pupil data from session
+### 3. Add Soft Deletes to Critical Tables
 
-### Technical Detail
+Currently, deleting a pupil, lesson, or payment permanently erases it. We'll add a `deleted_at` timestamp column to these tables:
 
-- The `PupilLogin.tsx` `performLogin` already stores `sessionStorage.setItem(\`pupil_\${data.instructorId}\`, data.pupilId)` and navigates to `/p/\${data.instructorSlug}`, so the branded portal's existing session check will pick it up automatically.
-- The phone input UI and `handlePhoneVerify` function (~lines 65, 171-210, and the corresponding JSX) will be removed entirely.
+- **pupils**
+- **lesson_history**
+- **scheduled_lessons**
+- **payment_history**
+- **instructor_expenses**
+
+Records won't be physically removed -- instead `deleted_at` gets set to `now()`. All existing queries that read from these tables will be updated to filter out soft-deleted rows (`.is("deleted_at", null)`).
+
+The most critical delete operations to convert (based on codebase analysis):
+- Pupil deletion in `InstructorPupils.tsx`
+- Payment deletion in `PupilRecordsManager.tsx`
+- Lesson deletions across scheduling components
+
+---
+
+### 4. Create Audit Log Table
+
+A new `data_audit_log` table will track all significant changes (creates, updates, deletes) on critical tables, storing:
+- Who made the change (instructor ID)
+- What table/record was affected
+- What the action was (insert/update/delete)
+- Old and new values
+- Timestamp
+
+This provides a recoverable history if anything goes wrong.
+
+---
+
+### 5. Add Performance Indexes
+
+For 7,000 users, we'll add indexes on the most queried columns:
+- `pupils(instructor_id, deleted_at)`
+- `lesson_history(instructor_id, lesson_date, deleted_at)`
+- `scheduled_lessons(instructor_id, lesson_date, deleted_at)`
+- `payment_history(instructor_id, recorded_at, deleted_at)`
+- `instructor_expenses(instructor_id, expense_date, deleted_at)`
+
+---
+
+### Technical Summary
+
+| Change | Type | Files Affected |
+|--------|------|---------------|
+| Cron job for backups | SQL (insert) | Database only |
+| Remove .limit(500) | Edge function | `weekly-backup-email/index.ts` |
+| Soft delete columns | SQL migration | 5 tables |
+| Update delete calls to soft delete | Frontend code | ~15 components |
+| Audit log table | SQL migration | New table |
+| Audit logging helper | Frontend code | New utility + existing delete/update calls |
+| Performance indexes | SQL migration | 5 tables |
 
