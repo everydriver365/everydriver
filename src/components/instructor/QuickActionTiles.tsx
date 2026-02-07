@@ -71,8 +71,10 @@ const customIconImages: Record<string, string> = {
   "find-my-car": findMyCarIcon,
 };
 
-// Tiles whose icon container + image should be rounded (exempt from sharp-corner override)
-const roundedIconTiles = new Set<string>([]);
+// Tiles with custom icon border-radius (inline style to override global !important)
+const customIconRadius: Record<string, string> = {
+  "find-my-car": "2px",
+};
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
 const additionalTiles: QuickAction[] = [
@@ -333,8 +335,8 @@ export function QuickActionTiles({
                       </button>
 
                       <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
-                      <div className={`relative w-10 h-10 ${roundedIconTiles.has(action.id) ? 'rounded-full' : 'rounded-xl'} ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`}>
-                        {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className={`w-full h-full object-cover ${roundedIconTiles.has(action.id) ? 'rounded-full' : ''}`} /> : <Icon className={`h-5 w-5 ${style.iconColor}`} />}
+                      <div className={`relative w-10 h-10 rounded-xl ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
+                        {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-5 w-5 ${style.iconColor}`} />}
                         {showBadge && (
                           <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
                             {badgeCount > 9 ? "9+" : badgeCount}
@@ -366,8 +368,8 @@ export function QuickActionTiles({
                       className="flex items-center justify-between p-3 bg-muted/50 rounded-none border border-dashed border-muted-foreground/20"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 ${roundedIconTiles.has(tile.id) ? 'rounded-full' : 'rounded-none'} ${customIconImages[tile.id] ? '' : 'bg-primary/10'} flex items-center justify-center overflow-hidden`}>
-                          {customIconImages[tile.id] ? <img src={customIconImages[tile.id]} alt={tile.title} className={`w-full h-full object-cover ${roundedIconTiles.has(tile.id) ? 'rounded-full' : ''}`} /> : <Icon className="h-4 w-4 text-primary" />}
+                        <div className={`w-8 h-8 rounded-none ${customIconImages[tile.id] ? '' : 'bg-primary/10'} flex items-center justify-center overflow-hidden`} style={customIconRadius[tile.id] ? { borderRadius: customIconRadius[tile.id] } : undefined}>
+                          {customIconImages[tile.id] ? <img src={customIconImages[tile.id]} alt={tile.title} className="w-full h-full object-cover" style={customIconRadius[tile.id] ? { borderRadius: customIconRadius[tile.id] } : undefined} /> : <Icon className="h-4 w-4 text-primary" />}
                         </div>
                         <span className="text-sm font-medium text-muted-foreground">{tile.title}</span>
                       </div>
@@ -403,7 +405,7 @@ export function QuickActionTiles({
               <Link to={localTiles[0].route}>
                  <div className="relative overflow-hidden bg-white rounded-none p-4 shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:shadow-sm transition-all border border-border">
                   <div className="flex items-center gap-4">
-                    <div className={`relative w-14 h-14 ${roundedIconTiles.has(localTiles[0].id) ? 'rounded-full' : 'rounded-none'} ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`}>
+                    <div className={`relative w-14 h-14 rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
                       {(() => {
                         const Icon = getIcon(localTiles[0].icon);
                         const firstTileBadgeCount = getBadgeCount(localTiles[0]);
@@ -412,7 +414,7 @@ export function QuickActionTiles({
                         const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
                         return (
                           <>
-                            {customIconImages[localTiles[0].id] ? <img src={customIconImages[localTiles[0].id]} alt={localTiles[0].title} className={`w-full h-full object-cover ${roundedIconTiles.has(localTiles[0].id) ? 'rounded-full' : ''}`} /> : <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />}
+                            {customIconImages[localTiles[0].id] ? <img src={customIconImages[localTiles[0].id]} alt={localTiles[0].title} className="w-full h-full object-cover" style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined} /> : <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />}
                             {showBadge && (
                               <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
                                 {firstTileBadgeCount > 9 ? "9+" : firstTileBadgeCount}
@@ -481,8 +483,8 @@ export function QuickActionTiles({
                     whileTap={{ scale: 0.97 }}
                      className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-shadow border border-border`}
                   >
-                    <div className={`relative w-10 h-10 ${roundedIconTiles.has(action.id) ? 'rounded-full' : 'rounded-none'} ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`}>
-                      {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className={`w-full h-full object-cover ${roundedIconTiles.has(action.id) ? 'rounded-full' : ''}`} /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
+                    <div className={`relative w-10 h-10 rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
+                      {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
                           {badgeCount > 9 ? "9+" : badgeCount}
