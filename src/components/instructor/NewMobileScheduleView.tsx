@@ -290,7 +290,7 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
         onSelectDate={setSelectedDate} 
       />
 
-      {/* Header with Lesson Count + View Toggle + Add Button */}
+      {/* Header with Lesson Count */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">
@@ -299,32 +299,6 @@ export function NewMobileScheduleView({ instructorId }: NewMobileScheduleViewPro
           <span className="text-sm text-muted-foreground">
             {lessonCount} {lessonCount === 1 ? "lesson" : "lessons"}
           </span>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {/* View Toggle */}
-          <ToggleGroup 
-            type="single" 
-            value={viewMode} 
-            onValueChange={(v) => v && setViewMode(v as "list" | "timeline")}
-            className="bg-muted rounded-lg p-0.5"
-          >
-            <ToggleGroupItem value="list" size="sm" className="h-7 w-7 p-0">
-              <List className="h-4 w-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="timeline" size="sm" className="h-7 w-7 p-0">
-              <GitBranch className="h-4 w-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
-          
-          <Button 
-            size="sm" 
-            onClick={() => setAddLessonOpen(true)}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            Add
-          </Button>
         </div>
       </div>
 
