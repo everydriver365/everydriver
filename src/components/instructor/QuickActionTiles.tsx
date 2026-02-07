@@ -73,7 +73,7 @@ const customIconImages: Record<string, string> = {
 
 // Tiles with custom icon border-radius (inline style to override global !important)
 const customIconRadius: Record<string, string> = {
-  "find-my-car": "2px",
+  "find-my-car": "7px",
 };
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
