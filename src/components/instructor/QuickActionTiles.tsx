@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
 import messagesIcon from "@/assets/messages-icon.png";
-import paymentsIcon from "@/assets/payments-icon.png";
+import paymentsIcon from "@/assets/payments-icon-new.png";
 import scheduleIcon from "@/assets/schedule-icon.png";
 import pupilsIcon from "@/assets/pupils-icon.png";
 import trackIcon from "@/assets/track-icon.png";
@@ -65,6 +65,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 const customIconImages: Record<string, string> = {
   messages: messagesIcon,
   "take-payment": paymentsIcon,
+  "payments": paymentsIcon,
   schedule: scheduleIcon,
   pupils: pupilsIcon,
   "track-lesson": trackIcon,
@@ -77,6 +78,8 @@ const customIconImages: Record<string, string> = {
 const customIconRadius: Record<string, string> = {
   "find-my-car": "7px",
   "jobs": "7px",
+  "take-payment": "7px",
+  "payments": "7px",
 };
 
 // Tiles with larger icon size
