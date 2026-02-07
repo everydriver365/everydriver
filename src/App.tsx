@@ -85,6 +85,7 @@ import PublicAvailability from "./pages/PublicAvailability";
 import RemoteSigning from "./pages/RemoteSigning";
 import InstructorDoodlepad from "./pages/InstructorDoodlepad";
 import InstructorTodos from "./pages/InstructorTodos";
+import InstructorNotes from "./pages/InstructorNotes";
 
 // Instructor SaaS pages
 import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
@@ -210,6 +211,7 @@ const App = () => (
               <Route path="/instructor/locations" element={<InstructorLocations />} />
               <Route path="/instructor/doodlepad" element={<InstructorDoodlepad />} />
               <Route path="/instructor/todos" element={<InstructorTodos />} />
+              <Route path="/instructor/notes" element={<InstructorNotes />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />

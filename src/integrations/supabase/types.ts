@@ -5027,6 +5027,48 @@ export type Database = {
           },
         ]
       }
+      notes: {
+        Row: {
+          content: string
+          created_at: string
+          deleted_at: string | null
+          folder: string | null
+          id: string
+          is_pinned: boolean | null
+          owner_id: string
+          owner_type: string
+          shared_with_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          folder?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          owner_id: string
+          owner_type: string
+          shared_with_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          folder?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          owner_id?: string
+          owner_type?: string
+          shared_with_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       offline_sync_queue: {
         Row: {
           action_type: string
@@ -7967,6 +8009,10 @@ export type Database = {
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       generate_calendar_share_token: { Args: never; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
+      get_instructor_id_for_user: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

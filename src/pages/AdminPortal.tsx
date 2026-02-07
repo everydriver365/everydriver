@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -65,6 +65,7 @@ import { ActivityLogViewer } from "@/components/admin/ActivityLogViewer";
 import { CampaignManager } from "@/components/admin/CampaignManager";
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog";
+import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -141,6 +142,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "pwa-apps": { title: "PWA Configuration", group: "System Settings", icon: Download },
   "site-settings": { title: "Site Settings & SEO", group: "System Settings", icon: Globe },
   "activity-log": { title: "Activity Log", group: "System Settings", icon: Clock },
+  "admin-notes": { title: "Admin Notes", group: "System Settings", icon: StickyNote },
   // Products & Booking - Additional
   bookings: { title: "All Bookings", group: "Products & Booking", icon: Calendar },
   payments: { title: "Payment History", group: "Products & Booking", icon: CreditCard },
@@ -846,6 +848,18 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="analytics" className="mb-4" />
             <RevenueAnalytics />
+          </motion.div>
+        );
+
+      case "admin-notes":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <Card>
+              <CardContent className="pt-6">
+                <AdminNotesManager />
+              </CardContent>
+            </Card>
           </motion.div>
         );
 

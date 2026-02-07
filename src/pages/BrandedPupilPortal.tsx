@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
   BookOpen, Car, History, ChevronRight, ChevronDown, X, AlertCircle,
-  Loader2, Moon, Sun, MapPin, CheckCircle2, User
+  Loader2, Moon, Sun, MapPin, CheckCircle2, User, StickyNote
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { PupilChat } from "@/components/pupil-portal/PupilChat";
 import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
 import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
+import { PupilNotes } from "@/components/pupil-portal/PupilNotes";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { PupilDetailsDrawer } from "@/components/pupil-portal/PupilDetailsDrawer";
 
@@ -52,7 +53,7 @@ interface Pupil {
   profile_image_url: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -439,6 +440,7 @@ export default function BrandedPupilPortal() {
                     { id: 'schedule' as const, icon: Calendar, label: 'My Lessons', desc: 'View & manage your schedule' },
                     { id: 'gaps' as const, icon: Clock, label: 'Book a Lesson', desc: 'See available slots' },
                     { id: 'messages' as const, icon: MessageSquare, label: 'Messages', desc: 'Chat with your instructor' },
+                    { id: 'notes' as const, icon: StickyNote, label: 'My Notes', desc: 'Personal notes & instructor shared' },
                     { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & payment history' },
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & book exam' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
@@ -661,6 +663,33 @@ export default function BrandedPupilPortal() {
                   instructorId={instructor.id}
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
+                />
+              </motion.div>
+            )}
+
+            {activeSection === 'notes' && (
+              <motion.div
+                key="notes"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div className="p-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setActiveSection('home')}
+                    className="mb-4"
+                    style={{ color: 'var(--brand-text)' }}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+                <PupilNotes
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
+                  brandColour={instructor.brand_colour}
+                  instructorName={instructor.name}
                 />
               </motion.div>
             )}
