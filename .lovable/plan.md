@@ -1,89 +1,57 @@
 
 
-# Instructor Mobile Home Page - Layout and Design Improvements
+# Map Annotation Tool (Doodlepad)
 
-## Current State
+A new interactive tool that lets instructors view their current location on a map, then draw lines, arrows, and annotations directly on it to illustrate vehicle direction of travel, road positioning, and other teaching points.
 
-The home page currently has a good foundation but feels dense and slightly fragmented. The hero image with overlapping card works well, but the sections below (YOUR DAY, QUICK ACTIONS, INSIGHTS, PLAN AHEAD) feel like a long vertical scroll of similarly-styled white cards with minimal visual hierarchy differentiation.
+## What It Does
 
-## Proposed Improvements
+- **Shows your current location** on a live map using your phone's GPS (no Google Maps needed -- uses the same mapping system already in the app)
+- **Draw on the map** with your finger or mouse -- lines, arrows, circles, and text
+- **Annotations stay pinned** to real-world locations, so when you pan or zoom, your drawings move with the map
+- **Save and reload** your drawings for reuse in future lessons (e.g., "Roundabout approach", "Parallel parking steps")
+- **Undo/redo** support for easy editing
 
-### 1. Reduce Visual Clutter - Consolidate Sections
+## How It Works
 
-**Problem:** There are too many small section headers (YOUR DAY, QUICK ACTIONS, INSIGHTS, PLAN AHEAD) making the page feel like a long checklist rather than a dashboard.
-
-**Solution:**
-- Merge "Today's Stats" and "Weekly Progress" into a single **compact stats bar** with two columns side by side instead of stacked full-width cards.
-- Remove the redundant section label text ("YOUR DAY", "INSIGHTS", etc.) and let the cards speak for themselves with better spacing.
-- The hero card already shows weekly progress — remove the duplicate "Weekly Progress" card lower on the page.
-
-### 2. Quick Action Tiles - Grid Refinement
-
-**Problem:** The first tile is full-width and the rest are in a 2-column grid, creating an inconsistent visual rhythm.
-
-**Solution:**
-- Make ALL tiles a uniform 3-column grid (matching the style of the old `HomeQuickActions` component) — smaller, icon-focused tiles without subtitles.
-- This reduces the vertical space consumed by tiles by roughly 50% and puts more content above the fold.
-- Remove the chevron arrows and subtitle text from tiles; keep just icon + label.
-
-### 3. Next Lesson Card - Tighten Spacing
-
-**Problem:** The Next Lesson card is well-designed but takes significant vertical space.
-
-**Solution:**
-- Reduce internal padding from `p-4` to `p-3`.
-- Make the "More actions" expandable section default-collapsed (already is) but reduce the collapsed card height by tightening the action button row spacing.
-
-### 4. Hero Card - Streamline
-
-**Problem:** The hero overlapping card shows greeting, weekly goal subtitle, badges, a progress ring, AND a progress bar — some redundancy.
-
-**Solution:**
-- Remove the **linear progress bar** since the circular ring already shows the same data.
-- This saves ~24px of vertical space and reduces visual noise.
-- Keep the ring + greeting + badges as they are.
-
-### 5. Background and Spacing Polish
-
-**Problem:** The light blue background (#E8F1FE) is nice but cards don't have enough breathing room.
-
-**Solution:**
-- Increase gap between major sections from `mt-4` to `mt-5`.
-- Add a subtle bottom padding to the last section so content doesn't butt up against the bottom nav.
-- Ensure consistent card shadow depth across all cards.
-
-### 6. Today's Route Map - Make Optional
-
-**Problem:** The route map preview takes significant space and may not always have data.
-
-**Solution:**
-- Only render the TodayRoutePreview when there are 2+ lessons (already partially done but ensure it collapses cleanly).
-- When shown, cap its height at 120px instead of letting it grow.
-
----
+1. Open the Doodlepad from the instructor menu
+2. The map centres on your current GPS position
+3. Tap the pencil icon to start drawing -- select colour, tool type (freehand, arrow, circle, text)
+4. Draw directly on the map to show students vehicle paths, positioning, etc.
+5. Save your annotation with a name for later use
 
 ## Technical Details
 
-### Files to Modify
+### New Files
+- `src/pages/InstructorDoodlepad.tsx` -- Page wrapper with geolocation initialisation
+- `src/components/instructor/doodlepad/DoodlepadMap.tsx` -- Full-screen Leaflet map with canvas overlay
+- `src/components/instructor/doodlepad/DoodlepadToolbar.tsx` -- Floating toolbar (tool selection, colour picker, undo/redo, save/load)
+- `src/components/instructor/doodlepad/DoodlepadCanvas.tsx` -- HTML5 Canvas overlay that converts screen coordinates to lat/lng for geo-anchored drawing
+- `src/components/instructor/doodlepad/SavedAnnotationsDrawer.tsx` -- Bottom drawer listing saved doodlepads from the database
 
-1. **`src/components/instructor/InstructorMobileHome.tsx`**
-   - Remove duplicate section labels or consolidate them
-   - Merge "Today's Stats" and "Weekly Progress" into a single row
-   - Adjust spacing classes (mt-4 to mt-5, add pb-24 at bottom)
+### Database
+- New `doodlepads` table:
+  - `id` (UUID, primary key)
+  - `instructor_id` (UUID, references auth user)
+  - `name` (text)
+  - `center_lat`, `center_lng` (float8 -- map centre when saved)
+  - `zoom_level` (integer)
+  - `annotations` (JSONB -- array of drawing objects with lat/lng anchors)
+  - `created_at`, `updated_at` (timestamps)
+  - RLS policies restricting access to the owning instructor
 
-2. **`src/components/instructor/ContextualHomeHero.tsx`**
-   - Remove the linear progress bar (lines 254-267)
-   - Tighten card padding slightly
+### Drawing Architecture
+- Canvas overlay sits on top of the Leaflet map, sized to the viewport
+- Each drawing stroke records lat/lng anchor points (converted from pixel coordinates using Leaflet's `containerPointToLatLng`)
+- On map pan/zoom, all strokes are re-projected from lat/lng back to screen pixels using `latLngToContainerPoint` and redrawn
+- Tools: Freehand pen, straight line, arrow, circle, text label
+- Colours: Red, blue, green, black, white (with thickness options)
 
-3. **`src/components/instructor/QuickActionTiles.tsx`**
-   - Convert normal view from "1 full-width + 2-col grid" to a uniform 3-column grid
-   - Simplify tile rendering to icon + label only (no subtitles, no chevrons)
-   - Reduce tile padding for compact appearance
+### Navigation Integration
+- New route: `/instructor/doodlepad`
+- Added to instructor menu, bottom nav, and command palette
+- Uses existing `mapConfig.ts` for consistent tile styling
 
-4. **`src/components/instructor/NextUpTile.tsx`**
-   - Reduce internal padding and action row spacing
-
-### No Database Changes Required
-
-All changes are purely presentational — CSS classes, layout structure, and component rendering logic.
-
+### Geolocation
+- Uses the browser's `navigator.geolocation.getCurrentPosition()` (same approach as existing tracking features)
+- Falls back to UK centre coordinates if permission denied
