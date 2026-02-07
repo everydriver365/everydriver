@@ -37,7 +37,7 @@ export function PupilAvatar({ name, imageUrl, size = "md", className }: PupilAva
           onError={() => setImageError(true)}
         />
       ) : null}
-      <AvatarFallback className="text-white font-semibold" style={{ backgroundColor: '#1877F2' }}>
+      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
         {getInitials(name)}
       </AvatarFallback>
     </Avatar>
