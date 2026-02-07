@@ -145,7 +145,7 @@ export function NextUpTile({
       >
         <div className="rounded-2xl bg-white border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] overflow-hidden">
           {/* Header section — date/time + countdown */}
-          <div className="px-5 pt-4 pb-3">
+          <div className="px-4 pt-3 pb-2">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Clock className="h-4 w-4 text-primary" />
               <span className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -163,7 +163,7 @@ export function NextUpTile({
           </div>
 
           {/* Pupil info card */}
-          <div className="mx-4 mb-3 rounded-xl border border-border p-3" style={{ backgroundColor: '#f5f5f5' }}>
+          <div className="mx-3 mb-2 rounded-xl border border-border p-2.5" style={{ backgroundColor: '#f5f5f5' }}>
             <div className="flex items-center gap-3">
               <PupilAvatar
                 name={pupilName}
@@ -208,7 +208,7 @@ export function NextUpTile({
 
           {/* Start Navigation CTA */}
           {pickupPostcode && (
-            <div className="px-4 mb-3">
+            <div className="px-3 mb-2">
               <button
                 onClick={handleNavigate}
                 className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-primary-foreground font-semibold text-base shadow-md hover:shadow-lg transition-all bg-primary hover:bg-primary/90"
@@ -220,7 +220,7 @@ export function NextUpTile({
           )}
 
           {/* Primary action buttons */}
-          <div className="px-4 pb-2 grid grid-cols-3 gap-2">
+          <div className="px-3 pb-1.5 grid grid-cols-3 gap-1.5">
             <button
               onClick={handleCall}
               disabled={!pupilPhone}

@@ -360,105 +360,32 @@ export function QuickActionTiles({
       ) : (
         // Normal view mode
         <>
-          {/* First tile - full width with enhanced info */}
-          {localTiles[0] && (
-            <motion.div
-              key={localTiles[0].id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link to={localTiles[0].route}>
-                 <div className="relative overflow-hidden bg-white rounded-none p-4 shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:shadow-sm transition-all border border-border">
-                  <div className="flex items-center gap-4">
-                    <div className={`relative w-12 h-12 rounded-none ${tileStyles[0].iconBg} flex items-center justify-center shrink-0`}>
-                      {(() => {
-                        const Icon = getIcon(localTiles[0].icon);
-                        const firstTileBadgeCount = getBadgeCount(localTiles[0]);
-                        const showBadge = firstTileBadgeCount > 0;
-                        const isSchedule = isScheduleAction(localTiles[0]);
-                        const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
-                        return (
-                          <>
-                            <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />
-                            {showBadge && (
-                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                                {firstTileBadgeCount > 9 ? "9+" : firstTileBadgeCount}
-                              </span>
-                            )}
-                            {showLessonBadge && !showBadge && (
-                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                                {todayOverview.lessonCount}
-                              </span>
-                            )}
-                          </>
-                        );
-                      })()}
-                    </div>
-                    <div className="relative flex-1 min-w-0">
-                      <span className="font-semibold text-foreground text-lg">{localTiles[0].title}</span>
-                       {/* Simple subtitle */}
-                       <p className="text-muted-foreground text-xs mt-0.5">
-                         {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0
-                           ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount !== 1 ? 's' : ''} today`
-                           : 'Tap to view'
-                         }
-                       </p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground relative shrink-0" />
-                  </div>
-                  
-                  {/* Quick stats row for schedule tile */}
-                  {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0 && (
-                    <div className="mt-3 pt-3 border-t border-border/30 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">{todayOverview.totalHours} hours of lessons</span>
-                        <span className="text-muted-foreground/40">•</span>
-                        <span className="text-xs text-muted-foreground">£{todayOverview.expectedEarnings} expected</span>
-                      </div>
-                      {nextLessonDetails?.pickupPostcode && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-xs font-medium text-primary">
-                            Next lesson in {nextLessonDetails.pickupPostcode}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            </motion.div>
-          )}
-
-          {/* 2-column grid for remaining actions - compact oblong tiles */}
-          <div className="grid grid-cols-2 gap-2">
-            {localTiles.slice(1).map((action, index) => {
+          {/* Uniform 3-column grid for all tiles */}
+          <div className="grid grid-cols-3 gap-2">
+            {localTiles.map((action, index) => {
               const Icon = getIcon(action.icon);
               const badgeCount = getBadgeCount(action);
               const showBadge = badgeCount > 0;
-              const style = tileStyles[(index + 1) % tileStyles.length];
+              const style = tileStyles[index % tileStyles.length];
               
               return (
                 <Link key={action.id} to={action.route} className="block">
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + index * 0.03 }}
+                    transition={{ delay: 0.05 + index * 0.03 }}
                     whileTap={{ scale: 0.97 }}
-                     className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-shadow border border-border`}
+                    className={`relative overflow-hidden ${style.bg} rounded-none p-3 flex flex-col items-center gap-1.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:shadow-sm transition-shadow border border-border`}
                   >
-                    <div className={`relative w-8 h-8 rounded-none ${style.iconBg} flex items-center justify-center shrink-0`}>
-                      <Icon className={`h-4 w-4 ${style.iconColor}`} />
+                    <div className={`relative w-9 h-9 rounded-none ${style.iconBg} flex items-center justify-center shrink-0`}>
+                      <Icon className={`h-[18px] w-[18px] ${style.iconColor}`} />
                       {showBadge && (
                         <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
                           {badgeCount > 9 ? "9+" : badgeCount}
                         </span>
                       )}
                     </div>
-                    <span className="font-medium text-foreground text-sm leading-tight">
+                    <span className="font-medium text-foreground text-[11px] leading-tight text-center">
                       {action.title}
                     </span>
                   </motion.div>

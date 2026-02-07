@@ -359,14 +359,10 @@ export function InstructorMobileHome({
           />
       )}
 
-      {/* YOUR DAY section */}
-      {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">YOUR DAY</p>
-      )}
 
-      {/* Next Lesson Card - only show when there's a lesson */}
+      {/* Next Lesson Card */}
       {nextLesson && (
-        <div className="mt-2">
+        <div className="mt-5">
           <NextUpTile
             lessonId={nextLesson.lessonId}
             pupilId={nextLesson.pupilId}
@@ -388,29 +384,26 @@ export function InstructorMobileHome({
 
       {/* Today's Mini Timeline */}
       {todayLessons && todayLessons.length > 1 && (
-          <TodayMiniTimeline lessons={todayLessons} className="mt-4" />
+          <TodayMiniTimeline lessons={todayLessons} className="mt-5" />
       )}
 
       {/* Today's Route Map Preview */}
       <TodayRoutePreview 
         instructorId={instructorId}
         onTap={() => navigate("/instructor/diary")}
-        className="mt-4"
+        className="mt-5"
       />
 
       {/* Gap Filler Suggestions */}
       {gapSuggestions && gapSuggestions.length > 0 && (
           <GapFillerCard
             gaps={gapSuggestions}
-            className="mt-4"
+            className="mt-5"
           />
       )}
 
-      {/* QUICK ACTIONS section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">QUICK ACTIONS</p>
-
       {/* Quick Action Tiles */}
-      <div className="pb-6">
+      <div className="mt-5 pb-4">
         <QuickActionTiles
           quickActions={content?.quick_actions || []}
           pendingJobsCount={pendingJobsCount}
@@ -422,82 +415,74 @@ export function InstructorMobileHome({
       </div>
 
 
-      {/* INSIGHTS section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">INSIGHTS</p>
-
-      {/* Today's Stats - Tappable Glass Card */}
-      <div className="mt-2">
-        <div 
+      {/* Today's Stats + Weekly Progress — side by side */}
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <div
           className="bg-white border border-border p-4 cursor-pointer"
           onClick={() => navigate("/instructor/money")}
         >
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium text-foreground text-sm">Today's Stats</h3>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="flex items-center justify-around">
-            <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-rose-500">
-                <BookOpen className="h-4 w-4" />
-                <span className="text-lg font-semibold">
-                  <AnimatedCounter value={currentLessons} />
-                </span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Lessons</span>
+          <h3 className="font-medium text-foreground text-xs mb-2">Today</h3>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-rose-500">
+              <BookOpen className="h-3.5 w-3.5" />
+              <span className="text-sm font-semibold">
+                <AnimatedCounter value={currentLessons} />
+              </span>
+              <span className="text-[10px] text-muted-foreground">lessons</span>
             </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-blue-600">
-                <Clock className="h-4 w-4" />
-                <span className="text-lg font-semibold">
-                  <AnimatedCounter value={todayOverview?.totalHours || 0} />
-                </span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Hours</span>
+            <div className="flex items-center gap-1.5 text-blue-600">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="text-sm font-semibold">
+                <AnimatedCounter value={todayOverview?.totalHours || 0} />
+              </span>
+              <span className="text-[10px] text-muted-foreground">hours</span>
             </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-emerald-600">
-                <PoundSterling className="h-4 w-4" />
-                <span className="text-lg font-semibold">
-                  <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
-                </span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Expected</span>
+            <div className="flex items-center gap-1.5 text-emerald-600">
+              <PoundSterling className="h-3.5 w-3.5" />
+              <span className="text-sm font-semibold">
+                <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
+              </span>
+              <span className="text-[10px] text-muted-foreground">expected</span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Weekly Goal Progress - Glass Card */}
-      {weeklyGoals && (
-          <div className="mt-4">
-            <div className="bg-white border border-border p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="font-medium text-foreground text-xs mb-1">Weekly Progress</h3>
-                  <p className="text-[11px] text-muted-foreground">
-                    {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek} earned
+        {/* Weekly Progress column */}
+        {weeklyGoals ? (
+          <div
+            className="bg-white border border-border p-3 cursor-pointer"
+            onClick={() => navigate("/instructor/money")}
+          >
+            <h3 className="font-medium text-foreground text-xs mb-2">This Week</h3>
+            <div className="flex items-center gap-3">
+              <WeeklyGoalRing
+                hoursThisWeek={weeklyGoals.hoursThisWeek}
+                hoursGoal={weeklyGoals.hoursGoal}
+                progressPercent={weeklyGoals.progressPercent}
+                isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
+              />
+              <div className="space-y-0.5">
+                <p className="text-[11px] text-muted-foreground">
+                  {weeklyGoals.lessonsThisWeek} lessons
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  £{weeklyGoals.earningsThisWeek}
+                </p>
+                {lastWeekComparison && (
+                  <p className={`text-[10px] ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-destructive'}`}>
+                    {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}%
                   </p>
-                  {lastWeekComparison && (
-                    <p className={`text-[10px] mt-0.5 ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-destructive'}`}>
-                      {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
-                    </p>
-                  )}
-                </div>
-                <WeeklyGoalRing
-                  hoursThisWeek={weeklyGoals.hoursThisWeek}
-                  hoursGoal={weeklyGoals.hoursGoal}
-                  progressPercent={weeklyGoals.progressPercent}
-                  isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
-                />
+                )}
               </div>
             </div>
           </div>
-      )}
-
-      {/* PLAN AHEAD section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">PLAN AHEAD</p>
+        ) : (
+          <div className="bg-white border border-border p-3">
+            <h3 className="font-medium text-foreground text-xs mb-2">This Week</h3>
+            <p className="text-[11px] text-muted-foreground">No data yet</p>
+          </div>
+        )}
+      </div>
 
       {/* Tomorrow Peek Card */}
       {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
@@ -506,10 +491,10 @@ export function InstructorMobileHome({
             totalHours={tomorrowPreview.totalHours}
             expectedEarnings={tomorrowPreview.expectedEarnings}
             firstLessonTime={tomorrowPreview.firstLessonTime}
-            className="mt-4"
+            className="mt-5"
           />
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
-          <div className="mt-2">
+          <div className="mt-5">
             <div
               className="flex items-center gap-2.5 py-2 px-3 bg-muted/50 cursor-pointer"
               onClick={() => navigate("/instructor/gaps")}
@@ -536,6 +521,7 @@ export function InstructorMobileHome({
       {/* Floating Session Bar - shows during active tracking */}
       <FloatingSessionBar instructorId={instructorId} />
       </div>{/* end px-4 */}
+      <div className="pb-24" />
       </div>
     </PullToRefresh>
   );
