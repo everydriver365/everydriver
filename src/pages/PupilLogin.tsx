@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDomainBranding } from "@/hooks/useDomainBranding";
+import PupilRegister from "@/components/pupil/PupilRegister";
 
 export default function PupilLogin() {
   const [email, setEmail] = useState("");
@@ -17,6 +19,7 @@ export default function PupilLogin() {
   const [rememberMe, setRememberMe] = useState(false);
   const [faceIdAvailable, setFaceIdAvailable] = useState(false);
   const [autoLoggingIn, setAutoLoggingIn] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
   const navigate = useNavigate();
   const branding = useDomainBranding();
 
@@ -53,6 +56,13 @@ export default function PupilLogin() {
     };
 
     tryAutoLogin();
+  }, []);
+
+  // Listen for registration complete event
+  useEffect(() => {
+    const handler = () => setActiveTab("login");
+    window.addEventListener("pupil-registered", handler);
+    return () => window.removeEventListener("pupil-registered", handler);
   }, []);
 
   // Check for remembered email
@@ -180,102 +190,100 @@ export default function PupilLogin() {
               <div className="mb-4 mx-auto inline-block">
                 <img src={branding.logoPath} alt={branding.brandName} className="h-12 mx-auto" />
               </div>
-              <CardTitle className="text-2xl">Pupil Login</CardTitle>
+              <CardTitle className="text-2xl">Pupil Portal</CardTitle>
               <CardDescription>
-                Sign in with your email and password
+                Sign in or register your account
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-3">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      type="email"
-                      placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 text-lg h-12"
-                      autoComplete="username"
-                      autoFocus
-                    />
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 text-lg h-12"
-                      autoComplete="current-password"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    First time? Enter the email your instructor has on file and choose a password.
-                  </p>
-                </div>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="login">Sign In</TabsTrigger>
+                  <TabsTrigger value="register">Register</TabsTrigger>
+                </TabsList>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                  />
-                  <label
-                    htmlFor="remember"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Remember me on this device
-                  </label>
-                </div>
+                <TabsContent value="login">
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="email"
+                          placeholder="your@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10 text-lg h-12"
+                          autoComplete="username"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 text-lg h-12"
+                          autoComplete="current-password"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        First time? Use the Register tab to set up your password.
+                      </p>
+                    </div>
 
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-base"
-                  disabled={loading || !email.trim() || !password}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    <>
-                      Sign In
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="remember"
+                        checked={rememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      />
+                      <label
+                        htmlFor="remember"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Remember me on this device
+                      </label>
+                    </div>
 
-                {/* Face ID / Biometric button */}
-                {faceIdAvailable && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-12 text-base"
-                    onClick={handleFaceIdLogin}
-                    disabled={loading}
-                  >
-                    <ScanFace className="mr-2 h-5 w-5" />
-                    Sign in with Face ID
-                  </Button>
-                )}
-              </form>
+                    <Button
+                      type="submit"
+                      className="w-full h-12 text-base"
+                      disabled={loading || !email.trim() || !password}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Signing in...
+                        </>
+                      ) : (
+                        <>
+                          Sign In
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
 
-              <div className="mt-6 pt-6 border-t text-center">
-                <p className="text-sm text-muted-foreground mb-3">
-                  Not registered yet?
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => navigate("/courses")}
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Book Your First Lesson
-                </Button>
-              </div>
+                    {faceIdAvailable && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-12 text-base"
+                        onClick={handleFaceIdLogin}
+                        disabled={loading}
+                      >
+                        <ScanFace className="mr-2 h-5 w-5" />
+                        Sign in with Face ID
+                      </Button>
+                    )}
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="register">
+                  <PupilRegister />
+                </TabsContent>
+              </Tabs>
 
               <p className="mt-6 text-center text-xs text-muted-foreground">
                 Having trouble? Contact your instructor directly or email{" "}

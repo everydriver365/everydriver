@@ -44,7 +44,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, email, password } = await req.json();
+    const { action, email, password, name } = await req.json();
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -157,6 +157,48 @@ serve(async (req) => {
           hasPassword: !!pupils[0].password_hash,
           name: pupils[0].name.split(" ")[0],
         }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+
+    } else if (action === "register") {
+      if (!password || password.length < 6) {
+        return new Response(
+          JSON.stringify({ error: "Password must be at least 6 characters" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Find pupil by email (must already exist in system)
+      const { data: pupils, error: pupilError } = await supabase
+        .from("pupils")
+        .select("id, name, password_hash, instructor:instructors!inner(id, app_slug, pupil_app_enabled)")
+        .ilike("email", cleanEmail)
+        .limit(1);
+
+      if (pupilError || !pupils || pupils.length === 0) {
+        return new Response(
+          JSON.stringify({ error: "Email not found. Your instructor must add you to the system first." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const pupil = pupils[0] as any;
+
+      if (pupil.password_hash) {
+        return new Response(
+          JSON.stringify({ error: "Account already registered. Please sign in instead." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { hash } = await hashPassword(password);
+      await supabase
+        .from("pupils")
+        .update({ password_hash: hash })
+        .eq("id", pupil.id);
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Account registered successfully" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
 
