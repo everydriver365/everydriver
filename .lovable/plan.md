@@ -1,68 +1,89 @@
 
 
-## Replace All Quick Action Icons with iOS-Style Icons
+# Instructor Mobile Home Page - Layout and Design Improvements
 
-Currently, only 3 tiles (Schedule, Messages, Settings) have custom iOS-style SVG icons. The remaining tiles use generic Lucide line icons which look out of place. This plan creates custom iOS-style SVG icon components for every tile type and refactors the rendering logic.
+## Current State
 
-### Icons to Create
+The home page currently has a good foundation but feels dense and slightly fragmented. The hero image with overlapping card works well, but the sections below (YOUR DAY, QUICK ACTIONS, INSIGHTS, PLAN AHEAD) feel like a long vertical scroll of similarly-styled white cards with minimal visual hierarchy differentiation.
 
-Each icon will be a 120x120 SVG with a rounded-rect background, gradient fill, and white glyph -- matching the existing CalendarIcon, MessagesIcon, and SettingsIcon pattern.
+## Proposed Improvements
 
-| Tile | Icon Name | Background Gradient | Glyph |
-|------|-----------|-------------------|-------|
-| Pupils | PupilsIcon | Blue (#007AFF to #0055D4) | Two person silhouettes |
-| Job Offers | JobOffersIcon | Purple (#AF52DE to #8B3FC1) | Briefcase |
-| Payments | PaymentsIcon | Green (#34C759 to #248A3D) | Credit card / pound sign |
-| Availability | AvailabilityIcon | Orange (#FF9500 to #CC7700) | Clock face |
-| Vehicle Health / Find Fuel | CarIcon | Cyan (#32ADE6 to #1A8FC4) | Car silhouette |
-| Expenses | ExpensesIcon | Pink (#FF2D55 to #D4234A) | Receipt |
-| Find My Car | FindCarIcon | Red (#FF3B30 to #CC2F26) | Navigation pin |
-| Log Test Result / CPD Log | AwardIcon | Teal (#30B0C7 to #1F8A9E) | Trophy / ribbon |
-| Locations | LocationsIcon | Coral (#FF6B6B to #E04545) | Map pin |
-| Health Hub | HealthIcon | Rose (#FF2D55 to #E0245E) | Heart |
-| To Do | TodoIcon | Indigo (#5856D6 to #4240A8) | Checklist |
+### 1. Reduce Visual Clutter - Consolidate Sections
 
-### Architecture Change
+**Problem:** There are too many small section headers (YOUR DAY, QUICK ACTIONS, INSIGHTS, PLAN AHEAD) making the page feel like a long checklist rather than a dashboard.
 
-Instead of the current chain of `if/else` checks for each special icon, refactor to use a **single icon mapping** approach:
+**Solution:**
+- Merge "Today's Stats" and "Weekly Progress" into a single **compact stats bar** with two columns side by side instead of stacked full-width cards.
+- Remove the redundant section label text ("YOUR DAY", "INSIGHTS", etc.) and let the cards speak for themselves with better spacing.
+- The hero card already shows weekly progress — remove the duplicate "Weekly Progress" card lower on the page.
 
-1. Create an `iosIconMap` that maps action identifiers (route or title) to the corresponding iOS icon component
-2. The tile renderer checks this map first; if found, render the iOS icon; otherwise fall back to the Lucide icon in a colored square (for any future/unknown tiles)
+### 2. Quick Action Tiles - Grid Refinement
 
-This eliminates the growing `isScheduleAction` / `isMessagesAction` / `isSettingsAction` pattern and makes adding new icons trivial.
+**Problem:** The first tile is full-width and the rest are in a 2-column grid, creating an inconsistent visual rhythm.
 
-### Technical Details
+**Solution:**
+- Make ALL tiles a uniform 3-column grid (matching the style of the old `HomeQuickActions` component) — smaller, icon-focused tiles without subtitles.
+- This reduces the vertical space consumed by tiles by roughly 50% and puts more content above the fold.
+- Remove the chevron arrows and subtitle text from tiles; keep just icon + label.
 
-**New files (11 icon components):**
-- `src/components/icons/PupilsIcon.tsx`
-- `src/components/icons/JobOffersIcon.tsx`
-- `src/components/icons/PaymentsIcon.tsx`
-- `src/components/icons/AvailabilityIcon.tsx`
-- `src/components/icons/CarIcon.tsx`
-- `src/components/icons/ExpensesIcon.tsx`
-- `src/components/icons/FindCarIcon.tsx`
-- `src/components/icons/AwardIcon.tsx`
-- `src/components/icons/LocationsIcon.tsx`
-- `src/components/icons/HealthIcon.tsx`
-- `src/components/icons/TodoIcon.tsx`
+### 3. Next Lesson Card - Tighten Spacing
 
-**Modified file:**
-- `src/components/instructor/QuickActionTiles.tsx`
-  - Add an `iosIconMap` keyed by route path, mapping to the SVG component
-  - Replace the if/else chain in the normal view grid with a single lookup
-  - Keep fallback rendering for unmapped icons
-  - Update edit mode to also show iOS icons in the drag list
+**Problem:** The Next Lesson card is well-designed but takes significant vertical space.
 
-Each SVG component follows the same structure as the existing icons:
-```text
-+---------------------------+
-| 120x120 rounded rect      |
-| with linear gradient bg    |
-|                            |
-|    White glyph shape       |
-|    centered                |
-|                            |
-+---------------------------+
-```
+**Solution:**
+- Reduce internal padding from `p-4` to `p-3`.
+- Make the "More actions" expandable section default-collapsed (already is) but reduce the collapsed card height by tightening the action button row spacing.
 
-All icons accept a `className` prop for sizing, matching the existing pattern.
+### 4. Hero Card - Streamline
+
+**Problem:** The hero overlapping card shows greeting, weekly goal subtitle, badges, a progress ring, AND a progress bar — some redundancy.
+
+**Solution:**
+- Remove the **linear progress bar** since the circular ring already shows the same data.
+- This saves ~24px of vertical space and reduces visual noise.
+- Keep the ring + greeting + badges as they are.
+
+### 5. Background and Spacing Polish
+
+**Problem:** The light blue background (#E8F1FE) is nice but cards don't have enough breathing room.
+
+**Solution:**
+- Increase gap between major sections from `mt-4` to `mt-5`.
+- Add a subtle bottom padding to the last section so content doesn't butt up against the bottom nav.
+- Ensure consistent card shadow depth across all cards.
+
+### 6. Today's Route Map - Make Optional
+
+**Problem:** The route map preview takes significant space and may not always have data.
+
+**Solution:**
+- Only render the TodayRoutePreview when there are 2+ lessons (already partially done but ensure it collapses cleanly).
+- When shown, cap its height at 120px instead of letting it grow.
+
+---
+
+## Technical Details
+
+### Files to Modify
+
+1. **`src/components/instructor/InstructorMobileHome.tsx`**
+   - Remove duplicate section labels or consolidate them
+   - Merge "Today's Stats" and "Weekly Progress" into a single row
+   - Adjust spacing classes (mt-4 to mt-5, add pb-24 at bottom)
+
+2. **`src/components/instructor/ContextualHomeHero.tsx`**
+   - Remove the linear progress bar (lines 254-267)
+   - Tighten card padding slightly
+
+3. **`src/components/instructor/QuickActionTiles.tsx`**
+   - Convert normal view from "1 full-width + 2-col grid" to a uniform 3-column grid
+   - Simplify tile rendering to icon + label only (no subtitles, no chevrons)
+   - Reduce tile padding for compact appearance
+
+4. **`src/components/instructor/NextUpTile.tsx`**
+   - Reduce internal padding and action row spacing
+
+### No Database Changes Required
+
+All changes are purely presentational — CSS classes, layout structure, and component rendering logic.
+

@@ -1,19 +1,5 @@
 import { useState } from "react";
 import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
-import { CalendarIcon } from "@/components/icons/CalendarIcon";
-import { SettingsIcon } from "@/components/icons/SettingsIcon";
-import { MessagesIcon } from "@/components/icons/MessagesIcon";
-import { PupilsIcon } from "@/components/icons/PupilsIcon";
-import { JobOffersIcon } from "@/components/icons/JobOffersIcon";
-import { PaymentsIcon } from "@/components/icons/PaymentsIcon";
-import { AvailabilityIcon } from "@/components/icons/AvailabilityIcon";
-import { CarIcon as CarSvgIcon } from "@/components/icons/CarIcon";
-import { ExpensesIcon } from "@/components/icons/ExpensesIcon";
-import { FindCarIcon } from "@/components/icons/FindCarIcon";
-import { AwardIcon as AwardSvgIcon } from "@/components/icons/AwardIcon";
-import { LocationsIcon } from "@/components/icons/LocationsIcon";
-import { HealthIcon } from "@/components/icons/HealthIcon";
-import { TodoIcon } from "@/components/icons/TodoIcon";
 import { Link, useNavigate } from "react-router-dom";
 import { 
   Calendar, 
@@ -48,7 +34,7 @@ import { useVisitorChatUnreadCount } from "@/hooks/useVisitorChatUnreadCount";
 import { cn } from "@/lib/utils";
 import { format, parse } from "date-fns";
 
-// Lucide icon mapping (fallback)
+// Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Calendar,
   Users,
@@ -65,52 +51,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Heart,
   Fuel: Car,
   ListTodo,
-};
-
-// iOS-style SVG icon mapping by route or title
-const iosIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  "/instructor/schedule": CalendarIcon,
-  "/instructor/messages": MessagesIcon,
-  "/instructor/settings": SettingsIcon,
-  "/instructor/pupils": PupilsIcon,
-  "/instructor/jobs": JobOffersIcon,
-  "/instructor/pay": PaymentsIcon,
-  "/instructor/availability": AvailabilityIcon,
-  "/instructor/vehicle-health": CarSvgIcon,
-  "/instructor/fuel": CarSvgIcon,
-  "/instructor/traccar": CarSvgIcon,
-  "/instructor/expenses": ExpensesIcon,
-  "/instructor/find-my-car": FindCarIcon,
-  "/instructor/test-results": AwardSvgIcon,
-  "/instructor/cpd": AwardSvgIcon,
-  "/instructor/locations": LocationsIcon,
-  "/instructor/health": HealthIcon,
-  "/instructor/todos": TodoIcon,
-};
-
-// Also map by title for tiles that might not match by route
-const iosIconByTitle: Record<string, React.ComponentType<{ className?: string }>> = {
-  "schedule": CalendarIcon,
-  "messages": MessagesIcon,
-  "settings": SettingsIcon,
-  "pupils": PupilsIcon,
-  "job offers": JobOffersIcon,
-  "payments": PaymentsIcon,
-  "availability": AvailabilityIcon,
-  "vehicle health": CarSvgIcon,
-  "find fuel": CarSvgIcon,
-  "live tracking": CarSvgIcon,
-  "expenses": ExpensesIcon,
-  "find my car": FindCarIcon,
-  "log test result": AwardSvgIcon,
-  "cpd log": AwardSvgIcon,
-  "locations": LocationsIcon,
-  "health hub": HealthIcon,
-  "to do": TodoIcon,
-};
-
-const getIosIcon = (action: QuickAction): React.ComponentType<{ className?: string }> | null => {
-  return iosIconMap[action.route] || iosIconByTitle[action.title.toLowerCase()] || null;
 };
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
@@ -205,11 +145,6 @@ export function QuickActionTiles({
            action.title.toLowerCase().includes("visitor");
   };
 
-  const isSettingsAction = (action: QuickAction) => {
-    return action.route === "/instructor/settings" || 
-           action.title.toLowerCase().includes("settings");
-  };
-
   const getBadgeCount = (action: QuickAction): number => {
     if (isJobOffersAction(action)) return pendingJobsCount;
     if (isMessagesAction(action)) return messagesUnreadCount;
@@ -301,12 +236,9 @@ export function QuickActionTiles({
 
   // Different accent colors for visual variety
   const tileStyles = [
-     { iconBg: 'bg-[#1877F2]', iconColor: 'text-white' },
-     { iconBg: 'bg-emerald-500', iconColor: 'text-white' },
-     { iconBg: 'bg-rose-500', iconColor: 'text-white' },
-     { iconBg: 'bg-amber-500', iconColor: 'text-white' },
-     { iconBg: 'bg-violet-500', iconColor: 'text-white' },
-     { iconBg: 'bg-sky-500', iconColor: 'text-white' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-violet-500/15', iconColor: 'text-violet-600' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600' },
+     { bg: 'bg-white dark:bg-white', iconBg: 'bg-rose-500/15', iconColor: 'text-rose-600' },
   ];
 
   return (
@@ -351,7 +283,10 @@ export function QuickActionTiles({
                     layout
                   >
                     <motion.div
-                      className="relative overflow-hidden backdrop-blur-md rounded-none border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing bg-card"
+                      className={cn(
+                        "relative overflow-hidden backdrop-blur-md rounded-none border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
+                        style.bg
+                      )}
                       whileDrag={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
                       exit={{ opacity: 0, x: -100, transition: { duration: 0.2 } }}
                     >
@@ -367,31 +302,14 @@ export function QuickActionTiles({
                       </button>
 
                       <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />
-                      {(() => {
-                        const IosIcon = getIosIcon(action);
-                        if (IosIcon) {
-                          return (
-                            <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
-                              <IosIcon className="w-full h-full" />
-                              {showBadge && (
-                                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
-                                  {badgeCount > 9 ? "9+" : badgeCount}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        }
-                        return (
-                          <div className={`relative w-10 h-10 rounded-xl ${style.iconBg} flex items-center justify-center shrink-0`}>
-                            <Icon className={`h-5 w-5 ${style.iconColor}`} />
-                            {showBadge && (
-                              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
-                                {badgeCount > 9 ? "9+" : badgeCount}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
+                      <div className={`relative w-10 h-10 rounded-xl ${style.iconBg} flex items-center justify-center shrink-0`}>
+                        <Icon className={`h-5 w-5 ${style.iconColor}`} />
+                        {showBadge && (
+                          <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                            {badgeCount > 9 ? "9+" : badgeCount}
+                          </span>
+                        )}
+                      </div>
                       <span className="font-medium text-foreground text-base flex-1">{action.title}</span>
                     </motion.div>
                   </Reorder.Item>
@@ -417,21 +335,9 @@ export function QuickActionTiles({
                       className="flex items-center justify-between p-3 bg-muted/50 rounded-none border border-dashed border-muted-foreground/20"
                     >
                       <div className="flex items-center gap-3">
-                        {(() => {
-                          const IosIcon = getIosIcon(tile);
-                          if (IosIcon) {
-                            return (
-                              <div className="w-8 h-8 rounded-lg overflow-hidden">
-                                <IosIcon className="w-full h-full" />
-                              </div>
-                            );
-                          }
-                          return (
-                            <div className="w-8 h-8 rounded-none bg-primary/10 flex items-center justify-center">
-                              <Icon className="h-4 w-4 text-primary" />
-                            </div>
-                          );
-                        })()}
+                        <div className="w-8 h-8 rounded-none bg-primary/10 flex items-center justify-center">
+                          <Icon className="h-4 w-4 text-primary" />
+                        </div>
                         <span className="text-sm font-medium text-muted-foreground">{tile.title}</span>
                       </div>
                       <Button
@@ -452,56 +358,42 @@ export function QuickActionTiles({
           )}
         </>
       ) : (
-        // Normal view mode - App launcher style grid
-        <div className="grid grid-cols-4 gap-y-6 gap-x-3 px-2">
-          {localTiles.map((action, index) => {
-            const Icon = getIcon(action.icon);
-            const badgeCount = getBadgeCount(action);
-            const showBadge = badgeCount > 0;
-            const style = tileStyles[index % tileStyles.length];
-
-            return (
-              <Link key={action.id} to={action.route} className="block">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.05 + index * 0.03 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="flex flex-col items-center gap-2"
-                >
-                  {(() => {
-                    const IosIcon = getIosIcon(action);
-                    if (IosIcon) {
-                      return (
-                        <div className="relative w-[62px] h-[62px] rounded-[14px] overflow-hidden shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
-                          <IosIcon className="w-full h-full" />
-                          {showBadge && (
-                            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background z-10">
-                              {badgeCount > 9 ? "9+" : badgeCount}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className={`relative w-[62px] h-[62px] rounded-[14px] ${style.iconBg} flex items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.15)]`}>
-                        <Icon className={`h-7 w-7 ${style.iconColor}`} />
-                        {showBadge && (
-                          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-background">
-                            {badgeCount > 9 ? "9+" : badgeCount}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })()}
-                  <span className="text-[11px] font-medium text-foreground/80 text-center leading-tight line-clamp-2">
-                    {action.title}
-                  </span>
-                </motion.div>
-              </Link>
-            );
-          })}
-        </div>
+        // Normal view mode
+        <>
+          {/* Uniform 3-column grid for all tiles */}
+          <div className="grid grid-cols-3 gap-2">
+            {localTiles.map((action, index) => {
+              const Icon = getIcon(action.icon);
+              const badgeCount = getBadgeCount(action);
+              const showBadge = badgeCount > 0;
+              const style = tileStyles[index % tileStyles.length];
+              
+              return (
+                <Link key={action.id} to={action.route} className="block">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 + index * 0.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`relative overflow-hidden ${style.bg} rounded-none p-3 flex flex-col items-center gap-1.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:shadow-sm transition-shadow border border-border`}
+                  >
+                    <div className={`relative w-9 h-9 rounded-none ${style.iconBg} flex items-center justify-center shrink-0`}>
+                      <Icon className={`h-[18px] w-[18px] ${style.iconColor}`} />
+                      {showBadge && (
+                        <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
+                          {badgeCount > 9 ? "9+" : badgeCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-medium text-foreground text-[11px] leading-tight text-center">
+                      {action.title}
+                    </span>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );
