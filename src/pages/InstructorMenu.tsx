@@ -201,6 +201,14 @@ export default function InstructorMenu() {
         },
         {
           icon: MapPin,
+          label: "Doodlepad",
+          description: "Draw on the map to show vehicle paths",
+          path: "/instructor/doodlepad",
+          iconColor: "text-orange-600",
+          iconBg: "bg-orange-100 dark:bg-orange-900/30",
+        },
+        {
+          icon: MapPin,
           label: "Fill Gaps",
           path: "/instructor/gaps",
           iconColor: "text-pink-600",
