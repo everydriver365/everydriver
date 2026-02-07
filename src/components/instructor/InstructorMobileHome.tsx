@@ -304,7 +304,7 @@ export function InstructorMobileHome({
       </AnimatePresence>
 
       {/* Contextual Home Hero */}
-      <div className="pt-4">
+      <div>
         <ContextualHomeHero
           firstName={firstName}
           isGPSConnected={isGPSConnected}
