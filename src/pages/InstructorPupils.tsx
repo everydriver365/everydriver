@@ -480,11 +480,11 @@ export default function InstructorPupils() {
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Pupils</span>
           </div>
           <div className="flex flex-col items-center justify-center py-3 bg-card rounded-xl border">
-            <span className="text-lg font-bold text-emerald-600">{stats.active}</span>
+            <span className="text-lg font-bold text-primary">{stats.active}</span>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Active</span>
           </div>
           <div className="flex flex-col items-center justify-center py-3 bg-card rounded-xl border">
-            <span className="text-lg font-bold text-amber-600">{stats.passed}</span>
+            <span className="text-lg font-bold text-primary">{stats.passed}</span>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Passed</span>
           </div>
           <div className="flex flex-col items-center justify-center py-3 bg-card rounded-xl border">
