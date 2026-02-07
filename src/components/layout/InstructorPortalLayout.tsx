@@ -203,7 +203,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return (
       <div
         className={cn(
-          "min-h-screen overflow-x-hidden",
+          "min-h-screen overflow-x-hidden instructor-portal",
            isFullscreenMode ? "h-[100dvh] overflow-hidden bg-background" : "pb-20 bg-[#E8F1FE] dark:bg-background"
         )}
       >
@@ -557,7 +557,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   return (
     <>
       <CommandPalette variant="instructor" />
-      <div className="min-h-screen flex flex-col w-full bg-background">
+      <div className="min-h-screen flex flex-col w-full bg-background instructor-portal">
         {/* Navy Blue Header */}
         <header className="sticky top-0 z-50 bg-[#142040]">
           <div className="flex items-center justify-between px-6 h-14">
