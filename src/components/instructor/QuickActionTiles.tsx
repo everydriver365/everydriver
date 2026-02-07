@@ -19,7 +19,8 @@ import {
   MessageSquare,
   X,
   Plus,
-  Heart
+  Heart,
+  ListTodo
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuickAction } from "@/hooks/useInstructorHomepageContent";
@@ -48,11 +49,13 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MapPin,
   MessageSquare,
   Heart,
-  Fuel: Car, // Reuse Car icon for Fuel until Fuel is available
+  Fuel: Car,
+  ListTodo,
 };
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
 const additionalTiles: QuickAction[] = [
+  { id: "todos", title: "To Do", icon: "ListTodo", route: "/instructor/todos", display_order: 99 },
   { id: "vehicle-health", title: "Vehicle Health", icon: "Car", route: "/instructor/vehicle-health", display_order: 100 },
   { id: "test-results", title: "Log Test Result", icon: "Award", route: "/instructor/test-results", display_order: 101 },
   { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages", display_order: 102 },

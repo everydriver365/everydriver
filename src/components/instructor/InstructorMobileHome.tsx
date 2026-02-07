@@ -62,7 +62,6 @@ import { QuickStatsChips } from "@/components/instructor/QuickStatsChips";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { FloatingSessionBar } from "@/components/instructor/FloatingSessionBar";
 import { CardSection } from "@/components/ui/CardSection";
-import { TodoHomeTile } from "@/components/instructor/TodoHomeTile";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
@@ -407,9 +406,6 @@ export function InstructorMobileHome({
             className="mt-4"
           />
       )}
-
-      {/* TO DO tile */}
-      <TodoHomeTile instructorId={instructorId} className="mt-4" />
 
       {/* QUICK ACTIONS section */}
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">QUICK ACTIONS</p>
