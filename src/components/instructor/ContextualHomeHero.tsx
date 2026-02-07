@@ -261,7 +261,7 @@ export function ContextualHomeHero({
                     haptics.selection();
                     navigate("/instructor/jobs");
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 h-11 border border-border bg-background text-foreground text-sm font-medium active:scale-[0.97] transition-transform"
+                  className="w-full flex items-center justify-center gap-1.5 h-11 bg-primary text-primary-foreground text-sm font-semibold active:scale-[0.97] transition-transform shadow-md"
                 >
                   <Eye className="h-4 w-4" />
                   View offers
