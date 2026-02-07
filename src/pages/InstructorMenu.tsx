@@ -201,7 +201,7 @@ export default function InstructorMenu() {
         },
         {
           icon: MapPin,
-          label: "Doodlepad",
+          label: "Jotter",
           description: "Draw on the map to show vehicle paths",
           path: "/instructor/doodlepad",
           iconColor: "text-orange-600",

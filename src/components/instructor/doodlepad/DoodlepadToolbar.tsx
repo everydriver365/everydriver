@@ -87,7 +87,7 @@ export function DoodlepadToolbar({
           value={currentName}
           onChange={(e) => onNameChange(e.target.value)}
           className="max-w-[200px] h-9 bg-white/95 dark:bg-card/95 backdrop-blur text-sm shadow-lg border-border/50"
-          placeholder="Doodlepad name"
+          placeholder="Jotter name"
         />
       </div>
 
