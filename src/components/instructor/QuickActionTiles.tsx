@@ -79,6 +79,9 @@ const customIconRadius: Record<string, string> = {
   "jobs": "7px",
 };
 
+// Tiles with larger icon size
+const largeIconTiles = new Set(["jobs"]);
+
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
 const additionalTiles: QuickAction[] = [
   { id: "todos", title: "To Do", icon: "ListTodo", route: "/instructor/todos", display_order: 99 },
@@ -408,30 +411,40 @@ export function QuickActionTiles({
               <Link to={localTiles[0].route}>
                  <div className="relative overflow-hidden bg-white rounded-none p-4 shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:shadow-sm transition-all border border-border">
                   <div className="flex items-center gap-4">
-                    <div className={`relative w-14 h-14 rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
+                    <div className={`relative ${largeIconTiles.has(localTiles[0].id) ? 'w-16 h-16' : 'w-14 h-14'} rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
                       {(() => {
                         const Icon = getIcon(localTiles[0].icon);
-                        const firstTileBadgeCount = getBadgeCount(localTiles[0]);
-                        const showBadge = firstTileBadgeCount > 0;
                         const isSchedule = isScheduleAction(localTiles[0]);
                         const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
+                        const firstTileBadgeCount = getBadgeCount(localTiles[0]);
+                        const showBadge = firstTileBadgeCount > 0;
                         return (
                           <>
                             {customIconImages[localTiles[0].id] ? <img src={customIconImages[localTiles[0].id]} alt={localTiles[0].title} className="w-full h-full object-cover" style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined} /> : <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />}
-                            {showBadge && (
-                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                                {firstTileBadgeCount > 9 ? "9+" : firstTileBadgeCount}
-                              </span>
-                            )}
-                            {showLessonBadge && !showBadge && (
-                              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
-                                {todayOverview.lessonCount}
-                              </span>
-                            )}
                           </>
                         );
                       })()}
                     </div>
+                    {(() => {
+                      const firstTileBadgeCount = getBadgeCount(localTiles[0]);
+                      const showBadge = firstTileBadgeCount > 0;
+                      const isSchedule = isScheduleAction(localTiles[0]);
+                      const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
+                      return (
+                        <>
+                          {showBadge && (
+                            <span className="absolute top-2 right-2 min-w-[20px] h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
+                              {firstTileBadgeCount > 9 ? "9+" : firstTileBadgeCount}
+                            </span>
+                          )}
+                          {showLessonBadge && !showBadge && (
+                            <span className="absolute top-2 right-2 min-w-[20px] h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center shadow-lg ring-2 ring-card">
+                              {todayOverview.lessonCount}
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
                     <div className="relative flex-1 min-w-0">
                       <span className="font-semibold text-foreground text-lg">{localTiles[0].title}</span>
                        {/* Simple subtitle */}
@@ -486,14 +499,14 @@ export function QuickActionTiles({
                     whileTap={{ scale: 0.97 }}
                      className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-shadow border border-border`}
                   >
-                    <div className={`relative w-10 h-10 rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
+                    <div className={`relative ${largeIconTiles.has(action.id) ? 'w-12 h-12' : 'w-10 h-10'} rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
                       {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
-                      {showBadge && (
-                        <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
-                          {badgeCount > 9 ? "9+" : badgeCount}
-                        </span>
-                      )}
                     </div>
+                    {showBadge && (
+                      <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow-sm ring-1 ring-card">
+                        {badgeCount > 9 ? "9+" : badgeCount}
+                      </span>
+                    )}
                     <span className="font-medium text-foreground text-sm leading-tight">
                       {action.title}
                     </span>
