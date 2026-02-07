@@ -119,7 +119,7 @@ export function TodayRoutePreview({
         </div>
 
         {/* Map */}
-        <div className="h-32">
+        <div className="h-[120px]">
           <MapContainer
             center={defaultCenter}
             zoom={12}

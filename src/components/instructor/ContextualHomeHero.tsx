@@ -251,21 +251,6 @@ export function ContextualHomeHero({
               </div>
             </div>
 
-            {/* Progress bar */}
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-xs font-medium text-foreground whitespace-nowrap">
-                {hoursThisWeek}h / {hoursGoal}h
-              </span>
-              <div className="flex-1 h-2 rounded-full bg-muted/40 overflow-hidden">
-                <motion.div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${clampedProgress}%` }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                />
-              </div>
-            </div>
-
             {/* CTA Button */}
             {pendingJobs > 0 && (
               <div className="mt-3">
