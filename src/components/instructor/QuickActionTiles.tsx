@@ -131,7 +131,7 @@ export function QuickActionTiles({
   const renderTileIcon = (action: QuickAction, sizeClass: string) => {
     const customImg = customIconImages[action.id];
     if (customImg) {
-      return <img src={customImg} alt={action.title} className={`${sizeClass} object-contain`} />;
+      return <img src={customImg} alt={action.title} className={`${sizeClass} object-cover`} />;
     }
     const Icon = getIcon(action.icon);
     const style = tileStyles[0]; // fallback, caller should pass correct style
