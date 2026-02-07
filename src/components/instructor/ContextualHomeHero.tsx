@@ -154,9 +154,9 @@ export function ContextualHomeHero({
   // Weekly goal subtitle
   const getSubtitle = () => {
     if (hoursRemaining > 0) {
-      return `You're ${hoursRemaining.toFixed(1)} hours away from your weekly goal of ${hoursGoal} hours.`;
+      return `${hoursRemaining.toFixed(1)} hours remaining of ${hoursGoal}h weekly goal.`;
     }
-    return `Weekly goal of ${hoursGoal} hours achieved! 🎉`;
+    return `Weekly goal of ${hoursGoal} hours achieved.`;
   };
 
   return (
@@ -174,18 +174,14 @@ export function ContextualHomeHero({
 
       {/* Overlapping Card */}
       <div className="relative -mt-16 mx-4">
-        <motion.div
-          className="bg-white dark:bg-card rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ y: cardY }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+        <div
+          className="bg-white dark:bg-card shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden"
         >
           <div className="p-4 pb-3">
             {/* Top row: Headline + Ring */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-bold text-foreground tracking-tight leading-tight">
+                <h2 className="text-xl font-semibold text-foreground tracking-tight leading-tight">
                   {getGreeting(firstName, timePeriod)}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
@@ -256,7 +252,7 @@ export function ContextualHomeHero({
 
             {/* Progress bar */}
             <div className="mt-3 flex items-center gap-2">
-              <span className="text-xs font-semibold text-foreground whitespace-nowrap">
+              <span className="text-xs font-medium text-foreground whitespace-nowrap">
                 {hoursThisWeek}h / {hoursGoal}h
               </span>
               <div className="flex-1 h-2 rounded-full bg-muted/40 overflow-hidden">
@@ -278,7 +274,7 @@ export function ContextualHomeHero({
                     haptics.selection();
                     navigate("/instructor/jobs");
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 h-11 rounded-xl border border-border bg-background text-foreground text-sm font-semibold active:scale-[0.97] transition-transform"
+                  className="w-full flex items-center justify-center gap-1.5 h-11 border border-border bg-background text-foreground text-sm font-medium active:scale-[0.97] transition-transform"
                 >
                   <Eye className="h-4 w-4" />
                   View offers
@@ -410,7 +406,7 @@ export function ContextualHomeHero({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
       </div>
 
       {/* Alert indicator */}

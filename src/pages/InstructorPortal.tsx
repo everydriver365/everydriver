@@ -213,14 +213,10 @@ export default function InstructorPortal() {
       <div className="space-y-6">
         
         {/* Welcome Section with Online Toggle */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-4"
-        >
+        <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-1">
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="text-3xl font-semibold text-foreground">
                 {getGreeting()}, {instructorData?.name?.split(' ')[0] || 'there'}
               </h1>
               <p className="text-muted-foreground">
@@ -297,7 +293,7 @@ export default function InstructorPortal() {
               Availability
             </Button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Setup Checklist for new instructors */}
         <InstructorSetupChecklist 
@@ -306,62 +302,49 @@ export default function InstructorPortal() {
         />
 
         {/* Stats Grid - Professional Cards */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid gap-4 grid-cols-2 lg:grid-cols-4"
-        >
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {[
             { 
               icon: Calendar, 
               label: "Today's Lessons", 
               value: String(todaysLessonCount), 
               change: todaysLessonCount > 0 ? `${todaysLessonCount} scheduled` : "No lessons",
-              color: "text-blue-600", 
-              bgColor: "bg-blue-50 dark:bg-blue-950/50" 
             },
             { 
               icon: TrendingUp, 
               label: "This Week", 
               value: statsLoading ? "..." : `£${monthEarnings.toLocaleString()}`, 
               change: "Monthly earnings",
-              color: "text-emerald-600", 
-              bgColor: "bg-emerald-50 dark:bg-emerald-950/50" 
             },
             { 
               icon: Users, 
               label: "Active Pupils", 
               value: String(pupils.length), 
               change: pupils.length > 0 ? `${pupils.length} enrolled` : "Add pupils",
-              color: "text-violet-600", 
-              bgColor: "bg-violet-50 dark:bg-violet-950/50" 
             },
             { 
               icon: Clock, 
               label: "Hours This Week", 
               value: statsLoading ? "..." : String(hoursThisWeek), 
               change: "Teaching hours",
-              color: "text-amber-600", 
-              bgColor: "bg-amber-50 dark:bg-amber-950/50" 
             },
-          ].map((stat, i) => (
+          ].map((stat) => (
             <Card key={stat.label} className="border-border">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
                     <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
                   </div>
-                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", stat.bgColor)}>
-                    <stat.icon className={cn("w-5 h-5", stat.color)} />
+                  <div className="w-10 h-10 bg-muted/50 flex items-center justify-center">
+                    <stat.icon className="w-5 h-5 text-muted-foreground" />
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
-        </motion.div>
+        </div>
 
         {/* Job Alerts */}
         <JobOfferAlert instructorId={instructorId} />
@@ -370,12 +353,7 @@ export default function InstructorPortal() {
         <div className="grid gap-6 lg:grid-cols-3">
           
           {/* Left Column - Schedule */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="lg:col-span-2"
-          >
+          <div className="lg:col-span-2">
             <Card className="border-border">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -434,15 +412,10 @@ export default function InstructorPortal() {
                 </Tabs>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
           {/* Right Column - Sidebar */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             {/* Payment Summary */}
             <Card className="border-border">
               <CardContent className="p-4">
@@ -450,17 +423,13 @@ export default function InstructorPortal() {
               </CardContent>
             </Card>
 
-          </motion.div>
+          </div>
         </div>
 
         {/* Bottom Section - Tests */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
+        <div>
           <UpcomingTestsView instructorId={instructorId} />
-        </motion.div>
+        </div>
 
         <PaymentQRModal
           open={paymentModalOpen} 

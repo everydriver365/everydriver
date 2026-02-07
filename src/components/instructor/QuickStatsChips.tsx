@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Clock, PoundSterling, Car, Star, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,8 +19,6 @@ interface StatChip {
   value: string | number;
   label: string;
   route: string;
-  color: string;
-  bgColor: string;
 }
 
 export function QuickStatsChips({
@@ -42,8 +39,6 @@ export function QuickStatsChips({
       value: lessonCount,
       label: "lessons",
       route: "/instructor/schedule",
-      color: "text-violet-600 dark:text-violet-400",
-      bgColor: "bg-violet-500/15 dark:bg-violet-500/20",
     },
     {
       id: "hours",
@@ -51,8 +46,6 @@ export function QuickStatsChips({
       value: `${hoursToday}h`,
       label: "",
       route: "/instructor/schedule",
-      color: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-500/15 dark:bg-blue-500/20",
     },
     {
       id: "earnings",
@@ -60,12 +53,9 @@ export function QuickStatsChips({
       value: `£${expectedEarnings}`,
       label: "",
       route: "/instructor/earnings",
-      color: "text-emerald-600 dark:text-emerald-400",
-      bgColor: "bg-emerald-500/15 dark:bg-emerald-500/20",
     },
   ];
 
-  // Add optional chips if values are provided
   if (milesDriven !== undefined && milesDriven > 0) {
     chips.push({
       id: "miles",
@@ -73,8 +63,6 @@ export function QuickStatsChips({
       value: `${milesDriven}mi`,
       label: "",
       route: "/instructor/traccar",
-      color: "text-amber-600 dark:text-amber-400",
-      bgColor: "bg-amber-500/15 dark:bg-amber-500/20",
     });
   }
 
@@ -85,8 +73,6 @@ export function QuickStatsChips({
       value: averageRating.toFixed(1),
       label: "",
       route: "/instructor/reviews",
-      color: "text-amber-500",
-      bgColor: "bg-amber-500/15 dark:bg-amber-500/20",
     });
   }
 
@@ -97,12 +83,6 @@ export function QuickStatsChips({
       value: `${weeklyProgress}%`,
       label: "goal",
       route: "/instructor/earnings",
-      color: weeklyProgress >= 100 
-        ? "text-emerald-600 dark:text-emerald-400" 
-        : "text-primary",
-      bgColor: weeklyProgress >= 100
-        ? "bg-emerald-500/15 dark:bg-emerald-500/20"
-        : "bg-primary/15",
     });
   }
 
@@ -114,29 +94,21 @@ export function QuickStatsChips({
   return (
     <div className={cn("px-4 mt-3", className)}>
       <div className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-1">
-        {chips.map((chip, index) => {
+        {chips.map((chip) => {
           const Icon = chip.icon;
           return (
-            <motion.button
+            <button
               key={chip.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
               onClick={() => handleChipClick(chip.route)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full",
-                "backdrop-blur-md bg-card/70 dark:bg-card/50",
-                "border border-white/20 dark:border-white/10",
-                "shadow-sm",
+                "flex items-center gap-1.5 px-3 py-1.5",
+                "bg-card border border-border",
                 "snap-start shrink-0",
                 "active:scale-95 transition-transform duration-150"
               )}
-              whileTap={{ scale: 0.95 }}
             >
-              <div className={cn("p-1 rounded-full", chip.bgColor)}>
-                <Icon className={cn("h-3 w-3", chip.color)} />
-              </div>
-              <span className={cn("text-xs font-semibold tabular-nums", chip.color)}>
+              <Icon className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs font-semibold tabular-nums text-foreground">
                 {chip.value}
               </span>
               {chip.label && (
@@ -144,7 +116,7 @@ export function QuickStatsChips({
                   {chip.label}
                 </span>
               )}
-            </motion.button>
+            </button>
           );
         })}
       </div>
