@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, List, CalendarDays, ChevronDown, Check } from "lucide-react";
+import { Calendar, List, CalendarDays, ChevronDown, Check, Plus } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
 import { InstructorCalendar } from "@/components/instructor/InstructorCalendar";
@@ -123,34 +123,44 @@ export default function InstructorSchedule() {
             <h1 className="text-xl font-bold">Schedule</h1>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5 h-8">
-                {viewMode === 'list' && <List className="h-3.5 w-3.5" />}
-                {viewMode === 'schedule' && <CalendarDays className="h-3.5 w-3.5" />}
-                {viewMode === 'calendar' && <Calendar className="h-3.5 w-3.5" />}
-                <span className="text-xs capitalize">{viewMode === 'calendar' ? 'Calendar' : viewMode === 'schedule' ? 'Schedule' : 'List'}</span>
-                <ChevronDown className="h-3 w-3 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 bg-popover border shadow-lg z-50">
-              <DropdownMenuItem onClick={() => setViewMode('list')} className="cursor-pointer gap-2">
-                <List className="h-4 w-4" />
-                List
-                {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
-                <CalendarDays className="h-4 w-4" />
-                Schedule
-                {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setViewMode('calendar')} className="cursor-pointer gap-2">
-                <Calendar className="h-4 w-4" />
-                Calendar
-                {viewMode === 'calendar' && <Check className="ml-auto h-4 w-4" />}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5 h-8">
+                  {viewMode === 'list' && <List className="h-3.5 w-3.5" />}
+                  {viewMode === 'schedule' && <CalendarDays className="h-3.5 w-3.5" />}
+                  {viewMode === 'calendar' && <Calendar className="h-3.5 w-3.5" />}
+                  <span className="text-xs capitalize">{viewMode === 'calendar' ? 'Calendar' : viewMode === 'schedule' ? 'Schedule' : 'List'}</span>
+                  <ChevronDown className="h-3 w-3 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40 bg-popover border shadow-lg z-50">
+                <DropdownMenuItem onClick={() => setViewMode('list')} className="cursor-pointer gap-2">
+                  <List className="h-4 w-4" />
+                  List
+                  {viewMode === 'list' && <Check className="ml-auto h-4 w-4" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setViewMode('schedule')} className="cursor-pointer gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  Schedule
+                  {viewMode === 'schedule' && <Check className="ml-auto h-4 w-4" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setViewMode('calendar')} className="cursor-pointer gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Calendar
+                  {viewMode === 'calendar' && <Check className="ml-auto h-4 w-4" />}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={() => setFabLessonSheetOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
 
