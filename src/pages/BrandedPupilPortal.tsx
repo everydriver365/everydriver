@@ -245,7 +245,19 @@ export default function BrandedPupilPortal() {
         style={{ backgroundColor: instructor.brand_colour || '#1e3a5f' }}
       >
         <div className="flex items-center gap-3">
-          {instructor.logo_url ? (
+          {pupil ? (
+            pupil.profile_image_url ? (
+              <img 
+                src={pupil.profile_image_url} 
+                alt={pupil.name} 
+                className="h-10 w-10 object-cover rounded-full border-2 border-white/30"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+                {pupil.name.charAt(0)}
+              </div>
+            )
+          ) : instructor.logo_url ? (
             <img 
               src={instructor.logo_url} 
               alt={instructor.name} 
@@ -257,8 +269,8 @@ export default function BrandedPupilPortal() {
             </div>
           )}
           <div>
-            <h1 className="font-bold text-white text-sm line-clamp-1">{instructor.name}</h1>
-            <p className="text-white/70 text-xs">Pupil Portal</p>
+            <h1 className="font-bold text-white text-sm line-clamp-1">{pupil ? pupil.name : instructor.name}</h1>
+            <p className="text-white/70 text-xs">{pupil ? instructor.name : 'Pupil Portal'}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
