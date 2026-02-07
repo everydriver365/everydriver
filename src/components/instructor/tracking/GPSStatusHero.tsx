@@ -49,30 +49,26 @@
          animate={{ opacity: 1, y: 0 }}
          transition={{ duration: 0.4 }}
        >
-         {/* Connection Status Header */}
+         {/* Connection Status Header - uses primary blue, with green dot for connected */}
          <div className={`relative px-6 py-8 ${
            isConnected 
-             ? "bg-gradient-to-br from-emerald-500 to-emerald-600" 
+             ? "bg-gradient-to-br from-primary to-primary/80" 
              : showReconnecting 
                ? "bg-gradient-to-br from-slate-600 to-slate-700"
-               : "bg-gradient-to-br from-amber-500 to-amber-600"
+               : "bg-gradient-to-br from-primary/70 to-primary/50"
          }`}>
-           {/* Animated background pattern - hide during reconnecting for cleaner look */}
+           {/* Animated background pattern */}
            {!showReconnecting && (
              <div className="absolute inset-0 overflow-hidden">
-               <div className={`absolute -top-4 -right-4 w-32 h-32 rounded-full ${
-                 isConnected ? "bg-emerald-400/20" : "bg-amber-400/20"
-               }`} />
-               <div className={`absolute -bottom-8 -left-8 w-40 h-40 rounded-full ${
-                 isConnected ? "bg-emerald-400/10" : "bg-amber-400/10"
-               }`} />
+               <div className="absolute -top-4 -right-4 w-32 h-32 rounded-full bg-white/10" />
+               <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full bg-white/5" />
              </div>
            )}
            
            <div className={`relative flex items-center ${showReconnecting ? "justify-center gap-3" : "justify-between"}`}>
              <div className={`flex items-center ${showReconnecting ? "gap-3" : "gap-4"}`}>
-               {/* Status Icon with Animation */}
-               <div className={`relative ${showReconnecting ? "" : ""}`}>
+               {/* Status Icon */}
+               <div className="relative">
                  <div className={`flex items-center justify-center ${
                    isConnected 
                      ? "w-16 h-16 rounded-2xl bg-white/20" 
@@ -89,15 +85,12 @@
                    )}
                  </div>
                  
-                 {/* Animated pulse ring for connected state */}
+                 {/* Green connected indicator dot */}
                  {isConnected && (
-                   <>
-                     <span className="absolute inset-0 rounded-2xl animate-ping bg-white/30" style={{ animationDuration: '2s' }} />
-                     <span className="absolute -top-1 -right-1 flex h-5 w-5">
-                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                       <span className="relative inline-flex rounded-full h-5 w-5 bg-white"></span>
-                     </span>
-                   </>
+                   <span className="absolute -top-1 -right-1 flex h-5 w-5">
+                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                     <span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-500 border-2 border-white"></span>
+                   </span>
                  )}
                </div>
                
@@ -116,10 +109,10 @@
              {/* Live indicator badge */}
              <div className={`rounded-full font-semibold ${
                isConnected 
-                 ? "px-4 py-2 text-sm bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500/30" 
+                 ? "px-4 py-2 text-sm bg-white/90 text-primary ring-2 ring-white/30" 
                  : showReconnecting 
                    ? "px-3 py-1.5 text-xs bg-white/90 text-slate-700 font-bold shadow-sm"
-                   : "px-4 py-2 text-sm bg-white text-amber-600"
+                   : "px-4 py-2 text-sm bg-white text-primary/70"
              }`}>
                {isConnected ? (
                  <span className="flex items-center gap-2">
@@ -191,7 +184,7 @@
                  )}
                  <Button 
                     size="default" 
-                    className="flex-1 h-10 rounded-xl bg-amber-500 hover:bg-amber-600"
+                    className="flex-1 h-10 rounded-xl"
                    onClick={openTrackerApp}
                  >
                    <ExternalLink className="h-4 w-4 mr-2" />
