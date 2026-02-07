@@ -371,12 +371,8 @@ export default function InstructorPupils() {
     if (!confirm(`Are you sure you want to remove ${pupil.name}?`)) return;
 
     try {
-      const { error } = await supabase
-        .from("pupils")
-        .delete()
-        .eq("id", pupil.id);
-
-      if (error) throw error;
+      const { softDelete } = await import("@/lib/auditLogger");
+      await softDelete("pupils", pupil.id, instructorId || "", { name: pupil.name });
 
       toast.success("Pupil removed");
       fetchPupils();

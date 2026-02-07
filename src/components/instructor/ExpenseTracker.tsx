@@ -196,12 +196,8 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("instructor_expenses")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
+      const { softDelete } = await import("@/lib/auditLogger");
+      await softDelete("instructor_expenses", id, instructorId, null);
       
       toast.success("Expense deleted");
       fetchExpenses();

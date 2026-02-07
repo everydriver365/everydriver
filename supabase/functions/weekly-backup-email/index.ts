@@ -39,11 +39,11 @@ async function generateBackupData(supabase: any, instructorId: string) {
   
   // Fetch all instructor data
   const [pupilsRes, lessonsRes, scheduleRes, paymentsRes, expensesRes] = await Promise.all([
-    supabase.from("pupils").select("*").eq("instructor_id", instructorId),
-    supabase.from("lesson_history").select("*").eq("instructor_id", instructorId).order("lesson_date", { ascending: false }).limit(500),
-    supabase.from("scheduled_lessons").select("*").eq("instructor_id", instructorId).order("lesson_date", { ascending: false }).limit(500),
-    supabase.from("payment_history").select("*").eq("instructor_id", instructorId).order("recorded_at", { ascending: false }).limit(500),
-    supabase.from("instructor_expenses").select("*").eq("instructor_id", instructorId).order("expense_date", { ascending: false }).limit(500),
+    supabase.from("pupils").select("*").eq("instructor_id", instructorId).is("deleted_at", null),
+    supabase.from("lesson_history").select("*").eq("instructor_id", instructorId).is("deleted_at", null).order("lesson_date", { ascending: false }),
+    supabase.from("scheduled_lessons").select("*").eq("instructor_id", instructorId).is("deleted_at", null).order("lesson_date", { ascending: false }),
+    supabase.from("payment_history").select("*").eq("instructor_id", instructorId).is("deleted_at", null).order("recorded_at", { ascending: false }),
+    supabase.from("instructor_expenses").select("*").eq("instructor_id", instructorId).is("deleted_at", null).order("expense_date", { ascending: false }),
   ]);
 
   const pupils = pupilsRes.data || [];

@@ -310,12 +310,9 @@ export function PupilRecordsManager() {
   // Delete payment
   const deletePayment = async (paymentId: string) => {
     try {
-      const { error } = await supabase
-        .from("payment_history")
-        .delete()
-        .eq("id", paymentId);
-
-      if (error) throw error;
+      const { softDelete } = await import("@/lib/auditLogger");
+      const payment = payments.find(p => p.id === paymentId);
+      await softDelete("payment_history", paymentId, selectedPupil?.instructor_id || "", payment ? { amount: payment.amount } : null);
       setPayments(payments.filter(p => p.id !== paymentId));
       toast.success("Payment deleted");
     } catch (error) {

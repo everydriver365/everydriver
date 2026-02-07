@@ -205,12 +205,8 @@ export function LessonHistory({
     if (!confirm("Delete this lesson record?")) return;
 
     try {
-      const { error } = await supabase
-        .from("lesson_history")
-        .delete()
-        .eq("id", lesson.id);
-
-      if (error) throw error;
+      const { softDelete } = await import("@/lib/auditLogger");
+      await softDelete("lesson_history", lesson.id, lesson.instructor_id || "", { lesson_date: lesson.lesson_date });
 
       toast.success("Lesson deleted");
       fetchLessons();
