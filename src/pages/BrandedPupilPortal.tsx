@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
-  BookOpen, Car, History, ChevronRight, X, AlertCircle,
+  BookOpen, Car, History, ChevronRight, ChevronDown, X, AlertCircle,
   Loader2, Moon, Sun, MapPin, CheckCircle2, User
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ import { ReferralCard } from "@/components/pupil-portal/ReferralCard";
 import { PushNotificationBanner } from "@/components/pupil-portal/PushNotificationBanner";
 import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfilePictureUpload";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
+import { PupilDetailsDrawer } from "@/components/pupil-portal/PupilDetailsDrawer";
 
 interface InstructorBranding {
   id: string;
@@ -63,6 +64,7 @@ export default function BrandedPupilPortal() {
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
   const [notFound, setNotFound] = useState(false);
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Handle payment return params
   useEffect(() => {
@@ -246,32 +248,43 @@ export default function BrandedPupilPortal() {
       >
         <div className="flex items-center gap-3">
           {pupil ? (
-            pupil.profile_image_url ? (
-              <img 
-                src={pupil.profile_image_url} 
-                alt={pupil.name} 
-                className="h-10 w-10 object-cover rounded-full border-2 border-white/30"
-              />
-            ) : (
-              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-                {pupil.name.charAt(0)}
+            <button onClick={() => setDetailsOpen(true)} className="flex items-center gap-3">
+              {pupil.profile_image_url ? (
+                <img 
+                  src={pupil.profile_image_url} 
+                  alt={pupil.name} 
+                  className="h-10 w-10 object-cover rounded-full border-2 border-white/30"
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+                  {pupil.name.charAt(0)}
+                </div>
+              )}
+              <div className="text-left">
+                <h1 className="font-bold text-white text-sm line-clamp-1">{pupil.name}</h1>
+                <p className="text-white/70 text-xs">{instructor.name}</p>
               </div>
-            )
-          ) : instructor.logo_url ? (
-            <img 
-              src={instructor.logo_url} 
-              alt={instructor.name} 
-              className="h-10 w-10 object-contain rounded-lg bg-white/10 p-1"
-            />
+              <ChevronDown className="h-4 w-4 text-white/60" />
+            </button>
           ) : (
-            <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-              {instructor.name.charAt(0)}
-            </div>
+            <>
+              {instructor.logo_url ? (
+                <img 
+                  src={instructor.logo_url} 
+                  alt={instructor.name} 
+                  className="h-10 w-10 object-contain rounded-lg bg-white/10 p-1"
+                />
+              ) : (
+                <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+                  {instructor.name.charAt(0)}
+                </div>
+              )}
+              <div>
+                <h1 className="font-bold text-white text-sm line-clamp-1">{instructor.name}</h1>
+                <p className="text-white/70 text-xs">Pupil Portal</p>
+              </div>
+            </>
           )}
-          <div>
-            <h1 className="font-bold text-white text-sm line-clamp-1">{pupil ? pupil.name : instructor.name}</h1>
-            <p className="text-white/70 text-xs">{pupil ? instructor.name : 'Pupil Portal'}</p>
-          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -746,6 +759,15 @@ export default function BrandedPupilPortal() {
           </div>
           <div className="h-safe-area-inset-bottom" style={{ backgroundColor: 'var(--brand-card)' }} />
         </nav>
+      )}
+      {pupil && (
+        <PupilDetailsDrawer
+          open={detailsOpen}
+          onClose={() => setDetailsOpen(false)}
+          pupilId={pupil.id}
+          brandColour={instructor.brand_colour}
+          darkMode={effectiveDarkMode}
+        />
       )}
     </div>
   );

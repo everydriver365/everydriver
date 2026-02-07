@@ -6049,6 +6049,7 @@ export type Database = {
           deposit_forfeited: boolean | null
           deposit_paid: number | null
           drive_coins: number | null
+          driver_number: string | null
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
@@ -6091,6 +6092,7 @@ export type Database = {
           test_passed: boolean | null
           test_result_date: string | null
           test_time: string | null
+          theory_cert_number: string | null
           theory_test_date: string | null
           theory_test_passed: boolean | null
           total_distance_km: number | null
@@ -6116,6 +6118,7 @@ export type Database = {
           deposit_forfeited?: boolean | null
           deposit_paid?: number | null
           drive_coins?: number | null
+          driver_number?: string | null
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -6158,6 +6161,7 @@ export type Database = {
           test_passed?: boolean | null
           test_result_date?: string | null
           test_time?: string | null
+          theory_cert_number?: string | null
           theory_test_date?: string | null
           theory_test_passed?: boolean | null
           total_distance_km?: number | null
@@ -6183,6 +6187,7 @@ export type Database = {
           deposit_forfeited?: boolean | null
           deposit_paid?: number | null
           drive_coins?: number | null
+          driver_number?: string | null
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
@@ -6225,6 +6230,7 @@ export type Database = {
           test_passed?: boolean | null
           test_result_date?: string | null
           test_time?: string | null
+          theory_cert_number?: string | null
           theory_test_date?: string | null
           theory_test_passed?: boolean | null
           total_distance_km?: number | null
