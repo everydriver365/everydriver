@@ -115,38 +115,6 @@ export default function InstructorSchedule() {
             <Calendar className="h-5 w-5 text-primary" />
             <h1 className="text-xl font-bold">Schedule</h1>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-lg border p-0.5" style={{ backgroundColor: '#D1E4FC' }}>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="gap-1 px-2 h-7 sm:h-8"
-              >
-                <List className="h-3.5 w-3.5" />
-                <span className="text-xs">List</span>
-              </Button>
-              <Button
-                variant={viewMode === 'schedule' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('schedule')}
-                className="gap-1 px-2 h-7 sm:h-8"
-              >
-                <CalendarDays className="h-3.5 w-3.5" />
-                <span className="text-xs">Schedule</span>
-              </Button>
-              <Button
-                variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('calendar')}
-                className="gap-1 px-2 h-7 sm:h-8"
-              >
-                <Calendar className="h-3.5 w-3.5" />
-                <span className="text-xs">Calendar</span>
-              </Button>
-            </div>
-          </div>
         </div>
 
 
