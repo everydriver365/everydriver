@@ -162,7 +162,7 @@ export function ContextualHomeHero({
   return (
     <div className="relative">
       {/* Hero Image — tall, edge-to-edge */}
-      <div className="w-full h-[56vh] min-h-[320px] max-h-[480px] overflow-hidden relative">
+      <div className="w-full h-[38vh] min-h-[220px] max-h-[320px] overflow-hidden relative">
         <img
           src={heroImageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800"}
           alt="Hero"
