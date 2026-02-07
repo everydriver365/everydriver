@@ -1,122 +1,178 @@
 
 
-## Apple Notes Feature -- All Portals
+## Quartix Integration Plan
 
-A rich note-taking system inspired by Apple Notes, added across all four user types: instructors, pupils, admins, and shared instructor-pupil notes.
+Bring all Quartix telematics data into the app for instructors and admins, replacing GPSgate as the primary tracking data source.
 
 ---
 
-### Database Migration
+### Important: API Credentials Required
 
-Create a single `notes` table to serve all note types:
+Quartix provides API access only through partner agreements. You mentioned you're still waiting on credentials. **This plan prepares everything so it works the moment you receive them.** Once you have your Quartix API key/token and account ID, we store them as backend secrets and the poller starts working immediately.
+
+---
+
+### Architecture: Data Source Swap
+
+The existing database tables (`gps_devices`, `telematics_gps_points`, `lesson_telematics`, `telematics_alerts`) already store all the data your UI needs. The Quartix integration simply replaces **where that data comes from** -- no UI changes required.
 
 ```text
-notes
-  id              uuid PK (default gen_random_uuid())
-  owner_type      text NOT NULL  -- 'instructor', 'pupil', 'admin'
-  owner_id        uuid NOT NULL  -- instructor.id, pupil.id, or admin user_id
-  shared_with_id  uuid           -- if set, the note is shared (e.g. pupil_id for instructor notes shared with a pupil)
-  title           text NOT NULL DEFAULT 'Untitled'
-  content         text NOT NULL DEFAULT ''
-  is_pinned       boolean DEFAULT false
-  folder          text DEFAULT 'General'
-  deleted_at      timestamptz    -- soft delete
-  created_at      timestamptz DEFAULT now()
-  updated_at      timestamptz DEFAULT now()
+CURRENT:   GPSgate API  -->  gpsgate-poller  -->  gps_devices / telematics tables  -->  UI
+NEW:       Quartix API  -->  quartix-poller  -->  same tables                      -->  UI
 ```
 
-Indexes:
-- `(owner_type, owner_id, deleted_at)` for fetching a user's notes
-- `(shared_with_id)` for looking up shared notes
-
-RLS policies:
-- Instructors can CRUD their own notes (`owner_type = 'instructor' AND owner_id = auth.uid()` mapped via instructors table)
-- Pupils can read notes shared with them (`shared_with_id = pupil_id`) and CRUD their own (`owner_type = 'pupil'`)
-- Admin notes use service role or admin role check
-
-Trigger: `set_updated_at()` on UPDATE.
+All existing features continue working unchanged:
+- Live maps (instructor + admin)
+- Trip replay with speed profiles
+- Vehicle health dashboard
+- Mileage auto-logging
+- Driving behaviour alerts
+- Driver scores and reports
 
 ---
 
-### 1. Instructor Notes Page
+### What Gets Built
 
-**New file: `src/pages/InstructorNotes.tsx`**
+#### 1. Database Migration -- Quartix Columns
 
-Apple Notes-style interface with:
-- Left sidebar listing notes grouped by folder (General, Lessons, Pupils, Personal), with pinned notes at the top
-- Right panel showing the selected note with editable title and content (plain textarea, auto-saving on blur/debounce)
-- Search bar filtering notes by title and content
-- "New Note" button creating a note with focus on the title
-- Pin/unpin, move to folder, and delete actions via a dropdown menu on each note
-- Share toggle: optionally link a note to a pupil (dropdown of instructor's pupils) so it appears in the pupil portal
-- Mobile: full-width list view, tapping a note opens the editor view with a back button
-- Wrapped in `InstructorPortalLayout`
+Add Quartix-specific fields to `gps_devices` and a new `quartix_driver_scores` table:
 
-**Changes to `src/pages/InstructorMenu.tsx`:**
-- Add `StickyNote` (or `FileText`) to lucide imports
-- Add "Notes" item in the "Tools" section with path `/instructor/notes`
+**gps_devices additions:**
+- `quartix_vehicle_id` (text) -- Quartix vehicle identifier
+- `quartix_driver_id` (text) -- Quartix driver identifier
+- `tracking_provider` (text, default 'gpsgate') -- 'gpsgate' or 'quartix', enables dual-provider support during migration
 
-**Changes to `src/App.tsx`:**
-- Add route `/instructor/notes` pointing to `InstructorNotes`
+**New table: `quartix_driver_scores`**
+- `id` (uuid PK)
+- `instructor_id` (uuid, references instructors)
+- `pupil_id` (uuid, nullable, references pupils)
+- `quartix_driver_id` (text)
+- `score_date` (date)
+- `overall_score` (numeric)
+- `speed_score` (numeric)
+- `acceleration_score` (numeric)
+- `braking_score` (numeric)
+- `cornering_score` (numeric)
+- `fatigue_score` (numeric)
+- `raw_data` (jsonb) -- full Quartix response for future use
+- `created_at` (timestamptz)
 
----
+RLS: instructors can read their own scores. Admins can read all.
 
-### 2. Pupil Notes Section
-
-**New file: `src/components/pupil-portal/PupilNotes.tsx`**
-
-A simpler Apple Notes view for pupils:
-- List of the pupil's own notes (created by them) plus any notes shared by their instructor
-- Shared notes are read-only and visually distinguished with an instructor badge
-- Pupils can create, edit, pin, and delete their own notes
-- Search bar for filtering
-- Styled using the instructor's brand colour (passed as prop)
-
-**Changes to `src/pages/BrandedPupilPortal.tsx`:**
-- Add `'notes'` to the `ActiveSection` type
-- Add a "My Notes" menu item in the navigation menu (between Messages and Payments)
-- Add the `activeSection === 'notes'` rendering block importing `PupilNotes`
+**New table: `instructor_tracking_config`**
+- `id` (uuid PK)
+- `instructor_id` (uuid, unique, references instructors)
+- `provider` (text, default 'gpsgate') -- which provider this instructor uses
+- `quartix_account_id` (text, nullable)
+- `quartix_api_key` (text, nullable) -- per-instructor if needed, otherwise global
+- `created_at` / `updated_at`
 
 ---
 
-### 3. Shared Notes (Instructor to Pupil)
+#### 2. Backend Function: `quartix-poller`
 
-No separate UI needed -- this is handled by the "Share with pupil" toggle on the instructor notes page:
-- When an instructor shares a note with a pupil, `shared_with_id` is set to the pupil's ID
-- The pupil sees these shared notes in their notes section marked as "From [Instructor Name]"
-- Instructor can edit/unshare at any time
+**New file: `supabase/functions/quartix-poller/index.ts`**
 
----
+A backend function mirroring the GPSgate poller's role but calling Quartix endpoints:
 
-### 4. Admin Notes
+- **Live Positions**: Fetch current vehicle positions from Quartix, write to `gps_devices` (same columns: `last_latitude`, `last_longitude`, `last_speed_kmh`, `last_heading`, `last_seen_at`, `last_road_name`, `last_ignition_status`)
+- **Trip History**: Fetch completed trips, create `lesson_telematics` sessions with GPS points in `telematics_gps_points`
+- **Driver Scores**: Fetch daily/weekly driver scores, store in `quartix_driver_scores`
+- **Alerts**: Convert Quartix speeding/harsh-braking events into `telematics_alerts` rows
+- **Odometer/Engine Hours**: Update `gps_devices` odometer and engine hours fields
 
-**Changes to `src/pages/AdminPortal.tsx`:**
-- Add `"admin-notes"` to `sectionMeta` under System Settings: `{ title: "Admin Notes", group: "System Settings", icon: StickyNote }`
-- Add switch case rendering a new `AdminNotesManager` component
+The function checks `instructor_tracking_config` to only poll instructors using Quartix.
 
-**New file: `src/components/admin/AdminNotesManager.tsx`**
-- Apple Notes-style interface for admins
-- Folders: General, Instructors, Operations, Internal
-- Full CRUD with pin, search, and folder organization
-- Notes are private to the admin team (owner_type = 'admin')
+Secrets needed (when you get them):
+- `QUARTIX_API_KEY`
+- `QUARTIX_ACCOUNT_ID`
+- `QUARTIX_API_URL` (base URL for the partner API)
 
 ---
 
-### Implementation Summary
+#### 3. Backend Function: `quartix-trips`
 
-| # | What | Files | DB |
-|---|------|-------|----|
-| 1 | Database table + RLS | -- | Migration: `notes` table |
-| 2 | Instructor Notes page | `InstructorNotes.tsx` (new), `InstructorMenu.tsx`, `App.tsx` | -- |
-| 3 | Pupil Notes section | `PupilNotes.tsx` (new), `BrandedPupilPortal.tsx` | -- |
-| 4 | Admin Notes section | `AdminNotesManager.tsx` (new), `AdminPortal.tsx` | -- |
+**New file: `supabase/functions/quartix-trips/index.ts`**
 
-**Total: 3 new files, 4 modified files, 1 database migration**
+Mirrors `gpsgate-trips` -- fetches detailed trip history for a specific vehicle/date range. Called on-demand from the Trip Replay UI to backfill GPS points for historical journeys.
 
-### Key Behaviours
-- Auto-save: notes save automatically 1 second after the user stops typing (debounced)
-- Soft delete: deleted notes go to a "Recently Deleted" folder and can be restored within 30 days
-- Pinned notes always appear at the top of any folder view
-- Search is client-side filtering across title and content
-- Mobile-first layout: list view collapses to full-width with tap-to-open editor
+---
 
+#### 4. Instructor Settings -- Provider Selection
+
+**Modified: `src/components/instructor/InstructorDetailsEditor.tsx`**
+
+Add a "Tracking Provider" section:
+- Radio toggle: GPSgate / Quartix
+- When Quartix is selected, show fields for Quartix Vehicle ID and optional Driver ID
+- Save to `instructor_tracking_config` table
+- Hide GPSgate-specific fields when Quartix is selected
+
+---
+
+#### 5. Admin Dashboard -- Quartix Overview
+
+**Modified: `src/components/admin/AdminLiveMapView.tsx`**
+
+- Show a provider badge on each vehicle marker (GPSgate / Quartix)
+- No other changes needed -- same data structure, same map rendering
+
+**New component: `src/components/admin/QuartixDriverScores.tsx`**
+
+- League table view showing all driver scores across instructors
+- Filterable by date range, instructor, score type
+- Colour-coded scores (green > 80, amber 60-80, red < 60)
+- Added to AdminPortal under a "Driver Scores" section
+
+---
+
+#### 6. Instructor Portal -- Driver Scores Card
+
+**New component: `src/components/instructor/QuartixDriverScoreCard.tsx`**
+
+- Weekly/monthly score summary card showing overall, speed, braking, acceleration, cornering scores
+- Trend arrows comparing to previous period
+- Added to the instructor dashboard or vehicle health page
+
+---
+
+#### 7. Polling Schedule
+
+**Modified: `invoke_gpsgate_poller` database function**
+
+Create an equivalent `invoke_quartix_poller` function so both pollers can run on their own cron schedules. The existing 2-second client-side polling (`useGPSPoller`) will be updated to call the appropriate poller based on the instructor's provider setting.
+
+---
+
+### Implementation Order
+
+| Step | What | Depends On |
+|------|------|------------|
+| 1 | Database migration (new tables + columns) | Nothing |
+| 2 | `quartix-poller` edge function (stubbed, ready for API) | Step 1 + API credentials |
+| 3 | `quartix-trips` edge function | Step 1 + API credentials |
+| 4 | Instructor settings UI (provider toggle) | Step 1 |
+| 5 | Admin driver scores component | Step 1 |
+| 6 | Instructor driver score card | Step 1 |
+| 7 | Polling schedule setup | Step 2 |
+
+**Steps 1, 4, 5, and 6 can be built immediately.** Steps 2, 3, and 7 will be fully functional once you receive Quartix partner API credentials -- the code structure will be in place with placeholder API calls clearly marked.
+
+---
+
+### What You Need To Do
+
+1. Contact Quartix (01686 806 663 or partnerships@quartix.com) and request partner API access
+2. Once approved, you'll receive an API key, account ID, and API documentation
+3. Share those credentials with me and I'll wire them into the ready-made poller
+
+---
+
+### Summary
+
+- No UI changes needed for existing tracking features (maps, replays, mileage, alerts)
+- New driver scores feature for both instructors and admins
+- Dual-provider support so GPSgate instructors keep working alongside Quartix
+- Everything ready to go live the day credentials arrive
+
+Remove all other tracking systems and code
