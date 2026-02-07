@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -49,6 +50,9 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
+  const [trackingProvider, setTrackingProvider] = useState<string>("gpsgate");
+  const [quartixVehicleId, setQuartixVehicleId] = useState("");
+  const [quartixDriverId, setQuartixDriverId] = useState("");
   const [gpsStatus, setGpsStatus] = useState<{
     isConnected: boolean;
     lastSeenAt: string | null;
@@ -56,6 +60,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
 
   useEffect(() => {
     fetchDetails();
+    fetchTrackingConfig();
   }, [instructorId]);
 
   const fetchDetails = async () => {
@@ -91,6 +96,72 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
       toast.error("Failed to load details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTrackingConfig = async () => {
+    try {
+      const { data } = await supabase
+        .from("instructor_tracking_config")
+        .select("provider")
+        .eq("instructor_id", instructorId)
+        .maybeSingle();
+
+      if (data) {
+        setTrackingProvider(data.provider || "gpsgate");
+      }
+
+      const { data: device } = await supabase
+        .from("gps_devices")
+        .select("quartix_vehicle_id, quartix_driver_id")
+        .eq("instructor_id", instructorId)
+        .maybeSingle();
+
+      if (device) {
+        setQuartixVehicleId((device as any).quartix_vehicle_id || "");
+        setQuartixDriverId((device as any).quartix_driver_id || "");
+      }
+    } catch (err) {
+      console.error("Error fetching tracking config:", err);
+    }
+  };
+
+  const saveTrackingProvider = async (provider: string) => {
+    setTrackingProvider(provider);
+    try {
+      await supabase
+        .from("instructor_tracking_config")
+        .upsert({
+          instructor_id: instructorId,
+          provider,
+        } as any, { onConflict: "instructor_id" });
+    } catch (err) {
+      console.error("Error saving tracking config:", err);
+    }
+  };
+
+  const saveQuartixIds = async () => {
+    try {
+      const { data: device } = await supabase
+        .from("gps_devices")
+        .select("id")
+        .eq("instructor_id", instructorId)
+        .maybeSingle();
+
+      if (device) {
+        await supabase
+          .from("gps_devices")
+          .update({
+            quartix_vehicle_id: quartixVehicleId || null,
+            quartix_driver_id: quartixDriverId || null,
+            tracking_provider: "quartix",
+          } as any)
+          .eq("id", device.id);
+      }
+      toast.success("Quartix settings saved");
+    } catch (err) {
+      console.error("Error saving Quartix IDs:", err);
+      toast.error("Failed to save Quartix settings");
     }
   };
 
@@ -199,45 +270,73 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   if (defaultTab === "gps") {
     return (
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Satellite className="h-4 w-4" />
-            GPSgate Username / Tracker Name
-          </Label>
-          <Input
-            placeholder="e.g. Tracker iOS, instructor_john"
-            value={details.gpsgate_username || ""}
-            onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
-          />
-          <p className="text-xs text-muted-foreground">
-            Enter the name shown in GPSgate for your tracker, then click "Find Tracker" below
-          </p>
+        {/* Provider Selection */}
+        <div className="space-y-3">
+          <Label className="text-sm font-medium">Tracking Provider</Label>
+          <RadioGroup value={trackingProvider} onValueChange={saveTrackingProvider} className="flex gap-4">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="gpsgate" id="gpsgate" />
+              <Label htmlFor="gpsgate" className="cursor-pointer">GPSgate</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="quartix" id="quartix" />
+              <Label htmlFor="quartix" className="cursor-pointer">Quartix</Label>
+            </div>
+          </RadioGroup>
         </div>
 
-        <GPSTrackerLookup 
-          searchQuery={details.gpsgate_username || ""} 
-          onSelect={handleTrackerSelect}
-        />
-
-        <div className="space-y-2">
-          <Label>GPSgate User ID {details.gpsgate_user_id ? `(#${details.gpsgate_user_id})` : "(auto-filled)"}</Label>
-          <Input
-            type="number"
-            placeholder="Auto-filled when you find a tracker"
-            value={details.gpsgate_user_id || ""}
-            onChange={(e) => setDetails({ 
-              ...details, 
-              gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null 
-            })}
-            readOnly={!!details.gpsgate_user_id}
-            className={details.gpsgate_user_id ? "bg-muted" : ""}
-          />
-          <p className="text-xs text-muted-foreground">
-            {details.gpsgate_user_id 
-              ? "Linked! Click 'Find Tracker' again to change." 
-              : "This will be auto-filled when you select a tracker"}
-          </p>
-        </div>
+        {trackingProvider === "gpsgate" ? (
+          <>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Satellite className="h-4 w-4" />
+                GPSgate Username / Tracker Name
+              </Label>
+              <Input
+                placeholder="e.g. Tracker iOS, instructor_john"
+                value={details.gpsgate_username || ""}
+                onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
+              />
+            </div>
+            <GPSTrackerLookup searchQuery={details.gpsgate_username || ""} onSelect={handleTrackerSelect} />
+            <div className="space-y-2">
+              <Label>GPSgate User ID {details.gpsgate_user_id ? `(#${details.gpsgate_user_id})` : "(auto-filled)"}</Label>
+              <Input
+                type="number"
+                placeholder="Auto-filled when you find a tracker"
+                value={details.gpsgate_user_id || ""}
+                onChange={(e) => setDetails({ ...details, gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null })}
+                readOnly={!!details.gpsgate_user_id}
+                className={details.gpsgate_user_id ? "bg-muted" : ""}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Satellite className="h-4 w-4" />
+                Quartix Vehicle ID
+              </Label>
+              <Input
+                placeholder="Enter your Quartix vehicle ID"
+                value={quartixVehicleId}
+                onChange={(e) => setQuartixVehicleId(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Quartix Driver ID (optional)</Label>
+              <Input
+                placeholder="Enter your Quartix driver ID"
+                value={quartixDriverId}
+                onChange={(e) => setQuartixDriverId(e.target.value)}
+              />
+            </div>
+            <Button onClick={saveQuartixIds} variant="outline" className="w-full">
+              Save Quartix IDs
+            </Button>
+          </>
+        )}
 
         <Card>
           <CardContent className="p-4">
@@ -267,17 +366,8 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
           </CardContent>
         </Card>
 
-        <Button 
-          variant="outline" 
-          onClick={testConnection} 
-          disabled={testingConnection}
-          className="w-full"
-        >
-          {testingConnection ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
+        <Button variant="outline" onClick={testConnection} disabled={testingConnection} className="w-full">
+          {testingConnection ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
           Test Connection
         </Button>
 
@@ -507,45 +597,73 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
 
       {/* GPS Tracking Tab */}
       <TabsContent value="gps" className="space-y-4 mt-4">
-        <div className="space-y-2">
-          <Label className="flex items-center gap-2">
-            <Satellite className="h-4 w-4" />
-            GPSgate Username / Tracker Name
-          </Label>
-          <Input
-            placeholder="e.g. Tracker iOS, instructor_john"
-            value={details.gpsgate_username || ""}
-            onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
-          />
-          <p className="text-xs text-muted-foreground">
-            Enter the name shown in GPSgate for your tracker, then click "Find Tracker" below
-          </p>
+        {/* Provider Selection */}
+        <div className="space-y-3">
+          <Label className="text-sm font-medium">Tracking Provider</Label>
+          <RadioGroup value={trackingProvider} onValueChange={saveTrackingProvider} className="flex gap-4">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="gpsgate" id="tab-gpsgate" />
+              <Label htmlFor="tab-gpsgate" className="cursor-pointer">GPSgate</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="quartix" id="tab-quartix" />
+              <Label htmlFor="tab-quartix" className="cursor-pointer">Quartix</Label>
+            </div>
+          </RadioGroup>
         </div>
 
-        <GPSTrackerLookup 
-          searchQuery={details.gpsgate_username || ""} 
-          onSelect={handleTrackerSelect}
-        />
-
-        <div className="space-y-2">
-          <Label>GPSgate User ID {details.gpsgate_user_id ? `(#${details.gpsgate_user_id})` : "(auto-filled)"}</Label>
-          <Input
-            type="number"
-            placeholder="Auto-filled when you find a tracker"
-            value={details.gpsgate_user_id || ""}
-            onChange={(e) => setDetails({ 
-              ...details, 
-              gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null 
-            })}
-            readOnly={!!details.gpsgate_user_id}
-            className={details.gpsgate_user_id ? "bg-muted" : ""}
-          />
-          <p className="text-xs text-muted-foreground">
-            {details.gpsgate_user_id 
-              ? "Linked! Click 'Find Tracker' again to change." 
-              : "This will be auto-filled when you select a tracker"}
-          </p>
-        </div>
+        {trackingProvider === "gpsgate" ? (
+          <>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Satellite className="h-4 w-4" />
+                GPSgate Username / Tracker Name
+              </Label>
+              <Input
+                placeholder="e.g. Tracker iOS, instructor_john"
+                value={details.gpsgate_username || ""}
+                onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
+              />
+            </div>
+            <GPSTrackerLookup searchQuery={details.gpsgate_username || ""} onSelect={handleTrackerSelect} />
+            <div className="space-y-2">
+              <Label>GPSgate User ID {details.gpsgate_user_id ? `(#${details.gpsgate_user_id})` : "(auto-filled)"}</Label>
+              <Input
+                type="number"
+                placeholder="Auto-filled when you find a tracker"
+                value={details.gpsgate_user_id || ""}
+                onChange={(e) => setDetails({ ...details, gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null })}
+                readOnly={!!details.gpsgate_user_id}
+                className={details.gpsgate_user_id ? "bg-muted" : ""}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Satellite className="h-4 w-4" />
+                Quartix Vehicle ID
+              </Label>
+              <Input
+                placeholder="Enter your Quartix vehicle ID"
+                value={quartixVehicleId}
+                onChange={(e) => setQuartixVehicleId(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Quartix Driver ID (optional)</Label>
+              <Input
+                placeholder="Enter your Quartix driver ID"
+                value={quartixDriverId}
+                onChange={(e) => setQuartixDriverId(e.target.value)}
+              />
+            </div>
+            <Button onClick={saveQuartixIds} variant="outline" className="w-full">
+              Save Quartix IDs
+            </Button>
+          </>
+        )}
 
         <Card>
           <CardContent className="p-4">
@@ -575,17 +693,8 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
           </CardContent>
         </Card>
 
-        <Button 
-          variant="outline" 
-          onClick={testConnection} 
-          disabled={testingConnection}
-          className="w-full"
-        >
-          {testingConnection ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
+        <Button variant="outline" onClick={testConnection} disabled={testingConnection} className="w-full">
+          {testingConnection ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
           Test Connection
         </Button>
 
