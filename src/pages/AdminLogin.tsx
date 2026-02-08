@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -327,6 +327,19 @@ export default function AdminLogin() {
             </CardContent>
           </Card>
         </motion.div>
+      </div>
+
+      {/* Portal Links Footer */}
+      <div className="py-4 text-center text-xs text-white/40 space-y-2">
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link to="/drive365" className="hover:text-white/70 transition-colors">Drive365 Learners</Link>
+          <span>·</span>
+          <Link to="/pupil/login" className="hover:text-white/70 transition-colors">Pupil Portal</Link>
+          <span>·</span>
+          <Link to="/instructor-app" className="hover:text-white/70 transition-colors">Instructor Home</Link>
+          <span>·</span>
+          <Link to="/instructor-app/login" className="hover:text-white/70 transition-colors">Instructor Login</Link>
+        </div>
       </div>
     </div>
   );

@@ -507,6 +507,19 @@ export default function InstructorLogin() {
             </div>
           </form>
         </motion.div>
+
+        {/* Portal Links Footer */}
+        <div className="mt-8 text-center text-xs text-white/40 space-y-2">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link to="/drive365" className="hover:text-white/70 transition-colors">Drive365 Learners</Link>
+            <span>·</span>
+            <Link to="/pupil/login" className="hover:text-white/70 transition-colors">Pupil Portal</Link>
+            <span>·</span>
+            <Link to="/instructor-app" className="hover:text-white/70 transition-colors">Instructor Home</Link>
+            <span>·</span>
+            <Link to="/admin/login" className="hover:text-white/70 transition-colors">Admin</Link>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
