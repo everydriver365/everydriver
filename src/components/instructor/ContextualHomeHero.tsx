@@ -1,18 +1,19 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
-  Clock, 
-  MapPin, 
-  Car, 
-  TrendingUp, 
-  Calendar, 
-  Sunrise, 
-  Sun, 
-  Sunset, 
-  Moon,
   AlertTriangle,
+  Briefcase,
+  Eye,
+  Menu,
+  ChevronDown,
+  MapPin,
+  Clock,
   PoundSterling,
+  BookOpen,
+  Calendar,
+  Car,
+  TrendingUp,
   CloudSun,
   Cloud,
   CloudRain,
@@ -21,15 +22,11 @@ import {
   CloudLightning,
   Snowflake,
   Wind,
-  ChevronDown,
-  BookOpen,
-  MessageCircle,
-  Briefcase,
-  Eye,
+  Sun,
 } from "lucide-react";
-import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { haptics } from "@/lib/haptics";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
+import edLogo from "@/assets/ed-black-white-logo.png";
 
 interface ContextualHomeHeroProps {
   firstName: string;
@@ -68,49 +65,9 @@ interface ContextualHomeHeroProps {
   motivationSubtitle?: string;
   unreadMessages?: number;
   pendingJobs?: number;
+  instructorAvatar?: string | null;
+  onMenuOpen?: () => void;
 }
-
-// Weather icon component
-const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
-  const iconMap: Record<string, React.ElementType> = {
-    Sun, CloudSun, Cloud, CloudRain, CloudDrizzle, CloudFog, CloudLightning, Snowflake, Wind,
-  };
-  const IconComponent = iconMap[icon] || Cloud;
-  return <IconComponent className={className} />;
-};
-
-const getWeatherIconColor = (icon: string): string => {
-  switch (icon) {
-    case "Sun": return "text-amber-500";
-    case "CloudSun": return "text-amber-400";
-    case "Cloud": return "text-slate-400";
-    case "CloudRain": case "CloudDrizzle": return "text-blue-500";
-    case "CloudFog": return "text-slate-500";
-    case "CloudLightning": return "text-purple-500";
-    case "Snowflake": return "text-sky-400";
-    case "Wind": return "text-teal-500";
-    default: return "text-slate-400";
-  }
-};
-
-type TimePeriod = "morning" | "midday" | "evening" | "night";
-
-const getTimePeriod = (): TimePeriod => {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return "morning";
-  if (hour >= 12 && hour < 17) return "midday";
-  if (hour >= 17 && hour < 21) return "evening";
-  return "night";
-};
-
-const getGreeting = (firstName: string, period: TimePeriod) => {
-  switch (period) {
-    case "morning": return `Ready to teach, ${firstName}?`;
-    case "midday": return `Keep going, ${firstName}!`;
-    case "evening": return `Great work, ${firstName}!`;
-    case "night": return `Ready to teach, ${firstName}?`;
-  }
-};
 
 export function ContextualHomeHero({
   firstName,
@@ -127,272 +84,100 @@ export function ContextualHomeHero({
   motivationSubtitle,
   unreadMessages = 0,
   pendingJobs = 0,
+  instructorAvatar,
+  onMenuOpen,
 }: ContextualHomeHeroProps) {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const timePeriod = getTimePeriod();
-
-  const { durationMinutes, durationText } = useTrafficETA(
-    timePeriod === "morning" && nextLesson?.pickupPostcode ? nextLesson.pickupPostcode : null
-  );
 
   // Weekly progress
   const hoursThisWeek = weeklyStats?.hoursThisWeek || 0;
-  const hoursGoal = weeklyStats?.hoursGoal || 42;
+  const hoursGoal = weeklyStats?.hoursGoal || 30;
   const progressPercent = weeklyStats?.progressPercent || 0;
-  const clampedProgress = Math.min(progressPercent, 100);
   const hoursRemaining = Math.max(hoursGoal - hoursThisWeek, 0);
-
-  // SVG ring math
-  const radius = 28;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
-
-  // Parallax
-  const { scrollY } = useScroll();
-  const cardY = useTransform(scrollY, [0, 200], [0, -12]);
-
-  // Weekly goal subtitle
-  const getSubtitle = () => {
-    if (hoursRemaining > 0) {
-      return `${hoursRemaining.toFixed(1)} hours remaining of ${hoursGoal}h weekly goal.`;
-    }
-    return `Weekly goal of ${hoursGoal} hours achieved.`;
-  };
 
   return (
     <div className="relative">
-      {/* Hero Image — tall, edge-to-edge */}
-      <div className="w-full h-[38vh] min-h-[220px] max-h-[320px] overflow-hidden relative">
+      {/* Full-bleed hero container */}
+      <div className="relative w-full" style={{ minHeight: 340 }}>
+        {/* Hero image - upper portion */}
         <img
           src={heroImageUrl || instructorHeroImg}
           alt="Hero"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover absolute inset-0"
         />
-        {/* Bottom gradient for smooth card overlap */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent" />
-      </div>
 
-      {/* Overlapping Card */}
-      <div className="relative -mt-10 mx-4">
-        <div
-          className="bg-white dark:bg-card shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden"
-        >
-          <div className="p-4 pb-3">
-            {/* Top row: Headline + Ring */}
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-semibold text-foreground tracking-tight leading-tight">
-                  {getGreeting(firstName, timePeriod)}
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                  {getSubtitle()}
-                </p>
+        {/* Gradient overlay — transparent top, teal-dark bottom */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to bottom, transparent 15%, rgba(74,124,111,0.6) 45%, rgba(45,74,63,0.92) 70%, rgba(35,58,50,0.98) 100%)"
+          }}
+        />
 
-                {/* Badges */}
-                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                  {pendingJobs > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 text-[11px] font-medium">
-                      <Briefcase className="h-3 w-3" />
-                      {pendingJobs} Job Offer{pendingJobs !== 1 ? "s" : ""}
-                    </span>
-                  )}
-                  {currentWeather && currentWeather.temperature !== null && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-foreground text-[11px] font-medium">
-                      <WeatherIcon
-                        icon={currentWeather.icon}
-                        className={`h-3 w-3 ${getWeatherIconColor(currentWeather.icon)}`}
-                      />
-                      {currentWeather.temperature}°C{" "}
-                      {currentWeather.description && (
-                        <span className="text-muted-foreground">{currentWeather.description}</span>
-                      )}
-                    </span>
-                  )}
-                  {unreadMessages > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-medium">
-                      <MessageCircle className="h-3 w-3" />
-                      {unreadMessages} Message{unreadMessages !== 1 ? "s" : ""}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Circular progress ring */}
-              <div className="flex-shrink-0">
-                <div className="relative w-[72px] h-[72px]">
-                  <svg className="w-full h-full -rotate-90" viewBox="0 0 72 72">
-                    <circle
-                      cx="36" cy="36" r={radius}
-                      fill="none" stroke="currentColor" strokeWidth="5"
-                      className="text-muted/20"
-                    />
-                    <motion.circle
-                      cx="36" cy="36" r={radius}
-                      fill="none" strokeWidth="5" strokeLinecap="round"
-                      className="text-emerald-500"
-                      stroke="currentColor"
-                      initial={{ strokeDashoffset: circumference }}
-                      animate={{ strokeDashoffset }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      style={{ strokeDasharray: circumference }}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-lg font-bold text-foreground leading-none">
-                      {hoursThisWeek}
-                      <span className="text-sm">h</span>
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-medium">
-                      {clampedProgress}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-
-            {/* CTA Button */}
-            {pendingJobs > 0 && (
-              <div className="mt-3">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    haptics.selection();
-                    navigate("/instructor/jobs");
-                  }}
-                  className="w-full flex items-center justify-center gap-1.5 h-11 bg-primary text-primary-foreground text-sm font-semibold active:scale-[0.97] transition-transform shadow-md"
-                >
-                  <Eye className="h-4 w-4" />
-                  View offers
-                </button>
+        {/* Top bar: hamburger, logo, Free badge, avatar */}
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-2" style={{ paddingTop: "max(env(safe-area-inset-top), 12px)" }}>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => onMenuOpen?.()}
+              className="h-9 w-9 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center"
+            >
+              <Menu className="h-5 w-5 text-white" />
+            </button>
+            <img src={edLogo} alt="Every Driver UK" className="h-5 brightness-0 invert" />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold">
+              Free
+            </span>
+            {instructorAvatar ? (
+              <img src={instructorAvatar} alt="" className="h-8 w-8 rounded-full border-2 border-white/30 object-cover" />
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold border-2 border-white/30">
+                {firstName.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
+        </div>
 
-          {/* Expand toggle */}
-          <button
-            onClick={() => {
-              haptics.selection();
-              setIsExpanded(!isExpanded);
-            }}
-            className="w-full flex justify-center py-1.5 border-t border-border/50 hover:bg-muted/30 transition-colors"
-          >
-            <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </motion.div>
-          </button>
+        {/* Stats content — centered in lower portion */}
+        <div className="relative z-10 flex flex-col items-center justify-end px-6 pb-6" style={{ minHeight: 340 }}>
+          {/* Large hours text */}
+          <div className="flex items-baseline gap-1 mb-2">
+            <span className="text-5xl font-extrabold text-white tracking-tight">{hoursThisWeek}</span>
+            <span className="text-2xl font-bold text-white/50">h</span>
+            <span className="text-3xl font-light text-white/40 mx-1">/</span>
+            <span className="text-3xl font-bold text-white/70">{hoursGoal}</span>
+            <span className="text-lg font-bold text-white/40">h</span>
+          </div>
 
-          {/* Expanded Content */}
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="px-4 pb-4 space-y-3">
-                  {/* Status + Location */}
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">
-                      Today's Summary
-                    </h4>
-                    <div className="flex items-center gap-2">
-                      {displayLocation && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <MapPin className="h-3 w-3 text-primary" />
-                          {displayLocation}
-                        </span>
-                      )}
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                          isGPSConnected
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                            : "bg-destructive/10 text-destructive"
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            isGPSConnected ? "bg-emerald-500 animate-pulse" : "bg-destructive"
-                          }`}
-                        />
-                        {isGPSConnected ? "Live" : "Offline"}
-                      </span>
-                    </div>
-                  </div>
+          {/* Progress bar */}
+          <div className="w-full max-w-xs h-2.5 rounded-full bg-white/20 overflow-hidden mb-2">
+            <motion.div
+              className="h-full rounded-full bg-emerald-400"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(progressPercent, 100)}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            />
+          </div>
 
-                  {/* Stats grid */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5">
-                      <BookOpen className="h-4 w-4 text-primary" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {todayOverview?.lessonCount || 0} lessons
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {todayOverview?.completedLessons || 0} completed
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-500/5">
-                      <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {todayOverview?.totalHours || 0}h
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">teaching time</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-emerald-500/5">
-                      <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          £{todayOverview?.expectedEarnings || 0}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">expected</p>
-                      </div>
-                    </div>
-                    {weeklyStats && (
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-violet-500/5">
-                        <TrendingUp className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {weeklyStats.progressPercent}%
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">weekly goal</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+          {/* Subtitle */}
+          <p className="text-white/60 text-xs mb-5">
+            {hoursRemaining > 0 ? `${hoursRemaining.toFixed(1)} hours remaining` : "Weekly goal achieved! 🎉"}
+          </p>
 
-                  {/* Traffic ETA */}
-                  {durationMinutes > 0 && nextLesson && (
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                      <Car className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                      <span className="text-xs text-muted-foreground">
-                        {durationText} drive to {nextLesson.pupilName.split(" ")[0]}'s pickup
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Tomorrow */}
-                  {tomorrowPreview && tomorrowPreview.lessonCount > 0 && (
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        Tomorrow: {tomorrowPreview.lessonCount} lesson
-                        {tomorrowPreview.lessonCount > 1 ? "s" : ""}
-                        {tomorrowPreview.firstLessonTime &&
-                          ` starting ${tomorrowPreview.firstLessonTime}`}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* View offers CTA */}
+          {pendingJobs > 0 && (
+            <button
+              onClick={() => {
+                haptics.selection();
+                navigate("/instructor/jobs");
+              }}
+              className="w-full max-w-xs flex items-center justify-center gap-2 h-12 bg-[#142542] text-white text-sm font-semibold rounded-xl active:scale-[0.97] transition-transform shadow-lg"
+            >
+              <Briefcase className="h-4 w-4" />
+              View offers
+            </button>
+          )}
         </div>
       </div>
 
@@ -401,7 +186,7 @@ export function ContextualHomeHero({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className={`mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium ${
+          className={`mx-4 mt-2 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium ${
             alerts[0].severity === "severe"
               ? "bg-destructive/10 text-destructive"
               : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
