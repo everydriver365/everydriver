@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -153,6 +154,7 @@ export function DesktopPupilDetailPanel({
   hasSignedTerms, instructorId, instructorName, isTracking = false,
   paymentQrUrl, commissionPayer, onClose,
 }: DesktopPupilDetailPanelProps) {
+  const queryClient = useQueryClient();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
   const [loadingTimeline, setLoadingTimeline] = useState(true);
@@ -185,6 +187,7 @@ export function DesktopPupilDetailPanel({
     const { error } = await supabase.from("pupils").update({ [field]: value }).eq("id", pupil.id);
     if (error) { toast.error("Failed to save"); throw error; }
     toast.success("Updated");
+    queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
   };
 
   // Fetch timeline data
