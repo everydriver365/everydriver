@@ -341,7 +341,7 @@ export function InstructorMobileHome({
         {pendingJobsCount > 0 && (
           <button
             onClick={() => navigate("/instructor/jobs")}
-            className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-4 py-3 hover:bg-muted/50 active:scale-[0.99] transition-all"
+            className="flex items-center justify-between w-full bg-gradient-to-r from-amber-50 to-card dark:from-amber-950/20 dark:to-card border border-border rounded-xl px-4 py-3 shadow-[0_2px_12px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.12)] active:scale-[0.99] transition-all"
           >
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
@@ -356,7 +356,7 @@ export function InstructorMobileHome({
         )}
         <button
           onClick={() => navigate("/instructor/messages")}
-          className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-4 py-3 hover:bg-muted/50 active:scale-[0.99] transition-all"
+          className="flex items-center justify-between w-full bg-gradient-to-r from-blue-50 to-card dark:from-blue-950/20 dark:to-card border border-border rounded-xl px-4 py-3 shadow-[0_2px_12px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.12)] active:scale-[0.99] transition-all"
         >
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
