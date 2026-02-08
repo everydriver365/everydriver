@@ -12,6 +12,8 @@ export interface Message {
   created_at: string;
   attachment_url?: string | null;
   attachment_type?: string | null;
+  deleted_at?: string | null;
+  is_urgent?: boolean;
 }
 
 export interface Conversation {
@@ -57,7 +59,8 @@ export function useMessaging(instructorId: string | undefined) {
             .select("*", { count: "exact", head: true })
             .eq("conversation_id", conv.id)
             .eq("sender_type", "pupil")
-            .is("read_at", null);
+            .is("read_at", null)
+            .is("deleted_at", null);
 
           return {
             ...conv,
@@ -167,6 +170,7 @@ export function useConversationMessages(conversationId: string | null, userType:
         .from("messages")
         .select("*")
         .eq("conversation_id", conversationId)
+        .is("deleted_at", null)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
@@ -303,9 +307,63 @@ export function useConversationMessages(conversationId: string | null, userType:
         .update({ read_at: new Date().toISOString() })
         .eq("conversation_id", conversationId)
         .eq("sender_type", oppositeType)
-        .is("read_at", null);
+        .is("read_at", null)
+        .is("deleted_at", null);
     } catch (error) {
       console.error("Error marking messages as read:", error);
+    }
+  };
+
+  const softDeleteMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", messageId);
+
+      if (error) throw error;
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      return true;
+    } catch (error) {
+      console.error("Error soft-deleting message:", error);
+      return false;
+    }
+  };
+
+  const softDeleteAllMessages = async () => {
+    if (!conversationId) return false;
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("conversation_id", conversationId)
+        .is("deleted_at", null);
+
+      if (error) throw error;
+      setMessages([]);
+      return true;
+    } catch (error) {
+      console.error("Error soft-deleting messages:", error);
+      return false;
+    }
+  };
+
+  const toggleUrgent = async (messageId: string) => {
+    const msg = messages.find((m) => m.id === messageId);
+    if (!msg) return;
+    const newVal = !msg.is_urgent;
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({ is_urgent: newVal })
+        .eq("id", messageId);
+
+      if (error) throw error;
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, is_urgent: newVal } : m))
+      );
+    } catch (error) {
+      console.error("Error toggling urgent:", error);
     }
   };
 
@@ -315,5 +373,8 @@ export function useConversationMessages(conversationId: string | null, userType:
     sendMessage,
     markAsRead,
     fetchMessages,
+    softDeleteMessage,
+    softDeleteAllMessages,
+    toggleUrgent,
   };
 }

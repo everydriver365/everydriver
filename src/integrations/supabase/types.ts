@@ -5009,7 +5009,9 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string | null
+          deleted_at: string | null
           id: string
+          is_urgent: boolean | null
           read_at: string | null
           sender_id: string
           sender_type: string
@@ -5020,7 +5022,9 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
+          is_urgent?: boolean | null
           read_at?: string | null
           sender_id: string
           sender_type: string
@@ -5031,7 +5035,9 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
+          is_urgent?: boolean | null
           read_at?: string | null
           sender_id?: string
           sender_type?: string
