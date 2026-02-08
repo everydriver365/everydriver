@@ -148,6 +148,7 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
 
   const getPaymentStatusBadge = (lesson: ScheduledLesson) => {
     const { payment_status, pupil } = lesson;
+    const balance = pupil?.account_balance || 0;
     
     if (payment_status === "paid") {
       return <Badge className="bg-success text-success-foreground text-xs">Paid</Badge>;
@@ -157,6 +158,24 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
       return (
         <Badge variant="secondary" className="bg-accent/20 text-accent-foreground text-xs">
           {pupil.prepaid_hours}h Credit
+        </Badge>
+      );
+    }
+
+    // If pupil has positive account balance, show credit instead of unpaid
+    if (balance > 0) {
+      return (
+        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs">
+          £{Math.round(balance)} Credit
+        </Badge>
+      );
+    }
+
+    // Negative balance = debt
+    if (balance < 0) {
+      return (
+        <Badge variant="destructive" className="text-xs">
+          £{Math.abs(Math.round(balance))} Due
         </Badge>
       );
     }
