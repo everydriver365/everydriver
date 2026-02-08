@@ -1,4 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
+import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
+import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -111,6 +113,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [showQRModal, setShowQRModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructor?.id);
   
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
@@ -204,6 +207,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Mobile Layout
   if (isMobile) {
     return (
+      <>
+      <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       <div
         className={cn(
           "min-h-screen overflow-x-hidden instructor-portal",
@@ -516,6 +521,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           instructorName={instructor?.name}
         />
       </div>
+      </>
     );
   }
 
@@ -559,6 +565,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Desktop Layout - Admin-style top nav + sidebar
   return (
     <>
+      <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       <CommandPalette variant="instructor" />
       <div className="min-h-screen flex flex-col w-full bg-background instructor-portal">
         {/* Navy Blue Header */}
