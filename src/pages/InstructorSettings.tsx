@@ -284,22 +284,7 @@ export default function InstructorSettings() {
 
   // Category header component
   const CategoryHeader = ({ category }: { category: SettingsCategory }) => (
-    <button
-      onClick={() => toggleCategory(category.id)}
-      className="w-full flex items-center justify-between p-3 rounded-lg transition-colors"
-      style={{ backgroundColor: '#D1E4FC' }}
-    >
-      <div className="flex items-center gap-3">
-        <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", category.iconBg)}>
-          <category.icon className={cn("h-4 w-4", category.iconColor)} />
-        </div>
-        <span className="font-semibold text-sm">{category.title}</span>
-      </div>
-      <ChevronDown className={cn(
-        "h-4 w-4 text-muted-foreground transition-transform duration-200",
-        isCategoryOpen(category.id) && "rotate-180"
-      )} />
-    </button>
+    <h2 className="text-lg font-bold tracking-tight">{category.title}</h2>
   );
 
   if (!instructorId) {
@@ -323,33 +308,12 @@ export default function InstructorSettings() {
           <p className="text-sm text-muted-foreground mt-1">Manage your profile and preferences</p>
         </div>
 
-        {/* Quick Jump Navigation */}
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex gap-2 pb-2">
-            {settingsCategories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => scrollToCategory(category.id)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
-                  selectedCategory === category.id
-                    ? "bg-blue-100 text-blue-700 border-blue-300 font-semibold dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
-                    : "bg-transparent text-muted-foreground border-border hover:bg-muted/50 hover:text-foreground"
-                )}
-              >
-                <category.icon className="h-3.5 w-3.5" />
-                {category.title}
-              </button>
-            ))}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        {/* Quick Jump Navigation - removed in favour of section headers */}
 
         {/* Profile & Identity Category */}
         <div ref={el => categoryRefs.current["profile"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[0]} />
-          <Collapsible open={isCategoryOpen("profile")}>
-            <CollapsibleContent className="space-y-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Profile Section */}
               <SettingsTile 
                 id="profile" 
@@ -468,15 +432,13 @@ export default function InstructorSettings() {
               >
                 <ComplianceTracker instructorId={instructorId} />
               </SettingsTile>
-            </CollapsibleContent>
-          </Collapsible>
+          </div>
         </div>
 
         {/* Courses & Pricing Category */}
         <div ref={el => categoryRefs.current["courses"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[1]} />
-          <Collapsible open={isCategoryOpen("courses")}>
-            <CollapsibleContent className="space-y-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Courses Section */}
               <SettingsTile 
                 id="courses" 
@@ -566,15 +528,13 @@ export default function InstructorSettings() {
                   compact={false}
                 />
               </SettingsTile>
-            </CollapsibleContent>
-          </Collapsible>
+          </div>
         </div>
 
         {/* Mini-Website Category */}
         <div ref={el => categoryRefs.current["website"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[2]} />
-          <Collapsible open={isCategoryOpen("website")}>
-            <CollapsibleContent className="space-y-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Mini-Website Share Section */}
               <SettingsTile 
                 id="mini-website" 
@@ -634,15 +594,13 @@ export default function InstructorSettings() {
                   onUpdate={refreshInstructor}
                 />
               </SettingsTile>
-            </CollapsibleContent>
-          </Collapsible>
+          </div>
         </div>
 
         {/* Scheduling & Availability Category */}
         <div ref={el => categoryRefs.current["scheduling"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[3]} />
-          <Collapsible open={isCategoryOpen("scheduling")}>
-            <CollapsibleContent className="space-y-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Working Hours Section */}
               <SettingsTile 
                 id="working-hours" 
@@ -690,15 +648,13 @@ export default function InstructorSettings() {
               >
                 <NoShowPolicySettings instructorId={instructorId} />
               </SettingsTile>
-            </CollapsibleContent>
-          </Collapsible>
+          </div>
         </div>
 
         {/* Tracking & Routes Category */}
         <div ref={el => categoryRefs.current["tracking"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[4]} />
-          <Collapsible open={isCategoryOpen("tracking")}>
-            <CollapsibleContent className="space-y-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Mobile GPS Tracking Section */}
               <SettingsTile 
                 id="gps-mobile" 
@@ -789,15 +745,13 @@ export default function InstructorSettings() {
               >
                 <TestCentresAndExaminersManager instructorId={instructorId} />
               </SettingsTile>
-            </CollapsibleContent>
-          </Collapsible>
+          </div>
         </div>
 
         {/* Preferences & Data Category */}
         <div ref={el => categoryRefs.current["preferences"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[5]} />
-          <Collapsible open={isCategoryOpen("preferences")}>
-            <CollapsibleContent className="space-y-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Dashboard Layout Section */}
               <SettingsTile 
                 id="dashboard-layout" 
@@ -1166,8 +1120,7 @@ export default function InstructorSettings() {
                   />
                 </div>
               </SettingsTile>
-            </CollapsibleContent>
-          </Collapsible>
+          </div>
         </div>
       </div>
     </InstructorPortalLayout>
