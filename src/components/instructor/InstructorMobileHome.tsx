@@ -341,13 +341,13 @@ export function InstructorMobileHome({
         {pendingJobsCount > 0 && (
           <button
             onClick={() => navigate("/instructor/jobs")}
-            className="flex items-center justify-between w-full bg-gradient-to-r from-amber-50 to-card dark:from-amber-950/20 dark:to-card border border-border rounded-xl px-4 py-3 shadow-[0_2px_12px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.12)] active:scale-[0.99] transition-all"
+            className="flex items-center justify-between w-full bg-gradient-to-r from-amber-100 to-card dark:from-amber-950/20 dark:to-card border border-amber-200/60 dark:border-amber-800/30 rounded-xl px-4 py-3 shadow-[0_2px_12px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.12)] hover:ring-1 hover:ring-amber-300/50 active:scale-[0.99] transition-all"
           >
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
                 <AlertTriangle className="h-5 w-5 text-amber-600" />
               </div>
-              <span className="font-medium text-sm text-foreground">View Job Offers</span>
+              <span className="font-medium text-sm text-amber-900 dark:text-amber-100">View Job Offers</span>
             </div>
             <span className="min-w-[24px] h-6 px-2 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">
               {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
@@ -356,13 +356,13 @@ export function InstructorMobileHome({
         )}
         <button
           onClick={() => navigate("/instructor/messages")}
-          className="flex items-center justify-between w-full bg-gradient-to-r from-blue-50 to-card dark:from-blue-950/20 dark:to-card border border-border rounded-xl px-4 py-3 shadow-[0_2px_12px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.12)] active:scale-[0.99] transition-all"
+          className="flex items-center justify-between w-full bg-gradient-to-r from-blue-100 to-card dark:from-blue-950/20 dark:to-card border border-blue-200/60 dark:border-blue-800/30 rounded-xl px-4 py-3 shadow-[0_2px_12px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.12)] hover:ring-1 hover:ring-blue-300/50 active:scale-[0.99] transition-all"
         >
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-blue-500/20 flex items-center justify-center">
               <Mail className="h-5 w-5 text-primary" />
             </div>
-            <span className="font-medium text-sm text-foreground">View Messages</span>
+            <span className="font-medium text-sm text-blue-900 dark:text-blue-100">View Messages</span>
           </div>
           {(unreadCount || 0) > 0 && (
             <span className="min-w-[24px] h-6 px-2 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
