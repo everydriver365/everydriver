@@ -33,7 +33,9 @@ import {
   Loader2,
   CheckCircle2,
   X,
+  ClipboardCheck,
 } from "lucide-react";
+import { PostLessonReview } from "./PostLessonReview";
 import { format } from "date-fns";
 
 interface LessonRecord {
@@ -98,6 +100,8 @@ export function LessonHistory({
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviewLessonId, setReviewLessonId] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<LessonRecord | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -503,6 +507,19 @@ export function LessonHistory({
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
+                          title="Review Skills"
+                          onClick={() => {
+                            setReviewLessonId(lesson.id);
+                            setSelectedLesson(lesson);
+                            setIsReviewOpen(true);
+                          }}
+                        >
+                          <ClipboardCheck className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
                           onClick={() => openEditDialog(lesson)}
                         >
                           <Edit className="h-4 w-4" />
@@ -548,6 +565,29 @@ export function LessonHistory({
             </DialogDescription>
           </DialogHeader>
           <LessonForm isEdit />
+        </DialogContent>
+      </Dialog>
+
+      {/* Post-Lesson Review Dialog */}
+      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Post-Lesson Review</DialogTitle>
+            <DialogDescription>
+              Update {pupilName}'s skills and plan next lesson
+            </DialogDescription>
+          </DialogHeader>
+          {reviewLessonId && (
+            <PostLessonReview
+              lessonId={reviewLessonId}
+              pupilId={pupilId}
+              instructorId={instructorId}
+              skillsPracticed={selectedLesson?.skills_practiced || []}
+              existingNotes={selectedLesson?.notes}
+              onSaved={() => fetchLessons()}
+              onClose={() => setIsReviewOpen(false)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

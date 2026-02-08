@@ -9,9 +9,10 @@ import {
   getCompetenciesByCategory,
   calculateSyllabusProgress 
 } from '@/constants/dvsaSyllabus';
-import { ChevronDown, ChevronUp, GraduationCap, Loader2, CheckCircle2, Circle } from 'lucide-react';
+import { ChevronDown, ChevronUp, GraduationCap, Loader2, CheckCircle2, Circle, TrendingUp, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SyllabusProgressChart } from '@/components/instructor/SyllabusProgressChart';
+import { format } from 'date-fns';
 
 interface PupilSyllabusViewProps {
   pupilId: string;
@@ -21,6 +22,12 @@ interface PupilSyllabusViewProps {
 
 export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSyllabusViewProps) {
   const [progress, setProgress] = useState<{ competency_id: string; level: number }[]>([]);
+  const [recentChanges, setRecentChanges] = useState<{
+    competency_id: string;
+    previous_level: number;
+    new_level: number;
+    created_at: string;
+  }[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
@@ -30,13 +37,25 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
 
   const fetchProgress = async () => {
     try {
-      const { data, error } = await supabase
-        .from('pupil_syllabus_progress')
-        .select('competency_id, level')
-        .eq('pupil_id', pupilId);
+      const [progressRes, changesRes] = await Promise.all([
+        supabase
+          .from('pupil_syllabus_progress')
+          .select('competency_id, level')
+          .eq('pupil_id', pupilId),
+        supabase
+          .from('lesson_syllabus_updates')
+          .select('competency_id, previous_level, new_level, created_at')
+          .eq('pupil_id', pupilId)
+          .order('created_at', { ascending: false })
+          .limit(10),
+      ]);
 
-      if (error) throw error;
-      setProgress(data || []);
+      if (progressRes.error) throw progressRes.error;
+      setProgress(progressRes.data || []);
+
+      if (!changesRes.error && changesRes.data) {
+        setRecentChanges(changesRes.data);
+      }
     } catch (error) {
       console.error('Error fetching syllabus progress:', error);
     } finally {
@@ -88,7 +107,37 @@ export function PupilSyllabusView({ pupilId, brandColour, darkMode }: PupilSylla
       {/* Radar Chart */}
       <SyllabusProgressChart progress={progress} />
 
-      {/* Categories */}
+      {/* Recent Skill Changes */}
+      {recentChanges.length > 0 && (
+        <Card style={{ backgroundColor: 'var(--brand-card)', borderColor: 'var(--brand-border)' }}>
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-base flex items-center gap-2" style={{ color: 'var(--brand-text)' }}>
+              <TrendingUp className="h-4 w-4" />
+              Recent Skill Updates
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-3 px-4 space-y-2">
+            {recentChanges.slice(0, 5).map((change, i) => {
+              const comp = DVSA_SYLLABUS.find(c => c.id === change.competency_id);
+              const improved = change.new_level > change.previous_level;
+              return (
+                <div key={i} className="flex items-center gap-2 text-sm py-1 border-b last:border-b-0" style={{ borderColor: 'var(--brand-border)' }}>
+                  {improved && <ArrowUp className="h-3 w-3 text-green-500 flex-shrink-0" />}
+                  <span className="flex-1 truncate" style={{ color: 'var(--brand-text)' }}>
+                    {comp?.name || change.competency_id}
+                  </span>
+                  <Badge className={cn('text-xs', SKILL_LEVELS[change.new_level]?.color, SKILL_LEVELS[change.new_level]?.textColor)}>
+                    {SKILL_LEVELS[change.new_level]?.label}
+                  </Badge>
+                  <span className="text-xs" style={{ color: 'var(--brand-muted)' }}>
+                    {format(new Date(change.created_at), 'd MMM')}
+                  </span>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
       {Object.entries(categorizedCompetencies).map(([category, competencies]) => {
         const categoryProgress = competencies.reduce((sum, c) => {
           const entry = progress.find(p => p.competency_id === c.id);

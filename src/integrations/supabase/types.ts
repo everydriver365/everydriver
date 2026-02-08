@@ -4463,6 +4463,7 @@ export type Database = {
           id: string
           instructor_id: string
           lesson_date: string
+          next_lesson_plan: string | null
           notes: string | null
           pupil_id: string
           rating: number | null
@@ -4480,6 +4481,7 @@ export type Database = {
           id?: string
           instructor_id: string
           lesson_date: string
+          next_lesson_plan?: string | null
           notes?: string | null
           pupil_id: string
           rating?: number | null
@@ -4497,6 +4499,7 @@ export type Database = {
           id?: string
           instructor_id?: string
           lesson_date?: string
+          next_lesson_plan?: string | null
           notes?: string | null
           pupil_id?: string
           rating?: number | null
@@ -4541,6 +4544,51 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_syllabus_updates: {
+        Row: {
+          competency_id: string
+          created_at: string
+          id: string
+          lesson_history_id: string
+          new_level: number
+          previous_level: number
+          pupil_id: string
+        }
+        Insert: {
+          competency_id: string
+          created_at?: string
+          id?: string
+          lesson_history_id: string
+          new_level?: number
+          previous_level?: number
+          pupil_id: string
+        }
+        Update: {
+          competency_id?: string
+          created_at?: string
+          id?: string
+          lesson_history_id?: string
+          new_level?: number
+          previous_level?: number
+          pupil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_syllabus_updates_lesson_history_id_fkey"
+            columns: ["lesson_history_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_syllabus_updates_pupil_id_fkey"
+            columns: ["pupil_id"]
+            isOneToOne: false
+            referencedRelation: "pupils"
             referencedColumns: ["id"]
           },
         ]

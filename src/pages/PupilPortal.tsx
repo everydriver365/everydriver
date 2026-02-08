@@ -62,6 +62,7 @@ interface LessonHistoryItem {
   rating: number | null;
   notes: string | null;
   skills_practiced: string[] | null;
+  next_lesson_plan: string | null;
 }
 
 export default function PupilPortal() {
@@ -104,7 +105,7 @@ export default function PupilPortal() {
           .order("start_time", { ascending: true }),
         supabase
           .from("lesson_history")
-          .select("id, lesson_date, duration_minutes, rating, notes, skills_practiced")
+          .select("id, lesson_date, duration_minutes, rating, notes, skills_practiced, next_lesson_plan")
           .eq("pupil_id", pupilId)
           .order("lesson_date", { ascending: false })
           .limit(20),
@@ -363,6 +364,12 @@ export default function PupilPortal() {
                                 <p className="text-sm text-muted-foreground mt-2 italic">
                                   "{lesson.notes}"
                                 </p>
+                              )}
+                              {lesson.next_lesson_plan && (
+                                <div className="mt-2 p-2 rounded bg-secondary/50 border border-border">
+                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Next lesson plan:</p>
+                                  <p className="text-sm">{lesson.next_lesson_plan}</p>
+                                </div>
                               )}
                             </div>
                           ))}
