@@ -1,165 +1,83 @@
 
 
-# Instructor Portal Desktop Redesign -- 4 Style Options
+# Lesson Review and Planning System
 
-Below are four distinct redesign directions for the instructor portal desktop layout. Each option reimagines the navigation, dashboard, and overall visual design. Review all four, then tell me which one (or combination) you'd like me to build.
+## Overview
+Build a "Post-Lesson Review" workflow that ties each completed lesson to the DVSA syllabus, enabling instructors to quickly update competency levels after every lesson and plan what to cover next. Pupils see the review in their portal and can add their own reflections.
 
----
+## How It Works
 
-## Option A: Clean SaaS Dashboard (Notion / Linear style)
+### For Instructors: Post-Lesson Debrief
+When a lesson is completed (or manually triggered), the instructor gets a streamlined review screen:
 
-**Navigation**: Collapsible left sidebar (no top nav tabs). Sidebar has grouped sections with subtle dividers.
+1. **Competency Quick-Update** -- A compact grid of the 27 DVSA syllabus items. Only the skills relevant to that lesson are pre-selected (based on the `skills_practiced` field in `lesson_history`). The instructor taps to adjust each skill's level (0-5) without opening the full syllabus.
 
-**Header**: Minimal white bar with just logo, search, and avatar dropdown (logout/settings inside).
+2. **Lesson Notes + Next Plan** -- Two text fields:
+   - "How did it go?" (saved to `lesson_history.notes`)
+   - "Plan for next lesson" (new field: `next_lesson_plan`)
 
-**Dashboard**: 
-- Clean white background, generous padding
-- Stats displayed as simple inline text metrics (no cards)
-- Schedule as a clean table/list
-- Sidebar widgets removed; everything in a single-column flow
+3. **Save** -- Upserts the updated levels into `pupil_syllabus_progress` and saves the lesson record, all in one action.
 
-**Visual identity**:
-- White/gray palette, no navy header
-- Very thin 1px borders, no shadows
-- System font stack, large headings
-- Active nav items shown with a subtle left border accent
+### For Pupils: Review + Reflect
+In the pupil portal, each past lesson shows:
+- The instructor's notes and skill-level changes
+- A "Reflect" button linking to the existing Reflective Log (pre-filled with the lesson ID)
+- The instructor's plan for the next lesson, so the pupil knows what to prepare for
 
-```text
-+------------------------------------------+
-| [Logo]    [Search...]     [Avatar v]     |
-+----------+-------------------------------+
-| Dashboard|  Good morning, John           |
-| Schedule |  5 lessons · 6h · £240        |
-| Pupils   |                               |
-| Messages |  [Today's Schedule list]      |
-| Money    |                               |
-| GPS      |  [Pupils table]               |
-| Settings |                               |
-+----------+-------------------------------+
-```
+### Entry Points
+- **After logging a lesson**: The "Log Lesson" dialog gains a "Review Skills" step before final save.
+- **From lesson history**: An "Add Review" button on any past lesson card.
+- **From the schedule**: When a lesson's status changes to "completed", a prompt appears.
 
----
+## Database Changes
 
-## Option B: Bold & Branded (Current direction, refined)
+A single new column on `lesson_history`:
 
-**Navigation**: Keep navy top bar + sidebar, but add icon-only collapse mode. Group sidebar into sections (Teaching, Business, Tools).
+| Column | Type | Purpose |
+|--------|------|---------|
+| `next_lesson_plan` | TEXT, nullable | Instructor's plan for what to cover next |
 
-**Header**: Navy gradient header with glowing brand accent, integrated search and notification bells.
+A new linking table to record which competencies were updated during each lesson review:
 
-**Dashboard**:
-- Stats in bold colored metric cards with subtle gradients
-- Hero welcome section with instructor avatar and status badge
-- Schedule in a prominent card with day/week toggle
-- Right sidebar with payment summary and plan widget
+| Table: `lesson_syllabus_updates` | | |
+|---|---|---|
+| `id` | UUID PK | |
+| `lesson_history_id` | UUID FK -> lesson_history | Links to the lesson |
+| `pupil_id` | UUID FK -> pupils | For quick queries |
+| `competency_id` | TEXT | DVSA syllabus item ID |
+| `previous_level` | INTEGER | Level before this lesson |
+| `new_level` | INTEGER | Level after this lesson |
+| `created_at` | TIMESTAMPTZ | |
 
-**Visual identity**:
-- Navy (#142040) header, white content area
-- Primary blue accents throughout
-- Medium shadows, 0px border radius (sharp corners preserved)
-- Notification dots and badges for engagement
+This gives a full audit trail of skill progression per lesson.
 
-```text
-+===== NAVY HEADER (logo, tabs, search, avatar) =====+
-| Breadcrumb: Instructor > Home                       |
-+----------+------------------------------------------+
-| TEACHING | [Welcome Hero + Avatar]                  |
-|  Sched   | [==== 4 Stat Cards in row ====]          |
-|  Pupils  |                                          |
-|  Tests   | [Schedule Card]     [Payment Summary]    |
-| BUSINESS | [Gap Filler]        [Plan Widget]        |
-|  Money   |                     [Reminders]          |
-|  Expenses|                                          |
-| TOOLS    |                                          |
-|  GPS     |                                          |
-|  Website |                                          |
-+----------+------------------------------------------+
-```
+## Technical Implementation
 
----
+### 1. Database Migration
+- Add `next_lesson_plan TEXT` to `lesson_history`
+- Create `lesson_syllabus_updates` table with RLS policies (instructor can insert/read their own pupils' records; pupil can read their own)
 
-## Option C: Compact Data-Dense (Bloomberg / Trading terminal style)
+### 2. New Component: `PostLessonReview.tsx`
+- Receives `lessonId`, `pupilId`, `instructorId`
+- Fetches current `pupil_syllabus_progress` for all 27 competencies
+- Shows a compact card per category with tappable level buttons (only for skills practiced)
+- "Next Lesson Plan" textarea
+- On save: batch upserts to `pupil_syllabus_progress`, inserts delta records to `lesson_syllabus_updates`, updates `lesson_history.next_lesson_plan`
 
-**Navigation**: Horizontal top tabs only, no sidebar. All pages accessible from a single row of tabs + "More" dropdown.
+### 3. Integration Points
+- **LessonHistory.tsx**: Add a "Review" button on each lesson card that opens `PostLessonReview` in a sheet/dialog
+- **AddLessonSheet / Log Lesson flow**: Add an optional "Review Skills" step after filling in lesson details
+- **ExpandablePupilCard.tsx**: No changes needed (syllabus already accessible)
 
-**Header**: Slim dark header with tabs inline, maximum horizontal space for content.
+### 4. Pupil Portal Updates
+- **PupilSyllabusView.tsx**: Add a "Recent Changes" section showing the last few `lesson_syllabus_updates` with dates
+- **ReflectiveLog.tsx**: Already linked via `lesson_history_id` -- no changes needed
+- Show the instructor's `next_lesson_plan` on the pupil's upcoming lesson card or in a "Preparing for Next Lesson" section
 
-**Dashboard**:
-- Tight grid of metric tiles (6-8 stats visible at once)
-- Schedule rendered as a compact data table with status pills
-- Pupils shown as a mini table below
-- Everything visible on one screen, minimal scrolling
-
-**Visual identity**:
-- Dark header, light content, very tight spacing
-- Small text sizes (13-14px body)
-- Tabular/monospace numbers
-- No decorative elements, pure function
-
-```text
-+== [Logo] [Home|Sched|Pupils|Msgs|Money|GPS|Tests|Web|Settings] [Search] [Out] ==+
-|                                                                                  |
-| [5 lessons] [6.0h] [£240] [12 pupils] [38mi] [4.8★]                            |
-|                                                                                  |
-| Today's Schedule                          | Payment Summary                      |
-| 09:00  John Smith    1h  Confirmed  £40  | This week: £580                      |
-| 10:30  Jane Doe      1h  Pending    £40  | Outstanding: £120                    |
-| 12:00  Bob Jones     2h  Confirmed  £80  | Next payout: Fri                     |
-| ...                                       |                                      |
-+----------------------------------------------------------------------------------+
-```
-
----
-
-## Option D: Modern Card-Based (Stripe / Apple style)
-
-**Navigation**: Top bar with horizontal pill navigation (no sidebar). Clean logo left, avatar/actions right.
-
-**Header**: White/light header with a soft bottom shadow. Rounded pill-style nav items.
-
-**Dashboard**:
-- Large rounded cards (8-12px radius -- exception to the sharp-corner rule for this style)
-- Stats in soft-colored cards with icons
-- Schedule card with smooth transitions
-- Generous whitespace, breathing room between sections
-
-**Visual identity**:
-- All white/cream backgrounds
-- Soft shadows (box-shadow), rounded corners on cards
-- Pastel accent colors for stat icons
-- Smooth hover animations and transitions
-
-```text
-+---------------------------------------------------------------+
-| [Logo]   ( Home  Schedule  Pupils  Money  More )    [Avatar]  |
-+---------------------------------------------------------------+
-|                                                               |
-|  Good morning, John                                           |
-|                                                               |
-|  +----------+ +----------+ +----------+ +----------+         |
-|  | 5 Lessons| | 6.0 Hours| | £240 Est | | 12 Pupils|         |
-|  +----------+ +----------+ +----------+ +----------+         |
-|                                                               |
-|  +---------------------------+  +------------------+          |
-|  | Today's Schedule          |  | Payments         |          |
-|  | ...                       |  | ...              |          |
-|  +---------------------------+  +------------------+          |
-+---------------------------------------------------------------+
-```
-
----
-
-## Summary Comparison
-
-| Aspect | A: Clean SaaS | B: Bold Branded | C: Data-Dense | D: Modern Cards |
-|---|---|---|---|---|
-| Navigation | Left sidebar | Top nav + sidebar | Top tabs only | Top pill nav |
-| Header | Minimal white | Navy gradient | Slim dark | White + shadow |
-| Information density | Medium | Medium | Very high | Low-medium |
-| Visual style | Minimal | Branded, bold | Functional | Soft, modern |
-| Corners | Sharp | Sharp | Sharp | Rounded cards |
-| Best for | Focus & clarity | Brand identity | Power users | Visual appeal |
-
----
-
-Tell me which option you prefer (A, B, C, or D), or mix elements from multiple options (e.g., "Navigation from C with cards from D"). I'll then create a detailed implementation plan for your chosen direction.
+### 5. Files to Create/Modify
+- **Create**: `src/components/instructor/PostLessonReview.tsx`
+- **Modify**: `src/components/instructor/LessonHistory.tsx` (add Review button)
+- **Modify**: `src/components/pupil-portal/PupilSyllabusView.tsx` (add recent skill changes)
+- **Modify**: `src/pages/PupilPortal.tsx` (show next lesson plan)
+- **Migration**: New SQL migration for the table and column
 
