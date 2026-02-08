@@ -12,7 +12,8 @@ import {
   CreditCard,
   Mail,
   Headphones,
-  MapPin
+  MapPin,
+  PoundSterling
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -352,6 +353,13 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       value: "View",
       color: "bg-indigo-500/10 text-indigo-600",
       onClick: () => onNavigate("analytics"),
+    },
+    {
+      icon: PoundSterling,
+      label: "Pupil Payments",
+      value: "View",
+      color: "bg-amber-500/10 text-amber-600",
+      onClick: () => onNavigate("payments"),
     },
   ];
 
