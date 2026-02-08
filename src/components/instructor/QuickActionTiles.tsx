@@ -109,6 +109,7 @@ const largeIconTiles = new Set(["jobs", "find-fuel", "vehicle-health"]);
 
 // Additional tiles available to add (only tiles NOT in the main quick_actions from DB)
 const additionalTiles: QuickAction[] = [
+  { id: "fill-gaps", title: "Fill Gaps", icon: "Calendar", route: "/instructor/gaps", display_order: 98 },
   { id: "todos", title: "To Do", icon: "ListTodo", route: "/instructor/todos", display_order: 99 },
   { id: "vehicle-health", title: "Vehicle Health", icon: "Car", route: "/instructor/vehicle-health", display_order: 100 },
   { id: "find-fuel", title: "Find Fuel", icon: "Fuel", route: "/instructor/fuel", display_order: 100.5 },
