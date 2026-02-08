@@ -407,13 +407,7 @@ export function InstructorMobileHome({
         className="mt-4"
       />
 
-      {/* Gap Filler Suggestions */}
-      {gapSuggestions && gapSuggestions.length > 0 && (
-          <GapFillerCard
-            gaps={gapSuggestions}
-            className="mt-4"
-          />
-      )}
+      {/* Gap Filler moved to addable tile grid */}
 
       {/* QUICK ACTIONS section */}
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">QUICK ACTIONS</p>
