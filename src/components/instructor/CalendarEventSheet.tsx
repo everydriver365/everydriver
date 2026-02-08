@@ -179,9 +179,19 @@ export function CalendarEventSheet({ event, onClose, onDelete, onRefetch }: Cale
               {/* Payment Status */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Payment:</span>
-                <Badge variant={event.data.payment_status === 'paid' ? 'default' : 'destructive'}>
-                  {event.data.payment_status === 'paid' ? 'Paid' : 'Unpaid'}
-                </Badge>
+                {event.data.payment_status === 'paid' ? (
+                  <Badge variant="default">Paid</Badge>
+                ) : event.data.pupil_account_balance > 0 ? (
+                  <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                    £{Math.round(event.data.pupil_account_balance)} Credit
+                  </Badge>
+                ) : event.data.pupil_account_balance < 0 ? (
+                  <Badge variant="destructive">
+                    £{Math.abs(Math.round(event.data.pupil_account_balance))} Due
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive">Unpaid</Badge>
+                )}
               </div>
 
               <Separator />

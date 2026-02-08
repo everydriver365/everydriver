@@ -28,6 +28,7 @@ interface ScheduledLesson {
     id: string;
     name: string;
     phone: string;
+    account_balance: number;
   } | null;
 }
 
@@ -111,7 +112,7 @@ export function useInstructorCalendar(instructorId: string) {
           .select(`
             id, lesson_date, start_time, duration_minutes, lesson_type,
             pickup_location, status, payment_status,
-            pupils (id, name, phone)
+            pupils (id, name, phone, account_balance)
           `)
           .eq('instructor_id', instructorId)
           .gte('lesson_date', startStr)
@@ -179,6 +180,7 @@ export function useInstructorCalendar(instructorId: string) {
             ...lesson,
             duration_hours: (lesson.duration_minutes || 60) / 60,
             pickup_address: lesson.pickup_location,
+            pupil_account_balance: pupil?.account_balance || 0,
           },
         });
       });

@@ -28,7 +28,7 @@ interface DayEvents {
 
 function getEventColor(event: CalendarEvent, colors: CalendarColors): string {
   if (event.type === 'lesson') {
-    const isPaid = event.data?.payment_status === 'paid';
+    const isPaid = event.data?.payment_status === 'paid' || (event.data?.pupil_account_balance || 0) > 0;
     return isPaid ? colors.lesson : colors.lesson_unpaid;
   }
   if (event.type === 'external') {
