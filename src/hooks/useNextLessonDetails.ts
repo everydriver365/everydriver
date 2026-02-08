@@ -97,7 +97,8 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       };
     },
     enabled: !!instructorId,
-    staleTime: 30 * 1000,
+    staleTime: 10 * 1000,
     refetchInterval: 60 * 1000,
+    refetchOnWindowFocus: true,
   });
 }
