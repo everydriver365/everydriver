@@ -29,6 +29,7 @@ import { WeeklyComparisonBar } from "@/components/instructor/money/WeeklyCompari
 import { PupilBalancesList } from "@/components/instructor/money/PupilBalancesList";
 import { EarningsForecaster } from "@/components/instructor/EarningsForecaster";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
+import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 
 interface Pupil {
   id: string;
@@ -42,7 +43,8 @@ export default function InstructorPay() {
   const instructorId = authInstructor?.id;
   
   const { data: earnings, isLoading } = useDailyEarnings(instructorId);
-  const [paymentQrUrl, setPaymentQrUrl] = useState<string | null>(null);
+  const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
+  const [commissionPayer, setCommissionPayer] = useState<string | null>('pupil');
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -58,11 +60,12 @@ export default function InstructorPay() {
     if (!instructorId) return;
     const { data } = await supabase
       .from("instructors")
-      .select("payment_qr_url, name")
+      .select("payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, name")
       .eq("id", instructorId)
       .maybeSingle();
     if (data) {
-      setPaymentQrUrl(data.payment_qr_url);
+      setResolvedQrUrl(getActivePaymentQrUrl(data));
+      setCommissionPayer(data.commission_payer);
       setInstructorName(data.name || "Your Instructor");
     }
   };
@@ -292,7 +295,8 @@ export default function InstructorPay() {
       <PaymentQRModal 
         open={paymentModalOpen} 
         onOpenChange={setPaymentModalOpen}
-        paymentQrUrl={paymentQrUrl}
+        paymentQrUrl={resolvedQrUrl}
+        commissionPayer={commissionPayer}
         pupils={pupils}
         instructorId={instructorId}
         instructorName={instructorName}

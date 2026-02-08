@@ -137,6 +137,7 @@ interface PupilCardStackProps {
   instructorName?: string;
   isTracking?: boolean;
   paymentQrUrl?: string | null;
+  commissionPayer?: string | null;
 }
 
 const courseTypeLabels: Record<string, string> = {
@@ -165,6 +166,7 @@ export function PupilCardStack({
   instructorName,
   isTracking = false,
   paymentQrUrl,
+  commissionPayer,
 }: PupilCardStackProps) {
   const [changingStatus, setChangingStatus] = useState(false);
   const currentStatus = (pupil.status || 'active') as PupilStatus;
@@ -1010,6 +1012,7 @@ export function PupilCardStack({
         open={showQRModal}
         onOpenChange={setShowQRModal}
         paymentQrUrl={paymentQrUrl}
+        commissionPayer={commissionPayer}
         instructorName={instructorName}
       />
 

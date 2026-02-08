@@ -5,12 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface PaymentQRModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   paymentQrUrl?: string | null;
   instructorName?: string;
+  commissionPayer?: string | null;
   // Keep these props for backward compatibility but they're unused now
   pupils?: unknown[];
   instructorId?: string;
@@ -22,7 +24,12 @@ export function PaymentQRModal({
   onOpenChange, 
   paymentQrUrl, 
   instructorName = "Your Instructor",
+  commissionPayer = "pupil",
 }: PaymentQRModalProps) {
+  const paysLabel = commissionPayer === 'instructor' 
+    ? 'Instructor pays commission' 
+    : 'Pupil pays commission';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[320px] max-w-[90vw] p-6" aria-describedby={undefined}>
@@ -51,6 +58,10 @@ export function PaymentQRModal({
           <p className="text-sm text-muted-foreground text-center font-medium">
             Scan to pay {instructorName}
           </p>
+
+          <Badge variant="outline" className="text-xs text-muted-foreground">
+            {paysLabel}
+          </Badge>
         </div>
       </DialogContent>
     </Dialog>
