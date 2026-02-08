@@ -67,7 +67,7 @@ import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { haptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
-import { CardSection } from "@/components/ui/CardSection";
+import { SectionPanel } from "@/components/ui/SectionPanel";
 
 interface ScheduledLesson {
   id: string;
@@ -740,7 +740,7 @@ export function PupilCardStack({
                   </div>
 
                   {/* Lesson Feedback Section */}
-                  <CardSection title="Lesson Feedback" defaultOpen={false}>
+                  <SectionPanel title="Lesson Feedback" icon={<Star className="h-4 w-4 text-primary" />} headerGradient>
                     <div className="px-4 pb-2 space-y-3">
                       {latestFeedback?.notes && !isAddingFeedback && (
                         <div className="bg-muted/30 rounded-xl p-3 space-y-2">
@@ -846,17 +846,17 @@ export function PupilCardStack({
                         </div>
                       )}
                     </div>
-                  </CardSection>
+                  </SectionPanel>
 
                   {/* Tracking History */}
-                  <CardSection title="Tracking History" defaultOpen={false}>
+                  <SectionPanel title="Tracking History" icon={<Route className="h-4 w-4 text-primary" />} headerGradient>
                     <div className="px-4 pb-2">
                       <PupilTrackingHistory pupilId={pupil.id} pupilName={pupil.name} />
                     </div>
-                  </CardSection>
+                  </SectionPanel>
 
                   {/* Payments Section */}
-                  <CardSection title="Payments" defaultOpen={false}>
+                  <SectionPanel title="Payments" icon={<PoundSterling className="h-4 w-4 text-primary" />} headerGradient>
                     <div className="px-4 pb-2 space-y-3">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Button
@@ -907,7 +907,7 @@ export function PupilCardStack({
                         paymentType={pupil.payment_type}
                       />
                     </div>
-                  </CardSection>
+                  </SectionPanel>
 
                   {/* Tools Grid */}
                   <div className="grid grid-cols-4 gap-2">
