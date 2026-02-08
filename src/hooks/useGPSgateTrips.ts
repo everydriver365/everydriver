@@ -50,7 +50,7 @@ export function useGPSgateTrips(instructorId?: string): UseGPSgateTripsResult {
     setError(null);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke("gpsgate-trips", {
+      const { data, error: invokeError } = await supabase.functions.invoke("quartix-trips", {
         body: {
           instructorId,
           fromDate: fromDate?.toISOString() || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -59,20 +59,20 @@ export function useGPSgateTrips(instructorId?: string): UseGPSgateTripsResult {
       });
 
       if (invokeError) {
-        console.error("[GPSgateTrips] Invoke error:", invokeError);
+        console.error("[Trips] Invoke error:", invokeError);
         setError(invokeError.message || "Failed to fetch trips");
         return;
       }
 
       if (data?.error) {
-        console.error("[GPSgateTrips] API error:", data.error);
+        console.error("[Trips] API error:", data.error);
         setError(data.error);
       }
 
       setTrips(data?.trips || []);
       setMeta(data?.meta || null);
     } catch (err) {
-      console.error("[GPSgateTrips] Error:", err);
+      console.error("[Trips] Error:", err);
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);

@@ -14,11 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { GPSTrackerLookup } from "./GPSTrackerLookup";
 
 interface InstructorDetails {
   home_postcode: string | null;
@@ -36,8 +34,6 @@ interface InstructorDetails {
   instagram_url: string | null;
   twitter_url: string | null;
   linkedin_url: string | null;
-  gpsgate_user_id: number | null;
-  gpsgate_username: string | null;
 }
 
 interface InstructorDetailsEditorProps {
@@ -50,7 +46,6 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
-  const [trackingProvider, setTrackingProvider] = useState<string>("gpsgate");
   const [quartixVehicleId, setQuartixVehicleId] = useState("");
   const [quartixDriverId, setQuartixDriverId] = useState("");
   const [gpsStatus, setGpsStatus] = useState<{
@@ -82,9 +77,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
           facebook_url,
           instagram_url,
           twitter_url,
-          linkedin_url,
-          gpsgate_user_id,
-          gpsgate_username
+          linkedin_url
         `)
         .eq("id", instructorId)
         .single();
@@ -101,16 +94,6 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
 
   const fetchTrackingConfig = async () => {
     try {
-      const { data } = await supabase
-        .from("instructor_tracking_config")
-        .select("provider")
-        .eq("instructor_id", instructorId)
-        .maybeSingle();
-
-      if (data) {
-        setTrackingProvider(data.provider || "gpsgate");
-      }
-
       const { data: device } = await supabase
         .from("gps_devices")
         .select("quartix_vehicle_id, quartix_driver_id")
@@ -123,20 +106,6 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
       }
     } catch (err) {
       console.error("Error fetching tracking config:", err);
-    }
-  };
-
-  const saveTrackingProvider = async (provider: string) => {
-    setTrackingProvider(provider);
-    try {
-      await supabase
-        .from("instructor_tracking_config")
-        .upsert({
-          instructor_id: instructorId,
-          provider,
-        } as any, { onConflict: "instructor_id" });
-    } catch (err) {
-      console.error("Error saving tracking config:", err);
     }
   };
 
@@ -157,6 +126,19 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
             tracking_provider: "quartix",
           } as any)
           .eq("id", device.id);
+      } else {
+        // Create a new device record for Quartix
+        await supabase
+          .from("gps_devices")
+          .insert({
+            instructor_id: instructorId,
+            device_identifier: `quartix-${quartixVehicleId}`,
+            device_name: "Quartix Tracker",
+            quartix_vehicle_id: quartixVehicleId || null,
+            quartix_driver_id: quartixDriverId || null,
+            tracking_provider: "quartix",
+            is_active: true,
+          } as any);
       }
       toast.success("Quartix settings saved");
     } catch (err) {
@@ -169,7 +151,6 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     if (!instructorId) return;
     
     try {
-      // Check gps_devices for this instructor's last_seen_at
       const { data } = await supabase
         .from("gps_devices")
         .select("last_seen_at")
@@ -202,22 +183,18 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   const testConnection = async () => {
     setTestingConnection(true);
     try {
-      // Trigger a poll to check if credentials work
-      const { data, error } = await supabase.functions.invoke("gpsgate-poller");
+      const { data, error } = await supabase.functions.invoke("quartix-poller");
       
       if (error) throw error;
-      
-      // Refresh status after poll
       await fetchGpsStatus();
       
       if (data?.success) {
         const parts = [];
         if (data.processed > 0) parts.push(`${data.processed} devices updated`);
-        if (data.instructors_processed > 0) parts.push(`${data.instructors_processed} instructor(s) updated`);
         if (parts.length === 0) parts.push("No updates - check your tracker is online");
         toast.success(`GPS poll complete: ${parts.join(", ")}`);
       } else {
-        toast.info("Poll completed - check your GPSgate credentials");
+        toast.info("Poll completed - check your Quartix credentials");
       }
     } catch (err) {
       console.error("Test connection error:", err);
@@ -225,15 +202,6 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     } finally {
       setTestingConnection(false);
     }
-  };
-
-  const handleTrackerSelect = (userId: number, username: string, name: string) => {
-    if (!details) return;
-    setDetails({ 
-      ...details, 
-      gpsgate_user_id: userId,
-      gpsgate_username: name || username 
-    });
   };
 
   const handleSave = async () => {
@@ -266,77 +234,32 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
 
   if (!details) return null;
 
-  // If defaultTab is gps, hide the tabs and just show the GPS content
+  // If defaultTab is gps, show Quartix-only GPS content
   if (defaultTab === "gps") {
     return (
       <div className="space-y-4">
-        {/* Provider Selection */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Tracking Provider</Label>
-          <RadioGroup value={trackingProvider} onValueChange={saveTrackingProvider} className="flex gap-4">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="gpsgate" id="gpsgate" />
-              <Label htmlFor="gpsgate" className="cursor-pointer">GPSgate</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="quartix" id="quartix" />
-              <Label htmlFor="quartix" className="cursor-pointer">Quartix</Label>
-            </div>
-          </RadioGroup>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Satellite className="h-4 w-4" />
+            Quartix Vehicle ID
+          </Label>
+          <Input
+            placeholder="Enter your Quartix vehicle ID"
+            value={quartixVehicleId}
+            onChange={(e) => setQuartixVehicleId(e.target.value)}
+          />
         </div>
-
-        {trackingProvider === "gpsgate" ? (
-          <>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Satellite className="h-4 w-4" />
-                GPSgate Username / Tracker Name
-              </Label>
-              <Input
-                placeholder="e.g. Tracker iOS, instructor_john"
-                value={details.gpsgate_username || ""}
-                onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
-              />
-            </div>
-            <GPSTrackerLookup searchQuery={details.gpsgate_username || ""} onSelect={handleTrackerSelect} />
-            <div className="space-y-2">
-              <Label>GPSgate User ID {details.gpsgate_user_id ? `(#${details.gpsgate_user_id})` : "(auto-filled)"}</Label>
-              <Input
-                type="number"
-                placeholder="Auto-filled when you find a tracker"
-                value={details.gpsgate_user_id || ""}
-                onChange={(e) => setDetails({ ...details, gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null })}
-                readOnly={!!details.gpsgate_user_id}
-                className={details.gpsgate_user_id ? "bg-muted" : ""}
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Satellite className="h-4 w-4" />
-                Quartix Vehicle ID
-              </Label>
-              <Input
-                placeholder="Enter your Quartix vehicle ID"
-                value={quartixVehicleId}
-                onChange={(e) => setQuartixVehicleId(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Quartix Driver ID (optional)</Label>
-              <Input
-                placeholder="Enter your Quartix driver ID"
-                value={quartixDriverId}
-                onChange={(e) => setQuartixDriverId(e.target.value)}
-              />
-            </div>
-            <Button onClick={saveQuartixIds} variant="outline" className="w-full">
-              Save Quartix IDs
-            </Button>
-          </>
-        )}
+        <div className="space-y-2">
+          <Label>Quartix Driver ID (optional)</Label>
+          <Input
+            placeholder="Enter your Quartix driver ID"
+            value={quartixDriverId}
+            onChange={(e) => setQuartixDriverId(e.target.value)}
+          />
+        </div>
+        <Button onClick={saveQuartixIds} variant="outline" className="w-full">
+          Save Quartix IDs
+        </Button>
 
         <Card>
           <CardContent className="p-4">
@@ -595,75 +518,30 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         </Button>
       </TabsContent>
 
-      {/* GPS Tracking Tab */}
+      {/* GPS Tracking Tab - Quartix Only */}
       <TabsContent value="gps" className="space-y-4 mt-4">
-        {/* Provider Selection */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Tracking Provider</Label>
-          <RadioGroup value={trackingProvider} onValueChange={saveTrackingProvider} className="flex gap-4">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="gpsgate" id="tab-gpsgate" />
-              <Label htmlFor="tab-gpsgate" className="cursor-pointer">GPSgate</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="quartix" id="tab-quartix" />
-              <Label htmlFor="tab-quartix" className="cursor-pointer">Quartix</Label>
-            </div>
-          </RadioGroup>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Satellite className="h-4 w-4" />
+            Quartix Vehicle ID
+          </Label>
+          <Input
+            placeholder="Enter your Quartix vehicle ID"
+            value={quartixVehicleId}
+            onChange={(e) => setQuartixVehicleId(e.target.value)}
+          />
         </div>
-
-        {trackingProvider === "gpsgate" ? (
-          <>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Satellite className="h-4 w-4" />
-                GPSgate Username / Tracker Name
-              </Label>
-              <Input
-                placeholder="e.g. Tracker iOS, instructor_john"
-                value={details.gpsgate_username || ""}
-                onChange={(e) => setDetails({ ...details, gpsgate_username: e.target.value })}
-              />
-            </div>
-            <GPSTrackerLookup searchQuery={details.gpsgate_username || ""} onSelect={handleTrackerSelect} />
-            <div className="space-y-2">
-              <Label>GPSgate User ID {details.gpsgate_user_id ? `(#${details.gpsgate_user_id})` : "(auto-filled)"}</Label>
-              <Input
-                type="number"
-                placeholder="Auto-filled when you find a tracker"
-                value={details.gpsgate_user_id || ""}
-                onChange={(e) => setDetails({ ...details, gpsgate_user_id: e.target.value ? parseInt(e.target.value) : null })}
-                readOnly={!!details.gpsgate_user_id}
-                className={details.gpsgate_user_id ? "bg-muted" : ""}
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Satellite className="h-4 w-4" />
-                Quartix Vehicle ID
-              </Label>
-              <Input
-                placeholder="Enter your Quartix vehicle ID"
-                value={quartixVehicleId}
-                onChange={(e) => setQuartixVehicleId(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Quartix Driver ID (optional)</Label>
-              <Input
-                placeholder="Enter your Quartix driver ID"
-                value={quartixDriverId}
-                onChange={(e) => setQuartixDriverId(e.target.value)}
-              />
-            </div>
-            <Button onClick={saveQuartixIds} variant="outline" className="w-full">
-              Save Quartix IDs
-            </Button>
-          </>
-        )}
+        <div className="space-y-2">
+          <Label>Quartix Driver ID (optional)</Label>
+          <Input
+            placeholder="Enter your Quartix driver ID"
+            value={quartixDriverId}
+            onChange={(e) => setQuartixDriverId(e.target.value)}
+          />
+        </div>
+        <Button onClick={saveQuartixIds} variant="outline" className="w-full">
+          Save Quartix IDs
+        </Button>
 
         <Card>
           <CardContent className="p-4">

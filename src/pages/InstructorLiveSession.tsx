@@ -739,9 +739,8 @@ export default function InstructorLiveSession() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Use last_gpsgate_track_time (actual GPS data) NOT last_seen_at (poller artifact)
-  // last_seen_at gets refreshed every poll cycle even when device has no real GPS data
-  const trackTime = (device as any)?.last_gpsgate_track_time;
+  // Use last_seen_at as primary indicator of device activity
+  const trackTime = device?.last_seen_at;
   const secondsSinceTrack = trackTime
     ? Math.floor((Date.now() - new Date(trackTime).getTime()) / 1000)
     : 9999;

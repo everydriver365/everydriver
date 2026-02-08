@@ -19,24 +19,21 @@ interface GPSPollerResult {
 
 export function useGPSPoller({
   enabled,
-  intervalMs = 5000, // 5 seconds default for faster map updates
+  intervalMs = 5000,
   onData,
   onError,
 }: UseGPSPollerOptions) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isPollingRef = useRef(false);
   
-  // Store callbacks in refs to prevent effect restarts when they change
   const onDataRef = useRef(onData);
   const onErrorRef = useRef(onError);
   
-  // Keep refs in sync with latest callbacks
   useEffect(() => {
     onDataRef.current = onData;
     onErrorRef.current = onError;
   }, [onData, onError]);
 
-  // Stable poll function that doesn't depend on callback identity
   const poll = useCallback(async () => {
     if (isPollingRef.current) {
       console.log("[GPSPoller] Skipping - previous poll still running");
@@ -46,9 +43,8 @@ export function useGPSPoller({
     isPollingRef.current = true;
     
     try {
-      // Use GPSgate poller only
       const { data, error } = await supabase.functions.invoke<GPSPollerResult>(
-        "gpsgate-poller"
+        "quartix-poller"
       );
 
       if (error) {
@@ -67,7 +63,7 @@ export function useGPSPoller({
     } finally {
       isPollingRef.current = false;
     }
-  }, []); // No dependencies - uses refs for callbacks
+  }, []);
 
   useEffect(() => {
     if (!enabled) {
@@ -78,10 +74,7 @@ export function useGPSPoller({
       return;
     }
 
-    // Poll immediately on enable
     poll();
-
-    // Set up interval
     intervalRef.current = setInterval(poll, intervalMs);
 
     return () => {
