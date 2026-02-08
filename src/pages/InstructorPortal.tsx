@@ -19,6 +19,9 @@ import { GapsFiller } from "@/components/instructor/GapsFiller";
 import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
+import { ReminderStatusWidget } from "@/components/instructor/dashboard/ReminderStatusWidget";
+import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
@@ -428,6 +431,14 @@ export default function InstructorPortal() {
               </CardContent>
             </Card>
 
+            {/* Plan Widget */}
+            <PlanWidget />
+
+            {/* Reminder Status */}
+            <ReminderStatusWidget />
+
+            {/* Referral Stats */}
+            <ReferralStatsWidget />
           </div>
         </div>
 
