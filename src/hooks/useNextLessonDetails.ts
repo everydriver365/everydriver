@@ -80,14 +80,31 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       const lessonTime = new Date(`${lessonDate}T${lesson.start_time}`);
       const minutesUntil = differenceInMinutes(lessonTime, now);
 
+      // Use pupil's current address as the canonical source;
+      // only use lesson-level pickup fields if they meaningfully differ
+      // (i.e. a custom pickup was explicitly set that isn't the pupil's home)
+      const pupilPostcode = pupil.postcode || null;
+      const pupilAddress = pupil.address || null;
+      const lessonPickupPostcode = lesson.pickup_postcode || null;
+      const lessonPickupLocation = lesson.pickup_location || null;
+
+      // If the lesson pickup matches the pupil home, prefer the (possibly updated) pupil data
+      const isPickupSameAsHome =
+        !lessonPickupPostcode ||
+        lessonPickupPostcode === pupilPostcode ||
+        lessonPickupLocation === pupilAddress;
+
+      const effectivePostcode = isPickupSameAsHome ? pupilPostcode : lessonPickupPostcode;
+      const effectiveLocation = isPickupSameAsHome ? pupilAddress : lessonPickupLocation;
+
       return {
         lessonId: lesson.id,
         pupilId: pupil.id,
         pupilName: pupil.name,
         pupilPhone: pupil.phone,
         pupilProfileImage: pupil.profile_image_url,
-        pickupPostcode: lesson.pickup_postcode || pupil.postcode,
-        pickupLocation: lesson.pickup_location || pupil.address,
+        pickupPostcode: effectivePostcode,
+        pickupLocation: effectiveLocation,
         lessonDate,
         startTime: lesson.start_time,
         minutesUntil: Math.max(0, minutesUntil),
