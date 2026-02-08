@@ -67,12 +67,13 @@ interface SettingsCategory {
 }
 
 const settingsCategories: SettingsCategory[] = [
-  { id: "profile", title: "Profile", icon: User, iconColor: "text-blue-600", iconBg: "bg-blue-100 dark:bg-blue-900/30" },
-  { id: "courses", title: "Courses", icon: BookOpen, iconColor: "text-emerald-600", iconBg: "bg-emerald-100 dark:bg-emerald-900/30" },
-  { id: "website", title: "Website", icon: Globe, iconColor: "text-cyan-600", iconBg: "bg-cyan-100 dark:bg-cyan-900/30" },
-  { id: "scheduling", title: "Schedule", icon: Clock, iconColor: "text-sky-600", iconBg: "bg-sky-100 dark:bg-sky-900/30" },
-  { id: "tracking", title: "Tracking", icon: Navigation, iconColor: "text-amber-600", iconBg: "bg-amber-100 dark:bg-amber-900/30" },
-  { id: "preferences", title: "Preferences", icon: Settings, iconColor: "text-gray-600", iconBg: "bg-gray-100 dark:bg-gray-900/30" },
+  { id: "profile", title: "Profile & Identity", icon: User, iconColor: "text-blue-600", iconBg: "bg-blue-100 dark:bg-blue-900/30" },
+  { id: "teaching", title: "Compliance & Teaching", icon: GraduationCap, iconColor: "text-emerald-600", iconBg: "bg-emerald-100 dark:bg-emerald-900/30" },
+  { id: "courses", title: "Courses & Payments", icon: BookOpen, iconColor: "text-green-600", iconBg: "bg-green-100 dark:bg-green-900/30" },
+  { id: "website", title: "Website & Branding", icon: Globe, iconColor: "text-cyan-600", iconBg: "bg-cyan-100 dark:bg-cyan-900/30" },
+  { id: "scheduling", title: "Scheduling", icon: Clock, iconColor: "text-sky-600", iconBg: "bg-sky-100 dark:bg-sky-900/30" },
+  { id: "tracking", title: "Tracking & Routes", icon: Navigation, iconColor: "text-amber-600", iconBg: "bg-amber-100 dark:bg-amber-900/30" },
+  { id: "preferences", title: "Preferences & Data", icon: Settings, iconColor: "text-gray-600", iconBg: "bg-gray-100 dark:bg-gray-900/30" },
 ];
 
 export default function InstructorSettings() {
@@ -421,415 +422,7 @@ export default function InstructorSettings() {
                 <InstructorDetailsEditor instructorId={instructorId} />
               </SettingsTile>
 
-              {/* Compliance Tracking Section */}
-              <SettingsTile 
-                id="compliance" 
-                icon={Shield} 
-                title="Compliance & CPD" 
-                description="Track ADI badge, insurance, MOT & CPD hours"
-                iconColor="text-emerald-500"
-                iconBg="bg-emerald-50 dark:bg-emerald-900/20"
-              >
-                <ComplianceTracker instructorId={instructorId} />
-              </SettingsTile>
-          </div>
-        </div>
-
-        {/* Courses & Pricing Category */}
-        <div ref={el => categoryRefs.current["courses"] = el} className="space-y-3">
-          <CategoryHeader category={settingsCategories[1]} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Courses Section */}
-              <SettingsTile 
-                id="courses" 
-                icon={BookOpen} 
-                title="My Courses" 
-                description="Manage your course offerings & pricing"
-                iconColor="text-emerald-600"
-                iconBg="bg-emerald-100 dark:bg-emerald-900/30"
-              >
-                <InstructorCoursesManager instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Booking Mode Section */}
-              <SettingsTile 
-                id="booking-mode" 
-                icon={CalendarClock} 
-                title="Booking Mode" 
-                description="How pupils book lessons"
-                iconColor="text-teal-600"
-                iconBg="bg-teal-100 dark:bg-teal-900/30"
-              >
-                <BookingModeSelector 
-                  instructorId={instructorId} 
-                  currentMode={authInstructor?.booking_mode || 'pupil_choice'}
-                />
-              </SettingsTile>
-
-              {/* Deposit Settings Section */}
-              <SettingsTile 
-                id="deposits" 
-                icon={Banknote} 
-                title="Deposit Payments" 
-                description="Accept deposits on bookings"
-                iconColor="text-lime-600"
-                iconBg="bg-lime-100 dark:bg-lime-900/30"
-              >
-                <DepositSettingsEditor instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Visibility Section */}
-              <SettingsTile 
-                id="visibility" 
-                icon={Eye} 
-                title="Visibility" 
-                description="Control website listing"
-                iconColor="text-violet-600"
-                iconBg="bg-violet-100 dark:bg-violet-900/30"
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="visibility-toggle" className="text-sm font-medium">
-                        Listed on website
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Your courses will appear in search results
-                      </p>
-                    </div>
-                    <Switch
-                      id="visibility-toggle"
-                      checked={profile?.is_active ?? true}
-                      onCheckedChange={handleVisibilityToggle}
-                    />
-                  </div>
-                  {profile && !profile.is_active && (
-                    <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-                      <p className="text-sm text-amber-700 dark:text-amber-400">
-                        You're currently hidden from the website.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </SettingsTile>
-
-              {/* Payment Summary Section */}
-              <SettingsTile 
-                id="payments" 
-                icon={PoundSterling} 
-                title="Payment Summary" 
-                description="Monthly earnings & outstanding"
-                iconColor="text-green-600"
-                iconBg="bg-green-100 dark:bg-green-900/30"
-              >
-                <PaymentSummaryWidget 
-                  instructorId={instructorId} 
-                  instructorName={profile?.name}
-                  compact={false}
-                />
-              </SettingsTile>
-          </div>
-        </div>
-
-        {/* Mini-Website Category */}
-        <div ref={el => categoryRefs.current["website"] = el} className="space-y-3">
-          <CategoryHeader category={settingsCategories[2]} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Mini-Website Share Section */}
-              <SettingsTile 
-                id="mini-website" 
-                icon={Globe} 
-                title="Share Link" 
-                description="Share your instructor profile"
-                iconColor="text-cyan-600"
-                iconBg="bg-cyan-100 dark:bg-cyan-900/30"
-              >
-                <MiniWebsiteShare instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Mini-Website CMS Section */}
-              <SettingsTile 
-                id="website-pages" 
-                icon={Layout} 
-                title="Website Pages" 
-                description="Edit your 5-page mini-website"
-                iconColor="text-indigo-600"
-                iconBg="bg-indigo-100 dark:bg-indigo-900/30"
-              >
-                {authInstructor?.app_slug ? (
-                  <MiniWebsiteCMS 
-                    instructorId={instructorId} 
-                    instructorSlug={authInstructor.app_slug} 
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    Your website URL is being set up. Please refresh in a moment.
-                  </p>
-                )}
-              </SettingsTile>
-
-              {/* Website Theme Section */}
-              <SettingsTile 
-                id="website-theme" 
-                icon={Sparkles} 
-                title="Website Theme" 
-                description="Colors, fonts & style presets"
-                iconColor="text-pink-600"
-                iconBg="bg-pink-100 dark:bg-pink-900/30"
-              >
-                <MiniWebsiteThemeEditor
-                  instructorId={instructorId}
-                  currentSettings={{
-                    website_theme: authInstructor?.website_theme,
-                    website_font: authInstructor?.website_font,
-                    website_header_style: authInstructor?.website_header_style,
-                    brand_colour: authInstructor?.brand_colour,
-                    secondary_colour: authInstructor?.secondary_colour,
-                    website_button_color: authInstructor?.website_button_color,
-                    website_footer_bg: authInstructor?.website_footer_bg,
-                    logo_url: authInstructor?.logo_url,
-                    phone: authInstructor?.phone,
-                    email: authInstructor?.email,
-                  }}
-                  onUpdate={refreshInstructor}
-                />
-              </SettingsTile>
-          </div>
-        </div>
-
-        {/* Scheduling & Availability Category */}
-        <div ref={el => categoryRefs.current["scheduling"] = el} className="space-y-3">
-          <CategoryHeader category={settingsCategories[3]} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Working Hours Section */}
-              <SettingsTile 
-                id="working-hours" 
-                icon={Clock} 
-                title="Working Hours" 
-                description="Set your availability"
-                iconColor="text-blue-500"
-                iconBg="bg-blue-50 dark:bg-blue-900/20"
-              >
-                <WorkingHoursEditor instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Calendar Sync Section */}
-              <SettingsTile 
-                id="calendar" 
-                icon={Calendar} 
-                title="Calendar Sync" 
-                description="Sync lessons to your calendar"
-                iconColor="text-sky-600"
-                iconBg="bg-sky-100 dark:bg-sky-900/30"
-              >
-                <CalendarConnect instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Cancellation Policy Section */}
-              <SettingsTile 
-                id="cancellation" 
-                icon={FileText} 
-                title="Cancellation Policy" 
-                description="Set notice period & charges"
-                iconColor="text-slate-600"
-                iconBg="bg-slate-100 dark:bg-slate-900/30"
-              >
-                <CancellationPolicyEditor instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* No-Show Policy Section */}
-              <SettingsTile 
-                id="no-show-policy" 
-                icon={AlertTriangle} 
-                title="No-Show Policy" 
-                description="Set fees for no-shows & late cancellations"
-                iconColor="text-red-600"
-                iconBg="bg-red-100 dark:bg-red-900/30"
-              >
-                <NoShowPolicySettings instructorId={instructorId} />
-              </SettingsTile>
-          </div>
-        </div>
-
-        {/* Tracking & Routes Category */}
-        <div ref={el => categoryRefs.current["tracking"] = el} className="space-y-3">
-          <CategoryHeader category={settingsCategories[4]} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Mobile GPS Tracking Section */}
-              <SettingsTile 
-                id="gps-mobile" 
-                icon={Satellite} 
-                title="Mobile GPS Tracking" 
-                description="Link your Every Driver GPS Gate account"
-                iconColor="text-cyan-600"
-                iconBg="bg-cyan-100 dark:bg-cyan-900/30"
-              >
-                <InstructorDetailsEditor instructorId={instructorId} defaultTab="gps" />
-              </SettingsTile>
-
-              {/* Hardware GPS Tracking Section */}
-              <SettingsTile 
-                id="traccar" 
-                icon={Navigation} 
-                title="Vehicle GPS Device" 
-                description="OBD-II hardware tracker setup"
-                iconColor="text-amber-600"
-                iconBg="bg-amber-100 dark:bg-amber-900/30"
-              >
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Use the ST-902L OBD-II tracker for reliable GPS tracking during lessons. 
-                    Plugs directly into your vehicle's diagnostic port.
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    <Button 
-                      onClick={() => navigate('/instructor/settings/traccar')}
-                      className="w-full justify-between"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Device Setup
-                      </span>
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => navigate('/instructor/traccar')}
-                      className="w-full justify-between"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Navigation className="h-4 w-4" />
-                        Start Tracking Session
-                      </span>
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </SettingsTile>
-
-              {/* Saved Routes Section */}
-              <SettingsTile 
-                id="routes" 
-                icon={Route} 
-                title="Saved Routes" 
-                description="View and manage your recorded driving routes"
-                iconColor="text-fuchsia-600"
-                iconBg="bg-fuchsia-100 dark:bg-fuchsia-900/30"
-              >
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Access your saved lesson routes, test routes, and driving test recordings. 
-                    View route analytics and manage your route library.
-                  </p>
-                  <Button 
-                    onClick={() => navigate('/instructor/routes')}
-                    className="w-full justify-between"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Route className="h-4 w-4" />
-                      Manage Routes
-                    </span>
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </div>
-              </SettingsTile>
-
-              {/* Test Centres & Examiners Section */}
-              <SettingsTile 
-                id="test-centres" 
-                icon={MapPin} 
-                title="Test Centres & Examiners" 
-                description="Manage test centres and examiners for routes & triggers"
-                iconColor="text-red-600"
-                iconBg="bg-red-100 dark:bg-red-900/30"
-              >
-                <TestCentresAndExaminersManager instructorId={instructorId} />
-              </SettingsTile>
-          </div>
-        </div>
-
-        {/* Preferences & Data Category */}
-        <div ref={el => categoryRefs.current["preferences"] = el} className="space-y-3">
-          <CategoryHeader category={settingsCategories[5]} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* Dashboard Layout Section */}
-              <SettingsTile 
-                id="dashboard-layout" 
-                icon={LayoutGrid} 
-                title="Dashboard Layout" 
-                description="Customize your home screen tiles"
-                iconColor="text-indigo-600"
-                iconBg="bg-indigo-100 dark:bg-indigo-900/30"
-              >
-                <DashboardLayoutManager instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Push Notifications Section */}
-              <SettingsTile 
-                id="notifications" 
-                icon={Bell} 
-                title="Push Notifications" 
-                description="Manage notification preferences"
-                iconColor="text-yellow-600"
-                iconBg="bg-yellow-100 dark:bg-yellow-900/30"
-              >
-                <PushNotificationSettings instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Terms & Conditions Section */}
-              <SettingsTile 
-                id="terms" 
-                icon={FileSignature} 
-                title="Terms & Conditions" 
-                description="Create terms for pupils to sign"
-                iconColor="text-stone-600"
-                iconBg="bg-stone-100 dark:bg-stone-900/30"
-              >
-                <TermsConditionsEditor instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Bulk SMS Section */}
-              <SettingsTile 
-                id="bulk-sms" 
-                icon={Bell} 
-                title="Bulk Messaging" 
-                description="Send SMS to all pupils"
-                iconColor="text-orange-500"
-                iconBg="bg-orange-50 dark:bg-orange-900/20"
-              >
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Send announcements, holiday notices, or reminders to multiple pupils at once.
-                  </p>
-                  <BulkSMSDialog instructorId={instructorId} />
-                </div>
-              </SettingsTile>
-
-              {/* Referral Programme */}
-              <SettingsTile 
-                id="referrals" 
-                icon={Gift} 
-                title="Referral Programme" 
-                description="Configure pupil referral rewards"
-                iconColor="text-emerald-600"
-                iconBg="bg-emerald-100 dark:bg-emerald-900/30"
-              >
-                <ReferralSettingsCard instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Pupil App Branding Section */}
-              <SettingsTile 
-                id="branding" 
-                icon={Palette} 
-                title="Pupil App Branding" 
-                description="Customise your pupil portal"
-                iconColor="text-rose-600"
-                iconBg="bg-rose-100 dark:bg-rose-900/30"
-              >
-                <PupilAppBrandingEditor instructorId={instructorId} />
-              </SettingsTile>
-
-              {/* Images Section */}
+              {/* Images & Media Section (moved from Preferences) */}
               <SettingsTile 
                 id="images" 
                 icon={ImageIcon} 
@@ -1084,6 +677,420 @@ export default function InstructorSettings() {
                     />
                   </div>
                 </div>
+              </SettingsTile>
+
+              {/* Visibility Section (moved from Courses) */}
+              <SettingsTile 
+                id="visibility" 
+                icon={Eye} 
+                title="Visibility" 
+                description="Control website listing"
+                iconColor="text-violet-600"
+                iconBg="bg-violet-100 dark:bg-violet-900/30"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="visibility-toggle" className="text-sm font-medium">
+                        Listed on website
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Your courses will appear in search results
+                      </p>
+                    </div>
+                    <Switch
+                      id="visibility-toggle"
+                      checked={profile?.is_active ?? true}
+                      onCheckedChange={handleVisibilityToggle}
+                    />
+                  </div>
+                  {profile && !profile.is_active && (
+                    <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
+                      <p className="text-sm text-amber-700 dark:text-amber-400">
+                        You're currently hidden from the website.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </SettingsTile>
+          </div>
+        </div>
+
+        {/* Compliance & Teaching Category */}
+        <div ref={el => categoryRefs.current["teaching"] = el} className="space-y-3">
+          <CategoryHeader category={settingsCategories[1]} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Compliance Tracking Section (moved from Profile) */}
+              <SettingsTile 
+                id="compliance" 
+                icon={Shield} 
+                title="Compliance & CPD" 
+                description="Track ADI badge, insurance, MOT & CPD hours"
+                iconColor="text-emerald-500"
+                iconBg="bg-emerald-50 dark:bg-emerald-900/20"
+              >
+                <ComplianceTracker instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Test Centres & Examiners (moved from Tracking) */}
+              <SettingsTile 
+                id="test-centres" 
+                icon={MapPin} 
+                title="Test Centres & Examiners" 
+                description="Manage test centres and examiners for routes & triggers"
+                iconColor="text-red-600"
+                iconBg="bg-red-100 dark:bg-red-900/30"
+              >
+                <TestCentresAndExaminersManager instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Terms & Conditions (moved from Preferences) */}
+              <SettingsTile 
+                id="terms" 
+                icon={FileSignature} 
+                title="Terms & Conditions" 
+                description="Create terms for pupils to sign"
+                iconColor="text-stone-600"
+                iconBg="bg-stone-100 dark:bg-stone-900/30"
+              >
+                <TermsConditionsEditor instructorId={instructorId} />
+              </SettingsTile>
+          </div>
+        </div>
+
+        {/* Courses & Payments Category */}
+        <div ref={el => categoryRefs.current["courses"] = el} className="space-y-3">
+          <CategoryHeader category={settingsCategories[2]} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Courses Section */}
+              <SettingsTile 
+                id="courses" 
+                icon={BookOpen} 
+                title="My Courses" 
+                description="Manage your course offerings & pricing"
+                iconColor="text-emerald-600"
+                iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+              >
+                <InstructorCoursesManager instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Booking Mode Section */}
+              <SettingsTile 
+                id="booking-mode" 
+                icon={CalendarClock} 
+                title="Booking Mode" 
+                description="How pupils book lessons"
+                iconColor="text-teal-600"
+                iconBg="bg-teal-100 dark:bg-teal-900/30"
+              >
+                <BookingModeSelector 
+                  instructorId={instructorId} 
+                  currentMode={authInstructor?.booking_mode || 'pupil_choice'}
+                />
+              </SettingsTile>
+
+              {/* Deposit Settings Section */}
+              <SettingsTile 
+                id="deposits" 
+                icon={Banknote} 
+                title="Deposit Payments" 
+                description="Accept deposits on bookings"
+                iconColor="text-lime-600"
+                iconBg="bg-lime-100 dark:bg-lime-900/30"
+              >
+                <DepositSettingsEditor instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Payment Summary Section */}
+              <SettingsTile 
+                id="payments" 
+                icon={PoundSterling} 
+                title="Payment Summary" 
+                description="Monthly earnings & outstanding"
+                iconColor="text-green-600"
+                iconBg="bg-green-100 dark:bg-green-900/30"
+              >
+                <PaymentSummaryWidget 
+                  instructorId={instructorId} 
+                  instructorName={profile?.name}
+                  compact={false}
+                />
+              </SettingsTile>
+          </div>
+        </div>
+
+        {/* Website & Branding Category */}
+        <div ref={el => categoryRefs.current["website"] = el} className="space-y-3">
+          <CategoryHeader category={settingsCategories[3]} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Mini-Website Share Section */}
+              <SettingsTile 
+                id="mini-website" 
+                icon={Globe} 
+                title="Share Link" 
+                description="Share your instructor profile"
+                iconColor="text-cyan-600"
+                iconBg="bg-cyan-100 dark:bg-cyan-900/30"
+              >
+                <MiniWebsiteShare instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Mini-Website CMS Section */}
+              <SettingsTile 
+                id="website-pages" 
+                icon={Layout} 
+                title="Website Pages" 
+                description="Edit your 5-page mini-website"
+                iconColor="text-indigo-600"
+                iconBg="bg-indigo-100 dark:bg-indigo-900/30"
+              >
+                {authInstructor?.app_slug ? (
+                  <MiniWebsiteCMS 
+                    instructorId={instructorId} 
+                    instructorSlug={authInstructor.app_slug} 
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Your website URL is being set up. Please refresh in a moment.
+                  </p>
+                )}
+              </SettingsTile>
+
+              {/* Website Theme Section */}
+              <SettingsTile 
+                id="website-theme" 
+                icon={Sparkles} 
+                title="Website Theme" 
+                description="Colors, fonts & style presets"
+                iconColor="text-pink-600"
+                iconBg="bg-pink-100 dark:bg-pink-900/30"
+              >
+                <MiniWebsiteThemeEditor
+                  instructorId={instructorId}
+                  currentSettings={{
+                    website_theme: authInstructor?.website_theme,
+                    website_font: authInstructor?.website_font,
+                    website_header_style: authInstructor?.website_header_style,
+                    brand_colour: authInstructor?.brand_colour,
+                    secondary_colour: authInstructor?.secondary_colour,
+                    website_button_color: authInstructor?.website_button_color,
+                    website_footer_bg: authInstructor?.website_footer_bg,
+                    logo_url: authInstructor?.logo_url,
+                    phone: authInstructor?.phone,
+                    email: authInstructor?.email,
+                  }}
+                  onUpdate={refreshInstructor}
+                />
+              </SettingsTile>
+
+              {/* Pupil App Branding (moved from Preferences) */}
+              <SettingsTile 
+                id="branding" 
+                icon={Palette} 
+                title="Pupil App Branding" 
+                description="Customise your pupil portal"
+                iconColor="text-rose-600"
+                iconBg="bg-rose-100 dark:bg-rose-900/30"
+              >
+                <PupilAppBrandingEditor instructorId={instructorId} />
+              </SettingsTile>
+          </div>
+        </div>
+
+        {/* Scheduling Category */}
+        <div ref={el => categoryRefs.current["scheduling"] = el} className="space-y-3">
+          <CategoryHeader category={settingsCategories[4]} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Working Hours Section */}
+              <SettingsTile 
+                id="working-hours" 
+                icon={Clock} 
+                title="Working Hours" 
+                description="Set your availability"
+                iconColor="text-blue-500"
+                iconBg="bg-blue-50 dark:bg-blue-900/20"
+              >
+                <WorkingHoursEditor instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Calendar Sync Section */}
+              <SettingsTile 
+                id="calendar" 
+                icon={Calendar} 
+                title="Calendar Sync" 
+                description="Sync lessons to your calendar"
+                iconColor="text-sky-600"
+                iconBg="bg-sky-100 dark:bg-sky-900/30"
+              >
+                <CalendarConnect instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Cancellation Policy Section */}
+              <SettingsTile 
+                id="cancellation" 
+                icon={FileText} 
+                title="Cancellation Policy" 
+                description="Set notice period & charges"
+                iconColor="text-slate-600"
+                iconBg="bg-slate-100 dark:bg-slate-900/30"
+              >
+                <CancellationPolicyEditor instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* No-Show Policy Section */}
+              <SettingsTile 
+                id="no-show-policy" 
+                icon={AlertTriangle} 
+                title="No-Show Policy" 
+                description="Set fees for no-shows & late cancellations"
+                iconColor="text-red-600"
+                iconBg="bg-red-100 dark:bg-red-900/30"
+              >
+                <NoShowPolicySettings instructorId={instructorId} />
+              </SettingsTile>
+          </div>
+        </div>
+
+        {/* Tracking & Routes Category */}
+        <div ref={el => categoryRefs.current["tracking"] = el} className="space-y-3">
+          <CategoryHeader category={settingsCategories[5]} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Mobile GPS Tracking Section */}
+              <SettingsTile 
+                id="gps-mobile" 
+                icon={Satellite} 
+                title="Mobile GPS Tracking" 
+                description="Link your Every Driver GPS Gate account"
+                iconColor="text-cyan-600"
+                iconBg="bg-cyan-100 dark:bg-cyan-900/30"
+              >
+                <InstructorDetailsEditor instructorId={instructorId} defaultTab="gps" />
+              </SettingsTile>
+
+              {/* Hardware GPS Tracking Section */}
+              <SettingsTile 
+                id="traccar" 
+                icon={Navigation} 
+                title="Vehicle GPS Device" 
+                description="OBD-II hardware tracker setup"
+                iconColor="text-amber-600"
+                iconBg="bg-amber-100 dark:bg-amber-900/30"
+              >
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Use the ST-902L OBD-II tracker for reliable GPS tracking during lessons. 
+                    Plugs directly into your vehicle's diagnostic port.
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      onClick={() => navigate('/instructor/settings/traccar')}
+                      className="w-full justify-between"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Device Setup
+                      </span>
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => navigate('/instructor/traccar')}
+                      className="w-full justify-between"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Navigation className="h-4 w-4" />
+                        Start Tracking Session
+                      </span>
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </SettingsTile>
+
+              {/* Saved Routes Section */}
+              <SettingsTile 
+                id="routes" 
+                icon={Route} 
+                title="Saved Routes" 
+                description="View and manage your recorded driving routes"
+                iconColor="text-fuchsia-600"
+                iconBg="bg-fuchsia-100 dark:bg-fuchsia-900/30"
+              >
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Access your saved lesson routes, test routes, and driving test recordings. 
+                    View route analytics and manage your route library.
+                  </p>
+                  <Button 
+                    onClick={() => navigate('/instructor/routes')}
+                    className="w-full justify-between"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Route className="h-4 w-4" />
+                      Manage Routes
+                    </span>
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
+              </SettingsTile>
+          </div>
+        </div>
+
+        {/* Preferences & Data Category */}
+        <div ref={el => categoryRefs.current["preferences"] = el} className="space-y-3">
+          <CategoryHeader category={settingsCategories[6]} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Dashboard Layout Section */}
+              <SettingsTile 
+                id="dashboard-layout" 
+                icon={LayoutGrid} 
+                title="Dashboard Layout" 
+                description="Customize your home screen tiles"
+                iconColor="text-indigo-600"
+                iconBg="bg-indigo-100 dark:bg-indigo-900/30"
+              >
+                <DashboardLayoutManager instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Push Notifications Section */}
+              <SettingsTile 
+                id="notifications" 
+                icon={Bell} 
+                title="Push Notifications" 
+                description="Manage notification preferences"
+                iconColor="text-yellow-600"
+                iconBg="bg-yellow-100 dark:bg-yellow-900/30"
+              >
+                <PushNotificationSettings instructorId={instructorId} />
+              </SettingsTile>
+
+              {/* Bulk SMS Section */}
+              <SettingsTile 
+                id="bulk-sms" 
+                icon={Bell} 
+                title="Bulk Messaging" 
+                description="Send SMS to all pupils"
+                iconColor="text-orange-500"
+                iconBg="bg-orange-50 dark:bg-orange-900/20"
+              >
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Send announcements, holiday notices, or reminders to multiple pupils at once.
+                  </p>
+                  <BulkSMSDialog instructorId={instructorId} />
+                </div>
+              </SettingsTile>
+
+              {/* Referral Programme */}
+              <SettingsTile 
+                id="referrals" 
+                icon={Gift} 
+                title="Referral Programme" 
+                description="Configure pupil referral rewards"
+                iconColor="text-emerald-600"
+                iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+              >
+                <ReferralSettingsCard instructorId={instructorId} />
               </SettingsTile>
 
               {/* Data Export & Backup Section */}
