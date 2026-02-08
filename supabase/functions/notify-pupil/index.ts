@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { initVapidKeys, sendPush } from "../_shared/webpush.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,9 +25,8 @@ serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { pupilId, type, title, body, data }: NotifyPupilRequest = await req.json();
 
     if (!pupilId) {
@@ -36,7 +36,6 @@ serve(async (req: Request) => {
       );
     }
 
-    // Get pupil info
     const { data: pupil, error: pupilError } = await supabase
       .from("pupils")
       .select("name, phone, instructor_id")
@@ -89,48 +88,56 @@ serve(async (req: Request) => {
     };
 
     // Send push notifications
-    const { data: pushSubs } = await supabase
-      .from("pupil_push_subscriptions")
-      .select("*")
-      .eq("pupil_id", pupilId);
+    if (vapidPublicKey && vapidPrivateKey) {
+      await initVapidKeys(vapidPublicKey, vapidPrivateKey);
 
-    if (pushSubs && pushSubs.length > 0 && vapidPublicKey && vapidPrivateKey) {
-      const payload = JSON.stringify({
-        title: notificationTitle,
-        body: notificationBody,
-        icon: "/favicon.png",
-        badge: "/favicon.png",
-        data: data || {},
-      });
+      const { data: pushSubs } = await supabase
+        .from("pupil_push_subscriptions")
+        .select("*")
+        .eq("pupil_id", pupilId);
 
-      for (const sub of pushSubs) {
-        try {
-          // Simple push notification (would need web-push library for full implementation)
-          // For now, log that we would send
-          console.log(`Would send push to endpoint: ${sub.endpoint}`);
-          results.pushSent = true;
-        } catch (pushError) {
-          console.error("Push error:", pushError);
-          results.errors.push(`Push failed: ${(pushError as Error).message}`);
+      if (pushSubs && pushSubs.length > 0) {
+        const staleIds: string[] = [];
+
+        for (const sub of pushSubs) {
+          const result = await sendPush(
+            { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
+            {
+              title: notificationTitle,
+              body: notificationBody,
+              icon: "/favicon.png",
+              badge: "/favicon.png",
+              data: data || {},
+            }
+          );
+
+          if (result.success) {
+            results.pushSent = true;
+          } else if (result.stale) {
+            staleIds.push(sub.id);
+          } else {
+            results.errors.push(`Push failed: ${result.error}`);
+          }
+        }
+
+        // Clean up stale subscriptions
+        if (staleIds.length > 0) {
+          await supabase.from("pupil_push_subscriptions").delete().in("id", staleIds);
         }
       }
     }
 
-    // Optionally send SMS for important notifications
+    // SMS for important notifications
     const twilioAccountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioAuthToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioPhone = Deno.env.get("TWILIO_PHONE_NUMBER");
 
     if (
-      twilioAccountSid &&
-      twilioAuthToken &&
-      twilioPhone &&
-      pupil.phone &&
+      twilioAccountSid && twilioAuthToken && twilioPhone && pupil.phone &&
       (type === "slot_offer" || type === "waitlist_match")
     ) {
       try {
         const smsBody = `${notificationTitle}\n${notificationBody}`;
-        
         const twilioResponse = await fetch(
           `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`,
           {
@@ -154,16 +161,12 @@ serve(async (req: Request) => {
           results.errors.push(`SMS failed: ${errorText}`);
         }
       } catch (smsError) {
-        console.error("SMS error:", smsError);
         results.errors.push(`SMS failed: ${(smsError as Error).message}`);
       }
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        ...results,
-      }),
+      JSON.stringify({ success: true, ...results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
