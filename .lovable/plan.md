@@ -1,95 +1,49 @@
 
 
-## Instructor Dashboard Redesign Demo Page
+# Fix: Next Lesson Tile Always Shows Wrong Location
 
-A new demo page at `/instructor-tile-demo` showcasing multiple redesign options for both the **Hero card** and the **Next Lesson tile**, rendered with mock data so you can compare them side-by-side on any device.
+## Problem
 
----
+When you update a pupil's address in their record, the Next Lesson tile does not reflect the change. This is because the address is **copied onto the lesson record at the time of scheduling** and never updates afterward. The tile then reads this stale lesson-level copy instead of the pupil's current address.
 
-### Page Structure
+For example, "Fred kebab" was scheduled with a test address ("Bsbdb / BBSBDBE"), but you later updated his real address to "31 Chambord Street / E2 7NJ". The tile still shows the old test data.
 
-The page will be split into two main sections:
+## Solution
 
-**Section A: Hero Card Redesigns (3 options)**
-**Section B: Next Lesson Tile Redesigns (3 options)**
+Change the address resolution logic so the **pupil's current home address is always the fallback**, and lesson-level overrides are only used when they are genuinely different from the pupil's home address. This way, updating the pupil record always takes effect.
 
-Each option is a fully rendered, self-contained mock using static data (no database queries needed).
+### Priority order (updated):
+1. Pupil's default pickup address (if set) -- for pupils who are always collected from a different location
+2. Pupil's home address -- the live, up-to-date address from their profile
+3. Lesson-specific override -- only if it is meaningfully different from both of the above (for one-off alternate locations)
 
----
+## Changes
 
-### Section A: Hero Card Options
+### 1. Update `src/hooks/useNextLessonDetails.ts`
 
-**Option A1 -- Glassmorphism Card**
-- Semi-transparent frosted glass card overlapping the hero image
-- Blurred backdrop (`backdrop-blur-xl bg-white/70`)
-- Progress ring and stats visible through the frosted effect
-- Weather and traffic shown as small pill badges in a horizontal row
-- More modern, iOS-style feel
+Reverse the current priority so the pupil's live profile data takes precedence over the stale lesson-level snapshot:
 
-**Option A2 -- Full-Bleed Dark Overlay**
-- No separate card -- all content rendered directly over the hero image with a dark gradient overlay
-- White text on dark gradient (`bg-gradient-to-t from-black/80 via-black/40 to-transparent`)
-- Progress ring with a glowing emerald stroke on dark background
-- Stats in a bottom row of glass pill badges
-- Immersive, editorial feel
+- **Postcode**: Use `pupil.pickup_postcode` (if set), otherwise `pupil.postcode`, and only fall back to `lesson.pickup_postcode` if the lesson has a genuinely unique override
+- **Location**: Use `pupil.pickup_address` (if set), otherwise `pupil.address`, and only fall back to `lesson.pickup_location` if unique
 
-**Option A3 -- Split Gradient (No Image)**
-- Removes the hero image entirely
-- Full gradient background from primary to a teal/navy blend
-- Greeting, stats, and progress ring laid out in a clean card-free layout
-- Weather/traffic as inline text
-- Faster loading (no image), cleaner on lower-end devices
+### 2. Update `src/components/instructor/ScheduleLessonsDialog.tsx`
+
+When scheduling lessons, use the pupil's `pickup_address`/`pickup_postcode` fields (if set) as the default pickup location, falling back to home address. This ensures new lessons start with the best available address.
 
 ---
 
-### Section B: Next Lesson Tile Options
+### Technical Detail
 
-**Option B1 -- Compact Pill Card**
-- Single-row compact layout: Avatar | Name + Time | Navigate button
-- Urgency indicated by left border color (blue > amber > red)
-- Action buttons hidden behind a "swipe" or expand gesture
-- Duration badge as a small rounded pill
-- Minimal vertical footprint
+Current broken priority in `useNextLessonDetails.ts`:
+```
+pupil.pickup_postcode || lesson.pickup_postcode || pupil.postcode
+```
 
-**Option B2 -- Rich Card with Map Preview**
-- Larger card with a mini static map placeholder at the top (grey box with MapPin icon, simulating a map preview)
-- Pupil info below with avatar, name, location, payment badge, and traffic ETA
-- Countdown as a prominent pulsing badge when < 30 min
-- Action buttons in a horizontal scrollable strip
-- Premium, information-dense feel
+Fixed priority:
+```
+pupil.pickup_postcode || pupil.postcode || null
+pupil.pickup_address  || pupil.address  || null
+```
 
-**Option B3 -- Timeline-Style Card**
-- Vertical timeline aesthetic with a colored line on the left
-- Time marker dot at the top, connected by a line to the pupil info
-- Urgency colors on the timeline line itself
-- Actions as icon-only circular buttons in a row
-- Duration shown inline with the time
-- Clean, schedule-oriented look
+The lesson-level `pickup_location`/`pickup_postcode` will no longer be used for the tile display, since it is always a stale snapshot. It remains in the database for historical/export purposes but will not drive the live tile.
 
----
-
-### Technical Details
-
-**New file:** `src/pages/InstructorTileDemo.tsx`
-- Self-contained page with all mock data inline
-- Uses existing components: `PupilAvatar`, `PaymentStatusBadge`, `Badge`, `Button`
-- Uses `framer-motion` for entrance animations
-- Mobile-first layout (single column, scrollable sections)
-- Each option wrapped in a labeled section with `Badge` tag and description
-
-**Route registration:** `src/App.tsx`
-- Add route: `<Route path="/instructor-tile-demo" element={<InstructorTileDemo />} />`
-- Placed alongside existing demo routes (`/hero-demo`, `/collage-demo`, `/hero-redesign`)
-
-**Mock data used:**
-- Pupil name: "Sarah Mitchell"
-- Start time: "10:30 AM", date: "Today"
-- Minutes until: 26
-- Duration: 90 min (1.5h)
-- Pickup: "SW1A 1AA"
-- Account balance: 80 (credit)
-- Weather: 14 degrees C, partly cloudy
-- Weekly progress: 22h / 30h (73%)
-- Traffic: moderate with 5 min delay
-
-**No database queries or API calls** -- purely visual mock-ups for comparison.
