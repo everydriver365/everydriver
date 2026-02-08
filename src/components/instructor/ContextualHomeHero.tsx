@@ -58,7 +58,7 @@ export function ContextualHomeHero({
   const hoursRemaining = Math.max(hoursGoal - hoursThisWeek, 0);
 
   return (
-    <div className="relative w-full" style={{ height: "75vh", minHeight: 420, maxHeight: 640 }}>
+    <div className="relative w-full" style={{ height: "30vh", minHeight: 180, maxHeight: 280 }}>
       {/* Full-bleed hero image */}
       <img
         src={heroImageUrl || instructorHeroImg}
