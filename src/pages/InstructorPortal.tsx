@@ -275,30 +275,30 @@ export default function InstructorPortal() {
         </div>
 
         {/* Action Buttons Bar */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/schedule?action=add")} className="gap-1.5">
-            <Plus className="h-3.5 w-3.5" /> Add Lesson
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/schedule?action=add")} className="gap-1 h-7 px-2 text-xs shrink-0">
+            <Plus className="h-3 w-3" /> Add Lesson
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/pupils?action=bespoke")} className="gap-1.5">
-            <Briefcase className="h-3.5 w-3.5" /> Bespoke Booking
+          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/pupils?action=bespoke")} className="gap-1 h-7 px-2 text-xs shrink-0">
+            <Briefcase className="h-3 w-3" /> Bespoke
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setPaymentSheetOpen(true)} className="gap-1.5">
-            <PoundSterling className="h-3.5 w-3.5" /> Take Payment
+          <Button variant="outline" size="sm" onClick={() => setPaymentSheetOpen(true)} className="gap-1 h-7 px-2 text-xs shrink-0">
+            <PoundSterling className="h-3 w-3" /> Payment
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/messages?action=new")} className="gap-1.5">
-            <MessageSquare className="h-3.5 w-3.5" /> Send Text
+          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/messages?action=new")} className="gap-1 h-7 px-2 text-xs shrink-0">
+            <MessageSquare className="h-3 w-3" /> Text
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/pupils?action=add")} className="gap-1.5">
-            <Users className="h-3.5 w-3.5" /> New Pupil
+          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/pupils?action=add")} className="gap-1 h-7 px-2 text-xs shrink-0">
+            <Users className="h-3 w-3" /> New Pupil
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/schedule?tab=gaps")} className="gap-1.5">
-            <Calendar className="h-3.5 w-3.5" /> Fill My Gaps
+          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/schedule?tab=gaps")} className="gap-1 h-7 px-2 text-xs shrink-0">
+            <Calendar className="h-3 w-3" /> Fill Gaps
           </Button>
-          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/payments?action=reminder")} className="gap-1.5">
-            <CreditCard className="h-3.5 w-3.5" /> Payment Reminder
+          <Button variant="outline" size="sm" onClick={() => navigate("/instructor/payments?action=reminder")} className="gap-1 h-7 px-2 text-xs shrink-0">
+            <CreditCard className="h-3 w-3" /> Reminder
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setAvailabilityModalOpen(true)} className="gap-1.5">
-            <CalendarCheck className="h-3.5 w-3.5" /> Availability
+          <Button variant="outline" size="sm" onClick={() => setAvailabilityModalOpen(true)} className="gap-1 h-7 px-2 text-xs shrink-0">
+            <CalendarCheck className="h-3 w-3" /> Availability
           </Button>
         </div>
 
