@@ -34,7 +34,8 @@ import {
   Pause,
   XCircle,
   Route,
-  AlertCircle
+  AlertCircle,
+  Share2
 } from "lucide-react";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
@@ -59,6 +60,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
 import { DesktopPupilDetailPanel } from "@/components/instructor/DesktopPupilDetailPanel";
+import { InlineEditField } from "@/components/ui/InlineEditField";
+import { SharePupilDetailsDialog } from "@/components/instructor/SharePupilDetailsDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -402,6 +405,13 @@ export function PupilCardStack({
     return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
+  // Inline edit save helper
+  const saveField = async (field: string, value: string | null) => {
+    const { error } = await supabase.from("pupils").update({ [field]: value }).eq("id", pupil.id);
+    if (error) { toast.error("Failed to save"); throw error; }
+    toast.success("Updated");
+  };
+
   const handleNavigate = () => {
     const query = pupil.what3words 
       ? `what3words.com/${pupil.what3words}`
@@ -605,18 +615,38 @@ export function PupilCardStack({
                     </div>
                     <span className="text-[10px]">Chat</span>
                   </button>
+                  <SharePupilDetailsDialog 
+                    pupil={pupil} 
+                    instructorName={instructorName}
+                    trigger={
+                      <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Share2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <span className="text-[10px]">Share</span>
+                      </button>
+                    }
+                  />
                 </div>
 
                 <div className="p-4 space-y-4">
-                  {/* Address Section */}
+                  {/* Address Section - Inline Editable */}
                   <div className="space-y-1">
-                    <div className="flex items-start gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-foreground">{pupil.address}</p>
-                        <p className="text-muted-foreground">{pupil.postcode}</p>
-                      </div>
-                    </div>
+                    <InlineEditField
+                      value={pupil.address || ""}
+                      onSave={(v) => saveField("address", v)}
+                      icon={<MapPin className="h-4 w-4 text-muted-foreground" />}
+                      placeholder="Address"
+                      emptyText="Add address"
+                    />
+                    <InlineEditField
+                      value={pupil.postcode || ""}
+                      onSave={(v) => saveField("postcode", v)}
+                      placeholder="Postcode"
+                      className="ml-6"
+                      textClassName="text-muted-foreground"
+                      emptyText="Add postcode"
+                    />
                     {pupil.what3words && (
                       <button 
                         onClick={(e) => { e.stopPropagation(); openWhat3Words(); }}
@@ -696,13 +726,18 @@ export function PupilCardStack({
                     })()
                   )}
 
-                  {/* Notes */}
-                  {pupil.notes && (
-                    <div className="flex items-start gap-2 text-sm bg-muted/30 rounded-xl p-3">
-                      <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                      <p className="text-muted-foreground line-clamp-2">{pupil.notes}</p>
-                    </div>
-                  )}
+                  {/* Notes - Inline Editable */}
+                  <div className="bg-muted/30 rounded-xl p-3">
+                    <InlineEditField
+                      value={pupil.notes || ""}
+                      onSave={(v) => saveField("notes", v || null)}
+                      type="textarea"
+                      icon={<FileText className="h-4 w-4 text-muted-foreground" />}
+                      placeholder="Add notes..."
+                      textClassName="text-sm text-muted-foreground"
+                      emptyText="Tap to add notes"
+                    />
+                  </div>
 
                   {/* Lesson Feedback Section */}
                   <CardSection title="Lesson Feedback" defaultOpen={false}>

@@ -18,8 +18,10 @@ import {
   FileText, ExternalLink, MessageSquare, Star, Send, Check, X,
   FileSignature, CheckCircle2, Award, ClipboardList, Car, Route,
   PoundSterling, QrCode, Edit, Trash2, History, UserCheck, UserX,
-  Pause, XCircle, Clock, BookOpen, AlertCircle, ChevronDown,
+  Pause, XCircle, Clock, BookOpen, AlertCircle, ChevronDown, Share2,
 } from "lucide-react";
+import { InlineEditField } from "@/components/ui/InlineEditField";
+import { SharePupilDetailsDialog } from "@/components/instructor/SharePupilDetailsDialog";
 import { PupilTrackingHistory } from "@/components/instructor/PupilTrackingHistory";
 import { PupilPaymentHistory } from "@/components/instructor/PupilPaymentHistory";
 import { PupilCreditBreakdown } from "@/components/instructor/PupilCreditBreakdown";
@@ -177,6 +179,13 @@ export function DesktopPupilDetailPanel({
   const toggle = (s: string) => setExpandedSection(expandedSection === s ? null : s);
 
   const getInitials = (name: string) => name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+
+  // Inline edit save helper
+  const saveField = async (field: string, value: string | null) => {
+    const { error } = await supabase.from("pupils").update({ [field]: value }).eq("id", pupil.id);
+    if (error) { toast.error("Failed to save"); throw error; }
+    toast.success("Updated");
+  };
 
   // Fetch timeline data
   useEffect(() => {
@@ -458,9 +467,14 @@ export function DesktopPupilDetailPanel({
                 </Avatar>
                 <div className={cn("absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card", statusConfig[currentStatus].color)} />
               </div>
-              <div className="flex-1 min-w-0">
+               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-lg">{pupil.name}</h3>
+                  <InlineEditField
+                    value={pupil.name}
+                    onSave={(v) => saveField("name", v)}
+                    textClassName="font-bold text-lg"
+                    placeholder="Pupil name"
+                  />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="focus:outline-none">
@@ -491,13 +505,48 @@ export function DesktopPupilDetailPanel({
                   {pupil.course_type && <Badge variant="secondary" className="text-[10px]">{courseTypeLabels[pupil.course_type] || pupil.course_type}</Badge>}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">{pupil.address}, {pupil.postcode}</span>
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <InlineEditField
+                    value={pupil.address || ""}
+                    onSave={(v) => saveField("address", v)}
+                    placeholder="Address"
+                    textClassName="text-sm text-muted-foreground"
+                    emptyText="Add address"
+                  />
+                  <span className="text-muted-foreground text-sm">,</span>
+                  <InlineEditField
+                    value={pupil.postcode || ""}
+                    onSave={(v) => saveField("postcode", v)}
+                    placeholder="Postcode"
+                    textClassName="text-sm text-muted-foreground"
+                    emptyText="Postcode"
+                  />
                   {pupil.what3words && (
                     <button onClick={() => window.open(`https://what3words.com/${pupil.what3words}`, "_blank")} className="text-xs text-primary hover:underline">
                       ///{pupil.what3words}
                     </button>
                   )}
+                </div>
+                {/* Inline editable phone & email */}
+                <div className="flex items-center gap-4 mt-1">
+                  <InlineEditField
+                    value={pupil.phone || ""}
+                    onSave={(v) => saveField("phone", v)}
+                    type="tel"
+                    icon={<Phone className="h-3.5 w-3.5 text-muted-foreground" />}
+                    placeholder="Phone number"
+                    textClassName="text-sm"
+                    emptyText="Add phone"
+                  />
+                  <InlineEditField
+                    value={pupil.email || ""}
+                    onSave={(v) => saveField("email", v || null)}
+                    type="email"
+                    icon={<Mail className="h-3.5 w-3.5 text-muted-foreground" />}
+                    placeholder="Email address"
+                    textClassName="text-sm"
+                    emptyText="Add email"
+                  />
                 </div>
               </div>
               <div className="flex gap-1.5">
@@ -506,6 +555,7 @@ export function DesktopPupilDetailPanel({
                 <QuickAction icon={Navigation} label="Nav" color="bg-purple-100 dark:bg-purple-900/30 text-purple-600" onClick={handleNavigate} />
                 <QuickAction icon={Mail} label="Chat" color="bg-primary/10 text-primary" onClick={() => onStartChat?.(pupil)} />
                 <QuickAction icon={PoundSterling} label="Pay" color="bg-amber-100 dark:bg-amber-900/30 text-amber-600" onClick={() => setShowRecordPaymentModal(true)} />
+                <SharePupilDetailsDialog pupil={pupil} instructorName={instructorName} />
               </div>
             </div>
           </div>
@@ -692,12 +742,17 @@ export function DesktopPupilDetailPanel({
                 </Button>
               </div>
             </div>
-            {pupil.notes && (
-              <div className="flex items-start gap-2 text-sm bg-muted/30 rounded-xl p-3 mt-3">
-                <FileText className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                <p className="text-muted-foreground">{pupil.notes}</p>
-              </div>
-            )}
+            <div className="bg-muted/30 rounded-xl p-3 mt-3">
+              <InlineEditField
+                value={pupil.notes || ""}
+                onSave={(v) => saveField("notes", v || null)}
+                type="textarea"
+                icon={<FileText className="h-4 w-4 text-muted-foreground mt-0.5" />}
+                placeholder="Add notes..."
+                textClassName="text-sm text-muted-foreground"
+                emptyText="Click to add notes"
+              />
+            </div>
           </div>
         </div>
       </motion.div>
