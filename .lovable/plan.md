@@ -1,72 +1,54 @@
 
 
-# Redesign Instructor Mobile Home -- Reference-Matched Layout
+# Redesign Instructor Mobile Home Page
 
-## What Changes
+## Overview
+Redesign the instructor mobile home page to match the reference mockup -- a full-bleed hero image with overlaid weekly progress stats, a compact "Next Lesson" card, a 4-column iOS-style icon grid, and a bottom navigation bar. All data (tiles, next lesson, stats) will remain functional and connected to live data.
 
-### 1. Full-Bleed Gradient Hero (ContextualHomeHero)
-- Replace the current cropped photo + white overlapping card with a **full-screen hero** that fills the entire viewport height
-- The hero image (instructor + pupil in car) sits in the upper portion, blending into a **teal/green-to-dark gradient** that extends to fill the rest of the screen
-- The gradient creates a seamless transition from the photo to the stats area below
-- **Top bar**: Hamburger menu icon, "EVERY DRIVER UK" text logo, "Free" pill badge, and instructor avatar -- all in white overlaid on the hero
-- **Center/lower area**: Large bold white text "13.5h / 30h" with a bright green progress bar underneath and "16.5 hours remaining" subtitle
-- **Bottom CTA**: A dark navy outlined button "View offers" with a briefcase icon (only shown when pending job offers exist)
-- Remove the current white overlapping card with circular progress ring entirely
+## Visual Changes
 
-### 2. Compact Next Lesson Card
-- Positioned just below the hero section as a white rounded card
-- Shows pupil avatar, "Next Lesson" label, date, time, pickup postcode, traffic ETA, and payment badge
-- Tappable to navigate to the schedule/lesson detail
-- Keeps existing data from `useNextLessonDetails`
+### 1. Hero Section (ContextualHomeHero)
+- **Full-bleed hero image** covering the top portion of the screen (approx 45-50vh)
+- **Weekly hours progress** overlaid on the hero image in large bold white text: "13.5h / 30h" format with a green progress bar underneath
+- **"X hours remaining"** subtitle below the progress bar
+- Remove the current white overlapping card -- stats are rendered directly on the hero image with a dark gradient overlay for readability
+- Instructor profile avatar cluster in top-right corner
 
-### 3. iOS-Style 4-Column Icon Grid (QuickActionTiles)
-- Replace the current 2-column oblong tile layout (in normal/non-edit view) with a **4-column grid**
-- Each tile: square icon container (rounded-2xl, white background, shadow) with label underneath
-- Uses existing custom icon images (messages-icon.png, schedule-icon.png, etc.)
-- Badge counts for Job Offers and Messages preserved
-- Edit mode (drag-and-drop reorder) stays unchanged
+### 2. Next Lesson Card (Compact Overlay)
+- Redesigned as a compact, frosted-glass/white rounded pill overlapping the bottom of the hero
+- Shows: pupil avatar, "Next Lesson", time, duration, amount owed, pickup postcode
+- Chevron right indicator for tap-to-expand
+- Uses existing `useNextLessonDetails` data (pupilName, startTime, minutesUntil, accountBalance, pickupPostcode)
 
-### 4. Page Background
-- Change from `bg-[#E8F1FE]` to a subtle light grey/white so the tiles and cards stand out cleanly against the gradient hero above
+### 3. Quick Action Tiles (4-Column Grid)
+- Change from current 2-column oblong layout to a **4-column square icon grid** matching the reference
+- Each tile: large square icon (using existing custom icon images), label underneath
+- Tiles: Today, Job Offers (with badge), Messages, Wallet, Track Lesson, Sat Nav, Take Payment, Availability, Find My Car, Find Fuel, Health Hub, Resources
+- Uses existing `QuickActionTiles` component data and preferences system
+- Scrollable/paginated with dot indicators if more than 12 tiles
+
+### 4. Bottom Navigation
+- Keep existing 6-tab bottom nav (Home, Schedule, Track, Money, Pupils, More) -- already matches reference closely
 
 ## Technical Details
 
 ### Files to Modify
+1. **`src/components/instructor/ContextualHomeHero.tsx`** -- Redesign to full-bleed hero with overlaid progress stats (white text on dark gradient), remove the overlapping white card
+2. **`src/components/instructor/InstructorMobileHome.tsx`** -- Update layout flow: hero -> compact next lesson -> 4-col tiles -> insights. Remove section labels and spacing that don't match reference
+3. **`src/components/instructor/QuickActionTiles.tsx`** -- Change normal view from 2-column oblongs to 4-column square grid with icon on top, label below (iOS app icon style)
+4. **`src/components/instructor/NextUpTile.tsx`** -- Add a new "compact" variant prop that renders the condensed single-line card shown in the reference (avatar + time + duration + balance + postcode)
 
-1. **`src/components/instructor/ContextualHomeHero.tsx`**
-   - Complete visual redesign: remove white card, remove circular SVG ring
-   - Add full-viewport-height container with hero image at top and teal gradient overlay
-   - Overlay "EVERY DRIVER UK" top bar with hamburger, Free badge, avatar
-   - Large "Xh / Yh" text + progress bar + "X hours remaining" centered in lower portion
-   - "View offers" CTA button at the bottom (conditional on pendingJobs > 0)
-   - All existing props remain the same (weeklyStats, pendingJobs, currentWeather, etc.)
-
-2. **`src/components/instructor/InstructorMobileHome.tsx`**
-   - Remove the "YOUR DAY" section label (next lesson card speaks for itself)
-   - Move the compact next lesson card to sit right after the hero
-   - Adjust spacing so tiles flow naturally below
-
-3. **`src/components/instructor/QuickActionTiles.tsx`**
-   - In the normal (non-edit) view, replace the current layout with a 4-column grid
-   - Each tile: `w-16 h-16 rounded-2xl bg-white shadow-sm` icon container + `text-[10px]` label below
-   - Badge positioning: top-right corner of the icon square
-   - Edit mode layout remains unchanged (list-based drag reorder)
-
-4. **`src/pages/InstructorMobileDemo.tsx`**
-   - Update to match the same new layout so the demo page reflects the changes
-
-### Data Sources (Unchanged)
-- Weekly hours/goal: `useWeeklyGoals` (hoursThisWeek, hoursGoal, progressPercent)
-- Next lesson: `useNextLessonDetails` (pupilName, startTime, minutesUntil, accountBalance, pickupPostcode)
+### Data Sources (All Existing)
+- Weekly hours/goal: `useWeeklyGoals` hook (hoursThisWeek, hoursGoal, progressPercent)
+- Next lesson: `useNextLessonDetails` hook (pupilName, startTime, minutesUntil, accountBalance, pickupPostcode)
 - Quick action tiles: `useInstructorHomepageContent` + `useInstructorTilePreferences`
 - Tile badges: `usePendingJobsCount`, `useUnreadMessagesCount`
-- Weather: `useDrivingAlerts`
-- Traffic ETA: `useTrafficETA`
+- Traffic/ETA: `useTrafficETA` hook (already integrated)
+- Weather: `useDrivingAlerts` hook (already integrated)
 
-### Visual Reference Summary
-- Hero gradient: blend from transparent over photo into a muted teal/green (`#4a7c6f` to `#2d4a3f` range) filling the lower portion
-- Text: bold white, large (text-5xl for hours), with `/` separator in lighter opacity
-- Progress bar: bright emerald/green on white/translucent track
-- "View offers" button: dark navy background (`bg-[#142542]`), white text, full-width, rounded-xl
-- Top bar elements: all white, semi-transparent backgrounds for badges
+### Approach
+- First create a **demo page** at `/instructor-mobile-demo` showing the new layout with the same live data hooks so you can preview before replacing the real home page
+- Once approved, swap into the actual `InstructorMobileHome` component
+- The 4-column tile grid will reuse all existing custom icon images and tile preference/ordering logic
+- Background: soft blue gradient (`bg-[#E8F1FE]`) is kept as the page background, matching the reference's light blue feel
 
