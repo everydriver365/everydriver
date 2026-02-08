@@ -484,25 +484,8 @@ export function QuickActionTiles({
                     <ChevronRight className="h-5 w-5 text-muted-foreground relative shrink-0" />
                   </div>
                   
-                  {/* Quick stats row for schedule tile */}
-                  {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0 && (
-                    <div className="mt-3 pt-3 border-t border-border/30 space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">{todayOverview.totalHours} hours of lessons</span>
-                        <span className="text-muted-foreground/40">•</span>
-                        <span className="text-xs text-muted-foreground">£{todayOverview.expectedEarnings} expected</span>
-                      </div>
-                      {nextLessonDetails?.pickupPostcode && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-xs font-medium text-primary">
-                            Next lesson in {nextLessonDetails.pickupPostcode}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
+
+
                 </div>
               </Link>
             </motion.div>
