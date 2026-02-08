@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
+import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -36,6 +37,7 @@ interface Pupil {
   name: string;
   account_balance: number | null;
   phone: string | null;
+  email: string | null;
 }
 
 export default function InstructorPay() {
@@ -46,7 +48,8 @@ export default function InstructorPay() {
   const [resolvedQrUrl, setResolvedQrUrl] = useState<string | null>(null);
   const [commissionPayer, setCommissionPayer] = useState<string | null>('pupil');
   const [instructorName, setInstructorName] = useState<string>("Your Instructor");
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
+  const [paymentQROpen, setPaymentQROpen] = useState(false);
   const [pupils, setPupils] = useState<Pupil[]>([]);
 
   useEffect(() => {
@@ -74,7 +77,7 @@ export default function InstructorPay() {
     if (!instructorId) return;
     const { data } = await supabase
       .from("pupils")
-      .select("id, name, account_balance, phone")
+      .select("id, name, account_balance, phone, email")
       .eq("instructor_id", instructorId)
       .order("name", { ascending: true });
     setPupils(data || []);
@@ -103,7 +106,7 @@ export default function InstructorPay() {
             <PoundSterling className="h-5 w-5 text-primary" />
             Money
           </h1>
-          <Button size="sm" onClick={() => setPaymentModalOpen(true)}>
+          <Button size="sm" onClick={() => setPaymentSheetOpen(true)}>
             <QrCode className="h-4 w-4 mr-1.5" />
             Take Payment
           </Button>
@@ -292,15 +295,27 @@ export default function InstructorPay() {
         </motion.div>
       </div>
 
-      <PaymentQRModal 
-        open={paymentModalOpen} 
-        onOpenChange={setPaymentModalOpen}
+      <TakePaymentSheet
+        open={paymentSheetOpen}
+        onOpenChange={setPaymentSheetOpen}
         paymentQrUrl={resolvedQrUrl}
         commissionPayer={commissionPayer}
-        pupils={pupils}
-        instructorId={instructorId}
         instructorName={instructorName}
-        onPaymentRecorded={fetchPupils}
+        instructorId={instructorId}
+        pupils={pupils}
+        onShowQR={() => setPaymentQROpen(true)}
+        onRecordPayment={() => {
+          setPaymentSheetOpen(false);
+          // Navigate to pupils page for selecting who to record payment for
+          window.location.href = "/instructor/pupils";
+        }}
+      />
+      <PaymentQRModal 
+        open={paymentQROpen} 
+        onOpenChange={setPaymentQROpen}
+        paymentQrUrl={resolvedQrUrl}
+        commissionPayer={commissionPayer}
+        instructorName={instructorName}
       />
     </InstructorPortalLayout>
   );
