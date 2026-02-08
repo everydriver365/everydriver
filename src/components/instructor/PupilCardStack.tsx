@@ -675,7 +675,7 @@ export function PupilCardStack({
                     )}>
                       <div className={cn("text-xl font-bold", hasDebt && "text-rose-600")}>
                         {pupil.account_balance 
-                          ? (pupil.account_balance < 0 ? `-£${Math.abs(pupil.account_balance)}` : `£${pupil.account_balance}`) 
+                          ? (pupil.account_balance < 0 ? `-£${Math.abs(pupil.account_balance).toFixed(0)}` : `£${Number(pupil.account_balance).toFixed(0)}`) 
                           : "£0"}
                       </div>
                       <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Balance</div>
