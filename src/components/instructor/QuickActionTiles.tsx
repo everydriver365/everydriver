@@ -286,10 +286,10 @@ export function QuickActionTiles({
   if (loading) {
     return (
       <div className="space-y-3">
-        <div className="bg-card rounded-none border border-border p-4 h-16 animate-pulse" />
+        <div className="bg-card rounded-xl p-4 h-16 animate-pulse shadow-[0_2px_12px_rgba(20,37,66,0.12)]" />
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card rounded-none border border-border p-4 h-20 animate-pulse" />
+            <div key={i} className="bg-card rounded-xl p-4 h-20 animate-pulse shadow-[0_2px_12px_rgba(20,37,66,0.12)]" />
           ))}
         </div>
       </div>
@@ -348,7 +348,7 @@ export function QuickActionTiles({
                   >
                     <motion.div
                       className={cn(
-                        "relative overflow-hidden backdrop-blur-md rounded-none border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
+                        "relative overflow-hidden backdrop-blur-md rounded-xl border-2 border-dashed border-primary/30 p-3 flex items-center gap-3 shadow-md cursor-grab active:cursor-grabbing",
                         style.bg
                       )}
                       whileDrag={{ scale: 1.02, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
@@ -396,7 +396,7 @@ export function QuickActionTiles({
                       key={tile.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-none border border-dashed border-muted-foreground/20"
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-xl border border-dashed border-muted-foreground/20"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-none ${customIconImages[tile.id] ? '' : 'bg-primary/10'} flex items-center justify-center overflow-hidden`} style={customIconRadius[tile.id] ? { borderRadius: customIconRadius[tile.id] } : undefined}>
@@ -434,7 +434,7 @@ export function QuickActionTiles({
               whileTap={{ scale: 0.98 }}
             >
               <Link to={localTiles[0].route}>
-                 <div className="relative overflow-hidden bg-white rounded-none p-4 shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:shadow-sm transition-all border border-border">
+                 <div className="relative overflow-hidden bg-white rounded-xl p-4 shadow-[0_2px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-all">
                   <div className="flex items-center gap-4">
                     <div className={`relative ${largeIconTiles.has(localTiles[0].id) ? 'w-16 h-16' : 'w-14 h-14'} rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
                       {(() => {
@@ -522,7 +522,7 @@ export function QuickActionTiles({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + index * 0.03 }}
                     whileTap={{ scale: 0.97 }}
-                     className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-shadow border border-border`}
+                     className={`relative overflow-hidden ${style.bg} rounded-xl px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_12px_rgba(20,37,66,0.12)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.16)] active:shadow-sm transition-shadow`}
                   >
                     <div className={`relative ${largeIconTiles.has(action.id) ? 'w-12 h-12' : 'w-10 h-10'} rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
                       {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
