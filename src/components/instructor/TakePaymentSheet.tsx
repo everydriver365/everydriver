@@ -75,9 +75,6 @@ export function TakePaymentSheet({
     }
   };
 
-  const paysLabel = commissionPayer === 'instructor' 
-    ? 'Instructor pays commission' 
-    : 'Pupil pays commission';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -102,9 +99,6 @@ export function TakePaymentSheet({
                 {paymentQrUrl ? "Display QR for pupil to scan" : "No QR code configured"}
               </p>
             </div>
-            {paymentQrUrl && (
-              <Badge variant="outline" className="text-[10px] shrink-0">{paysLabel}</Badge>
-            )}
           </button>
 
           {/* Send Payment Link */}
