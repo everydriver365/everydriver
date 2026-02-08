@@ -41,6 +41,9 @@ import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
+import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
+import { ReminderStatusWidget } from "@/components/instructor/dashboard/ReminderStatusWidget";
+import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
@@ -491,6 +494,13 @@ export function InstructorMobileHome({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Plan, Reminders & Referrals Widgets */}
+      <div className="mt-4 space-y-3">
+        <PlanWidget />
+        <ReminderStatusWidget />
+        <ReferralStatsWidget />
       </div>
 
       {/* PLAN AHEAD section */}
