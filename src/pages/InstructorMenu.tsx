@@ -141,7 +141,7 @@ export default function InstructorMenu() {
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
               {section.title}
             </h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-2">
               {section.items.map((item) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
