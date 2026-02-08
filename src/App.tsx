@@ -44,6 +44,7 @@ import HeroLayoutDemo from "./pages/HeroLayoutDemo";
 import CollageDemo from "./pages/CollageDemo";
 import HeroRedesignDemo from "./pages/HeroRedesignDemo";
 import MobileHomeDemo from "./pages/MobileHomeDemo";
+import MobilePortalDemo from "./pages/MobilePortalDemo";
 import DesignDemo from "./pages/DesignDemo";
 
 import Theory from "./pages/Theory";
@@ -239,6 +240,7 @@ const App = () => (
               <Route path="/collage-demo" element={<CollageDemo />} />
               <Route path="/hero-redesign" element={<HeroRedesignDemo />} />
               <Route path="/mobile-home-demo" element={<MobileHomeDemo />} />
+              <Route path="/mobile-portal-demo" element={<MobilePortalDemo />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
