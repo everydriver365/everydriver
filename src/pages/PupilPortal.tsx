@@ -289,12 +289,19 @@ export default function PupilPortal() {
                                 </div>
                               </div>
                               <div className="text-right">
-                                <Badge
-                                  variant={lesson.payment_status === "paid" ? "secondary" : "outline"}
-                                  className={lesson.payment_status === "paid" ? "bg-emerald-100 text-emerald-700" : ""}
-                                >
-                                  {lesson.payment_status === "paid" ? "Paid" : `£${lesson.amount_due || 0}`}
-                                </Badge>
+                                {lesson.payment_status === "paid" ? (
+                                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                                    Paid
+                                  </Badge>
+                                ) : (pupil?.account_balance || 0) > 0 ? (
+                                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                                    £{Math.round(pupil!.account_balance)} Credit
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline">
+                                    £{lesson.amount_due || 0} Due
+                                  </Badge>
+                                )}
                               </div>
                             </div>
                           ))}

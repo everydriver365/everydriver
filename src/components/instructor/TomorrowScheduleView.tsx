@@ -26,6 +26,7 @@ interface ScheduledLesson {
     phone: string | null;
     address: string;
     postcode: string;
+    account_balance: number;
   };
 }
 
@@ -64,7 +65,8 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
             name,
             phone,
             address,
-            postcode
+            postcode,
+            account_balance
           )
         `)
         .eq("instructor_id", instructorId)
@@ -81,7 +83,8 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
           name: "Unknown",
           phone: null,
           address: "",
-          postcode: ""
+          postcode: "",
+          account_balance: 0
         }
       }));
       
@@ -102,9 +105,28 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
   };
 
   const getPaymentStatusBadge = (lesson: ScheduledLesson) => {
+    const balance = lesson.pupil?.account_balance || 0;
+    
     if (lesson.payment_status === "paid") {
       return <Badge className="bg-success text-success-foreground text-xs">Paid</Badge>;
     }
+    
+    if (balance > 0) {
+      return (
+        <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-xs">
+          £{Math.round(balance)} Credit
+        </Badge>
+      );
+    }
+
+    if (balance < 0) {
+      return (
+        <Badge variant="destructive" className="text-xs">
+          £{Math.abs(Math.round(balance))} Due
+        </Badge>
+      );
+    }
+    
     return <Badge variant="destructive" className="text-xs">Unpaid</Badge>;
   };
 
