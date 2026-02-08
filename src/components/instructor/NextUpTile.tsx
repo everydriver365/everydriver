@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, ChevronDown, Check, CreditCard, CalendarClock, User } from "lucide-react";
+import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CreditCard, CalendarClock, User, MapPin, Timer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,6 +9,8 @@ import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { CancelLessonDialog } from "./CancelLessonDialog";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface NextUpTileProps {
   lessonId: string;
@@ -43,7 +45,6 @@ export function NextUpTile({
   durationMinutes = 60,
   instructorId,
 }: NextUpTileProps) {
-  const [expanded, setExpanded] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -77,6 +78,11 @@ export function NextUpTile({
       return `in ${days}d`;
     }
     return mins > 0 ? `in ${hours}h ${mins}m` : `in ${hours}h`;
+  };
+
+  const formatDuration = () => {
+    const h = durationMinutes / 60;
+    return h % 1 === 0 ? `${h}h` : `${h}h`;
   };
 
   const effectiveBalance = prepaidHours > 0 ? prepaidHours * 40 : accountBalance;
@@ -125,7 +131,6 @@ export function NextUpTile({
     queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
   };
 
-  // Compute end time for cancel dialog
   const getEndTime = () => {
     try {
       const parsed = parse(startTime, "HH:mm:ss", new Date());
@@ -136,35 +141,29 @@ export function NextUpTile({
     }
   };
 
+  const displayLocation = [pickupLocation, pickupPostcode].filter(Boolean).join(", ");
+
   return (
     <>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className=""
       >
-        <div className="rounded-2xl bg-white border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] overflow-hidden">
-          {/* Header section — date/time + countdown */}
-          <div className="px-5 pt-4 pb-3">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <Clock className="h-4 w-4 text-primary" />
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">
-                Next Lesson
-              </span>
-            </div>
-            <h2 className="text-xl font-bold text-foreground">
-              {getDateLabel()} · {formatTime(startTime)}
-            </h2>
-            {minutesUntil < 60 && (
-              <p className="text-sm text-muted-foreground mt-0.5">
-                ({getCountdownText()})
-              </p>
-            )}
-          </div>
+        <div className="rounded-2xl bg-card border border-border shadow-[0_2px_12px_rgba(20,37,66,0.08)] overflow-hidden">
+          {/* Map placeholder */}
+          {pickupPostcode && (
+            <button
+              onClick={handleNavigate}
+              className="w-full h-28 bg-muted flex items-center justify-center gap-2 text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+            >
+              <MapPin className="h-5 w-5" />
+              <span className="text-sm font-medium">Map preview · {pickupPostcode}</span>
+            </button>
+          )}
 
-          {/* Pupil info card */}
-          <div className="mx-4 mb-3 rounded-xl border border-border p-3" style={{ backgroundColor: '#f5f5f5' }}>
-            <div className="flex items-center gap-3">
+          <div className="p-4">
+            {/* Pupil info */}
+            <div className="flex items-center gap-3 mb-3">
               <PupilAvatar
                 name={pupilName}
                 imageUrl={pupilProfileImage}
@@ -172,12 +171,10 @@ export function NextUpTile({
               />
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground text-base truncate">{pupilName}</p>
-                {(pickupLocation || pickupPostcode) && (
-                  <p className="text-sm text-muted-foreground mt-0.5 truncate">
-                    {pickupLocation ? `${pickupLocation}, ` : ""}{pickupPostcode || ""}
-                  </p>
+                {displayLocation && (
+                  <p className="text-sm text-muted-foreground truncate">{displayLocation}</p>
                 )}
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   <PaymentStatusBadge balance={effectiveBalance} size="md" />
                   {etaLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
@@ -199,112 +196,58 @@ export function NextUpTile({
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Unread message alert */}
-          {pupilUnreadCount > 0 && (
-            <div className="mx-4 mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 border border-destructive/20">
-              <Mail className="h-4 w-4 text-destructive shrink-0" />
-              <span className="text-xs font-medium text-destructive">
-                {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {pupilName.split(" ")[0]}
-              </span>
-            </div>
-          )}
-
-          {/* Start Navigation CTA */}
-          {pickupPostcode && (
-            <div className="px-4 mb-3">
-              <button
-                onClick={handleNavigate}
-                className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-primary-foreground font-semibold text-base shadow-md hover:shadow-lg transition-all bg-primary hover:bg-primary/90"
-              >
-                <Navigation className="h-5 w-5" />
-                Start Navigation &rsaquo;
-              </button>
-            </div>
-          )}
-
-          {/* Primary action buttons */}
-          <div className="px-4 pb-2 grid grid-cols-3 gap-2">
-            <button
-              onClick={handleCall}
-              disabled={!pupilPhone}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
-              style={{ backgroundColor: '#f5f5f5' }}
-            >
-              <Phone className="h-4 w-4" />
-              Call
-            </button>
-            <button
-              onClick={handleMessage}
-              disabled={!pupilPhone}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
-              style={{ backgroundColor: '#f5f5f5' }}
-            >
-              <MessageSquare className="h-4 w-4" />
-              Message
-            </button>
-            <button
-              onClick={handleOnMyWay}
-              disabled={!pupilPhone}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
-              style={{ backgroundColor: '#f5f5f5' }}
-            >
-              <Check className="h-4 w-4 text-emerald-600" />
-              On Way
-            </button>
-          </div>
-
-          {/* Expand toggle */}
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="w-full flex items-center justify-center gap-1 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <span>{expanded ? "Less" : "More actions"}</span>
-            <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-              <ChevronDown className="h-3.5 w-3.5" />
-            </motion.div>
-          </button>
-
-          {/* Expandable extra actions */}
-          <AnimatePresence>
-            {expanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="px-4 pb-4 grid grid-cols-3 gap-2 border-t border-border pt-3">
-                  <button
-                    onClick={() => setCancelOpen(true)}
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border py-3 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
-                    style={{ backgroundColor: '#f5f5f5' }}
-                  >
-                    <X className="h-4 w-4" />
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleViewPupil}
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border py-3 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
-                    style={{ backgroundColor: '#f5f5f5' }}
-                  >
-                    <User className="h-4 w-4 text-primary" />
-                    View Pupil
-                  </button>
-                  <button
-                    onClick={() => navigate(`/instructor/schedule?date=${lessonDate}`)}
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border py-3 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
-                    style={{ backgroundColor: '#f5f5f5' }}
-                  >
-                    <CalendarClock className="h-4 w-4 text-primary" />
-                    Schedule
-                  </button>
-                </div>
-              </motion.div>
+            {/* Unread message alert */}
+            {pupilUnreadCount > 0 && (
+              <div className="mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 border border-destructive/20">
+                <Mail className="h-4 w-4 text-destructive shrink-0" />
+                <span className="text-xs font-medium text-destructive">
+                  {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {pupilName.split(" ")[0]}
+                </span>
+              </div>
             )}
-          </AnimatePresence>
+
+            {/* Countdown + duration badges */}
+            <div className="flex items-center gap-2 mb-3">
+              {minutesUntil <= 30 ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-sm font-bold text-amber-700 dark:text-amber-300 animate-pulse">
+                  <Timer className="h-4 w-4" /> Starts {getCountdownText()}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm font-medium text-muted-foreground">
+                  <Clock className="h-4 w-4" /> {getDateLabel()} · {formatTime(startTime)}
+                </span>
+              )}
+              <Badge variant="secondary" className="text-xs">{formatDuration()} lesson</Badge>
+            </div>
+
+            {/* Action strip */}
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {pickupPostcode && (
+                <Button size="sm" onClick={handleNavigate} className="shrink-0 rounded-xl gap-1.5">
+                  <Navigation className="h-3.5 w-3.5" /> Navigate
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="shrink-0 rounded-xl gap-1.5">
+                <Phone className="h-3.5 w-3.5" /> Call
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="shrink-0 rounded-xl gap-1.5">
+                <MessageSquare className="h-3.5 w-3.5" /> Message
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleOnMyWay} disabled={!pupilPhone} className="shrink-0 rounded-xl gap-1.5">
+                <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleViewPupil} className="shrink-0 rounded-xl gap-1.5">
+                <User className="h-3.5 w-3.5" /> Pupil
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => navigate(`/instructor/schedule?date=${lessonDate}`)} className="shrink-0 rounded-xl gap-1.5">
+                <CalendarClock className="h-3.5 w-3.5" /> Schedule
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setCancelOpen(true)} className="shrink-0 rounded-xl gap-1.5 text-destructive hover:text-destructive">
+                <X className="h-3.5 w-3.5" /> Cancel
+              </Button>
+            </div>
+          </div>
         </div>
       </motion.div>
 
