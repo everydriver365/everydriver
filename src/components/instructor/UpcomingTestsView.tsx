@@ -398,10 +398,20 @@ export function UpcomingTestsView({ instructorId }: UpcomingTestsViewProps) {
           </div>
         ) : (
           <div className="space-y-3">
-            {pupils.map((pupil) => (
+            {pupils.map((pupil) => {
+              const daysUntil = pupil.test_date
+                ? differenceInDays(parseISO(pupil.test_date), new Date())
+                : Infinity;
+              const isUrgentTile = daysUntil <= 14;
+
+              return (
               <div
                 key={pupil.id}
-                className="relative rounded-lg border bg-card p-3 space-y-2"
+                className={`relative rounded-lg p-3 space-y-2 ${
+                  isUrgentTile
+                    ? "border-destructive/40 bg-destructive/10"
+                    : "border bg-card"
+                }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -442,7 +452,8 @@ export function UpcomingTestsView({ instructorId }: UpcomingTestsViewProps) {
                   </Button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>
