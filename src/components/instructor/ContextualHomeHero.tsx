@@ -227,16 +227,11 @@ export function ContextualHomeHero({
                       fill="none" stroke="currentColor" strokeWidth="5"
                       className="text-muted/20"
                     />
-                    <defs>
-                      <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="#14b8a6" />
-                      </linearGradient>
-                    </defs>
                     <motion.circle
                       cx="36" cy="36" r={radius}
                       fill="none" strokeWidth="5" strokeLinecap="round"
-                      stroke="url(#progressGradient)"
+                      className="text-emerald-500"
+                      stroke="currentColor"
                       initial={{ strokeDashoffset: circumference }}
                       animate={{ strokeDashoffset }}
                       transition={{ duration: 1, ease: "easeOut" }}

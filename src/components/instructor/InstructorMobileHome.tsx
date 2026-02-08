@@ -364,7 +364,7 @@ export function InstructorMobileHome({
 
       {/* YOUR DAY section */}
       {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-        <p className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 mt-6 mb-2">YOUR DAY</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">YOUR DAY</p>
       )}
 
       {/* Next Lesson Card - only show when there's a lesson */}
@@ -410,7 +410,7 @@ export function InstructorMobileHome({
       )}
 
       {/* QUICK ACTIONS section */}
-      <p className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 mt-6 mb-2">QUICK ACTIONS</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">QUICK ACTIONS</p>
 
       {/* Quick Action Tiles */}
       <div className="pb-6">
@@ -426,7 +426,7 @@ export function InstructorMobileHome({
 
 
       {/* INSIGHTS section */}
-      <p className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 mt-6 mb-2">INSIGHTS</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">INSIGHTS</p>
 
       {/* Today & Weekly Combined Card */}
       <div className="mt-2">
@@ -439,7 +439,7 @@ export function InstructorMobileHome({
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 border-l-[3px] border-l-blue-500 rounded-xl p-3 text-center">
+            <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-3 text-center">
               <div className="flex items-center justify-center gap-1 text-primary">
                 <BookOpen className="h-4 w-4" />
                 <span className="text-lg font-bold">
@@ -448,7 +448,7 @@ export function InstructorMobileHome({
               </div>
               <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Lessons</span>
             </div>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 border-l-[3px] border-l-emerald-500 rounded-xl p-3 text-center">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3 text-center">
               <div className="flex items-center justify-center gap-1 text-blue-600 dark:text-blue-400">
                 <Clock className="h-4 w-4" />
                 <span className="text-lg font-bold">
@@ -457,7 +457,7 @@ export function InstructorMobileHome({
               </div>
               <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Hours</span>
             </div>
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 border border-emerald-200 dark:border-emerald-800 border-l-[3px] border-l-amber-500 rounded-xl p-3 text-center">
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 text-center">
               <div className="flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400">
                 <PoundSterling className="h-4 w-4" />
                 <span className="text-lg font-bold">
@@ -502,7 +502,7 @@ export function InstructorMobileHome({
       </div>
 
       {/* PLAN AHEAD section */}
-      <p className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 mt-6 mb-2">PLAN AHEAD</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">PLAN AHEAD</p>
 
       {/* Tomorrow Peek Card */}
       {tomorrowPreview && tomorrowPreview.lessonCount > 0 ? (
