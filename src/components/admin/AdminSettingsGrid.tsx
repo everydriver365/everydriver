@@ -399,38 +399,38 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       </div>
 
       {/* Settings Grid */}
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="space-y-8">
       {settingsCategories.map((category) => (
         <div key={category.title} className="space-y-3">
           {/* Category Header */}
-          <div className="flex items-center gap-3">
-            <category.icon className={`h-6 w-6 ${category.iconColor}`} />
-            <h2 className="text-lg font-semibold">{category.title}</h2>
-          </div>
+          <h2 className="text-lg font-bold tracking-tight">{category.title}</h2>
           
-          {/* Links */}
-          <div className="space-y-1 pl-9">
+          {/* Links as card tiles */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {category.links.map((link) => {
               const count = getBadgeCount(link.badgeKey);
               return (
                 <button
                   key={link.key}
                   onClick={() => onNavigate(link.key)}
-                  className="block w-full text-left group"
+                  className="flex items-center gap-3 p-4 bg-card rounded-lg border hover:border-primary/50 hover:shadow-sm transition-all text-left w-full"
                 >
-                  <span className="inline-flex items-center gap-2">
-                    <span className="text-primary hover:underline font-medium text-sm">
-                      {link.title}
-                    </span>
-                    {count > 0 && (
-                      <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs animate-pulse">
-                        {count}
-                      </Badge>
-                    )}
-                  </span>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {link.description}
-                  </p>
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg shrink-0 ${category.iconColor} bg-muted`}>
+                    <category.icon className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{link.title}</span>
+                      {count > 0 && (
+                        <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs animate-pulse">
+                          {count}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {link.description}
+                    </p>
+                  </div>
                 </button>
               );
             })}
