@@ -379,6 +379,9 @@ serve(async (req: Request) => {
     if (provider === "klarna") {
       const klarnaOrderId = url.searchParams.get("order_id") || formData.order_id || "";
       const isPupilPayment = paymentRef.startsWith("PUPIL-") || paymentType === "balance";
+      // Extract amount from query param (passed from checkout redirect)
+      const klarnaAmountParam = url.searchParams.get("amount") || formData.amount || "0";
+      const klarnaAmount = parseFloat(klarnaAmountParam) || 0;
 
       // For Klarna, the payment is already captured via HPP, we just need to record it
       if (klarnaOrderId && pupilId) {
@@ -390,15 +393,48 @@ serve(async (req: Request) => {
             .single();
 
           if (pupil) {
-            // We don't have amount from callback, use 0 as placeholder
-            // The actual amount should be retrieved from Klarna API if needed
             await supabase.from("payment_history").insert({
               instructor_id: pupil.instructor_id,
               pupil_id: pupilId,
-              amount: 0, // Amount would need to be passed via query param
+              amount: klarnaAmount,
               payment_method: "klarna",
               notes: `Klarna Payment - Order: ${klarnaOrderId}`,
             });
+
+            // Update pupil balance for pupil payments
+            if (isPupilPayment && klarnaAmount > 0) {
+              const currentBalance = pupil.account_balance || 0;
+              const newBalance = currentBalance + klarnaAmount;
+              
+              await supabase
+                .from("pupils")
+                .update({ account_balance: newBalance })
+                .eq("id", pupilId);
+
+              console.log(`Klarna: Updated pupil balance: ${currentBalance} -> ${newBalance}`);
+
+              // Send payment receipt email
+              try {
+                const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+                await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${supabaseAnonKey}`,
+                  },
+                  body: JSON.stringify({
+                    pupilId,
+                    instructorId: pupil.instructor_id,
+                    amount: klarnaAmount,
+                    paymentMethod: "Klarna",
+                    transactionReference: klarnaOrderId,
+                  }),
+                });
+                console.log("Klarna payment receipt email triggered");
+              } catch (emailError) {
+                console.error("Failed to send Klarna receipt email:", emailError);
+              }
+            }
 
             paymentSuccessful = true;
           }
@@ -423,7 +459,7 @@ serve(async (req: Request) => {
         }
 
         const klarnaPupilRedirect = instructorSlug 
-          ? `${siteBaseUrl}/i/${instructorSlug}?payment=success`
+          ? `${siteBaseUrl}/i/${instructorSlug}?payment=success&amount=${klarnaAmount}`
           : `${siteBaseUrl}?payment=success`;
 
         return new Response(
@@ -436,7 +472,7 @@ serve(async (req: Request) => {
         );
       }
 
-      const klarnaRedirectUrl = `${siteBaseUrl}/booking-confirmation?klarna=success&order_id=${klarnaOrderId}`;
+      const klarnaRedirectUrl = `${siteBaseUrl}/booking-confirmation?klarna=success&order_id=${klarnaOrderId}&amountReceived=${klarnaAmount * 100}`;
       return new Response(
         `<!DOCTYPE html>
         <html>

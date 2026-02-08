@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 import { PoundSterling, Loader2, CreditCard, Banknote, Smartphone } from "lucide-react";
 import {
   Dialog,
@@ -44,6 +45,7 @@ export function RecordPaymentModal({
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   const handleSubmit = async () => {
     const parsedAmount = parseFloat(amount);
@@ -77,6 +79,7 @@ export function RecordPaymentModal({
       if (updateError) throw updateError;
 
       toast.success(`£${parsedAmount.toFixed(2)} payment recorded for ${pupilName}`);
+      invalidatePaymentQueries({ pupilId, instructorId });
       onOpenChange(false);
       setAmount("");
       setPaymentMethod("cash");
