@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, ChevronDown, Check, CreditCard, CalendarClock, User } from "lucide-react";
+import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, ChevronDown, Check, CreditCard, CalendarClock, User, Timer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,6 +27,32 @@ interface NextUpTileProps {
   instructorId?: string;
 }
 
+// --- Helper functions ---
+
+function getUrgencyBorderColor(minutesUntil: number) {
+  if (minutesUntil < 15) return "border-l-red-500";
+  if (minutesUntil <= 30) return "border-l-amber-400";
+  return "border-l-primary";
+}
+
+function getCountdownBadgeColors(minutesUntil: number) {
+  if (minutesUntil < 5) return "bg-red-500/15 text-red-700 dark:text-red-400";
+  if (minutesUntil <= 15) return "bg-amber-500/15 text-amber-700 dark:text-amber-400";
+  return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400";
+}
+
+function formatDuration(mins: number) {
+  const h = mins / 60;
+  if (h === Math.floor(h)) return `${h}h`;
+  return `${h.toFixed(1)}h`;
+}
+
+function getPaymentRingColor(effectiveBalance: number) {
+  if (effectiveBalance > 20) return "ring-emerald-400";
+  if (effectiveBalance > 0) return "ring-amber-400";
+  return "ring-red-400";
+}
+
 export function NextUpTile({
   lessonId,
   pupilId,
@@ -50,6 +76,8 @@ export function NextUpTile({
 
   const { data: pupilUnreadCount = 0 } = usePupilUnreadCount(instructorId, pupilId);
   const { durationMinutes: etaMinutes, durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(pickupPostcode);
+
+  const effectiveBalance = prepaidHours > 0 ? prepaidHours * 40 : accountBalance;
 
   const formatTime = (time: string) => {
     try {
@@ -78,8 +106,6 @@ export function NextUpTile({
     }
     return mins > 0 ? `in ${hours}h ${mins}m` : `in ${hours}h`;
   };
-
-  const effectiveBalance = prepaidHours > 0 ? prepaidHours * 40 : accountBalance;
 
   const handleNavigate = () => {
     if (pickupPostcode) {
@@ -125,7 +151,6 @@ export function NextUpTile({
     queryClient.invalidateQueries({ queryKey: ["today-remaining-lessons"] });
   };
 
-  // Compute end time for cancel dialog
   const getEndTime = () => {
     try {
       const parsed = parse(startTime, "HH:mm:ss", new Date());
@@ -141,35 +166,51 @@ export function NextUpTile({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className=""
       >
-        <div className="rounded-2xl bg-white border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] overflow-hidden">
-          {/* Header section — date/time + countdown */}
-          <div className="px-5 pt-4 pb-3">
+        {/* Enhancement 2: urgency border-left, 7: gradient bg + tinted border + shadow */}
+        <div className={`rounded-2xl overflow-hidden border-l-4 ${getUrgencyBorderColor(minutesUntil)} bg-gradient-to-b from-blue-50/40 to-white dark:from-blue-950/10 dark:to-card border border-blue-200/40 dark:border-blue-800/30 shadow-[0_2px_12px_rgba(20,37,66,0.08)]`}>
+          
+          {/* Enhancement 1: gradient header strip */}
+          <div className="px-5 pt-4 pb-3 bg-gradient-to-br from-primary/5 to-transparent">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Clock className="h-4 w-4 text-primary" />
               <span className="text-xs font-bold uppercase tracking-wider text-primary">
                 Next Lesson
               </span>
             </div>
-            <h2 className="text-xl font-bold text-foreground">
-              {getDateLabel()} · {formatTime(startTime)}
-            </h2>
-            {minutesUntil < 60 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl font-bold text-foreground">
+                {getDateLabel()} · {formatTime(startTime)}
+              </h2>
+              {/* Enhancement 4: duration badge */}
+              <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+                {formatDuration(durationMinutes)}
+              </span>
+            </div>
+            {/* Enhancement 3: animated countdown badge */}
+            {minutesUntil <= 30 ? (
+              <div className={`inline-flex items-center gap-1.5 mt-1.5 rounded-full px-2.5 py-1 text-xs font-semibold animate-pulse ${getCountdownBadgeColors(minutesUntil)}`}>
+                <Timer className="h-3 w-3" />
+                {getCountdownText()}
+              </div>
+            ) : minutesUntil < 60 ? (
               <p className="text-sm text-muted-foreground mt-0.5">
                 ({getCountdownText()})
               </p>
-            )}
+            ) : null}
           </div>
 
           {/* Pupil info card */}
-          <div className="mx-4 mb-3 rounded-xl border border-border p-3" style={{ backgroundColor: '#f5f5f5' }}>
+          <div className="mx-4 mb-3 rounded-xl border border-border p-3 bg-muted/50">
             <div className="flex items-center gap-3">
-              <PupilAvatar
-                name={pupilName}
-                imageUrl={pupilProfileImage}
-                size="lg"
-              />
+              {/* Enhancement 5: payment-status ring on avatar */}
+              <div className={`ring-2 ${getPaymentRingColor(effectiveBalance)} ring-offset-2 ring-offset-white dark:ring-offset-card rounded-full`}>
+                <PupilAvatar
+                  name={pupilName}
+                  imageUrl={pupilProfileImage}
+                  size="lg"
+                />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground text-base truncate">{pupilName}</p>
                 {(pickupLocation || pickupPostcode) && (
@@ -224,13 +265,12 @@ export function NextUpTile({
             </div>
           )}
 
-          {/* Primary action buttons */}
+          {/* Enhancement 6: improved action buttons */}
           <div className="px-4 pb-2 grid grid-cols-3 gap-2">
             <button
               onClick={handleCall}
               disabled={!pupilPhone}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
-              style={{ backgroundColor: '#f5f5f5' }}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-blue-200/60 py-2.5 text-sm font-medium text-blue-900 dark:text-blue-100 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-card hover:ring-1 hover:ring-blue-300/50 shadow-[0_1px_4px_rgba(20,37,66,0.06)] transition-all disabled:opacity-40"
             >
               <Phone className="h-4 w-4" />
               Call
@@ -238,8 +278,7 @@ export function NextUpTile({
             <button
               onClick={handleMessage}
               disabled={!pupilPhone}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
-              style={{ backgroundColor: '#f5f5f5' }}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-blue-200/60 py-2.5 text-sm font-medium text-blue-900 dark:text-blue-100 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-card hover:ring-1 hover:ring-blue-300/50 shadow-[0_1px_4px_rgba(20,37,66,0.06)] transition-all disabled:opacity-40"
             >
               <MessageSquare className="h-4 w-4" />
               Message
@@ -247,10 +286,9 @@ export function NextUpTile({
             <button
               onClick={handleOnMyWay}
               disabled={!pupilPhone}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors disabled:opacity-40"
-              style={{ backgroundColor: '#f5f5f5' }}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200/60 py-2.5 text-sm font-medium text-emerald-900 dark:text-emerald-100 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-950/20 dark:to-card hover:ring-1 hover:ring-emerald-300/50 shadow-[0_1px_4px_rgba(20,37,66,0.06)] transition-all disabled:opacity-40"
             >
-              <Check className="h-4 w-4 text-emerald-600" />
+              <Check className="h-4 w-4" />
               On Way
             </button>
           </div>
@@ -279,24 +317,21 @@ export function NextUpTile({
                 <div className="px-4 pb-4 grid grid-cols-3 gap-2 border-t border-border pt-3">
                   <button
                     onClick={() => setCancelOpen(true)}
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border py-3 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
-                    style={{ backgroundColor: '#f5f5f5' }}
+                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-red-200/60 py-3 text-xs font-medium text-red-700 dark:text-red-400 bg-gradient-to-r from-red-50 to-white dark:from-red-950/20 dark:to-card hover:ring-1 hover:ring-red-300/50 shadow-[0_1px_4px_rgba(20,37,66,0.06)] transition-all"
                   >
                     <X className="h-4 w-4" />
                     Cancel
                   </button>
                   <button
                     onClick={handleViewPupil}
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border py-3 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
-                    style={{ backgroundColor: '#f5f5f5' }}
+                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-blue-200/60 py-3 text-xs font-medium text-blue-900 dark:text-blue-100 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-card hover:ring-1 hover:ring-blue-300/50 shadow-[0_1px_4px_rgba(20,37,66,0.06)] transition-all"
                   >
                     <User className="h-4 w-4 text-primary" />
                     View Pupil
                   </button>
                   <button
                     onClick={() => navigate(`/instructor/schedule?date=${lessonDate}`)}
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border py-3 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
-                    style={{ backgroundColor: '#f5f5f5' }}
+                    className="flex flex-col items-center justify-center gap-1 rounded-xl border border-blue-200/60 py-3 text-xs font-medium text-blue-900 dark:text-blue-100 bg-gradient-to-r from-blue-50 to-white dark:from-blue-950/20 dark:to-card hover:ring-1 hover:ring-blue-300/50 shadow-[0_1px_4px_rgba(20,37,66,0.06)] transition-all"
                   >
                     <CalendarClock className="h-4 w-4 text-primary" />
                     Schedule
