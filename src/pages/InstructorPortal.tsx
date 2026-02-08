@@ -26,6 +26,8 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { PlanBadge } from "@/components/instructor/PlanBadge";
+import { UpgradePlanSheet } from "@/components/instructor/dashboard/UpgradePlanSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
@@ -54,7 +56,7 @@ interface InstructorData {
 }
 
 export default function InstructorPortal() {
-  const { instructor: authInstructor, loading: authLoading, user, refreshInstructor } = useInstructorAuth();
+  const { instructor: authInstructor, loading: authLoading, user, refreshInstructor, subscription } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   const navigate = useNavigate();
   
@@ -65,6 +67,7 @@ export default function InstructorPortal() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [availabilityModalOpen, setAvailabilityModalOpen] = useState(false);
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
+  const [upgradeSheetOpen, setUpgradeSheetOpen] = useState(false);
   const isMobile = useIsMobile();
   const { hoursThisWeek, monthEarnings, loading: statsLoading } = useInstructorLiveStats(instructorId);
 
@@ -232,6 +235,12 @@ export default function InstructorPortal() {
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <div
+                onClick={() => setUpgradeSheetOpen(true)}
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+              >
+                <PlanBadge planSlug={subscription?.plan_slug} size="md" />
+              </div>
               <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2.5">
                 <Globe className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Online</span>
@@ -471,6 +480,12 @@ export default function InstructorPortal() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <UpgradePlanSheet
+        open={upgradeSheetOpen}
+        onOpenChange={setUpgradeSheetOpen}
+        currentPlanSlug={subscription?.plan_slug || "free"}
+      />
     </InstructorPortalLayout>
   );
 }
