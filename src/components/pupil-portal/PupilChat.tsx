@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Check, CheckCheck, MessageCircle, Send, Paperclip, X, File } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, MessageCircle, Send, Paperclip, X, File, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -306,6 +306,7 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
                 <div className="space-y-2">
                   {group.messages.map((message) => {
                     const isPupil = message.sender_type === "pupil";
+                    const isUrgent = message.is_urgent;
                     return (
                       <div
                         key={message.id}
@@ -319,9 +320,19 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
                             "max-w-[75%] rounded-2xl px-4 py-2",
                             isPupil
                               ? "bg-primary text-primary-foreground rounded-br-md"
-                              : "bg-muted rounded-bl-md"
+                              : "bg-muted rounded-bl-md",
+                            isUrgent && "ring-2 ring-destructive/60"
                           )}
                         >
+                          {isUrgent && (
+                            <div className={cn(
+                              "flex items-center gap-1 mb-1 text-[10px] font-semibold",
+                              isPupil ? "text-primary-foreground/90" : "text-destructive"
+                            )}>
+                              <AlertTriangle className="h-3 w-3" />
+                              URGENT
+                            </div>
+                          )}
                           {message.content && (
                             <p className="text-sm whitespace-pre-wrap break-words">
                               {message.content}

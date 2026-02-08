@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File, Trash2, MoreVertical } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Send, User, Paperclip, X, File, Trash2, MoreVertical, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ conversation, instructorId, onBack, onDelete }: ChatWindowProps) {
-  const { messages, loading, sendMessage, markAsRead } = useConversationMessages(
+  const { messages, loading, sendMessage, markAsRead, softDeleteMessage, softDeleteAllMessages, toggleUrgent } = useConversationMessages(
     conversation.id,
     "instructor"
   );
@@ -237,13 +237,8 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
   const handleClearMessages = async () => {
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from("messages")
-        .delete()
-        .eq("conversation_id", conversation.id);
-
-      if (error) throw error;
-
+      const success = await softDeleteAllMessages();
+      if (!success) throw new Error("Failed");
       toast({ title: "Messages cleared" });
       setShowClearDialog(false);
     } catch (error) {
@@ -258,13 +253,8 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
     if (!messageToDelete) return;
     setDeletingMessage(true);
     try {
-      const { error } = await supabase
-        .from("messages")
-        .delete()
-        .eq("id", messageToDelete);
-
-      if (error) throw error;
-
+      const success = await softDeleteMessage(messageToDelete);
+      if (!success) throw new Error("Failed");
       toast({ title: "Message deleted" });
       setMessageToDelete(null);
     } catch (error) {
@@ -278,21 +268,11 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
   const handleDeleteConversation = async () => {
     setDeleting(true);
     try {
-      // First delete all messages
-      await supabase
-        .from("messages")
-        .delete()
-        .eq("conversation_id", conversation.id);
+      // Soft delete all messages first
+      await softDeleteAllMessages();
 
-      // Then delete the conversation
-      const { error } = await supabase
-        .from("conversations")
-        .delete()
-        .eq("id", conversation.id);
-
-      if (error) throw error;
-
-      toast({ title: "Conversation deleted" });
+      // Then soft-mark the conversation (we keep it but clear it)
+      toast({ title: "Conversation cleared" });
       setShowDeleteDialog(false);
       onDelete?.();
       onBack();
@@ -378,6 +358,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
                 <div className="space-y-2">
                   {group.messages.map((message) => {
                     const isInstructor = message.sender_type === "instructor";
+                    const isUrgent = message.is_urgent;
                     return (
                       <div
                         key={message.id}
@@ -386,25 +367,60 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
                           isInstructor ? "justify-end" : "justify-start"
                         )}
                       >
-                        {/* Delete button for instructor's own messages - appears on left */}
+                        {/* Actions for instructor's own messages */}
                         {isInstructor && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity mr-1 shrink-0 self-center"
-                            onClick={() => setMessageToDelete(message.id)}
-                          >
-                            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                          </Button>
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mr-1 shrink-0 self-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => toggleUrgent(message.id)}
+                              title={isUrgent ? "Remove urgent" : "Mark urgent"}
+                            >
+                              <AlertTriangle className={cn("h-3 w-3", isUrgent ? "text-destructive" : "text-muted-foreground")} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => setMessageToDelete(message.id)}
+                            >
+                              <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                            </Button>
+                          </div>
+                        )}
+                        {/* Urgent toggle for received messages */}
+                        {!isInstructor && (
+                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity mr-1 shrink-0 self-center order-last ml-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => toggleUrgent(message.id)}
+                              title={isUrgent ? "Remove urgent" : "Mark urgent"}
+                            >
+                              <AlertTriangle className={cn("h-3 w-3", isUrgent ? "text-destructive" : "text-muted-foreground")} />
+                            </Button>
+                          </div>
                         )}
                         <div
                           className={cn(
                             "max-w-[70%] rounded-2xl px-3 py-2",
                             isInstructor
                               ? "bg-primary text-primary-foreground rounded-br-md"
-                              : "bg-muted rounded-bl-md"
+                              : "bg-muted rounded-bl-md",
+                            isUrgent && "ring-2 ring-destructive/60"
                           )}
                         >
+                          {isUrgent && (
+                            <div className={cn(
+                              "flex items-center gap-1 mb-1 text-[10px] font-semibold",
+                              isInstructor ? "text-primary-foreground/90" : "text-destructive"
+                            )}>
+                              <AlertTriangle className="h-3 w-3" />
+                              URGENT
+                            </div>
+                          )}
                           {message.content && (
                             <p className="text-sm whitespace-pre-wrap break-words">
                               {message.content}
@@ -524,7 +540,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
         <AlertDialogHeader>
           <AlertDialogTitle>Clear all messages?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will delete all messages in this conversation. This action cannot be undone.
+            Messages will be hidden from view but retained in the system.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -544,9 +560,9 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
     <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+          <AlertDialogTitle>Clear this conversation?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete this conversation and all messages. This action cannot be undone.
+            All messages will be hidden from view but retained in the system.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -568,7 +584,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
         <AlertDialogHeader>
           <AlertDialogTitle>Delete this message?</AlertDialogTitle>
           <AlertDialogDescription>
-            This message will be permanently deleted. This action cannot be undone.
+            This message will be hidden from view but retained in the system.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
