@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, X, ArrowLeft, Mail, Crown, Star, Zap, Users, Building2, Sparkles } from "lucide-react";
+import { Check, X, ArrowLeft, Mail, Crown, Star, Zap, Users, Building2, Sparkles, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
@@ -50,7 +50,7 @@ const tierHeaderBg: Record<string, string> = {
 };
 
 export default function InstructorPlans() {
-  const { subscription } = useInstructorAuth();
+  const { subscription, signOut } = useInstructorAuth();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,20 +83,36 @@ export default function InstructorPlans() {
     });
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/instructor-app/login");
+  };
+
   return (
     <InstructorPortalLayout>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/instructor")}
-            className="mb-4 text-muted-foreground hover:text-foreground -ml-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
-            Back to Dashboard
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/instructor")}
+              className="text-muted-foreground hover:text-foreground -ml-2"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              Back to Dashboard
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-1.5" />
+              Log Out
+            </Button>
+          </div>
 
           <div className="flex items-center gap-3 mb-2">
             <Crown className="h-6 w-6 text-emerald-500" />
