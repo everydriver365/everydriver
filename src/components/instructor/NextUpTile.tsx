@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { CancelLessonDialog } from "./CancelLessonDialog";
+import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { Badge } from "@/components/ui/badge";
@@ -153,13 +154,10 @@ export function NextUpTile({
         <div className="rounded-2xl bg-card border border-border shadow-[0_2px_12px_rgba(20,37,66,0.08)] overflow-hidden">
           {/* Map placeholder */}
           {pickupPostcode && (
-            <button
+            <PostcodeMapPreview
+              postcode={pickupPostcode}
               onClick={handleNavigate}
-              className="w-full h-28 bg-muted flex items-center justify-center gap-2 text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
-            >
-              <MapPin className="h-5 w-5" />
-              <span className="text-sm font-medium">Map preview · {pickupPostcode}</span>
-            </button>
+            />
           )}
 
           <div className="p-4">
