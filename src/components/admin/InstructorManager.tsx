@@ -509,91 +509,110 @@ export function InstructorManager({ onEdit }: InstructorManagerProps) {
         </div>
       )}
 
-      {/* Instructor Details Dialog */}
+      {/* Instructor Details Dialog — Combined Layout */}
       <Dialog open={!!selectedInstructor} onOpenChange={() => setSelectedInstructor(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Instructor Details</DialogTitle>
           </DialogHeader>
           {selectedInstructor && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                  {selectedInstructor.profile_image_url ? (
-                    <img 
-                      src={selectedInstructor.profile_image_url} 
-                      alt={selectedInstructor.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xl font-medium text-primary">
-                      {selectedInstructor.name.split(" ").map(n => n[0]).join("")}
-                    </span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Left: Activity Timeline (1/3) */}
+              <div className="lg:col-span-1">
+                <div className="bg-muted/30 border border-border rounded-xl overflow-hidden">
+                  <div className="p-3 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-primary" />
+                      Overview
+                    </h4>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="truncate">{selectedInstructor.email || "No email"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedInstructor.phone || "No phone"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedInstructor.home_postcode} ({selectedInstructor.radius_miles} mi)</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedInstructor.pupil_count || 0} pupils</span>
+                    </div>
+                    {selectedInstructor.car_type && (
+                      <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                        <p className="text-muted-foreground text-xs mb-1">Vehicle</p>
+                        <p className="font-medium">{selectedInstructor.car_make} {selectedInstructor.car_model} ({selectedInstructor.car_type})</p>
+                      </div>
+                    )}
+                    {selectedInstructor.bio && (
+                      <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                        <p className="text-muted-foreground text-xs mb-1">Bio</p>
+                        <p>{selectedInstructor.bio}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Dashboard Cards (2/3) */}
+              <div className="lg:col-span-2 space-y-4">
+                {/* Header */}
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                    {selectedInstructor.profile_image_url ? (
+                      <img src={selectedInstructor.profile_image_url} alt={selectedInstructor.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-xl font-medium text-primary">
+                        {selectedInstructor.name.split(" ").map(n => n[0]).join("")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-lg">{selectedInstructor.name}</h3>
+                      <Badge variant={selectedInstructor.is_active ? "default" : "secondary"}>
+                        {selectedInstructor.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                      <PlanBadge planSlug={selectedInstructor.subscription?.plan_slug} planName={selectedInstructor.subscription?.plan_name} />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-0.5">{selectedInstructor.email}</p>
+                  </div>
+                </div>
+
+                {/* Stat cards */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-4">
+                    <div className="text-xs text-muted-foreground mb-1">Pupils</div>
+                    <div className="text-2xl font-bold">{selectedInstructor.pupil_count || 0}</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                    <div className="text-xs text-muted-foreground mb-1">Rate</div>
+                    <div className="text-2xl font-bold">{selectedInstructor.hourly_rate ? `£${selectedInstructor.hourly_rate}/hr` : "—"}</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                    <div className="text-xs text-muted-foreground mb-1">Coverage</div>
+                    <div className="text-2xl font-bold">{selectedInstructor.radius_miles} mi</div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-2">
+                  <Button onClick={() => { handleEditInstructor(selectedInstructor); setSelectedInstructor(null); }}>
+                    <Edit2 className="mr-2 h-4 w-4" /> Edit Instructor
+                  </Button>
+                  {selectedInstructor.website_slug && (
+                    <Button variant="outline" asChild>
+                      <a href={`/instructor/${selectedInstructor.website_slug}`} target="_blank" rel="noopener noreferrer">
+                        <Globe className="mr-2 h-4 w-4" /> View Website
+                      </a>
+                    </Button>
                   )}
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{selectedInstructor.name}</h3>
-                  <Badge variant={selectedInstructor.is_active ? "default" : "secondary"}>
-                    {selectedInstructor.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedInstructor.email || "No email"}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedInstructor.phone || "No phone"}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedInstructor.home_postcode} ({selectedInstructor.radius_miles} mi radius)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>{selectedInstructor.pupil_count || 0} pupils</span>
-                </div>
-              </div>
-
-              {selectedInstructor.car_type && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Vehicle</p>
-                  <p className="font-medium">
-                    {selectedInstructor.car_make} {selectedInstructor.car_model} ({selectedInstructor.car_type})
-                  </p>
-                </div>
-              )}
-
-              {selectedInstructor.hourly_rate && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Hourly Rate</p>
-                  <p className="font-medium">£{selectedInstructor.hourly_rate}/hr</p>
-                </div>
-              )}
-
-              {selectedInstructor.bio && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Bio</p>
-                  <p className="mt-1 rounded-md bg-muted p-3 text-sm">{selectedInstructor.bio}</p>
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-2">
-                <Button onClick={() => { handleEditInstructor(selectedInstructor); setSelectedInstructor(null); }}>
-                  <Edit2 className="mr-2 h-4 w-4" />
-                  Edit Instructor
-                </Button>
-                {selectedInstructor.website_slug && (
-                  <Button variant="outline" asChild>
-                    <a href={`/instructor/${selectedInstructor.website_slug}`} target="_blank" rel="noopener noreferrer">
-                      <Globe className="mr-2 h-4 w-4" />
-                      View Website
-                    </a>
-                  </Button>
-                )}
               </div>
             </div>
           )}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Phone, 
@@ -57,6 +58,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SendSigningLinkButton } from "@/components/instructor/SendSigningLinkButton";
+import { DesktopPupilDetailPanel } from "@/components/instructor/DesktopPupilDetailPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -168,6 +170,7 @@ export function PupilCardStack({
   paymentQrUrl,
   commissionPayer,
 }: PupilCardStackProps) {
+  const isMobile = useIsMobile();
   const [changingStatus, setChangingStatus] = useState(false);
   const currentStatus = (pupil.status || 'active') as PupilStatus;
   const [isExpanded, setIsExpanded] = useState(false);
@@ -525,6 +528,31 @@ export function PupilCardStack({
               className="overflow-hidden"
             >
               <div className="border-t border-border">
+                {/* Desktop: Combined Layout */}
+                {!isMobile ? (
+                  <div className="p-4">
+                    <DesktopPupilDetailPanel
+                      pupil={pupil}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      onViewHistory={onViewHistory}
+                      onViewReport={onViewReport}
+                      onViewTerms={onViewTerms}
+                      onStartChat={onStartChat}
+                      onRecordTestResult={onRecordTestResult}
+                      onViewTestHistory={onViewTestHistory}
+                      onStatusChange={onStatusChange}
+                      hasSignedTerms={hasSignedTerms}
+                      instructorId={instructorId}
+                      instructorName={instructorName}
+                      isTracking={isTracking}
+                      paymentQrUrl={paymentQrUrl}
+                      commissionPayer={commissionPayer}
+                      onClose={() => setIsExpanded(false)}
+                    />
+                  </div>
+                ) : (
+                <div>
                 {/* Quick Actions Row */}
                 <div className="flex items-center justify-around py-3 px-4 bg-muted/30">
                   <button
@@ -989,6 +1017,8 @@ export function PupilCardStack({
                     </Button>
                   </div>
                 </div>
+              </div>
+                )}
               </div>
             </motion.div>
           )}
