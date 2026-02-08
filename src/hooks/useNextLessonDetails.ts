@@ -82,9 +82,9 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       const lessonTime = new Date(`${lessonDate}T${lesson.start_time}`);
       const minutesUntil = differenceInMinutes(lessonTime, now);
 
-      // Priority: pupil pickup address > lesson pickup > pupil home address
-      const effectivePostcode = pupil.pickup_postcode || lesson.pickup_postcode || pupil.postcode || null;
-      const effectiveLocation = pupil.pickup_address || lesson.pickup_location || pupil.address || null;
+      // Priority: pupil pickup address > pupil home address (live profile data always wins)
+      const effectivePostcode = pupil.pickup_postcode || pupil.postcode || null;
+      const effectiveLocation = pupil.pickup_address || pupil.address || null;
 
       return {
         lessonId: lesson.id,

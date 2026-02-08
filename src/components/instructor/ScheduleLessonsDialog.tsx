@@ -63,7 +63,9 @@ export function ScheduleLessonsDialog({
   const [slots, setSlots] = useState<LessonSlot[]>([
     { id: crypto.randomUUID(), date: addDays(new Date(), 1), startTime: "09:00", duration: 2 }
   ]);
-  const [pickupLocation, setPickupLocation] = useState(pupil.address || "");
+  const [pickupLocation, setPickupLocation] = useState(
+    (pupil as any).pickup_address || pupil.address || ""
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   const totalScheduledHours = slots.reduce((sum, s) => sum + s.duration, 0);
