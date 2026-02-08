@@ -609,7 +609,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
               </Button>
               <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
-              <PlanBadge planSlug={subscription?.plan_slug} size="md" showUpgrade onUpgradeClick={() => navigate("/instructor/plans")} />
             </div>
 
             {/* Center: Navigation Tabs */}
@@ -633,6 +632,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
             {/* Right: Notifications + Theme + Avatar */}
             <div className="flex items-center gap-1">
+              <PlanBadge planSlug={subscription?.plan_slug} size="sm" showUpgrade onUpgradeClick={() => navigate("/instructor/plans")} />
               <Button
                 variant="ghost"
                 size="icon"
