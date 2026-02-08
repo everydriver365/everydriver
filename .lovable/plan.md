@@ -1,99 +1,101 @@
 
 
-## Commission QR Code Selection & Dual QR Codes
+## Add Reminders, Referrals, Plan & Upgrade Widgets to Instructor Portal
 
 ### Overview
 
-Allow instructors to choose who absorbs the platform commission fee on card payments -- either the pupil or the instructor. Based on this choice, the correct QR code is displayed throughout the app. Two separate QR code images can be uploaded in Settings.
+Add four new widget cards to the existing instructor home page (both desktop right sidebar and mobile home screen) -- no separate dashboard page needed. These cover the missing pieces: reminder status, referral stats, current plan display with upgrade option, and payment/upgrade options.
 
 ---
 
-### Database Changes
+### What Gets Added
 
-**Add 3 new columns to the `instructors` table:**
-
-| Column | Type | Default | Purpose |
-|--------|------|---------|---------|
-| `payment_qr_url_pupil_pays` | text, nullable | null | QR code image for when the pupil pays the commission |
-| `payment_qr_url_instructor_pays` | text, nullable | null | QR code image for when the instructor pays the commission |
-| `commission_payer` | text | `'pupil'` | Who pays the commission: `'pupil'` or `'instructor'` |
-
-The existing `payment_qr_url` column remains as a fallback for backward compatibility -- if the new fields are empty, the system falls back to it.
+| Widget | What It Shows |
+|--------|--------------|
+| **Subscription Plan Card** | Current plan name, badge, and feature highlights. "Upgrade" button linking to a plan comparison sheet. If on Free, shows prominent upgrade CTA. |
+| **Upgrade Plan Sheet** | A slide-up sheet/dialog listing all available plans (Free, Pro, Max, Multi, Enterprise) with prices, features, and a "Contact to Upgrade" or "Select Plan" action per plan. |
+| **Reminder Status Widget** | Lessons in the next 24 hours with their reminder status (24h sent, 1h sent, pending). Shows enabled channels from `instructor_reminder_preferences`. |
+| **Referral Stats Widget** | Compact version of the referral stats (total/completed/pending counts) with a link to full referral settings. |
 
 ---
 
-### Settings Page Changes (InstructorSettings.tsx)
+### Desktop Layout Changes (InstructorPortal.tsx)
 
-Replace the single "Payment QR Code" upload section with:
+The right sidebar column (currently only has PaymentSummaryWidget) will gain 3 new cards stacked below it:
 
-1. **Commission Payer Toggle** -- A radio group or segmented control: "Pupil Pays Commission" vs "Instructor Pays Commission"
-2. **Two QR Code Uploads** side by side:
-   - "Pupil Pays Commission QR" -- upload for `payment_qr_url_pupil_pays`
-   - "Instructor Pays Commission QR" -- upload for `payment_qr_url_instructor_pays`
-3. A visual indicator showing which QR is currently active based on the toggle selection
-
----
-
-### PaymentQRModal Changes
-
-Update the modal to accept both QR URLs and the `commission_payer` setting, then display:
-- The correct QR code based on who pays commission
-- A label beneath the QR: "Pupil pays commission" or "Instructor pays commission" so it's clear which code is being shown
-
-The modal already receives `paymentQrUrl` -- this will be replaced with logic that resolves the correct URL based on context.
+```text
+Right Sidebar (lg:col-span-1):
+  [Payment Summary]        <-- existing
+  [Your Plan]              <-- NEW
+  [Reminder Status]        <-- NEW
+  [Referral Stats]         <-- NEW
+```
 
 ---
 
-### Display Logic Across the App
+### Mobile Layout Changes (InstructorMobileHome.tsx)
 
-All 7 places that show the PaymentQRModal will be updated:
+Add the widgets to the INSIGHTS section of the mobile home, below the existing stats card:
 
-| Location | Context | QR Shown |
-|----------|---------|----------|
-| InstructorPortal (mobile) | Instructor viewing | Based on `commission_payer` setting |
-| InstructorPortal (desktop) | Instructor viewing | Based on `commission_payer` setting |
-| InstructorPay | Instructor "Take Payment" | Based on `commission_payer` setting |
-| InstructorPortalLayout | Sidebar QR button | Based on `commission_payer` setting |
-| InstructorMobileHeader | Settings dropdown | Based on `commission_payer` setting |
-| ExpandablePupilCard | Pupil card QR button | Based on `commission_payer` setting |
-| PupilCardStack | Pupil card QR button | Based on `commission_payer` setting |
+```text
+INSIGHTS section:
+  [Today's Stats]          <-- existing
+  [Your Plan]              <-- NEW
+  [Reminder Status]        <-- NEW
+  [Referral Stats]         <-- NEW
+```
 
-Each location will fetch or receive both QR URLs plus the `commission_payer` preference, then pass the resolved URL to the modal.
+---
+
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `src/components/instructor/dashboard/PlanWidget.tsx` | Shows current plan with badge, key features, and "Upgrade" button. Fetches plan data from the `subscription` in `useInstructorAuth`. Opens the upgrade sheet when clicked. |
+| `src/components/instructor/dashboard/UpgradePlanSheet.tsx` | A dialog/sheet listing all plans from `subscription_plans` with prices and features. Shows the current plan as "Current" and others with upgrade CTAs. Contact-based upgrade flow (no self-service payment change yet). |
+| `src/components/instructor/dashboard/ReminderStatusWidget.tsx` | Queries `scheduled_lessons` for lessons in the next 24h, checks `reminder_24h_sent_at` and `reminder_1h_sent_at` columns, and queries `instructor_reminder_preferences` for channel config. Displays a compact list with status badges. |
+| `src/components/instructor/dashboard/ReferralStatsWidget.tsx` | Compact card querying `pupil_referrals` for counts by status. Shows total/completed/pending with a "Manage" link to `/instructor/settings` (referral section). |
+
+### Modified Files
+
+| File | Change |
+|------|--------|
+| `src/pages/InstructorPortal.tsx` | Import and render PlanWidget, ReminderStatusWidget, and ReferralStatsWidget in the right sidebar column. |
+| `src/components/instructor/InstructorMobileHome.tsx` | Import and render the same three widgets in the INSIGHTS section. |
 
 ---
 
 ### Technical Details
 
-**Resolved QR URL helper:**
-```text
-function getActivePaymentQrUrl(instructor):
-  if commission_payer === 'pupil':
-    return payment_qr_url_pupil_pays || payment_qr_url (fallback)
-  else:
-    return payment_qr_url_instructor_pays || payment_qr_url (fallback)
-```
+**PlanWidget data source:**
+- Uses `useInstructorAuth()` to get `subscription.plan_name`, `subscription.plan_slug`, `subscription.features`
+- No additional database query needed
 
-**Data fetching updates needed:**
-- `InstructorPortal.tsx` -- add `payment_qr_url_pupil_pays`, `payment_qr_url_instructor_pays`, `commission_payer` to select query
-- `InstructorPay.tsx` -- same
-- `InstructorPortalLayout.tsx` -- same (uses `useInstructorAuth` context)
-- `ExpandablePupilCard.tsx` and `PupilCardStack.tsx` -- receive resolved URL from parent
-- `InstructorSettings.tsx` -- add to profile type and fetch query
+**UpgradePlanSheet data source:**
+- Fetches all active plans from `subscription_plans` table ordered by `display_order`
+- Compares against current `subscription.plan_slug` to highlight the active plan
+- Upgrade action shows a toast with "Contact us to upgrade" (or can be wired to a contact form/email later)
 
-**InstructorAuthContext** -- If this context provides the instructor object, its query will also need updating to include the new columns so the QR is available app-wide without extra fetches.
+**ReminderStatusWidget queries:**
+- `scheduled_lessons` where `lesson_date` is today or tomorrow, `status != 'cancelled'`, checking `reminder_24h_sent_at` and `reminder_1h_sent_at`
+- `instructor_reminder_preferences` for enabled channels (SMS, email, push)
+- Displays: lesson time, pupil name, green check or amber clock icon per reminder type
 
-**PaymentQRModal** -- Add a small badge/label showing the commission arrangement, e.g. "Commission: Pupil pays" in muted text below the QR image.
+**ReferralStatsWidget queries:**
+- `pupil_referrals` where `instructor_id` matches, grouped by status
+- Simple 3-number display (total, completed, pending) matching the existing ReferralSettingsCard style
+
+**No database migrations needed** -- all data already exists in the schema.
 
 ---
 
 ### Implementation Steps
 
-| Step | What |
-|------|------|
-| 1 | Database migration: add 3 columns to `instructors` |
-| 2 | Update `InstructorSettings.tsx`: commission payer toggle + dual QR uploads |
-| 3 | Create `getActivePaymentQrUrl` helper utility |
-| 4 | Update `PaymentQRModal` to show commission label |
-| 5 | Update all 7 consumer locations to pass the resolved QR URL |
-| 6 | Update instructor data queries to include new columns |
+| Step | Action |
+|------|--------|
+| 1 | Create `PlanWidget.tsx` and `UpgradePlanSheet.tsx` |
+| 2 | Create `ReminderStatusWidget.tsx` |
+| 3 | Create `ReferralStatsWidget.tsx` |
+| 4 | Add all three widgets to the desktop portal right sidebar in `InstructorPortal.tsx` |
+| 5 | Add all three widgets to the mobile home INSIGHTS section in `InstructorMobileHome.tsx` |
 
