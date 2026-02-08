@@ -629,10 +629,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                 </Link>
               ))}
             </nav>
+              <PlanBadge planSlug={subscription?.plan_slug} size="sm" showUpgrade onUpgradeClick={() => navigate("/instructor/plans")} />
 
             {/* Right: Notifications + Theme + Avatar */}
             <div className="flex items-center gap-1">
-              <PlanBadge planSlug={subscription?.plan_slug} size="sm" showUpgrade onUpgradeClick={() => navigate("/instructor/plans")} />
               <Button
                 variant="ghost"
                 size="icon"
