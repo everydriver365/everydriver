@@ -470,7 +470,7 @@ export function InstructorMobileHome({
       <div className="mt-4 space-y-3">
         <PlanWidget />
         <ReminderStatusWidget />
-        <ReferralStatsWidget />
+        
       </div>
 
       {/* PLAN AHEAD section */}
