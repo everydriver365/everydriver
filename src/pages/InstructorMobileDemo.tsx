@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronRight, Clock, PoundSterling, ChevronDown,
-  MapPin, Car, Loader2, BookOpen, ArrowLeft,
+  MapPin, Car, Loader2, BookOpen, ArrowLeft, Menu, Briefcase,
   Sun, CloudSun, Cloud, CloudRain, CloudDrizzle, CloudFog, CloudLightning, Snowflake, Wind,
 } from "lucide-react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
@@ -201,7 +201,7 @@ export default function InstructorMobileDemo() {
   };
 
   return (
-    <div className="min-h-screen bg-[#E8F1FE] dark:bg-background">
+    <div className="min-h-screen bg-[#f5f5f5] dark:bg-background">
       {/* Back button overlay */}
       <div className="fixed top-4 left-4 z-50">
         <button
@@ -212,33 +212,51 @@ export default function InstructorMobileDemo() {
         </button>
       </div>
 
-      {/* ── HERO with full-bleed image + overlaid stats ── */}
-      <div className="relative w-full" style={{ height: "48vh", minHeight: 280, maxHeight: 400 }}>
+      {/* ── HERO with full-bleed teal gradient ── */}
+      <div className="relative w-full" style={{ minHeight: 340 }}>
         <img
           src={content?.hero_image_url || instructorHeroImg}
           alt="Hero"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover absolute inset-0"
         />
-        {/* Dark gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        {/* Teal gradient overlay */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to bottom, transparent 15%, rgba(74,124,111,0.6) 45%, rgba(45,74,63,0.92) 70%, rgba(35,58,50,0.98) 100%)"
+          }}
+        />
 
-        {/* Weather badge - top right */}
-        {currentWeather && currentWeather.temperature !== null && (
-          <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-medium">
-            <WeatherIcon icon={currentWeather.icon} className="h-3.5 w-3.5" />
-            {currentWeather.temperature}°C
+        {/* Top bar */}
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-3 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center">
+              <Menu className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-white font-bold text-sm tracking-wide">EVERY DRIVER UK</span>
           </div>
-        )}
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-[11px] font-semibold">
+              Free
+            </span>
+            <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold border-2 border-white/30">
+              D
+            </div>
+          </div>
+        </div>
 
-        {/* Weekly progress overlay */}
-        <div className="absolute bottom-6 left-5 right-5">
-          <p className="text-white/80 text-xs font-medium uppercase tracking-wider mb-1">Weekly Progress</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-bold text-white">{hoursThisWeek}</span>
-            <span className="text-lg text-white/70">/ {hoursGoal}h</span>
+        {/* Stats content — centered in lower portion */}
+        <div className="relative z-10 flex flex-col items-center justify-end px-6 pb-6" style={{ minHeight: 340 }}>
+          <div className="flex items-baseline gap-1 mb-2">
+            <span className="text-5xl font-extrabold text-white tracking-tight">{hoursThisWeek}</span>
+            <span className="text-2xl font-bold text-white/50">h</span>
+            <span className="text-3xl font-light text-white/40 mx-1">/</span>
+            <span className="text-3xl font-bold text-white/70">{hoursGoal}</span>
+            <span className="text-lg font-bold text-white/40">h</span>
           </div>
+
           {/* Progress bar */}
-          <div className="mt-2 h-2 w-full rounded-full bg-white/20 overflow-hidden">
+          <div className="w-full max-w-xs h-2.5 rounded-full bg-white/20 overflow-hidden mb-2">
             <motion.div
               className="h-full rounded-full bg-emerald-400"
               initial={{ width: 0 }}
@@ -246,9 +264,20 @@ export default function InstructorMobileDemo() {
               transition={{ duration: 1, ease: "easeOut" }}
             />
           </div>
-          <p className="text-white/60 text-xs mt-1.5">
+          <p className="text-white/60 text-xs mb-5">
             {hoursRemaining > 0 ? `${hoursRemaining.toFixed(1)} hours remaining` : "Weekly goal achieved! 🎉"}
           </p>
+
+          {/* View offers CTA */}
+          {pendingJobsCount > 0 && (
+            <button
+              onClick={() => navigate("/instructor/jobs")}
+              className="w-full max-w-xs flex items-center justify-center gap-2 h-12 bg-[#142542] text-white text-sm font-semibold rounded-xl active:scale-[0.97] transition-transform shadow-lg"
+            >
+              <Briefcase className="h-4 w-4" />
+              View offers
+            </button>
+          )}
         </div>
       </div>
 
@@ -361,7 +390,7 @@ export default function InstructorMobileDemo() {
                     <BookOpen className="h-6 w-6 text-primary" />
                   )}
                   {badgeCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow ring-2 ring-[#E8F1FE]">
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center shadow ring-2 ring-white">
                       {badgeCount > 9 ? "9+" : badgeCount}
                     </span>
                   )}

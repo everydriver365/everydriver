@@ -286,7 +286,7 @@ export function InstructorMobileHome({
   return (
     <PullToRefresh onRefresh={handleRefresh}>
        <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-       <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative">
+       <div className="min-h-screen bg-[#f5f5f5] dark:bg-background overflow-x-hidden relative">
 
       {/* Updated feedback banner */}
       <AnimatePresence>
@@ -331,6 +331,7 @@ export function InstructorMobileHome({
           motivationSubtitle={content?.motivation_subtitle}
           unreadMessages={unreadCount || 0}
           pendingJobs={pendingJobsCount}
+          instructorAvatar={instructor?.profile_image_url}
         />
       </div>
 
@@ -362,14 +363,9 @@ export function InstructorMobileHome({
           />
       )}
 
-      {/* YOUR DAY section */}
-      {(nextLesson || (todayLessons && todayLessons.length > 1)) && (
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">YOUR DAY</p>
-      )}
-
-      {/* Next Lesson Card - only show when there's a lesson */}
+      {/* Next Lesson Card - directly after hero */}
       {nextLesson && (
-        <div className="mt-2">
+        <div className="mt-4">
           <NextUpTile
             lessonId={nextLesson.lessonId}
             pupilId={nextLesson.pupilId}
@@ -409,11 +405,8 @@ export function InstructorMobileHome({
           />
       )}
 
-      {/* QUICK ACTIONS section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">QUICK ACTIONS</p>
-
-      {/* Quick Action Tiles */}
-      <div className="pb-6">
+      {/* Quick Action Tiles — no section label */}
+      <div className="pb-6 mt-5">
         <QuickActionTiles
           quickActions={content?.quick_actions || []}
           pendingJobsCount={pendingJobsCount}
