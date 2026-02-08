@@ -1,59 +1,35 @@
 
 
-## Making Tiles Stand Out from the Background
+## Color Enhancement: All Options Applied
 
-Currently, the Job Offers, Messages, and other tiles use `bg-card border border-border` which can look flat against the page background, especially in light mode where the contrast is subtle.
+Applying all five color enhancements to the Job Offers and Messages tiles for maximum visual impact.
 
-Here are several approaches -- you can pick one or combine them:
+### Changes to `src/components/instructor/InstructorMobileHome.tsx`
 
----
+**Job Offers tile (line 344):**
+- Deeper gradient: `from-amber-100` (was `from-amber-50`)
+- Tinted border: `border-amber-200/60 dark:border-amber-800/30` (was `border-border`)
+- Accent glow on hover: `hover:ring-1 hover:ring-amber-300/50`
+- Stronger icon bg: `bg-amber-500/20` (was `bg-amber-500/15`)
+- Tinted label text: `text-amber-900 dark:text-amber-100` (was `text-foreground`)
 
-### Option A: Elevated Shadows
-Add a subtle shadow to give tiles a "lifted" feel, creating depth separation from the background.
-- Adds `shadow-sm` or a custom shadow like `shadow-[0_2px_12px_rgba(20,37,66,0.08)]` to each tile
-- Keeps the clean, minimal look but adds perceived depth
-- Works well in both light and dark mode
+**Messages tile (line 359):**
+- Deeper gradient: `from-blue-100` (was `from-blue-50`)
+- Tinted border: `border-blue-200/60 dark:border-blue-800/30` (was `border-border`)
+- Accent glow on hover: `hover:ring-1 hover:ring-blue-300/50`
+- Stronger icon bg: `bg-blue-500/20` (was `bg-primary/10`)
+- Tinted label text: `text-blue-900 dark:text-blue-100` (was `text-foreground`)
 
-### Option B: Gradient Background Fills
-Replace the flat `bg-card` with a subtle gradient fill on each tile.
-- Job Offers tile: warm amber gradient (`bg-gradient-to-r from-amber-50 to-card`)
-- Messages tile: cool blue gradient (`bg-gradient-to-r from-blue-50 to-card`)
-- Quick action tiles get similar treatment matching their icon color
-- Dark mode variants included
+### Summary of all enhancements per tile
 
-### Option C: Left Accent Border
-Add a colored left border stripe to each tile for a bold, app-like feel.
-- Job Offers: `border-l-4 border-l-amber-500`
-- Messages: `border-l-4 border-l-primary`
-- Simple but effective visual anchor
+| Enhancement | Job Offers | Messages |
+|---|---|---|
+| Gradient depth | `from-amber-100` | `from-blue-100` |
+| Border color | `border-amber-200/60` | `border-blue-200/60` |
+| Hover glow | `ring-amber-300/50` | `ring-blue-300/50` |
+| Icon bg opacity | `bg-amber-500/20` | `bg-blue-500/20` |
+| Label text color | `text-amber-900` | `text-blue-900` |
 
-### Option D: Thicker / Colored Border
-Replace the subtle `border-border` with a slightly more visible or tinted border.
-- e.g. `border-border/80 border-[1.5px]` for more definition
-- Or color-tinted borders matching each tile's theme
+### Files to modify
+- `src/components/instructor/InstructorMobileHome.tsx` -- update classNames on both tile buttons and their child elements (~lines 344-372)
 
-### Option E: Combined (Recommended)
-Use **shadow + subtle gradient** together for maximum standout:
-- `shadow-[0_2px_12px_rgba(20,37,66,0.08)]` for lift
-- Gentle color-tinted background matching each tile's purpose
-- This matches the existing design memory for quick action tiles
-
----
-
-### Technical Details
-
-**Files to modify:**
-- `src/components/instructor/InstructorMobileHome.tsx` -- update the className on the Job Offers button (~line 344) and Messages button (~line 359)
-- `src/components/instructor/QuickActionTiles.tsx` -- update tile styling if quick action cards should match
-- Optionally update `src/components/instructor/NextUpTile.tsx` and other card components for consistency
-
-**Example (Option E combined):**
-```
-// Job Offers button
-className="... bg-gradient-to-r from-amber-50 to-card dark:from-amber-950/20 dark:to-card shadow-[0_2px_12px_rgba(20,37,66,0.08)] ..."
-
-// Messages button  
-className="... bg-gradient-to-r from-blue-50 to-card dark:from-blue-950/20 dark:to-card shadow-[0_2px_12px_rgba(20,37,66,0.08)] ..."
-```
-
-Pick your preferred option (A-E) or combine elements, and I will implement it.
