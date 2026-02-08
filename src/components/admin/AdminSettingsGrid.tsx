@@ -44,31 +44,39 @@ const settingsCategories: SettingsCategory[] = [
       { key: "email", title: "Email Inbox", description: "View and manage incoming emails.", badgeKey: "emails" },
       { key: "enquiries", title: "Enquiries & Callbacks", description: "Review bespoke course requests and callback requests.", badgeKey: "enquiries" },
       { key: "instructor-messages", title: "Instructor Support", description: "Handle support chats with instructors.", badgeKey: "instructorMessages" },
+      { key: "live-chat", title: "Visitor Chats", description: "Manage live chat sessions with website visitors.", badgeKey: "liveChats" },
       { key: "campaigns", title: "Campaigns", description: "Send bulk SMS or email to instructors and pupils." },
     ],
   },
   {
-    title: "People & Support",
+    title: "People",
     icon: Users,
     iconColor: "text-blue-500",
     links: [
       { key: "instructors", title: "Instructors", description: "Manage instructor accounts and profiles." },
       { key: "pupil-records", title: "Pupil Records", description: "EMIS-style view of all pupils and their data." },
       { key: "compliance", title: "Compliance Dashboard", description: "Track ADI badge, DBS, and document expiry." },
-      { key: "live-chat", title: "Visitor Chats", description: "Manage live chat sessions with website visitors.", badgeKey: "liveChats" },
     ],
   },
   {
-    title: "Products & Booking",
-    icon: BookOpen,
+    title: "Finance & Payments",
+    icon: PoundSterling,
     iconColor: "text-green-500",
+    links: [
+      { key: "bookings", title: "All Bookings", description: "View and manage all course bookings." },
+      { key: "payments", title: "Payment History", description: "Track all payment transactions." },
+      { key: "commission", title: "Commission Earned", description: "View platform commission from payments & subscriptions." },
+    ],
+  },
+  {
+    title: "Products & Courses",
+    icon: BookOpen,
+    iconColor: "text-orange-500",
     links: [
       { key: "courses", title: "Course Templates", description: "Create and manage driving course packages." },
       { key: "booking-modes", title: "Booking Modes", description: "Configure instructor booking preferences." },
       { key: "upsells", title: "Booking Upsells", description: "Add-on services during checkout." },
-      { key: "bookings", title: "All Bookings", description: "View and manage all course bookings." },
-      { key: "payments", title: "Payment History", description: "Track all payment transactions." },
-      { key: "commission", title: "Commission Earned", description: "View platform commission from payments & subscriptions." },
+      { key: "discount-codes", title: "Discount Codes", description: "Create and manage promo codes." },
     ],
   },
   {
@@ -88,7 +96,7 @@ const settingsCategories: SettingsCategory[] = [
   {
     title: "Instructor Platform",
     icon: Smartphone,
-    iconColor: "text-orange-500",
+    iconColor: "text-cyan-500",
     links: [
       { key: "mini-websites", title: "Mini Websites", description: "Edit instructor website themes, colors, and content." },
       { key: "domains", title: "Purchased Domains", description: "Manage custom domain assignments." },
@@ -103,7 +111,6 @@ const settingsCategories: SettingsCategory[] = [
     icon: Gift,
     iconColor: "text-pink-500",
     links: [
-      { key: "discount-codes", title: "Discount Codes", description: "Create and manage promo codes." },
       { key: "rewards-config", title: "Loyalty Settings", description: "Points and rewards configuration." },
       { key: "reward-tiers", title: "Badge Tiers & Perks", description: "Membership levels and benefits." },
       { key: "bonuses", title: "Instructor Bonuses", description: "Performance incentive programs." },
