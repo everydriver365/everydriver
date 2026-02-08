@@ -64,7 +64,6 @@ import { AdminMessageBadge } from "@/components/instructor/AdminMessageBadge";
 import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
-import { UpgradePlanSheet } from "@/components/instructor/dashboard/UpgradePlanSheet";
 
 const sidebarLinks = [
   { href: "/instructor", label: "Dashboard", icon: Home },
@@ -112,7 +111,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [showQRModal, setShowQRModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [upgradeSheetOpen, setUpgradeSheetOpen] = useState(false);
+  
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string; href?: string }>>([]);
@@ -316,7 +315,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     alt="EveryDriver" 
                     className="h-4 sm:h-5 object-contain"
                   />
-                  <PlanBadge planSlug={subscription?.plan_slug} size="sm" showUpgrade onUpgradeClick={() => setUpgradeSheetOpen(true)} />
+                  <PlanBadge planSlug={subscription?.plan_slug} size="sm" showUpgrade onUpgradeClick={() => navigate("/instructor/plans")} />
                 </div>
 
                 {/* Right: Settings, QR, Schedule, ADD, Avatar */}
@@ -516,7 +515,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           instructorId={instructor?.id}
           instructorName={instructor?.name}
         />
-        <UpgradePlanSheet open={upgradeSheetOpen} onOpenChange={setUpgradeSheetOpen} currentPlanSlug={subscription?.plan_slug} />
       </div>
     );
   }
@@ -568,7 +566,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           <div className="flex items-center justify-between px-6 h-14">
             <div className="flex items-center gap-3">
               <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
-              <PlanBadge planSlug={subscription?.plan_slug} size="md" showUpgrade onUpgradeClick={() => setUpgradeSheetOpen(true)} />
+              <PlanBadge planSlug={subscription?.plan_slug} size="md" showUpgrade onUpgradeClick={() => navigate("/instructor/plans")} />
             </div>
 
             {/* Navigation Tabs */}
@@ -721,7 +719,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </main>
         </div>
       </div>
-      <UpgradePlanSheet open={upgradeSheetOpen} onOpenChange={setUpgradeSheetOpen} currentPlanSlug={subscription?.plan_slug} />
+      
     </>
   );
 }
