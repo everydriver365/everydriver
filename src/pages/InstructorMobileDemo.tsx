@@ -95,23 +95,82 @@ const additionalTiles: QuickAction[] = [
   { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 107 },
 ];
 
+// Mock data for when not authenticated
+const mockNextLesson = {
+  lessonId: "mock-1",
+  pupilId: "mock-p1",
+  pupilName: "Sarah Johnson",
+  pupilProfileImage: null,
+  pupilPhone: "07700900123",
+  lessonDate: format(new Date(), "yyyy-MM-dd"),
+  startTime: "10:30:00",
+  minutesUntil: 25,
+  pickupPostcode: "SW1A 1AA",
+  pickupLocation: "10 Downing Street",
+  accountBalance: 120,
+  prepaidHours: 0,
+  durationMinutes: 120,
+};
+
+const mockTodayOverview = {
+  lessonCount: 4,
+  totalHours: 6,
+  expectedEarnings: 240,
+  completedLessons: 1,
+};
+
+const mockWeeklyGoals = {
+  hoursThisWeek: 13.5,
+  hoursLastWeek: 28,
+  hoursGoal: 30,
+  lessonsThisWeek: 18,
+  earningsThisWeek: 540,
+  earningsLastWeek: 1120,
+  progressPercent: 45,
+  isAheadOfLastWeek: false,
+  dayOfWeek: new Date().getDay(),
+  expectedPace: 57,
+};
+
+const mockTiles: QuickAction[] = [
+  { id: "schedule", title: "Today", icon: "Calendar", route: "/instructor/schedule", display_order: 1 },
+  { id: "jobs", title: "Job Offers", icon: "Briefcase", route: "/instructor/jobs", display_order: 2 },
+  { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages", display_order: 3 },
+  { id: "payments", title: "Wallet", icon: "CreditCard", route: "/instructor/money", display_order: 4 },
+  { id: "track-lesson", title: "Track Lesson", icon: "Car", route: "/instructor/track", display_order: 5 },
+  { id: "satnav", title: "Sat Nav", icon: "Navigation", route: "/instructor/satnav", display_order: 6 },
+  { id: "take-payment", title: "Take Payment", icon: "CreditCard", route: "/instructor/money", display_order: 7 },
+  { id: "availability", title: "Availability", icon: "Clock", route: "/instructor/availability", display_order: 8 },
+  { id: "find-my-car", title: "Find My Car", icon: "MapPin", route: "/instructor/find-car", display_order: 9 },
+  { id: "find-fuel", title: "Find Fuel", icon: "Fuel", route: "/instructor/fuel", display_order: 10 },
+  { id: "health-hub", title: "Health Hub", icon: "Heart", route: "/instructor/health", display_order: 11 },
+  { id: "pupils", title: "Pupils", icon: "Users", route: "/instructor/pupils", display_order: 12 },
+];
+
 export default function InstructorMobileDemo() {
   const navigate = useNavigate();
   const { instructor } = useInstructorAuth();
   const instructorId = instructor?.id;
 
-  const { data: nextLesson } = useNextLessonDetails(instructorId);
-  const { data: weeklyGoals } = useWeeklyGoals(instructorId);
-  const { data: todayOverview } = useTodayOverview(instructorId);
+  const { data: liveNextLesson } = useNextLessonDetails(instructorId);
+  const { data: liveWeeklyGoals } = useWeeklyGoals(instructorId);
+  const { data: liveTodayOverview } = useTodayOverview(instructorId);
   const { content } = useInstructorHomepageContent();
   const pendingJobsCount = usePendingJobsCount();
   const { data: unreadCount = 0 } = useUnreadMessagesCount(instructorId);
   const { currentWeather } = useDrivingAlerts(instructorId);
-  const { durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(nextLesson?.pickupPostcode);
   const { getOrderedTiles } = useInstructorTilePreferences(instructorId);
 
+  // Use live data if available, fallback to mock
+  const nextLesson = liveNextLesson || mockNextLesson;
+  const weeklyGoals = liveWeeklyGoals || mockWeeklyGoals;
+  const todayOverview = liveTodayOverview || mockTodayOverview;
+  
   const quickActions = content?.quick_actions || [];
-  const orderedTiles = getOrderedTiles(quickActions, additionalTiles);
+  const liveOrderedTiles = getOrderedTiles(quickActions, additionalTiles);
+  const orderedTiles = liveOrderedTiles.length > 0 ? liveOrderedTiles : mockTiles;
+
+  const { durationText: etaText, trafficCondition, isLoading: etaLoading } = useTrafficETA(nextLesson?.pickupPostcode);
 
   // Weekly progress
   const hoursThisWeek = weeklyGoals?.hoursThisWeek || 0;
