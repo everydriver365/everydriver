@@ -129,7 +129,7 @@ export function ContextualHomeHero({
   pendingJobs = 0,
 }: ContextualHomeHeroProps) {
   const navigate = useNavigate();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const timePeriod = getTimePeriod();
 
   const { durationMinutes, durationText } = useTrafficETA(
@@ -252,22 +252,8 @@ export function ContextualHomeHero({
             </div>
 
 
-            {/* CTA Button */}
-            {pendingJobs > 0 && (
-              <div className="mt-3">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    haptics.selection();
-                    navigate("/instructor/jobs");
-                  }}
-                  className="w-full flex items-center justify-center gap-1.5 h-11 bg-primary text-primary-foreground text-sm font-semibold active:scale-[0.97] transition-transform shadow-md"
-                >
-                  <Eye className="h-4 w-4" />
-                  View offers
-                </button>
-              </div>
-            )}
+
+
           </div>
 
           {/* Expand toggle */}
