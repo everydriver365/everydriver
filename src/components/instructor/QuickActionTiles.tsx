@@ -180,7 +180,7 @@ export function QuickActionTiles({
       return <img src={customImg} alt={action.title} className={`${sizeClass} object-cover`} />;
     }
     const Icon = getIcon(action.icon);
-    const style = tileStyles[0]; // fallback, caller should pass correct style
+    const style = fallbackStyles[0]; // fallback, caller should pass correct style
     return <Icon className={sizeClass} />;
   };
 
@@ -298,12 +298,33 @@ export function QuickActionTiles({
 
   if (localTiles.length === 0 && availableTilesToAdd.length === 0) return null;
 
-  // Different accent colors for visual variety
-  const tileStyles = [
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-violet-500/15', iconColor: 'text-violet-600' },
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600' },
-     { bg: 'bg-white dark:bg-white', iconBg: 'bg-rose-500/15', iconColor: 'text-rose-600' },
+  // Category-specific gradient backgrounds for visual variety
+  const tileStyleMap: Record<string, { bg: string; iconBg: string; iconColor: string; glow: string }> = {
+    schedule: { bg: 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30', iconBg: 'bg-blue-500/15', iconColor: 'text-blue-600', glow: 'shadow-blue-200/50 ring-1 ring-blue-200/30 dark:shadow-blue-800/30 dark:ring-blue-800/30' },
+    pupils: { bg: 'bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30', iconBg: 'bg-teal-500/15', iconColor: 'text-teal-600', glow: 'shadow-teal-200/50 ring-1 ring-teal-200/30 dark:shadow-teal-800/30 dark:ring-teal-800/30' },
+    "take-payment": { bg: 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30', iconBg: 'bg-amber-500/15', iconColor: 'text-amber-600', glow: 'shadow-amber-200/50 ring-1 ring-amber-200/30 dark:shadow-amber-800/30 dark:ring-amber-800/30' },
+    payments: { bg: 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30', iconBg: 'bg-amber-500/15', iconColor: 'text-amber-600', glow: 'shadow-amber-200/50 ring-1 ring-amber-200/30 dark:shadow-amber-800/30 dark:ring-amber-800/30' },
+    "track-lesson": { bg: 'bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30', iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-600', glow: 'shadow-emerald-200/50 ring-1 ring-emerald-200/30 dark:shadow-emerald-800/30 dark:ring-emerald-800/30' },
+    messages: { bg: 'bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30', iconBg: 'bg-purple-500/15', iconColor: 'text-purple-600', glow: 'shadow-purple-200/50 ring-1 ring-purple-200/30 dark:shadow-purple-800/30 dark:ring-purple-800/30' },
+    jobs: { bg: 'bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30', iconBg: 'bg-violet-500/15', iconColor: 'text-violet-600', glow: 'shadow-violet-200/50 ring-1 ring-violet-200/30 dark:shadow-violet-800/30 dark:ring-violet-800/30' },
+    satnav: { bg: 'bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-950/30 dark:to-blue-950/30', iconBg: 'bg-sky-500/15', iconColor: 'text-sky-600', glow: 'shadow-sky-200/50 ring-1 ring-sky-200/30 dark:shadow-sky-800/30 dark:ring-sky-800/30' },
+    "find-my-car": { bg: 'bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-950/30 dark:to-teal-950/30', iconBg: 'bg-cyan-500/15', iconColor: 'text-cyan-600', glow: 'shadow-cyan-200/50 ring-1 ring-cyan-200/30 dark:shadow-cyan-800/30 dark:ring-cyan-800/30' },
+    "health-hub": { bg: 'bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30', iconBg: 'bg-rose-500/15', iconColor: 'text-rose-600', glow: 'shadow-rose-200/50 ring-1 ring-rose-200/30 dark:shadow-rose-800/30 dark:ring-rose-800/30' },
+    "find-fuel": { bg: 'bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30', iconBg: 'bg-orange-500/15', iconColor: 'text-orange-600', glow: 'shadow-orange-200/50 ring-1 ring-orange-200/30 dark:shadow-orange-800/30 dark:ring-orange-800/30' },
+    availability: { bg: 'bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30', iconBg: 'bg-indigo-500/15', iconColor: 'text-indigo-600', glow: 'shadow-indigo-200/50 ring-1 ring-indigo-200/30 dark:shadow-indigo-800/30 dark:ring-indigo-800/30' },
+    expenses: { bg: 'bg-gradient-to-br from-lime-50 to-emerald-50 dark:from-lime-950/30 dark:to-emerald-950/30', iconBg: 'bg-lime-600/15', iconColor: 'text-lime-600', glow: 'shadow-lime-200/50 ring-1 ring-lime-200/30 dark:shadow-lime-800/30 dark:ring-lime-800/30' },
+  };
+
+  // Cycling fallback styles
+  const fallbackStyles = [
+    { bg: 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30', iconBg: 'bg-blue-500/15', iconColor: 'text-blue-600', glow: 'shadow-blue-200/50 ring-1 ring-blue-200/30' },
+    { bg: 'bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30', iconBg: 'bg-teal-500/15', iconColor: 'text-teal-600', glow: 'shadow-teal-200/50 ring-1 ring-teal-200/30' },
+    { bg: 'bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30', iconBg: 'bg-violet-500/15', iconColor: 'text-violet-600', glow: 'shadow-violet-200/50 ring-1 ring-violet-200/30' },
   ];
+
+  const getTileStyle = (tileId: string, index: number) => {
+    return tileStyleMap[tileId] || fallbackStyles[index % fallbackStyles.length];
+  };
 
   return (
     <div className="space-y-3">
@@ -335,7 +356,7 @@ export function QuickActionTiles({
             <AnimatePresence mode="popLayout">
               {localTiles.map((action, index) => {
                 const Icon = getIcon(action.icon);
-                const style = tileStyles[index % tileStyles.length];
+                const style = getTileStyle(action.id, index);
                 const badgeCount = getBadgeCount(action);
                 const showBadge = badgeCount > 0;
 
@@ -436,16 +457,13 @@ export function QuickActionTiles({
               <Link to={localTiles[0].route}>
                  <div className="relative overflow-hidden bg-white rounded-none p-4 shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:shadow-sm transition-all border border-border">
                   <div className="flex items-center gap-4">
-                    <div className={`relative ${largeIconTiles.has(localTiles[0].id) ? 'w-16 h-16' : 'w-14 h-14'} rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
+                     <div className={`relative ${largeIconTiles.has(localTiles[0].id) ? 'w-16 h-16' : 'w-14 h-14'} rounded-none ${customIconImages[localTiles[0].id] ? '' : getTileStyle(localTiles[0].id, 0).iconBg} flex items-center justify-center shrink-0 overflow-hidden ${getTileStyle(localTiles[0].id, 0).glow}`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
                       {(() => {
                         const Icon = getIcon(localTiles[0].icon);
-                        const isSchedule = isScheduleAction(localTiles[0]);
-                        const showLessonBadge = isSchedule && todayOverview && todayOverview.lessonCount > 0;
-                        const firstTileBadgeCount = getBadgeCount(localTiles[0]);
-                        const showBadge = firstTileBadgeCount > 0;
+                        const firstStyle = getTileStyle(localTiles[0].id, 0);
                         return (
                           <>
-                            {customIconImages[localTiles[0].id] ? <img src={customIconImages[localTiles[0].id]} alt={localTiles[0].title} className="w-full h-full object-cover" style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined} /> : <Icon className={`h-6 w-6 ${tileStyles[0].iconColor}`} />}
+                            {customIconImages[localTiles[0].id] ? <img src={customIconImages[localTiles[0].id]} alt={localTiles[0].title} className="w-full h-full object-cover" style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined} /> : <Icon className={`h-6 w-6 ${firstStyle.iconColor}`} />}
                           </>
                         );
                       })()}
@@ -513,7 +531,7 @@ export function QuickActionTiles({
               const Icon = getIcon(action.icon);
               const badgeCount = getBadgeCount(action);
               const showBadge = badgeCount > 0;
-              const style = tileStyles[(index + 1) % tileStyles.length];
+              const style = getTileStyle(action.id, index + 1);
               
               return (
                 <Link key={action.id} to={action.route} className="block">
@@ -522,9 +540,9 @@ export function QuickActionTiles({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + index * 0.03 }}
                     whileTap={{ scale: 0.97 }}
-                     className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-shadow border border-border`}
+                     className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_8px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-shadow border border-transparent`}
                   >
-                    <div className={`relative ${largeIconTiles.has(action.id) ? 'w-12 h-12' : 'w-10 h-10'} rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
+                    <div className={`relative ${largeIconTiles.has(action.id) ? 'w-12 h-12' : 'w-10 h-10'} rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden ${style.glow}`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
                       {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
                     </div>
                     {showBadge && (
