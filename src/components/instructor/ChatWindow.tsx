@@ -45,6 +45,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
   );
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendAsUrgent, setSendAsUrgent] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -165,11 +166,14 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
     const success = await sendMessage(newMessage, instructorId, {
       attachmentUrl: attachmentData?.url,
       attachmentType: attachmentData?.type,
+      isUrgent: sendAsUrgent,
+      pupilId: conversation.pupil_id,
     });
 
     if (success) {
       setNewMessage("");
       clearSelectedFile();
+      setSendAsUrgent(false);
       inputRef.current?.focus();
     }
     setSending(false);
@@ -374,7 +378,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6"
-                              onClick={() => toggleUrgent(message.id)}
+                              onClick={() => toggleUrgent(message.id, { instructorId, pupilId: conversation.pupil_id })}
                               title={isUrgent ? "Remove urgent" : "Mark urgent"}
                             >
                               <AlertTriangle className={cn("h-3 w-3", isUrgent ? "text-destructive" : "text-muted-foreground")} />
@@ -396,7 +400,7 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6"
-                              onClick={() => toggleUrgent(message.id)}
+                              onClick={() => toggleUrgent(message.id, { instructorId, pupilId: conversation.pupil_id })}
                               title={isUrgent ? "Remove urgent" : "Mark urgent"}
                             >
                               <AlertTriangle className={cn("h-3 w-3", isUrgent ? "text-destructive" : "text-muted-foreground")} />
@@ -509,6 +513,15 @@ export function ChatWindow({ conversation, instructorId, onBack, onDelete }: Cha
             disabled={sending}
           >
             <Paperclip className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={sendAsUrgent ? "destructive" : "ghost"}
+            size="icon"
+            onClick={() => setSendAsUrgent(!sendAsUrgent)}
+            title={sendAsUrgent ? "Sending as urgent" : "Mark as urgent"}
+            className="shrink-0"
+          >
+            <AlertTriangle className="h-4 w-4" />
           </Button>
           <Input
             ref={inputRef}

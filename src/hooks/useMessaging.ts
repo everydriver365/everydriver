@@ -249,7 +249,7 @@ export function useConversationMessages(conversationId: string | null, userType:
   const sendMessage = async (
     content: string, 
     senderId: string, 
-    options?: { attachmentUrl?: string; attachmentType?: string; instructorId?: string; pupilName?: string }
+    options?: { attachmentUrl?: string; attachmentType?: string; instructorId?: string; pupilId?: string; pupilName?: string; isUrgent?: boolean }
   ) => {
     if (!conversationId || (!content.trim() && !options?.attachmentUrl)) return false;
 
@@ -261,26 +261,50 @@ export function useConversationMessages(conversationId: string | null, userType:
         content: content.trim() || (options?.attachmentUrl ? "" : ""),
         attachment_url: options?.attachmentUrl || null,
         attachment_type: options?.attachmentType || null,
+        is_urgent: options?.isUrgent || false,
       });
 
       if (error) throw error;
 
       // If pupil sends a message, notify instructor via push
       if (userType === "pupil" && options?.instructorId) {
+        const prefix = options?.isUrgent ? "⚠️ URGENT: " : "";
         try {
           await supabase.functions.invoke("notify-instructor", {
             body: {
               instructorId: options.instructorId,
               type: "pupil_message",
               pupilName: options.pupilName || "Pupil",
-              messagePreview: content.trim(),
+              messagePreview: `${prefix}${content.trim()}`,
               hasAttachment: !!options?.attachmentUrl,
             },
           });
         } catch (notifyError) {
           console.error("Error sending push notification:", notifyError);
-          // Don't fail the message send if notification fails
         }
+
+        // Create in-app notification for urgent messages
+        if (options?.isUrgent) {
+          supabase.from("instructor_notifications").insert({
+            instructor_id: options.instructorId,
+            title: "⚠️ Urgent Message",
+            message: `${options.pupilName || "Pupil"}: ${content.trim().slice(0, 80)}`,
+            type: "warning",
+            action_url: "/instructor/messages",
+          }).then(({ error: e }) => { if (e) console.error("Notification error:", e); });
+        }
+      }
+
+      // If instructor sends an urgent message, notify pupil via push
+      if (userType === "instructor" && options?.isUrgent && options?.pupilId) {
+        supabase.functions.invoke("notify-pupil", {
+          body: {
+            pupilId: options.pupilId,
+            type: "lesson_reminder",
+            title: "⚠️ Urgent Message from Instructor",
+            body: content.trim().slice(0, 80),
+          },
+        }).catch(console.error);
       }
 
       return true;
@@ -348,7 +372,7 @@ export function useConversationMessages(conversationId: string | null, userType:
     }
   };
 
-  const toggleUrgent = async (messageId: string) => {
+  const toggleUrgent = async (messageId: string, conversationMeta?: { instructorId?: string; pupilId?: string }) => {
     const msg = messages.find((m) => m.id === messageId);
     if (!msg) return;
     const newVal = !msg.is_urgent;
@@ -362,6 +386,45 @@ export function useConversationMessages(conversationId: string | null, userType:
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, is_urgent: newVal } : m))
       );
+
+      // Send notification when marking as urgent
+      if (newVal && conversationMeta) {
+        const preview = msg.content?.slice(0, 80) || "Attachment";
+        
+        // Notify the other party
+        if (userType === "instructor" && conversationMeta.pupilId) {
+          // Instructor marked urgent → notify pupil
+          supabase.functions.invoke("notify-pupil", {
+            body: {
+              pupilId: conversationMeta.pupilId,
+              type: "lesson_reminder",
+              title: "⚠️ Urgent Message",
+              body: preview,
+            },
+          }).catch(console.error);
+        } else if (userType === "pupil" && conversationMeta.instructorId) {
+          // Pupil marked urgent → notify instructor
+          supabase.functions.invoke("notify-instructor", {
+            body: {
+              instructorId: conversationMeta.instructorId,
+              type: "pupil_message",
+              pupilName: "Pupil",
+              messagePreview: `⚠️ URGENT: ${preview}`,
+            },
+          }).catch(console.error);
+        }
+
+        // Also create an in-app notification for the instructor
+        if (conversationMeta.instructorId && userType === "pupil") {
+          supabase.from("instructor_notifications").insert({
+            instructor_id: conversationMeta.instructorId,
+            title: "⚠️ Urgent Message",
+            message: preview,
+            type: "warning",
+            action_url: "/instructor/messages",
+          }).then(({ error }) => { if (error) console.error("Notification insert error:", error); });
+        }
+      }
     } catch (error) {
       console.error("Error toggling urgent:", error);
     }

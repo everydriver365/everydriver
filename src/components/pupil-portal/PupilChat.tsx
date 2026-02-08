@@ -27,6 +27,7 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendAsUrgent, setSendAsUrgent] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -185,11 +186,13 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
       attachmentType: attachmentData?.type,
       instructorId: instructorId,
       pupilName: pupilName || "Pupil",
+      isUrgent: sendAsUrgent,
     });
 
     if (success) {
       setNewMessage("");
       clearSelectedFile();
+      setSendAsUrgent(false);
       inputRef.current?.focus();
     }
     setSending(false);
@@ -424,6 +427,15 @@ export function PupilChat({ pupilId, pupilName, instructorId, instructorName, on
             disabled={sending}
           >
             <Paperclip className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={sendAsUrgent ? "destructive" : "ghost"}
+            size="icon"
+            onClick={() => setSendAsUrgent(!sendAsUrgent)}
+            title={sendAsUrgent ? "Sending as urgent" : "Mark as urgent"}
+            className="shrink-0"
+          >
+            <AlertTriangle className="h-4 w-4" />
           </Button>
           <Input
             ref={inputRef}
