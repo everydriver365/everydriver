@@ -526,7 +526,7 @@ export default function InstructorRoutes() {
               <TabsTrigger value="practice">Practice</TabsTrigger>
             </TabsList>
 
-            {/* GPSgate Trips Tab Content */}
+            {/* GPS Trips Tab Content */}
             {activeTab === "gpsgate" ? (
               <div className="mt-4">
                 {instructor?.id && (

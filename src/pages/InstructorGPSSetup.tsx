@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
-import { GPSgateUserIdSettings } from "@/components/instructor/GPSgateUserIdSettings";
+// GPSgate removed - Quartix only
 import { GPSConnectionStatusCard } from "@/components/instructor/GPSConnectionStatusCard";
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
 import { formatDistanceToNow } from "date-fns";
@@ -236,15 +236,12 @@ export default function InstructorTraccarSetup() {
     <InstructorPortalLayout>
      <div className="min-h-[calc(100dvh-120px)] bg-[#E8F1FE] dark:bg-background -mx-4 -mt-4 p-4">
       <div className="space-y-6 max-w-2xl mx-auto">
-        {/* GPSgate User ID Settings */}
-        {instructor?.id && (
-          <GPSgateUserIdSettings instructorId={instructor.id} />
-        )}
+        {/* Quartix Tracker Connection */}
 
         {/* Live connection status when tracker is active */}
         {position.isActive && (
           <GPSConnectionStatusCard
-            deviceName="GPSgate Tracker"
+            deviceName="Quartix Tracker"
             isConnected={position.isActive}
             lastSeenLabel={position.lastSeenAt ? formatDistanceToNow(new Date(position.lastSeenAt), { addSuffix: true }) : "Never"}
             speedKmh={position.speedKmh}

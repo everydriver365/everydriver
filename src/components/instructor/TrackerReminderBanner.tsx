@@ -44,21 +44,9 @@ const dismissReminder = (lessonId: string) => {
   }
 };
 
-// Open GPSgate Tracker app with fallback to app store
+// Tracker app link removed - Quartix only
 const openTrackerApp = () => {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const deepLink = "gpsgate://";
-  const appStoreLink = isIOS 
-    ? "https://apps.apple.com/app/gpsgate-tracker/id434645675"
-    : "https://play.google.com/store/apps/details?id=com.gpsgate.tracker";
-  
-  // Attempt deep link first
-  window.location.href = deepLink;
-  
-  // Fallback to app store after delay (if deep link didn't work)
-  setTimeout(() => {
-    window.location.href = appStoreLink;
-  }, 1500);
+  // No-op - Quartix uses hardware trackers, no app to open
 };
 
 export function TrackerReminderBanner({ 
@@ -108,7 +96,7 @@ export function TrackerReminderBanner({
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                    Open GPSgate Tracker
+                    Open Tracker
                   </h4>
                   <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                     Start the app to record your lesson in {minutesUntil} min

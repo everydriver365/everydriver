@@ -8408,7 +8408,6 @@ export type Database = {
         Args: { p_distance_km: number; p_vehicle_id: string }
         Returns: undefined
       }
-      invoke_gpsgate_poller: { Args: never; Returns: undefined }
       update_live_position:
         | {
             Args: {

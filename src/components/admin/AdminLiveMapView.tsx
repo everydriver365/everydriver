@@ -34,7 +34,6 @@ interface InstructorDevice {
   last_road_name: string | null;
   last_ignition_status: boolean | null;
   is_active: boolean;
-  gpsgate_user_id: number | null;
   instructor_id: string;
   instructors: {
     name: string;
@@ -100,7 +99,7 @@ export function AdminLiveMapView() {
         .select(`
           id, device_name, last_latitude, last_longitude,
           last_speed_kmh, last_heading, last_seen_at, last_road_name,
-          last_ignition_status, is_active, gpsgate_user_id, instructor_id,
+          last_ignition_status, is_active, instructor_id,
           instructors!inner (name, phone)
         `)
         .eq("is_active", true)
@@ -300,7 +299,7 @@ export function AdminLiveMapView() {
                         </div>
                         
                         <div className="text-[10px] text-muted-foreground pt-1 border-t">
-                          {device.device_name || `Device #${device.gpsgate_user_id}`}
+                          {device.device_name || `Device`}
                         </div>
                       </div>
                     </Popup>

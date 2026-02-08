@@ -21,24 +21,15 @@ export function EnhancedDeviceStatusCard({ device, onLinkClick }: EnhancedDevice
   const speedLimitKmh = device.last_speed_limit_kmh;
   const roadName = device.last_road_name;
   
-  // Calculate odometer in miles
-  const odometerMiles = device.gpsgate_odometer_m 
-    ? Math.round((device.gpsgate_odometer_m / 1000) * 0.621371) 
-    : null;
+  // Calculate odometer in miles (uses generic odometer field)
+  const odometerMiles = null; // Will be populated by Quartix poller
   
-  // Calculate today's distance if we have daily tracking
+  // Calculate today's distance
   const today = new Date().toISOString().split("T")[0];
-  const todayDistanceMiles = (
-    device.daily_start_date === today && 
-    device.gpsgate_odometer_m != null && 
-    device.daily_start_odometer_m != null
-  ) ? Math.round(((device.gpsgate_odometer_m - device.daily_start_odometer_m) / 1000) * 0.621371) 
-    : null;
+  const todayDistanceMiles = null; // Will be populated by Quartix poller
   
   // Format engine hours
-  const engineHoursFormatted = device.gpsgate_engine_hours_s 
-    ? `${Math.floor(device.gpsgate_engine_hours_s / 3600)}h ${Math.floor((device.gpsgate_engine_hours_s % 3600) / 60)}m`
-    : null;
+  const engineHoursFormatted = null; // Will be populated by Quartix poller
 
   const getBatteryColor = (level: number | null) => {
     if (level === null) return "text-muted-foreground";

@@ -186,7 +186,7 @@ export function useRunningCosts() {
 
       const { data: devices, error } = await supabase
         .from("gps_devices")
-        .select("gpsgate_odometer_m, daily_start_odometer_m, daily_start_date")
+        .select("daily_start_odometer_m, daily_start_date")
         .eq("instructor_id", instructor.id);
 
       if (error) throw error;
@@ -197,11 +197,10 @@ export function useRunningCosts() {
       for (const device of devices || []) {
         if (
           device.daily_start_date === today &&
-          device.gpsgate_odometer_m != null &&
           device.daily_start_odometer_m != null
         ) {
-          const delta = device.gpsgate_odometer_m - device.daily_start_odometer_m;
-          if (delta > 0) todayMeters += delta;
+          // Without live odometer from tracking provider, we can't calculate today's delta
+          // This will be populated by the quartix-poller when it runs
         }
       }
 

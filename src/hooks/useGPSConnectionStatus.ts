@@ -20,35 +20,24 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
   const [deviceName, setDeviceName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Calculate status based on last_gpsgate_track_time (real GPS data) not last_seen_at (poller artifact)
   const getStatus = useCallback((trackTime: string | null, heartbeat: string | null): "active" | "recent" | "stationary" | "offline" => {
     const now = new Date();
     
-    // Primary indicator: last_gpsgate_track_time — when the device actually sent GPS data
+    // Primary: last_seen_at — when we last got data from the tracking provider
     if (trackTime) {
       const trackDate = new Date(trackTime);
       const trackDiffSeconds = (now.getTime() - trackDate.getTime()) / 1000;
       
-      // Device sent real GPS data within 60 seconds — actively tracking
       if (trackDiffSeconds < 60) return "active";
-      // Within 5 minutes — recently active
       if (trackDiffSeconds < 300) return "recent";
     }
 
-    // If heartbeat is fresh but no recent track data, device is responding to polls
-    // but NOT sending GPS data — this is NOT a real connection
-    // The poller updates heartbeat even when the device has no new position
-    // So heartbeat alone does NOT mean connected
-    
-    // Check heartbeat only for "stationary" — device is online but parked
-    // Only if track time exists and is within 30 minutes (device was recently active)
     if (heartbeat && trackTime) {
       const heartbeatDate = new Date(heartbeat);
       const heartbeatDiffSeconds = (now.getTime() - heartbeatDate.getTime()) / 1000;
       const trackDate = new Date(trackTime);
       const trackDiffSeconds = (now.getTime() - trackDate.getTime()) / 1000;
       
-      // Heartbeat fresh AND device had GPS data within last 30 minutes = stationary
       if (heartbeatDiffSeconds < 120 && trackDiffSeconds < 1800) {
         return "stationary";
       }
@@ -66,7 +55,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
     try {
       const { data } = await supabase
         .from("gps_devices")
-        .select("last_seen_at, last_heartbeat_at, last_gpsgate_track_time, device_name, device_identifier")
+        .select("last_seen_at, last_heartbeat_at, device_name, device_identifier")
         .eq("instructor_id", instructorId)
         .order("last_seen_at", { ascending: false })
         .limit(1)
@@ -78,7 +67,7 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
       return {
         lastSeenAt: data?.last_seen_at || null,
         lastHeartbeatAt: data?.last_heartbeat_at || null,
-        lastTrackTime: data?.last_gpsgate_track_time || null,
+        lastTrackTime: data?.last_seen_at || null, // Use last_seen_at as track time now
       };
     } catch (err) {
       console.error("Error checking GPS connection:", err);
@@ -106,7 +95,6 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
 
     if (!instructorId) return;
 
-    // Subscribe to realtime updates for instant connection status
     const channel = supabase
       .channel(`gps-connection-${instructorId}`)
       .on(
@@ -121,18 +109,15 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
           const newData = payload.new as { 
             last_seen_at?: string; 
             last_heartbeat_at?: string;
-            last_gpsgate_track_time?: string;
             device_name?: string; 
             device_identifier?: string 
           };
           if (newData.last_seen_at) {
             setLastSeenAt(newData.last_seen_at);
+            setLastTrackTime(newData.last_seen_at);
           }
           if (newData.last_heartbeat_at) {
             setLastHeartbeatAt(newData.last_heartbeat_at);
-          }
-          if (newData.last_gpsgate_track_time) {
-            setLastTrackTime(newData.last_gpsgate_track_time);
           }
           if (newData.device_name || newData.device_identifier) {
             setDeviceName(newData.device_name || newData.device_identifier || null);
@@ -163,5 +148,4 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
   };
 }
 
-// Re-export for backwards compatibility
 export { useGPSConnectionStatus as useTraccarConnectionStatus };

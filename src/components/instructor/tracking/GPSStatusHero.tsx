@@ -14,19 +14,7 @@
    onManualReconnect?: () => void;
  }
  
- // Open GPSgate Tracker app with fallback to app store
- const openTrackerApp = () => {
-   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-   const deepLink = "gpsgate://";
-   const appStoreLink = isIOS 
-     ? "https://apps.apple.com/app/gpsgate-tracker/id434645675"
-     : "https://play.google.com/store/apps/details?id=com.gpsgate.tracker";
-   
-   window.location.href = deepLink;
-   setTimeout(() => {
-     window.location.href = appStoreLink;
-   }, 1500);
- };
+ // Removed GPSgate app link - Quartix only
  
  export function GPSStatusHero({
    deviceName,
