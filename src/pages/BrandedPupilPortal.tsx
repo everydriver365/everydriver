@@ -27,6 +27,7 @@ import { PupilProfilePictureUpload } from "@/components/pupil-portal/PupilProfil
 import { PupilNotes } from "@/components/pupil-portal/PupilNotes";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { PupilDetailsDrawer } from "@/components/pupil-portal/PupilDetailsDrawer";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 
 interface InstructorBranding {
   id: string;
@@ -66,6 +67,7 @@ export default function BrandedPupilPortal() {
   const [notFound, setNotFound] = useState(false);
   const [darkModeOverride, setDarkModeOverride] = useState<boolean | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   // Handle payment return params
   useEffect(() => {
@@ -81,7 +83,8 @@ export default function BrandedPupilPortal() {
       searchParams.delete("payment");
       searchParams.delete("amount");
       setSearchParams(searchParams);
-      // Refresh pupil data to show updated balance
+      // Invalidate all payment caches and refresh pupil data
+      invalidatePaymentQueries({ pupilId: pupil?.id, instructorId: instructor?.id });
       if (pupil) {
         fetchPupil(pupil.id);
       }

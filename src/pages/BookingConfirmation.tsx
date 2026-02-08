@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
 
 interface ScheduledLesson {
   id: string;
@@ -75,6 +76,7 @@ export default function BookingConfirmation() {
   const [pupil, setPupil] = useState<PupilDetails | null>(null);
   const [lessons, setLessons] = useState<ScheduledLesson[]>([]);
   const [loading, setLoading] = useState(true);
+  const { invalidatePaymentQueries } = usePaymentInvalidation();
 
   useEffect(() => {
     const fetchBookingDetails = async () => {
@@ -108,6 +110,10 @@ export default function BookingConfirmation() {
           ...pupilData,
           instructor: Array.isArray(pupilData.instructor) ? pupilData.instructor[0] : pupilData.instructor,
         });
+        // Invalidate payment caches when booking confirmation loads with successful payment
+        if (paymentSuccessful) {
+          invalidatePaymentQueries({ pupilId: pupilData.id, instructorId: pupilData.instructor_id || (Array.isArray(pupilData.instructor) ? pupilData.instructor[0]?.id : pupilData.instructor?.id) });
+        }
       }
       if (lessonsRes.data) setLessons(lessonsRes.data);
       setLoading(false);

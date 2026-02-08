@@ -79,12 +79,13 @@ serve(async (req: Request) => {
     if (action === "paid") {
       const body = await req.json().catch(() => ({}));
       const { amount } = body;
+      const paidAmount = amount || linkData.amount_requested || 0;
 
       const { error: updateError } = await supabase
         .from("payment_link_tracking")
         .update({
           paid_at: new Date().toISOString(),
-          paid_amount: amount || linkData.amount_requested,
+          paid_amount: paidAmount,
           status: "paid",
         })
         .eq("id", linkData.id);
@@ -97,7 +98,69 @@ serve(async (req: Request) => {
         });
       }
 
-      console.log(`Link ${linkCode} marked as paid: £${amount || linkData.amount_requested}`);
+      // Record payment_history and update pupil account_balance
+      if (linkData.pupil_id && linkData.instructor_id && paidAmount > 0) {
+        try {
+          // Insert payment_history record
+          const { error: historyError } = await supabase
+            .from("payment_history")
+            .insert({
+              pupil_id: linkData.pupil_id,
+              instructor_id: linkData.instructor_id,
+              amount: paidAmount,
+              payment_method: "payment_link",
+              notes: `Email Payment Link - Code: ${linkCode}`,
+            });
+
+          if (historyError) {
+            console.error("Error inserting payment_history:", historyError);
+          }
+
+          // Update pupil account_balance
+          const { data: pupilData } = await supabase
+            .from("pupils")
+            .select("account_balance")
+            .eq("id", linkData.pupil_id)
+            .single();
+
+          if (pupilData) {
+            const currentBalance = pupilData.account_balance || 0;
+            const newBalance = currentBalance + paidAmount;
+            await supabase
+              .from("pupils")
+              .update({ account_balance: newBalance })
+              .eq("id", linkData.pupil_id);
+
+            console.log(`Pupil balance updated: ${currentBalance} -> ${newBalance}`);
+          }
+
+          // Send payment receipt email
+          try {
+            const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+            await fetch(`${supabaseUrl}/functions/v1/send-payment-receipt`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${supabaseAnonKey}`,
+              },
+              body: JSON.stringify({
+                pupilId: linkData.pupil_id,
+                instructorId: linkData.instructor_id,
+                amount: paidAmount,
+                paymentMethod: "Email Payment Link",
+                transactionReference: linkCode,
+              }),
+            });
+            console.log("Payment receipt email triggered for payment link");
+          } catch (emailError) {
+            console.error("Failed to send receipt email:", emailError);
+          }
+        } catch (dbError) {
+          console.error("Error recording payment details:", dbError);
+        }
+      }
+
+      console.log(`Link ${linkCode} marked as paid: £${paidAmount}`);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
