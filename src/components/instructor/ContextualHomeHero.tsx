@@ -210,11 +210,6 @@ export function ContextualHomeHero({
                   <div className="flex items-center gap-2">
                     {trafficCondition ? (
                       <>
-                        <Car className={`h-4 w-4 ${
-                          trafficCondition === "Heavy" ? "text-destructive" :
-                          trafficCondition === "Moderate" ? "text-amber-500" :
-                          "text-emerald-500"
-                        }`} />
                         <span className={`text-sm font-medium ${
                           trafficCondition === "Heavy" ? "text-destructive" :
                           trafficCondition === "Moderate" ? "text-amber-600 dark:text-amber-400" :
@@ -229,12 +224,9 @@ export function ContextualHomeHero({
                         )}
                       </>
                     ) : (
-                      <>
-                        <Car className="h-4 w-4 text-emerald-500" />
-                        <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
-                          🚗 No incidents reported
-                        </span>
-                      </>
+                      <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                        🚗 No incidents reported
+                      </span>
                     )}
                   </div>
                   {unreadMessages > 0 && (
