@@ -207,27 +207,36 @@ export function ContextualHomeHero({
                       )}
                     </div>
                   )}
-                  {trafficCondition && (
-                    <div className="flex items-center gap-2">
-                      <Car className={`h-4 w-4 ${
-                        trafficCondition === "Heavy" ? "text-destructive" :
-                        trafficCondition === "Moderate" ? "text-amber-500" :
-                        "text-emerald-500"
-                      }`} />
-                      <span className={`text-sm font-medium ${
-                        trafficCondition === "Heavy" ? "text-destructive" :
-                        trafficCondition === "Moderate" ? "text-amber-600 dark:text-amber-400" :
-                        "text-emerald-600 dark:text-emerald-400"
-                      }`}>
-                        {trafficCondition === "Heavy" ? "🔴" : trafficCondition === "Moderate" ? "🟡" : "🟢"} {trafficCondition} traffic
-                      </span>
-                      {delayMinutes > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          (+{delayMinutes} min delay)
+                  <div className="flex items-center gap-2">
+                    {trafficCondition ? (
+                      <>
+                        <Car className={`h-4 w-4 ${
+                          trafficCondition === "Heavy" ? "text-destructive" :
+                          trafficCondition === "Moderate" ? "text-amber-500" :
+                          "text-emerald-500"
+                        }`} />
+                        <span className={`text-sm font-medium ${
+                          trafficCondition === "Heavy" ? "text-destructive" :
+                          trafficCondition === "Moderate" ? "text-amber-600 dark:text-amber-400" :
+                          "text-emerald-600 dark:text-emerald-400"
+                        }`}>
+                          {trafficCondition === "Heavy" ? "🔴" : trafficCondition === "Moderate" ? "🟡" : "🟢"} {trafficCondition} traffic
                         </span>
-                      )}
-                    </div>
-                  )}
+                        {delayMinutes > 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            (+{delayMinutes} min delay)
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <Car className="h-4 w-4 text-emerald-500" />
+                        <span className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                          🚗 No incidents reported
+                        </span>
+                      </>
+                    )}
+                  </div>
                   {unreadMessages > 0 && (
                     <div className="flex items-center gap-2">
                       <MessageCircle className="h-4 w-4 text-blue-500" />
