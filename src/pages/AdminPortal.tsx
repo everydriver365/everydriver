@@ -46,6 +46,7 @@ import { SystemAlertsCard } from "@/components/admin/SystemAlertsCard";
 import { ComplianceDashboard } from "@/components/admin/ComplianceDashboard";
 import { AdminBookingsManager } from "@/components/admin/AdminBookingsManager";
 import { AdminPaymentsManager } from "@/components/admin/AdminPaymentsManager";
+import { RecentPaymentsWidget } from "@/components/admin/RecentPaymentsWidget";
 import { AdminSettingsGrid } from "@/components/admin/AdminSettingsGrid";
 import { SubscribersManager } from "@/components/admin/SubscribersManager";
 import { MiniWebsitesManager } from "@/components/admin/MiniWebsitesManager";
@@ -296,6 +297,9 @@ export default function AdminPortal() {
               <Button onClick={() => setIsUrgentAlertOpen(true)} size="lg" variant="destructive" className="shadow-md shrink-0">
                 <AlertTriangle className="mr-1 h-4 w-4" /> Urgent Alert
               </Button>
+            </div>
+            <div className="mb-6">
+              <RecentPaymentsWidget onViewAll={() => setActiveSection("payments")} />
             </div>
             <AdminSettingsGrid onNavigate={setActiveSection} />
             <BespokeBookingModal open={isBespokeOpen} onOpenChange={setIsBespokeOpen} />
