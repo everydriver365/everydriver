@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format, differenceInMinutes, parseISO } from "date-fns";
+import { format, differenceInMinutes } from "date-fns";
 
 interface NextLessonDetails {
   lessonId: string;
@@ -19,13 +19,15 @@ interface NextLessonDetails {
 }
 
 export function useNextLessonDetails(instructorId: string | undefined) {
-  const today = format(new Date(), "yyyy-MM-dd");
-  const currentTime = format(new Date(), "HH:mm:ss");
-
   return useQuery({
-    queryKey: ["next-lesson-details", instructorId, today, currentTime.slice(0, 5)],
+    queryKey: ["next-lesson-details", instructorId],
     queryFn: async (): Promise<NextLessonDetails | null> => {
       if (!instructorId) return null;
+
+      // Compute fresh timestamps at query execution time
+      const now = new Date();
+      const today = format(now, "yyyy-MM-dd");
+      const currentTime = format(now, "HH:mm:ss");
 
       // First try today's remaining lessons
       const { data: todayLesson } = await supabase
@@ -75,8 +77,6 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       const pupil = (lesson as any).pupils;
       const lessonDate = (lesson as any).lesson_date;
       
-      // Calculate minutes until lesson
-      const now = new Date();
       const lessonTime = new Date(`${lessonDate}T${lesson.start_time}`);
       const minutesUntil = differenceInMinutes(lessonTime, now);
 
@@ -97,7 +97,7 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       };
     },
     enabled: !!instructorId,
-    staleTime: 10 * 1000,
+    staleTime: 0,
     refetchInterval: 60 * 1000,
     refetchOnWindowFocus: true,
   });
