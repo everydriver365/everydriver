@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe, CalendarCheck, MessageSquare, Plus, PoundSterling } from "lucide-react";
+import { User, Calendar, Users, Clock, TrendingUp, Settings, ChevronRight, CreditCard, Eye, EyeOff, Briefcase, Car, MapPin, CheckCircle2, AlertTriangle, Globe, CalendarCheck, MessageSquare, Plus, PoundSterling, LogOut } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -57,9 +57,14 @@ interface InstructorData {
 }
 
 export default function InstructorPortal() {
-  const { instructor: authInstructor, loading: authLoading, user, refreshInstructor, subscription } = useInstructorAuth();
+  const { instructor: authInstructor, loading: authLoading, user, refreshInstructor, subscription, signOut } = useInstructorAuth();
   const instructorId = authInstructor?.id;
   const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/instructor-app/login");
+  };
   
   const [instructorData, setInstructorData] = useState<InstructorData | null>(null);
   const [pupils, setPupils] = useState<Pupil[]>([]);
@@ -260,6 +265,15 @@ export default function InstructorPortal() {
                   disabled={updatingVisibility}
                 />
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-muted-foreground hover:text-foreground gap-1.5"
+              >
+                <LogOut className="h-4 w-4" />
+                Log Out
+              </Button>
             </div>
           </div>
 
