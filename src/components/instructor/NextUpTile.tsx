@@ -188,7 +188,12 @@ export function NextUpTile({
                       : 'text-emerald-600'
                     }`}>
                       <Car className="h-3.5 w-3.5" />
-                      {trafficCondition === 'clear' ? '✓ Clear' : trafficCondition === 'heavy' ? '🔴 Heavy' : trafficCondition === 'moderate' ? '🟡 Moderate' : `✓ ${etaText}`}
+                      {etaText}
+                      {trafficCondition && trafficCondition !== 'clear' && trafficCondition !== 'light' && (
+                        <span className="ml-0.5">
+                          {trafficCondition === 'heavy' ? '🔴' : '🟡'}
+                        </span>
+                      )}
                     </span>
                   ) : null}
                 </div>

@@ -10,6 +10,13 @@ interface TrafficETA {
   error: string | null;
 }
 
+// Basic UK postcode validation (e.g. SW1A 1AA, SO14 2BT, LE11 2RR)
+const UK_POSTCODE_REGEX = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
+
+function isValidUKPostcode(postcode: string): boolean {
+  return UK_POSTCODE_REGEX.test(postcode.trim());
+}
+
 export function useTrafficETA(destinationPostcode: string | null): TrafficETA {
   const [durationMinutes, setDurationMinutes] = useState<number>(0);
   const [durationText, setDurationText] = useState<string>("");
@@ -19,11 +26,14 @@ export function useTrafficETA(destinationPostcode: string | null): TrafficETA {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!destinationPostcode) {
+    if (!destinationPostcode || !isValidUKPostcode(destinationPostcode)) {
       setDurationMinutes(0);
       setDurationText("");
       setTrafficCondition(null);
       setDelayMinutes(0);
+      if (destinationPostcode && !isValidUKPostcode(destinationPostcode)) {
+        setError("Invalid postcode format");
+      }
       return;
     }
 
