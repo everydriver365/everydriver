@@ -262,13 +262,14 @@ export default function InstructorPortal() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 bg-white/10 border border-white/20 px-3 py-2">
-              <Globe className="h-4 w-4 text-white/60" />
-              <span className="text-sm text-white/80">Online</span>
+            <div className={cn("flex items-center gap-2 border px-3 py-2", authInstructor?.is_active ? "bg-emerald-500/20 border-emerald-400/30" : "bg-white/10 border-white/20")}>
+              <Globe className={cn("h-4 w-4", authInstructor?.is_active ? "text-emerald-400" : "text-white/60")} />
+              <span className={cn("text-sm", authInstructor?.is_active ? "text-emerald-300" : "text-white/80")}>Online</span>
               <Switch
                 checked={authInstructor?.is_active ?? false}
                 onCheckedChange={handleVisibilityToggle}
                 disabled={updatingVisibility}
+                className="data-[state=checked]:bg-emerald-500"
               />
             </div>
           </div>
