@@ -564,19 +564,19 @@ export function PupilCardStack({
                 ) : (
                 <div>
                 {/* Quick Actions Row */}
-                <div className="flex items-center justify-around py-3 px-4 bg-muted/30">
+                <div className="flex items-center justify-around py-4 px-4 bg-muted/30">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       if (pupil.phone) window.open(`tel:${pupil.phone}`);
                     }}
                     disabled={!pupil.phone}
-                    className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground disabled:opacity-40"
+                    className="flex flex-col items-center gap-1.5 disabled:opacity-40"
                   >
-                    <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                      <Phone className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                      <Phone className="h-6 w-6 text-primary" />
                     </div>
-                    <span className="text-[10px]">Call</span>
+                    <span className="text-[10px] font-medium text-foreground">Call</span>
                   </button>
                   <button
                     onClick={(e) => {
@@ -584,46 +584,46 @@ export function PupilCardStack({
                       if (pupil.phone) window.open(`sms:${pupil.phone}`);
                     }}
                     disabled={!pupil.phone}
-                    className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground disabled:opacity-40"
+                    className="flex flex-col items-center gap-1.5 disabled:opacity-40"
                   >
-                    <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                      <MessageSquare className="h-6 w-6 text-primary" />
                     </div>
-                    <span className="text-[10px]">Text</span>
+                    <span className="text-[10px] font-medium text-foreground">Text</span>
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleNavigate();
                     }}
-                    className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground"
+                    className="flex flex-col items-center gap-1.5"
                   >
-                    <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                      <Navigation className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                      <Navigation className="h-6 w-6 text-primary" />
                     </div>
-                    <span className="text-[10px]">Navigate</span>
+                    <span className="text-[10px] font-medium text-foreground">Navigate</span>
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onStartChat?.(pupil);
                     }}
-                    className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground"
+                    className="flex flex-col items-center gap-1.5"
                   >
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Mail className="h-5 w-5 text-primary" />
+                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                      <Mail className="h-6 w-6 text-primary" />
                     </div>
-                    <span className="text-[10px]">Chat</span>
+                    <span className="text-[10px] font-medium text-foreground">Chat</span>
                   </button>
                   <SharePupilDetailsDialog 
                     pupil={pupil} 
                     instructorName={instructorName}
                     trigger={
-                      <button className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Share2 className="h-5 w-5 text-primary" />
+                      <button className="flex flex-col items-center gap-1.5">
+                        <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                          <Share2 className="h-6 w-6 text-primary" />
                         </div>
-                        <span className="text-[10px]">Share</span>
+                        <span className="text-[10px] font-medium text-foreground">Share</span>
                       </button>
                     }
                   />
@@ -910,56 +910,56 @@ export function PupilCardStack({
                   </SectionPanel>
 
                   {/* Tools Grid */}
-                  <div className="grid grid-cols-4 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-col h-auto py-3 gap-1.5"
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-4">
+                    <button
+                      className="flex flex-col items-center gap-1.5"
                       onClick={(e) => {
                         e.stopPropagation();
                         onViewHistory(pupil);
                       }}
                     >
-                      <History className="h-5 w-5 text-amber-500" />
-                      <span className="text-[10px]">Lessons</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-col h-auto py-3 gap-1.5"
+                      <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                        <History className="h-6 w-6 text-primary" />
+                      </div>
+                      <span className="text-[10px] font-medium text-foreground">Lessons</span>
+                    </button>
+                    <button
+                      className="flex flex-col items-center gap-1.5"
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowSyllabusSheet(true);
                       }}
                     >
-                      <GraduationCap className="h-5 w-5 text-primary" />
-                      <span className="text-[10px]">Syllabus</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-col h-auto py-3 gap-1.5"
+                      <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                        <GraduationCap className="h-6 w-6 text-primary" />
+                      </div>
+                      <span className="text-[10px] font-medium text-foreground">Syllabus</span>
+                    </button>
+                    <button
+                      className="flex flex-col items-center gap-1.5"
                       onClick={(e) => {
                         e.stopPropagation();
                         onViewReport(pupil);
                       }}
                     >
-                      <Car className="h-5 w-5 text-emerald-500" />
-                      <span className="text-[10px]">Report</span>
-                    </Button>
+                      <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                        <Car className="h-6 w-6 text-primary" />
+                      </div>
+                      <span className="text-[10px] font-medium text-foreground">Report</span>
+                    </button>
                     {onRecordTestResult && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-col h-auto py-3 gap-1.5"
+                      <button
+                        className="flex flex-col items-center gap-1.5"
                         onClick={(e) => {
                           e.stopPropagation();
                           onRecordTestResult(pupil, false);
                         }}
                       >
-                        <Award className="h-5 w-5 text-blue-500" />
-                        <span className="text-[10px]">Test</span>
-                      </Button>
+                        <div className="w-14 h-14 rounded-2xl bg-white dark:bg-card shadow-sm flex items-center justify-center border border-border/50">
+                          <Award className="h-6 w-6 text-primary" />
+                        </div>
+                        <span className="text-[10px] font-medium text-foreground">Test</span>
+                      </button>
                     )}
                   </div>
 
