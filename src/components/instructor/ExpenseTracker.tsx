@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Camera, Plus, Receipt, Trash2, Upload, X, CheckCircle, Pencil } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Camera, Plus, Receipt, Trash2, Upload, X, CheckCircle, Pencil, FileText, Sparkles, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +38,15 @@ const EXPENSE_CATEGORIES = [
   "Other"
 ];
 
+const ALLOWED_FILE_TYPES = [
+  "image/jpeg", "image/png", "image/gif", "image/webp", "image/heic",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+];
+
+const isImageFile = (file: File) => file.type.startsWith("image/");
+
 export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,8 +63,11 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [existingReceiptUrl, setExistingReceiptUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+  const invoiceInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchExpenses();
@@ -81,21 +93,25 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please select an image file");
-        return;
-      }
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image must be less than 5MB");
-        return;
-      }
-      setReceiptFile(file);
-      setReceiptPreview(URL.createObjectURL(file));
-      setExistingReceiptUrl(null); // Clear existing receipt when new one is selected
+    if (!file) return;
+
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type) && !file.type.startsWith("image/")) {
+      toast.error("Please select an image, PDF, or document file");
+      return;
     }
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File must be less than 10MB");
+      return;
+    }
+    setReceiptFile(file);
+    if (isImageFile(file)) {
+      setReceiptPreview(URL.createObjectURL(file));
+    } else {
+      setReceiptPreview(null);
+    }
+    setExistingReceiptUrl(null);
   };
 
   const uploadReceipt = async (): Promise<string | null> => {
@@ -126,6 +142,55 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
     }
   };
 
+  const handleExtractInvoice = async () => {
+    if (!receiptFile) {
+      toast.error("Please upload a file first");
+      return;
+    }
+
+    setExtracting(true);
+    try {
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(",")[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(receiptFile);
+      });
+
+      const { data, error } = await supabase.functions.invoke("extract-invoice-data", {
+        body: {
+          base64Content: base64,
+          mimeType: receiptFile.type,
+          fileName: receiptFile.name,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.data) {
+        const extracted = data.data;
+        if (extracted.amount) setAmount(extracted.amount.toString());
+        if (extracted.date) setExpenseDate(extracted.date);
+        if (extracted.description) setDescription(extracted.description);
+        if (extracted.category && EXPENSE_CATEGORIES.includes(extracted.category)) {
+          setCategory(extracted.category);
+        }
+        toast.success("Invoice details extracted successfully");
+      } else {
+        toast.error(data?.error || "Could not extract details. Please fill in manually.");
+      }
+    } catch (error) {
+      console.error("Error extracting invoice:", error);
+      toast.error("Failed to read invoice. Please fill in details manually.");
+    } finally {
+      setExtracting(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!category || !amount || parseFloat(amount) <= 0) {
       toast.error("Please fill in all required fields");
@@ -140,7 +205,6 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
       }
 
       if (editingExpense) {
-        // Update existing expense
         const { error } = await supabase
           .from("instructor_expenses")
           .update({
@@ -155,7 +219,6 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
         if (error) throw error;
         toast.success("Expense updated successfully");
       } else {
-        // Insert new expense
         const { error } = await supabase
           .from("instructor_expenses")
           .insert({
@@ -198,7 +261,6 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
     try {
       const { softDelete } = await import("@/lib/auditLogger");
       await softDelete("instructor_expenses", id, instructorId, null);
-      
       toast.success("Expense deleted");
       fetchExpenses();
     } catch (error) {
@@ -220,15 +282,25 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
 
   const handleSheetOpenChange = (open: boolean) => {
     setIsSheetOpen(open);
-    if (!open) {
-      resetForm();
-    }
+    if (!open) resetForm();
   };
+
+  const clearFile = () => {
+    setReceiptFile(null);
+    setReceiptPreview(null);
+    setExistingReceiptUrl(null);
+  };
+
+  const hasFile = receiptFile || receiptPreview || existingReceiptUrl;
+  const isDocumentFile = receiptFile && !isImageFile(receiptFile);
 
   const totalUnsynced = expenses.filter(e => !e.xero_synced).reduce((sum, e) => sum + e.amount, 0);
   const totalThisMonth = expenses
     .filter(e => e.expense_date.startsWith(format(new Date(), "yyyy-MM")))
     .reduce((sum, e) => sum + e.amount, 0);
+
+  // Check if existing receipt is a document (non-image)
+  const isExistingDoc = existingReceiptUrl && /\.(pdf|doc|docx)(\?|$)/i.test(existingReceiptUrl);
 
   return (
     <div className="space-y-4">
@@ -262,6 +334,126 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
           </SheetHeader>
           
           <div className="space-y-4 mt-4">
+            {/* Receipt / Invoice Upload */}
+            <div className="space-y-2">
+              <Label>Receipt / Invoice</Label>
+              {/* Hidden file inputs */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <input
+                ref={uploadInputRef}
+                type="file"
+                accept="image/*,.pdf,.doc,.docx"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <input
+                ref={invoiceInputRef}
+                type="file"
+                accept="image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              
+              {hasFile ? (
+                <div className="space-y-3">
+                  <div className="relative">
+                    {receiptPreview ? (
+                      <img 
+                        src={receiptPreview} 
+                        alt="Receipt preview" 
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    ) : isDocumentFile ? (
+                      <div className="w-full h-32 bg-muted rounded-lg flex flex-col items-center justify-center gap-2">
+                        <FileText className="h-10 w-10 text-primary" />
+                        <p className="text-sm font-medium text-foreground truncate max-w-[80%]">
+                          {receiptFile.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {(receiptFile.size / 1024).toFixed(0)} KB
+                        </p>
+                      </div>
+                    ) : existingReceiptUrl && !isExistingDoc ? (
+                      <img 
+                        src={existingReceiptUrl} 
+                        alt="Receipt preview" 
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    ) : existingReceiptUrl && isExistingDoc ? (
+                      <div className="w-full h-32 bg-muted rounded-lg flex flex-col items-center justify-center gap-2">
+                        <FileText className="h-10 w-10 text-primary" />
+                        <p className="text-sm font-medium text-foreground">Document attached</p>
+                      </div>
+                    ) : null}
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 h-8 w-8"
+                      onClick={clearFile}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Extract Details button */}
+                  {receiptFile && (
+                    <Button
+                      variant="secondary"
+                      className="w-full gap-2"
+                      onClick={handleExtractInvoice}
+                      disabled={extracting}
+                    >
+                      {extracting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Reading invoice...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Extract Details from Invoice
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col gap-2"
+                    onClick={() => cameraInputRef.current?.click()}
+                  >
+                    <Camera className="h-6 w-6" />
+                    <span className="text-xs">Take Photo</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col gap-2"
+                    onClick={() => uploadInputRef.current?.click()}
+                  >
+                    <Upload className="h-6 w-6" />
+                    <span className="text-xs">Upload File</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col gap-2 border-primary/30 bg-primary/5"
+                    onClick={() => invoiceInputRef.current?.click()}
+                  >
+                    <FileText className="h-6 w-6 text-primary" />
+                    <span className="text-xs font-medium text-primary">Import Invoice</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+
             {/* Date */}
             <div className="space-y-2">
               <Label>Date</Label>
@@ -311,69 +503,6 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
               />
             </div>
 
-            {/* Receipt Upload */}
-            <div className="space-y-2">
-              <Label>Receipt Photo</Label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-              
-              {receiptPreview || existingReceiptUrl ? (
-                <div className="relative">
-                  <img 
-                    src={receiptPreview || existingReceiptUrl || ""} 
-                    alt="Receipt preview" 
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-2 right-2 h-8 w-8"
-                    onClick={() => {
-                      setReceiptFile(null);
-                      setReceiptPreview(null);
-                      setExistingReceiptUrl(null);
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="absolute bottom-2 right-2"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Camera className="h-4 w-4 mr-1" />
-                    Replace
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col gap-2"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Camera className="h-6 w-6" />
-                    <span className="text-xs">Take Photo</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col gap-2"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="h-6 w-6" />
-                    <span className="text-xs">Upload</span>
-                  </Button>
-                </div>
-              )}
-            </div>
-
             {/* Submit */}
             <Button
               onClick={handleSubmit}
@@ -383,7 +512,7 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
             >
               {saving || uploading ? (
                 <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   {uploading ? "Uploading..." : "Saving..."}
                 </>
               ) : (
@@ -426,73 +555,82 @@ export function ExpenseTracker({ instructorId }: ExpenseTrackerProps) {
             </CardContent>
           </Card>
         ) : (
-          expenses.map((expense) => (
-            <Card key={expense.id} className="overflow-hidden">
-              <CardContent className="p-3">
-                <div className="flex items-start gap-3">
-                  {expense.receipt_url ? (
-                    <img 
-                      src={expense.receipt_url} 
-                      alt="Receipt"
-                      className="w-14 h-14 object-cover rounded-lg shrink-0"
-                    />
-                  ) : (
-                    <div className="w-14 h-14 bg-muted rounded-lg flex items-center justify-center shrink-0">
-                      <Receipt className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                  )}
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-medium text-foreground">{expense.category}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(parseISO(expense.expense_date), "d MMM yyyy")}
-                        </p>
-                        {expense.description && (
-                          <p className="text-xs text-muted-foreground truncate mt-0.5">
-                            {expense.description}
+          expenses.map((expense) => {
+            const isDoc = expense.receipt_url && /\.(pdf|doc|docx)(\?|$)/i.test(expense.receipt_url);
+            return (
+              <Card key={expense.id} className="overflow-hidden">
+                <CardContent className="p-3">
+                  <div className="flex items-start gap-3">
+                    {expense.receipt_url ? (
+                      isDoc ? (
+                        <div className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                          <FileText className="h-6 w-6 text-primary" />
+                        </div>
+                      ) : (
+                        <img 
+                          src={expense.receipt_url} 
+                          alt="Receipt"
+                          className="w-14 h-14 object-cover rounded-lg shrink-0"
+                        />
+                      )
+                    ) : (
+                      <div className="w-14 h-14 bg-muted rounded-lg flex items-center justify-center shrink-0">
+                        <Receipt className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-medium text-foreground">{expense.category}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(parseISO(expense.expense_date), "d MMM yyyy")}
                           </p>
-                        )}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-semibold text-foreground">£{expense.amount.toFixed(2)}</p>
-                        {expense.xero_synced ? (
-                          <Badge variant="secondary" className="text-[10px] mt-1">
-                            <CheckCircle className="h-2.5 w-2.5 mr-1" />
-                            Synced
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px] mt-1">
-                            Pending
-                          </Badge>
-                        )}
+                          {expense.description && (
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">
+                              {expense.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-semibold text-foreground">£{expense.amount.toFixed(2)}</p>
+                          {expense.xero_synced ? (
+                            <Badge variant="secondary" className="text-[10px] mt-1">
+                              <CheckCircle className="h-2.5 w-2.5 mr-1" />
+                              Synced
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] mt-1">
+                              Pending
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    
+                    <div className="flex flex-col gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => handleEdit(expense)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDelete(expense.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <div className="flex flex-col gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-primary"
-                      onClick={() => handleEdit(expense)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => handleDelete(expense.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            );
+          })
         )}
       </div>
     </div>
