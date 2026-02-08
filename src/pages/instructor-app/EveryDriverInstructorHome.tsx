@@ -219,23 +219,24 @@ export default function EveryDriverInstructorHome() {
               <Link to="/instructor-app/pricing" className="hover:text-white transition-colors">
                 Pricing
               </Link>
-              <Link to="/instructor-app/about" className="hover:text-white transition-colors">
-                About
-              </Link>
-              <Link to="/instructor-app/contact" className="hover:text-white transition-colors">
-                Contact
-              </Link>
               <Link to="/privacy-policy" className="hover:text-white transition-colors">
                 Privacy
               </Link>
               <Link to="/terms-of-service" className="hover:text-white transition-colors">
                 Terms
               </Link>
+              <span className="text-white/30">|</span>
+              <Link to="/drive365" className="hover:text-white transition-colors text-emerald-400 font-medium">
+                Drive365 Learners
+              </Link>
+              <Link to="/pupil/login" className="hover:text-white transition-colors">
+                Pupil Portal
+              </Link>
+              <Link to="/instructor-app/login" className="hover:text-white transition-colors">
+                Instructor Login
+              </Link>
               <Link to="/admin/login" className="hover:text-white transition-colors text-white/40 text-xs">
                 Admin
-              </Link>
-              <Link to="/drive365" className="hover:text-white transition-colors text-emerald-400 text-xs font-medium">
-                Drive365 Learner Site →
               </Link>
             </nav>
             <p className="text-sm">
