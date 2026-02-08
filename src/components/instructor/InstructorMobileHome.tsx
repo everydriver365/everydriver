@@ -46,6 +46,7 @@ import { ReminderStatusWidget } from "@/components/instructor/dashboard/Reminder
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
+import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
@@ -337,6 +338,11 @@ export function InstructorMobileHome({
 
       {/* Content with horizontal padding */}
       <div className="px-4">
+
+      {/* Vehicle Health Strip */}
+      {authInstructor?.id && (
+        <VehicleHealthStrip instructorId={authInstructor.id} />
+      )}
 
       {/* Celebration Confetti */}
       <CelebrationConfetti
