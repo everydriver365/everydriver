@@ -6,12 +6,19 @@ import {
   Flag,
   Calendar as CalendarIcon,
   ChevronRight,
-  Circle,
   Trash2,
   ListTodo,
+  Pencil,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useInstructorTodos, InstructorTodo } from "@/hooks/useInstructorTodos";
 import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
@@ -51,15 +58,14 @@ interface TodoHomeTileProps {
 }
 
 export function TodoHomeTile({ instructorId, className }: TodoHomeTileProps) {
-  const { data: todos = [], addTodo, toggleTodo, deleteTodo } = useInstructorTodos(instructorId);
+  const { data: todos = [], addTodo, toggleTodo, updateTodo, deleteTodo } = useInstructorTodos(instructorId);
   const [showInput, setShowInput] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newPriority, setNewPriority] = useState(4);
+  const [newDueDate, setNewDueDate] = useState<Date | undefined>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Only show incomplete todos, limit to 5 on home
   const activeTodos = todos.filter((t) => !t.is_completed).slice(0, 5);
-  const completedCount = todos.filter((t) => t.is_completed).length;
   const totalActive = todos.filter((t) => !t.is_completed).length;
 
   useEffect(() => {
@@ -68,9 +74,14 @@ export function TodoHomeTile({ instructorId, className }: TodoHomeTileProps) {
 
   const handleAdd = () => {
     if (!newTitle.trim()) return;
-    addTodo.mutate({ title: newTitle.trim(), priority: newPriority });
+    addTodo.mutate({
+      title: newTitle.trim(),
+      priority: newPriority,
+      due_date: newDueDate ? format(newDueDate, "yyyy-MM-dd") : null,
+    });
     setNewTitle("");
     setNewPriority(4);
+    setNewDueDate(undefined);
     setShowInput(false);
   };
 
@@ -79,11 +90,11 @@ export function TodoHomeTile({ instructorId, className }: TodoHomeTileProps) {
   };
 
   return (
-    <div className={cn("bg-white border border-border", className)}>
+    <div className={cn("bg-card border border-border", className)}>
       {/* Header */}
       <div className="flex items-center justify-between p-3 pb-2">
         <div className="flex items-center gap-2">
-          <ListTodo className="h-4 w-4 text-violet-600" />
+          <ListTodo className="h-4 w-4 text-primary" />
           <h3 className="font-semibold text-sm text-foreground">To Do</h3>
           {totalActive > 0 && (
             <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5">
@@ -92,12 +103,7 @@ export function TodoHomeTile({ instructorId, className }: TodoHomeTileProps) {
           )}
         </div>
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => setShowInput(!showInput)}
-          >
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowInput(!showInput)}>
             <Plus className="h-4 w-4" />
           </Button>
           <Link to="/instructor/todos">
@@ -117,27 +123,48 @@ export function TodoHomeTile({ instructorId, className }: TodoHomeTileProps) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-3 pb-2 flex gap-2 items-center">
-              <button onClick={cyclePriority} className="shrink-0">
-                <Flag className={cn("h-4 w-4", PRIORITY_FLAGS[newPriority])} />
-              </button>
-              <Input
-                ref={inputRef}
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                placeholder="Add a task…"
-                className="h-8 text-sm border-0 border-b border-border/50 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs shrink-0"
-                onClick={handleAdd}
-                disabled={!newTitle.trim()}
-              >
-                Add
-              </Button>
+            <div className="px-3 pb-2 space-y-2">
+              <div className="flex gap-2 items-center">
+                <button onClick={cyclePriority} className="shrink-0">
+                  <Flag className={cn("h-4 w-4", PRIORITY_FLAGS[newPriority])} />
+                </button>
+                <Input
+                  ref={inputRef}
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                  placeholder="Add a task…"
+                  className="h-8 text-sm border-0 border-b border-border/50 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1">
+                      <CalendarIcon className="h-3 w-3" />
+                      {newDueDate ? format(newDueDate, "d MMM") : "Due date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={newDueDate}
+                      onSelect={setNewDueDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+                {newDueDate && (
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setNewDueDate(undefined)}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+                <div className="flex-1" />
+                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleAdd} disabled={!newTitle.trim()}>
+                  Add
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -162,16 +189,13 @@ export function TodoHomeTile({ instructorId, className }: TodoHomeTileProps) {
               todo={todo}
               onToggle={() => toggleTodo.mutate({ id: todo.id, is_completed: true })}
               onDelete={() => deleteTodo.mutate(todo.id)}
+              onUpdate={(updates) => updateTodo.mutate({ id: todo.id, ...updates })}
             />
           ))}
         </AnimatePresence>
 
-        {/* "View all" link if more tasks exist */}
         {totalActive > 5 && (
-          <Link
-            to="/instructor/todos"
-            className="block text-center text-xs text-primary font-medium pt-2 hover:underline"
-          >
+          <Link to="/instructor/todos" className="block text-center text-xs text-primary font-medium pt-2 hover:underline">
             View all {totalActive} tasks →
           </Link>
         )}
@@ -184,12 +208,80 @@ function TodoItem({
   todo,
   onToggle,
   onDelete,
+  onUpdate,
 }: {
   todo: InstructorTodo;
   onToggle: () => void;
   onDelete: () => void;
+  onUpdate: (updates: Partial<InstructorTodo>) => void;
 }) {
-  const [swiped, setSwiped] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(todo.title);
+  const [editDueDate, setEditDueDate] = useState<Date | undefined>(
+    todo.due_date ? parseISO(todo.due_date) : undefined
+  );
+  const editRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && editRef.current) editRef.current.focus();
+  }, [editing]);
+
+  const handleSave = () => {
+    if (!editTitle.trim()) return;
+    onUpdate({
+      title: editTitle.trim(),
+      due_date: editDueDate ? format(editDueDate, "yyyy-MM-dd") : null,
+    });
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <motion.div layout className="py-2 border-b border-border/30 last:border-0 space-y-2">
+        <Input
+          ref={editRef}
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSave();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          className="h-8 text-sm"
+        />
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1">
+                <CalendarIcon className="h-3 w-3" />
+                {editDueDate ? format(editDueDate, "d MMM") : "Due date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={editDueDate}
+                onSelect={setEditDueDate}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          {editDueDate && (
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditDueDate(undefined)}>
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+          <div className="flex-1" />
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+          <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>
+            Save
+          </Button>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -199,7 +291,6 @@ function TodoItem({
       exit={{ opacity: 0, x: -80, transition: { duration: 0.2 } }}
       className="flex items-start gap-2.5 py-2 border-b border-border/30 last:border-0 group"
     >
-      {/* Checkbox */}
       <button
         onClick={onToggle}
         className={cn(
@@ -210,7 +301,6 @@ function TodoItem({
         <Check className="h-3 w-3 opacity-0 group-hover:opacity-40 transition-opacity" />
       </button>
 
-      {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="text-sm text-foreground leading-tight">{todo.title}</p>
         {todo.due_date && (
@@ -223,11 +313,17 @@ function TodoItem({
         )}
       </div>
 
-      {/* Delete on hover */}
       <button
-        onClick={onDelete}
+        onClick={() => {
+          setEditTitle(todo.title);
+          setEditDueDate(todo.due_date ? parseISO(todo.due_date) : undefined);
+          setEditing(true);
+        }}
         className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5"
       >
+        <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+      </button>
+      <button onClick={onDelete} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
         <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
       </button>
     </motion.div>
