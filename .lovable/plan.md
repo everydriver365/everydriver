@@ -1,178 +1,99 @@
 
 
-## Quartix Integration Plan
+## Commission QR Code Selection & Dual QR Codes
 
-Bring all Quartix telematics data into the app for instructors and admins, replacing GPSgate as the primary tracking data source.
+### Overview
 
----
-
-### Important: API Credentials Required
-
-Quartix provides API access only through partner agreements. You mentioned you're still waiting on credentials. **This plan prepares everything so it works the moment you receive them.** Once you have your Quartix API key/token and account ID, we store them as backend secrets and the poller starts working immediately.
+Allow instructors to choose who absorbs the platform commission fee on card payments -- either the pupil or the instructor. Based on this choice, the correct QR code is displayed throughout the app. Two separate QR code images can be uploaded in Settings.
 
 ---
 
-### Architecture: Data Source Swap
+### Database Changes
 
-The existing database tables (`gps_devices`, `telematics_gps_points`, `lesson_telematics`, `telematics_alerts`) already store all the data your UI needs. The Quartix integration simply replaces **where that data comes from** -- no UI changes required.
+**Add 3 new columns to the `instructors` table:**
 
+| Column | Type | Default | Purpose |
+|--------|------|---------|---------|
+| `payment_qr_url_pupil_pays` | text, nullable | null | QR code image for when the pupil pays the commission |
+| `payment_qr_url_instructor_pays` | text, nullable | null | QR code image for when the instructor pays the commission |
+| `commission_payer` | text | `'pupil'` | Who pays the commission: `'pupil'` or `'instructor'` |
+
+The existing `payment_qr_url` column remains as a fallback for backward compatibility -- if the new fields are empty, the system falls back to it.
+
+---
+
+### Settings Page Changes (InstructorSettings.tsx)
+
+Replace the single "Payment QR Code" upload section with:
+
+1. **Commission Payer Toggle** -- A radio group or segmented control: "Pupil Pays Commission" vs "Instructor Pays Commission"
+2. **Two QR Code Uploads** side by side:
+   - "Pupil Pays Commission QR" -- upload for `payment_qr_url_pupil_pays`
+   - "Instructor Pays Commission QR" -- upload for `payment_qr_url_instructor_pays`
+3. A visual indicator showing which QR is currently active based on the toggle selection
+
+---
+
+### PaymentQRModal Changes
+
+Update the modal to accept both QR URLs and the `commission_payer` setting, then display:
+- The correct QR code based on who pays commission
+- A label beneath the QR: "Pupil pays commission" or "Instructor pays commission" so it's clear which code is being shown
+
+The modal already receives `paymentQrUrl` -- this will be replaced with logic that resolves the correct URL based on context.
+
+---
+
+### Display Logic Across the App
+
+All 7 places that show the PaymentQRModal will be updated:
+
+| Location | Context | QR Shown |
+|----------|---------|----------|
+| InstructorPortal (mobile) | Instructor viewing | Based on `commission_payer` setting |
+| InstructorPortal (desktop) | Instructor viewing | Based on `commission_payer` setting |
+| InstructorPay | Instructor "Take Payment" | Based on `commission_payer` setting |
+| InstructorPortalLayout | Sidebar QR button | Based on `commission_payer` setting |
+| InstructorMobileHeader | Settings dropdown | Based on `commission_payer` setting |
+| ExpandablePupilCard | Pupil card QR button | Based on `commission_payer` setting |
+| PupilCardStack | Pupil card QR button | Based on `commission_payer` setting |
+
+Each location will fetch or receive both QR URLs plus the `commission_payer` preference, then pass the resolved URL to the modal.
+
+---
+
+### Technical Details
+
+**Resolved QR URL helper:**
 ```text
-CURRENT:   GPSgate API  -->  gpsgate-poller  -->  gps_devices / telematics tables  -->  UI
-NEW:       Quartix API  -->  quartix-poller  -->  same tables                      -->  UI
+function getActivePaymentQrUrl(instructor):
+  if commission_payer === 'pupil':
+    return payment_qr_url_pupil_pays || payment_qr_url (fallback)
+  else:
+    return payment_qr_url_instructor_pays || payment_qr_url (fallback)
 ```
 
-All existing features continue working unchanged:
-- Live maps (instructor + admin)
-- Trip replay with speed profiles
-- Vehicle health dashboard
-- Mileage auto-logging
-- Driving behaviour alerts
-- Driver scores and reports
+**Data fetching updates needed:**
+- `InstructorPortal.tsx` -- add `payment_qr_url_pupil_pays`, `payment_qr_url_instructor_pays`, `commission_payer` to select query
+- `InstructorPay.tsx` -- same
+- `InstructorPortalLayout.tsx` -- same (uses `useInstructorAuth` context)
+- `ExpandablePupilCard.tsx` and `PupilCardStack.tsx` -- receive resolved URL from parent
+- `InstructorSettings.tsx` -- add to profile type and fetch query
+
+**InstructorAuthContext** -- If this context provides the instructor object, its query will also need updating to include the new columns so the QR is available app-wide without extra fetches.
+
+**PaymentQRModal** -- Add a small badge/label showing the commission arrangement, e.g. "Commission: Pupil pays" in muted text below the QR image.
 
 ---
 
-### What Gets Built
+### Implementation Steps
 
-#### 1. Database Migration -- Quartix Columns
+| Step | What |
+|------|------|
+| 1 | Database migration: add 3 columns to `instructors` |
+| 2 | Update `InstructorSettings.tsx`: commission payer toggle + dual QR uploads |
+| 3 | Create `getActivePaymentQrUrl` helper utility |
+| 4 | Update `PaymentQRModal` to show commission label |
+| 5 | Update all 7 consumer locations to pass the resolved QR URL |
+| 6 | Update instructor data queries to include new columns |
 
-Add Quartix-specific fields to `gps_devices` and a new `quartix_driver_scores` table:
-
-**gps_devices additions:**
-- `quartix_vehicle_id` (text) -- Quartix vehicle identifier
-- `quartix_driver_id` (text) -- Quartix driver identifier
-- `tracking_provider` (text, default 'gpsgate') -- 'gpsgate' or 'quartix', enables dual-provider support during migration
-
-**New table: `quartix_driver_scores`**
-- `id` (uuid PK)
-- `instructor_id` (uuid, references instructors)
-- `pupil_id` (uuid, nullable, references pupils)
-- `quartix_driver_id` (text)
-- `score_date` (date)
-- `overall_score` (numeric)
-- `speed_score` (numeric)
-- `acceleration_score` (numeric)
-- `braking_score` (numeric)
-- `cornering_score` (numeric)
-- `fatigue_score` (numeric)
-- `raw_data` (jsonb) -- full Quartix response for future use
-- `created_at` (timestamptz)
-
-RLS: instructors can read their own scores. Admins can read all.
-
-**New table: `instructor_tracking_config`**
-- `id` (uuid PK)
-- `instructor_id` (uuid, unique, references instructors)
-- `provider` (text, default 'gpsgate') -- which provider this instructor uses
-- `quartix_account_id` (text, nullable)
-- `quartix_api_key` (text, nullable) -- per-instructor if needed, otherwise global
-- `created_at` / `updated_at`
-
----
-
-#### 2. Backend Function: `quartix-poller`
-
-**New file: `supabase/functions/quartix-poller/index.ts`**
-
-A backend function mirroring the GPSgate poller's role but calling Quartix endpoints:
-
-- **Live Positions**: Fetch current vehicle positions from Quartix, write to `gps_devices` (same columns: `last_latitude`, `last_longitude`, `last_speed_kmh`, `last_heading`, `last_seen_at`, `last_road_name`, `last_ignition_status`)
-- **Trip History**: Fetch completed trips, create `lesson_telematics` sessions with GPS points in `telematics_gps_points`
-- **Driver Scores**: Fetch daily/weekly driver scores, store in `quartix_driver_scores`
-- **Alerts**: Convert Quartix speeding/harsh-braking events into `telematics_alerts` rows
-- **Odometer/Engine Hours**: Update `gps_devices` odometer and engine hours fields
-
-The function checks `instructor_tracking_config` to only poll instructors using Quartix.
-
-Secrets needed (when you get them):
-- `QUARTIX_API_KEY`
-- `QUARTIX_ACCOUNT_ID`
-- `QUARTIX_API_URL` (base URL for the partner API)
-
----
-
-#### 3. Backend Function: `quartix-trips`
-
-**New file: `supabase/functions/quartix-trips/index.ts`**
-
-Mirrors `gpsgate-trips` -- fetches detailed trip history for a specific vehicle/date range. Called on-demand from the Trip Replay UI to backfill GPS points for historical journeys.
-
----
-
-#### 4. Instructor Settings -- Provider Selection
-
-**Modified: `src/components/instructor/InstructorDetailsEditor.tsx`**
-
-Add a "Tracking Provider" section:
-- Radio toggle: GPSgate / Quartix
-- When Quartix is selected, show fields for Quartix Vehicle ID and optional Driver ID
-- Save to `instructor_tracking_config` table
-- Hide GPSgate-specific fields when Quartix is selected
-
----
-
-#### 5. Admin Dashboard -- Quartix Overview
-
-**Modified: `src/components/admin/AdminLiveMapView.tsx`**
-
-- Show a provider badge on each vehicle marker (GPSgate / Quartix)
-- No other changes needed -- same data structure, same map rendering
-
-**New component: `src/components/admin/QuartixDriverScores.tsx`**
-
-- League table view showing all driver scores across instructors
-- Filterable by date range, instructor, score type
-- Colour-coded scores (green > 80, amber 60-80, red < 60)
-- Added to AdminPortal under a "Driver Scores" section
-
----
-
-#### 6. Instructor Portal -- Driver Scores Card
-
-**New component: `src/components/instructor/QuartixDriverScoreCard.tsx`**
-
-- Weekly/monthly score summary card showing overall, speed, braking, acceleration, cornering scores
-- Trend arrows comparing to previous period
-- Added to the instructor dashboard or vehicle health page
-
----
-
-#### 7. Polling Schedule
-
-**Modified: `invoke_gpsgate_poller` database function**
-
-Create an equivalent `invoke_quartix_poller` function so both pollers can run on their own cron schedules. The existing 2-second client-side polling (`useGPSPoller`) will be updated to call the appropriate poller based on the instructor's provider setting.
-
----
-
-### Implementation Order
-
-| Step | What | Depends On |
-|------|------|------------|
-| 1 | Database migration (new tables + columns) | Nothing |
-| 2 | `quartix-poller` edge function (stubbed, ready for API) | Step 1 + API credentials |
-| 3 | `quartix-trips` edge function | Step 1 + API credentials |
-| 4 | Instructor settings UI (provider toggle) | Step 1 |
-| 5 | Admin driver scores component | Step 1 |
-| 6 | Instructor driver score card | Step 1 |
-| 7 | Polling schedule setup | Step 2 |
-
-**Steps 1, 4, 5, and 6 can be built immediately.** Steps 2, 3, and 7 will be fully functional once you receive Quartix partner API credentials -- the code structure will be in place with placeholder API calls clearly marked.
-
----
-
-### What You Need To Do
-
-1. Contact Quartix (01686 806 663 or partnerships@quartix.com) and request partner API access
-2. Once approved, you'll receive an API key, account ID, and API documentation
-3. Share those credentials with me and I'll wire them into the ready-made poller
-
----
-
-### Summary
-
-- No UI changes needed for existing tracking features (maps, replays, mileage, alerts)
-- New driver scores feature for both instructors and admins
-- Dual-provider support so GPSgate instructors keep working alongside Quartix
-- Everything ready to go live the day credentials arrive
-
-Remove all other tracking systems and code
