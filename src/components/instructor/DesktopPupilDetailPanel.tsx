@@ -61,6 +61,8 @@ interface Pupil {
   deposit_forfeited?: boolean | null;
   status?: string;
   profile_image_url?: string | null;
+  pickup_address?: string | null;
+  pickup_postcode?: string | null;
 }
 
 type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
@@ -529,6 +531,25 @@ export function DesktopPupilDetailPanel({
                       ///{pupil.what3words}
                     </button>
                   )}
+                </div>
+                {/* Pickup address */}
+                <div className="flex items-center gap-2 mt-1">
+                  <Navigation className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <InlineEditField
+                    value={pupil.pickup_address || ""}
+                    onSave={(v) => saveField("pickup_address", v || null)}
+                    placeholder="Pickup address"
+                    textClassName="text-sm text-muted-foreground"
+                    emptyText="Add pickup address"
+                  />
+                  <span className="text-muted-foreground text-sm">,</span>
+                  <InlineEditField
+                    value={pupil.pickup_postcode || ""}
+                    onSave={(v) => saveField("pickup_postcode", v || null)}
+                    placeholder="Pickup postcode"
+                    textClassName="text-sm text-muted-foreground"
+                    emptyText="Pickup postcode"
+                  />
                 </div>
                 {/* Inline editable phone & email */}
                 <div className="flex items-center gap-4 mt-1">

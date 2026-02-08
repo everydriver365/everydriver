@@ -108,6 +108,8 @@ interface Pupil {
   deposit_forfeited?: boolean | null;
   status?: string;
   profile_image_url?: string | null;
+  pickup_address?: string | null;
+  pickup_postcode?: string | null;
 }
 
 type PupilStatus = 'active' | 'passed' | 'inactive' | 'on_hold' | 'cancelled';
@@ -649,6 +651,21 @@ export function PupilCardStack({
                       className="ml-6"
                       textClassName="text-muted-foreground"
                       emptyText="Add postcode"
+                    />
+                    <InlineEditField
+                      value={pupil.pickup_address || ""}
+                      onSave={(v) => saveField("pickup_address", v || null)}
+                      icon={<Navigation className="h-4 w-4 text-muted-foreground" />}
+                      placeholder="Pickup address"
+                      emptyText="Add pickup address"
+                    />
+                    <InlineEditField
+                      value={pupil.pickup_postcode || ""}
+                      onSave={(v) => saveField("pickup_postcode", v || null)}
+                      placeholder="Pickup postcode"
+                      className="ml-6"
+                      textClassName="text-muted-foreground"
+                      emptyText="Add pickup postcode"
                     />
                     {pupil.what3words && (
                       <button 
