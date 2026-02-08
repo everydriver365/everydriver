@@ -157,7 +157,7 @@ export function AdminLayout({
       </header>
 
       {/* Breadcrumb */}
-      <div className="border-b bg-muted/30 px-6 py-2">
+      <div className="border-b bg-gradient-to-r from-primary/[0.03] to-transparent px-6 py-2.5">
         <nav className="flex items-center text-sm text-muted-foreground">
           <button 
             onClick={() => onSectionChange("overview")}

@@ -375,7 +375,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-accent" />
+                  <Shield className="h-5 w-5 text-primary" />
                   Instructor Compliance Dashboard
                 </CardTitle>
               </CardHeader>
@@ -403,7 +403,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FileEdit className="h-5 w-5 text-accent" />
+                  <FileEdit className="h-5 w-5 text-primary" />
                   Bespoke Enquiries & Callback Requests
                 </CardTitle>
               </CardHeader>
@@ -422,7 +422,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-accent" />
+                  <MessageCircle className="h-5 w-5 text-primary" />
                   Pupil Messages
                 </CardTitle>
               </CardHeader>
@@ -495,7 +495,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Download className="h-5 w-5 text-accent" />
+                  <Download className="h-5 w-5 text-primary" />
                   Mobile App Configuration
                 </CardTitle>
               </CardHeader>
@@ -514,7 +514,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Smartphone className="h-5 w-5 text-accent" />
+                  <Smartphone className="h-5 w-5 text-primary" />
                   Instructor Mobile Homepage
                 </CardTitle>
               </CardHeader>
@@ -533,7 +533,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Rocket className="h-5 w-5 text-accent" />
+                  <Rocket className="h-5 w-5 text-primary" />
                   Instructor App Marketing Page
                 </CardTitle>
               </CardHeader>
@@ -578,7 +578,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5 text-accent" />
+                  <ImageIcon className="h-5 w-5 text-primary" />
                   Site Images
                 </CardTitle>
               </CardHeader>
@@ -597,7 +597,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Video className="h-5 w-5 text-accent" />
+                  <Video className="h-5 w-5 text-primary" />
                   Site Videos
                 </CardTitle>
               </CardHeader>
@@ -616,7 +616,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-accent" />
+                  <Globe className="h-5 w-5 text-primary" />
                   Demo Mini Site
                 </CardTitle>
               </CardHeader>
@@ -635,7 +635,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Megaphone className="h-5 w-5 text-accent" />
+                  <Megaphone className="h-5 w-5 text-primary" />
                   Promotional Banner
                 </CardTitle>
               </CardHeader>
@@ -654,7 +654,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-accent" />
+                  <Globe className="h-5 w-5 text-primary" />
                   Site Settings & SEO
                 </CardTitle>
               </CardHeader>
@@ -673,7 +673,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Tag className="h-5 w-5 text-accent" />
+                  <Tag className="h-5 w-5 text-primary" />
                   Discount Codes
                 </CardTitle>
               </CardHeader>
@@ -692,7 +692,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Gift className="h-5 w-5 text-accent" />
+                  <Gift className="h-5 w-5 text-primary" />
                   Instructor Bonuses
                 </CardTitle>
               </CardHeader>
@@ -711,7 +711,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Coins className="h-5 w-5 text-accent" />
+                  <Coins className="h-5 w-5 text-primary" />
                   Loyalty & Rewards Configuration
                 </CardTitle>
               </CardHeader>
@@ -749,7 +749,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5 text-accent" />
+                  <HelpCircle className="h-5 w-5 text-primary" />
                   Public FAQs
                 </CardTitle>
               </CardHeader>
@@ -768,7 +768,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <HelpCircle className="h-5 w-5 text-accent" />
+                  <HelpCircle className="h-5 w-5 text-primary" />
                   Instructor FAQs & Help Articles
                 </CardTitle>
               </CardHeader>
@@ -787,7 +787,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-accent" />
+                  <Zap className="h-5 w-5 text-primary" />
                   Booking Upsells
                 </CardTitle>
               </CardHeader>
@@ -806,7 +806,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-accent" />
+                  <Users className="h-5 w-5 text-primary" />
                   Pupil Records
                 </CardTitle>
               </CardHeader>
@@ -825,7 +825,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-accent" />
+                  <Clock className="h-5 w-5 text-primary" />
                   Activity Log
                 </CardTitle>
               </CardHeader>

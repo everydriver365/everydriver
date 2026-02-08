@@ -431,38 +431,36 @@ export function InstructorMobileHome({
       {/* Today & Weekly Combined Card */}
       <div className="mt-2">
         <div 
-          className="bg-white border border-border p-4 cursor-pointer"
+          className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-sm transition-all"
           onClick={() => navigate("/instructor/money")}
         >
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-medium text-foreground text-sm">Today's Stats</h3>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="flex items-center justify-around">
-            <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-rose-500">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-3 text-center">
+              <div className="flex items-center justify-center gap-1 text-primary">
                 <BookOpen className="h-4 w-4" />
-                <span className="text-lg font-semibold">
+                <span className="text-lg font-bold">
                   <AnimatedCounter value={currentLessons} />
                 </span>
               </div>
               <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Lessons</span>
             </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-blue-600">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3 text-center">
+              <div className="flex items-center justify-center gap-1 text-blue-600 dark:text-blue-400">
                 <Clock className="h-4 w-4" />
-                <span className="text-lg font-semibold">
+                <span className="text-lg font-bold">
                   <AnimatedCounter value={todayOverview?.totalHours || 0} />
                 </span>
               </div>
               <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Hours</span>
             </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-1 text-emerald-600">
+            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 text-center">
+              <div className="flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400">
                 <PoundSterling className="h-4 w-4" />
-                <span className="text-lg font-semibold">
+                <span className="text-lg font-bold">
                   <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
                 </span>
               </div>

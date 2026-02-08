@@ -13,9 +13,11 @@ import {
   Mail,
   Headphones,
   MapPin,
-  PoundSterling
+  PoundSterling,
+  ChevronRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { StatCard } from "@/components/ui/StatCard";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminTodoList } from "./AdminTodoList";
 import { WebsitesNeededList } from "./WebsitesNeededList";
@@ -318,61 +320,61 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
     return `£${amount.toFixed(0)}`;
   };
 
-  const statTiles = [
+  const statTiles: { icon: LucideIcon; label: string; value: string; variant: "primary" | "success" | "warning" | "danger" | "info" | "neutral"; onClick: () => void }[] = [
     {
       icon: Users,
       label: "Instructors",
       value: dashboardStats.instructors.toString(),
-      color: "bg-blue-500/10 text-blue-600",
+      variant: "info",
       onClick: () => onNavigate("instructors"),
     },
     {
       icon: TrendingUp,
       label: "Revenue",
       value: formatRevenue(dashboardStats.revenue),
-      color: "bg-green-500/10 text-green-600",
+      variant: "success",
       onClick: () => onNavigate("payments"),
     },
     {
       icon: Calendar,
       label: "Bookings",
       value: dashboardStats.bookings.toString(),
-      color: "bg-purple-500/10 text-purple-600",
+      variant: "primary",
       onClick: () => onNavigate("bookings"),
     },
     {
       icon: CreditCard,
       label: "Courses Booked",
       value: dashboardStats.coursesBooked.toString(),
-      color: "bg-orange-500/10 text-orange-600",
+      variant: "warning",
       onClick: () => onNavigate("courses"),
     },
     {
       icon: MapPin,
       label: "Live Map",
       value: "View",
-      color: "bg-cyan-500/10 text-cyan-600",
+      variant: "info",
       onClick: () => onNavigate("live-map"),
     },
     {
       icon: TrendingUp,
       label: "Analytics",
       value: "View",
-      color: "bg-indigo-500/10 text-indigo-600",
+      variant: "primary",
       onClick: () => onNavigate("analytics"),
     },
     {
       icon: Users,
       label: "Subscribers",
       value: "View",
-      color: "bg-violet-500/10 text-violet-600",
+      variant: "primary",
       onClick: () => onNavigate("subscribers"),
     },
     {
       icon: PoundSterling,
       label: "Pupil Payments",
       value: "View",
-      color: "bg-amber-500/10 text-amber-600",
+      variant: "warning",
       onClick: () => onNavigate("payments"),
     },
   ];
@@ -380,21 +382,16 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
   return (
     <div className="space-y-8">
       {/* Stats Tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {statTiles.map((tile) => (
-          <button
+          <StatCard
             key={tile.label}
+            icon={tile.icon}
+            label={tile.label}
+            value={tile.value}
+            variant={tile.variant}
             onClick={tile.onClick}
-            className="flex items-center gap-3 p-4 bg-card rounded-lg border hover:border-primary/50 hover:shadow-sm transition-all text-left"
-          >
-            <div className={`flex h-10 w-10 items-center justify-center rounded-lg shrink-0 ${tile.color}`}>
-              <tile.icon className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-2xl font-bold truncate">{tile.value}</div>
-              <div className="text-xs text-muted-foreground truncate">{tile.label}</div>
-            </div>
-          </button>
+          />
         ))}
       </div>
 
@@ -406,11 +403,14 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       </div>
 
       {/* Settings Grid */}
-      <div className="space-y-8">
+      <div className="space-y-6">
       {settingsCategories.map((category) => (
         <div key={category.title} className="space-y-3">
           {/* Category Header */}
-          <h2 className="text-lg font-bold tracking-tight">{category.title}</h2>
+          <div className="flex items-center gap-2">
+            <category.icon className={`h-5 w-5 ${category.iconColor}`} />
+            <h2 className="text-lg font-bold tracking-tight">{category.title}</h2>
+          </div>
           
           {/* Links as card tiles */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -420,9 +420,9 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
                 <button
                   key={link.key}
                   onClick={() => onNavigate(link.key)}
-                  className="flex items-center gap-3 p-4 bg-card rounded-lg border hover:border-primary/50 hover:shadow-sm transition-all text-left w-full"
+                  className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border hover:border-primary/30 hover:bg-primary/[0.02] hover:shadow-sm transition-all text-left w-full group"
                 >
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg shrink-0 ${category.iconColor} bg-muted`}>
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 ${category.iconColor} bg-muted/50`}>
                     <category.icon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -438,6 +438,7 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
                       {link.description}
                     </p>
                   </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors shrink-0" />
                 </button>
               );
             })}
