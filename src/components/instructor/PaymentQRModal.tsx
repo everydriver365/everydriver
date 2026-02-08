@@ -26,9 +26,6 @@ export function PaymentQRModal({
   instructorName = "Your Instructor",
   commissionPayer = "pupil",
 }: PaymentQRModalProps) {
-  const paysLabel = commissionPayer === 'instructor' 
-    ? 'Instructor pays commission' 
-    : 'Pupil pays commission';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -58,10 +55,6 @@ export function PaymentQRModal({
           <p className="text-sm text-muted-foreground text-center font-medium">
             Scan to pay {instructorName}
           </p>
-
-          <Badge variant="outline" className="text-xs text-muted-foreground">
-            {paysLabel}
-          </Badge>
         </div>
       </DialogContent>
     </Dialog>
