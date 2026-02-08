@@ -19,6 +19,9 @@ interface NextLesson {
     id: string;
     name: string;
     postcode: string;
+    pickup_address: string | null;
+    pickup_postcode: string | null;
+    address: string | null;
     profile_image_url: string | null;
   };
 }
@@ -41,6 +44,9 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
             id,
             name,
             postcode,
+            pickup_address,
+            pickup_postcode,
+            address,
             profile_image_url
           )
         `)
@@ -140,7 +146,9 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
             </div>
             <div className="flex items-center gap-1.5 mt-1.5 text-sm text-primary-foreground/80">
               <MapPin className="h-3.5 w-3.5" />
-              <span className="truncate">{nextLesson.pupil.postcode}</span>
+              <span className="truncate">
+                {nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode}
+              </span>
             </div>
           </div>
 
