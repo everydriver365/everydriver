@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
@@ -24,6 +24,7 @@ import { TestCentresAndExaminersManager } from "@/components/instructor/TestCent
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutManager";
+import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -814,6 +815,21 @@ export default function InstructorSettings() {
                   instructorId={instructorId} 
                   instructorName={profile?.name}
                   compact={false}
+                />
+              </SettingsTile>
+
+              {/* Card Commission Settings */}
+              <SettingsTile 
+                id="commission" 
+                icon={CreditCard} 
+                title="Card Commission" 
+                description="Choose who pays the card fee"
+                iconColor="text-violet-600"
+                iconBg="bg-violet-100 dark:bg-violet-900/30"
+              >
+                <CommissionPayerSettings 
+                  instructorId={instructorId} 
+                  initialPayer={profile?.commission_payer}
                 />
               </SettingsTile>
           </div>
