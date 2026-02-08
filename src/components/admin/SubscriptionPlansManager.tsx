@@ -28,7 +28,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Plus, Pencil, Trash2, Star, GripVertical, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, GripVertical, X, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 interface SubscriptionPlan {
@@ -257,10 +257,21 @@ export function SubscriptionPlansManager() {
             Manage pricing tiers and features
           </p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Plan
-        </Button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/instructor/plans"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Preview Plans Page
+          </a>
+          <Button onClick={handleCreate}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Plan
+          </Button>
+        </div>
       </div>
 
       {/* Plans Table */}
