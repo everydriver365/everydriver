@@ -153,6 +153,40 @@ function HeroA3_SplitGradient() {
   );
 }
 
+function HeroA4_SplitGradientWithImage() {
+  return (
+    <div className="rounded-2xl overflow-hidden">
+      {/* Top: image with gradient overlay */}
+      <div className="relative h-36 bg-gradient-to-br from-primary via-primary/90 to-teal-800">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjMwMCIgY3k9IjEwMCIgcj0iMTIwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDYpIi8+PGNpcmNsZSBjeD0iNTAiIGN5PSIxNTAiIHI9IjgwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDQpIi8+PC9zdmc+')] opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/60" />
+        <div className="absolute bottom-4 left-5 right-5">
+          <p className="text-white/90 text-sm font-medium">{MOCK.greeting}</p>
+          <div className="flex items-center gap-3 text-white/60 text-xs mt-1">
+            <span className="inline-flex items-center gap-1"><Cloud className="h-3 w-3" /> {MOCK.weather.temp}°C</span>
+            <span>·</span>
+            <span className="inline-flex items-center gap-1">🚗 +{MOCK.trafficDelay} min 🟡</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom: stats on gradient */}
+      <div className="bg-gradient-to-br from-primary to-teal-800 px-5 pb-5 pt-4 text-white">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-3xl font-bold">{MOCK.weeklyHours}h</p>
+            <p className="text-white/60 text-sm">of {MOCK.weeklyTarget}h target</p>
+          </div>
+          <ProgressRing pct={progress} size={64} stroke={5} glowColor="hsl(142, 71%, 45%)" className="text-white" />
+        </div>
+        <div className="w-full h-2 bg-white/20 rounded-full">
+          <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════
 // NEXT LESSON OPTIONS
 // ═══════════════════════════════════════════════════════════
@@ -338,6 +372,11 @@ export default function InstructorTileDemo() {
             <div>
               <SectionLabel tag="Option A3" title="Split Gradient (No Image)" desc="Clean gradient background, no image. Fast loading, device-friendly." />
               <HeroA3_SplitGradient />
+            </div>
+
+            <div>
+              <SectionLabel tag="Option A4" title="Split Gradient with Image" desc="Hero image at top with gradient stats panel below. Best of both worlds." />
+              <HeroA4_SplitGradientWithImage />
             </div>
           </div>
         </section>
