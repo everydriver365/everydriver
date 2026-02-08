@@ -580,7 +580,7 @@ export function DesktopPupilDetailPanel({
                   <span className="text-xs text-muted-foreground">Finance</span>
                 </div>
                 <div className={cn("text-2xl font-bold", hasDebt ? "text-rose-600" : "text-emerald-600")}>
-                  {pupil.account_balance ? (pupil.account_balance < 0 ? `-£${Math.abs(pupil.account_balance)}` : `£${pupil.account_balance}`) : "£0"}
+                  {pupil.account_balance ? (pupil.account_balance < 0 ? `-£${Math.abs(pupil.account_balance).toFixed(0)}` : `£${Number(pupil.account_balance).toFixed(0)}`) : "£0"}
                 </div>
                 <p className="text-[10px] text-muted-foreground">{pupil.prepaid_hours || 0}h credit</p>
               </CardContent>
