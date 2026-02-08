@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -173,6 +174,7 @@ export function PupilCardStack({
   paymentQrUrl,
   commissionPayer,
 }: PupilCardStackProps) {
+  const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const [changingStatus, setChangingStatus] = useState(false);
   const currentStatus = (pupil.status || 'active') as PupilStatus;
@@ -410,6 +412,7 @@ export function PupilCardStack({
     const { error } = await supabase.from("pupils").update({ [field]: value }).eq("id", pupil.id);
     if (error) { toast.error("Failed to save"); throw error; }
     toast.success("Updated");
+    queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
   };
 
   const handleNavigate = () => {

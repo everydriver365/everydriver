@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,7 @@ const courseTypeLabels: Record<string, string> = {
 
 export default function InstructorPupils() {
   const { instructor, refreshInstructor } = useInstructorAuth();
+  const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
   const instructorId = instructor?.id;
@@ -300,6 +302,7 @@ export default function InstructorPupils() {
       toast.success("Pupil updated successfully");
       setIsEditOpen(false);
       fetchPupils();
+      queryClient.invalidateQueries({ queryKey: ["next-lesson-details"] });
     } catch (error) {
       console.error("Error updating pupil:", error);
       toast.error("Failed to update pupil");
