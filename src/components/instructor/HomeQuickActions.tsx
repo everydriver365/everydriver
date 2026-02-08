@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, MapPin, Plus, PoundSterling, Car, Heart } from "lucide-react";
+import { Calendar, MapPin, Plus, PoundSterling, Car, Heart, ChevronRight } from "lucide-react";
 
 interface HomeQuickActionsProps {
   onTakePayment?: () => void;
@@ -10,16 +10,16 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
   const navigate = useNavigate();
 
   const actions = [
-    { id: "fill-gaps", label: "Fill Gaps", icon: Calendar, iconColor: "text-violet-600", route: "/instructor/gaps" },
-    { id: "track-live", label: "Track Live", icon: MapPin, iconColor: "text-emerald-600", route: "/instructor/traccar" },
-    { id: "add-lesson", label: "Add Lesson", icon: Plus, iconColor: "text-blue-600", route: "/instructor/schedule?action=add" },
-    { id: "take-payment", label: "Take Payment", icon: PoundSterling, iconColor: "text-rose-600", onClick: onTakePayment },
-    { id: "find-my-car", label: "Find My Car", icon: Car, iconColor: "text-sky-600", route: "/instructor/find-my-car" },
-    { id: "health-hub", label: "Health Hub", icon: Heart, iconColor: "text-pink-600", route: "/instructor/health" },
+    { id: "fill-gaps", label: "Fill Gaps", subtitle: "Schedule gaps", icon: Calendar, iconColor: "text-violet-600", route: "/instructor/gaps" },
+    { id: "track-live", label: "Track Live", subtitle: "GPS tracking", icon: MapPin, iconColor: "text-emerald-600", route: "/instructor/traccar" },
+    { id: "add-lesson", label: "Add Lesson", subtitle: "New booking", icon: Plus, iconColor: "text-blue-600", route: "/instructor/schedule?action=add" },
+    { id: "take-payment", label: "Take Payment", subtitle: "Record income", icon: PoundSterling, iconColor: "text-rose-600", onClick: onTakePayment },
+    { id: "find-my-car", label: "Find My Car", subtitle: "Car location", icon: Car, iconColor: "text-sky-600", route: "/instructor/find-my-car" },
+    { id: "health-hub", label: "Health Hub", subtitle: "Wellness tips", icon: Heart, iconColor: "text-pink-600", route: "/instructor/health" },
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-3">
       {actions.map((action, index) => {
         const Icon = action.icon;
         const content = (
@@ -27,12 +27,18 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + index * 0.05 }}
-            className="flex flex-col items-center justify-center p-3 rounded-none border border-gray-200 bg-white shadow-[0_2px_8px_rgba(20,37,66,0.08)] active:scale-[0.98] transition-transform"
+            className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
           >
-            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-              <Icon className={`h-4.5 w-4.5 ${action.iconColor}`} />
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Icon className={`h-5 w-5 ${action.iconColor}`} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-sm">{action.label}</p>
+                <p className="text-xs text-muted-foreground">{action.subtitle}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </div>
-            <span className="text-[11px] font-semibold text-foreground">{action.label}</span>
           </motion.div>
         );
 
