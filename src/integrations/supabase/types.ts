@@ -6502,6 +6502,8 @@ export type Database = {
           password_hash: string | null
           payment_type: string | null
           phone: string | null
+          pickup_address: string | null
+          pickup_postcode: string | null
           postcode: string
           preferred_days: string[] | null
           preferred_language: string | null
@@ -6572,6 +6574,8 @@ export type Database = {
           password_hash?: string | null
           payment_type?: string | null
           phone?: string | null
+          pickup_address?: string | null
+          pickup_postcode?: string | null
           postcode: string
           preferred_days?: string[] | null
           preferred_language?: string | null
@@ -6642,6 +6646,8 @@ export type Database = {
           password_hash?: string | null
           payment_type?: string | null
           phone?: string | null
+          pickup_address?: string | null
+          pickup_postcode?: string | null
           postcode?: string
           preferred_days?: string[] | null
           preferred_language?: string | null

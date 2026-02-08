@@ -37,7 +37,8 @@ export function useNextLessonDetails(instructorId: string | undefined) {
           pickup_location, pickup_postcode,
           pupils!inner (
             id, name, phone, profile_image_url,
-            postcode, address, account_balance, prepaid_hours
+            postcode, address, pickup_address, pickup_postcode,
+            account_balance, prepaid_hours
           )
         `)
         .eq("instructor_id", instructorId)
@@ -58,7 +59,8 @@ export function useNextLessonDetails(instructorId: string | undefined) {
             pickup_location, pickup_postcode,
             pupils!inner (
               id, name, phone, profile_image_url,
-              postcode, address, account_balance, prepaid_hours
+              postcode, address, pickup_address, pickup_postcode,
+              account_balance, prepaid_hours
             )
           `)
           .eq("instructor_id", instructorId)
@@ -80,22 +82,9 @@ export function useNextLessonDetails(instructorId: string | undefined) {
       const lessonTime = new Date(`${lessonDate}T${lesson.start_time}`);
       const minutesUntil = differenceInMinutes(lessonTime, now);
 
-      // Use pupil's current address as the canonical source;
-      // only use lesson-level pickup fields if they meaningfully differ
-      // (i.e. a custom pickup was explicitly set that isn't the pupil's home)
-      const pupilPostcode = pupil.postcode || null;
-      const pupilAddress = pupil.address || null;
-      const lessonPickupPostcode = lesson.pickup_postcode || null;
-      const lessonPickupLocation = lesson.pickup_location || null;
-
-      // If the lesson pickup matches the pupil home, prefer the (possibly updated) pupil data
-      const isPickupSameAsHome =
-        !lessonPickupPostcode ||
-        lessonPickupPostcode === pupilPostcode ||
-        lessonPickupLocation === pupilAddress;
-
-      const effectivePostcode = isPickupSameAsHome ? pupilPostcode : lessonPickupPostcode;
-      const effectiveLocation = isPickupSameAsHome ? pupilAddress : lessonPickupLocation;
+      // Priority: pupil pickup address > lesson pickup > pupil home address
+      const effectivePostcode = pupil.pickup_postcode || lesson.pickup_postcode || pupil.postcode || null;
+      const effectiveLocation = pupil.pickup_address || lesson.pickup_location || pupil.address || null;
 
       return {
         lessonId: lesson.id,
