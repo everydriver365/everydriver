@@ -15,6 +15,7 @@ import {
 import { useTheme } from "@/context/ThemeContext";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
+import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import OfflineSyncIndicator from "@/components/pwa/OfflineSyncIndicator";
 
 interface InstructorMobileHeaderProps {
@@ -106,7 +107,13 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           )}
         </div>
       </div>
-      <PaymentQRModal open={open} onOpenChange={setOpen} />
+      <PaymentQRModal 
+        open={open} 
+        onOpenChange={setOpen} 
+        paymentQrUrl={getActivePaymentQrUrl(instructor)}
+        commissionPayer={instructor?.commission_payer}
+        instructorName={instructor?.name}
+      />
     </div>
   );
 };

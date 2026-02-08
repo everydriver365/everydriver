@@ -49,6 +49,9 @@ interface InstructorProfile {
   profile_image_url: string | null;
   car_image_url: string | null;
   payment_qr_url: string | null;
+  payment_qr_url_pupil_pays: string | null;
+  payment_qr_url_instructor_pays: string | null;
+  commission_payer: string | null;
   welcome_video_url: string | null;
   hero_image_url: string | null;
   adi_certificate_url: string | null;
@@ -98,7 +101,7 @@ export default function InstructorSettings() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("name, email, phone, bio, profile_image_url, car_image_url, payment_qr_url, welcome_video_url, hero_image_url, adi_certificate_url, is_active")
+        .select("name, email, phone, bio, profile_image_url, car_image_url, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, welcome_video_url, hero_image_url, adi_certificate_url, is_active")
         .eq("id", instructorId)
         .single();
 
@@ -946,36 +949,117 @@ export default function InstructorSettings() {
                     />
                   </div>
 
-                  {/* Payment QR Code */}
-                  <div className="space-y-2">
+                  {/* Commission Payer Toggle */}
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2 mb-2">
                       <QrCode className="h-4 w-4 text-muted-foreground" />
-                      <Label className="text-sm font-medium">Payment QR Code</Label>
+                      <Label className="text-sm font-medium">Payment QR Codes</Label>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Pupils can scan to make quick payments
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Choose who pays the £1 card payment commission, then upload the matching QR code
                     </p>
-                    <CMSImageUpload
-                      value={profile?.payment_qr_url || null}
-                      onChange={async (url) => {
-                        if (!instructorId) return;
-                        try {
-                          const { error } = await supabase
-                            .from("instructors")
-                            .update({ payment_qr_url: url })
-                            .eq("id", instructorId);
-                          if (error) throw error;
-                          setProfile(prev => prev ? { ...prev, payment_qr_url: url } : null);
-                          toast({ title: "Payment QR updated" });
-                        } catch (error) {
-                          console.error("Error updating QR code:", error);
-                          toast({ title: "Error", description: "Failed to update QR code", variant: "destructive" });
-                        }
-                      }}
-                      bucket="instructor-images"
-                      folder={instructorId}
-                      label=""
-                    />
+                    
+                    {/* Commission payer selector */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant={profile?.commission_payer !== 'instructor' ? 'default' : 'outline'}
+                        size="sm"
+                        className="flex-1"
+                        onClick={async () => {
+                          if (!instructorId) return;
+                          try {
+                            const { error } = await supabase
+                              .from("instructors")
+                              .update({ commission_payer: 'pupil' })
+                              .eq("id", instructorId);
+                            if (error) throw error;
+                            setProfile(prev => prev ? { ...prev, commission_payer: 'pupil' } : null);
+                            toast({ title: "Commission payer updated to Pupil" });
+                          } catch {
+                            toast({ title: "Error", variant: "destructive" });
+                          }
+                        }}
+                      >
+                        Pupil Pays
+                      </Button>
+                      <Button
+                        variant={profile?.commission_payer === 'instructor' ? 'default' : 'outline'}
+                        size="sm"
+                        className="flex-1"
+                        onClick={async () => {
+                          if (!instructorId) return;
+                          try {
+                            const { error } = await supabase
+                              .from("instructors")
+                              .update({ commission_payer: 'instructor' })
+                              .eq("id", instructorId);
+                            if (error) throw error;
+                            setProfile(prev => prev ? { ...prev, commission_payer: 'instructor' } : null);
+                            toast({ title: "Commission payer updated to Instructor" });
+                          } catch {
+                            toast({ title: "Error", variant: "destructive" });
+                          }
+                        }}
+                      >
+                        Instructor Pays
+                      </Button>
+                    </div>
+
+                    {/* Dual QR uploads */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                      <div className={`space-y-2 rounded-lg border p-3 ${profile?.commission_payer !== 'instructor' ? 'ring-2 ring-primary' : ''}`}>
+                        <Label className="text-xs font-medium">Pupil Pays Commission QR</Label>
+                        {profile?.commission_payer !== 'instructor' && (
+                          <span className="text-[10px] text-primary font-semibold ml-1">ACTIVE</span>
+                        )}
+                        <CMSImageUpload
+                          value={profile?.payment_qr_url_pupil_pays || null}
+                          onChange={async (url) => {
+                            if (!instructorId) return;
+                            try {
+                              const { error } = await supabase
+                                .from("instructors")
+                                .update({ payment_qr_url_pupil_pays: url })
+                                .eq("id", instructorId);
+                              if (error) throw error;
+                              setProfile(prev => prev ? { ...prev, payment_qr_url_pupil_pays: url } : null);
+                              toast({ title: "Pupil pays QR updated" });
+                            } catch {
+                              toast({ title: "Error", variant: "destructive" });
+                            }
+                          }}
+                          bucket="instructor-images"
+                          folder={instructorId}
+                          label=""
+                        />
+                      </div>
+                      <div className={`space-y-2 rounded-lg border p-3 ${profile?.commission_payer === 'instructor' ? 'ring-2 ring-primary' : ''}`}>
+                        <Label className="text-xs font-medium">Instructor Pays Commission QR</Label>
+                        {profile?.commission_payer === 'instructor' && (
+                          <span className="text-[10px] text-primary font-semibold ml-1">ACTIVE</span>
+                        )}
+                        <CMSImageUpload
+                          value={profile?.payment_qr_url_instructor_pays || null}
+                          onChange={async (url) => {
+                            if (!instructorId) return;
+                            try {
+                              const { error } = await supabase
+                                .from("instructors")
+                                .update({ payment_qr_url_instructor_pays: url })
+                                .eq("id", instructorId);
+                              if (error) throw error;
+                              setProfile(prev => prev ? { ...prev, payment_qr_url_instructor_pays: url } : null);
+                              toast({ title: "Instructor pays QR updated" });
+                            } catch {
+                              toast({ title: "Error", variant: "destructive" });
+                            }
+                          }}
+                          bucket="instructor-images"
+                          folder={instructorId}
+                          label=""
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   {/* Welcome Video URL */}

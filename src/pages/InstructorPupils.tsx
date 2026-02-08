@@ -51,6 +51,7 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import PupilDrivingReport from "@/components/instructor/PupilDrivingReport";
 import { PupilCardStack } from "@/components/instructor/PupilCardStack";
+import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { PostcodeAutocomplete } from "@/components/PostcodeAutocomplete";
 import { GoogleAddressAutocomplete } from "@/components/admin/GoogleAddressAutocomplete";
 import { TermsSignatureModal } from "@/components/instructor/TermsSignatureModal";
@@ -581,6 +582,8 @@ export default function InstructorPupils() {
                 instructorId={instructorId}
                 instructorName={instructor?.name}
                 isTracking={isTracking(pupil.id)}
+                paymentQrUrl={getActivePaymentQrUrl(instructor)}
+                commissionPayer={instructor?.commission_payer}
               />
             ))}
           </div>

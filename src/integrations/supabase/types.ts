@@ -3949,6 +3949,7 @@ export type Database = {
           car_mot_expiry: string | null
           car_tax_expiry: string | null
           car_type: string
+          commission_payer: string | null
           cpd_certified: boolean | null
           cpd_hours_logged: number | null
           cpd_year_target: number | null
@@ -3995,6 +3996,8 @@ export type Database = {
           name: string
           payment_link_base_url: string | null
           payment_qr_url: string | null
+          payment_qr_url_instructor_pays: string | null
+          payment_qr_url_pupil_pays: string | null
           personal_website_url: string | null
           phone: string | null
           preferred_language: string | null
@@ -4051,6 +4054,7 @@ export type Database = {
           car_mot_expiry?: string | null
           car_tax_expiry?: string | null
           car_type: string
+          commission_payer?: string | null
           cpd_certified?: boolean | null
           cpd_hours_logged?: number | null
           cpd_year_target?: number | null
@@ -4097,6 +4101,8 @@ export type Database = {
           name: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
+          payment_qr_url_instructor_pays?: string | null
+          payment_qr_url_pupil_pays?: string | null
           personal_website_url?: string | null
           phone?: string | null
           preferred_language?: string | null
@@ -4153,6 +4159,7 @@ export type Database = {
           car_mot_expiry?: string | null
           car_tax_expiry?: string | null
           car_type?: string
+          commission_payer?: string | null
           cpd_certified?: boolean | null
           cpd_hours_logged?: number | null
           cpd_year_target?: number | null
@@ -4199,6 +4206,8 @@ export type Database = {
           name?: string
           payment_link_base_url?: string | null
           payment_qr_url?: string | null
+          payment_qr_url_instructor_pays?: string | null
+          payment_qr_url_pupil_pays?: string | null
           personal_website_url?: string | null
           phone?: string | null
           preferred_language?: string | null

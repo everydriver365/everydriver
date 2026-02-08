@@ -52,6 +52,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
+import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
 import { LayoutGrid } from "lucide-react";
 
@@ -505,15 +506,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         )}
 
         {/* QR Code Modal */}
-        {instructor?.payment_qr_url && (
-          <PaymentQRModal
-            open={showQRModal}
-            onOpenChange={setShowQRModal}
-            paymentQrUrl={instructor.payment_qr_url}
-            instructorId={instructor.id}
-            instructorName={instructor.name}
-          />
-        )}
+        <PaymentQRModal
+          open={showQRModal}
+          onOpenChange={setShowQRModal}
+          paymentQrUrl={getActivePaymentQrUrl(instructor)}
+          commissionPayer={instructor?.commission_payer}
+          instructorId={instructor?.id}
+          instructorName={instructor?.name}
+        />
       </div>
     );
   }

@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
 import { cn } from "@/lib/utils";
+import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 
 interface Pupil {
   id: string;
@@ -43,6 +44,9 @@ interface InstructorData {
   name: string;
   profile_image_url: string | null;
   payment_qr_url: string | null;
+  payment_qr_url_pupil_pays: string | null;
+  payment_qr_url_instructor_pays: string | null;
+  commission_payer: string | null;
   is_active: boolean;
 }
 
@@ -100,7 +104,7 @@ export default function InstructorPortal() {
     try {
       const { data, error } = await supabase
         .from("instructors")
-        .select("id, name, profile_image_url, payment_qr_url, is_active")
+        .select("id, name, profile_image_url, payment_qr_url, payment_qr_url_pupil_pays, payment_qr_url_instructor_pays, commission_payer, is_active")
         .eq("id", instructorId)
         .single();
 
@@ -197,7 +201,8 @@ export default function InstructorPortal() {
         <PaymentQRModal 
           open={paymentModalOpen} 
           onOpenChange={setPaymentModalOpen}
-          paymentQrUrl={instructorData?.payment_qr_url}
+          paymentQrUrl={getActivePaymentQrUrl(instructorData)}
+          commissionPayer={instructorData?.commission_payer}
           pupils={pupils}
           instructorId={instructorId}
           instructorName={instructorData?.name}
@@ -434,7 +439,8 @@ export default function InstructorPortal() {
         <PaymentQRModal
           open={paymentModalOpen} 
           onOpenChange={setPaymentModalOpen}
-          paymentQrUrl={instructorData?.payment_qr_url}
+          paymentQrUrl={getActivePaymentQrUrl(instructorData)}
+          commissionPayer={instructorData?.commission_payer}
           pupils={pupils}
           instructorId={instructorId}
           instructorName={instructorData?.name}
