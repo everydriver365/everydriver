@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CreditCard, CalendarClock, User, MapPin, Timer } from "lucide-react";
+import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CreditCard, CalendarClock, User, MapPin, Timer, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -46,6 +46,7 @@ export function NextUpTile({
   instructorId,
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -221,32 +222,59 @@ export function NextUpTile({
               <Badge variant="secondary" className="text-xs">{formatDuration()} lesson</Badge>
             </div>
 
-            {/* Action strip */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            {/* Primary actions — grid */}
+            <div className="grid grid-cols-3 gap-2">
               {pickupPostcode && (
-                <Button size="sm" onClick={handleNavigate} className="shrink-0 rounded-xl gap-1.5">
-                  <Navigation className="h-3.5 w-3.5" /> Navigate
+                <Button size="sm" onClick={handleNavigate} className="rounded-xl gap-1.5 col-span-3">
+                  <Navigation className="h-4 w-4" /> Start Navigation
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="shrink-0 rounded-xl gap-1.5">
+              <Button size="sm" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="rounded-xl gap-1.5">
                 <Phone className="h-3.5 w-3.5" /> Call
               </Button>
-              <Button size="sm" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="shrink-0 rounded-xl gap-1.5">
+              <Button size="sm" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-xl gap-1.5">
                 <MessageSquare className="h-3.5 w-3.5" /> Message
               </Button>
-              <Button size="sm" variant="outline" onClick={handleOnMyWay} disabled={!pupilPhone} className="shrink-0 rounded-xl gap-1.5">
+              <Button size="sm" variant="outline" onClick={handleOnMyWay} disabled={!pupilPhone} className="rounded-xl gap-1.5">
                 <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
               </Button>
-              <Button size="sm" variant="outline" onClick={handleViewPupil} className="shrink-0 rounded-xl gap-1.5">
-                <User className="h-3.5 w-3.5" /> Pupil
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => navigate(`/instructor/schedule?date=${lessonDate}`)} className="shrink-0 rounded-xl gap-1.5">
-                <CalendarClock className="h-3.5 w-3.5" /> Schedule
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => setCancelOpen(true)} className="shrink-0 rounded-xl gap-1.5 text-destructive hover:text-destructive">
-                <X className="h-3.5 w-3.5" /> Cancel
-              </Button>
             </div>
+
+            {/* Expand toggle */}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="w-full flex items-center justify-center gap-1 pt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>{expanded ? "Less" : "More actions"}</span>
+              <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </motion.div>
+            </button>
+
+            {/* Expandable extra actions */}
+            <AnimatePresence>
+              {expanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border mt-2">
+                    <Button size="sm" variant="outline" onClick={handleViewPupil} className="rounded-xl gap-1.5">
+                      <User className="h-3.5 w-3.5" /> Pupil
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/instructor/schedule?date=${lessonDate}`)} className="rounded-xl gap-1.5">
+                      <CalendarClock className="h-3.5 w-3.5" /> Schedule
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setCancelOpen(true)} className="rounded-xl gap-1.5 text-destructive hover:text-destructive">
+                      <X className="h-3.5 w-3.5" /> Cancel
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>
