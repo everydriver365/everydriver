@@ -421,6 +421,7 @@ export default function InstructorPortal() {
                 </Tabs>
               </CardContent>
             </Card>
+            <UpcomingTestsView instructorId={instructorId} />
           </div>
 
           {/* Right Column - Widgets */}
@@ -437,11 +438,6 @@ export default function InstructorPortal() {
             <ReminderStatusWidget />
             <ReferralStatsWidget />
           </div>
-        </div>
-
-        {/* Bottom Section - Tests */}
-        <div>
-          <UpcomingTestsView instructorId={instructorId} />
         </div>
 
         <TakePaymentSheet
