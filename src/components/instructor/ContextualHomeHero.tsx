@@ -132,8 +132,8 @@ export function ContextualHomeHero({
   const [isExpanded, setIsExpanded] = useState(true);
   const timePeriod = getTimePeriod();
 
-  const { durationMinutes, durationText } = useTrafficETA(
-    timePeriod === "morning" && nextLesson?.pickupPostcode ? nextLesson.pickupPostcode : null
+  const { durationMinutes, durationText, trafficCondition, delayMinutes } = useTrafficETA(
+    nextLesson?.pickupPostcode || null
   );
 
   // Weekly progress
@@ -189,31 +189,52 @@ export function ContextualHomeHero({
                   {getSubtitle()}
                 </p>
 
-                {/* Badges */}
-                <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                  {pendingJobs > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 text-[11px] font-medium">
-                      <Briefcase className="h-3 w-3" />
-                      {pendingJobs} Job Offer{pendingJobs !== 1 ? "s" : ""}
-                    </span>
-                  )}
+                {/* Weather & Traffic */}
+                <div className="flex flex-col gap-1.5 mt-2.5">
                   {currentWeather && currentWeather.temperature !== null && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-foreground text-[11px] font-medium">
+                    <div className="flex items-center gap-2">
                       <WeatherIcon
                         icon={currentWeather.icon}
-                        className={`h-3 w-3 ${getWeatherIconColor(currentWeather.icon)}`}
+                        className={`h-4 w-4 ${getWeatherIconColor(currentWeather.icon)}`}
                       />
-                      {currentWeather.temperature}°C{" "}
+                      <span className="text-sm text-foreground font-medium">
+                        {currentWeather.temperature}°C
+                      </span>
                       {currentWeather.description && (
-                        <span className="text-muted-foreground">{currentWeather.description}</span>
+                        <span className="text-sm text-muted-foreground capitalize">
+                          {currentWeather.description}
+                        </span>
                       )}
-                    </span>
+                    </div>
+                  )}
+                  {trafficCondition && (
+                    <div className="flex items-center gap-2">
+                      <Car className={`h-4 w-4 ${
+                        trafficCondition === "Heavy" ? "text-destructive" :
+                        trafficCondition === "Moderate" ? "text-amber-500" :
+                        "text-emerald-500"
+                      }`} />
+                      <span className={`text-sm font-medium ${
+                        trafficCondition === "Heavy" ? "text-destructive" :
+                        trafficCondition === "Moderate" ? "text-amber-600 dark:text-amber-400" :
+                        "text-emerald-600 dark:text-emerald-400"
+                      }`}>
+                        {trafficCondition === "Heavy" ? "🔴" : trafficCondition === "Moderate" ? "🟡" : "🟢"} {trafficCondition} traffic
+                      </span>
+                      {delayMinutes > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          (+{delayMinutes} min delay)
+                        </span>
+                      )}
+                    </div>
                   )}
                   {unreadMessages > 0 && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-medium">
-                      <MessageCircle className="h-3 w-3" />
-                      {unreadMessages} Message{unreadMessages !== 1 ? "s" : ""}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                        {unreadMessages} unread message{unreadMessages !== 1 ? "s" : ""}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
