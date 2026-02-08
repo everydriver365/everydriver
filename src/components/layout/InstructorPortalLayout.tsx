@@ -57,6 +57,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { CommandPalette } from "@/components/CommandPalette";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
+import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
 import { LayoutGrid } from "lucide-react";
@@ -138,7 +139,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const isMobile = useIsMobile();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructor?.id);
   
@@ -151,6 +154,18 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Check for fullscreen mode (used when tracking is active)
   const searchParams = new URLSearchParams(location.search);
   const isFullscreenMode = isTrackingPage && searchParams.get("fullscreen") === "true";
+
+  // Fetch pupils for payment sheet
+  useEffect(() => {
+    if (!instructor?.id) return;
+    supabase
+      .from("pupils")
+      .select("id, name, phone, email, account_balance")
+      .eq("instructor_id", instructor.id)
+      .is("deleted_at", null)
+      .order("name")
+      .then(({ data }) => { if (data) setPupils(data); });
+  }, [instructor?.id]);
 
   // Mobile search - live query (pupils, lessons, pages)
   useEffect(() => {
@@ -404,16 +419,16 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   >
                     <Search className="h-4 w-4" />
                   </Button>
-                  {instructor?.payment_qr_url && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowQRModal(true)}
-                      className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
-                    >
-                      <span className="text-[10px] font-bold border border-current rounded px-0.5">QR</span>
-                    </Button>
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPaymentSheet(true)}
+                    className="text-foreground hover:bg-[#D1E4FC] h-7 sm:h-8 gap-1 px-2 shrink-0"
+                    title="Take Payment"
+                  >
+                    <PoundSterling className="h-3.5 w-3.5" />
+                    <span className="text-[10px] font-semibold">Pay</span>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -451,9 +466,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <CalendarClock className="h-4 w-4 mr-2" />
                         Availability
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setShowQRModal(true)} className="cursor-pointer">
+                      <DropdownMenuItem onClick={() => setShowPaymentSheet(true)} className="cursor-pointer">
                         <PoundSterling className="h-4 w-4 mr-2" />
-                        Payment QR
+                        Take Payment
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -538,12 +553,23 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
           </>
         )}
 
+        {/* Payment Sheet */}
+        <TakePaymentSheet
+          open={showPaymentSheet}
+          onOpenChange={setShowPaymentSheet}
+          paymentQrUrl={getActivePaymentQrUrl(instructor)}
+          instructorName={instructor?.name}
+          instructorId={instructor?.id}
+          pupils={pupils}
+          onShowQR={() => { setShowPaymentSheet(false); setShowQRModal(true); }}
+          onRecordPayment={() => { setShowPaymentSheet(false); navigate("/instructor/pupils"); }}
+        />
+
         {/* QR Code Modal */}
         <PaymentQRModal
           open={showQRModal}
           onOpenChange={setShowQRModal}
           paymentQrUrl={getActivePaymentQrUrl(instructor)}
-          commissionPayer={instructor?.commission_payer}
           instructorId={instructor?.id}
           instructorName={instructor?.name}
         />
