@@ -463,74 +463,8 @@ export function InstructorMobileHome({
       </div>
 
 
-      {/* INSIGHTS section */}
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">INSIGHTS</p>
 
-      {/* Today & Weekly Combined Card */}
-      <div className="mt-2">
-        <div 
-          className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-sm transition-all"
-          onClick={() => navigate("/instructor/money")}
-        >
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium text-foreground text-sm">Today's Stats</h3>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl p-3 text-center">
-              <div className="flex items-center justify-center gap-1 text-primary">
-                <BookOpen className="h-4 w-4" />
-                <span className="text-lg font-bold">
-                  <AnimatedCounter value={currentLessons} />
-                </span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Lessons</span>
-            </div>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-3 text-center">
-              <div className="flex items-center justify-center gap-1 text-blue-600 dark:text-blue-400">
-                <Clock className="h-4 w-4" />
-                <span className="text-lg font-bold">
-                  <AnimatedCounter value={todayOverview?.totalHours || 0} />
-                </span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Hours</span>
-            </div>
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 text-center">
-              <div className="flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400">
-                <PoundSterling className="h-4 w-4" />
-                <span className="text-lg font-bold">
-                  <AnimatedCounter value={todayOverview?.expectedEarnings || 0} prefix="£" />
-                </span>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Expected</span>
-            </div>
-          </div>
 
-          {/* Weekly Progress inline */}
-          {weeklyGoals && (
-            <div className="mt-3 pt-3 border-t border-border">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-[11px] text-muted-foreground">
-                    Weekly: {weeklyGoals.lessonsThisWeek} lessons · £{weeklyGoals.earningsThisWeek}
-                  </p>
-                  {lastWeekComparison && (
-                    <p className={`text-[10px] mt-0.5 ${lastWeekComparison.isImprovement ? 'text-emerald-600' : 'text-destructive'}`}>
-                      {lastWeekComparison.isImprovement ? '↑' : '↓'} {Math.abs(lastWeekComparison.percentChange)}% vs last week
-                    </p>
-                  )}
-                </div>
-                <WeeklyGoalRing
-                  hoursThisWeek={weeklyGoals.hoursThisWeek}
-                  hoursGoal={weeklyGoals.hoursGoal}
-                  progressPercent={weeklyGoals.progressPercent}
-                  isAheadOfLastWeek={lastWeekComparison?.isImprovement || false}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Plan, Reminders & Referrals Widgets */}
       <div className="mt-4 space-y-3">
