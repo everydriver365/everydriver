@@ -336,6 +336,42 @@ export function InstructorMobileHome({
         />
       </div>
 
+      {/* Job Offers & Messages buttons - right under hero */}
+      <div className="px-4 flex flex-col gap-2 mt-3">
+        {pendingJobsCount > 0 && (
+          <button
+            onClick={() => navigate("/instructor/jobs")}
+            className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-4 py-3 hover:bg-muted/50 active:scale-[0.99] transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+              </div>
+              <span className="font-medium text-sm text-foreground">View Job Offers</span>
+            </div>
+            <span className="min-w-[24px] h-6 px-2 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">
+              {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+            </span>
+          </button>
+        )}
+        <button
+          onClick={() => navigate("/instructor/messages")}
+          className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-4 py-3 hover:bg-muted/50 active:scale-[0.99] transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Mail className="h-5 w-5 text-primary" />
+            </div>
+            <span className="font-medium text-sm text-foreground">View Messages</span>
+          </div>
+          {(unreadCount || 0) > 0 && (
+            <span className="min-w-[24px] h-6 px-2 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
+              {(unreadCount || 0) > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </div>
 
       {/* Content with horizontal padding */}
       <div className="px-4">
@@ -408,42 +444,8 @@ export function InstructorMobileHome({
         className="mt-4"
       />
 
-      {/* Job Offers & Messages buttons */}
-      <div className="flex flex-col gap-2 mt-4">
-        {pendingJobsCount > 0 && (
-          <button
-            onClick={() => navigate("/instructor/jobs")}
-            className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-4 py-3 hover:bg-muted/50 active:scale-[0.99] transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
-              </div>
-              <span className="font-medium text-sm text-foreground">View Job Offers</span>
-            </div>
-            <span className="min-w-[24px] h-6 px-2 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">
-              {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-            </span>
-          </button>
-        )}
-        <button
-          onClick={() => navigate("/instructor/messages")}
-          className="flex items-center justify-between w-full bg-card border border-border rounded-xl px-4 py-3 hover:bg-muted/50 active:scale-[0.99] transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Mail className="h-5 w-5 text-primary" />
-            </div>
-            <span className="font-medium text-sm text-foreground">View Messages</span>
-          </div>
-          {(unreadCount || 0) > 0 && (
-            <span className="min-w-[24px] h-6 px-2 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
-              {(unreadCount || 0) > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </button>
-      </div>
+
+
 
       {/* QUICK ACTIONS section */}
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mt-6 mb-2">QUICK ACTIONS</p>
