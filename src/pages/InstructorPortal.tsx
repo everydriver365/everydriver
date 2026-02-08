@@ -28,7 +28,6 @@ import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
-import { UpgradePlanSheet } from "@/components/instructor/dashboard/UpgradePlanSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useInstructorLiveStats } from "@/hooks/useInstructorLiveStats";
@@ -70,7 +69,7 @@ export default function InstructorPortal() {
   const [paymentQROpen, setPaymentQROpen] = useState(false);
   const [availabilityModalOpen, setAvailabilityModalOpen] = useState(false);
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
-  const [upgradeSheetOpen, setUpgradeSheetOpen] = useState(false);
+  
   const isMobile = useIsMobile();
   const { hoursThisWeek, monthEarnings, loading: statsLoading } = useInstructorLiveStats(instructorId);
 
@@ -247,7 +246,7 @@ export default function InstructorPortal() {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <div
-                onClick={() => setUpgradeSheetOpen(true)}
+                onClick={() => navigate("/instructor/plans")}
                 className="cursor-pointer hover:opacity-80 transition-opacity"
               >
                 <PlanBadge planSlug={subscription?.plan_slug} size="md" />
@@ -500,11 +499,6 @@ export default function InstructorPortal() {
         </Dialog>
       </div>
 
-      <UpgradePlanSheet
-        open={upgradeSheetOpen}
-        onOpenChange={setUpgradeSheetOpen}
-        currentPlanSlug={subscription?.plan_slug || "free"}
-      />
     </InstructorPortalLayout>
   );
 }
