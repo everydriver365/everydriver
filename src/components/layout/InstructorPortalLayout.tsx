@@ -33,7 +33,10 @@ import {
   Plus,
   Car,
   PoundSterling,
-  Search
+  Search,
+  PanelLeftClose,
+  PanelLeft,
+  Bell
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -67,27 +70,50 @@ import { HeaderSearchBox } from "@/components/HeaderSearchBox";
 import { PendingSchedulingBadge } from "@/components/instructor/PendingSchedulingBadge";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 
-const sidebarLinks = [
-  { href: "/instructor", label: "Dashboard", icon: Home },
-  { href: "/instructor/schedule", label: "Schedule", icon: Calendar },
-  { href: "/instructor/availability", label: "Availability", icon: CalendarClock },
-  { href: "/instructor/pending-scheduling", label: "Pending Scheduling", icon: ClipboardList },
-  { href: "/instructor/pupils", label: "Pupils", icon: Users },
-  { href: "/instructor/test-results", label: "Test Results", icon: Award },
-  { href: "/instructor/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/instructor/pay", label: "Payments", icon: CreditCard },
-  { href: "/instructor/accounts", label: "Accounts", icon: Wallet },
-  { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
-  { href: "/instructor/gaps", label: "Fill Gaps", icon: MapPin },
-  { href: "/instructor/routes", label: "Saved Routes", icon: Navigation },
-  { href: "/instructor/messages", label: "Messages", icon: MessageCircle },
-  { href: "/instructor/admin-chat", label: "Contact Admin", icon: ShieldCheck, highlight: true },
-  { href: "/instructor/visitor-chats", label: "Visitor Chats", icon: Headphones },
-  { href: "/instructor/website", label: "Mini Website", icon: Globe },
-  { href: "/instructor/domains", label: "Domains", icon: Globe2 },
-  { href: "/instructor/traccar", label: "GPS Tracking", icon: Radio },
-  { href: "/instructor/settings", label: "Settings", icon: Settings },
+const sidebarGroups = [
+  {
+    label: "TEACHING",
+    items: [
+      { href: "/instructor", label: "Dashboard", icon: Home },
+      { href: "/instructor/schedule", label: "Schedule", icon: Calendar },
+      { href: "/instructor/availability", label: "Availability", icon: CalendarClock },
+      { href: "/instructor/pending-scheduling", label: "Pending", icon: ClipboardList },
+      { href: "/instructor/pupils", label: "Pupils", icon: Users },
+      { href: "/instructor/test-results", label: "Test Results", icon: Award },
+      { href: "/instructor/jobs", label: "Jobs", icon: Briefcase },
+    ],
+  },
+  {
+    label: "BUSINESS",
+    items: [
+      { href: "/instructor/pay", label: "Payments", icon: CreditCard },
+      { href: "/instructor/accounts", label: "Accounts", icon: Wallet },
+      { href: "/instructor/expenses", label: "Expenses", icon: Receipt },
+    ],
+  },
+  {
+    label: "COMMUNICATION",
+    items: [
+      { href: "/instructor/messages", label: "Messages", icon: MessageCircle },
+      { href: "/instructor/admin-chat", label: "Contact Admin", icon: ShieldCheck, highlight: true },
+      { href: "/instructor/visitor-chats", label: "Visitor Chats", icon: Headphones },
+    ],
+  },
+  {
+    label: "TOOLS",
+    items: [
+      { href: "/instructor/gaps", label: "Fill Gaps", icon: MapPin },
+      { href: "/instructor/routes", label: "Saved Routes", icon: Navigation },
+      { href: "/instructor/website", label: "Mini Website", icon: Globe },
+      { href: "/instructor/domains", label: "Domains", icon: Globe2 },
+      { href: "/instructor/traccar", label: "GPS Tracking", icon: Radio },
+      { href: "/instructor/settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
+
+// Flat list for search and mobile menu
+const sidebarLinks = sidebarGroups.flatMap(g => g.items);
 
 const desktopNavTabs = [
   { id: "/instructor", label: "Home", icon: Home },
@@ -113,6 +139,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const { theme, resolvedTheme, setTheme } = useTheme();
   const [showQRModal, setShowQRModal] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructor?.id);
   
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -562,47 +589,65 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     return tab?.label || "Home";
   };
 
-  // Desktop Layout - Admin-style top nav + sidebar
+  // Desktop Layout - Bold & Branded
   return (
     <>
       <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
       <CommandPalette variant="instructor" />
       <div className="min-h-screen flex flex-col w-full bg-background instructor-portal">
         {/* Navy Blue Header */}
-        <header className="sticky top-0 z-50 bg-[#142040]">
-          <div className="flex items-center justify-between px-6 h-14">
-            <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-50 bg-[#142040] shadow-lg">
+          <div className="flex items-center justify-between px-4 h-14">
+            {/* Left: Collapse toggle + Search + Plan */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8 hidden lg:flex"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              >
+                {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              </Button>
               <HeaderSearchBox variant="instructor" instructorId={instructor?.id} />
               <PlanBadge planSlug={subscription?.plan_slug} size="md" showUpgrade onUpgradeClick={() => navigate("/instructor/plans")} />
             </div>
 
-            {/* Navigation Tabs */}
-            <nav className="hidden md:flex items-center gap-1 ml-4">
+            {/* Center: Navigation Tabs */}
+            <nav className="hidden md:flex items-center gap-0.5">
               {desktopNavTabs.map((tab) => (
                 <Link
                   key={tab.id}
                   to={tab.id}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                    "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors",
                     activeTab === tab.id
                       ? "bg-white/20 text-white"
-                      : "text-white/70 hover:text-white hover:bg-white/10"
+                      : "text-white/60 hover:text-white hover:bg-white/10"
                   )}
                 >
-                  <tab.icon className="h-4 w-4" />
+                  <tab.icon className="h-3.5 w-3.5" />
                   {tab.label}
                 </Link>
               ))}
             </nav>
 
-            {/* Right: Theme + Logout */}
-            <div className="flex items-center gap-2">
+            {/* Right: Notifications + Theme + Avatar */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8 relative"
+                onClick={() => navigate("/instructor/messages")}
+              >
+                <Bell className="h-4 w-4" />
+                <MessageNotificationBadge instructorId={instructor?.id} className="absolute -top-0.5 -right-0.5" />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-white/70 hover:text-white hover:bg-white/10 h-8 w-8"
+                    className="text-white/60 hover:text-white hover:bg-white/10 h-8 w-8"
                   >
                     {resolvedTheme === 'oled' ? <Contrast className="h-4 w-4" /> : resolvedTheme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                   </Button>
@@ -626,30 +671,47 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="text-white/70 hover:text-white hover:bg-white/10"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="ml-1 flex items-center gap-2 rounded-md px-2 py-1 hover:bg-white/10 transition-colors">
+                    <Avatar className="h-7 w-7 border border-white/20">
+                      <AvatarImage src={instructor?.profile_image_url || undefined} />
+                      <AvatarFallback className="bg-white/20 text-white text-xs font-semibold">
+                        {instructor?.name?.charAt(0) || "I"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium text-white/80 hidden xl:inline">{instructor?.name?.split(' ')[0]}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <div className="px-3 py-2 border-b">
+                    <p className="text-sm font-medium">{instructor?.name || "Instructor"}</p>
+                    <p className="text-xs text-muted-foreground">{instructor?.email}</p>
+                  </div>
+                  <DropdownMenuItem onClick={() => navigate("/instructor/settings")} className="cursor-pointer">
+                    <Settings className="h-4 w-4 mr-2" /> Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" /> Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
 
         {/* Breadcrumb */}
-        <div className="border-b bg-muted/30 px-6 py-2">
-          <nav className="flex items-center text-sm text-muted-foreground">
+        <div className="border-b bg-muted/30 px-6 py-1.5">
+          <nav className="flex items-center text-xs text-muted-foreground">
             <Link to="/instructor" className="hover:text-foreground transition-colors">
               Instructor
             </Link>
-            <ChevronRight className="h-4 w-4 mx-2" />
+            <ChevronRight className="h-3 w-3 mx-1.5" />
             <span className="text-muted-foreground">{getGroupTitle()}</span>
             {getPageTitle() !== getGroupTitle() && (
               <>
-                <ChevronRight className="h-4 w-4 mx-2" />
+                <ChevronRight className="h-3 w-3 mx-1.5" />
                 <span className="text-foreground font-medium">{getPageTitle()}</span>
               </>
             )}
@@ -658,66 +720,88 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
         {/* Content area with sidebar */}
         <div className="flex flex-1">
-          {/* Sidebar */}
-          <aside className="w-56 border-r bg-card hidden lg:flex flex-col shrink-0">
-            <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
-              {sidebarLinks.map((link) => {
-                const isActive = location.pathname === link.href;
-                const isMessages = link.href === "/instructor/messages";
-                const isAdminChat = link.href === "/instructor/admin-chat";
-                const isVisitorChats = link.href === "/instructor/visitor-chats";
-                const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-                const isHighlighted = 'highlight' in link && link.highlight;
-                return (
-                  <Link
-                    key={link.href}
-                    to={link.href}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 text-sm transition-all rounded-md",
-                      isActive
-                        ? "text-foreground font-medium bg-muted border-l-2 border-primary pl-[10px]"
-                        : isHighlighted
-                        ? "text-emerald-600 dark:text-emerald-400 hover:bg-muted/50"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    )}
-                  >
-                    <span className="relative">
-                      <link.icon className={cn(
-                        "h-4 w-4",
-                        isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
-                      )} />
-                      {isAdminChat && !isActive && <AdminMessageBadge />}
-                    </span>
-                    <span className="flex-1">{link.label}</span>
-                    {isVisitorChats && !isActive && (
-                      <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-                    )}
-                    {isMessages && !isActive && (
-                      <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-                    )}
-                    {isPendingScheduling && !isActive && (
-                      <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-                    )}
-                  </Link>
-                );
-              })}
+          {/* Grouped Sidebar */}
+          <aside className={cn(
+            "border-r bg-card hidden lg:flex flex-col shrink-0 transition-all duration-200",
+            sidebarCollapsed ? "w-14" : "w-52"
+          )}>
+            <nav className="flex-1 py-2 px-2 overflow-y-auto">
+              {sidebarGroups.map((group) => (
+                <div key={group.label} className="mb-3">
+                  {!sidebarCollapsed && (
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-2 mb-1">
+                      {group.label}
+                    </p>
+                  )}
+                  <div className="space-y-0.5">
+                    {group.items.map((link) => {
+                      const isActive = location.pathname === link.href;
+                      const isMessages = link.href === "/instructor/messages";
+                      const isAdminChat = link.href === "/instructor/admin-chat";
+                      const isVisitorChats = link.href === "/instructor/visitor-chats";
+                      const isPendingScheduling = link.href === "/instructor/pending-scheduling";
+                      const isHighlighted = 'highlight' in link && link.highlight;
+                      return (
+                        <Link
+                          key={link.href}
+                          to={link.href}
+                          title={sidebarCollapsed ? link.label : undefined}
+                          className={cn(
+                            "flex items-center gap-2.5 py-1.5 text-sm transition-all rounded-md",
+                            sidebarCollapsed ? "justify-center px-0" : "px-2.5",
+                            isActive
+                              ? "text-foreground font-medium bg-primary/10 border-l-2 border-primary"
+                              : isHighlighted
+                              ? "text-emerald-600 dark:text-emerald-400 hover:bg-muted/50"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                          )}
+                        >
+                          <span className="relative shrink-0">
+                            <link.icon className={cn(
+                              "h-4 w-4",
+                              isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
+                            )} />
+                            {isAdminChat && !isActive && <AdminMessageBadge />}
+                          </span>
+                          {!sidebarCollapsed && (
+                            <>
+                              <span className="flex-1 truncate text-[13px]">{link.label}</span>
+                              {isVisitorChats && !isActive && (
+                                <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+                              )}
+                              {isMessages && !isActive && (
+                                <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+                              )}
+                              {isPendingScheduling && !isActive && (
+                                <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+                              )}
+                            </>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </nav>
 
             {/* User info at bottom */}
-            <div className="border-t p-3">
-              <div className="flex items-center gap-3 px-2 py-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={instructor?.profile_image_url || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                    {instructor?.name?.charAt(0) || "I"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{instructor?.name || "Instructor"}</p>
-                  <p className="text-xs text-muted-foreground truncate">{instructor?.email}</p>
+            {!sidebarCollapsed && (
+              <div className="border-t p-2">
+                <div className="flex items-center gap-2.5 px-2 py-1.5">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={instructor?.profile_image_url || undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                      {instructor?.name?.charAt(0) || "I"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate">{instructor?.name || "Instructor"}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{instructor?.email}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </aside>
 
           {/* Main Content */}
