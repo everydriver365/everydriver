@@ -468,8 +468,8 @@ export function InstructorMobileHome({
 
       {/* Plan, Reminders & Referrals Widgets */}
       <div className="mt-4 space-y-3">
-        <PlanWidget />
         <ReminderStatusWidget />
+        <PlanWidget />
         
       </div>
 
