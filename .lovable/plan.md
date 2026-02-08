@@ -1,91 +1,67 @@
 
+## Wire Up Real Push Notification Delivery for Lesson Reminders
 
-## Add Reminders, Referrals, Plan & Upgrade Widgets to Instructor Portal
+### Problem
 
-### Overview
+The push notification infrastructure is fully scaffolded (service worker, VAPID keys, subscription hooks, DB tables) but the actual Web Push delivery is **stubbed out** in three edge functions:
 
-Add four new widget cards to the existing instructor home page (both desktop right sidebar and mobile home screen) -- no separate dashboard page needed. These cover the missing pieces: reminder status, referral stats, current plan display with upgrade option, and payment/upgrade options.
+- `send-push-notification` -- has a `sendWebPush` function that sends raw unencrypted payloads (won't work with any push service)
+- `send-lesson-reminders` -- logs "Push notification queued" but never sends
+- `notify-pupil` -- logs "Would send push" but never sends
 
----
+### Solution
 
-### What Gets Added
-
-| Widget | What It Shows |
-|--------|--------------|
-| **Subscription Plan Card** | Current plan name, badge, and feature highlights. "Upgrade" button linking to a plan comparison sheet. If on Free, shows prominent upgrade CTA. |
-| **Upgrade Plan Sheet** | A slide-up sheet/dialog listing all available plans (Free, Pro, Max, Multi, Enterprise) with prices, features, and a "Contact to Upgrade" or "Select Plan" action per plan. |
-| **Reminder Status Widget** | Lessons in the next 24 hours with their reminder status (24h sent, 1h sent, pending). Shows enabled channels from `instructor_reminder_preferences`. |
-| **Referral Stats Widget** | Compact version of the referral stats (total/completed/pending counts) with a link to full referral settings. |
+Create a shared Web Push utility using the Deno-native `@negrel/webpush` JSR package, then wire it into all three edge functions so push notifications are actually delivered.
 
 ---
 
-### Desktop Layout Changes (InstructorPortal.tsx)
+### What Changes
 
-The right sidebar column (currently only has PaymentSummaryWidget) will gain 3 new cards stacked below it:
-
-```text
-Right Sidebar (lg:col-span-1):
-  [Payment Summary]        <-- existing
-  [Your Plan]              <-- NEW
-  [Reminder Status]        <-- NEW
-  [Referral Stats]         <-- NEW
-```
-
----
-
-### Mobile Layout Changes (InstructorMobileHome.tsx)
-
-Add the widgets to the INSIGHTS section of the mobile home, below the existing stats card:
-
-```text
-INSIGHTS section:
-  [Today's Stats]          <-- existing
-  [Your Plan]              <-- NEW
-  [Reminder Status]        <-- NEW
-  [Referral Stats]         <-- NEW
-```
-
----
-
-### New Files
-
-| File | Purpose |
-|------|---------|
-| `src/components/instructor/dashboard/PlanWidget.tsx` | Shows current plan with badge, key features, and "Upgrade" button. Fetches plan data from the `subscription` in `useInstructorAuth`. Opens the upgrade sheet when clicked. |
-| `src/components/instructor/dashboard/UpgradePlanSheet.tsx` | A dialog/sheet listing all plans from `subscription_plans` with prices and features. Shows the current plan as "Current" and others with upgrade CTAs. Contact-based upgrade flow (no self-service payment change yet). |
-| `src/components/instructor/dashboard/ReminderStatusWidget.tsx` | Queries `scheduled_lessons` for lessons in the next 24h, checks `reminder_24h_sent_at` and `reminder_1h_sent_at` columns, and queries `instructor_reminder_preferences` for channel config. Displays a compact list with status badges. |
-| `src/components/instructor/dashboard/ReferralStatsWidget.tsx` | Compact card querying `pupil_referrals` for counts by status. Shows total/completed/pending with a "Manage" link to `/instructor/settings` (referral section). |
-
-### Modified Files
-
-| File | Change |
+| Area | Change |
 |------|--------|
-| `src/pages/InstructorPortal.tsx` | Import and render PlanWidget, ReminderStatusWidget, and ReferralStatsWidget in the right sidebar column. |
-| `src/components/instructor/InstructorMobileHome.tsx` | Import and render the same three widgets in the INSIGHTS section. |
+| **Shared utility** | New `_shared/webpush.ts` -- imports `@negrel/webpush`, exports a `sendPush()` helper that takes a subscription + payload and delivers it using proper VAPID/ECE encryption |
+| **send-push-notification** | Replace the broken `sendWebPush` function with the shared `sendPush()` utility |
+| **send-lesson-reminders** | Replace the stub `sendPushNotification` function with actual delivery using the shared utility; also send push to **pupils** (via `pupil_push_subscriptions`) not just instructors |
+| **notify-pupil** | Replace the "Would send push" log with actual delivery using the shared utility |
+
+### No Database Changes
+
+All tables (`push_subscriptions`, `pupil_push_subscriptions`) and secrets (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`) already exist.
 
 ---
 
 ### Technical Details
 
-**PlanWidget data source:**
-- Uses `useInstructorAuth()` to get `subscription.plan_name`, `subscription.plan_slug`, `subscription.features`
-- No additional database query needed
+**New file: `supabase/functions/_shared/webpush.ts`**
 
-**UpgradePlanSheet data source:**
-- Fetches all active plans from `subscription_plans` table ordered by `display_order`
-- Compares against current `subscription.plan_slug` to highlight the active plan
-- Upgrade action shows a toast with "Contact us to upgrade" (or can be wired to a contact form/email later)
+- Imports `@negrel/webpush` from JSR (`jsr:@negrel/webpush`)
+- Exports `importVapidKeys(publicKey, privateKey)` to initialize VAPID credentials
+- Exports `sendPushNotification(subscription, payload, vapidKeys)` that:
+  1. Builds a `PushSubscription` object from endpoint/p256dh/auth
+  2. Encrypts the payload using the library's built-in ECE implementation
+  3. Sends via the library's `sendPushMessage` with proper VAPID JWT headers
+  4. Returns success/failure boolean
+- Handles expired/invalid subscriptions (HTTP 404/410) by returning a flag so callers can clean up stale records
 
-**ReminderStatusWidget queries:**
-- `scheduled_lessons` where `lesson_date` is today or tomorrow, `status != 'cancelled'`, checking `reminder_24h_sent_at` and `reminder_1h_sent_at`
-- `instructor_reminder_preferences` for enabled channels (SMS, email, push)
-- Displays: lesson time, pupil name, green check or amber clock icon per reminder type
+**Modified: `supabase/functions/send-push-notification/index.ts`**
 
-**ReferralStatsWidget queries:**
-- `pupil_referrals` where `instructor_id` matches, grouped by status
-- Simple 3-number display (total, completed, pending) matching the existing ReferralSettingsCard style
+- Import shared `sendPushNotification` from `../_shared/webpush.ts`
+- Remove the broken `sendWebPush` function
+- Call the shared utility for each subscription
+- Delete stale subscriptions that return 404/410
 
-**No database migrations needed** -- all data already exists in the schema.
+**Modified: `supabase/functions/send-lesson-reminders/index.ts`**
+
+- Import shared utility
+- Replace the stub `sendPushNotification` function with real delivery
+- Add pupil push notifications: query `pupil_push_subscriptions` for each lesson's pupil and send them a "Lesson Tomorrow" push
+- Update `reminder_24h_sent_at` timestamp after successful send
+
+**Modified: `supabase/functions/notify-pupil/index.ts`**
+
+- Import shared utility
+- Replace the "Would send push" log with actual `sendPushNotification` calls
+- Clean up stale subscriptions on 404/410 responses
 
 ---
 
@@ -93,9 +69,8 @@ INSIGHTS section:
 
 | Step | Action |
 |------|--------|
-| 1 | Create `PlanWidget.tsx` and `UpgradePlanSheet.tsx` |
-| 2 | Create `ReminderStatusWidget.tsx` |
-| 3 | Create `ReferralStatsWidget.tsx` |
-| 4 | Add all three widgets to the desktop portal right sidebar in `InstructorPortal.tsx` |
-| 5 | Add all three widgets to the mobile home INSIGHTS section in `InstructorMobileHome.tsx` |
-
+| 1 | Create `supabase/functions/_shared/webpush.ts` with the shared push delivery utility |
+| 2 | Update `send-push-notification/index.ts` to use the shared utility |
+| 3 | Update `send-lesson-reminders/index.ts` to deliver real pushes to both instructors and pupils |
+| 4 | Update `notify-pupil/index.ts` to deliver real pushes |
+| 5 | Deploy and test all three functions |
