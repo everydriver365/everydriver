@@ -5509,6 +5509,86 @@ export type Database = {
           },
         ]
       }
+      platform_commission_config: {
+        Row: {
+          commission_type: string
+          created_at: string
+          fixed_fee_pence: number
+          id: string
+          is_active: boolean
+          rate_percent: number
+          updated_at: string
+        }
+        Insert: {
+          commission_type?: string
+          created_at?: string
+          fixed_fee_pence?: number
+          id?: string
+          is_active?: boolean
+          rate_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          commission_type?: string
+          created_at?: string
+          fixed_fee_pence?: number
+          id?: string
+          is_active?: boolean
+          rate_percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_commissions: {
+        Row: {
+          commission_amount: number
+          commission_rate: number | null
+          created_at: string
+          description: string | null
+          fixed_fee: number | null
+          gross_amount: number
+          id: string
+          instructor_id: string | null
+          net_amount: number
+          source_id: string | null
+          source_type: string
+        }
+        Insert: {
+          commission_amount?: number
+          commission_rate?: number | null
+          created_at?: string
+          description?: string | null
+          fixed_fee?: number | null
+          gross_amount?: number
+          id?: string
+          instructor_id?: string | null
+          net_amount?: number
+          source_id?: string | null
+          source_type?: string
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number | null
+          created_at?: string
+          description?: string | null
+          fixed_fee?: number | null
+          gross_amount?: number
+          id?: string
+          instructor_id?: string | null
+          net_amount?: number
+          source_id?: string | null
+          source_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_commissions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pre_lesson_checklist_completions: {
         Row: {
           all_required_completed: boolean | null
