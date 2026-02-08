@@ -67,6 +67,7 @@ const settingsCategories: SettingsCategory[] = [
       { key: "upsells", title: "Booking Upsells", description: "Add-on services during checkout." },
       { key: "bookings", title: "All Bookings", description: "View and manage all course bookings." },
       { key: "payments", title: "Payment History", description: "Track all payment transactions." },
+      { key: "commission", title: "Commission Earned", description: "View platform commission from payments & subscriptions." },
     ],
   },
   {

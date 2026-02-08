@@ -53,6 +53,7 @@ import { MiniWebsitesManager } from "@/components/admin/MiniWebsitesManager";
 import { DomainsManager } from "@/components/admin/DomainsManager";
 import { SubscriptionPlansManager } from "@/components/admin/SubscriptionPlansManager";
 import { FeatureGatingManager } from "@/components/admin/FeatureGatingManager";
+import { CommissionDashboard } from "@/components/admin/CommissionDashboard";
 import { OnboardingStepEditor } from "@/components/admin/OnboardingStepEditor";
 import { AdminEmailClient } from "@/components/admin/AdminEmailClient";
 import { AdminBackButton } from "@/components/admin/AdminBackButton";
@@ -151,6 +152,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   campaigns: { title: "Campaigns", group: "Communications", icon: Megaphone },
   // Analytics
   analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
+  commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
 };
 
 export default function AdminPortal() {
@@ -852,6 +854,15 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="analytics" className="mb-4" />
             <RevenueAnalytics />
+          </motion.div>
+        );
+
+      case "commission":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="commission" className="mb-4" />
+            <CommissionDashboard />
           </motion.div>
         );
 
