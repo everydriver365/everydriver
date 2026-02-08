@@ -1,64 +1,29 @@
 
+# Make Tiles Stand Out from Background
 
-# Import Invoices into Expenses
+## The Problem
+The tiles currently have minimal visual separation from the light grey (#f5f5f5) background -- they use `rounded-none` (sharp corners), a very subtle shadow, and `bg-white` with a thin border. This makes them blend in.
 
-## What This Does
-Lets instructors upload invoice files (PDFs, photos, documents) from their phone -- including files saved from email -- and automatically reads the invoice to fill in expense details (amount, date, category, description).
+## Proposed Changes (in `QuickActionTiles.tsx`)
 
-## How It Works
 
-1. **Expanded file upload** -- The "Upload" button will accept PDFs and images (not just photos). On a phone, this opens the system file picker where instructors can browse Downloads, Files, Google Drive, iCloud, etc. Invoices saved from email apps appear here automatically.
 
-2. **"Import Invoice" button** -- A new prominent button alongside "Take Photo" and "Upload" that specifically guides the user to pick a document.
+### 2. Strengthen the shadow
+Upgrade from `shadow-[0_2px_8px_rgba(20,37,66,0.08)]` to `shadow-[0_2px_12px_rgba(20,37,66,0.12)]` -- a slightly deeper, more visible shadow that lifts tiles off the page.
 
-3. **AI-powered reading** -- After uploading, the system sends the file to an AI model which extracts:
-   - Total amount
-   - Invoice date
-   - Vendor/supplier name (used as description)
-   - Suggested category (Fuel, Insurance, Vehicle Maintenance, etc.)
 
-4. **Auto-fill form** -- The extracted details pre-fill the expense form. The instructor can review and adjust before saving.
-
-5. **Document preview** -- PDFs show a document icon with filename instead of an image preview. Images continue to show a visual preview.
+### Tiles affected
+- **First tile** (full-width, line ~437): rounded corners + stronger shadow + no border
+- **Grid tiles** (2-column, line ~525): rounded corners + stronger shadow + no border
+- **Loading skeletons** (line ~289): match the new rounded style
+- **Edit mode tiles** (line ~351): rounded corners on the dashed-border drag items
 
 ## Technical Details
 
-### File: `src/components/instructor/ExpenseTracker.tsx`
-- Expand `accept` attribute from `image/*` to `image/*,.pdf,.doc,.docx`
-- Remove the `image/*` validation check; allow PDFs and common doc types (max 10MB)
-- Add a third button: "Import Invoice" with a `FileText` icon
-- After file selection, if not an image, show a document placeholder with filename
-- Add an "Extract Details" button that calls the backend function
-- Auto-populate form fields from the AI response
+All changes are in `src/components/instructor/QuickActionTiles.tsx`:
 
-### New Edge Function: `supabase/functions/extract-invoice-data/index.ts`
-- Receives the file URL (from storage) or base64 content
-- Uses Lovable AI (google/gemini-2.5-flash -- strong at document reading, cost-effective) to extract:
-  - `amount` (number)
-  - `date` (YYYY-MM-DD)
-  - `description` (vendor/supplier name + brief summary)
-  - `category` (matched to existing categories: Fuel, Vehicle Maintenance, Insurance, etc.)
-- Returns JSON with extracted fields
-- Falls back gracefully if extraction fails (user can still fill manually)
-
-### Storage
-- The existing `expense-receipts` bucket already accepts uploads -- no changes needed there
-- PDFs and documents will be stored alongside receipt images
-
-### No Database Changes Required
-- The existing `instructor_expenses` table already has all needed columns
-- `receipt_url` stores the link to the uploaded file (works for PDFs too)
-
-## User Flow
-
-```text
-1. Instructor taps "Add Expense"
-2. Sees three options: "Take Photo" | "Upload File" | "Import Invoice"
-3. Taps "Import Invoice" --> phone file picker opens
-4. Selects a PDF invoice from Downloads (saved from email)
-5. File uploads, document preview shown
-6. "Extract Details" button appears --> taps it
-7. AI reads the invoice, form auto-fills with amount, date, category
-8. Instructor reviews, adjusts if needed, taps "Save Expense"
-```
-
+- Lines ~289: Loading skeleton `rounded-none` to `rounded-xl`
+- Lines ~351: Edit mode items `rounded-none` to `rounded-xl`
+- Lines ~399: Add-tile items `rounded-none` to `rounded-xl`
+- Lines ~437: First tile `rounded-none` to `rounded-xl`, shadow upgrade, remove border
+- Lines ~525: Grid tiles `rounded-none` to `rounded-xl`, shadow upgrade, remove border
