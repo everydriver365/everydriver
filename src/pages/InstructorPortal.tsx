@@ -23,6 +23,9 @@ import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetu
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
 import { ReminderStatusWidget } from "@/components/instructor/dashboard/ReminderStatusWidget";
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
+import { NotesWidget } from "@/components/instructor/dashboard/NotesWidget";
+import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
+import { TodoHomeTile } from "@/components/instructor/TodoHomeTile";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
@@ -420,6 +423,9 @@ export default function InstructorPortal() {
                 <PaymentSummaryWidget instructorId={instructorId} instructorName={instructorData?.name} />
               </CardContent>
             </Card>
+            <TodoHomeTile instructorId={instructorId} />
+            <NotesWidget instructorId={instructorId} />
+            <MessagesWidget instructorId={instructorId} />
             <PlanWidget />
             <ReminderStatusWidget />
             <ReferralStatsWidget />
