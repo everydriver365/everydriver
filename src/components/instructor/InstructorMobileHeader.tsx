@@ -88,11 +88,12 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           )}
           <Button 
             variant="ghost" 
-            size="icon" 
+            size="sm" 
             onClick={() => setPaymentSheetOpen(true)}
-            className="relative"
+            className="relative gap-1 px-2"
           >
-            <PoundSterling className="h-5 w-5" />
+            <PoundSterling className="h-4 w-4" />
+            <span className="text-xs font-semibold">Pay</span>
           </Button>
           {showSettings && (
             <DropdownMenu>
