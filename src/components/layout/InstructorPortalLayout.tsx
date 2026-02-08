@@ -420,14 +420,13 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     <Search className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => setShowPaymentSheet(true)}
-                    className="text-foreground hover:bg-[#D1E4FC] h-7 sm:h-8 gap-1 px-2 shrink-0"
+                    className="h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold"
                     title="Take Payment"
                   >
-                    <PoundSterling className="h-3.5 w-3.5" />
-                    <span className="text-[10px] font-semibold">Pay</span>
+                    Pay
                   </Button>
                   <Button
                     variant="ghost"
