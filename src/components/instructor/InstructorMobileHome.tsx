@@ -350,7 +350,7 @@ export function InstructorMobileHome({
           weatherDesc={currentWeather?.description || ""}
           nextMinutesUntil={nextLesson?.minutesUntil}
           nextPupilFirstName={nextLesson?.pupilName?.split(" ")[0]}
-          nextLessonTime={nextLesson?.startTime ? new Date(nextLesson.startTime).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : undefined}
+          nextLessonTime={nextLesson?.startTime ? nextLesson.startTime.substring(0, 5) : undefined}
           isOnline={instructor?.is_active ?? false}
         />
       </div>
