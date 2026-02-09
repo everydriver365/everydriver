@@ -201,9 +201,29 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => setShowInput(!showInput)}>
-            <Plus className="h-4 w-4" />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-36 p-1" align="end" side="bottom">
+              <button
+                onClick={() => { setAddMode("task"); setShowInput(true); }}
+                className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+              >
+                <Flag className="h-3.5 w-3.5 text-muted-foreground" />
+                Add Task
+              </button>
+              <button
+                onClick={() => { setAddMode("reminder"); setShowInput(true); }}
+                className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+              >
+                <Bell className="h-3.5 w-3.5 text-amber-500" />
+                Add Reminder
+              </button>
+            </PopoverContent>
+          </Popover>
           <Link to="/instructor/todos">
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
