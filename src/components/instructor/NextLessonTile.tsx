@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Clock, MapPin, ChevronRight } from "lucide-react";
+import { Clock, MapPin, ChevronRight, Car, Loader2 } from "lucide-react";
 import { format, parseISO, isToday, isTomorrow } from "date-fns";
 import { PupilAvatar } from "./PupilAvatar";
+import { PaymentStatusBadge } from "./PaymentStatusBadge";
+import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +25,8 @@ interface NextLesson {
     pickup_postcode: string | null;
     address: string | null;
     profile_image_url: string | null;
+    account_balance: number;
+    prepaid_hours: number;
   };
 }
 
@@ -47,7 +51,9 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
             pickup_address,
             pickup_postcode,
             address,
-            profile_image_url
+            profile_image_url,
+            account_balance,
+            prepaid_hours
           )
         `)
         .eq("instructor_id", instructorId)
@@ -58,7 +64,6 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
 
       if (error) throw error;
 
-      // Filter to get the next upcoming lesson (not already started)
       const upcoming = (data || []).find((lesson: any) => {
         if (lesson.lesson_date > today) return true;
         if (lesson.lesson_date === today && lesson.start_time >= now) return true;
@@ -78,6 +83,15 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
     staleTime: 60 * 1000,
     refetchInterval: 60 * 1000,
   });
+
+  const destinationPostcode = nextLesson?.pupil.pickup_postcode || nextLesson?.pupil.postcode || null;
+  const { durationText, trafficCondition, isLoading: etaLoading } = useTrafficETA(destinationPostcode);
+
+  const effectiveBalance = nextLesson
+    ? (nextLesson.pupil.prepaid_hours > 0
+        ? nextLesson.pupil.prepaid_hours * 40
+        : nextLesson.pupil.account_balance || 0)
+    : 0;
 
   if (isLoading) {
     return (
@@ -103,6 +117,17 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
 
   const getTimeLabel = () => {
     return nextLesson.start_time.slice(0, 5);
+  };
+
+  const getTrafficEmoji = () => {
+    if (!trafficCondition) return "";
+    switch (trafficCondition.toLowerCase()) {
+      case "clear": return "🟢";
+      case "light": return "🟡";
+      case "moderate": return "🟠";
+      case "heavy": return "🔴";
+      default: return "";
+    }
   };
 
   return (
@@ -144,11 +169,32 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
                 </span>
               </div>
             </div>
+            <div className="flex items-center gap-2 mt-1.5">
+              <div className="flex items-center gap-1.5 text-sm text-primary-foreground/80">
+                <MapPin className="h-3.5 w-3.5" />
+                <span className="truncate">
+                  {nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode}
+                </span>
+              </div>
+              <PaymentStatusBadge
+                balance={effectiveBalance}
+                size="sm"
+                className="bg-white/15 border-white/20 text-white [&_svg]:text-white"
+              />
+            </div>
+            {/* ETA row */}
             <div className="flex items-center gap-1.5 mt-1.5 text-sm text-primary-foreground/80">
-              <MapPin className="h-3.5 w-3.5" />
-              <span className="truncate">
-                {nextLesson.pupil.pickup_postcode || nextLesson.pupil.postcode}
-              </span>
+              {etaLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : durationText ? (
+                <>
+                  <Car className="h-3.5 w-3.5" />
+                  <span>{durationText}</span>
+                  {trafficCondition && (
+                    <span className="text-xs">{getTrafficEmoji()}</span>
+                  )}
+                </>
+              ) : null}
             </div>
           </div>
 
