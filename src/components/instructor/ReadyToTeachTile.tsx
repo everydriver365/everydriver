@@ -25,12 +25,13 @@ interface ReadyToTeachTileProps {
   nextMinutesUntil?: number;
   nextPupilFirstName?: string;
   nextLessonTime?: string;
+  nextPostcode?: string;
   isOnline: boolean;
 }
 
 export function ReadyToTeachTile({
   firstName, lessonCount, expectedEarnings, progressPercent,
-  temperature, weatherIcon, weatherDesc, nextMinutesUntil, nextPupilFirstName, nextLessonTime, isOnline,
+  temperature, weatherIcon, weatherDesc, nextMinutesUntil, nextPupilFirstName, nextLessonTime, nextPostcode, isOnline,
 }: ReadyToTeachTileProps) {
   const clampedProgress = Math.min(progressPercent, 100);
 
@@ -38,7 +39,7 @@ export function ReadyToTeachTile({
     { icon: BookOpen, label: "Lessons", value: lessonCount.toString(), iconColor: "text-blue-500", bg: "bg-blue-500/10" },
     { icon: PoundSterling, label: "Expected", value: `£${expectedEarnings}`, iconColor: "text-emerald-500", bg: "bg-emerald-500/10" },
     { icon: Target, label: "Weekly", value: `${clampedProgress}%`, iconColor: "text-violet-500", bg: "bg-violet-500/10" },
-    { icon: Timer, label: nextPupilFirstName || "Next up", value: nextLessonTime || (nextMinutesUntil != null ? `${nextMinutesUntil}m` : "--"), iconColor: "text-amber-500", bg: "bg-amber-500/10" },
+    { icon: Timer, label: nextPupilFirstName || "Next up", value: nextLessonTime ? `${nextLessonTime}${nextPostcode ? ` • ${nextPostcode}` : ""}` : (nextMinutesUntil != null ? `${nextMinutesUntil}m` : "--"), iconColor: "text-amber-500", bg: "bg-amber-500/10" },
   ];
 
   return (
