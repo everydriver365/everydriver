@@ -315,6 +315,16 @@ export function InstructorMobileHome({
         )}
       </AnimatePresence>
 
+      {/* App Style layout: iOS launcher (replaces entire page content) */}
+      {layoutStyle === "schedule" ? (
+        <AppStyleHomeView
+          instructorId={instructorId}
+          heroImageUrl={personalHeroUrl || content?.hero_image_url}
+          wallpaperColor={wallpaperColor}
+          profileImageUrl={instructor?.profile_image_url}
+        />
+      ) : (
+      <>
       {/* Contextual Home Hero — full bleed */}
       <div>
         <ContextualHomeHero
@@ -343,17 +353,6 @@ export function InstructorMobileHome({
           pendingJobs={pendingJobsCount}
         />
       </div>
-
-      {/* App Style layout: iOS launcher */}
-      {layoutStyle === "schedule" ? (
-        <AppStyleHomeView
-          instructorId={instructorId}
-          heroImageUrl={personalHeroUrl || content?.hero_image_url}
-          wallpaperColor={wallpaperColor}
-          profileImageUrl={instructor?.profile_image_url}
-        />
-      ) : (
-      <>
       {/* Job Offers & Messages buttons - right under hero */}
       <div className="px-4 flex flex-col gap-2 mt-3">
         {pendingJobsCount > 0 && (
