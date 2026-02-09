@@ -84,15 +84,15 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
 
           {/* Connection */}
           <div className={cn("flex items-center gap-2 p-2.5 rounded-xl",
-            isOnline ? "bg-violet-500/10" : "bg-muted/50"
+            isOnline ? "bg-emerald-500/10" : "bg-muted/50"
           )}>
             {isOnline ? (
-              <Wifi className="h-4 w-4 text-violet-500" />
+              <Wifi className="h-4 w-4 text-emerald-500" />
             ) : (
               <WifiOff className="h-4 w-4 text-muted-foreground" />
             )}
             <div>
-              <p className={cn("text-sm font-bold leading-none", isOnline ? "text-violet-500" : "text-muted-foreground")}>
+              <p className={cn("text-sm font-bold leading-none", isOnline ? "text-emerald-500" : "text-muted-foreground")}>
                 {isOnline ? "Live" : "Off"}
               </p>
               <p className="text-[10px] text-muted-foreground mt-0.5">Status</p>
