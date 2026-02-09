@@ -210,7 +210,9 @@ export function NextUpTile({
               </div>
             </div>
             <div className="mb-3">
-              <p className="font-bold text-foreground text-base truncate">{pupilName}</p>
+              <button onClick={handleViewPupil} className="font-bold text-foreground text-base truncate hover:text-primary transition-colors text-left">
+                {pupilName}
+              </button>
               {displayLocation && (
                 <p className="text-xs text-muted-foreground truncate">{displayLocation}</p>
               )}
@@ -269,23 +271,17 @@ export function NextUpTile({
               </span>
             </div>
 
-            {/* Primary actions — Navigate full width + icon circles */}
+            {/* Primary actions — Navigate + On Way + icon circles */}
             <div className="flex items-center gap-2">
               {pickupPostcode && (
                 <Button size="sm" onClick={handleNavigate} className="flex-1 rounded-xl gap-1.5">
                   <Navigation className="h-4 w-4" /> Navigate
                 </Button>
               )}
-              <Button size="icon" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="rounded-full h-10 w-10 shrink-0">
-                <Phone className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-full h-10 w-10 shrink-0">
-                <MessageSquare className="h-4 w-4" />
-              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="icon" variant="outline" disabled={!pupilPhone} className="rounded-full h-10 w-10 shrink-0">
-                    <Check className="h-4 w-4 text-emerald-600" />
+                  <Button size="sm" variant="outline" disabled={!pupilPhone} className="rounded-xl gap-1.5">
+                    <Check className="h-4 w-4 text-emerald-600" /> On Way
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
@@ -319,6 +315,12 @@ export function NextUpTile({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button size="icon" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="rounded-full h-10 w-10 shrink-0">
+                <Phone className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-full h-10 w-10 shrink-0">
+                <MessageSquare className="h-4 w-4" />
+              </Button>
             </div>
 
             {/* Expand toggle */}
@@ -342,12 +344,9 @@ export function NextUpTile({
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border mt-2">
-                    <Button size="sm" variant="outline" onClick={handleViewPupil} className="rounded-xl gap-1.5">
-                      <User className="h-3.5 w-3.5" /> Pupil
-                    </Button>
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border mt-2">
                     <Button size="sm" variant="outline" onClick={() => navigate(`/instructor/schedule?date=${lessonDate}`)} className="rounded-xl gap-1.5">
-                      <CalendarClock className="h-3.5 w-3.5" /> Schedule
+                      <CalendarClock className="h-3.5 w-3.5" /> Reschedule
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setCancelOpen(true)} className="rounded-xl gap-1.5 text-destructive hover:text-destructive">
                       <X className="h-3.5 w-3.5" /> Cancel
