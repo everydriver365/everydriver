@@ -46,6 +46,7 @@ import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentRe
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
 import { SyllabusRecommendations } from "@/components/instructor/SyllabusRecommendations";
 import { NewPupilChecklist } from "@/components/instructor/NewPupilChecklist";
+import { TestDayPrep } from "@/components/instructor/TestDayPrep";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -986,6 +987,9 @@ export function ExpandablePupilCard({
 
               {/* New Pupil Checklist */}
               <NewPupilChecklist pupilId={pupil.id} pupilName={pupil.name} />
+
+              {/* Test Day Preparation */}
+              <TestDayPrep pupilId={pupil.id} pupilName={pupil.name} />
 
               {/* Syllabus Recommendations */}
               <SyllabusRecommendations pupilId={pupil.id} />
