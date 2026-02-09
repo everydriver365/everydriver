@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import calendarIcon from "@/assets/calendar-icon.png";
 import { 
   Calendar, 
   Clock, 
@@ -146,7 +147,7 @@ export function TomorrowPreviewCard({
           <div className="flex gap-3">
             <Link to="/instructor/schedule" className="flex-1">
               <Button variant="outline" size="default" className="w-full gap-2 h-12 rounded-2xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm font-semibold text-slate-700 dark:text-slate-200">
-                <Calendar className="h-5 w-5" />
+                <img src={calendarIcon} alt="Calendar" className="h-5 w-5" />
                 View Schedule
               </Button>
             </Link>
