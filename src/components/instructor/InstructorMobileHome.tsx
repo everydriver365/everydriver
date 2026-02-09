@@ -51,7 +51,8 @@ import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
-import { ReadyToTeachOptions } from "@/components/instructor/ReadyToTeachOptions";
+import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
+import instructorHeroImg from "@/assets/instructor-hero.jpeg";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
@@ -326,26 +327,29 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* TEMP: Ready to Teach tile options for selection */}
-      <div className="px-4 pt-4">
-        <ReadyToTeachOptions
+      {/* Hero Image — full bleed */}
+      <div className="w-full h-[38vh] min-h-[220px] max-h-[320px] overflow-hidden relative">
+        <img
+          src={personalHeroUrl || content?.hero_image_url || instructorHeroImg}
+          alt="Hero"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/20 to-transparent" />
+      </div>
+
+      {/* Ready to Teach tile — overlapping hero */}
+      <div className="relative -mt-8 mx-4">
+        <ReadyToTeachTile
           firstName={firstName}
           lessonCount={todayOverview?.lessonCount || 0}
           totalHours={todayOverview?.totalHours || 0}
           expectedEarnings={todayOverview?.expectedEarnings || 0}
-          completedLessons={0}
           progressPercent={weeklyGoals?.progressPercent || 0}
-          hoursThisWeek={weeklyGoals?.hoursThisWeek || 0}
-          hoursGoal={weeklyGoals?.hoursGoal || 42}
           temperature={currentWeather?.temperature ?? null}
           weatherIcon={currentWeather?.icon || "Cloud"}
           weatherDesc={currentWeather?.description || ""}
-          trafficCondition="Light"
-          unreadMessages={unreadCount || 0}
-          nextPupilName={nextLesson?.pupilName}
           nextMinutesUntil={nextLesson?.minutesUntil}
-          nextPostcode={nextLesson?.pickupPostcode ?? undefined}
-          isGPSConnected={isGPSConnected}
+          isOnline={instructor?.is_active ?? false}
         />
       </div>
       {/* Job Offers & Messages buttons - right under hero */}
