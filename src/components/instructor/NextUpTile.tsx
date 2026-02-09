@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-fns";
-import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CreditCard, CalendarClock, User, MapPin, Timer, ChevronDown, Send } from "lucide-react";
+import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CalendarClock, User, Timer, ChevronDown, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -10,7 +10,6 @@ import { CancelLessonDialog } from "./CancelLessonDialog";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -91,7 +90,7 @@ export function NextUpTile({
 
   const formatDuration = () => {
     const h = durationMinutes / 60;
-    return h % 1 === 0 ? `${h}h` : `${h}h`;
+    return `${h}h`;
   };
 
   const effectiveBalance = prepaidHours > 0 ? prepaidHours * 40 : accountBalance;
@@ -163,6 +162,8 @@ export function NextUpTile({
   };
 
   const displayLocation = [pickupLocation, pickupPostcode].filter(Boolean).join(", ");
+  const isUrgent = minutesUntil <= 30;
+  const hasUnread = pupilUnreadCount > 0;
 
   return (
     <>
@@ -171,80 +172,92 @@ export function NextUpTile({
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="rounded-2xl bg-card border border-border/40 shadow-[0_2px_12px_rgba(20,37,66,0.10)] overflow-hidden">
-          {/* Map preview at top */}
-          {pickupPostcode && (
-            <PostcodeMapPreview
-              postcode={pickupPostcode}
-              onClick={handleNavigate}
-            />
-          )}
-
-          <div className="p-4">
-            {/* Pupil info row with floating countdown */}
-            <div className="flex items-center gap-3 mb-3">
-              <PupilAvatar
-                name={pupilName}
-                imageUrl={pupilProfileImage}
-                size="lg"
+          {/* Map with floating countdown chip */}
+          <div className="relative">
+            {pickupPostcode && (
+              <PostcodeMapPreview
+                postcode={pickupPostcode}
+                onClick={handleNavigate}
               />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-foreground text-base truncate">{pupilName}</p>
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 shadow-sm ${
-                    minutesUntil <= 30
-                      ? "bg-amber-50 dark:bg-amber-900/30 border border-amber-200/60 text-amber-700 dark:text-amber-300 animate-pulse"
-                      : "bg-primary/5 border border-primary/10 text-foreground"
-                  }`}>
-                    <Timer className="h-3 w-3" /> {getCountdownText()}
-                  </span>
-                </div>
+            )}
+            {/* Floating countdown chip on map */}
+            <div className="absolute top-3 right-3 z-10">
+              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md ${
+                isUrgent
+                  ? "bg-amber-50 dark:bg-amber-900/80 border border-amber-200/60 text-amber-700 dark:text-amber-300 animate-pulse"
+                  : "bg-card/90 backdrop-blur-sm border border-border/60 text-foreground"
+              }`}>
+                <Timer className="h-3 w-3" /> {getCountdownText()}
+              </span>
+            </div>
+          </div>
+
+          {/* Avatar overlapping the map bottom edge */}
+          <div className="relative px-4">
+            <div className="-mt-8 flex items-end gap-3 mb-3">
+              <div className="ring-4 ring-card rounded-full shrink-0">
+                <PupilAvatar
+                  name={pupilName}
+                  imageUrl={pupilProfileImage}
+                  size="lg"
+                />
+              </div>
+              <div className="flex-1 min-w-0 pb-1">
+                <p className="font-bold text-foreground text-base truncate">{pupilName}</p>
                 {displayLocation && (
-                  <p className="text-sm text-muted-foreground truncate mt-0.5">{displayLocation}</p>
+                  <p className="text-xs text-muted-foreground truncate">{displayLocation}</p>
                 )}
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <PaymentStatusBadge balance={effectiveBalance} size="md" className="rounded-none" />
-                  {etaLoading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                  ) : etaMinutes > 0 ? (
-                    <span className={`inline-flex items-center gap-1 text-xs font-medium ${
-                      trafficCondition === 'heavy' ? 'text-destructive'
-                      : trafficCondition === 'moderate' ? 'text-amber-600'
-                      : 'text-emerald-600'
-                    }`}>
-                      <Car className="h-3.5 w-3.5" />
-                      ETA {format(addMinutes(new Date(), etaMinutes), "HH:mm")} ({etaText})
-                      {trafficCondition && trafficCondition !== 'clear' && trafficCondition !== 'light' && (
-                        <span className="ml-0.5">
-                          {trafficCondition === 'heavy' ? '🔴' : '🟡'}
-                        </span>
-                      )}
-                    </span>
-                  ) : null}
-                </div>
               </div>
             </div>
+          </div>
 
-            {/* Unread message alert */}
-            {pupilUnreadCount > 0 && (
-              <div className="mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 border border-destructive/20">
-                <Mail className="h-4 w-4 text-destructive shrink-0" />
-                <span className="text-xs font-medium text-destructive">
-                  {pupilUnreadCount} unread message{pupilUnreadCount !== 1 ? "s" : ""} from {firstName}
-                </span>
-              </div>
-            )}
-
-            {/* Time + duration badges */}
-            <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/5 border border-primary/10 text-sm font-medium text-foreground shadow-[0_1px_4px_rgba(20,37,66,0.06)]">
-                <Clock className="h-4 w-4 text-primary" /> {getDateLabel()} · {formatTime(startTime)}
+          <div className="px-4 pb-4">
+            {/* Info badges row */}
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-primary/5 border border-primary/10 text-xs font-medium text-foreground">
+                <Clock className="h-3.5 w-3.5 text-primary" /> {getDateLabel()} · {formatTime(startTime)}
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/30 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/30 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
                 {formatDuration()} lesson
               </span>
+              <PaymentStatusBadge balance={effectiveBalance} size="md" className="rounded-none" />
             </div>
 
-            {/* Primary actions — Navigate + icon circles */}
+            {/* ETA row */}
+            {etaLoading ? (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Calculating ETA...
+              </div>
+            ) : etaMinutes > 0 ? (
+              <div className={`flex items-center gap-1.5 text-xs font-medium mb-3 ${
+                trafficCondition === 'heavy' ? 'text-destructive'
+                : trafficCondition === 'moderate' ? 'text-amber-600'
+                : 'text-emerald-600'
+              }`}>
+                <Car className="h-3.5 w-3.5" />
+                ETA {format(addMinutes(new Date(), etaMinutes), "HH:mm")} ({etaText})
+                {trafficCondition && trafficCondition !== 'clear' && trafficCondition !== 'light' && (
+                  <span className="ml-0.5">{trafficCondition === 'heavy' ? '🔴' : '🟡'}</span>
+                )}
+              </div>
+            ) : null}
+
+            {/* Messages row — always visible */}
+            <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-2 border ${
+              hasUnread
+                ? "bg-destructive/10 border-destructive/20"
+                : "bg-muted/30 border-border/40"
+            }`}>
+              <Mail className={`h-4 w-4 shrink-0 ${hasUnread ? "text-destructive" : "text-muted-foreground"}`} />
+              <span className={`text-xs font-medium ${hasUnread ? "text-destructive" : "text-muted-foreground"}`}>
+                {hasUnread
+                  ? `${pupilUnreadCount} unread message${pupilUnreadCount !== 1 ? "s" : ""} from ${firstName}`
+                  : `No unread messages from ${firstName}`
+                }
+              </span>
+            </div>
+
+            {/* Primary actions — Navigate full width + icon circles */}
             <div className="flex items-center gap-2">
               {pickupPostcode && (
                 <Button size="sm" onClick={handleNavigate} className="flex-1 rounded-xl gap-1.5">
