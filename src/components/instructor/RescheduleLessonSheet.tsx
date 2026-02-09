@@ -79,10 +79,12 @@ export function RescheduleLessonSheet({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const bookingAdvanceDays = 28;
+  const bookingAdvanceDays = 365;
 
   useEffect(() => {
     if (open) {
+      setSelectedDate(undefined);
+      setSelectedTime(null);
       fetchAvailability();
     }
   }, [open, instructorId]);
@@ -146,6 +148,20 @@ export function RescheduleLessonSheet({
       setLoading(false);
     }
   };
+
+  // Auto-select the first available date after loading
+  useEffect(() => {
+    if (!loading && !selectedDate && workingHours.length > 0) {
+      const today = startOfDay(new Date());
+      for (let i = 1; i <= bookingAdvanceDays; i++) {
+        const candidate = addDays(today, i);
+        if (isDateAvailable(candidate)) {
+          setSelectedDate(candidate);
+          break;
+        }
+      }
+    }
+  }, [loading, workingHours, dateOverrides]);
 
   const getAvailabilityForDate = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
@@ -317,6 +333,7 @@ export function RescheduleLessonSheet({
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}
+                  defaultMonth={selectedDate}
                   onSelect={(date) => {
                     setSelectedDate(date);
                     setSelectedTime(null);
@@ -332,7 +349,7 @@ export function RescheduleLessonSheet({
                       fontWeight: "600",
                     },
                   }}
-                  className="p-1"
+                  className="p-1 pointer-events-auto"
                 />
               </div>
             </div>
