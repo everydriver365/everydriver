@@ -53,7 +53,7 @@ const PRIORITY_FLAGS: Record<number, string> = {
 
 // ─── Types ──────────────────────────────────────────────────────
 interface TimelineEntry {
-  type: "reminder" | "todo";
+  type: "reminder" | "todo" | "manual-reminder";
   sortKey: string;
   id: string;
   overdue?: boolean;
@@ -110,26 +110,35 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
 
   // Quick-add
   const [showInput, setShowInput] = useState(false);
+  const [addMode, setAddMode] = useState<"task" | "reminder">("task");
   const [newTitle, setNewTitle] = useState("");
   const [newPriority, setNewPriority] = useState(4);
   const [newDueDate, setNewDueDate] = useState<Date | undefined>(undefined);
+  const [newTime, setNewTime] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (showInput && inputRef.current) inputRef.current.focus();
-  }, [showInput]);
+  }, [showInput, addMode]);
 
-  const handleAdd = () => {
-    if (!newTitle.trim()) return;
-    addTodo.mutate({
-      title: newTitle.trim(),
-      priority: newPriority,
-      due_date: newDueDate ? format(newDueDate, "yyyy-MM-dd") : null,
-    });
+  const resetForm = () => {
     setNewTitle("");
     setNewPriority(4);
     setNewDueDate(undefined);
+    setNewTime("");
     setShowInput(false);
+  };
+
+  const handleAdd = () => {
+    if (!newTitle.trim()) return;
+    const isReminder = addMode === "reminder";
+    addTodo.mutate({
+      title: isReminder && newTime ? `${newTime} — ${newTitle.trim()}` : newTitle.trim(),
+      priority: isReminder ? 3 : newPriority,
+      due_date: newDueDate ? format(newDueDate, "yyyy-MM-dd") : (isReminder ? format(new Date(), "yyyy-MM-dd") : null),
+      project: isReminder ? "Reminders" : "Inbox",
+    });
+    resetForm();
   };
 
   const cyclePriority = () => setNewPriority((p) => (p === 1 ? 4 : p - 1));
@@ -155,8 +164,9 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
 
     activeTodos.slice(0, 5).forEach((t) => {
       const od = t.due_date ? isOverdue(t.due_date) : false;
+      const isManualReminder = t.project === "Reminders";
       entries.push({
-        type: "todo",
+        type: isManualReminder ? "manual-reminder" : "todo",
         sortKey: t.due_date || t.created_at,
         id: `t-${t.id}`,
         todo: t,
@@ -211,25 +221,64 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
             className="overflow-hidden"
           >
             <div className="px-4 pb-3 space-y-2">
-              <div className="flex gap-2 items-center">
-                <button onClick={cyclePriority} className="shrink-0">
-                  <Flag className={cn("h-4 w-4", PRIORITY_FLAGS[newPriority])} />
+              {/* Tab toggle */}
+              <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
+                <button
+                  onClick={() => setAddMode("task")}
+                  className={cn(
+                    "flex-1 text-xs font-medium py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5",
+                    addMode === "task" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Flag className="h-3 w-3" /> Task
                 </button>
+                <button
+                  onClick={() => setAddMode("reminder")}
+                  className={cn(
+                    "flex-1 text-xs font-medium py-1.5 rounded-md transition-colors flex items-center justify-center gap-1.5",
+                    addMode === "reminder" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Bell className="h-3 w-3" /> Reminder
+                </button>
+              </div>
+
+              {/* Input row */}
+              <div className="flex gap-2 items-center">
+                {addMode === "task" && (
+                  <button onClick={cyclePriority} className="shrink-0">
+                    <Flag className={cn("h-4 w-4", PRIORITY_FLAGS[newPriority])} />
+                  </button>
+                )}
+                {addMode === "reminder" && (
+                  <Bell className="h-4 w-4 text-amber-500 shrink-0" />
+                )}
                 <Input
                   ref={inputRef}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                  placeholder="Add a task…"
+                  placeholder={addMode === "task" ? "Add a task…" : "Remind me to…"}
                   className="h-8 text-sm border-0 border-b border-border/50 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
                 />
               </div>
+
+              {/* Options row */}
               <div className="flex items-center gap-2">
+                {addMode === "reminder" && (
+                  <Input
+                    type="time"
+                    value={newTime}
+                    onChange={(e) => setNewTime(e.target.value)}
+                    className="h-7 w-24 text-xs px-2"
+                    placeholder="Time"
+                  />
+                )}
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1">
                       <CalendarIcon className="h-3 w-3" />
-                      {newDueDate ? format(newDueDate, "d MMM") : "Due date"}
+                      {newDueDate ? format(newDueDate, "d MMM") : "Date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -279,7 +328,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
                   "h-3 w-3 rounded-full border-2 shrink-0 mt-1",
                   entry.overdue
                     ? "border-red-500 bg-red-500 animate-pulse"
-                    : entry.type === "reminder"
+                    : (entry.type === "reminder" || entry.type === "manual-reminder")
                     ? "border-primary bg-primary/20"
                     : entry.todo?.priority === 1
                     ? "border-red-500 bg-red-500/20"
@@ -300,6 +349,12 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
                     startTime={entry.startTime!}
                     sent24h={entry.sent24h!}
                     sent1h={entry.sent1h!}
+                  />
+                ) : entry.type === "manual-reminder" ? (
+                  <ManualReminderRow
+                    todo={entry.todo!}
+                    onToggle={() => toggleTodo.mutate({ id: entry.todo!.id, is_completed: true })}
+                    onDelete={() => deleteTodo.mutate(entry.todo!.id)}
                   />
                 ) : (
                   <TodoRow
@@ -353,6 +408,36 @@ function ReminderRow({ pupilName, startTime, sent24h, sent1h }: {
       )}>
         {status === "sent" ? <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> : <Clock className="h-2.5 w-2.5 mr-0.5" />}
         {status === "sent" ? "Sent" : "Pending"}
+      </Badge>
+    </>
+  );
+}
+
+// ─── Manual reminder row ───────────────────────────────────────
+function ManualReminderRow({ todo, onToggle, onDelete }: {
+  todo: InstructorTodo;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const timeLabel = todo.due_date ? formatDueDate(todo.due_date) : "";
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <button onClick={onToggle} className="text-sm font-medium truncate text-left hover:line-through transition-all">
+          {todo.title}
+        </button>
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          {timeLabel && (
+            <span className="text-[10px] text-muted-foreground">{timeLabel}</span>
+          )}
+          <button onClick={onDelete} className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+          </button>
+        </div>
+      </div>
+      <Badge variant="outline" className="text-[9px] mt-1 px-1.5 py-0 border-primary/30 bg-primary/10 text-primary">
+        <Bell className="h-2.5 w-2.5 mr-0.5" />
+        Reminder
       </Badge>
     </>
   );
