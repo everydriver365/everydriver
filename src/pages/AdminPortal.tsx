@@ -68,6 +68,7 @@ import { CampaignManager } from "@/components/admin/CampaignManager";
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog";
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
+import { useAdminTabCounts } from "@/hooks/useAdminTabCounts";
 
 const stats = [
   { icon: Users, label: "Total Pupils", value: "1,247", change: "+45 this month", trend: "up" },
@@ -158,6 +159,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
 export default function AdminPortal() {
   const [activeSection, setActiveSection] = useState("overview");
   const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const tabCounts = useAdminTabCounts();
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null);
@@ -888,6 +890,7 @@ export default function AdminPortal() {
         groupTitle={currentMeta.group}
         onSectionChange={setActiveSection}
         onLogout={handleLogout}
+        tabCounts={tabCounts}
       >
         {renderContent()}
       </AdminLayout>
