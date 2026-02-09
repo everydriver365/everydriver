@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   ClipboardCheck, Eye, Glasses, FileText, Car, Camera, 
-  Loader2, Save, CheckCircle2, ChevronDown, Upload
+  Loader2, Save, CheckCircle2, ChevronDown
 } from "lucide-react";
 import { SectionPanel } from "@/components/ui/SectionPanel";
 import { Badge } from "@/components/ui/badge";
@@ -349,8 +349,9 @@ export function NewPupilChecklist({ pupilId, pupilName }: NewPupilChecklistProps
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <>
-                        <Upload className="h-5 w-5" />
-                        <span className="text-xs">Front</span>
+                        <Camera className="h-5 w-5" />
+                        <span className="text-xs">Take Photo</span>
+                        <span className="text-[10px] text-muted-foreground">Front</span>
                       </>
                     )}
                   </Button>
@@ -396,8 +397,9 @@ export function NewPupilChecklist({ pupilId, pupilName }: NewPupilChecklistProps
                       <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                       <>
-                        <Upload className="h-5 w-5" />
-                        <span className="text-xs">Back</span>
+                        <Camera className="h-5 w-5" />
+                        <span className="text-xs">Take Photo</span>
+                        <span className="text-[10px] text-muted-foreground">Back</span>
                       </>
                     )}
                   </Button>
