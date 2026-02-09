@@ -111,7 +111,7 @@ export function InstructorBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border/50 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden">
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -195,7 +195,7 @@ export function InstructorBottomNav() {
         })}
       </div>
       {/* Safe area for iOS */}
-      <div className="h-safe-area-inset-bottom bg-background" />
+      <div className="h-safe-area-inset-bottom" style={{ background: 'inherit' }} />
     </nav>
   );
 }
