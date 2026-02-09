@@ -1,6 +1,6 @@
 import { format, parse } from "date-fns";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Calendar, Check } from "lucide-react";
 import { TodayLesson } from "@/hooks/useTodayRemainingLessons";
 
 interface TodayMiniTimelineProps {
@@ -38,9 +38,14 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
   return (
     <div className={className}>
       <div className="bg-white rounded-xl border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-          Today's Schedule
-        </h3>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Today's Schedule
+          </h3>
+        </div>
         <div className="relative">
           {/* Vertical line */}
           <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-border" />

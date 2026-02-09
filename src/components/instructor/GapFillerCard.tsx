@@ -206,6 +206,10 @@ export function GapFillerCard({ gaps, className = "", isLoading = false }: GapFi
           onClick={handleToggle}
           className="w-full p-4 flex items-center gap-3 text-left active:bg-muted/50 transition-colors"
         >
+          {/* Tinted icon pill */}
+          <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
+            <CalendarPlus className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+          </div>
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">

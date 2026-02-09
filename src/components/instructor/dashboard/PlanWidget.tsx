@@ -18,7 +18,9 @@ export function PlanWidget() {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Crown className="h-4 w-4 text-muted-foreground" />
+            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <Crown className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
             <h3 className="font-medium text-sm text-foreground">Your Plan</h3>
           </div>
           <PlanBadge planSlug={planSlug} size="md" />

@@ -43,7 +43,9 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
         {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Car className="h-4 w-4 text-primary" />
+            <div className="h-8 w-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+              <Car className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+            </div>
             <span className="text-sm font-semibold text-foreground">Vehicle Health</span>
             {registration && (
               <span className="text-xs font-medium bg-primary text-primary-foreground rounded px-1.5 py-0.5">
