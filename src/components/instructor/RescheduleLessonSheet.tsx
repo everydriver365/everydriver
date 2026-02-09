@@ -155,7 +155,6 @@ export function RescheduleLessonSheet({
       const startDate = o.override_date;
       const endDate = o.override_end_date;
       if (endDate) return dateStr >= startDate && dateStr <= endDate;
-      if (!endDate && dateStr >= startDate) return true;
       return dateStr === startDate;
     });
 
