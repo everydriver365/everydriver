@@ -341,6 +341,7 @@ export function InstructorMobileHome({
       <div className="relative -mt-8 mx-4">
         <ReadyToTeachTile
           firstName={firstName}
+          profileImageUrl={instructor?.profile_image_url}
           lessonCount={todayOverview?.lessonCount || 0}
           totalHours={todayOverview?.totalHours || 0}
           expectedEarnings={todayOverview?.expectedEarnings || 0}

@@ -15,6 +15,7 @@ const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) 
 
 interface ReadyToTeachTileProps {
   firstName: string;
+  profileImageUrl?: string | null;
   lessonCount: number;
   totalHours: number;
   expectedEarnings: number;
@@ -30,7 +31,7 @@ interface ReadyToTeachTileProps {
 }
 
 export function ReadyToTeachTile({
-  firstName, lessonCount, expectedEarnings, progressPercent,
+  firstName, profileImageUrl, lessonCount, expectedEarnings, progressPercent,
   temperature, weatherIcon, weatherDesc, nextMinutesUntil, nextPupilFirstName, nextLessonTime, nextPostcode, isOnline,
 }: ReadyToTeachTileProps) {
   const clampedProgress = Math.min(progressPercent, 100);
@@ -51,9 +52,13 @@ export function ReadyToTeachTile({
     >
       {/* Header row */}
       <div className="flex items-center gap-3 mb-3">
-        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
-          {firstName[0]}
-        </div>
+        {profileImageUrl ? (
+          <img src={profileImageUrl} alt={firstName} className="h-10 w-10 rounded-full object-cover" />
+        ) : (
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+            {firstName[0]}
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-bold text-foreground truncate">Ready to teach, {firstName}?</h2>
