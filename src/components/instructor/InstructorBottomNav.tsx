@@ -112,6 +112,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
   };
 
   const getIconColor = (_item: NavItem, isActive: boolean) => {
+    if (wallpaperColor) return isActive ? "text-white" : "text-white/70";
     return isActive ? "text-primary" : "text-muted-foreground";
   };
 
@@ -147,16 +148,16 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               key={item.path}
               onClick={() => handleNavClick(item.path)}
               className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
-                isActive
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                wallpaperColor
+                  ? (isActive ? "text-white" : "text-white/70 hover:text-white")
+                  : (isActive ? "text-primary" : "text-muted-foreground hover:text-foreground")
               }`}
             >
               {/* Active indicator pill */}
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-full"
+                  className={cn("absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full", wallpaperColor ? "bg-white" : "bg-primary")}
                   initial={false}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
@@ -197,7 +198,9 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                isActive ? "font-medium text-primary" : "font-normal text-muted-foreground"
+                wallpaperColor
+                  ? (isActive ? "font-medium text-white" : "font-normal text-white/70")
+                  : (isActive ? "font-medium text-primary" : "font-normal text-muted-foreground")
               }`}>
                 {item.label}
               </span>
