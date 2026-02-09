@@ -1,26 +1,44 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link, Navigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  GraduationCap, Calendar, BookOpen, CreditCard, Clock, Award, ChevronRight, 
-  MessageCircle, Phone, Mail, MapPin, User, Send, Car, CheckCircle, XCircle,
-  Loader2
+import { motion } from "framer-motion";
+import {
+  GraduationCap, Calendar, CreditCard, Clock, Award,
+  MapPin, Car, Loader2, BookOpen, ChevronRight,
 } from "lucide-react";
-import { format, parseISO, isAfter, isBefore, startOfToday } from "date-fns";
+import { format, parseISO, startOfToday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { PupilDashboardRadar } from "@/components/pupil-portal/PupilDashboardRadar";
+import { PupilTelematicsCard } from "@/components/pupil-portal/PupilTelematicsCard";
+import { PupilCoachingCard } from "@/components/pupil-portal/PupilCoachingCard";
+import { PupilAIInsightsCard } from "@/components/pupil-portal/PupilAIInsightsCard";
 
-interface ScheduledLesson {
+interface PupilData {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  course_type: string | null;
+  prepaid_hours: number | null;
+  lessons_completed: number | null;
+  progress: number | null;
+  account_balance: number | null;
+  instructor: {
+    id: string;
+    name: string;
+    phone: string | null;
+    car_make: string | null;
+    car_model: string | null;
+    car_type: string;
+    profile_image_url: string | null;
+  } | null;
+}
+
+interface UpcomingLesson {
   id: string;
   lesson_date: string;
   start_time: string;
@@ -31,86 +49,39 @@ interface ScheduledLesson {
   amount_due: number | null;
 }
 
-interface PupilData {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  address: string;
-  postcode: string;
-  course_type: string | null;
-  prepaid_hours: number | null;
-  lessons_completed: number | null;
-  progress: number | null;
-  account_balance: number | null;
-  instructor: {
-    id: string;
-    name: string;
-    email: string | null;
-    phone: string | null;
-    car_make: string | null;
-    car_model: string | null;
-    car_type: string;
-    profile_image_url: string | null;
-  } | null;
-}
-
-interface LessonHistoryItem {
-  id: string;
-  lesson_date: string;
-  duration_minutes: number;
-  rating: number | null;
-  notes: string | null;
-  skills_practiced: string[] | null;
-  next_lesson_plan: string | null;
-}
-
 export default function PupilPortal() {
   const [searchParams] = useSearchParams();
   const pupilId = searchParams.get("id");
-  
+
   const [pupil, setPupil] = useState<PupilData | null>(null);
-  const [upcomingLessons, setUpcomingLessons] = useState<ScheduledLesson[]>([]);
-  const [pastLessons, setPastLessons] = useState<ScheduledLesson[]>([]);
-  const [lessonHistory, setLessonHistory] = useState<LessonHistoryItem[]>([]);
+  const [upcomingLessons, setUpcomingLessons] = useState<UpcomingLesson[]>([]);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
-  const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
-    const fetchPupilData = async () => {
-      if (!pupilId) {
-        setLoading(false);
-        return;
-      }
+    if (!pupilId) { setLoading(false); return; }
 
-      const today = startOfToday();
-      const todayStr = format(today, "yyyy-MM-dd");
+    const todayStr = format(startOfToday(), "yyyy-MM-dd");
 
-      const [pupilRes, lessonsRes, historyRes] = await Promise.all([
-        supabase
-          .from("pupils")
-          .select(`
-            id, name, email, phone, address, postcode, course_type, prepaid_hours,
-            lessons_completed, progress, account_balance,
-            instructor:instructors(id, name, email, phone, car_make, car_model, car_type, profile_image_url)
-          `)
-          .eq("id", pupilId)
-          .maybeSingle(),
-        supabase
-          .from("scheduled_lessons")
-          .select("id, lesson_date, start_time, duration_minutes, pickup_location, status, payment_status, amount_due")
-          .eq("pupil_id", pupilId)
-          .order("lesson_date", { ascending: true })
-          .order("start_time", { ascending: true }),
-        supabase
-          .from("lesson_history")
-          .select("id, lesson_date, duration_minutes, rating, notes, skills_practiced, next_lesson_plan")
-          .eq("pupil_id", pupilId)
-          .order("lesson_date", { ascending: false })
-          .limit(20),
-      ]);
-
+    Promise.all([
+      supabase
+        .from("pupils")
+        .select(`
+          id, name, email, phone, course_type, prepaid_hours,
+          lessons_completed, progress, account_balance,
+          instructor:instructors(id, name, phone, car_make, car_model, car_type, profile_image_url)
+        `)
+        .eq("id", pupilId)
+        .maybeSingle(),
+      supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes, pickup_location, status, payment_status, amount_due")
+        .eq("pupil_id", pupilId)
+        .gte("lesson_date", todayStr)
+        .neq("status", "cancelled")
+        .order("lesson_date", { ascending: true })
+        .order("start_time", { ascending: true })
+        .limit(8),
+    ]).then(([pupilRes, lessonsRes]) => {
       if (pupilRes.data) {
         const data = pupilRes.data as any;
         setPupil({
@@ -118,42 +89,12 @@ export default function PupilPortal() {
           instructor: Array.isArray(data.instructor) ? data.instructor[0] : data.instructor,
         });
       }
-
-      if (lessonsRes.data) {
-        const upcoming = lessonsRes.data.filter(l => l.lesson_date >= todayStr);
-        const past = lessonsRes.data.filter(l => l.lesson_date < todayStr);
-        setUpcomingLessons(upcoming);
-        setPastLessons(past);
-      }
-
-      if (historyRes.data) {
-        setLessonHistory(historyRes.data);
-      }
-
+      if (lessonsRes.data) setUpcomingLessons(lessonsRes.data);
       setLoading(false);
-    };
-
-    fetchPupilData();
+    });
   }, [pupilId]);
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || !pupil?.instructor) return;
-    
-    setSendingMessage(true);
-    // In a real app, this would send an SMS or email via an edge function
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success("Message sent to your instructor!");
-    setMessage("");
-    setSendingMessage(false);
-  };
-
-  const totalScheduledHours = upcomingLessons.reduce((acc, l) => acc + l.duration_minutes / 60, 0);
-  const totalCompletedHours = lessonHistory.reduce((acc, l) => acc + l.duration_minutes / 60, 0);
-
-  // Redirect to login if no pupilId
-  if (!pupilId) {
-    return <Navigate to="/pupil/login" replace />;
-  }
+  if (!pupilId) return <Navigate to="/pupil/login" replace />;
 
   if (loading) {
     return (
@@ -172,49 +113,54 @@ export default function PupilPortal() {
         <div className="container py-16 text-center">
           <h1 className="text-2xl font-bold">Pupil not found</h1>
           <p className="mt-2 text-muted-foreground">We couldn't find your account.</p>
-          <Button asChild className="mt-6">
-            <Link to="/courses">Browse Courses</Link>
-          </Button>
+          <Button asChild className="mt-6"><Link to="/courses">Browse Courses</Link></Button>
         </div>
       </MainLayout>
     );
   }
 
+  const totalScheduledHours = upcomingLessons.reduce((acc, l) => acc + l.duration_minutes / 60, 0);
+
   return (
     <MainLayout>
-      <div className="container py-8">
+      <div className="container py-6 max-w-7xl">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-2xl font-bold md:text-3xl">Welcome back, {pupil.name.split(" ")[0]}!</h1>
-          <p className="text-muted-foreground">Track your progress and manage your lessons</p>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <div className="flex items-center gap-4">
+            {pupil.instructor && (
+              <Avatar className="h-12 w-12 border-2 border-primary/20">
+                <AvatarImage src={pupil.instructor.profile_image_url || undefined} />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {pupil.instructor.name.split(" ").map(n => n[0]).join("")}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            <div>
+              <h1 className="text-2xl font-bold">Welcome back, {pupil.name.split(" ")[0]}!</h1>
+              <p className="text-sm text-muted-foreground">
+                {pupil.instructor ? `Learning with ${pupil.instructor.name}` : 'Track your progress and manage your lessons'}
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Quick Stats */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
-            { icon: Clock, label: "Hours Scheduled", value: totalScheduledHours.toString(), color: "bg-primary" },
-            { icon: Calendar, label: "Lessons Completed", value: (pupil.lessons_completed || 0).toString(), color: "bg-emerald-500" },
-            { icon: CreditCard, label: "Balance", value: `£${Math.abs(pupil.account_balance || 0).toFixed(0)}`, color: (pupil.account_balance || 0) >= 0 ? "bg-emerald-500" : "bg-amber-500" },
-            { icon: Award, label: "Progress", value: `${pupil.progress || 0}%`, color: "bg-blue-500" },
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
+            { icon: Clock, label: "Hours Booked", value: `${totalScheduledHours}h`, bg: "bg-blue-100 dark:bg-blue-900/30", iconColor: "text-blue-600 dark:text-blue-400" },
+            { icon: Calendar, label: "Lessons Done", value: `${pupil.lessons_completed || 0}`, bg: "bg-emerald-100 dark:bg-emerald-900/30", iconColor: "text-emerald-600 dark:text-emerald-400" },
+            { icon: CreditCard, label: "Balance", value: `£${Math.abs(pupil.account_balance || 0).toFixed(0)}`, bg: "bg-amber-100 dark:bg-amber-900/30", iconColor: "text-amber-600 dark:text-amber-400" },
+            { icon: Award, label: "Progress", value: `${pupil.progress || 0}%`, bg: "bg-violet-100 dark:bg-violet-900/30", iconColor: "text-violet-600 dark:text-violet-400" },
+          ].map((stat, i) => (
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <Card>
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.color}`}>
-                    <stat.icon className="h-6 w-6 text-white" />
+                <CardContent className="flex items-center gap-3 p-4">
+                  <div className={`h-10 w-10 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
+                    <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  <div className="min-w-0">
+                    <div className="text-xl font-bold truncate">{stat.value}</div>
+                    <div className="text-xs text-muted-foreground">{stat.label}</div>
                   </div>
                 </CardContent>
               </Card>
@@ -222,359 +168,158 @@ export default function PupilPortal() {
           ))}
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Main Content */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Lessons Tabs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
+            {/* Upcoming Lessons */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    Your Lessons
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    Upcoming Lessons
+                    <Badge variant="secondary" className="ml-auto">{upcomingLessons.length}</Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Tabs defaultValue="upcoming">
-                    <TabsList className="mb-4">
-                      <TabsTrigger value="upcoming">
-                        Upcoming ({upcomingLessons.length})
-                      </TabsTrigger>
-                      <TabsTrigger value="history">
-                        History ({lessonHistory.length})
-                      </TabsTrigger>
-                    </TabsList>
+                  {upcomingLessons.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">No upcoming lessons scheduled</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {upcomingLessons.map((lesson) => {
+                        const dateStr = format(parseISO(lesson.lesson_date), "yyyy-MM-dd");
+                        const todayStr = format(new Date(), "yyyy-MM-dd");
+                        const isToday = dateStr === todayStr;
 
-                    <TabsContent value="upcoming">
-                      {upcomingLessons.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                          <p>No upcoming lessons scheduled</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {upcomingLessons.map((lesson) => (
-                            <div
-                              key={lesson.id}
-                              className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-secondary/50"
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className="flex h-14 w-14 flex-col items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                                  <span className="text-xs font-medium">
-                                    {format(parseISO(lesson.lesson_date), "EEE")}
-                                  </span>
-                                  <span className="text-lg font-bold">
-                                    {format(parseISO(lesson.lesson_date), "d")}
-                                  </span>
-                                  <span className="text-[10px]">
-                                    {format(parseISO(lesson.lesson_date), "MMM")}
-                                  </span>
-                                </div>
-                                <div>
-                                  <div className="font-medium">
-                                    {lesson.duration_minutes / 60}h Driving Lesson
-                                  </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {lesson.start_time}
-                                  </div>
-                                  {lesson.pickup_location && (
-                                    <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                      <MapPin className="h-3 w-3" />
-                                      {lesson.pickup_location}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                {lesson.payment_status === "paid" ? (
-                                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
-                                    Paid
-                                  </Badge>
-                                ) : (pupil?.account_balance || 0) > 0 ? (
-                                  <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
-                                    £{Math.round(pupil!.account_balance)} Credit
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline">
-                                    £{lesson.amount_due || 0} Due
-                                  </Badge>
-                                )}
-                              </div>
+                        return (
+                          <div
+                            key={lesson.id}
+                            className={`flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50 ${
+                              isToday ? 'border-primary/30 bg-primary/5' : ''
+                            }`}
+                          >
+                            <div className={`flex h-12 w-12 flex-col items-center justify-center rounded-lg shrink-0 ${
+                              isToday ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                            }`}>
+                              <span className="text-[10px] font-medium">{format(parseISO(lesson.lesson_date), "EEE")}</span>
+                              <span className="text-base font-bold leading-none">{format(parseISO(lesson.lesson_date), "d")}</span>
+                              <span className="text-[10px]">{format(parseISO(lesson.lesson_date), "MMM")}</span>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="history">
-                      {lessonHistory.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                          <p>No lesson history yet</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {lessonHistory.map((lesson) => (
-                            <div
-                              key={lesson.id}
-                              className="rounded-lg border p-4"
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="font-medium">
-                                  {format(parseISO(lesson.lesson_date), "EEEE, d MMM yyyy")}
-                                </div>
-                                <Badge variant="secondary">
-                                  {lesson.duration_minutes / 60}h
-                                </Badge>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm">
+                                {isToday && <Badge className="mr-1.5 text-[10px] h-4">Today</Badge>}
+                                {lesson.duration_minutes}min Lesson
                               </div>
-                              {lesson.rating && (
-                                <div className="flex items-center gap-1 text-sm mb-2">
-                                  {Array.from({ length: 5 }).map((_, i) => (
-                                    <div
-                                      key={i}
-                                      className={`h-2 w-2 rounded-full ${
-                                        i < lesson.rating! ? "bg-amber-400" : "bg-gray-200"
-                                      }`}
-                                    />
-                                  ))}
-                                  <span className="ml-2 text-muted-foreground">
-                                    {lesson.rating}/5
-                                  </span>
-                                </div>
-                              )}
-                              {lesson.skills_practiced && lesson.skills_practiced.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mt-2">
-                                  {lesson.skills_practiced.slice(0, 4).map((skill) => (
-                                    <Badge key={skill} variant="outline" className="text-xs">
-                                      {skill}
-                                    </Badge>
-                                  ))}
-                                  {lesson.skills_practiced.length > 4 && (
-                                    <Badge variant="outline" className="text-xs">
-                                      +{lesson.skills_practiced.length - 4} more
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-                              {lesson.notes && (
-                                <p className="text-sm text-muted-foreground mt-2 italic">
-                                  "{lesson.notes}"
-                                </p>
-                              )}
-                              {lesson.next_lesson_plan && (
-                                <div className="mt-2 p-2 rounded bg-secondary/50 border border-border">
-                                  <p className="text-xs font-medium text-muted-foreground mb-0.5">Next lesson plan:</p>
-                                  <p className="text-sm">{lesson.next_lesson_plan}</p>
+                              <div className="text-xs text-muted-foreground">{lesson.start_time}</div>
+                              {lesson.pickup_location && (
+                                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                  <MapPin className="h-3 w-3 shrink-0" />
+                                  {lesson.pickup_location}
                                 </div>
                               )}
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Payment History */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-primary" />
-                    Payment Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="rounded-lg bg-secondary/50 p-4 text-center">
-                      <div className="text-2xl font-bold text-primary">
-                        {pupil.prepaid_hours || 0}h
-                      </div>
-                      <div className="text-sm text-muted-foreground">Prepaid Hours</div>
-                    </div>
-                    <div className="rounded-lg bg-secondary/50 p-4 text-center">
-                      <div className="text-2xl font-bold">
-                        {totalCompletedHours}h
-                      </div>
-                      <div className="text-sm text-muted-foreground">Completed</div>
-                    </div>
-                    <div className="rounded-lg bg-secondary/50 p-4 text-center">
-                      <div className={`text-2xl font-bold ${(pupil.account_balance || 0) >= 0 ? "text-emerald-600" : "text-amber-600"}`}>
-                        £{Math.abs(pupil.account_balance || 0).toFixed(2)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {(pupil.account_balance || 0) >= 0 ? "Credit" : "Balance Due"}
-                      </div>
-                    </div>
-                  </div>
-
-                  {pastLessons.length > 0 && (
-                    <>
-                      <Separator className="my-4" />
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-sm">Recent Payments</h4>
-                        {pastLessons.slice(0, 5).map((lesson) => (
-                          <div key={lesson.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
-                            <div className="flex items-center gap-2">
-                              {lesson.payment_status === "paid" ? (
-                                <CheckCircle className="h-4 w-4 text-emerald-500" />
-                              ) : (
-                                <XCircle className="h-4 w-4 text-amber-500" />
-                              )}
-                              <span>{format(parseISO(lesson.lesson_date), "d MMM")} - {lesson.duration_minutes / 60}h lesson</span>
-                            </div>
-                            <span className={lesson.payment_status === "paid" ? "text-emerald-600" : "text-amber-600"}>
+                            <Badge variant={lesson.payment_status === "paid" ? "default" : "outline"} className="shrink-0">
                               {lesson.payment_status === "paid" ? "Paid" : `£${lesson.amount_due || 0}`}
-                            </span>
+                            </Badge>
                           </div>
-                        ))}
-                      </div>
-                    </>
+                        );
+                      })}
+                    </div>
                   )}
                 </CardContent>
               </Card>
             </motion.div>
+
+            {/* Coaching Messages */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <PupilCoachingCard pupilId={pupil.id} />
+            </motion.div>
+
+            {/* AI Driving Insights */}
+            {pupil.instructor && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+                <PupilAIInsightsCard pupilId={pupil.id} instructorId={pupil.instructor.id} />
+              </motion.div>
+            )}
           </div>
 
-          {/* Sidebar */}
+          {/* Right Column */}
           <div className="space-y-6">
+            {/* Syllabus Radar Chart */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <PupilDashboardRadar pupilId={pupil.id} />
+            </motion.div>
+
+            {/* Telematics Safety Score */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+              <PupilTelematicsCard pupilId={pupil.id} />
+            </motion.div>
+
             {/* Instructor Card */}
             {pupil.instructor && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Your Instructor</CardTitle>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+                        <Car className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                      </div>
+                      Your Instructor
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center gap-4 mb-4">
-                      <Avatar className="h-16 w-16">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar className="h-12 w-12">
                         <AvatarImage src={pupil.instructor.profile_image_url || undefined} />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
                           {pupil.instructor.name.split(" ").map(n => n[0]).join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-semibold">{pupil.instructor.name}</div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Car className="h-3.5 w-3.5" />
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Car className="h-3 w-3" />
                           {pupil.instructor.car_make} {pupil.instructor.car_model}
                         </div>
-                        <Badge variant="secondary" className="mt-1 text-xs">
-                          {pupil.instructor.car_type}
-                        </Badge>
+                        <Badge variant="secondary" className="mt-0.5 text-[10px]">{pupil.instructor.car_type}</Badge>
                       </div>
                     </div>
-
-                    <div className="space-y-2 mb-4">
-                      {pupil.instructor.phone && (
-                        <a
-                          href={`tel:${pupil.instructor.phone}`}
-                          className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-secondary transition-colors"
-                        >
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          {pupil.instructor.phone}
+                    {pupil.instructor.phone && (
+                      <Button variant="outline" size="sm" className="w-full" asChild>
+                        <a href={`tel:${pupil.instructor.phone}`}>
+                          Call {pupil.instructor.name.split(" ")[0]}
                         </a>
-                      )}
-                      {pupil.instructor.email && (
-                        <a
-                          href={`mailto:${pupil.instructor.email}`}
-                          className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-secondary transition-colors"
-                        >
-                          <Mail className="h-4 w-4 text-muted-foreground" />
-                          {pupil.instructor.email}
-                        </a>
-                      )}
-                    </div>
-
-                    <Separator className="my-4" />
-
-                    {/* Quick Message */}
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-sm flex items-center gap-2">
-                        <MessageCircle className="h-4 w-4" />
-                        Send a Message
-                      </h4>
-                      <Textarea
-                        placeholder="Type your message..."
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        rows={3}
-                      />
-                      <Button
-                        className="w-full gap-2"
-                        onClick={handleSendMessage}
-                        disabled={!message.trim() || sendingMessage}
-                      >
-                        {sendingMessage ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                        Send Message
                       </Button>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
             )}
 
-            {/* Progress Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
+            {/* Quick Links */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <GraduationCap className="h-5 w-5 text-primary" />
-                    Your Progress
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+                      <GraduationCap className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                    </div>
+                    Quick Links
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Overall Progress</span>
-                      <span className="font-medium">{pupil.progress || 0}%</span>
-                    </div>
-                    <Progress value={pupil.progress || 0} className="h-3" />
-                  </div>
-
-                  <div className="space-y-3">
-                    {[
-                      { name: "Moving Off & Stopping", progress: 100 },
-                      { name: "Use of Mirrors", progress: 85 },
-                      { name: "Roundabouts", progress: 60 },
-                      { name: "Parallel Parking", progress: 40 },
-                    ].map((skill) => (
-                      <div key={skill.name}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-muted-foreground">{skill.name}</span>
-                          <span>{skill.progress}%</span>
-                        </div>
-                        <Progress value={skill.progress} className="h-1.5" />
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button variant="outline" className="w-full mt-4" asChild>
+                <CardContent className="space-y-1.5">
+                  <Button variant="ghost" className="w-full justify-between h-auto py-2.5" asChild>
                     <Link to="/theory">
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Practice Theory
+                      <span className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        Practice Theory
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </Link>
                   </Button>
                 </CardContent>
