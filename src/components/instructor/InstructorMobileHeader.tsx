@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling } from "lucide-react";
+import { ArrowLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,9 +17,16 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
+import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { supabase } from "@/integrations/supabase/client";
 import OfflineSyncIndicator from "@/components/pwa/OfflineSyncIndicator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 interface InstructorMobileHeaderProps {
   title?: string;
@@ -44,6 +51,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [selectedPupilForPayment, setSelectedPupilForPayment] = useState<{ id: string; name: string; balance: number } | null>(null);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
 
   useEffect(() => {
@@ -126,6 +134,19 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
+                  <Palette className="mr-2 h-4 w-4" />
+                  Wallpaper
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  Hero Image
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setAppearanceOpen(true)}>
+                  <LayoutGrid className="mr-2 h-4 w-4" />
+                  Screen Layout
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/logout")}>Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -150,6 +171,16 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
         commissionPayer={instructor?.commission_payer}
         instructorName={instructor?.name}
       />
+      <Sheet open={appearanceOpen} onOpenChange={setAppearanceOpen}>
+        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Appearance</SheetTitle>
+          </SheetHeader>
+          <div className="py-4">
+            <AppearanceSettings instructorId={instructor?.id} />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
