@@ -13,6 +13,10 @@ import {
   Calendar,
   ChevronDown,
   MessageCircle,
+  Zap,
+  Target,
+  Flame,
+  ArrowRight,
 } from "lucide-react";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
 
@@ -340,6 +344,250 @@ function OptionD() {
   );
 }
 
+// ── Option E: Full Image Overlay ─────────────────────────────────
+function OptionE() {
+  const hoursRemaining = MOCK.weekly.hoursGoal - MOCK.weekly.hoursThisWeek;
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="relative rounded-2xl overflow-hidden h-[200px]">
+      <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+      
+      <div className="absolute inset-0 p-5 flex flex-col justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-white">{greetingText[period]}</h2>
+          <div className="flex items-center gap-3 mt-2">
+            <WeatherPill className="bg-white/15 backdrop-blur-sm text-white/90 border border-white/10 text-[11px]" />
+            <TrafficPill className="bg-white/15 backdrop-blur-sm text-white/90 border border-white/10 text-[11px]" />
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-4xl font-black text-white leading-none">{MOCK.weekly.hoursThisWeek}<span className="text-lg font-normal text-white/60">h</span></p>
+            <p className="text-xs text-white/60 mt-1">{hoursRemaining}h to go · {MOCK.weekly.progressPercent}%</p>
+          </div>
+          <div className="flex gap-1.5">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 rounded-full ${i < Math.round(MOCK.weekly.progressPercent / 100 * 7) ? "bg-emerald-400 h-6" : "bg-white/20 h-4"}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option F: Metric Dashboard (No Image) ────────────────────────
+function OptionF() {
+  const hoursRemaining = MOCK.weekly.hoursGoal - MOCK.weekly.hoursThisWeek;
+  
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }} className="rounded-2xl bg-card border border-border overflow-hidden">
+      {/* Header with greeting */}
+      <div className="p-4 pb-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">{greetingText[period]}</h2>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3" />
+            {MOCK.location}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+          <CloudSun className="h-3.5 w-3.5 text-amber-500" />
+          <span>{MOCK.weather.temperature}°C {MOCK.weather.description}</span>
+          <span className="text-muted-foreground/40">·</span>
+          <span>🟢 {MOCK.traffic.condition}</span>
+        </div>
+      </div>
+
+      {/* Large metric row */}
+      <div className="px-4 pb-3 flex items-baseline gap-2">
+        <span className="text-5xl font-black text-foreground tracking-tight">{MOCK.weekly.hoursThisWeek}</span>
+        <span className="text-lg text-muted-foreground font-medium">/ {MOCK.weekly.hoursGoal}h</span>
+        <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+          <TrendingUp className="h-3 w-3" />
+          {MOCK.weekly.progressPercent}%
+        </div>
+      </div>
+
+      {/* Segmented progress bar */}
+      <div className="px-4 pb-3 flex gap-1">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} className="flex-1 h-2 rounded-full overflow-hidden bg-muted/30">
+            {i < Math.round(MOCK.weekly.progressPercent / 100 * 7) && (
+              <motion.div
+                className="h-full bg-emerald-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 0.4, delay: 0.1 * i }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom stat strip */}
+      <div className="border-t border-border/50 grid grid-cols-4 divide-x divide-border/50">
+        {[
+          { label: "Lessons", value: MOCK.today.lessonCount },
+          { label: "Hours", value: `${MOCK.today.totalHours}h` },
+          { label: "Earned", value: `£${MOCK.today.expectedEarnings}` },
+          { label: "Messages", value: MOCK.unreadMessages },
+        ].map((s) => (
+          <div key={s.label} className="py-2.5 text-center">
+            <p className="text-sm font-bold text-foreground">{s.value}</p>
+            <p className="text-[10px] text-muted-foreground">{s.label}</p>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option G: Stacked Banner ─────────────────────────────────────
+function OptionG() {
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.6 }} className="space-y-2">
+      {/* Image banner with greeting */}
+      <div className="relative rounded-2xl overflow-hidden h-[140px]">
+        <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+        <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white">{greetingText[period]}</h2>
+            <p className="text-xs text-white/70 mt-0.5">
+              {MOCK.weather.temperature}°C · {MOCK.weather.description}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-emerald-400 font-medium">
+            🟢 {MOCK.traffic.condition}
+          </div>
+        </div>
+      </div>
+
+      {/* Progress strip */}
+      <div className="rounded-xl bg-card border border-border p-3 flex items-center gap-3">
+        <CircularRing size={56} strokeWidth={4} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span className="text-lg font-bold text-foreground">{MOCK.weekly.hoursThisWeek}h</span>
+            <span className="text-xs text-muted-foreground">/ {MOCK.weekly.hoursGoal}h weekly</span>
+          </div>
+          <div className="mt-1.5 h-1.5 bg-muted/30 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-emerald-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${MOCK.weekly.progressPercent}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col items-center">
+          <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{MOCK.weekly.progressPercent}%</span>
+          <span className="text-[10px] text-muted-foreground">goal</span>
+        </div>
+      </div>
+
+      {/* Quick stats row */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { icon: BookOpen, label: "Today", value: `${MOCK.today.lessonCount} lessons`, bg: "bg-primary/5", iconColor: "text-primary" },
+          { icon: PoundSterling, label: "Expected", value: `£${MOCK.today.expectedEarnings}`, bg: "bg-emerald-500/5", iconColor: "text-emerald-600 dark:text-emerald-400" },
+          { icon: MessageCircle, label: "Unread", value: `${MOCK.unreadMessages}`, bg: "bg-blue-500/5", iconColor: "text-blue-600 dark:text-blue-400" },
+        ].map((s) => (
+          <div key={s.label} className={`rounded-xl ${s.bg} border border-border/50 p-2.5 text-center`}>
+            <s.icon className={`h-4 w-4 mx-auto ${s.iconColor}`} />
+            <p className="text-sm font-semibold text-foreground mt-1">{s.value}</p>
+            <p className="text-[10px] text-muted-foreground">{s.label}</p>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option H: Streak Card ────────────────────────────────────────
+function OptionH() {
+  const daysActive = 4; // mock: 4 out of 7 days active this week
+  const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+  
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.7 }} className="rounded-2xl overflow-hidden">
+      {/* Top gradient banner */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-700 dark:to-teal-600 p-4 pb-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white">{greetingText[period]}</h2>
+            <p className="text-sm text-white/80 mt-0.5">
+              <Flame className="inline h-3.5 w-3.5 mr-1" />
+              {daysActive}-day streak this week
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-3xl font-black text-white">{MOCK.weekly.progressPercent}%</p>
+            <p className="text-[10px] text-white/70">weekly goal</p>
+          </div>
+        </div>
+
+        {/* Day streak dots */}
+        <div className="flex justify-between mt-4 px-2">
+          {dayLabels.map((day, i) => (
+            <div key={i} className="flex flex-col items-center gap-1">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                i < daysActive
+                  ? "bg-white text-emerald-700"
+                  : "bg-white/20 text-white/50"
+              }`}>
+                {i < daysActive ? "✓" : day}
+              </div>
+              <span className="text-[9px] text-white/60">{day}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats body */}
+      <div className="bg-card border-x border-b border-border rounded-b-2xl p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex-1">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-foreground">{MOCK.weekly.hoursThisWeek}h</span>
+              <span className="text-sm text-muted-foreground">/ {MOCK.weekly.hoursGoal}h</span>
+            </div>
+            <div className="mt-1.5 h-2 bg-muted/30 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${MOCK.weekly.progressPercent}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <CloudSun className="h-3.5 w-3.5 text-amber-500" />
+            {MOCK.weather.temperature}°C
+          </span>
+          <span>·</span>
+          <span>🟢 {MOCK.traffic.condition}</span>
+          <span>·</span>
+          <span className="flex items-center gap-1">
+            <BookOpen className="h-3 w-3" />
+            {MOCK.today.lessonCount} today
+          </span>
+          <span>·</span>
+          <span>£{MOCK.today.expectedEarnings}</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Demo Page ────────────────────────────────────────────────────
 export default function InstructorHeroDemo() {
   return (
@@ -347,31 +595,47 @@ export default function InstructorHeroDemo() {
       <div className="max-w-[430px] mx-auto space-y-10">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-foreground">Hero Tile Redesign</h1>
-          <p className="text-sm text-muted-foreground mt-1">4 options · mobile preview (390px)</p>
+          <p className="text-sm text-muted-foreground mt-1">8 options · mobile preview</p>
         </div>
 
-        {/* Option A */}
         <div>
           <SectionLabel label="Option A — Glassmorphism Card" />
           <OptionA />
         </div>
 
-        {/* Option B */}
         <div>
           <SectionLabel label="Option B — Gradient Dashboard" />
           <OptionB />
         </div>
 
-        {/* Option C */}
         <div>
           <SectionLabel label="Option C — Split Hero" />
           <OptionC />
         </div>
 
-        {/* Option D */}
         <div>
           <SectionLabel label="Option D — Compact Status Bar" />
           <OptionD />
+        </div>
+
+        <div>
+          <SectionLabel label="Option E — Full Image Overlay" />
+          <OptionE />
+        </div>
+
+        <div>
+          <SectionLabel label="Option F — Metric Dashboard" />
+          <OptionF />
+        </div>
+
+        <div>
+          <SectionLabel label="Option G — Stacked Banner" />
+          <OptionG />
+        </div>
+
+        <div>
+          <SectionLabel label="Option H — Streak Card" />
+          <OptionH />
         </div>
       </div>
     </div>
