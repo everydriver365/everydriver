@@ -1,132 +1,75 @@
 
 
-# All 5 Enhancements Implementation Plan
+# New Pupil Checklist Feature
 
-## 1. Wire SyllabusRecommendations into Pupil Cards
+## Overview
 
-The `SyllabusRecommendations` component already exists but isn't used anywhere. It needs to be imported and rendered inside `ExpandablePupilCard.tsx`.
+A collapsible "New Pupil Checklist" section on the expanded pupil card, allowing instructors to quickly capture and verify important details for new learners during their first lesson. Each item is interactive -- some are checkboxes, some are text inputs, and one allows a photo upload.
 
-**Changes:**
-- Import `SyllabusRecommendations` in `ExpandablePupilCard.tsx`
-- Add it after the Lesson Feedback section (around line 800), inside the expanded card body, above the tool grid
-- Pass `pupilId={pupil.id}` as the prop
+## What It Looks Like
 
----
+A collapsible panel (matching the existing Tracking History / Feedback style) with:
 
-## 2. Enhanced Pupil Portal Dashboard
+- Eyesight check (checkbox + pass/fail toggle)
+- Needs glasses (checkbox)
+- Special needs / requirements (text field)
+- DVLA check code (text input)
+- Driver number (text input -- already exists in DB, pre-fills if set)
+- Theory test certificate number (text input -- already exists in DB, pre-fills if set)
+- Previous driving experience (dropdown: None / Some lessons / Significant experience)
+- Driving licence photo (camera/upload button, stores image in `pupil-avatars` bucket)
 
-The pupil portal (`BrandedPupilPortal.tsx`) already has a home screen with stats and navigation. We'll enhance it with:
+A green progress indicator shows "5/8 completed" and a save button persists everything to the database.
 
-**New component: `PupilDashboardInsights.tsx`**
-- Shows AI driving insights summary (uses existing `useDrivingInsights` hook)
-- Displays a mini radar chart of syllabus progress by category
-- Shows latest coaching tip from AI
-- Telematics score badges (speed, braking, acceleration)
+## Database Changes
 
-**Changes to `BrandedPupilPortal.tsx`:**
-- Import and add `PupilDashboardInsights` to the home section, between the stats grid and the navigation menu
-- Add a new "AI Coaching" nav item that links to full insights view
+Add new columns to the `pupils` table:
 
-**New component: `PupilAICoaching.tsx`**
-- Full-page view of AI driving insights
-- Overall score gauge, strengths, areas to improve, coaching tips with priority badges
-- Weekly trend indicator
-- Links back to specific progress skills
+```
+eyesight_checked       boolean   default null
+needs_glasses          boolean   default null
+special_needs          text      default null
+dvla_check_code        text      default null
+previous_experience    text      default null
+licence_photo_url      text      default null
+checklist_completed_at timestamptz default null
+```
 
-**Changes to `BrandedPupilPortal.tsx`:**
-- Add `'coaching'` to the `ActiveSection` type
-- Add navigation item for AI Coaching
-- Add section rendering for the coaching view
+`driver_number` and `theory_cert_number` already exist -- no changes needed for those.
 
----
+## New Component
 
-## 3. Mock Theory Tests (Enhanced)
+**`NewPupilChecklist.tsx`** -- a self-contained component that:
+- Fetches the pupil's current checklist data on mount
+- Renders each item with appropriate input type (checkbox, text, dropdown, photo)
+- Shows completion progress (X/8 items)
+- Saves all fields to the `pupils` table on "Save Checklist"
+- Photo upload uses the existing `pupil-avatars` storage bucket
+- Marks `checklist_completed_at` when all items are filled
 
-The existing `PupilPortalTheory.tsx` has a basic 5-question hardcoded quiz. We'll significantly expand it.
+## Integration
 
-**New file: `src/constants/theoryQuestions.ts`**
-- 50+ DVSA-style multiple choice questions across categories (road signs, rules, hazard awareness, vehicle safety)
-- Each question has: question text, 4 options, correct answer index, category, explanation
-- Questions are randomly selected for each test session
-
-**Changes to `PupilPortalTheory.tsx`:**
-- Replace the 5 hardcoded `SAMPLE_QUESTIONS` with random selection of 20 from the question bank
-- Add category filters (Road Signs, Rules, Hazards, Vehicle Safety)
-- Show correct answer and explanation after each question (instead of just moving on)
-- Track best score in localStorage
-- Add "Quick 10" and "Full 50" test modes
-- Show post-test review of wrong answers with explanations
-
----
-
-## 4. Test Day Countdown and Preparation
-
-The existing `PupilTestInfo.tsx` already has a countdown timer and a basic 3-item checklist. We'll enhance it.
-
-**Changes to `PupilTestInfo.tsx`:**
-- Expand the checklist to include interactive checkboxes (saved in localStorage per pupil)
-- Add "Show Me / Tell Me" revision section with the 19 official questions grouped by topic
-- Add a "Route Familiarity" section suggesting practice routes near the test centre
-- Add eyesight test practice (read a number plate at 20m reminder)
-- Add "Day Before" and "Test Morning" preparation tips
-
-**New component: `ShowMeTellMeRevision.tsx`**
-- All 19 official Show Me / Tell Me questions
-- Toggle to reveal answers
-- Links to corresponding DVSA syllabus competency (`show_me_tell_me`)
-- Track which ones the pupil has revised (localStorage)
-
-**Changes to `BrandedPupilPortal.tsx`:**
-- The `test-info` section already renders `PupilTestInfo` - no routing changes needed
-- Add the new `ShowMeTellMeRevision` as a sub-section within PupilTestInfo
-
----
-
-## 5. Enhanced Parent Dashboard
-
-The existing `ParentPortal.tsx` has OTP auth, children overview, basic stats, next lesson, feedback, and activity feed. We'll add syllabus progress and payment history.
-
-**Changes to `ParentPortal.tsx` (child detail view, lines 486-625):**
-- Add syllabus progress section showing a simplified progress bar per category (Controls, Road Procedure, Junctions, Judgement, Manoeuvres, Test Ready)
-- Fetch `pupil_syllabus_progress` data for the selected child
-- Add payment history section showing recent payments with amounts and dates
-- Add upcoming lessons list (next 5 scheduled lessons)
-- Add test readiness percentage indicator
-
-**New component: `ParentSyllabusOverview.tsx`**
-- Simplified read-only view of the child's DVSA progress
-- Shows progress bars per category
-- Overall test readiness percentage
-- No interactivity needed - just a visual overview
-
-**New component: `ParentPaymentHistory.tsx`**
-- Recent payment history for the selected child
-- Shows date, amount, method
-- Running balance
-
----
+- Imported and rendered inside `ExpandablePupilCard.tsx`, placed after the Notes section and before the Lesson Feedback section (around line 800)
+- Uses the same collapsible panel style as Tracking History (border, rounded-lg, bg-muted/30 header)
+- Icon: `ClipboardCheck` from lucide-react
 
 ## Technical Details
 
-### New Files
+### Files Created
 | File | Purpose |
 |------|---------|
-| `src/constants/theoryQuestions.ts` | 50+ DVSA theory questions bank |
-| `src/components/pupil-portal/PupilDashboardInsights.tsx` | Mini insights panel for pupil home |
-| `src/components/pupil-portal/PupilAICoaching.tsx` | Full AI coaching insights page |
-| `src/components/pupil-portal/ShowMeTellMeRevision.tsx` | Show Me / Tell Me revision cards |
-| `src/components/parent/ParentSyllabusOverview.tsx` | Parent-facing syllabus progress |
-| `src/components/parent/ParentPaymentHistory.tsx` | Parent-facing payment history |
+| `src/components/instructor/NewPupilChecklist.tsx` | The checklist component with form fields, photo upload, and save logic |
 
-### Modified Files
-| File | Changes |
-|------|---------|
-| `src/components/instructor/ExpandablePupilCard.tsx` | Import + render SyllabusRecommendations |
-| `src/pages/BrandedPupilPortal.tsx` | Add coaching section, dashboard insights |
-| `src/components/pupil-portal/PupilPortalTheory.tsx` | Major expansion with question bank, categories, review |
-| `src/components/pupil-portal/PupilTestInfo.tsx` | Interactive checklist, Show Me/Tell Me, prep tips |
-| `src/pages/ParentPortal.tsx` | Add syllabus overview + payment history to child detail |
+### Files Modified
+| File | Change |
+|------|--------|
+| `src/components/instructor/ExpandablePupilCard.tsx` | Import and render `NewPupilChecklist` in expanded card body |
 
-### No Database Changes Required
-All data sources already exist: `pupil_syllabus_progress`, `payment_history`, `lesson_telematics`, `scheduled_lessons`. The theory questions are client-side constants. Checklist state uses localStorage.
+### Database Migration
+- Add 7 new nullable columns to `pupils` table (eyesight_checked, needs_glasses, special_needs, dvla_check_code, previous_experience, licence_photo_url, checklist_completed_at)
+- No RLS changes needed -- existing `pupils` table policies already cover instructor access
+
+### Storage
+- Uses existing `pupil-avatars` bucket (already public) for licence photo uploads
+- File path: `{pupilId}/licence-{timestamp}.jpg`
 
