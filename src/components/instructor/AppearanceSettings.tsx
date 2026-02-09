@@ -170,7 +170,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
             </div>
             <span className="text-xs font-medium mt-1">App Style</span>
             <span className="text-[10px] text-muted-foreground text-center leading-tight">
-              Clean day-view focus
+              iOS-style launcher grid
             </span>
             {layoutStyle === "schedule" && (
               <div className="absolute top-2 right-2">

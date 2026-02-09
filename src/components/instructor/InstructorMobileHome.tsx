@@ -58,7 +58,7 @@ import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
-import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
+import { AppStyleHomeView } from "@/components/instructor/AppStyleHomeView";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -344,12 +344,14 @@ export function InstructorMobileHome({
         />
       </div>
 
-      {/* Schedule layout: compact view */}
+      {/* App Style layout: iOS launcher */}
       {layoutStyle === "schedule" ? (
-        <div className="px-4 mt-4">
-          <NewMobileScheduleView instructorId={instructorId || ""} />
-          <FloatingSessionBar instructorId={instructorId} />
-        </div>
+        <AppStyleHomeView
+          instructorId={instructorId}
+          heroImageUrl={personalHeroUrl || content?.hero_image_url}
+          wallpaperColor={wallpaperColor}
+          profileImageUrl={instructor?.profile_image_url}
+        />
       ) : (
       <>
       {/* Job Offers & Messages buttons - right under hero */}
