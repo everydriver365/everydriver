@@ -6988,6 +6988,7 @@ export type Database = {
           address: string
           balance_due_date: string | null
           best_driving_score: number | null
+          checklist_completed_at: string | null
           course_type: string | null
           created_at: string
           current_streak: number | null
@@ -6999,11 +7000,13 @@ export type Database = {
           deposit_paid: number | null
           drive_coins: number | null
           driver_number: string | null
+          dvla_check_code: string | null
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           emergency_contact_relation: string | null
           enquiry_id: string | null
+          eyesight_checked: boolean | null
           free_lessons_earned: number | null
           free_lessons_used: number | null
           harsh_brake_events_total: number | null
@@ -7011,9 +7014,11 @@ export type Database = {
           instructor_id: string
           last_trip_at: string | null
           lessons_completed: number | null
+          licence_photo_url: string | null
           longest_streak: number | null
           monthly_driving_score: number | null
           name: string
+          needs_glasses: boolean | null
           next_lesson: string | null
           notes: string | null
           parent_email: string | null
@@ -7029,12 +7034,14 @@ export type Database = {
           preferred_language: string | null
           preferred_times: string[] | null
           prepaid_hours: number | null
+          previous_experience: string | null
           profile_image_url: string | null
           progress: number | null
           referral_code: string | null
           referred_by_pupil_id: string | null
           reward_points: number | null
           scheduling_status: string | null
+          special_needs: string | null
           speeding_events_total: number | null
           status: string
           test_attempts: number | null
@@ -7060,6 +7067,7 @@ export type Database = {
           address: string
           balance_due_date?: string | null
           best_driving_score?: number | null
+          checklist_completed_at?: string | null
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
@@ -7071,11 +7079,13 @@ export type Database = {
           deposit_paid?: number | null
           drive_coins?: number | null
           driver_number?: string | null
+          dvla_check_code?: string | null
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relation?: string | null
           enquiry_id?: string | null
+          eyesight_checked?: boolean | null
           free_lessons_earned?: number | null
           free_lessons_used?: number | null
           harsh_brake_events_total?: number | null
@@ -7083,9 +7093,11 @@ export type Database = {
           instructor_id: string
           last_trip_at?: string | null
           lessons_completed?: number | null
+          licence_photo_url?: string | null
           longest_streak?: number | null
           monthly_driving_score?: number | null
           name: string
+          needs_glasses?: boolean | null
           next_lesson?: string | null
           notes?: string | null
           parent_email?: string | null
@@ -7101,12 +7113,14 @@ export type Database = {
           preferred_language?: string | null
           preferred_times?: string[] | null
           prepaid_hours?: number | null
+          previous_experience?: string | null
           profile_image_url?: string | null
           progress?: number | null
           referral_code?: string | null
           referred_by_pupil_id?: string | null
           reward_points?: number | null
           scheduling_status?: string | null
+          special_needs?: string | null
           speeding_events_total?: number | null
           status?: string
           test_attempts?: number | null
@@ -7132,6 +7146,7 @@ export type Database = {
           address?: string
           balance_due_date?: string | null
           best_driving_score?: number | null
+          checklist_completed_at?: string | null
           course_type?: string | null
           created_at?: string
           current_streak?: number | null
@@ -7143,11 +7158,13 @@ export type Database = {
           deposit_paid?: number | null
           drive_coins?: number | null
           driver_number?: string | null
+          dvla_check_code?: string | null
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relation?: string | null
           enquiry_id?: string | null
+          eyesight_checked?: boolean | null
           free_lessons_earned?: number | null
           free_lessons_used?: number | null
           harsh_brake_events_total?: number | null
@@ -7155,9 +7172,11 @@ export type Database = {
           instructor_id?: string
           last_trip_at?: string | null
           lessons_completed?: number | null
+          licence_photo_url?: string | null
           longest_streak?: number | null
           monthly_driving_score?: number | null
           name?: string
+          needs_glasses?: boolean | null
           next_lesson?: string | null
           notes?: string | null
           parent_email?: string | null
@@ -7173,12 +7192,14 @@ export type Database = {
           preferred_language?: string | null
           preferred_times?: string[] | null
           prepaid_hours?: number | null
+          previous_experience?: string | null
           profile_image_url?: string | null
           progress?: number | null
           referral_code?: string | null
           referred_by_pupil_id?: string | null
           reward_points?: number | null
           scheduling_status?: string | null
+          special_needs?: string | null
           speeding_events_total?: number | null
           status?: string
           test_attempts?: number | null

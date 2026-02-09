@@ -45,6 +45,7 @@ import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
 import { SyllabusRecommendations } from "@/components/instructor/SyllabusRecommendations";
+import { NewPupilChecklist } from "@/components/instructor/NewPupilChecklist";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -982,6 +983,9 @@ export function ExpandablePupilCard({
                   </div>
                 )}
               </div>
+
+              {/* New Pupil Checklist */}
+              <NewPupilChecklist pupilId={pupil.id} pupilName={pupil.name} />
 
               {/* Syllabus Recommendations */}
               <SyllabusRecommendations pupilId={pupil.id} />
