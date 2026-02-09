@@ -1,49 +1,73 @@
 
 
-# Fix: Next Lesson Tile Always Shows Wrong Location
+# Instructor Mobile App Personalisation
 
-## Problem
+Allow instructors to customise their mobile home screen with layout style, hero image, and wallpaper colour choices.
 
-When you update a pupil's address in their record, the Next Lesson tile does not reflect the change. This is because the address is **copied onto the lesson record at the time of scheduling** and never updates afterward. The tile then reads this stale lesson-level copy instead of the pupil's current address.
+## What You'll Get
 
-For example, "Fred kebab" was scheduled with a test address ("Bsbdb / BBSBDBE"), but you later updated his real address to "31 Chambord Street / E2 7NJ". The tile still shows the old test data.
+- **Layout Style Toggle**: Choose between the current "Dashboard" style (hero + tiles + widgets) or a cleaner "Schedule" style (day-view schedule as the main focus, with a compact header)
+- **Hero Image**: Upload a custom hero photo (e.g. their car, a scenic road) or choose from preset options -- replaces the default `instructor-hero.jpeg`
+- **Wallpaper/Background Colour**: Pick a background tint for the home screen (currently hardcoded to `#E8F1FE` in light mode) from a set of presets or a custom colour
 
-## Solution
+## Where It Lives
 
-Change the address resolution logic so the **pupil's current home address is always the fallback**, and lesson-level overrides are only used when they are genuinely different from the pupil's home address. This way, updating the pupil record always takes effect.
+A new "Appearance" card in the instructor Settings page, with a mobile-friendly UI showing:
+1. Layout style selector (two visual previews to tap)
+2. Hero image uploader / preset gallery
+3. Wallpaper colour picker (swatches)
 
-### Priority order (updated):
-1. Pupil's default pickup address (if set) -- for pupils who are always collected from a different location
-2. Pupil's home address -- the live, up-to-date address from their profile
-3. Lesson-specific override -- only if it is meaningfully different from both of the above (for one-off alternate locations)
+## Technical Plan
 
-## Changes
+### 1. Database: Extend `instructor_tile_preferences`
 
-### 1. Update `src/hooks/useNextLessonDetails.ts`
+Add three new columns:
 
-Reverse the current priority so the pupil's live profile data takes precedence over the stale lesson-level snapshot:
-
-- **Postcode**: Use `pupil.pickup_postcode` (if set), otherwise `pupil.postcode`, and only fall back to `lesson.pickup_postcode` if the lesson has a genuinely unique override
-- **Location**: Use `pupil.pickup_address` (if set), otherwise `pupil.address`, and only fall back to `lesson.pickup_location` if unique
-
-### 2. Update `src/components/instructor/ScheduleLessonsDialog.tsx`
-
-When scheduling lessons, use the pupil's `pickup_address`/`pickup_postcode` fields (if set) as the default pickup location, falling back to home address. This ensures new lessons start with the best available address.
-
----
-
-### Technical Detail
-
-Current broken priority in `useNextLessonDetails.ts`:
-```
-pupil.pickup_postcode || lesson.pickup_postcode || pupil.postcode
+```text
+home_layout_style  TEXT DEFAULT 'dashboard'   -- 'dashboard' or 'schedule'
+hero_image_url     TEXT DEFAULT NULL           -- custom uploaded hero URL (stored in file storage)
+wallpaper_color    TEXT DEFAULT NULL           -- hex colour override for bg, e.g. '#E8F1FE'
 ```
 
-Fixed priority:
-```
-pupil.pickup_postcode || pupil.postcode || null
-pupil.pickup_address  || pupil.address  || null
-```
+This reuses the existing table with RLS already configured, avoiding a new table.
 
-The lesson-level `pickup_location`/`pickup_postcode` will no longer be used for the tile display, since it is always a stale snapshot. It remains in the database for historical/export purposes but will not drive the live tile.
+### 2. Storage: Create a `hero-images` bucket
 
+A public storage bucket for instructor-uploaded hero images, with RLS policies so instructors can only upload/manage their own files (using their instructor ID as folder prefix).
+
+### 3. New Hook: `useInstructorAppearance`
+
+A lightweight hook wrapping the three new columns from `instructor_tile_preferences`. Provides:
+- `layoutStyle`: 'dashboard' | 'schedule'
+- `heroImageUrl`: string | null
+- `wallpaperColor`: string | null
+- `updateAppearance(changes)`: saves back to database
+
+### 4. New Component: `AppearanceSettings.tsx`
+
+Placed inside the instructor Settings page as a new card in the grid. Contains:
+- **Layout Picker**: Two tappable cards with mini preview illustrations ("Dashboard" vs "Schedule")
+- **Hero Image**: Shows current image, tap to upload or pick a preset. Upload goes to file storage `hero-images/{instructor_id}/hero.jpg`
+- **Wallpaper Swatches**: 6-8 preset colour circles plus a "Custom" option with a hex input
+
+### 5. Update `InstructorMobileHome.tsx`
+
+- Read `layoutStyle` from the appearance hook
+- If `'schedule'`, render a compact header (greeting + weather) followed by `NewMobileScheduleView` instead of the full dashboard layout
+- If `'dashboard'` (default), render current layout unchanged
+- Apply `wallpaperColor` to the background div (replacing the hardcoded `#E8F1FE`)
+
+### 6. Update `ContextualHomeHero.tsx`
+
+- Accept `heroImageUrl` override from the appearance hook (already partially supported via `heroImageUrl` prop, but currently sourced from admin CMS -- this will also check the instructor's personal override first)
+
+### Files to Create
+- `src/components/instructor/AppearanceSettings.tsx` -- settings UI
+- `src/hooks/useInstructorAppearance.ts` -- data hook
+
+### Files to Modify
+- `src/components/instructor/InstructorMobileHome.tsx` -- conditional layout + wallpaper
+- `src/components/instructor/ContextualHomeHero.tsx` -- personal hero override
+- `src/hooks/useInstructorTilePreferences.ts` -- expose new columns
+- Instructor settings page (add Appearance card to the grid)
+- Database migration (new columns + storage bucket)
