@@ -222,9 +222,17 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
 
     setSendingMessage(lesson.id);
     
-    let message = "Hi! I'm on my way to pick you up for your driving lesson. See you soon!";
-    if (delayMinutes) {
-      message = `Hi! I'm running about ${delayMinutes} minutes late for your driving lesson. I'll be with you as soon as possible.`;
+    const firstName = (lesson.pupil?.name || "").split(" ")[0];
+    let message: string;
+    
+    if (delayMinutes === -1) {
+      message = `Hi ${firstName}, I'll call you as soon as I can!`;
+    } else if (delayMinutes === -2) {
+      message = `Hi ${firstName}, I'm on my way to you now!`;
+    } else if (delayMinutes) {
+      message = `Hi ${firstName}, I'm on my way! I'll be with you in about ${delayMinutes} minutes.`;
+    } else {
+      message = `Hi ${firstName}, I'm on my way to you!`;
     }
     
     const encodedMessage = encodeURIComponent(message);
@@ -535,18 +543,32 @@ export function TodayScheduleView({ instructorId }: TodayScheduleViewProps) {
                               <span className="text-[10px] leading-none">On Way</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="w-52">
                             <DropdownMenuItem onClick={() => handleOnWay(lesson)}>
                               On my way!
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => handleOnWay(lesson, 5)}>
-                              Delayed 5 mins
+                              I'll be 5 mins
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleOnWay(lesson, 10)}>
-                              Delayed 10 mins
+                              I'll be 10 mins
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleOnWay(lesson, 15)}>
-                              Delayed 15 mins
+                              I'll be 15 mins
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOnWay(lesson, 20)}>
+                              I'll be 20 mins
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOnWay(lesson, 30)}>
+                              I'll be 30 mins
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleOnWay(lesson, -1)}>
+                              I'll call you ASAP
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOnWay(lesson, -2)}>
+                              Send current ETA
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

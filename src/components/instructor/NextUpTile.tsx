@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
-import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CreditCard, CalendarClock, User, MapPin, Timer, ChevronDown } from "lucide-react";
+import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CreditCard, CalendarClock, User, MapPin, Timer, ChevronDown, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,6 +12,13 @@ import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NextUpTileProps {
   lessonId: string;
@@ -114,13 +121,25 @@ export function NextUpTile({
     }
   };
 
-  const handleOnMyWay = () => {
+  const sendSMS = (message: string) => {
     if (pupilPhone) {
-      const firstName = pupilName.split(" ")[0];
-      const message = encodeURIComponent(`Hi ${firstName}, I'm on my way to you!`);
+      const encoded = encodeURIComponent(message);
       const link = document.createElement("a");
-      link.href = `sms:${pupilPhone}?body=${message}`;
+      link.href = `sms:${pupilPhone}?body=${encoded}`;
       link.click();
+    }
+  };
+
+  const firstName = pupilName.split(" ")[0];
+
+  const handleOnMyWay = () => sendSMS(`Hi ${firstName}, I'm on my way to you!`);
+  const handleOnWayDelay = (mins: number) => sendSMS(`Hi ${firstName}, I'm on my way! I'll be with you in about ${mins} minutes.`);
+  const handleCallASAP = () => sendSMS(`Hi ${firstName}, I'll call you as soon as I can!`);
+  const handleSendETA = () => {
+    if (etaText) {
+      sendSMS(`Hi ${firstName}, I'm on my way! My estimated arrival time is ${etaText}.`);
+    } else {
+      sendSMS(`Hi ${firstName}, I'm on my way to you now!`);
     }
   };
 
@@ -235,9 +254,43 @@ export function NextUpTile({
               <Button size="sm" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-xl gap-1.5">
                 <MessageSquare className="h-3.5 w-3.5" /> Message
               </Button>
-              <Button size="sm" variant="outline" onClick={handleOnMyWay} disabled={!pupilPhone} className="rounded-xl gap-1.5">
-                <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline" disabled={!pupilPhone} className="rounded-xl gap-1.5">
+                    <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem onClick={handleOnMyWay}>
+                    <Check className="h-4 w-4 mr-2 text-emerald-600" />
+                    On my way!
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleOnWayDelay(5)}>
+                    <Clock className="h-4 w-4 mr-2" /> I'll be 5 mins
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleOnWayDelay(10)}>
+                    <Clock className="h-4 w-4 mr-2" /> I'll be 10 mins
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleOnWayDelay(15)}>
+                    <Clock className="h-4 w-4 mr-2" /> I'll be 15 mins
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleOnWayDelay(20)}>
+                    <Clock className="h-4 w-4 mr-2" /> I'll be 20 mins
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleOnWayDelay(30)}>
+                    <Clock className="h-4 w-4 mr-2" /> I'll be 30 mins
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleCallASAP}>
+                    <Phone className="h-4 w-4 mr-2" /> I'll call you ASAP
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSendETA}>
+                    <Send className="h-4 w-4 mr-2 text-primary" />
+                    {etaText ? `Send ETA (${etaText})` : "Send current ETA"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Expand toggle */}
