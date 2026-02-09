@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Loader2, X, LayoutGrid, Calendar, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import instructorHeroImg from "@/assets/instructor-hero.jpeg";
 
 interface AppearanceSettingsProps {
   instructorId: string | undefined;
@@ -22,6 +23,55 @@ const WALLPAPER_PRESETS = [
   { color: "#ECEFF1", label: "Slate" },
 ];
 
+/* ── tiny phone-frame preview ── */
+function PhonePreview({
+  bg,
+  heroSrc,
+  variant,
+}: {
+  bg: string;
+  heroSrc: string;
+  variant: "dashboard" | "schedule";
+}) {
+  return (
+    <div
+      className="w-full aspect-[9/16] rounded-xl border border-border/60 overflow-hidden shadow-inner"
+      style={{ backgroundColor: bg }}
+    >
+      {/* hero strip */}
+      <div className="h-[30%] w-full overflow-hidden">
+        <img src={heroSrc} alt="" className="w-full h-full object-cover" />
+      </div>
+      {/* body */}
+      <div className="p-1.5 space-y-1">
+        {variant === "dashboard" ? (
+          <>
+            {/* card overlay */}
+            <div className="rounded bg-card/90 h-5 w-full" />
+            {/* tiles grid */}
+            <div className="grid grid-cols-3 gap-0.5">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="rounded bg-card/80 aspect-square" />
+              ))}
+            </div>
+            <div className="rounded bg-card/60 h-3 w-full" />
+          </>
+        ) : (
+          <>
+            {/* schedule lines */}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-1">
+                <div className="w-3 h-1.5 rounded-sm bg-primary/30" />
+                <div className="flex-1 h-2.5 rounded bg-card/80" />
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
   const {
     layoutStyle,
@@ -34,6 +84,9 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
 
   const [uploading, setUploading] = useState(false);
   const [customColor, setCustomColor] = useState("");
+
+  const currentBg = wallpaperColor || "#E8F1FE";
+  const currentHero = heroImageUrl || instructorHeroImg;
 
   const handleLayoutChange = (style: LayoutStyle) => {
     updateAppearance({ layoutStyle: style });
@@ -65,40 +118,60 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Layout Style Picker */}
+      {/* ── Live Preview ── */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Preview</Label>
+        <div className="max-w-[140px] mx-auto">
+          <PhonePreview bg={currentBg} heroSrc={currentHero} variant={layoutStyle} />
+        </div>
+      </div>
+
+      {/* ── Layout Style Picker ── */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Home Layout</Label>
         <div className="grid grid-cols-2 gap-3">
+          {/* Dashboard option */}
           <button
             onClick={() => handleLayoutChange("dashboard")}
             className={cn(
-              "relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all",
               layoutStyle === "dashboard"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
             )}
           >
-            <LayoutGrid className="h-8 w-8 text-primary" />
-            <span className="text-xs font-medium">Dashboard</span>
-            <span className="text-[10px] text-muted-foreground text-center">Hero + tiles + widgets</span>
+            {/* mini preview inside the button */}
+            <div className="w-full max-w-[80px]">
+              <PhonePreview bg={currentBg} heroSrc={currentHero} variant="dashboard" />
+            </div>
+            <span className="text-xs font-medium mt-1">Dashboard</span>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">
+              Hero + tiles + widgets
+            </span>
             {layoutStyle === "dashboard" && (
               <div className="absolute top-2 right-2">
                 <Check className="h-4 w-4 text-primary" />
               </div>
             )}
           </button>
+
+          {/* Schedule option */}
           <button
             onClick={() => handleLayoutChange("schedule")}
             className={cn(
-              "relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
+              "relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all",
               layoutStyle === "schedule"
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border hover:border-primary/40"
             )}
           >
-            <Calendar className="h-8 w-8 text-primary" />
-            <span className="text-xs font-medium">Schedule</span>
-            <span className="text-[10px] text-muted-foreground text-center">Clean day-view focus</span>
+            <div className="w-full max-w-[80px]">
+              <PhonePreview bg={currentBg} heroSrc={currentHero} variant="schedule" />
+            </div>
+            <span className="text-xs font-medium mt-1">Schedule</span>
+            <span className="text-[10px] text-muted-foreground text-center leading-tight">
+              Clean day-view focus
+            </span>
             {layoutStyle === "schedule" && (
               <div className="absolute top-2 right-2">
                 <Check className="h-4 w-4 text-primary" />
@@ -108,7 +181,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
         </div>
       </div>
 
-      {/* Hero Image */}
+      {/* ── Hero Image ── */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Hero Image</Label>
         <div className="flex items-center gap-3">
@@ -164,7 +237,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
         <p className="text-[10px] text-muted-foreground">Recommended: landscape, under 5MB</p>
       </div>
 
-      {/* Wallpaper Colour */}
+      {/* ── Wallpaper Colour ── */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Background Colour</Label>
         <div className="flex flex-wrap gap-2">
