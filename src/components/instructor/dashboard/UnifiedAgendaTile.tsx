@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import agendaIcon from "@/assets/agenda-icon.webp";
+import agendaIcon from "@/assets/agenda-icon.png";
 import { Link } from "react-router-dom";
 import {
   Check,
