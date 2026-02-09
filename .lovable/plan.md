@@ -1,73 +1,26 @@
 
+# Add Appearance Options to Settings Cog
 
-# Instructor Mobile App Personalisation
+Add three new menu items to the existing settings dropdown in the instructor mobile header: **Wallpaper**, **Hero Image**, and **Screen Layout**. Each will open a bottom sheet or navigate to the relevant section of the settings page.
 
-Allow instructors to customise their mobile home screen with layout style, hero image, and wallpaper colour choices.
+## Changes
 
-## What You'll Get
+### File: `src/components/instructor/InstructorMobileHeader.tsx`
 
-- **Layout Style Toggle**: Choose between the current "Dashboard" style (hero + tiles + widgets) or a cleaner "Schedule" style (day-view schedule as the main focus, with a compact header)
-- **Hero Image**: Upload a custom hero photo (e.g. their car, a scenic road) or choose from preset options -- replaces the default `instructor-hero.jpeg`
-- **Wallpaper/Background Colour**: Pick a background tint for the home screen (currently hardcoded to `#E8F1FE` in light mode) from a set of presets or a custom colour
+Add three new `DropdownMenuItem` entries between the theme toggle and the logout separator:
 
-## Where It Lives
+- **Wallpaper** (Palette icon) -- navigates to `/instructor/settings#appearance` or opens a sheet with the wallpaper colour picker
+- **Hero Image** (Image icon) -- navigates to `/instructor/settings#appearance` or opens a sheet with the hero uploader
+- **Screen Layout** (LayoutGrid icon) -- navigates to `/instructor/settings#appearance` or opens a sheet with the layout picker
 
-A new "Appearance" card in the instructor Settings page, with a mobile-friendly UI showing:
-1. Layout style selector (two visual previews to tap)
-2. Hero image uploader / preset gallery
-3. Wallpaper colour picker (swatches)
+Since the `AppearanceSettings` component already exists and handles all three features, the simplest approach is to embed it in a Dialog/Sheet that opens directly from the header, giving quick access without leaving the current page.
 
-## Technical Plan
+### Implementation Detail
 
-### 1. Database: Extend `instructor_tile_preferences`
+1. Import `AppearanceSettings` component, `Dialog`/`Sheet` UI primitives, and icons (`Palette`, `ImageIcon`, `LayoutGrid`).
+2. Add three state variables (`wallpaperSheetOpen`, `heroSheetOpen`, `layoutSheetOpen`) to control individual sheets -- or a single state with a discriminator for which section to show.
+3. Add three `DropdownMenuItem` entries in the dropdown, each opening the corresponding sheet.
+4. Render three small `Sheet` components (or one with conditional content) that wrap the relevant portion of `AppearanceSettings`.
+5. Pass `instructor?.id` from `useInstructorAuth()` (already available in the component) to the appearance settings.
 
-Add three new columns:
-
-```text
-home_layout_style  TEXT DEFAULT 'dashboard'   -- 'dashboard' or 'schedule'
-hero_image_url     TEXT DEFAULT NULL           -- custom uploaded hero URL (stored in file storage)
-wallpaper_color    TEXT DEFAULT NULL           -- hex colour override for bg, e.g. '#E8F1FE'
-```
-
-This reuses the existing table with RLS already configured, avoiding a new table.
-
-### 2. Storage: Create a `hero-images` bucket
-
-A public storage bucket for instructor-uploaded hero images, with RLS policies so instructors can only upload/manage their own files (using their instructor ID as folder prefix).
-
-### 3. New Hook: `useInstructorAppearance`
-
-A lightweight hook wrapping the three new columns from `instructor_tile_preferences`. Provides:
-- `layoutStyle`: 'dashboard' | 'schedule'
-- `heroImageUrl`: string | null
-- `wallpaperColor`: string | null
-- `updateAppearance(changes)`: saves back to database
-
-### 4. New Component: `AppearanceSettings.tsx`
-
-Placed inside the instructor Settings page as a new card in the grid. Contains:
-- **Layout Picker**: Two tappable cards with mini preview illustrations ("Dashboard" vs "Schedule")
-- **Hero Image**: Shows current image, tap to upload or pick a preset. Upload goes to file storage `hero-images/{instructor_id}/hero.jpg`
-- **Wallpaper Swatches**: 6-8 preset colour circles plus a "Custom" option with a hex input
-
-### 5. Update `InstructorMobileHome.tsx`
-
-- Read `layoutStyle` from the appearance hook
-- If `'schedule'`, render a compact header (greeting + weather) followed by `NewMobileScheduleView` instead of the full dashboard layout
-- If `'dashboard'` (default), render current layout unchanged
-- Apply `wallpaperColor` to the background div (replacing the hardcoded `#E8F1FE`)
-
-### 6. Update `ContextualHomeHero.tsx`
-
-- Accept `heroImageUrl` override from the appearance hook (already partially supported via `heroImageUrl` prop, but currently sourced from admin CMS -- this will also check the instructor's personal override first)
-
-### Files to Create
-- `src/components/instructor/AppearanceSettings.tsx` -- settings UI
-- `src/hooks/useInstructorAppearance.ts` -- data hook
-
-### Files to Modify
-- `src/components/instructor/InstructorMobileHome.tsx` -- conditional layout + wallpaper
-- `src/components/instructor/ContextualHomeHero.tsx` -- personal hero override
-- `src/hooks/useInstructorTilePreferences.ts` -- expose new columns
-- Instructor settings page (add Appearance card to the grid)
-- Database migration (new columns + storage bucket)
+Alternatively, for simplicity, use a single sheet that shows the full `AppearanceSettings` component, triggered by any of the three menu items (scrolled to the relevant section). This avoids splitting the component and keeps things maintainable.
