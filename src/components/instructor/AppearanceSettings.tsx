@@ -168,7 +168,7 @@ export function AppearanceSettings({ instructorId }: AppearanceSettingsProps) {
             <div className="w-full max-w-[80px]">
               <PhonePreview bg={currentBg} heroSrc={currentHero} variant="schedule" />
             </div>
-            <span className="text-xs font-medium mt-1">Schedule</span>
+            <span className="text-xs font-medium mt-1">App Style</span>
             <span className="text-[10px] text-muted-foreground text-center leading-tight">
               Clean day-view focus
             </span>
