@@ -113,6 +113,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "admin_conversations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       admin_messages: {
@@ -337,6 +344,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "calendar_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "calendar_events_lesson_id_fkey"
             columns: ["lesson_id"]
             isOneToOne: true
@@ -381,6 +395,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "calendar_sync_queue_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       compliance_reminders: {
@@ -423,6 +444,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "compliance_reminders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "compliance_reminders_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -462,6 +490,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -536,6 +571,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "course_enquiries_assigned_instructor_id_fkey"
+            columns: ["assigned_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       course_reviews: {
@@ -581,6 +623,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_reviews_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -697,6 +746,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cpd_log_entries_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -956,6 +1012,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "domain_orders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       doodlepads: {
@@ -998,6 +1061,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doodlepads_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -1156,6 +1226,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "driving_test_results_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "driving_test_results_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -1243,6 +1320,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "examiners_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "examiners_test_centre_id_fkey"
             columns: ["test_centre_id"]
             isOneToOne: false
@@ -1303,6 +1387,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favourite_locations_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -1369,6 +1460,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followup_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -1441,6 +1539,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "followup_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       fuel_log: {
@@ -1504,6 +1609,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fuel_log_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -1579,6 +1691,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "gap_offers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "gap_offers_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -1622,6 +1741,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_battery_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -1755,6 +1881,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "traccar_devices_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "traccar_devices_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -1810,6 +1943,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traccar_ignition_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -2121,6 +2261,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "hosting_orders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       included_features: {
@@ -2375,6 +2522,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_blood_glucose_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_blood_pressure_logs: {
@@ -2417,6 +2571,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_blood_pressure_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -2466,6 +2627,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_booking_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_calendar_events: {
@@ -2505,6 +2673,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_calendar_events_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -2557,6 +2732,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_calendar_shares_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_calendar_tokens: {
@@ -2607,6 +2789,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_calendar_tokens_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_courses: {
@@ -2651,6 +2840,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_courses_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_date_overrides: {
@@ -2693,6 +2889,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_date_overrides_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -2746,6 +2949,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_expenses_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -2820,6 +3030,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "instructor_forum_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "instructor_forum_alerts_reply_id_fkey"
             columns: ["reply_id"]
             isOneToOne: false
@@ -2869,6 +3086,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_forum_replies_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -2935,10 +3159,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "instructor_forum_topics_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "instructor_forum_topics_last_reply_by_fkey"
             columns: ["last_reply_by"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_forum_topics_last_reply_by_fkey"
+            columns: ["last_reply_by"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -2982,6 +3220,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_google_service_calendar_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_health_logs: {
@@ -3015,6 +3260,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_health_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3059,6 +3311,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: true
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_health_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3153,6 +3412,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_manual_blocks_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_notifications: {
@@ -3195,6 +3461,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_notifications_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3245,6 +3518,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: true
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_referral_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3303,6 +3583,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_reminder_preferences_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_standards_check: {
@@ -3354,6 +3641,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_standards_check_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3425,6 +3719,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_subscriptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -3523,6 +3824,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_terms_conditions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_test_centres: {
@@ -3550,6 +3858,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_test_centres_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -3601,6 +3916,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: true
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_tile_preferences_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3660,6 +3982,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "instructor_todos_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "instructor_todos_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
@@ -3702,6 +4031,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: true
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_tracking_config_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3785,10 +4121,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "instructor_vehicles_assigned_instructor_id_fkey"
+            columns: ["assigned_instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "instructor_vehicles_instructor_id_fkey"
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_vehicles_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3827,6 +4177,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_water_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -3888,6 +4245,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "instructor_website_pages_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       instructor_working_hours: {
@@ -3927,6 +4291,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_working_hours_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -4339,6 +4710,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "invoices_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "invoices_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -4396,6 +4774,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_cancellation_requests_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -4462,6 +4847,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "lesson_cancellation_stats_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lesson_history: {
@@ -4525,6 +4917,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -4749,6 +5148,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "lesson_video_clips_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "lesson_video_clips_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -4810,6 +5216,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_waitlist_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -4910,6 +5323,13 @@ export type Database = {
             referencedRelation: "instructors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "live_chat_sessions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
         ]
       }
       live_chat_typing: {
@@ -5002,6 +5422,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_pupil_positions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -5239,6 +5666,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "mileage_logs_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "mileage_logs_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -5343,6 +5777,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offline_sync_queue_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -5456,6 +5897,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "payment_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payment_history_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -5564,6 +6012,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "payment_link_tracking_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payment_link_tracking_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -5648,6 +6103,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_commissions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -5747,6 +6209,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pre_lesson_checklist_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -5916,6 +6385,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pupil_assignments_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pupil_assignments_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -6015,6 +6491,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pupil_churn_scores_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pupil_churn_scores_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: true
@@ -6111,6 +6594,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_leaderboard_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -6233,6 +6723,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pupil_referrals_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pupil_referrals_referred_pupil_id_fkey"
             columns: ["referred_pupil_id"]
             isOneToOne: true
@@ -6282,6 +6779,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_rewards_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -6352,6 +6856,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pupil_signatures_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -6704,6 +7215,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "pupils_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pupils_referred_by_pupil_id_fkey"
             columns: ["referred_by_pupil_id"]
             isOneToOne: false
@@ -6756,6 +7274,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -6863,6 +7388,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quartix_driver_scores_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quartix_driver_scores_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -6914,6 +7446,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_expenses_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -7015,6 +7554,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "remote_signing_tokens_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "remote_signing_tokens_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -7073,6 +7619,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -7240,6 +7793,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "saved_routes_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "saved_routes_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -7362,6 +7922,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_lessons_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -7526,6 +8093,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "slot_offers_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "slot_offers_original_lesson_id_fkey"
             columns: ["original_lesson_id"]
             isOneToOne: false
@@ -7674,6 +8248,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "syllabus_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -8023,6 +8604,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "theory_test_attempts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "theory_test_attempts_pupil_id_fkey"
             columns: ["pupil_id"]
             isOneToOne: false
@@ -8071,6 +8659,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "urgent_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -8197,6 +8792,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "vehicle_security_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "vehicle_security_alerts_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -8245,6 +8847,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_security_settings_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -8308,6 +8917,13 @@ export type Database = {
             columns: ["instructor_id"]
             isOneToOne: false
             referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicle_service_history_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
           {
@@ -8387,6 +9003,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "vehicle_service_reminders_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "vehicle_service_reminders_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
@@ -8397,7 +9020,195 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_instructors: {
+        Row: {
+          allowed_lesson_lengths: number[] | null
+          app_slug: string | null
+          available_from: string | null
+          bio: string | null
+          booking_advance_days: number | null
+          booking_mode: string | null
+          brand_colour: string | null
+          buffer_minutes: number | null
+          cancellation_charge_percent: number | null
+          cancellation_policy_hours: number | null
+          cancellation_policy_text: string | null
+          car_image_url: string | null
+          car_make: string | null
+          car_model: string | null
+          car_type: string | null
+          cpd_certified: boolean | null
+          created_at: string | null
+          custom_branding_enabled: boolean | null
+          custom_domain: string | null
+          custom_domain_verified: boolean | null
+          deposit_amount: number | null
+          deposit_deadline_days: number | null
+          deposit_enabled: boolean | null
+          extra_info: string | null
+          facebook_url: string | null
+          hero_image_url: string | null
+          hero_overlay_color: string | null
+          hero_overlay_opacity: number | null
+          hero_show_logo: boolean | null
+          home_postcode: string | null
+          hourly_rate: number | null
+          id: string | null
+          instagram_url: string | null
+          instructor_grade: string | null
+          is_active: boolean | null
+          lat: number | null
+          linkedin_url: string | null
+          lng: number | null
+          location_name: string | null
+          logo_url: string | null
+          name: string | null
+          personal_website_url: string | null
+          preferred_lesson_length: number | null
+          profile_image_url: string | null
+          pupil_app_dark_mode: boolean | null
+          pupil_app_enabled: boolean | null
+          radius_miles: number | null
+          secondary_colour: string | null
+          special_skills: string | null
+          twitter_url: string | null
+          website_button_color: string | null
+          website_font: string | null
+          website_footer_bg: string | null
+          website_header_bg: string | null
+          website_header_style: string | null
+          website_heading_color: string | null
+          website_menu_text_color: string | null
+          website_text_color: string | null
+          website_theme: string | null
+          welcome_video_url: string | null
+        }
+        Insert: {
+          allowed_lesson_lengths?: number[] | null
+          app_slug?: string | null
+          available_from?: string | null
+          bio?: string | null
+          booking_advance_days?: number | null
+          booking_mode?: string | null
+          brand_colour?: string | null
+          buffer_minutes?: number | null
+          cancellation_charge_percent?: number | null
+          cancellation_policy_hours?: number | null
+          cancellation_policy_text?: string | null
+          car_image_url?: string | null
+          car_make?: string | null
+          car_model?: string | null
+          car_type?: string | null
+          cpd_certified?: boolean | null
+          created_at?: string | null
+          custom_branding_enabled?: boolean | null
+          custom_domain?: string | null
+          custom_domain_verified?: boolean | null
+          deposit_amount?: number | null
+          deposit_deadline_days?: number | null
+          deposit_enabled?: boolean | null
+          extra_info?: string | null
+          facebook_url?: string | null
+          hero_image_url?: string | null
+          hero_overlay_color?: string | null
+          hero_overlay_opacity?: number | null
+          hero_show_logo?: boolean | null
+          home_postcode?: string | null
+          hourly_rate?: number | null
+          id?: string | null
+          instagram_url?: string | null
+          instructor_grade?: string | null
+          is_active?: boolean | null
+          lat?: number | null
+          linkedin_url?: string | null
+          lng?: number | null
+          location_name?: string | null
+          logo_url?: string | null
+          name?: string | null
+          personal_website_url?: string | null
+          preferred_lesson_length?: number | null
+          profile_image_url?: string | null
+          pupil_app_dark_mode?: boolean | null
+          pupil_app_enabled?: boolean | null
+          radius_miles?: number | null
+          secondary_colour?: string | null
+          special_skills?: string | null
+          twitter_url?: string | null
+          website_button_color?: string | null
+          website_font?: string | null
+          website_footer_bg?: string | null
+          website_header_bg?: string | null
+          website_header_style?: string | null
+          website_heading_color?: string | null
+          website_menu_text_color?: string | null
+          website_text_color?: string | null
+          website_theme?: string | null
+          welcome_video_url?: string | null
+        }
+        Update: {
+          allowed_lesson_lengths?: number[] | null
+          app_slug?: string | null
+          available_from?: string | null
+          bio?: string | null
+          booking_advance_days?: number | null
+          booking_mode?: string | null
+          brand_colour?: string | null
+          buffer_minutes?: number | null
+          cancellation_charge_percent?: number | null
+          cancellation_policy_hours?: number | null
+          cancellation_policy_text?: string | null
+          car_image_url?: string | null
+          car_make?: string | null
+          car_model?: string | null
+          car_type?: string | null
+          cpd_certified?: boolean | null
+          created_at?: string | null
+          custom_branding_enabled?: boolean | null
+          custom_domain?: string | null
+          custom_domain_verified?: boolean | null
+          deposit_amount?: number | null
+          deposit_deadline_days?: number | null
+          deposit_enabled?: boolean | null
+          extra_info?: string | null
+          facebook_url?: string | null
+          hero_image_url?: string | null
+          hero_overlay_color?: string | null
+          hero_overlay_opacity?: number | null
+          hero_show_logo?: boolean | null
+          home_postcode?: string | null
+          hourly_rate?: number | null
+          id?: string | null
+          instagram_url?: string | null
+          instructor_grade?: string | null
+          is_active?: boolean | null
+          lat?: number | null
+          linkedin_url?: string | null
+          lng?: number | null
+          location_name?: string | null
+          logo_url?: string | null
+          name?: string | null
+          personal_website_url?: string | null
+          preferred_lesson_length?: number | null
+          profile_image_url?: string | null
+          pupil_app_dark_mode?: boolean | null
+          pupil_app_enabled?: boolean | null
+          radius_miles?: number | null
+          secondary_colour?: string | null
+          special_skills?: string | null
+          twitter_url?: string | null
+          website_button_color?: string | null
+          website_font?: string | null
+          website_footer_bg?: string | null
+          website_header_bg?: string | null
+          website_header_style?: string | null
+          website_heading_color?: string | null
+          website_menu_text_color?: string | null
+          website_text_color?: string | null
+          website_theme?: string | null
+          welcome_video_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }

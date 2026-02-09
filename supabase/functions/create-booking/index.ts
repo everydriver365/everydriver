@@ -1,36 +1,38 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { z } from "https://esm.sh/zod@3.25.76";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface BookingSlot {
-  date: string;
-  startTime: string;
-  endTime: string;
-  duration: number; // in minutes
-}
+const bookingSlotSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+  startTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Invalid time format"),
+  endTime: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, "Invalid time format"),
+  duration: z.number().int().min(15).max(600),
+});
 
-interface BookingRequest {
-  instructorId: string;
-  pupilName: string;
-  pupilEmail: string;
-  pupilPhone: string;
-  pupilAddress: string;
-  pupilPostcode: string;
-  courseType: string;
-  courseHours: number;
-  totalPrice: number;
-  slots: BookingSlot[];
-  // Deposit payment fields
-  paymentType?: 'full' | 'deposit';
-  amountPaid?: number;
-  depositAmount?: number;
-  // Upsells
-  upsells?: { id: string; price: number }[];
-}
+const bookingSchema = z.object({
+  instructorId: z.string().uuid("Invalid instructor ID"),
+  pupilName: z.string().trim().min(1, "Name is required").max(200),
+  pupilEmail: z.string().trim().email("Invalid email").max(255),
+  pupilPhone: z.string().trim().min(1, "Phone is required").max(30),
+  pupilAddress: z.string().trim().min(1, "Address is required").max(500),
+  pupilPostcode: z.string().trim().min(1, "Postcode is required").max(20),
+  courseType: z.string().trim().min(1).max(100),
+  courseHours: z.number().min(1).max(200),
+  totalPrice: z.number().min(0).max(100000),
+  slots: z.array(bookingSlotSchema).min(1, "At least one slot required").max(100),
+  paymentType: z.enum(['full', 'deposit']).optional(),
+  amountPaid: z.number().min(0).max(100000).optional(),
+  depositAmount: z.number().min(0).max(100000).optional(),
+  upsells: z.array(z.object({
+    id: z.string().uuid(),
+    price: z.number().min(0).max(10000),
+  })).optional(),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -38,8 +40,17 @@ serve(async (req) => {
   }
 
   try {
-    const booking: BookingRequest = await req.json();
+    const rawBody = await req.json();
+    const parseResult = bookingSchema.safeParse(rawBody);
 
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({ error: "Invalid input", details: parseResult.error.flatten().fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const booking = parseResult.data;
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -73,10 +84,9 @@ serve(async (req) => {
         postcode: booking.pupilPostcode,
         course_type: booking.courseType,
         prepaid_hours: booking.courseHours,
-        account_balance: -remainingBalance, // Negative = amount owed (0 if paid in full)
+        account_balance: -remainingBalance,
         progress: 0,
         lessons_completed: 0,
-        // Deposit tracking fields
         payment_type: paymentType,
         deposit_paid: paymentType === 'deposit' ? amountPaid : 0,
         balance_due_date: balanceDueDate,
@@ -114,7 +124,6 @@ serve(async (req) => {
 
     if (lessonsError) {
       console.error("Error creating lessons:", lessonsError);
-      // Rollback pupil creation
       await supabase.from("pupils").delete().eq("id", pupil.id);
       return new Response(
         JSON.stringify({ error: "Failed to create lesson schedule" }),
@@ -122,7 +131,7 @@ serve(async (req) => {
       );
     }
 
-    // 3. Save purchased upsells and send notifications
+    // 3. Save purchased upsells
     if (booking.upsells && booking.upsells.length > 0) {
       const upsellInserts = booking.upsells.map((u) => ({
         pupil_id: pupil.id,
@@ -138,8 +147,6 @@ serve(async (req) => {
       if (upsellError) {
         console.error("Error saving upsells (non-fatal):", upsellError);
       }
-
-      // Notification emails will be sent after sortedLessons is calculated
     }
 
     // 4. Update pupil with next lesson date
@@ -156,7 +163,7 @@ serve(async (req) => {
         .eq("id", pupil.id);
     }
 
-    // 5. Send upsell notification emails (after lessons are sorted)
+    // 5. Send upsell notification emails
     if (booking.upsells && booking.upsells.length > 0) {
       try {
         const { data: upsellDetails } = await supabase
@@ -166,7 +173,6 @@ serve(async (req) => {
 
         const firstLessonDate = sortedLessons?.[0]?.lesson_date;
 
-        // Send notification for each purchased upsell
         for (const upsell of upsellDetails || []) {
           await fetch(
             `${supabaseUrl}/functions/v1/notify-upsell-purchase`,
@@ -195,7 +201,7 @@ serve(async (req) => {
       }
     }
 
-    // 4. Notify instructor of new booking via SMS
+    // 6. Notify instructor of new booking
     try {
       const firstLesson = sortedLessons?.[0];
       if (firstLesson) {
@@ -223,7 +229,7 @@ serve(async (req) => {
       console.error("Instructor notification error (non-fatal):", notifyError);
     }
 
-    // 5. Sync lessons to Google Calendar (if connected)
+    // 7. Sync lessons to Google Calendar
     try {
       const calendarLessons = lessons?.map((lesson) => ({
         lessonId: lesson.id,
@@ -234,7 +240,6 @@ serve(async (req) => {
         duration: lesson.duration_minutes,
       }));
 
-      // Call the calendar sync function
       const syncResponse = await fetch(
         `${supabaseUrl}/functions/v1/google-calendar-sync`,
         {
@@ -254,7 +259,6 @@ serve(async (req) => {
       const syncResult = await syncResponse.json();
       console.log("Calendar sync result:", syncResult);
     } catch (calendarError) {
-      // Log but don't fail the booking if calendar sync fails
       console.error("Calendar sync error (non-fatal):", calendarError);
     }
 

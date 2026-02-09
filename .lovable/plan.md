@@ -1,124 +1,45 @@
 
+# Security Remediation Plan — COMPLETED
 
-# Security Issues and Remediation Plan
+## Results Summary
 
-## Summary
+Started with **83 linter issues**, reduced to **9** (all acceptable).
 
-The scan found **83 linter issues** across 3 categories. Here's a breakdown of what needs fixing, ordered by priority.
+### ✅ Batch 1 — Admin Tables (DONE)
+Fixed 25 admin/CMS tables: `admin_section_notes`, `admin_todos`, `admin_websites_needed`, `admin_activity_log`, `admin_campaigns`, `homepage_*`, `course_templates`, `included_features`, `instructor_app_*`, `booking_upsells`, `course_reviews`, `course_enquiries`, `site_images`, `site_settings`, `test_centres`, `instructor_test_centres`, `instructor_courses`, `instructor_homepage_content`.
 
----
+All now require `public.has_role(auth.uid(), 'admin')`.
 
-## 1. CRITICAL: Overly Permissive RLS Policies (50+ tables)
+### ✅ Batch 2 — Instructor-Owned Tables (DONE)
+Fixed 35+ tables: `calendar_events`, `calendar_sync_queue`, `conversations`, `instructor_expenses`, `gps_devices`, `instructor_calendar_events`, `instructor_date_overrides`, `instructor_working_hours`, `instructor_vehicles`, `messages`, `live_pupil_positions`, `live_chat_*`, `payment_intents`, `payment_link_tracking`, `pupil_referrals`, `pupil_upsells`, `pupil_achievements`, `pupil_coaching_messages`, `parent_otp_codes`, `pupil_otp_codes`, `pupil_push_subscriptions`, `instructor_notifications`, `lesson_waitlist`, `slot_offers`, `pre_lesson_checklist_completions`, `pupil_leaderboard`, `pupil_rewards_history`, `platform_commissions`, `telematics_*`, `gap_offers`, `vehicle_security_alerts`.
 
-Many tables have INSERT, UPDATE, and DELETE policies set to `USING(true)` or `WITH CHECK(true)`, meaning **any user (or even anonymous visitors)** can modify data.
+All now use `instructor_id = public.get_instructor_id_for_user(auth.uid())` or admin role checks.
 
-**Affected tables include:**
-- `admin_section_notes` -- public can insert/update/delete
-- `booking_upsells` -- public full access
-- `calendar_events` -- public can insert/delete
-- `calendar_sync_queue` -- public full access
-- `conversations` -- public full access
-- `course_enquiries` -- public can manage (some public insert is intentional, but ALL operations is not)
-- `course_reviews` -- public full access
-- `course_templates` -- public full access
-- `gps_devices` -- public full access
-- `homepage_features/hero/sections/stats/testimonials` -- public full access
-- `included_features` -- public full access
-- `instructor_app_features/hero` -- public full access
-- `instructor_expenses` -- any authenticated user can insert/update/delete any expense
-- `admin_todos` -- any authenticated user can manage
-- `admin_websites_needed` -- any authenticated user can manage
-- And many more...
+### ✅ Batch 3 — Public Data Exposure (DONE)
+- Created `public_instructors` view excluding sensitive fields (email, phone, address, financial data, OAuth tokens)
+- Restricted full `instructors` table SELECT to owner + admin
+- Anon users can only see active instructors via the view
 
-**Risk:** Anyone can delete or modify instructor data, lesson records, payment history, homepage content, and more -- without being logged in.
+### ⚠️ Batch 4 — Leaked Password Protection
+Leaked password protection is a platform-level setting. This cannot be changed via migrations.
 
-**Fix:** Replace `USING(true)` / `WITH CHECK(true)` policies with proper checks:
-- Admin tables: `public.has_role(auth.uid(), 'admin')`
-- Instructor-owned tables: `instructor_id = public.get_instructor_id_for_user(auth.uid())`
-- Public insert only (enquiries/bookings): Keep `WITH CHECK(true)` for INSERT only, restrict UPDATE/DELETE
+### ✅ Batch 5 — Edge Function Validation (DONE)
+Added Zod schema validation to:
+- `create-enquiry`: validates name, address, postcode, courseType, requestedHours, preferredTiming, additionalNotes
+- `create-booking`: validates instructorId (UUID), pupilName, pupilEmail, pupilPhone, pupilAddress, pupilPostcode, courseType, courseHours, totalPrice, slots (date/time format), paymentType, upsells
 
 ---
 
-## 2. HIGH: Tables with RLS Enabled but No Policies
+## Remaining 9 Linter Warnings (Acceptable)
 
-These tables have RLS turned on but zero policies, meaning **nobody can access them** (or they're bypassed by service role):
+8 × `WITH CHECK(true)` on INSERT — these are intentional for public-facing forms:
+1. `course_enquiries` — public enquiry submission
+2. `live_chat_messages` — public chat
+3. `live_chat_sessions` — public chat sessions
+4. `live_chat_typing` — typing indicators
+5. `pre_lesson_checklist_completions` — pupil checklist
+6. `reflective_logs` — pupil reflective logs
+7. `payment_link_tracking` — payment link creation
+8. `lesson_cancellation_requests` — pupil cancellation
 
-- `admin_activity_log`
-- `admin_campaigns`
-
-**Fix:** Add appropriate policies (admin-only access for both).
-
----
-
-## 3. MEDIUM: Leaked Password Protection Disabled
-
-The authentication system doesn't check new passwords against known leaked/breached password databases.
-
-**Fix:** Enable leaked password protection in the authentication settings.
-
----
-
-## 4. MEDIUM: Instructor Personal Data Publicly Exposed
-
-The `instructors` table has a SELECT policy of `USING(true)`, exposing sensitive fields like:
-- Email addresses, phone numbers, home addresses
-- Financial data (hourly_rate, school_skim_percentage)
-- Google OAuth tokens (google_access_token, google_refresh_token)
-
-**Fix:** Create a `public_instructors` view that only exposes safe fields (name, bio, profile image, app_slug), and restrict the full table to the instructor themselves and admins.
-
----
-
-## 5. LOW: Edge Function Input Validation
-
-Public-facing backend functions (create-booking, create-enquiry) lack server-side input validation.
-
-**Fix:** Add Zod schema validation to these functions.
-
----
-
-## Implementation Approach
-
-Due to the large number of affected tables, this will be done in batches:
-
-### Batch 1 - Admin tables
-Fix policies on admin_section_notes, admin_todos, admin_websites_needed, admin_activity_log, admin_campaigns, homepage_*, course_templates, included_features, instructor_app_* to require admin role.
-
-### Batch 2 - Instructor-owned tables
-Fix policies on calendar_events, instructor_expenses, conversations, and other instructor-scoped tables to verify ownership via `get_instructor_id_for_user(auth.uid())`.
-
-### Batch 3 - Public data exposure
-Create a `public_instructors` view excluding sensitive columns. Update public-facing queries to use the view.
-
-### Batch 4 - Auth hardening
-Enable leaked password protection.
-
-### Batch 5 - Edge function validation
-Add input validation to create-booking and create-enquiry functions.
-
----
-
-## Technical Details
-
-Each RLS policy fix follows this pattern:
-
-```text
--- Example: Admin-only table
-DROP POLICY "Anyone can manage homepage features" ON homepage_features;
-CREATE POLICY "Admins can manage homepage features"
-  ON homepage_features FOR ALL
-  TO authenticated
-  USING (public.has_role(auth.uid(), 'admin'))
-  WITH CHECK (public.has_role(auth.uid(), 'admin'));
-
--- Example: Instructor-owned table
-DROP POLICY "Instructors can delete their own events" ON calendar_events;
-CREATE POLICY "Instructors manage own events"
-  ON calendar_events FOR ALL
-  TO authenticated
-  USING (instructor_id = public.get_instructor_id_for_user(auth.uid()))
-  WITH CHECK (instructor_id = public.get_instructor_id_for_user(auth.uid()));
-```
-
-This is a significant amount of work due to the 50+ affected tables. Would you like me to proceed with all batches, or start with the most critical ones first?
-
+1 × Leaked password protection disabled (platform setting)
