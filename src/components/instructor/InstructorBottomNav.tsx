@@ -131,8 +131,8 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 border-t shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden",
-        wallpaperColor ? "border-border/30" : "bg-background/95 backdrop-blur-sm border-border/50"
+        "fixed bottom-0 left-0 right-0 z-50 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden",
+        wallpaperColor ? "" : "bg-background/95 backdrop-blur-sm"
       )}
       style={wallpaperColor ? { backgroundColor: wallpaperColor } : undefined}
     >
