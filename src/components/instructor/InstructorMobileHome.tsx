@@ -58,6 +58,7 @@ import { GapFillerCard } from "@/components/instructor/GapFillerCard";
 import { CelebrationConfetti } from "@/components/instructor/CelebrationConfetti";
 import { QuietDayEmpty } from "@/components/instructor/QuietDayEmpty";
 import { HomePageSkeleton } from "@/components/instructor/HomePageSkeleton";
+import { NewMobileScheduleView } from "@/components/instructor/NewMobileScheduleView";
 import { TodayMiniTimeline } from "@/components/instructor/TodayMiniTimeline";
 import { TomorrowPeekCard } from "@/components/instructor/TomorrowPeekCard";
 import { RoadAlertsRow } from "@/components/instructor/RoadAlertsRow";
@@ -74,6 +75,7 @@ import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { triggerHaptic } from "@/lib/haptics";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
 // Weather icon component
 const WeatherIcon = ({ icon, className }: { icon: string; className?: string }) => {
@@ -167,6 +169,9 @@ export function InstructorMobileHome({
 
   // Use auth context for instructor ID
   const instructorId = authInstructor?.id || instructor?.id;
+  
+  // Appearance preferences (layout, wallpaper, hero)
+  const { layoutStyle, wallpaperColor, heroImageUrl: personalHeroUrl } = useInstructorAppearance(instructorId);
   
   // GPS connection status and today's overview
   const { 
@@ -288,7 +293,10 @@ export function InstructorMobileHome({
   return (
     <PullToRefresh onRefresh={handleRefresh}>
        <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
-       <div className="min-h-screen bg-[#E8F1FE] dark:bg-background overflow-x-hidden relative">
+       <div
+         className="min-h-screen dark:bg-background overflow-x-hidden relative"
+         style={{ backgroundColor: wallpaperColor || '#E8F1FE' }}
+       >
 
       {/* Updated feedback banner */}
       <AnimatePresence>
@@ -329,13 +337,21 @@ export function InstructorMobileHome({
             hoursGoal: weeklyGoals.hoursGoal,
             progressPercent: weeklyGoals.progressPercent,
           } : null}
-          heroImageUrl={content?.hero_image_url}
+          heroImageUrl={personalHeroUrl || content?.hero_image_url}
           motivationSubtitle={content?.motivation_subtitle}
           unreadMessages={unreadCount || 0}
           pendingJobs={pendingJobsCount}
         />
       </div>
 
+      {/* Schedule layout: compact view */}
+      {layoutStyle === "schedule" ? (
+        <div className="px-4 mt-4">
+          <NewMobileScheduleView instructorId={instructorId || ""} />
+          <FloatingSessionBar instructorId={instructorId} />
+        </div>
+      ) : (
+      <>
       {/* Job Offers & Messages buttons - right under hero */}
       <div className="px-4 flex flex-col gap-2 mt-3">
         {pendingJobsCount > 0 && (
@@ -513,6 +529,8 @@ export function InstructorMobileHome({
       {/* Floating Session Bar - shows during active tracking */}
       <FloatingSessionBar instructorId={instructorId} />
       </div>{/* end px-4 */}
+      </>
+      )}
       </div>
     </PullToRefresh>
   );

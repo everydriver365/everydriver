@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
@@ -24,6 +24,7 @@ import { TestCentresAndExaminersManager } from "@/components/instructor/TestCent
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutManager";
+import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
@@ -1056,6 +1057,18 @@ export default function InstructorSettings() {
         <div ref={el => categoryRefs.current["preferences"] = el} className="space-y-3">
           <CategoryHeader category={settingsCategories[6]} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Appearance Section */}
+              <SettingsTile 
+                id="appearance" 
+                icon={Paintbrush} 
+                title="Appearance" 
+                description="Layout, hero image & wallpaper"
+                iconColor="text-pink-600"
+                iconBg="bg-pink-100 dark:bg-pink-900/30"
+              >
+                <AppearanceSettings instructorId={instructorId} />
+              </SettingsTile>
+
               {/* Dashboard Layout Section */}
               <SettingsTile 
                 id="dashboard-layout" 

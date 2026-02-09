@@ -3564,27 +3564,36 @@ export type Database = {
       instructor_tile_preferences: {
         Row: {
           created_at: string
+          hero_image_url: string | null
           hidden_tiles: Json | null
+          home_layout_style: string
           id: string
           instructor_id: string
           tile_order: Json
           updated_at: string
+          wallpaper_color: string | null
         }
         Insert: {
           created_at?: string
+          hero_image_url?: string | null
           hidden_tiles?: Json | null
+          home_layout_style?: string
           id?: string
           instructor_id: string
           tile_order?: Json
           updated_at?: string
+          wallpaper_color?: string | null
         }
         Update: {
           created_at?: string
+          hero_image_url?: string | null
           hidden_tiles?: Json | null
+          home_layout_style?: string
           id?: string
           instructor_id?: string
           tile_order?: Json
           updated_at?: string
+          wallpaper_color?: string | null
         }
         Relationships: [
           {
