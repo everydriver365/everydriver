@@ -522,6 +522,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         <PoundSterling className="h-4 w-4 mr-2" />
                         Take Payment
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/instructor/todos?action=add-reminder")} className="cursor-pointer">
+                        <Bell className="h-4 w-4 mr-2" />
+                        Add Reminder
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Avatar
