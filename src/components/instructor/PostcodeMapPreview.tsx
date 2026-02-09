@@ -76,12 +76,6 @@ export function PostcodeMapPreview({ postcode, className = "", onClick }: Postco
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => e.key === "Enter" && onClick() : undefined}
     >
-      {onClick && (
-        <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full shadow-md flex items-center gap-1 pointer-events-none">
-          <Navigation className="h-3 w-3" />
-          Tap to navigate
-        </div>
-      )}
       <div className="relative z-0">
         <MapContainer
           center={[coords.lat, coords.lng]}
