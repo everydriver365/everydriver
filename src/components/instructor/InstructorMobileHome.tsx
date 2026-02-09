@@ -51,6 +51,7 @@ import { VehicleHealthStrip } from "@/components/instructor/VehicleHealthStrip";
 import { WeeklyGoalRing } from "@/components/instructor/WeeklyGoalRing";
 import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBanner";
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
+import { ReadyToTeachOptions } from "@/components/instructor/ReadyToTeachOptions";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
@@ -325,32 +326,26 @@ export function InstructorMobileHome({
         />
       ) : (
       <>
-      {/* Contextual Home Hero — full bleed */}
-      <div>
-        <ContextualHomeHero
+      {/* TEMP: Ready to Teach tile options for selection */}
+      <div className="px-4 pt-4">
+        <ReadyToTeachOptions
           firstName={firstName}
-          isGPSConnected={isGPSConnected}
-          gpsDeviceName={gpsDeviceName}
-          displayLocation={displayLocation}
-          currentWeather={currentWeather}
-          alerts={alerts}
-          todayOverview={todayOverview}
-          tomorrowPreview={tomorrowPreview}
-          nextLesson={nextLesson ? {
-            pupilName: nextLesson.pupilName,
-            pickupPostcode: nextLesson.pickupPostcode,
-            startTime: nextLesson.startTime,
-            minutesUntil: nextLesson.minutesUntil,
-          } : null}
-          weeklyStats={weeklyGoals ? {
-            hoursThisWeek: weeklyGoals.hoursThisWeek,
-            hoursGoal: weeklyGoals.hoursGoal,
-            progressPercent: weeklyGoals.progressPercent,
-          } : null}
-          heroImageUrl={personalHeroUrl || content?.hero_image_url}
-          motivationSubtitle={content?.motivation_subtitle}
+          lessonCount={todayOverview?.lessonCount || 0}
+          totalHours={todayOverview?.totalHours || 0}
+          expectedEarnings={todayOverview?.expectedEarnings || 0}
+          completedLessons={0}
+          progressPercent={weeklyGoals?.progressPercent || 0}
+          hoursThisWeek={weeklyGoals?.hoursThisWeek || 0}
+          hoursGoal={weeklyGoals?.hoursGoal || 42}
+          temperature={currentWeather?.temperature ?? null}
+          weatherIcon={currentWeather?.icon || "Cloud"}
+          weatherDesc={currentWeather?.description || ""}
+          trafficCondition="Light"
           unreadMessages={unreadCount || 0}
-          pendingJobs={pendingJobsCount}
+          nextPupilName={nextLesson?.pupilName}
+          nextMinutesUntil={nextLesson?.minutesUntil}
+          nextPostcode={nextLesson?.pickupPostcode ?? undefined}
+          isGPSConnected={isGPSConnected}
         />
       </div>
       {/* Job Offers & Messages buttons - right under hero */}
