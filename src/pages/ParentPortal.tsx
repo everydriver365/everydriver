@@ -18,6 +18,8 @@ import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner"
 import { ParentMessageCard } from "@/components/parent/ParentMessageCard";
 import { ParentSyllabusOverview } from "@/components/parent/ParentSyllabusOverview";
 import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
+import { ParentUpcomingLessons } from "@/components/parent/ParentUpcomingLessons";
+import { ParentSafetyScores } from "@/components/parent/ParentSafetyScores";
 
 interface Child {
   id: string;
@@ -611,6 +613,9 @@ export default function ParentPortal() {
                 </CardContent>
               </Card>
 
+              {/* Upcoming Lessons */}
+              <ParentUpcomingLessons childId={selectedChild.id} />
+
               {/* Syllabus Progress */}
               <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
 
@@ -618,8 +623,12 @@ export default function ParentPortal() {
               <ParentPaymentHistory childId={selectedChild.id} />
             </div>
 
-            {/* Sidebar - Message Instructor */}
-            <div>
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Safety Scores */}
+              <ParentSafetyScores childId={selectedChild.id} />
+
+              {/* Message Instructor */}
               <ParentMessageCard
                 instructorId={selectedChild.instructor_id}
                 instructorName={selectedChild.instructor_name}
