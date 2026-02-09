@@ -192,22 +192,22 @@ export function NextUpTile({
             </div>
           </div>
 
-          {/* Avatar overlapping the map bottom edge */}
+          {/* Avatar overlapping map, name below */}
           <div className="relative px-4">
-            <div className="-mt-8 flex items-end gap-3 mb-3">
-              <div className="ring-4 ring-card rounded-full shrink-0">
+            <div className="-mt-8 mb-2">
+              <div className="ring-4 ring-card rounded-full shrink-0 inline-block">
                 <PupilAvatar
                   name={pupilName}
                   imageUrl={pupilProfileImage}
                   size="lg"
                 />
               </div>
-              <div className="flex-1 min-w-0 pb-1">
-                <p className="font-bold text-foreground text-base truncate">{pupilName}</p>
-                {displayLocation && (
-                  <p className="text-xs text-muted-foreground truncate">{displayLocation}</p>
-                )}
-              </div>
+            </div>
+            <div className="mb-3">
+              <p className="font-bold text-foreground text-base truncate">{pupilName}</p>
+              {displayLocation && (
+                <p className="text-xs text-muted-foreground truncate">{displayLocation}</p>
+              )}
             </div>
           </div>
 
