@@ -39,7 +39,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
 
   return (
     <Link to="/instructor/vehicle-health" className="block mt-4">
-      <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(20,37,66,0.12)] p-4 space-y-3">
+      <div className="bg-card rounded-2xl shadow-[0_2px_12px_rgba(20,37,66,0.10)] border border-border/40 p-4 space-y-3">
         {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
