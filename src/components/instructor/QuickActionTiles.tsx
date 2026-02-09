@@ -3,7 +3,7 @@ import { motion, Reorder, AnimatePresence, PanInfo } from "framer-motion";
 import messagesIcon from "@/assets/messages-icon.png";
 import paymentsIcon from "@/assets/payments-icon-new.png";
 import takePaymentIcon from "@/assets/take-payment-icon.png";
-import scheduleIcon from "@/assets/schedule-icon.png";
+import scheduleIcon from "@/assets/calendar-icon.png";
 import pupilsIcon from "@/assets/pupils-icon.png";
 import trackIcon from "@/assets/track-icon.png";
 import satnavIcon from "@/assets/satnav-icon.png";
