@@ -435,9 +435,10 @@ export function PupilCardStack({
     setIsExpanded(!isExpanded);
   };
 
-  // Calculate if there's a balance issue
-  const hasDebt = (pupil.account_balance || 0) < 0;
-  const hasCredit = (pupil.prepaid_hours || 0) > 0;
+  // Calculate balance state from real-time account_balance
+  const balance = pupil.account_balance || 0;
+  const hasDebt = balance < 0;
+  const hasCredit = balance > 0;
 
   // Get avatar ring color based on status
   const getAvatarRingColor = () => {
@@ -506,19 +507,19 @@ export function PupilCardStack({
             </p>
           </div>
 
-          {/* Credit / Balance indicator */}
+          {/* Credit / Balance indicator — driven by account_balance */}
           <div className="text-right shrink-0">
             {hasCredit ? (
               <span className="text-[13px] font-semibold text-emerald-600">
-                {pupil.prepaid_hours} hrs credit
+                £{balance.toFixed(0)} Credit
               </span>
             ) : hasDebt ? (
               <span className="text-[13px] font-semibold text-rose-600">
-                -£{Math.abs(pupil.account_balance || 0).toFixed(0)} owed
+                £{Math.abs(balance).toFixed(0)} Due
               </span>
             ) : (
-              <span className="text-[13px] font-semibold text-emerald-600">
-                0 hrs credit
+              <span className="text-[13px] font-semibold text-muted-foreground">
+                £0
               </span>
             )}
           </div>
