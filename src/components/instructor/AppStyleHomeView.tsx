@@ -117,8 +117,6 @@ export function AppStyleHomeView({
                 <div
                   className={cn(
                     "relative w-[60px] h-[60px] rounded-[16px] flex items-center justify-center overflow-hidden",
-                    "shadow-[0_2px_8px_rgba(0,0,0,0.1)]",
-                    !hasCustomIcon && "bg-white/60 dark:bg-white/10 backdrop-blur-sm"
                   )}
                 >
                   {hasCustomIcon ? (
