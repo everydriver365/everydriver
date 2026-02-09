@@ -794,6 +794,207 @@ function OptionL() {
   );
 }
 
+// ── Option M: Glass Ticker + Ring (I variant) ────────────────────
+function OptionM() {
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative rounded-2xl overflow-hidden">
+      <div className="relative h-[220px]">
+        <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
+
+        {/* Top glass bar: greeting + ring */}
+        <div className="absolute top-3 left-3 right-3">
+          <div className="bg-white/15 backdrop-blur-lg rounded-xl px-3.5 py-2 border border-white/10 flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-white">{greetingText[period]}</h2>
+              <p className="text-[10px] text-white/60 mt-0.5">{MOCK.weekly.hoursGoal - MOCK.weekly.hoursThisWeek}h to weekly goal</p>
+            </div>
+            <CircularRing size={40} strokeWidth={3} />
+          </div>
+        </div>
+
+        {/* Bottom glass ticker with more detail */}
+        <div className="absolute bottom-0 inset-x-0 bg-black/40 backdrop-blur-md px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CloudSun className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-[11px] text-white/80">{MOCK.weather.temperature}°C</span>
+            <span className="text-white/30">·</span>
+            <span className="text-[11px] text-emerald-400">🟢 {MOCK.traffic.condition}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <MessageCircle className="h-3 w-3 text-blue-400" />
+            <span className="text-[11px] text-white/80">{MOCK.unreadMessages}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Stat strip below */}
+      <div className="bg-card border border-t-0 border-border rounded-b-2xl grid grid-cols-3 divide-x divide-border/50">
+        {[
+          { v: `${MOCK.today.lessonCount} lessons`, l: "Today" },
+          { v: `${MOCK.today.totalHours}h`, l: "Teaching" },
+          { v: `£${MOCK.today.expectedEarnings}`, l: "Expected" },
+        ].map((s) => (
+          <div key={s.l} className="py-2.5 text-center">
+            <p className="text-sm font-bold text-foreground">{s.v}</p>
+            <p className="text-[10px] text-muted-foreground">{s.l}</p>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option N: Dual Glass Bars (I variant) ────────────────────────
+function OptionN() {
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative rounded-2xl overflow-hidden h-[240px]">
+      <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/50" />
+
+      {/* Top glass bar: greeting */}
+      <div className="absolute top-3 left-3 right-3">
+        <div className="bg-white/15 backdrop-blur-xl rounded-xl px-4 py-3 border border-white/10">
+          <h2 className="text-lg font-bold text-white">{greetingText[period]}</h2>
+          <div className="flex items-center gap-2 mt-1">
+            <CloudSun className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-[11px] text-white/70">{MOCK.weather.temperature}°C, {MOCK.weather.description}</span>
+            <span className="text-white/30">·</span>
+            <span className="text-[11px] text-emerald-400">🟢 {MOCK.traffic.condition}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom glass bar: progress + stats */}
+      <div className="absolute bottom-3 left-3 right-3">
+        <div className="bg-white/15 backdrop-blur-xl rounded-xl px-4 py-3 border border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-bold text-white">{MOCK.weekly.hoursThisWeek}h / {MOCK.weekly.hoursGoal}h</span>
+            <span className="text-xs text-emerald-400 font-semibold">{MOCK.weekly.progressPercent}%</span>
+          </div>
+          <div className="h-1.5 bg-white/15 rounded-full overflow-hidden">
+            <motion.div className="h-full bg-emerald-400 rounded-full" initial={{ width: 0 }} animate={{ width: `${MOCK.weekly.progressPercent}%` }} transition={{ duration: 0.8 }} />
+          </div>
+          <div className="flex justify-between mt-2">
+            {[
+              { v: MOCK.today.lessonCount, l: "Lessons" },
+              { v: `${MOCK.today.totalHours}h`, l: "Hours" },
+              { v: `£${MOCK.today.expectedEarnings}`, l: "Earned" },
+              { v: MOCK.unreadMessages, l: "Msgs" },
+            ].map((s) => (
+              <div key={s.l} className="text-center">
+                <p className="text-xs font-bold text-white">{s.v}</p>
+                <p className="text-[9px] text-white/50">{s.l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option O: Glass Side Panel (I variant) ───────────────────────
+function OptionO() {
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative rounded-2xl overflow-hidden h-[220px]">
+      <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+
+      {/* Left glass panel */}
+      <div className="absolute top-3 bottom-3 left-3 w-[55%]">
+        <div className="h-full bg-white/10 backdrop-blur-xl rounded-xl border border-white/10 p-3.5 flex flex-col justify-between">
+          <div>
+            <h2 className="text-base font-bold text-white leading-tight">{greetingText[period]}</h2>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <CloudSun className="h-3 w-3 text-amber-400" />
+              <span className="text-[11px] text-white/70">{MOCK.weather.temperature}°C</span>
+              <span className="text-white/30">·</span>
+              <span className="text-[11px] text-emerald-400">🟢</span>
+            </div>
+          </div>
+
+          {/* Mini progress */}
+          <div>
+            <div className="flex items-baseline gap-1 mb-1">
+              <span className="text-lg font-bold text-white">{MOCK.weekly.hoursThisWeek}h</span>
+              <span className="text-[10px] text-white/50">/ {MOCK.weekly.hoursGoal}h</span>
+            </div>
+            <div className="h-1 bg-white/15 rounded-full overflow-hidden">
+              <motion.div className="h-full bg-emerald-400 rounded-full" initial={{ width: 0 }} animate={{ width: `${MOCK.weekly.progressPercent}%` }} transition={{ duration: 0.8 }} />
+            </div>
+          </div>
+
+          {/* Compact stats */}
+          <div className="grid grid-cols-2 gap-1">
+            {[
+              { v: MOCK.today.lessonCount, l: "Lessons" },
+              { v: `£${MOCK.today.expectedEarnings}`, l: "Earned" },
+            ].map((s) => (
+              <div key={s.l} className="bg-white/10 rounded-md py-1 text-center">
+                <p className="text-xs font-bold text-white">{s.v}</p>
+                <p className="text-[8px] text-white/50">{s.l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option P: Floating Glass Cards (I variant) ──────────────────
+function OptionP() {
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative rounded-2xl overflow-hidden h-[260px]">
+      <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/40" />
+
+      {/* Floating greeting chip */}
+      <div className="absolute top-3 left-3">
+        <div className="bg-white/15 backdrop-blur-lg rounded-full px-4 py-1.5 border border-white/10">
+          <span className="text-sm font-semibold text-white">{greetingText[period]}</span>
+        </div>
+      </div>
+
+      {/* Floating context chips - top right */}
+      <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+        <div className="bg-white/15 backdrop-blur-lg rounded-full px-2.5 py-1 border border-white/10 flex items-center gap-1.5">
+          <CloudSun className="h-3 w-3 text-amber-400" />
+          <span className="text-[11px] text-white/80">{MOCK.weather.temperature}°C</span>
+        </div>
+        <div className="bg-white/15 backdrop-blur-lg rounded-full px-2.5 py-1 border border-white/10">
+          <span className="text-[11px] text-emerald-400">🟢 {MOCK.traffic.condition}</span>
+        </div>
+      </div>
+
+      {/* Bottom floating progress card */}
+      <div className="absolute bottom-3 left-3 right-3">
+        <div className="bg-white/15 backdrop-blur-xl rounded-xl border border-white/10 p-3 flex items-center gap-3">
+          <CircularRing size={48} strokeWidth={3} />
+          <div className="flex-1">
+            <div className="flex items-baseline gap-1">
+              <span className="text-base font-bold text-white">{MOCK.weekly.hoursThisWeek}h</span>
+              <span className="text-[10px] text-white/50">/ {MOCK.weekly.hoursGoal}h</span>
+            </div>
+            <div className="mt-1 h-1 bg-white/15 rounded-full overflow-hidden">
+              <motion.div className="h-full bg-emerald-400 rounded-full" initial={{ width: 0 }} animate={{ width: `${MOCK.weekly.progressPercent}%` }} transition={{ duration: 0.8 }} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-0.5 text-right">
+            {[
+              { v: MOCK.today.lessonCount, l: "lessons" },
+              { v: `£${MOCK.today.expectedEarnings}`, l: "today" },
+            ].map((s) => (
+              <p key={s.l} className="text-[10px] text-white/80"><span className="font-bold">{s.v}</span> {s.l}</p>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Demo Page ────────────────────────────────────────────────────
 export default function InstructorHeroDemo() {
   return (
@@ -801,7 +1002,7 @@ export default function InstructorHeroDemo() {
       <div className="max-w-[430px] mx-auto space-y-10">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-foreground">Hero Tile Redesign</h1>
-          <p className="text-sm text-muted-foreground mt-1">12 options · mobile preview</p>
+          <p className="text-sm text-muted-foreground mt-1">16 options · mobile preview</p>
         </div>
 
         <div>
@@ -845,23 +1046,43 @@ export default function InstructorHeroDemo() {
         </div>
 
         <div>
-          <SectionLabel label="Option I — Glass Ticker (A variant)" />
+          <SectionLabel label="Option I — Glass Ticker" />
           <OptionI />
         </div>
 
         <div>
-          <SectionLabel label="Option J — Cinematic Overlay (E variant)" />
+          <SectionLabel label="Option J — Cinematic Overlay" />
           <OptionJ />
         </div>
 
         <div>
-          <SectionLabel label="Option K — Minimal Glass Band (A variant)" />
+          <SectionLabel label="Option K — Minimal Glass Band" />
           <OptionK />
         </div>
 
         <div>
-          <SectionLabel label="Option L — Bold Image + Detached Card (E variant)" />
+          <SectionLabel label="Option L — Bold Image + Detached Card" />
           <OptionL />
+        </div>
+
+        <div>
+          <SectionLabel label="Option M — Glass Ticker + Ring" />
+          <OptionM />
+        </div>
+
+        <div>
+          <SectionLabel label="Option N — Dual Glass Bars" />
+          <OptionN />
+        </div>
+
+        <div>
+          <SectionLabel label="Option O — Glass Side Panel" />
+          <OptionO />
+        </div>
+
+        <div>
+          <SectionLabel label="Option P — Floating Glass Cards" />
+          <OptionP />
         </div>
       </div>
     </div>
