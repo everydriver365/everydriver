@@ -139,7 +139,7 @@ export function AppStyleHomeView({
                   )}
                 </div>
 
-                <span className="text-[11px] font-medium text-foreground/70 leading-tight text-center line-clamp-1 max-w-[64px]">
+                <span className="text-[11px] font-medium text-white/90 leading-tight text-center line-clamp-1 max-w-[64px]">
                   {action.title}
                 </span>
               </motion.button>
