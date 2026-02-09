@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
@@ -65,7 +66,11 @@ const navItems: NavItem[] = [
   },
 ];
 
-export function InstructorBottomNav() {
+interface InstructorBottomNavProps {
+  wallpaperColor?: string;
+}
+
+export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const pendingJobsCount = usePendingJobsCount();
@@ -111,7 +116,13 @@ export function InstructorBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border/50 shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden">
+    <nav
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-50 border-t shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.1)] md:hidden",
+        wallpaperColor ? "border-border/30" : "bg-background/95 backdrop-blur-sm border-border/50"
+      )}
+      style={wallpaperColor ? { backgroundColor: wallpaperColor } : undefined}
+    >
       <div className="flex items-center justify-around h-16 w-full px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;

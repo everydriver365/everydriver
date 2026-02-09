@@ -62,6 +62,7 @@ import { getActivePaymentQrUrl } from "@/lib/getActivePaymentQrUrl";
 import { QuickActionsFAB } from "@/components/instructor/QuickActionsFAB";
 import { LayoutGrid, Palette, ImageIcon } from "lucide-react";
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
+import { useInstructorAppearance } from "@/hooks/useInstructorAppearance";
 
 import instructorLogo from "@/assets/ed-black-white-logo.png";
 import { IOSInstallBanner } from "@/components/pwa/IOSInstallBanner";
@@ -150,6 +151,12 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState<Array<{ id: string; name: string; subtitle: string; href?: string }>>([]);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+
+  // Appearance settings for app-style layout
+  const { layoutStyle, wallpaperColor } = useInstructorAppearance(instructor?.id);
+  const isHomePage = location.pathname === "/instructor";
+  const isAppStyle = isHomePage && layoutStyle === "schedule";
+  const appStyleBg = isAppStyle ? (wallpaperColor || "#E8F1FE") : undefined;
 
   const isTrackingPage = location.pathname.startsWith("/instructor/traccar");
   
@@ -265,7 +272,13 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <IOSInstallBanner />
 
             {/* Mobile Header - White background with dark icons */}
-            <header className="sticky top-0 z-40 bg-background border-b border-border shadow-sm">
+            <header
+              className={cn(
+                "sticky top-0 z-40 shadow-sm",
+                isAppStyle ? "border-b border-border/30" : "bg-background border-b border-border"
+              )}
+              style={isAppStyle ? { backgroundColor: appStyleBg } : undefined}
+            >
               <div className="flex items-center justify-between px-3 sm:px-4 h-14">
                 {/* Left: Hamburger Menu + Logo */}
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -564,7 +577,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
         ) : (
           <>
             <main className={`overflow-x-hidden ${location.pathname === '/instructor' ? '' : 'px-4 py-4'}`}>{children}</main>
-            <InstructorBottomNav />
+            <InstructorBottomNav wallpaperColor={appStyleBg} />
           </>
         )}
 
