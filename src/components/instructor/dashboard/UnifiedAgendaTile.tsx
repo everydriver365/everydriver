@@ -300,7 +300,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
       </AnimatePresence>
 
       {/* Timeline */}
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-4 pl-8">
         {timeline.length === 0 && !showInput && (
           <button
             onClick={() => setShowInput(true)}
