@@ -48,6 +48,7 @@ import MobilePortalDemo from "./pages/MobilePortalDemo";
 import InstructorMobileDemo from "./pages/InstructorMobileDemo";
 import InstructorTileDemo from "./pages/InstructorTileDemo";
 import DesignDemo from "./pages/DesignDemo";
+import InstructorHeroDemo from "./pages/InstructorHeroDemo";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -245,6 +246,7 @@ const App = () => (
               <Route path="/mobile-portal-demo" element={<MobilePortalDemo />} />
               <Route path="/instructor-mobile-demo" element={<InstructorMobileDemo />} />
               <Route path="/instructor-tile-demo" element={<InstructorTileDemo />} />
+              <Route path="/instructor-hero-demo" element={<InstructorHeroDemo />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
