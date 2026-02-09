@@ -287,7 +287,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-primary/80 hover:text-primary hover:bg-[#D1E4FC] -ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0"
+                        className={cn(
+                          "hover:bg-white/20 -ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0",
+                          isAppStyle ? "text-white" : "text-primary/80 hover:text-primary hover:bg-[#D1E4FC]"
+                        )}
                       >
                         <Menu className="h-5 w-5" />
                       </Button>
@@ -372,11 +375,17 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                   </Sheet>
 
                   {/* Logo + Plan Badge */}
-                  <img 
-                    src={instructorLogo}
-                    alt="EveryDriver" 
-                    className="h-4 sm:h-5 object-contain"
-                  />
+                  {isAppStyle ? (
+                    <span className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                      EVERY DRIVER
+                    </span>
+                  ) : (
+                    <img 
+                      src={instructorLogo}
+                      alt="EveryDriver" 
+                      className="h-4 sm:h-5 object-contain"
+                    />
+                  )}
 
 
                 </div>
@@ -388,7 +397,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                        className={cn("h-7 w-7 sm:h-8 sm:w-8 shrink-0", isAppStyle ? "text-white hover:bg-white/20" : "text-foreground hover:bg-[#D1E4FC]")}
                         title="Settings"
                       >
                         <Settings className="h-4 w-4" />
@@ -452,7 +461,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="outline"
                     size="sm"
                     onClick={() => setShowPaymentSheet(true)}
-                    className="h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold"
+                    className={cn(
+                      "h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold",
+                      isAppStyle && "bg-emerald-400/80 hover:bg-emerald-400 text-white border-emerald-300/50"
+                    )}
                     title="Take Payment"
                   >
                     Pay
