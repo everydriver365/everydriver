@@ -96,7 +96,7 @@ export function AppStyleHomeView({
   return (
     <div className="min-h-screen flex flex-col pt-16" style={{ backgroundColor: wallpaperColor || "#E8F1FE" }}>
 
-      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-24">
+      <div className="flex-1 overflow-y-auto px-5 pt-1 pb-24">
         <div className="grid grid-cols-4 gap-x-4 gap-y-5">
           {orderedTiles.map((action, index) => {
             const badgeCount = getBadgeCount(action);
