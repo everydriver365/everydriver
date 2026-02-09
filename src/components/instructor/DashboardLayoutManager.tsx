@@ -1,21 +1,11 @@
-import { Plus, Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, Loader2 } from "lucide-react";
 import { useInstructorTilePreferences } from "@/hooks/useInstructorTilePreferences";
 import { useInstructorHomepageContent, QuickAction } from "@/hooks/useInstructorHomepageContent";
 import { cn } from "@/lib/utils";
 
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Calendar,
-  Users,
-  Briefcase,
-  CreditCard,
-  Clock,
-  Settings,
-  Car,
-  Receipt,
-  Navigation,
-  Award
+  Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award,
 };
 
 interface DashboardLayoutManagerProps {
@@ -23,15 +13,14 @@ interface DashboardLayoutManagerProps {
 }
 
 export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerProps) {
-  const { getHiddenTiles, getOrderedTiles, showTile, saving, loading } = useInstructorTilePreferences(instructorId);
+  const { getHiddenTiles, getOrderedTiles, hideTile, showTile, saving, loading } = useInstructorTilePreferences(instructorId);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
 
-  const hiddenTiles = getHiddenTiles(content?.quick_actions || []);
-  const visibleTiles = getOrderedTiles(content?.quick_actions || []);
+  const allTiles = content?.quick_actions || [];
+  const hiddenTiles = getHiddenTiles(allTiles);
+  const hiddenIds = new Set(hiddenTiles.map((t) => t.id));
 
-  const getIcon = (iconName: string) => {
-    return iconMap[iconName] || Calendar;
-  };
+  const getIcon = (iconName: string) => iconMap[iconName] || Calendar;
 
   if (loading || contentLoading) {
     return (
@@ -41,64 +30,92 @@ export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerP
     );
   }
 
+  if (allTiles.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground text-center py-6">
+        No tiles available yet.
+      </p>
+    );
+  }
+
+  const visibleCount = allTiles.length - hiddenIds.size;
+
+  const handleToggle = (tile: QuickAction) => {
+    if (hiddenIds.has(tile.id)) {
+      showTile(tile.id);
+    } else {
+      hideTile(tile.id);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Manage which tiles appear on your dashboard home screen. You can also hide tiles by tapping Edit on the home screen and clicking the X button.
+        Choose which tiles appear on your home screen.
       </p>
 
-      {/* Visible tiles summary */}
+      {/* Summary */}
       <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
         <p className="text-sm font-medium text-primary">
-          {visibleTiles.length} tile{visibleTiles.length !== 1 ? 's' : ''} visible on home
+          {visibleCount} of {allTiles.length} tile{allTiles.length !== 1 ? "s" : ""} visible
         </p>
       </div>
 
-      {/* Hidden tiles */}
-      {hiddenTiles.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground text-sm">
-            All tiles are visible on your dashboard
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            To hide a tile, tap Edit on the home screen
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">
-            Hidden Tiles ({hiddenTiles.length})
-          </p>
-          <div className="space-y-2">
-            {hiddenTiles.map(tile => {
-              const Icon = getIcon(tile.icon);
-              return (
+      {/* Full tile list with checkboxes */}
+      <div className="space-y-1.5">
+        {allTiles
+          .sort((a, b) => a.display_order - b.display_order)
+          .map((tile) => {
+            const Icon = getIcon(tile.icon);
+            const isVisible = !hiddenIds.has(tile.id);
+
+            return (
+              <button
+                key={tile.id}
+                onClick={() => handleToggle(tile)}
+                disabled={saving}
+                className={cn(
+                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
+                  isVisible
+                    ? "bg-card border-primary/20 shadow-[0_1px_4px_rgba(20,37,66,0.06)]"
+                    : "bg-muted/30 border-border/50 opacity-70"
+                )}
+              >
+                {/* Checkbox */}
                 <div
-                  key={tile.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border/50"
+                  className={cn(
+                    "h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
+                    isVisible
+                      ? "bg-primary border-primary"
+                      : "border-muted-foreground/40 bg-transparent"
+                  )}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="font-medium text-sm">{tile.title}</span>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => showTile(tile.id)}
-                    disabled={saving}
-                    className="gap-1"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Add to Home
-                  </Button>
+                  {isVisible && (
+                    <svg className="h-3 w-3 text-primary-foreground" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+
+                {/* Icon */}
+                <div className={cn(
+                  "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
+                  isVisible ? "bg-primary/10" : "bg-muted"
+                )}>
+                  <Icon className={cn("h-4.5 w-4.5", isVisible ? "text-primary" : "text-muted-foreground")} />
+                </div>
+
+                {/* Label */}
+                <span className={cn(
+                  "text-sm font-medium",
+                  isVisible ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {tile.title}
+                </span>
+              </button>
+            );
+          })}
+      </div>
     </div>
   );
 }
