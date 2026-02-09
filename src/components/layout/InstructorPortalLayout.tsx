@@ -288,8 +288,10 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         variant="ghost"
                         size="icon"
                         className={cn(
-                          "hover:bg-white/20 -ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0",
-                          isAppStyle ? "text-white" : "text-primary/80 hover:text-primary hover:bg-[#D1E4FC]"
+                          "-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0",
+                          isAppStyle
+                            ? "text-white hover:text-white hover:bg-white/20"
+                            : "text-primary/80 hover:text-primary hover:bg-[#D1E4FC]"
                         )}
                       >
                         <Menu className="h-5 w-5" />
