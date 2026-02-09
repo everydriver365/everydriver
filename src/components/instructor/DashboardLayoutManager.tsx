@@ -1,24 +1,99 @@
-import { Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, Loader2 } from "lucide-react";
+import { Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, Loader2, MapPin, MessageSquare, Heart, ListTodo } from "lucide-react";
 import { useInstructorTilePreferences } from "@/hooks/useInstructorTilePreferences";
 import { useInstructorHomepageContent, QuickAction } from "@/hooks/useInstructorHomepageContent";
 import { cn } from "@/lib/utils";
 
-// Icon mapping
+// Same icon imports as QuickActionTiles
+import messagesIcon from "@/assets/messages-icon.png";
+import paymentsIcon from "@/assets/payments-icon-new.png";
+import takePaymentIcon from "@/assets/take-payment-icon.png";
+import scheduleIcon from "@/assets/schedule-icon.png";
+import pupilsIcon from "@/assets/pupils-icon.png";
+import trackIcon from "@/assets/track-icon.png";
+import satnavIcon from "@/assets/satnav-icon.png";
+import findMyCarIcon from "@/assets/find_car2.png";
+import jobOffersIcon from "@/assets/job-offers-icon.png";
+import availabilityIcon from "@/assets/availability-icon.png";
+import healthHubIcon from "@/assets/health-hub-icon.png";
+import findFuelIcon from "@/assets/find-fuel-icon.png";
+import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
+import expensesIcon from "@/assets/expenses-icon.png";
+import todoIcon from "@/assets/todo-icon.png";
+import settingsIcon from "@/assets/settings-icon.png";
+
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award,
+  Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt, Navigation, Award, MapPin, MessageSquare, Heart, Fuel: Car, ListTodo,
 };
+
+const customIconImages: Record<string, string> = {
+  messages: messagesIcon,
+  "take-payment": takePaymentIcon,
+  payments: paymentsIcon,
+  schedule: scheduleIcon,
+  pupils: pupilsIcon,
+  "track-lesson": trackIcon,
+  satnav: satnavIcon,
+  "find-my-car": findMyCarIcon,
+  jobs: jobOffersIcon,
+  availability: availabilityIcon,
+  "health-hub": healthHubIcon,
+  "find-fuel": findFuelIcon,
+  "vehicle-health": vehicleHealthIcon,
+  expenses: expensesIcon,
+  todos: todoIcon,
+  settings: settingsIcon,
+};
+
+const customIconRadius: Record<string, string> = {
+  "find-my-car": "7px",
+  jobs: "7px",
+  "take-payment": "7px",
+  payments: "7px",
+  availability: "7px",
+  "health-hub": "7px",
+  "find-fuel": "7px",
+  "vehicle-health": "7px",
+  expenses: "7px",
+  todos: "7px",
+  settings: "7px",
+};
+
+// Same additional tiles as QuickActionTiles
+const additionalTiles: QuickAction[] = [
+  { id: "fill-gaps", title: "Fill Gaps", icon: "Calendar", route: "/instructor/gaps", display_order: 98 },
+  { id: "todos", title: "To Do", icon: "ListTodo", route: "/instructor/todos", display_order: 99 },
+  { id: "vehicle-health", title: "Vehicle Health", icon: "Car", route: "/instructor/vehicle-health", display_order: 100 },
+  { id: "find-fuel", title: "Find Fuel", icon: "Fuel", route: "/instructor/fuel", display_order: 100.5 },
+  { id: "test-results", title: "Log Test Result", icon: "Award", route: "/instructor/test-results", display_order: 101 },
+  { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages", display_order: 102 },
+  { id: "locations", title: "Locations", icon: "MapPin", route: "/instructor/locations", display_order: 103 },
+  { id: "cpd-log", title: "CPD Log", icon: "Award", route: "/instructor/cpd", display_order: 104 },
+  { id: "settings", title: "Settings", icon: "Settings", route: "/instructor/settings", display_order: 105 },
+  { id: "referrals", title: "Referrals", icon: "Users", route: "/instructor/referrals", display_order: 106 },
+  { id: "availability", title: "Availability", icon: "Clock", route: "/instructor/availability", display_order: 106 },
+  { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses", display_order: 107 },
+];
 
 interface DashboardLayoutManagerProps {
   instructorId: string;
 }
 
 export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerProps) {
-  const { getHiddenTiles, getOrderedTiles, hideTile, showTile, saving, loading } = useInstructorTilePreferences(instructorId);
+  const { getOrderedTiles, hideTile, showTile, saving, loading, hiddenTiles } = useInstructorTilePreferences(instructorId);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
 
-  const allTiles = content?.quick_actions || [];
-  const hiddenTiles = getHiddenTiles(allTiles);
-  const hiddenIds = new Set(hiddenTiles.map((t) => t.id));
+  const dbTiles = content?.quick_actions || [];
+  
+  // Merge DB tiles + additional tiles (deduped), same as QuickActionTiles
+  const allTilesMap = new Map<string, QuickAction>();
+  dbTiles.forEach(t => allTilesMap.set(t.id, t));
+  additionalTiles.forEach(t => { if (!allTilesMap.has(t.id)) allTilesMap.set(t.id, t); });
+  const allTiles = Array.from(allTilesMap.values()).sort((a, b) => a.display_order - b.display_order);
+
+  const hiddenSet = new Set(hiddenTiles);
+  // Tiles currently visible on the homepage
+  const orderedTiles = getOrderedTiles(dbTiles, additionalTiles);
+  const visibleIds = new Set(orderedTiles.map(t => t.id));
 
   const getIcon = (iconName: string) => iconMap[iconName] || Calendar;
 
@@ -38,13 +113,13 @@ export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerP
     );
   }
 
-  const visibleCount = allTiles.length - hiddenIds.size;
+  const visibleCount = visibleIds.size;
 
   const handleToggle = (tile: QuickAction) => {
-    if (hiddenIds.has(tile.id)) {
-      showTile(tile.id);
-    } else {
+    if (visibleIds.has(tile.id)) {
       hideTile(tile.id);
+    } else {
+      showTile(tile.id);
     }
   };
 
@@ -54,67 +129,78 @@ export function DashboardLayoutManager({ instructorId }: DashboardLayoutManagerP
         Choose which tiles appear on your home screen.
       </p>
 
-      {/* Summary */}
       <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
         <p className="text-sm font-medium text-primary">
           {visibleCount} of {allTiles.length} tile{allTiles.length !== 1 ? "s" : ""} visible
         </p>
       </div>
 
-      {/* Full tile list with checkboxes */}
       <div className="space-y-1.5">
-        {allTiles
-          .sort((a, b) => a.display_order - b.display_order)
-          .map((tile) => {
-            const Icon = getIcon(tile.icon);
-            const isVisible = !hiddenIds.has(tile.id);
+        {allTiles.map((tile) => {
+          const Icon = getIcon(tile.icon);
+          const isVisible = visibleIds.has(tile.id);
+          const customImg = customIconImages[tile.id];
+          const radius = customIconRadius[tile.id];
 
-            return (
-              <button
-                key={tile.id}
-                onClick={() => handleToggle(tile)}
-                disabled={saving}
+          return (
+            <button
+              key={tile.id}
+              onClick={() => handleToggle(tile)}
+              disabled={saving}
+              className={cn(
+                "w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
+                isVisible
+                  ? "bg-card border-primary/20 shadow-[0_1px_4px_rgba(20,37,66,0.06)]"
+                  : "bg-muted/30 border-border/50 opacity-70"
+              )}
+            >
+              {/* Checkbox */}
+              <div
                 className={cn(
-                  "w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
+                  "h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
                   isVisible
-                    ? "bg-card border-primary/20 shadow-[0_1px_4px_rgba(20,37,66,0.06)]"
-                    : "bg-muted/30 border-border/50 opacity-70"
+                    ? "bg-primary border-primary"
+                    : "border-muted-foreground/40 bg-transparent"
                 )}
               >
-                {/* Checkbox */}
-                <div
-                  className={cn(
-                    "h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors",
-                    isVisible
-                      ? "bg-primary border-primary"
-                      : "border-muted-foreground/40 bg-transparent"
-                  )}
-                >
-                  {isVisible && (
-                    <svg className="h-3 w-3 text-primary-foreground" viewBox="0 0 12 12" fill="none">
-                      <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </div>
+                {isVisible && (
+                  <svg className="h-3 w-3 text-primary-foreground" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
 
-                {/* Icon */}
-                <div className={cn(
-                  "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
-                  isVisible ? "bg-primary/10" : "bg-muted"
-                )}>
+              {/* Icon - using custom images when available */}
+              <div
+                className={cn(
+                  "h-9 w-9 flex items-center justify-center shrink-0 overflow-hidden",
+                  !customImg && (isVisible ? "bg-primary/10" : "bg-muted"),
+                  customImg ? "rounded-none" : "rounded-lg"
+                )}
+                style={radius ? { borderRadius: radius } : undefined}
+              >
+                {customImg ? (
+                  <img
+                    src={customImg}
+                    alt={tile.title}
+                    className="w-full h-full object-cover"
+                    style={radius ? { borderRadius: radius } : undefined}
+                  />
+                ) : (
                   <Icon className={cn("h-4.5 w-4.5", isVisible ? "text-primary" : "text-muted-foreground")} />
-                </div>
+                )}
+              </div>
 
-                {/* Label */}
-                <span className={cn(
-                  "text-sm font-medium",
-                  isVisible ? "text-foreground" : "text-muted-foreground"
-                )}>
-                  {tile.title}
-                </span>
-              </button>
-            );
-          })}
+              {/* Label */}
+              <span className={cn(
+                "text-sm font-medium",
+                isVisible ? "text-foreground" : "text-muted-foreground"
+              )}>
+                {tile.title}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
