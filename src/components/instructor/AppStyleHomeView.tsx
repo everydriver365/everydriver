@@ -8,6 +8,15 @@ import { useWeeklyGoals } from "@/hooks/useWeeklyGoals";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
 import { cn } from "@/lib/utils";
 
+function getContrastTextColor(hex: string): string {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? "rgba(0,0,0,0.75)" : "rgba(255,255,255,0.9)";
+}
+
 // Import icon images from QuickActionTiles (duplicated mapping for decoupling)
 import messagesIcon from "@/assets/messages-icon.png";
 import paymentsIcon from "@/assets/payments-icon-new.png";
@@ -139,7 +148,10 @@ export function AppStyleHomeView({
                   )}
                 </div>
 
-                <span className="text-[11px] font-medium text-white/90 leading-tight text-center line-clamp-1 max-w-[64px]">
+                <span
+                  className="text-[11px] font-medium leading-tight text-center line-clamp-1 max-w-[64px]"
+                  style={{ color: getContrastTextColor(wallpaperColor || "#E8F1FE") }}
+                >
                   {action.title}
                 </span>
               </motion.button>
