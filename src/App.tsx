@@ -82,6 +82,7 @@ import InstructorTax from "./pages/InstructorTax";
 import InstructorVehicleHealth from "./pages/InstructorVehicleHealth";
 import InstructorTripReplay from "./pages/InstructorTripReplay";
 import InstructorFuel from "./pages/InstructorFuel";
+import NextUpTileShowcase from "./pages/NextUpTileShowcase";
 import InstructorMileageTracker from "./pages/InstructorMileageTracker";
 import InstructorLocations from "./pages/InstructorLocations";
 import InstallPupil from "./pages/InstallPupil";
@@ -209,6 +210,7 @@ const App = () => (
               <Route path="/instructor/trip-replay/:routeId" element={<InstructorTripReplay />} />
               <Route path="/instructor/trip-replay" element={<InstructorTripReplay />} />
               <Route path="/instructor/menu" element={<InstructorMenu />} />
+              <Route path="/instructor/next-up-showcase" element={<NextUpTileShowcase />} />
               <Route path="/instructor/website" element={<InstructorMiniWebsiteSettings />} />
               <Route path="/instructor/income" element={<InstructorIncome />} />
               <Route path="/instructor/in-out" element={<InstructorInOut />} />
