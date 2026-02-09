@@ -271,17 +271,17 @@ export function NextUpTile({
               </span>
             </div>
 
-            {/* Primary actions — Navigate + On Way + icon circles */}
-            <div className="flex items-center gap-2">
+            {/* Primary actions — compact */}
+            <div className="flex items-center gap-1.5">
               {pickupPostcode && (
-                <Button size="sm" onClick={handleNavigate} className="flex-1 rounded-xl gap-1.5">
-                  <Navigation className="h-4 w-4" /> Navigate
+                <Button size="sm" onClick={handleNavigate} className="flex-1 rounded-xl gap-1 h-8 text-xs">
+                  <Navigation className="h-3.5 w-3.5" /> Navigate
                 </Button>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" disabled={!pupilPhone} className="rounded-xl gap-1.5">
-                    <Check className="h-4 w-4 text-emerald-600" /> On Way
+                  <Button size="sm" variant="outline" disabled={!pupilPhone} className="rounded-xl gap-1 h-8 text-xs">
+                    <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
@@ -315,11 +315,11 @@ export function NextUpTile({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button size="icon" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="rounded-full h-10 w-10 shrink-0">
-                <Phone className="h-4 w-4" />
+              <Button size="icon" variant="outline" onClick={handleCall} disabled={!pupilPhone} className="rounded-full h-8 w-8 shrink-0">
+                <Phone className="h-3.5 w-3.5" />
               </Button>
-              <Button size="icon" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-full h-10 w-10 shrink-0">
-                <MessageSquare className="h-4 w-4" />
+              <Button size="icon" variant="outline" onClick={handleMessage} disabled={!pupilPhone} className="rounded-full h-8 w-8 shrink-0">
+                <MessageSquare className="h-3.5 w-3.5" />
               </Button>
             </div>
 
