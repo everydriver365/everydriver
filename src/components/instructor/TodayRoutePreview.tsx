@@ -103,7 +103,9 @@ export function TodayRoutePreview({
         {/* Header */}
          <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Navigation className="h-4 w-4 text-primary" />
+            <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+              <Navigation className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </div>
             <span className="text-sm font-medium">Today's Route</span>
           </div>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">

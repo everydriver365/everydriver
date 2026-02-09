@@ -34,7 +34,9 @@ export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-blue-500" />
+            <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
             <h3 className="font-medium text-sm text-foreground">Messages</h3>
             {unreadCount > 0 && (
               <span className="text-[10px] font-medium bg-destructive/10 text-destructive px-1.5 py-0.5">
