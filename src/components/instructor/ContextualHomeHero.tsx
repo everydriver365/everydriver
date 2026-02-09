@@ -167,6 +167,7 @@ export function ContextualHomeHero({
         <img
           src={heroImageUrl || instructorHeroImg}
           alt="Hero"
+          key={heroImageUrl || "default"}
           className="w-full h-full object-cover"
         />
         {/* Bottom gradient for smooth card overlap */}
