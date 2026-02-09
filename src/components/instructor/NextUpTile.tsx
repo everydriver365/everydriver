@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, parse, isToday, isTomorrow, parseISO } from "date-fns";
+import { format, parse, isToday, isTomorrow, parseISO, addMinutes } from "date-fns";
 import { Clock, Phone, MessageSquare, X, Navigation, Car, Loader2, Mail, Check, CreditCard, CalendarClock, User, MapPin, Timer, ChevronDown, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -193,7 +193,7 @@ export function NextUpTile({
                   <p className="text-sm text-muted-foreground truncate">{displayLocation}</p>
                 )}
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <PaymentStatusBadge balance={effectiveBalance} size="md" />
+                  <PaymentStatusBadge balance={effectiveBalance} size="md" className="rounded-none" />
                   {etaLoading ? (
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                   ) : etaMinutes > 0 ? (
@@ -203,7 +203,7 @@ export function NextUpTile({
                       : 'text-emerald-600'
                     }`}>
                       <Car className="h-3.5 w-3.5" />
-                      {etaText}
+                      ETA {format(addMinutes(new Date(), etaMinutes), "HH:mm")} ({etaText})
                       {trafficCondition && trafficCondition !== 'clear' && trafficCondition !== 'light' && (
                         <span className="ml-0.5">
                           {trafficCondition === 'heavy' ? '🔴' : '🟡'}
