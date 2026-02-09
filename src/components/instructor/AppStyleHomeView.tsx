@@ -94,135 +94,102 @@ export function AppStyleHomeView({
   };
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: wallpaperColor || "#E8F1FE" }}>
-      {/* ── Hero Section ── */}
-      <div className="relative w-full" style={{ height: "35vh", minHeight: 240 }}>
-        <img src={heroSrc} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+    <div className="fixed inset-0 flex flex-col" style={{ backgroundColor: wallpaperColor || "#E8F1FE" }}>
+      {/* Status bar spacer */}
+      <div className="pt-safe-top" style={{ paddingTop: "env(safe-area-inset-top, 44px)" }} />
 
-        {/* Profile avatar top-right */}
-        {profileImageUrl && (
-          <div className="absolute top-4 right-4 z-10">
-            <img
-              src={profileImageUrl}
-              alt="Profile"
-              className="w-10 h-10 rounded-full border-2 border-white/60 object-cover shadow-lg"
-            />
+      {/* Top bar: time/profile */}
+      <div className="flex items-center justify-between px-5 py-3">
+        <div>
+          <p className="text-sm font-semibold text-foreground/90">
+            {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}
+          </p>
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-2xl font-bold text-foreground">{hoursThisWeek}h</span>
+            <span className="text-sm text-muted-foreground font-medium">/ {hoursGoal}h</span>
           </div>
+        </div>
+        {profileImageUrl && (
+          <img
+            src={profileImageUrl}
+            alt="Profile"
+            className="w-10 h-10 rounded-full border-2 border-white/60 object-cover shadow-lg"
+          />
         )}
+      </div>
 
-        {/* Progress overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+      {/* Progress bar */}
+      <div className="px-5 pb-4">
+        <div className="h-2 rounded-full bg-foreground/10 overflow-hidden">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-white/80 text-xs font-medium tracking-wide uppercase mb-1"
-              style={{ textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>
-              Weekly Progress
-            </p>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-white text-3xl font-bold"
-                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
-                {hoursThisWeek}h
-              </span>
-              <span className="text-white/70 text-lg font-medium">/ {hoursGoal}h</span>
-            </div>
-            <p className="text-white/60 text-xs mt-0.5"
-              style={{ textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>
-              {hoursRemaining > 0 ? `${hoursRemaining.toFixed(1)} hours remaining` : "Goal reached! 🎉"}
-            </p>
+            className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(100, progressPercent)}%` }}
+            transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          {hoursRemaining > 0 ? `${hoursRemaining.toFixed(1)} hours remaining` : "Goal reached! 🎉"}
+        </p>
+      </div>
 
-            {/* Progress bar */}
-            <div className="mt-3 h-2 rounded-full bg-white/20 overflow-hidden backdrop-blur-sm">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, progressPercent)}%` }}
-                transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-              />
-            </div>
-          </motion.div>
+      {/* ── Full-screen Icon Grid ── */}
+      <div className="flex-1 overflow-y-auto px-5 pb-24">
+        <div className="grid grid-cols-4 gap-x-4 gap-y-5">
+          {orderedTiles.map((action, index) => {
+            const badgeCount = getBadgeCount(action);
+            const hasCustomIcon = !!customIconImages[action.id];
+            const FallbackIcon = iconMap[action.icon] || Calendar;
+
+            return (
+              <motion.button
+                key={action.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.05 + index * 0.025 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate(action.route)}
+                className="flex flex-col items-center gap-1.5 relative"
+              >
+                {/* Icon tile */}
+                <div
+                  className={cn(
+                    "relative w-[60px] h-[60px] rounded-[16px] flex items-center justify-center overflow-hidden",
+                    "shadow-[0_2px_8px_rgba(0,0,0,0.1)]",
+                    !hasCustomIcon && "bg-white/60 dark:bg-white/10 backdrop-blur-sm"
+                  )}
+                >
+                  {hasCustomIcon ? (
+                    <img
+                      src={customIconImages[action.id]}
+                      alt={action.title}
+                      className="w-full h-full object-cover rounded-[16px]"
+                    />
+                  ) : (
+                    <FallbackIcon className="h-7 w-7 text-primary" />
+                  )}
+
+                  {/* Notification badge */}
+                  {badgeCount > 0 && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm"
+                    >
+                      {badgeCount > 9 ? "9+" : badgeCount}
+                    </motion.span>
+                  )}
+                </div>
+
+                {/* Label */}
+                <span className="text-[11px] font-medium text-foreground/70 leading-tight text-center line-clamp-1 max-w-[64px]">
+                  {action.title}
+                </span>
+              </motion.button>
+            );
+          })}
         </div>
       </div>
-
-      {/* ── Glassmorphism Container ── */}
-      <div className="relative -mt-4 z-20">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mx-3 rounded-2xl border border-white/30 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden"
-          style={{
-            background: "rgba(255,255,255,0.75)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-          }}
-        >
-          <div className="p-4">
-            {/* 4-column icon grid */}
-            <div className="grid grid-cols-4 gap-x-3 gap-y-4">
-              {orderedTiles.map((action, index) => {
-                const badgeCount = getBadgeCount(action);
-                const hasCustomIcon = !!customIconImages[action.id];
-                const FallbackIcon = iconMap[action.icon] || Calendar;
-
-                return (
-                  <motion.button
-                    key={action.id}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: 0.1 + index * 0.03 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => navigate(action.route)}
-                    className="flex flex-col items-center gap-1.5 relative"
-                  >
-                    {/* Icon tile */}
-                    <div
-                      className={cn(
-                        "relative w-14 h-14 rounded-[16px] flex items-center justify-center overflow-hidden",
-                        "shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
-                        !hasCustomIcon && "bg-primary/10"
-                      )}
-                    >
-                      {hasCustomIcon ? (
-                        <img
-                          src={customIconImages[action.id]}
-                          alt={action.title}
-                          className="w-full h-full object-cover rounded-[16px]"
-                        />
-                      ) : (
-                        <FallbackIcon className="h-6 w-6 text-primary" />
-                      )}
-
-                      {/* Notification badge */}
-                      {badgeCount > 0 && (
-                        <motion.span
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center shadow-sm"
-                        >
-                          {badgeCount > 9 ? "9+" : badgeCount}
-                        </motion.span>
-                      )}
-                    </div>
-
-                    {/* Label */}
-                    <span className="text-[11px] font-medium text-foreground/80 leading-tight text-center line-clamp-1 max-w-[60px]">
-                      {action.title}
-                    </span>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Bottom spacing */}
-      <div className="h-24" />
     </div>
   );
 }
