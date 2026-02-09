@@ -85,7 +85,14 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
   });
 
   const destinationPostcode = nextLesson?.pupil.pickup_postcode || nextLesson?.pupil.postcode || null;
-  const { durationText, trafficCondition, isLoading: etaLoading } = useTrafficETA(destinationPostcode);
+  const { durationMinutes, durationText, trafficCondition, isLoading: etaLoading } = useTrafficETA(destinationPostcode);
+
+  // Compute actual arrival time (now + travel duration)
+  const getArrivalTime = () => {
+    if (!durationMinutes) return null;
+    const arrival = new Date(Date.now() + durationMinutes * 60 * 1000);
+    return format(arrival, "HH:mm");
+  };
 
   const effectiveBalance = nextLesson
     ? (nextLesson.pupil.prepaid_hours > 0
@@ -179,17 +186,17 @@ export function NextLessonTile({ instructorId }: NextLessonTileProps) {
               <PaymentStatusBadge
                 balance={effectiveBalance}
                 size="sm"
-                className="bg-white/15 border-white/20 text-white [&_svg]:text-white"
+                className="rounded-none bg-white/15 border-white/20 text-white [&_svg]:text-white"
               />
             </div>
             {/* ETA row */}
             <div className="flex items-center gap-1.5 mt-1.5 text-sm text-primary-foreground/80">
               {etaLoading ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : durationText ? (
+              ) : durationMinutes ? (
                 <>
                   <Car className="h-3.5 w-3.5" />
-                  <span>{durationText}</span>
+                  <span>ETA {getArrivalTime()} ({durationText})</span>
                   {trafficCondition && (
                     <span className="text-xs">{getTrafficEmoji()}</span>
                   )}
