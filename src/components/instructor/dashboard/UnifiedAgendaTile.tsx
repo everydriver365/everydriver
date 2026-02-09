@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
+import agendaIcon from "@/assets/agenda-icon.webp";
 import { Link } from "react-router-dom";
 import {
   Check,
@@ -191,9 +192,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
       {/* Header */}
       <div className="flex items-center justify-between p-4 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Timer className="h-4 w-4 text-primary" />
-          </div>
+          <img src={agendaIcon} alt="Agenda" className="h-8 w-8" />
           <div>
             <h3 className="font-semibold text-sm text-foreground">Agenda</h3>
             <p className="text-[10px] text-muted-foreground">
