@@ -27,6 +27,7 @@ import {
   CheckSquare,
   Lock,
   StickyNote,
+  FolderOpen,
 } from "lucide-react";
 
 // Custom PNG icons from the mobile app
@@ -115,6 +116,12 @@ export default function InstructorMenu() {
         { icon: MapPin, label: "Jotter", description: "Draw on map", iconColor: "text-orange-600", gateKey: "doodlepad", path: "/instructor/doodlepad" },
         { icon: MapPin, label: "Fill Gaps", description: "Schedule gaps", iconColor: "text-pink-600", gateKey: "gaps", path: "/instructor/gaps" },
         { icon: StickyNote, label: "Notes", description: "Notebook", iconColor: "text-yellow-600", gateKey: "notes", path: "/instructor/notes" },
+      ],
+    },
+    {
+      title: "Resources",
+      items: [
+        { icon: FolderOpen, label: "Resources", description: "Documents & files", iconColor: "text-blue-600", gateKey: "resources", path: "/instructor/resources" },
       ],
     },
     {
