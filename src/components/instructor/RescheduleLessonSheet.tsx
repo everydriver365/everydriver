@@ -161,7 +161,7 @@ export function RescheduleLessonSheet({
         }
       }
     }
-  }, [loading, workingHours, dateOverrides]);
+  }, [loading, workingHours, dateOverrides, calendarEvents, existingLessons]);
 
   const getAvailabilityForDate = (date: Date) => {
     const dateStr = format(date, "yyyy-MM-dd");
