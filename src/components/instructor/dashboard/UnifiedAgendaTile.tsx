@@ -186,7 +186,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
 
   return (
     <div className={cn(
-      "bg-card rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(20,37,66,0.10)] overflow-hidden",
+      "bg-card rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(20,37,66,0.10)]",
       className
     )}>
       {/* Header */}
