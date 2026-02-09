@@ -588,6 +588,212 @@ function OptionH() {
   );
 }
 
+// ── Option I: Glass Ticker (A variant) ───────────────────────────
+function OptionI() {
+  const hoursRemaining = MOCK.weekly.hoursGoal - MOCK.weekly.hoursThisWeek;
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative rounded-2xl overflow-hidden">
+      <div className="relative h-[200px]">
+        <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+        
+        {/* Top-left glass greeting */}
+        <div className="absolute top-3 left-3 right-3">
+          <div className="bg-white/15 backdrop-blur-lg rounded-xl px-3.5 py-2.5 border border-white/10">
+            <h2 className="text-base font-bold text-white">{greetingText[period]}</h2>
+            <p className="text-[11px] text-white/70 mt-0.5">{hoursRemaining}h remaining of {MOCK.weekly.hoursGoal}h weekly goal</p>
+          </div>
+        </div>
+
+        {/* Bottom ticker strip */}
+        <div className="absolute bottom-0 inset-x-0 bg-black/40 backdrop-blur-md px-4 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-white text-sm font-bold">{MOCK.weekly.hoursThisWeek}h</span>
+            <div className="w-20 h-1.5 bg-white/20 rounded-full overflow-hidden">
+              <motion.div className="h-full bg-emerald-400 rounded-full" initial={{ width: 0 }} animate={{ width: `${MOCK.weekly.progressPercent}%` }} transition={{ duration: 0.8 }} />
+            </div>
+            <span className="text-white/60 text-xs">{MOCK.weekly.progressPercent}%</span>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-white/80 text-[11px]"><CloudSun className="inline h-3 w-3 mr-0.5" />{MOCK.weather.temperature}°C</span>
+            <span className="text-emerald-400 text-[11px]">🟢</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Below-image stats */}
+      <div className="bg-card border border-t-0 border-border rounded-b-2xl grid grid-cols-4 divide-x divide-border/50">
+        {[
+          { v: MOCK.today.lessonCount, l: "Lessons" },
+          { v: `${MOCK.today.totalHours}h`, l: "Hours" },
+          { v: `£${MOCK.today.expectedEarnings}`, l: "Expected" },
+          { v: MOCK.unreadMessages, l: "Messages" },
+        ].map((s) => (
+          <div key={s.l} className="py-2.5 text-center">
+            <p className="text-sm font-bold text-foreground">{s.v}</p>
+            <p className="text-[10px] text-muted-foreground">{s.l}</p>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option J: Cinematic Overlay (E variant) ──────────────────────
+function OptionJ() {
+  const hoursRemaining = MOCK.weekly.hoursGoal - MOCK.weekly.hoursThisWeek;
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative rounded-2xl overflow-hidden h-[240px]">
+      <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
+
+      {/* Top: weather & traffic as minimal text */}
+      <div className="absolute top-3 left-4 right-4 flex justify-between items-center">
+        <span className="text-[11px] text-white/70"><CloudSun className="inline h-3 w-3 mr-1 text-amber-400" />{MOCK.weather.temperature}°C {MOCK.weather.description}</span>
+        <span className="text-[11px] text-emerald-400 font-medium">🟢 {MOCK.traffic.condition}</span>
+      </div>
+
+      {/* Bottom: all content */}
+      <div className="absolute bottom-0 inset-x-0 p-4">
+        <h2 className="text-xl font-bold text-white">{greetingText[period]}</h2>
+        
+        {/* Progress row */}
+        <div className="mt-3 flex items-center gap-3">
+          <CircularRing size={52} strokeWidth={4} />
+          <div className="flex-1">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-white">{MOCK.weekly.hoursThisWeek}h</span>
+              <span className="text-xs text-white/50">/ {MOCK.weekly.hoursGoal}h</span>
+            </div>
+            <div className="mt-1 h-1 bg-white/15 rounded-full overflow-hidden">
+              <motion.div className="h-full bg-emerald-400 rounded-full" initial={{ width: 0 }} animate={{ width: `${MOCK.weekly.progressPercent}%` }} transition={{ duration: 0.8 }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom stat pills */}
+        <div className="mt-3 flex gap-2">
+          {[
+            `${MOCK.today.lessonCount} lessons`,
+            `£${MOCK.today.expectedEarnings}`,
+            `${MOCK.unreadMessages} msgs`,
+          ].map((t) => (
+            <span key={t} className="px-2 py-0.5 rounded-full bg-white/10 text-[11px] text-white/80 font-medium">{t}</span>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option K: Minimal Glass Band (A variant) ─────────────────────
+function OptionK() {
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="relative rounded-2xl overflow-hidden">
+      <div className="relative h-[280px]">
+        <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+
+        {/* Centered glass band */}
+        <div className="absolute inset-x-4 bottom-4">
+          <div className="bg-white/20 backdrop-blur-2xl rounded-2xl p-4 border border-white/15 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-white">{greetingText[period]}</h2>
+              <CircularRing size={44} strokeWidth={3} />
+            </div>
+            
+            {/* Inline weather + traffic */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[11px] text-white/80"><CloudSun className="inline h-3 w-3 mr-1" />{MOCK.weather.temperature}°C</span>
+              <span className="text-white/30">·</span>
+              <span className="text-[11px] text-emerald-400">🟢 {MOCK.traffic.condition}</span>
+              <span className="text-white/30">·</span>
+              <span className="text-[11px] text-white/70"><MapPin className="inline h-3 w-3 mr-0.5" />{MOCK.location}</span>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-4 gap-1">
+              {[
+                { v: MOCK.today.lessonCount, l: "Lessons" },
+                { v: `${MOCK.today.totalHours}h`, l: "Hours" },
+                { v: `£${MOCK.today.expectedEarnings}`, l: "Earned" },
+                { v: `${MOCK.weekly.progressPercent}%`, l: "Goal" },
+              ].map((s) => (
+                <div key={s.l} className="text-center bg-white/10 rounded-lg py-1.5">
+                  <p className="text-sm font-bold text-white">{s.v}</p>
+                  <p className="text-[9px] text-white/60">{s.l}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Option L: Bold Image + Detached Card (E variant) ─────────────
+function OptionL() {
+  const [expanded, setExpanded] = useState(false);
+  const hoursRemaining = MOCK.weekly.hoursGoal - MOCK.weekly.hoursThisWeek;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="space-y-2">
+      {/* Image with bold overlay text only */}
+      <div className="relative rounded-2xl overflow-hidden h-[160px]">
+        <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 to-transparent" />
+        <div className="absolute inset-0 p-4 flex flex-col justify-end">
+          <h2 className="text-2xl font-black text-white leading-tight">{greetingText[period]}</h2>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-[11px] text-white/70"><CloudSun className="inline h-3 w-3 mr-0.5 text-amber-400" />{MOCK.weather.temperature}°C</span>
+            <span className="text-[11px] text-emerald-400">🟢 {MOCK.traffic.condition}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Detached progress card */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden">
+        <div className="p-3.5 flex items-center gap-3">
+          <CircularRing size={56} strokeWidth={4} />
+          <div className="flex-1">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-bold text-foreground">{MOCK.weekly.hoursThisWeek}h</span>
+              <span className="text-xs text-muted-foreground">/ {MOCK.weekly.hoursGoal}h</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{hoursRemaining}h remaining this week</p>
+          </div>
+          <button onClick={() => setExpanded(!expanded)} className="p-1.5 rounded-full hover:bg-muted/50 transition-colors">
+            <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </motion.div>
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {expanded && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+              <div className="px-3.5 pb-3.5 grid grid-cols-4 gap-1.5">
+                {[
+                  { v: MOCK.today.lessonCount, l: "Lessons", bg: "bg-primary/5" },
+                  { v: `${MOCK.today.totalHours}h`, l: "Hours", bg: "bg-blue-500/5" },
+                  { v: `£${MOCK.today.expectedEarnings}`, l: "Earned", bg: "bg-emerald-500/5" },
+                  { v: MOCK.unreadMessages, l: "Msgs", bg: "bg-violet-500/5" },
+                ].map((s) => (
+                  <div key={s.l} className={`${s.bg} rounded-lg py-2 text-center`}>
+                    <p className="text-sm font-bold text-foreground">{s.v}</p>
+                    <p className="text-[9px] text-muted-foreground">{s.l}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Demo Page ────────────────────────────────────────────────────
 export default function InstructorHeroDemo() {
   return (
@@ -595,7 +801,7 @@ export default function InstructorHeroDemo() {
       <div className="max-w-[430px] mx-auto space-y-10">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-foreground">Hero Tile Redesign</h1>
-          <p className="text-sm text-muted-foreground mt-1">8 options · mobile preview</p>
+          <p className="text-sm text-muted-foreground mt-1">12 options · mobile preview</p>
         </div>
 
         <div>
@@ -636,6 +842,26 @@ export default function InstructorHeroDemo() {
         <div>
           <SectionLabel label="Option H — Streak Card" />
           <OptionH />
+        </div>
+
+        <div>
+          <SectionLabel label="Option I — Glass Ticker (A variant)" />
+          <OptionI />
+        </div>
+
+        <div>
+          <SectionLabel label="Option J — Cinematic Overlay (E variant)" />
+          <OptionJ />
+        </div>
+
+        <div>
+          <SectionLabel label="Option K — Minimal Glass Band (A variant)" />
+          <OptionK />
+        </div>
+
+        <div>
+          <SectionLabel label="Option L — Bold Image + Detached Card (E variant)" />
+          <OptionL />
         </div>
       </div>
     </div>
