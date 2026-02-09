@@ -1,32 +1,57 @@
 
 
-## Fix: Remove Grey Line at Bottom of Navigation
+# Instructor Home Hero Tile Redesign - Demo Page
 
-The grey line you're seeing at the bottom of the screen is caused by the **top border** on the bottom navigation bar. The nav has `border-t` applied, which renders a visible grey border line above the nav.
+## Overview
+Create a new demo page at `/instructor-hero-demo` showcasing 4 different redesign options for the instructor mobile home hero tile (currently `ContextualHomeHero.tsx`). Each option will use mock data to demonstrate the layout with weekly progress, weather, traffic, and greeting information.
 
-### What will change
+## Design Options
 
-In `src/components/instructor/InstructorBottomNav.tsx`, the border classes will be removed from the nav element:
+### Option A: Glassmorphism Card
+- Full-bleed hero image with a frosted glass overlay card
+- Weekly hours displayed as a large number with a thin horizontal progress bar
+- Weather and traffic shown as small pill badges floating on the image
+- Greeting text in white over the image, stats card overlapping the bottom
 
-- **Remove** `border-t` from the base classes
-- **Remove** `border-border/30` (wallpaper mode) and `border-border/50` (default mode)
-- Keep the shadow for subtle visual separation instead of a hard border line
+### Option B: Gradient Dashboard (No Image)
+- No hero image -- instead a dynamic gradient background based on time of day (warm sunrise tones in morning, cool blues at night)
+- Large circular progress ring centered at top
+- Stats in a horizontal scrollable row of mini-cards
+- Weather/traffic as inline text below greeting
+- Clean, minimal, app-native feel
 
-This is a single-line change in the className of the `<nav>` element.
+### Option C: Split Hero
+- Left 40%: dark navy panel with greeting, weekly goal text, and weather/traffic info stacked vertically
+- Right 60%: hero image with rounded corners
+- Progress bar spanning full width below the split
+- Compact and information-dense
 
-### Technical Details
+### Option D: Compact Status Bar
+- No large hero image at all -- just a slim, information-dense card
+- Top row: greeting + circular mini progress ring (48px)
+- Bottom row: weather pill, traffic pill, hours pill in a horizontal flex
+- Expandable drawer (chevron) reveals today's summary stats grid
+- Maximum screen real estate saved for tiles below
 
-**File**: `src/components/instructor/InstructorBottomNav.tsx` (line 133-135)
+## Technical Details
 
-Current:
-```
-"fixed bottom-0 left-0 right-0 z-50 border-t shadow-[...] md:hidden",
-wallpaperColor ? "border-border/30" : "bg-background/95 backdrop-blur-sm border-border/50"
-```
+### New File
+- `src/pages/InstructorHeroDemo.tsx` -- standalone demo page with all 4 options rendered vertically, each in a mobile-width container (max-w-[390px] centered) to simulate the phone view
 
-Updated:
-```
-"fixed bottom-0 left-0 right-0 z-50 shadow-[...] md:hidden",
-wallpaperColor ? "" : "bg-background/95 backdrop-blur-sm"
-```
+### Route Registration
+- Add route `/instructor-hero-demo` in `src/App.tsx`
 
+### Mock Data
+- All options use hardcoded mock data (firstName, weather, traffic, weekly stats, etc.) so no hooks or backend calls are needed
+
+### Shared Elements
+Each option will include:
+- Time-based greeting (morning/afternoon/evening)
+- Weekly hours progress (e.g., 24h / 42h)
+- Weather badge (18C, Partly Cloudy)
+- Traffic status indicator
+- Framer Motion entrance animations
+
+### Dependencies
+- Uses existing dependencies only: framer-motion, lucide-react, tailwind
+- Reuses the instructor hero image asset for options that include an image
