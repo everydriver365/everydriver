@@ -528,15 +528,6 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Avatar
-                    className="h-7 w-7 sm:h-8 sm:w-8 border-2 border-border cursor-pointer shrink-0"
-                    onClick={() => navigate("/instructor/settings")}
-                  >
-                    <AvatarImage src={instructor?.profile_image_url || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                      {instructor?.name?.charAt(0) || "I"}
-                    </AvatarFallback>
-                  </Avatar>
                 </div>
               </div>
             </header>
