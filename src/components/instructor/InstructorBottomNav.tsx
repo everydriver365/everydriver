@@ -13,6 +13,16 @@ import {
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+function getContrastColor(hex: string, activeOpacity = "1", inactiveOpacity = "0.6"): { active: string; inactive: string } {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  const base = lum > 0.6 ? "0,0,0" : "255,255,255";
+  return { active: `rgba(${base},${activeOpacity})`, inactive: `rgba(${base},${inactiveOpacity})` };
+}
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MessageNotificationBadge } from "@/components/instructor/MessageNotificationBadge";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
@@ -111,8 +121,10 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const contrast = wallpaperColor ? getContrastColor(wallpaperColor) : null;
+
   const getIconColor = (_item: NavItem, isActive: boolean) => {
-    if (wallpaperColor) return isActive ? "text-white" : "text-white/70";
+    if (contrast) return ""; // handled via inline style
     return isActive ? "text-primary" : "text-muted-foreground";
   };
 
@@ -148,16 +160,18 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               key={item.path}
               onClick={() => handleNavClick(item.path)}
               className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
-                wallpaperColor
-                  ? (isActive ? "text-white" : "text-white/70 hover:text-white")
-                  : (isActive ? "text-primary" : "text-muted-foreground hover:text-foreground")
+                !contrast
+                  ? (isActive ? "text-primary" : "text-muted-foreground hover:text-foreground")
+                  : ""
               }`}
+              style={contrast ? { color: isActive ? contrast.active : contrast.inactive } : undefined}
             >
               {/* Active indicator pill */}
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className={cn("absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full", wallpaperColor ? "bg-white" : "bg-primary")}
+                  className={cn("absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full", !contrast && "bg-primary")}
+                  style={contrast ? { backgroundColor: contrast.active } : undefined}
                   initial={false}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
@@ -198,10 +212,12 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
-                wallpaperColor
-                  ? (isActive ? "font-medium text-white" : "font-normal text-white/70")
-                  : (isActive ? "font-medium text-primary" : "font-normal text-muted-foreground")
-              }`}>
+                !contrast
+                  ? (isActive ? "font-medium text-primary" : "font-normal text-muted-foreground")
+                  : (isActive ? "font-medium" : "font-normal")
+              }`}
+              style={contrast ? { color: isActive ? contrast.active : contrast.inactive } : undefined}
+              >
                 {item.label}
               </span>
             </button>
