@@ -12,10 +12,11 @@ import {
   Bell,
   Clock,
   CheckCircle2,
-  ListTodo,
+  Timer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -29,13 +30,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, isToday, isTomorrow, isPast, parseISO, addHours } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ─── Priority styling ───────────────────────────────────────────────
-const PRIORITY_COLORS: Record<number, string> = {
-  1: "border-red-500",
-  2: "border-orange-500",
-  3: "border-blue-500",
-  4: "border-muted-foreground/30",
-};
+// ─── Helpers ────────────────────────────────────────────────────
+function formatDueDate(dateStr: string) {
+  const d = parseISO(dateStr);
+  if (isToday(d)) return "Due today";
+  if (isTomorrow(d)) return "Tomorrow";
+  if (isPast(d)) return "Overdue!";
+  return format(d, "d MMM");
+}
+
+function isOverdue(dateStr: string) {
+  const d = parseISO(dateStr);
+  return isPast(d) && !isToday(d);
+}
 
 const PRIORITY_FLAGS: Record<number, string> = {
   1: "text-red-500",
@@ -44,32 +51,18 @@ const PRIORITY_FLAGS: Record<number, string> = {
   4: "text-muted-foreground/30",
 };
 
-// ─── Helpers ────────────────────────────────────────────────────────
-function formatDueDate(dateStr: string) {
-  const d = parseISO(dateStr);
-  if (isToday(d)) return "Today";
-  if (isTomorrow(d)) return "Tomorrow";
-  return format(d, "d MMM");
-}
-
-function getDueDateColor(dateStr: string) {
-  const d = parseISO(dateStr);
-  if (isPast(d) && !isToday(d)) return "text-red-500";
-  if (isToday(d)) return "text-emerald-600";
-  return "text-muted-foreground";
-}
-
-// ─── Types ──────────────────────────────────────────────────────────
+// ─── Types ──────────────────────────────────────────────────────
 interface TimelineEntry {
   type: "reminder" | "todo";
-  time: string; // sortable ISO or HH:MM
+  sortKey: string;
   id: string;
-  // reminder fields
+  overdue?: boolean;
+  // reminder
   pupilName?: string;
   startTime?: string;
   sent24h?: boolean;
   sent1h?: boolean;
-  // todo fields
+  // todo
   todo?: InstructorTodo;
 }
 
@@ -78,12 +71,12 @@ interface UnifiedAgendaTileProps {
   className?: string;
 }
 
-// ─── Main component ─────────────────────────────────────────────────
+// ─── Main ───────────────────────────────────────────────────────
 export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTileProps) {
   const { instructor } = useInstructorAuth();
   const { data: todos = [], addTodo, toggleTodo, updateTodo, deleteTodo } = useInstructorTodos(instructorId);
 
-  // Reminder state
+  // Reminders
   const [lessons, setLessons] = useState<{ id: string; pupilName: string; startTime: string; sent24h: boolean; sent1h: boolean }[]>([]);
 
   useEffect(() => {
@@ -115,7 +108,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
     fetchLessons();
   }, [instructor?.id]);
 
-  // Quick-add state
+  // Quick-add
   const [showInput, setShowInput] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newPriority, setNewPriority] = useState(4);
@@ -141,18 +134,17 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
 
   const cyclePriority = () => setNewPriority((p) => (p === 1 ? 4 : p - 1));
 
-  // Build merged timeline
   const activeTodos = todos.filter((t) => !t.is_completed);
-  const totalActive = activeTodos.length + lessons.length;
+  const totalItems = activeTodos.length + lessons.length;
 
+  // Build timeline
   const timeline: TimelineEntry[] = useMemo(() => {
     const entries: TimelineEntry[] = [];
 
-    // Add reminders
     lessons.forEach((l) => {
       entries.push({
         type: "reminder",
-        time: l.startTime,
+        sortKey: l.startTime,
         id: `r-${l.id}`,
         pupilName: l.pupilName,
         startTime: l.startTime,
@@ -161,23 +153,21 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
       });
     });
 
-    // Add todos (use due_date or created_at for sorting)
     activeTodos.slice(0, 5).forEach((t) => {
+      const od = t.due_date ? isOverdue(t.due_date) : false;
       entries.push({
         type: "todo",
-        time: t.due_date || t.created_at,
+        sortKey: t.due_date || t.created_at,
         id: `t-${t.id}`,
         todo: t,
+        overdue: od,
       });
     });
 
-    // Sort: overdue first, then by time
     entries.sort((a, b) => {
-      const aOverdue = a.type === "todo" && a.todo?.due_date && isPast(parseISO(a.todo.due_date)) && !isToday(parseISO(a.todo.due_date));
-      const bOverdue = b.type === "todo" && b.todo?.due_date && isPast(parseISO(b.todo.due_date)) && !isToday(parseISO(b.todo.due_date));
-      if (aOverdue && !bOverdue) return -1;
-      if (!aOverdue && bOverdue) return 1;
-      return a.time.localeCompare(b.time);
+      if (a.overdue && !b.overdue) return -1;
+      if (!a.overdue && b.overdue) return 1;
+      return a.sortKey.localeCompare(b.sortKey);
     });
 
     return entries;
@@ -185,35 +175,33 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
 
   return (
     <div className={cn(
-      "bg-card rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(20,37,66,0.10)]",
+      "bg-card rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(20,37,66,0.10)] overflow-hidden",
       className
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-3 pb-1">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center">
-            <ListTodo className="h-3.5 w-3.5 text-primary" />
+      <div className="flex items-center justify-between p-4 pb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <Timer className="h-4 w-4 text-primary" />
           </div>
-          <h3 className="font-semibold text-sm text-foreground">Agenda</h3>
-          {totalActive > 0 && (
-            <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
-              {totalActive}
-            </span>
-          )}
+          <div>
+            <h3 className="font-semibold text-sm text-foreground">Agenda</h3>
+            <p className="text-[10px] text-muted-foreground">
+              {totalItems > 0 ? `${totalItems} item${totalItems !== 1 ? "s" : ""} today` : "Nothing scheduled"}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowInput(!showInput)}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => setShowInput(!showInput)}>
             <Plus className="h-4 w-4" />
           </Button>
           <Link to="/instructor/todos">
-            <Button variant="ghost" size="icon" className="h-7 w-7">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </Link>
         </div>
       </div>
 
-      {/* Quick add input */}
+      {/* Quick add */}
       <AnimatePresence>
         {showInput && (
           <motion.div
@@ -222,7 +210,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-3 pb-2 space-y-2">
+            <div className="px-4 pb-3 space-y-2">
               <div className="flex gap-2 items-center">
                 <button onClick={cyclePriority} className="shrink-0">
                   <Flag className={cn("h-4 w-4", PRIORITY_FLAGS[newPriority])} />
@@ -264,7 +252,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
       </AnimatePresence>
 
       {/* Timeline */}
-      <div className="px-3 pb-3">
+      <div className="px-4 pb-4">
         {timeline.length === 0 && !showInput && (
           <button
             onClick={() => setShowInput(true)}
@@ -275,43 +263,60 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
           </button>
         )}
 
-        <div className="relative">
-          {/* Vertical timeline line */}
-          {timeline.length > 0 && (
-            <div className="absolute left-[9px] top-3 bottom-3 w-px bg-border/60" />
-          )}
+        <AnimatePresence mode="popLayout">
+          {timeline.map((entry, idx) => (
+            <motion.div
+              key={entry.id}
+              layout
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -80, transition: { duration: 0.2 } }}
+              className="flex gap-3"
+            >
+              {/* Timeline dot + line */}
+              <div className="flex flex-col items-center">
+                <div className={cn(
+                  "h-3 w-3 rounded-full border-2 shrink-0 mt-1",
+                  entry.overdue
+                    ? "border-red-500 bg-red-500 animate-pulse"
+                    : entry.type === "reminder"
+                    ? "border-primary bg-primary/20"
+                    : entry.todo?.priority === 1
+                    ? "border-red-500 bg-red-500/20"
+                    : entry.todo?.priority === 2
+                    ? "border-orange-500 bg-orange-500/20"
+                    : entry.todo?.priority === 3
+                    ? "border-blue-500 bg-blue-500/20"
+                    : "border-muted-foreground/30 bg-muted"
+                )} />
+                {idx < timeline.length - 1 && <div className="w-px flex-1 bg-border/60 my-0.5" />}
+              </div>
 
-          <AnimatePresence mode="popLayout">
-            {timeline.map((entry, idx) => (
-              <motion.div
-                key={entry.id}
-                layout
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -80, transition: { duration: 0.2 } }}
-              >
+              {/* Content */}
+              <div className="flex-1 min-w-0 pb-3 group">
                 {entry.type === "reminder" ? (
-                  <ReminderTimelineItem
+                  <ReminderRow
                     pupilName={entry.pupilName!}
                     startTime={entry.startTime!}
                     sent24h={entry.sent24h!}
                     sent1h={entry.sent1h!}
                   />
                 ) : (
-                  <TodoTimelineItem
+                  <TodoRow
                     todo={entry.todo!}
+                    isOverdue={!!entry.overdue}
                     onToggle={() => toggleTodo.mutate({ id: entry.todo!.id, is_completed: true })}
                     onDelete={() => deleteTodo.mutate(entry.todo!.id)}
                     onUpdate={(updates) => updateTodo.mutate({ id: entry.todo!.id, ...updates })}
                   />
                 )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         {activeTodos.length > 5 && (
-          <Link to="/instructor/todos" className="block text-center text-xs text-primary font-medium pt-2 hover:underline">
+          <Link to="/instructor/todos" className="block text-center text-xs text-primary font-medium pt-1 hover:underline">
             View all {activeTodos.length} tasks →
           </Link>
         )}
@@ -320,67 +325,43 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
   );
 }
 
-// ─── Reminder timeline item ────────────────────────────────────────
-function ReminderTimelineItem({
-  pupilName,
-  startTime,
-  sent24h,
-  sent1h,
-}: {
+// ─── Reminder row ──────────────────────────────────────────────
+function ReminderRow({ pupilName, startTime, sent24h, sent1h }: {
   pupilName: string;
   startTime: string;
   sent24h: boolean;
   sent1h: boolean;
 }) {
+  const status = sent1h ? "sent" : "pending";
   return (
-    <div className="flex items-start gap-3 py-2 group relative">
-      {/* Timeline dot */}
-      <div className="relative z-10 mt-1 h-[18px] w-[18px] rounded-full bg-amber-100 border-2 border-amber-400 flex items-center justify-center shrink-0">
-        <Bell className="h-2.5 w-2.5 text-amber-600" />
+    <>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium truncate">Reminder: {pupilName}</p>
+        <span className={cn(
+          "text-[10px] shrink-0 ml-2",
+          status === "sent" ? "text-emerald-600" : "text-amber-600"
+        )}>
+          {startTime}
+        </span>
       </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-medium text-amber-600 uppercase tracking-wide">Reminder</span>
-        </div>
-        <p className="text-sm font-medium text-foreground leading-tight mt-0.5">{pupilName}</p>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {startTime}
-          </span>
-          <span className={cn(
-            "text-[9px] px-1.5 py-0 rounded-full border inline-flex items-center gap-0.5",
-            sent24h
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
-              : "border-amber-500/30 bg-amber-500/10 text-amber-600"
-          )}>
-            {sent24h ? <CheckCircle2 className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5" />}
-            24h
-          </span>
-          <span className={cn(
-            "text-[9px] px-1.5 py-0 rounded-full border inline-flex items-center gap-0.5",
-            sent1h
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
-              : "border-amber-500/30 bg-amber-500/10 text-amber-600"
-          )}>
-            {sent1h ? <CheckCircle2 className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5" />}
-            1h
-          </span>
-        </div>
-      </div>
-    </div>
+      <p className="text-[10px] text-muted-foreground">{startTime} lesson</p>
+      <Badge variant="outline" className={cn(
+        "text-[9px] mt-1 px-1.5 py-0",
+        status === "sent"
+          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600"
+          : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+      )}>
+        {status === "sent" ? <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> : <Clock className="h-2.5 w-2.5 mr-0.5" />}
+        {status === "sent" ? "Sent" : "Pending"}
+      </Badge>
+    </>
   );
 }
 
-// ─── Todo timeline item ────────────────────────────────────────────
-function TodoTimelineItem({
-  todo,
-  onToggle,
-  onDelete,
-  onUpdate,
-}: {
+// ─── Todo row ──────────────────────────────────────────────────
+function TodoRow({ todo, isOverdue: overdue, onToggle, onDelete, onUpdate }: {
   todo: InstructorTodo;
+  isOverdue: boolean;
   onToggle: () => void;
   onDelete: () => void;
   onUpdate: (updates: Partial<InstructorTodo>) => void;
@@ -391,7 +372,6 @@ function TodoTimelineItem({
     todo.due_date ? parseISO(todo.due_date) : undefined
   );
   const editRef = useRef<HTMLInputElement>(null);
-  const isOverdue = todo.due_date && isPast(parseISO(todo.due_date)) && !isToday(parseISO(todo.due_date));
 
   useEffect(() => {
     if (editing && editRef.current) editRef.current.focus();
@@ -408,85 +388,74 @@ function TodoTimelineItem({
 
   if (editing) {
     return (
-      <div className="flex items-start gap-3 py-2 relative">
-        <div className="relative z-10 mt-1 h-[18px] w-[18px] rounded-full border-2 border-muted-foreground/30 shrink-0" />
-        <div className="flex-1 space-y-2">
-          <Input
-            ref={editRef}
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSave();
-              if (e.key === "Escape") setEditing(false);
-            }}
-            className="h-8 text-sm"
-          />
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1">
-                  <CalendarIcon className="h-3 w-3" />
-                  {editDueDate ? format(editDueDate, "d MMM") : "Due date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={editDueDate} onSelect={setEditDueDate} initialFocus className="p-3 pointer-events-auto" />
-              </PopoverContent>
-            </Popover>
-            {editDueDate && (
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditDueDate(undefined)}>
-                <X className="h-3 w-3" />
+      <div className="space-y-2">
+        <Input
+          ref={editRef}
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSave();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          className="h-8 text-sm"
+        />
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1">
+                <CalendarIcon className="h-3 w-3" />
+                {editDueDate ? format(editDueDate, "d MMM") : "Due date"}
               </Button>
-            )}
-            <div className="flex-1" />
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setEditing(false)}>Cancel</Button>
-            <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>Save</Button>
-          </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar mode="single" selected={editDueDate} onSelect={setEditDueDate} initialFocus className="p-3 pointer-events-auto" />
+            </PopoverContent>
+          </Popover>
+          {editDueDate && (
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditDueDate(undefined)}>
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+          <div className="flex-1" />
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setEditing(false)}>Cancel</Button>
+          <Button size="sm" className="h-7 px-2 text-xs" onClick={handleSave}>Save</Button>
         </div>
       </div>
     );
   }
 
+  const timeLabel = todo.due_date ? formatDueDate(todo.due_date) : "";
+
   return (
-    <div className={cn("flex items-start gap-3 py-2 group relative", isOverdue && "animate-pulse-subtle")}>
-      {/* Timeline dot = priority circle + check */}
-      <button
-        onClick={onToggle}
-        className={cn(
-          "relative z-10 mt-0.5 h-[18px] w-[18px] rounded-full border-2 shrink-0 flex items-center justify-center transition-colors hover:bg-muted",
-          PRIORITY_COLORS[todo.priority]
-        )}
-      >
-        <Check className="h-3 w-3 opacity-0 group-hover:opacity-40 transition-opacity text-foreground" />
-      </button>
-
-      <div className="flex-1 min-w-0">
-        <p className={cn("text-sm text-foreground leading-tight", isOverdue && "text-red-600 font-medium")}>
-          {todo.title}
-        </p>
-        {todo.due_date && (
-          <div className="flex items-center gap-1 mt-0.5">
-            <CalendarIcon className="h-3 w-3" />
-            <span className={cn("text-[11px]", getDueDateColor(todo.due_date))}>
-              {formatDueDate(todo.due_date)}
+    <>
+      <div className="flex items-center justify-between">
+        <button onClick={onToggle} className="text-sm font-medium truncate text-left hover:line-through transition-all">
+          <span className={cn(overdue && "text-red-500")}>{todo.title}</span>
+        </button>
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          {timeLabel && (
+            <span className={cn(
+              "text-[10px]",
+              overdue ? "text-red-500 font-bold" : "text-muted-foreground"
+            )}>
+              {timeLabel}
             </span>
-          </div>
-        )}
+          )}
+          <button
+            onClick={() => {
+              setEditTitle(todo.title);
+              setEditDueDate(todo.due_date ? parseISO(todo.due_date) : undefined);
+              setEditing(true);
+            }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Pencil className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+          </button>
+          <button onClick={onDelete} className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+          </button>
+        </div>
       </div>
-
-      <button
-        onClick={() => {
-          setEditTitle(todo.title);
-          setEditDueDate(todo.due_date ? parseISO(todo.due_date) : undefined);
-          setEditing(true);
-        }}
-        className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5"
-      >
-        <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-      </button>
-      <button onClick={onDelete} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
-        <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-      </button>
-    </div>
+    </>
   );
 }
