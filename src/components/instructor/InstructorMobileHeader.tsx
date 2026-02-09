@@ -114,10 +114,6 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/instructor/profile")}>
-                  <Avatar className="mr-2 h-5 w-5">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>SC</AvatarFallback>
-                  </Avatar>
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={toggleTheme}>
