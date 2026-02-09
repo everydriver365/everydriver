@@ -28,6 +28,21 @@ import {
   Lock,
   StickyNote,
 } from "lucide-react";
+
+// Custom PNG icons from the mobile app
+import messagesIcon from "@/assets/messages-icon.png";
+import paymentsIcon from "@/assets/payments-icon-new.png";
+import takePaymentIcon from "@/assets/take-payment-icon.png";
+import scheduleIcon from "@/assets/schedule-icon.png";
+import pupilsIcon from "@/assets/pupils-icon.png";
+import trackIcon from "@/assets/track-icon.png";
+import findMyCarIcon from "@/assets/find_car2.png";
+import jobOffersIcon from "@/assets/job-offers-icon.png";
+import healthHubIcon from "@/assets/health-hub-icon.png";
+import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
+import expensesIcon from "@/assets/expenses-icon.png";
+import todoIcon from "@/assets/todo-icon.png";
+import settingsIcon from "@/assets/settings-icon.png";
 import { motion } from "framer-motion";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { useMenuFeatureGates } from "@/hooks/useMenuFeatureGates";
@@ -45,6 +60,7 @@ interface MenuItem {
   action?: () => void;
   iconColor?: string;
   gateKey?: string;
+  customIcon?: string;
 }
 
 export default function InstructorMenu() {
@@ -62,20 +78,20 @@ export default function InstructorMenu() {
     {
       title: "Quick Actions",
       items: [
-        { icon: CheckSquare, label: "To Do", description: "Task list", iconColor: "text-violet-600", gateKey: "todos", path: "/instructor/todos" },
-        { icon: MessageCircle, label: "Messages", description: "Chat with pupils", iconColor: "text-sky-600", gateKey: "messages", path: "/instructor/messages" },
-        { icon: Briefcase, label: "Job Offers", description: "Pending jobs", iconColor: "text-purple-600", gateKey: "jobs", path: "/instructor/jobs" },
+        { icon: CheckSquare, label: "To Do", description: "Task list", iconColor: "text-violet-600", gateKey: "todos", path: "/instructor/todos", customIcon: todoIcon },
+        { icon: MessageCircle, label: "Messages", description: "Chat with pupils", iconColor: "text-sky-600", gateKey: "messages", path: "/instructor/messages", customIcon: messagesIcon },
+        { icon: Briefcase, label: "Job Offers", description: "Pending jobs", iconColor: "text-purple-600", gateKey: "jobs", path: "/instructor/jobs", customIcon: jobOffersIcon },
         { icon: CalendarPlus, label: "New Bookings", description: "Pending schedule", iconColor: "text-amber-600", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling" },
-        { icon: QrCode, label: "Take Payment", description: "QR code payment", iconColor: "text-emerald-600", gateKey: "pay", path: "/instructor/pay" },
-        { icon: Car, label: "Live Tracking", description: "GPS tracking", iconColor: "text-cyan-600", gateKey: "traccar", path: "/instructor/traccar" },
-        { icon: Navigation, label: "Find My Car", description: "Car location", iconColor: "text-rose-500", gateKey: "find-my-car", path: "/instructor/find-my-car" },
-        { icon: Receipt, label: "Expenses", description: "Track costs", iconColor: "text-amber-600", gateKey: "expenses", path: "/instructor/expenses" },
+        { icon: QrCode, label: "Take Payment", description: "QR code payment", iconColor: "text-emerald-600", gateKey: "pay", path: "/instructor/pay", customIcon: takePaymentIcon },
+        { icon: Car, label: "Live Tracking", description: "GPS tracking", iconColor: "text-cyan-600", gateKey: "traccar", path: "/instructor/traccar", customIcon: trackIcon },
+        { icon: Navigation, label: "Find My Car", description: "Car location", iconColor: "text-rose-500", gateKey: "find-my-car", path: "/instructor/find-my-car", customIcon: findMyCarIcon },
+        { icon: Receipt, label: "Expenses", description: "Track costs", iconColor: "text-amber-600", gateKey: "expenses", path: "/instructor/expenses", customIcon: expensesIcon },
       ],
     },
     {
       title: "Money & Reports",
       items: [
-        { icon: CreditCard, label: "Payments", description: "Full breakdown", iconColor: "text-emerald-600", gateKey: "payments", path: "/instructor/pay" },
+        { icon: CreditCard, label: "Payments", description: "Full breakdown", iconColor: "text-emerald-600", gateKey: "payments", path: "/instructor/pay", customIcon: paymentsIcon },
         { icon: TrendingUp, label: "Income Summary", description: "Earnings overview", iconColor: "text-green-600", gateKey: "income", path: "/instructor/income" },
         { icon: ArrowUpDown, label: "In vs Out", description: "Income vs expenses", iconColor: "text-sky-600", gateKey: "in-out", path: "/instructor/in-out" },
         { icon: Car, label: "Mileage Tracker", description: "HMRC deductions", iconColor: "text-green-600", gateKey: "mileage", path: "/instructor/mileage" },
@@ -85,14 +101,14 @@ export default function InstructorMenu() {
     {
       title: "Schedule & Pupils",
       items: [
-        { icon: Calendar, label: "Schedule", description: "View calendar", iconColor: "text-blue-600", gateKey: "schedule", path: "/instructor/schedule" },
-        { icon: Users, label: "Pupils", description: "Manage pupils", iconColor: "text-indigo-600", gateKey: "pupils", path: "/instructor/pupils" },
+        { icon: Calendar, label: "Schedule", description: "View calendar", iconColor: "text-blue-600", gateKey: "schedule", path: "/instructor/schedule", customIcon: scheduleIcon },
+        { icon: Users, label: "Pupils", description: "Manage pupils", iconColor: "text-indigo-600", gateKey: "pupils", path: "/instructor/pupils", customIcon: pupilsIcon },
       ],
     },
     {
       title: "Tools",
       items: [
-        { icon: Car, label: "Vehicle Health", description: "Fleet compliance", iconColor: "text-cyan-600", gateKey: "vehicle-health", path: "/instructor/vehicle-health" },
+        { icon: Car, label: "Vehicle Health", description: "Fleet compliance", iconColor: "text-cyan-600", gateKey: "vehicle-health", path: "/instructor/vehicle-health", customIcon: vehicleHealthIcon },
         { icon: Award, label: "Quick Test Result", description: "Record result", iconColor: "text-emerald-600", gateKey: "test-result-quick", action: () => setShowTestResultForm(true) },
         { icon: Award, label: "Full Test Report", description: "DL25A recording", iconColor: "text-teal-600", gateKey: "test-results", path: "/instructor/test-results" },
         { icon: Route, label: "Saved Routes", description: "Route library", iconColor: "text-rose-600", gateKey: "routes", path: "/instructor/routes" },
@@ -104,13 +120,13 @@ export default function InstructorMenu() {
     {
       title: "Wellbeing",
       items: [
-        { icon: Heart, label: "Health Hub", description: "Wellness tips", iconColor: "text-rose-600", gateKey: "health", path: "/instructor/health" },
+        { icon: Heart, label: "Health Hub", description: "Wellness tips", iconColor: "text-rose-600", gateKey: "health", path: "/instructor/health", customIcon: healthHubIcon },
       ],
     },
     {
       title: "Settings",
       items: [
-        { icon: Settings, label: "All Settings", description: "Preferences", iconColor: "text-gray-600", gateKey: "settings", path: "/instructor/settings" },
+        { icon: Settings, label: "All Settings", description: "Preferences", iconColor: "text-gray-600", gateKey: "settings", path: "/instructor/settings", customIcon: settingsIcon },
         { icon: Globe, label: "Mini-Website", description: "Your website", iconColor: "text-violet-600", gateKey: "website", path: "/instructor/website" },
         { icon: HelpCircle, label: "FAQs & Help", description: "Get support", iconColor: "text-blue-600", gateKey: "faqs", path: "/instructor/faqs" },
       ],
@@ -179,6 +195,8 @@ export default function InstructorMenu() {
                       >
                         {locked ? (
                           <Lock className="h-5 w-5 text-muted-foreground" />
+                        ) : item.customIcon ? (
+                          <img src={item.customIcon} alt={item.label} className="h-8 w-8 object-cover rounded-lg" />
                         ) : (
                           <item.icon className={cn("h-5 w-5", item.iconColor || "text-primary")} />
                         )}
