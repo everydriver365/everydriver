@@ -1,28 +1,87 @@
 
-# Add Payment Badge and ETA to Next Lesson Tile
 
-## What changes
+# App Style Layout Redesign
 
-The **Next Lesson** tile (the gradient card on the homepage) will be updated to:
+## Overview
+Transform the "App Style" (schedule) layout option into a modern iOS-inspired mobile dashboard with glassmorphism effects, a hero image with progress overlay, and an icon-grid launcher -- matching the reference image's aesthetic.
 
-1. **Show the pupil's credit/balance** using the same `PaymentStatusBadge` component used everywhere else in the app -- consistent styling with emerald for credit, amber for due, etc.
-2. **Show expected ETA to the pupil** using the existing `useTrafficETA` hook, displaying drive time and traffic condition indicator (the same car icon + colored text used in the Next Up tile).
+## What Changes
 
-## Technical details
+### 1. New "AppStyleHomeView" Component
+A brand-new component (`src/components/instructor/AppStyleHomeView.tsx`) that replaces the current `NewMobileScheduleView` when `layoutStyle === "schedule"`.
 
-### File: `src/components/instructor/NextLessonTile.tsx`
+**Hero Area (top ~35% of screen):**
+- Full-bleed hero image (user's custom hero or default)
+- Bottom gradient overlay (dark, for text legibility)
+- Large bold progress metric overlaid: e.g. `13.5h / 30h` (from `weeklyGoals` hook)
+- Smaller "X hours remaining" subtitle below
+- Horizontal animated progress bar under the text
+- Small circular profile avatar in top-right corner area
 
-**Query update:**
-- Add `account_balance` and `prepaid_hours` to the `pupils` select fields so the balance is available.
-- Update the `NextLesson` interface to include these fields.
+**Glassmorphism Content Container:**
+- Floating rounded-xl container sitting over the wallpaper
+- Semi-transparent white background with `backdrop-blur-xl`
+- Subtle border and shadow for elevation
 
-**New imports:**
-- `PaymentStatusBadge` from `./PaymentStatusBadge`
-- `useTrafficETA` from `@/hooks/useTrafficETA`
-- `Car`, `Loader2` from `lucide-react`
+**4-Column Icon Grid (iOS launcher style):**
+- Rounded-xl icon tiles in a 4-column grid
+- Each tile: rounded square with icon image (reusing existing `customIconImages` from QuickActionTiles), short label below
+- Notification badges on tiles that need attention (Job Offers, Messages)
+- Uses the same tile ordering/preferences system already in place (`useInstructorTilePreferences`)
 
-**UI additions (inside the info section):**
-- Add a `PaymentStatusBadge` next to the postcode row, using the same logic as NextUpTile: if `prepaid_hours > 0`, use `prepaid_hours * 40` as the effective balance, otherwise use `account_balance`. The badge will be styled with a semi-transparent white background to remain legible on the gradient card.
-- Add ETA display below the postcode: a small `Car` icon with the `etaText` value and traffic condition emoji, matching the NextUpTile style. Show a spinner while loading. The text will use `text-primary-foreground/80` to blend with the gradient background.
+### 2. Update InstructorMobileHome.tsx
+- When `layoutStyle === "schedule"`, render the new `AppStyleHomeView` instead of `NewMobileScheduleView`
+- Pass through all necessary props: `instructorId`, `weeklyGoals`, `heroImageUrl`, `wallpaperColor`, `pendingJobsCount`, `unreadCount`, quick actions, etc.
 
-**Computed postcode:** Use `pupil.pickup_postcode || pupil.postcode` as the destination for the ETA hook (same priority as everywhere else).
+### 3. Update AppearanceSettings Labels
+- Rename "App Style" label to "App Style" with the updated description "iOS-style launcher grid"
+- Keep "Dashboard" as-is with its current preview
+
+### 4. Visual Details
+- Progress bar uses emerald/green gradient matching the reference
+- Icon tiles use the existing custom PNG icons (already iOS-style)
+- Text on hero auto-adapts (white text with text-shadow over the gradient overlay)
+- Wallpaper color visible behind the glass container
+- Smooth framer-motion animations on mount and interactions
+
+## Technical Details
+
+### New Files
+- `src/components/instructor/AppStyleHomeView.tsx` -- the main new layout component
+
+### Modified Files
+- `src/components/instructor/InstructorMobileHome.tsx` -- swap `NewMobileScheduleView` for `AppStyleHomeView` in the schedule branch, pass additional props
+- `src/components/instructor/AppearanceSettings.tsx` -- minor label update for the schedule preview description
+
+### Dependencies Used (all already installed)
+- `framer-motion` for animations
+- `lucide-react` for fallback icons
+- Existing `useInstructorTilePreferences`, `useWeeklyGoals`, `useUnreadMessagesCount`, `usePendingJobsCount` hooks
+- Existing `customIconImages` map from `QuickActionTiles.tsx` (will export or duplicate the mapping)
+
+### Component Structure
+
+```text
+AppStyleHomeView
++-- Hero Section (hero image + gradient overlay)
+|   +-- Progress metric (hours / goal)
+|   +-- Subtitle text
+|   +-- Progress bar
+|   +-- Profile avatar (top-right)
++-- Glass Container (backdrop-blur, rounded-xl, semi-transparent)
+    +-- 4-column Icon Grid
+        +-- Icon Tile (rounded-xl image + label + optional badge)
+        +-- ...repeated for each visible tile
+```
+
+### Data Flow
+- Weekly hours progress comes from existing `useWeeklyGoals(instructorId)` hook
+- Hero image from `useInstructorAppearance` (already available in parent)
+- Tile order/visibility from `useInstructorTilePreferences` (already used by QuickActionTiles)
+- Badge counts from `usePendingJobsCount` and `useUnreadMessagesCount` (already available)
+
+### Accessibility
+- All text on hero uses white with text-shadow for contrast over any image
+- Touch targets minimum 44x44px for icon tiles
+- Notification badges use distinct colors (red) not relying on color alone (also include count number)
+
