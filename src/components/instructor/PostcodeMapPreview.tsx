@@ -91,6 +91,7 @@ export function PostcodeMapPreview({ postcode, className = "", onClick }: Postco
           zoomControl={false}
           doubleClickZoom={false}
           touchZoom={false}
+          attributionControl={false}
           style={{ height: "120px", width: "100%", zIndex: 0 }}
         >
           <TileLayer
