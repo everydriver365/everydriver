@@ -294,7 +294,7 @@ export function InstructorMobileHome({
     <PullToRefresh onRefresh={handleRefresh}>
        <UrgentAlertOverlay alerts={urgentAlerts} onDismiss={dismissUrgentAlert} />
        <div
-         className="min-h-screen dark:bg-background overflow-x-hidden relative"
+         className="min-h-screen flex flex-col dark:bg-background overflow-x-hidden relative"
          style={{ backgroundColor: wallpaperColor || '#E8F1FE' }}
        >
 
