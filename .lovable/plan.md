@@ -1,75 +1,70 @@
 
-
-# New Pupil Checklist Feature
+# Tint Tiles on Instructor Mobile Home
 
 ## Overview
+Apply the same tinted icon background pill pattern (used on sub-pages like Schedule, Pay, Expenses, etc.) to all tiles and widget cards on the instructor mobile home page. This creates visual consistency across the entire mobile experience.
 
-A collapsible "New Pupil Checklist" section on the expanded pupil card, allowing instructors to quickly capture and verify important details for new learners during their first lesson. Each item is interactive -- some are checkboxes, some are text inputs, and one allows a photo upload.
+## Components to Update
 
-## What It Looks Like
+### 1. TodayMiniTimeline (`src/components/instructor/TodayMiniTimeline.tsx`)
+- Add a tinted header icon pill: `h-8 w-8 rounded-lg bg-blue-100` with a `Clock` or `Calendar` icon in `text-blue-600`
+- Currently just has a plain text header "Today's Schedule"
 
-A collapsible panel (matching the existing Tracking History / Feedback style) with:
+### 2. TomorrowPeekCard (`src/components/instructor/TomorrowPeekCard.tsx`)
+- Already has a tinted icon pill (`bg-primary/10`) -- update to use a specific color like `bg-indigo-100` with `text-indigo-600` for more visual variety
 
-- Eyesight check (checkbox + pass/fail toggle)
-- Needs glasses (checkbox)
-- Special needs / requirements (text field)
-- DVLA check code (text input)
-- Driver number (text input -- already exists in DB, pre-fills if set)
-- Theory test certificate number (text input -- already exists in DB, pre-fills if set)
-- Previous driving experience (dropdown: None / Some lessons / Significant experience)
-- Driving licence photo (camera/upload button, stores image in `pupil-avatars` bucket)
+### 3. VehicleHealthStrip (`src/components/instructor/VehicleHealthStrip.tsx`)
+- Currently uses a plain `Car` icon with `text-primary`
+- Wrap in a tinted pill: `h-8 w-8 rounded-lg bg-sky-100` with `text-sky-600`
 
-A green progress indicator shows "5/8 completed" and a save button persists everything to the database.
+### 4. UnifiedAgendaTile (`src/components/instructor/dashboard/UnifiedAgendaTile.tsx`)
+- Already uses a custom PNG icon (`agendaIcon`) -- no change needed (custom image icons are exempt)
 
-## Database Changes
+### 5. PlanWidget (`src/components/instructor/dashboard/PlanWidget.tsx`)
+- Currently uses a plain `Crown` icon with `text-muted-foreground`
+- Wrap in a tinted pill: `h-8 w-8 rounded-lg bg-amber-100` with `text-amber-600`
 
-Add new columns to the `pupils` table:
+### 6. ReferralStatsWidget (`src/components/instructor/dashboard/ReferralStatsWidget.tsx`)
+- Currently uses a plain `Gift` icon with `text-muted-foreground`
+- Wrap in a tinted pill: `h-8 w-8 rounded-lg bg-pink-100` with `text-pink-600`
 
-```
-eyesight_checked       boolean   default null
-needs_glasses          boolean   default null
-special_needs          text      default null
-dvla_check_code        text      default null
-previous_experience    text      default null
-licence_photo_url      text      default null
-checklist_completed_at timestamptz default null
-```
+### 7. MessagesWidget (`src/components/instructor/dashboard/MessagesWidget.tsx`)
+- Currently uses a plain `MessageSquare` icon with `text-blue-500`
+- Wrap in a tinted pill: `h-8 w-8 rounded-lg bg-blue-100` with `text-blue-600`
 
-`driver_number` and `theory_cert_number` already exist -- no changes needed for those.
+### 8. GapFillerCard (`src/components/instructor/GapFillerCard.tsx`)
+- Currently has no icon in the header area
+- Add a tinted icon pill: `h-8 w-8 rounded-lg bg-violet-100` with a `CalendarPlus` icon in `text-violet-600`
 
-## New Component
-
-**`NewPupilChecklist.tsx`** -- a self-contained component that:
-- Fetches the pupil's current checklist data on mount
-- Renders each item with appropriate input type (checkbox, text, dropdown, photo)
-- Shows completion progress (X/8 items)
-- Saves all fields to the `pupils` table on "Save Checklist"
-- Photo upload uses the existing `pupil-avatars` storage bucket
-- Marks `checklist_completed_at` when all items are filled
-
-## Integration
-
-- Imported and rendered inside `ExpandablePupilCard.tsx`, placed after the Notes section and before the Lesson Feedback section (around line 800)
-- Uses the same collapsible panel style as Tracking History (border, rounded-lg, bg-muted/30 header)
-- Icon: `ClipboardCheck` from lucide-react
+### 9. TodayRoutePreview (`src/components/instructor/TodayRoutePreview.tsx`)
+- This is a map preview card -- the header/title area will get a tinted icon pill if it has one
 
 ## Technical Details
 
-### Files Created
-| File | Purpose |
-|------|---------|
-| `src/components/instructor/NewPupilChecklist.tsx` | The checklist component with form fields, photo upload, and save logic |
+The pattern applied to each component follows this structure:
+```tsx
+<div className="h-8 w-8 rounded-lg bg-{color}-100 dark:bg-{color}-900/30 flex items-center justify-center">
+  <Icon className="h-4 w-4 text-{color}-600 dark:text-{color}-400" />
+</div>
+```
 
-### Files Modified
-| File | Change |
-|------|--------|
-| `src/components/instructor/ExpandablePupilCard.tsx` | Import and render `NewPupilChecklist` in expanded card body |
+### Color Assignments
+| Component | Color | Icon |
+|-----------|-------|------|
+| TodayMiniTimeline | Blue | Calendar |
+| TomorrowPeekCard | Indigo | Calendar |
+| VehicleHealthStrip | Sky | Car |
+| PlanWidget | Amber | Crown |
+| ReferralStatsWidget | Pink | Gift |
+| MessagesWidget | Blue | MessageSquare |
+| GapFillerCard | Violet | CalendarPlus |
 
-### Database Migration
-- Add 7 new nullable columns to `pupils` table (eyesight_checked, needs_glasses, special_needs, dvla_check_code, previous_experience, licence_photo_url, checklist_completed_at)
-- No RLS changes needed -- existing `pupils` table policies already cover instructor access
-
-### Storage
-- Uses existing `pupil-avatars` bucket (already public) for licence photo uploads
-- File path: `{pupilId}/licence-{timestamp}.jpg`
-
+### Files Modified (8 files)
+- `src/components/instructor/TodayMiniTimeline.tsx`
+- `src/components/instructor/TomorrowPeekCard.tsx`
+- `src/components/instructor/VehicleHealthStrip.tsx`
+- `src/components/instructor/dashboard/PlanWidget.tsx`
+- `src/components/instructor/dashboard/ReferralStatsWidget.tsx`
+- `src/components/instructor/dashboard/MessagesWidget.tsx`
+- `src/components/instructor/GapFillerCard.tsx`
+- `src/components/instructor/TodayRoutePreview.tsx`
