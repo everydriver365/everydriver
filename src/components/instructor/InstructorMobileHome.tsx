@@ -156,8 +156,21 @@ export function InstructorMobileHome({
   const [showFAB, setShowFAB] = useState(false);
   const [showRefreshFeedback, setShowRefreshFeedback] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isNetworkOnline, setIsNetworkOnline] = useState(navigator.onLine);
   const { content, loading: contentLoading } = useInstructorHomepageContent();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Track real network connectivity
+  useEffect(() => {
+    const goOnline = () => setIsNetworkOnline(true);
+    const goOffline = () => setIsNetworkOnline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
 
   // Listen for editTiles URL parameter
   useEffect(() => {
@@ -353,7 +366,7 @@ export function InstructorMobileHome({
           nextPupilFirstName={nextLesson?.pupilName}
           nextLessonTime={nextLesson?.startTime ? nextLesson.startTime.substring(0, 5) : undefined}
           nextPostcode={nextLesson?.pickupPostcode ?? undefined}
-          isOnline={instructor?.is_active ?? false}
+          isOnline={isNetworkOnline}
         />
       </div>
       {/* Job Offers & Messages buttons - right under hero */}
