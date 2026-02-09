@@ -7014,6 +7014,7 @@ export type Database = {
           instructor_id: string
           last_trip_at: string | null
           lessons_completed: number | null
+          licence_photo_back_url: string | null
           licence_photo_url: string | null
           longest_streak: number | null
           monthly_driving_score: number | null
@@ -7093,6 +7094,7 @@ export type Database = {
           instructor_id: string
           last_trip_at?: string | null
           lessons_completed?: number | null
+          licence_photo_back_url?: string | null
           licence_photo_url?: string | null
           longest_streak?: number | null
           monthly_driving_score?: number | null
@@ -7172,6 +7174,7 @@ export type Database = {
           instructor_id?: string
           last_trip_at?: string | null
           lessons_completed?: number | null
+          licence_photo_back_url?: string | null
           licence_photo_url?: string | null
           longest_streak?: number | null
           monthly_driving_score?: number | null
