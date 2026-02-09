@@ -94,6 +94,7 @@ import InstructorDoodlepad from "./pages/InstructorDoodlepad";
 import InstructorTodos from "./pages/InstructorTodos";
 import InstructorNotes from "./pages/InstructorNotes";
 import InstructorPlans from "./pages/InstructorPlans";
+import InstructorResources from "./pages/InstructorResources";
 import PupilCardDemo from "./pages/PupilCardDemo";
 
 // Instructor SaaS pages
@@ -227,6 +228,7 @@ const App = () => (
               <Route path="/instructor/todos" element={<InstructorTodos />} />
               <Route path="/instructor/notes" element={<InstructorNotes />} />
               <Route path="/instructor/plans" element={<InstructorPlans />} />
+              <Route path="/instructor/resources" element={<InstructorResources />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />
