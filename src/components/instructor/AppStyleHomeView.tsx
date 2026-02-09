@@ -122,7 +122,7 @@ export function AppStyleHomeView({
                     <img
                       src={customIconImages[action.id]}
                       alt={action.title}
-                      className="w-10 h-10 object-contain"
+                      className="w-full h-full object-cover rounded-[16px]"
                     />
                   ) : (
                     <FallbackIcon className="h-7 w-7 text-primary" />
