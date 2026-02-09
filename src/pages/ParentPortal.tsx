@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { ParentMessageCard } from "@/components/parent/ParentMessageCard";
+import { ParentSyllabusOverview } from "@/components/parent/ParentSyllabusOverview";
+import { ParentPaymentHistory } from "@/components/parent/ParentPaymentHistory";
 
 interface Child {
   id: string;
@@ -608,6 +610,12 @@ export default function ParentPortal() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Syllabus Progress */}
+              <ParentSyllabusOverview childId={selectedChild.id} childName={selectedChild.name} />
+
+              {/* Payment History */}
+              <ParentPaymentHistory childId={selectedChild.id} />
             </div>
 
             {/* Sidebar - Message Instructor */}

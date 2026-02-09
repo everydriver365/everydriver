@@ -44,6 +44,7 @@ import { RecordPaymentModal } from "@/components/instructor/RecordPaymentModal";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { SendPaymentReminderButton } from "@/components/instructor/SendPaymentReminderButton";
 import { DrivingSyllabus } from "@/components/instructor/DrivingSyllabus";
+import { SyllabusRecommendations } from "@/components/instructor/SyllabusRecommendations";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -981,6 +982,9 @@ export function ExpandablePupilCard({
                   </div>
                 )}
               </div>
+
+              {/* Syllabus Recommendations */}
+              <SyllabusRecommendations pupilId={pupil.id} />
 
               {/* Assignments Panel */}
               {instructorId && (
