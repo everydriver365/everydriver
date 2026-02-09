@@ -55,6 +55,15 @@ import { InstructorBottomNav } from "@/components/instructor/InstructorBottomNav
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
+
+function getContrastColor(hex: string): string {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return lum > 0.6 ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.9)";
+}
 import { CommandPalette } from "@/components/CommandPalette";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
@@ -157,6 +166,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const isHomePage = location.pathname === "/instructor";
   const isAppStyle = isHomePage && layoutStyle === "schedule";
   const appStyleBg = isAppStyle ? (wallpaperColor || "#E8F1FE") : undefined;
+  const headerContrast = appStyleBg ? getContrastColor(appStyleBg) : null;
 
   const isTrackingPage = location.pathname.startsWith("/instructor/traccar");
   
@@ -289,10 +299,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         size="icon"
                         className={cn(
                           "-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0",
-                          isAppStyle
-                            ? "text-white hover:text-white hover:bg-white/20"
-                            : "text-primary/80 hover:text-primary hover:bg-[#D1E4FC]"
+                          !headerContrast && "text-primary/80 hover:text-primary hover:bg-[#D1E4FC]"
                         )}
+                        style={headerContrast ? { color: headerContrast } : undefined}
                       >
                         <Menu className="h-5 w-5" />
                       </Button>
@@ -378,7 +387,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
 
                   {/* Logo + Plan Badge */}
                   {isAppStyle ? (
-                    <span className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    <span className="font-bold text-sm tracking-wide" style={{ fontFamily: "'Poppins', sans-serif", color: headerContrast || undefined }}>
                       EVERY DRIVER
                     </span>
                   ) : (
@@ -399,7 +408,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className={cn("h-7 w-7 sm:h-8 sm:w-8 shrink-0", isAppStyle ? "text-white hover:bg-white/20" : "text-foreground hover:bg-[#D1E4FC]")}
+                        className={cn("h-7 w-7 sm:h-8 sm:w-8 shrink-0", !headerContrast && "text-foreground hover:bg-[#D1E4FC]")}
+                        style={headerContrast ? { color: headerContrast } : undefined}
                         title="Settings"
                       >
                         <Settings className="h-4 w-4" />
