@@ -49,6 +49,7 @@ import InstructorMobileDemo from "./pages/InstructorMobileDemo";
 import InstructorTileDemo from "./pages/InstructorTileDemo";
 import DesignDemo from "./pages/DesignDemo";
 import InstructorHeroDemo from "./pages/InstructorHeroDemo";
+import ReadyToTeachDemo from "./pages/ReadyToTeachDemo";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -247,6 +248,7 @@ const App = () => (
               <Route path="/instructor-mobile-demo" element={<InstructorMobileDemo />} />
               <Route path="/instructor-tile-demo" element={<InstructorTileDemo />} />
               <Route path="/instructor-hero-demo" element={<InstructorHeroDemo />} />
+              <Route path="/ready-to-teach-demo" element={<ReadyToTeachDemo />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
