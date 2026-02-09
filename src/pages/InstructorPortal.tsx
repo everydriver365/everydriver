@@ -21,11 +21,11 @@ import { UpcomingTestsView } from "@/components/instructor/UpcomingTestsView";
 import { InstructorMobileHome } from "@/components/instructor/InstructorMobileHome";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
-import { ReminderStatusWidget } from "@/components/instructor/dashboard/ReminderStatusWidget";
+import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NotesWidget } from "@/components/instructor/dashboard/NotesWidget";
 import { MessagesWidget } from "@/components/instructor/dashboard/MessagesWidget";
-import { TodoHomeTile } from "@/components/instructor/TodoHomeTile";
+
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { AvailabilityCalendar } from "@/components/instructor/AvailabilityCalendar";
@@ -431,11 +431,10 @@ export default function InstructorPortal() {
                 <PaymentSummaryWidget instructorId={instructorId} instructorName={instructorData?.name} />
               </CardContent>
             </Card>
-            <TodoHomeTile instructorId={instructorId} />
+            <UnifiedAgendaTile instructorId={instructorId} />
             <NotesWidget instructorId={instructorId} />
             <MessagesWidget instructorId={instructorId} />
             <PlanWidget />
-            <ReminderStatusWidget />
             <ReferralStatsWidget />
           </div>
         </div>
