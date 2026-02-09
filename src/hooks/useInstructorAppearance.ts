@@ -117,7 +117,7 @@ export function useInstructorAppearance(instructorId: string | undefined) {
           .from("hero-images")
           .getPublicUrl(fileName);
 
-        const url = urlData.publicUrl;
+        const url = `${urlData.publicUrl}?t=${Date.now()}`;
         await updateAppearance({ heroImageUrl: url });
         return url;
       } catch (err) {
