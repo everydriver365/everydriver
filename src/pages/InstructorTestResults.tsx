@@ -158,7 +158,9 @@ export default function InstructorTestResults() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Award className="h-6 w-6 text-primary" />
+              <div className="h-8 w-8 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                <Award className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+              </div>
               Driving Test Results
             </h1>
             <p className="text-muted-foreground">

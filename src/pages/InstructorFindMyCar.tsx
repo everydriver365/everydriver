@@ -169,8 +169,13 @@ export default function InstructorFindMyCar() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold">Find My Car</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl font-bold flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+                  <Car className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+                </div>
+                Find My Car
+              </h1>
+              <p className="text-sm text-muted-foreground ml-10">
                 Locate your vehicle
               </p>
             </div>

@@ -444,8 +444,13 @@ export default function InstructorRoutes() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Saved Routes</h1>
-            <p className="text-muted-foreground text-sm">Your recorded driving routes</p>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <Route className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              </div>
+              Saved Routes
+            </h1>
+            <p className="text-muted-foreground text-sm ml-10">Your recorded driving routes</p>
           </div>
         </div>
 
