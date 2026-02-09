@@ -195,7 +195,8 @@ export function RescheduleLessonSheet({
     const today = startOfDay(new Date());
     const maxDate = addDays(today, bookingAdvanceDays);
     if (isBefore(date, today) || isAfter(date, maxDate)) return false;
-    return getAvailabilityForDate(date) !== null;
+    if (getAvailabilityForDate(date) === null) return false;
+    return getAvailableTimeSlots(date).length > 0;
   };
 
   const addMinutesToTime = (time: string, minutes: number) => {
