@@ -182,3 +182,6 @@ verify_jwt = false
 
 [functions.extract-invoice-data]
 verify_jwt = false
+
+[functions.generate-lesson-plan]
+verify_jwt = false

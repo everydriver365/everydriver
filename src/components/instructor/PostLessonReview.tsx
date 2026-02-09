@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Save, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Save, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   DVSA_SYLLABUS,
@@ -41,6 +41,7 @@ export function PostLessonReview({
   const [notes, setNotes] = useState(existingNotes || '');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,7 +63,6 @@ export function PostLessonReview({
       });
       setCurrentProgress(progressMap);
 
-      // Pre-populate updatedLevels with current values
       const initial: Record<string, number> = {};
       DVSA_SYLLABUS.forEach((c) => {
         initial[c.id] = progressMap[c.id] || 0;
@@ -82,15 +82,36 @@ export function PostLessonReview({
     }));
   };
 
+  const handleGeneratePlan = async () => {
+    setGeneratingPlan(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
+        body: { pupilId, instructorId },
+      });
+
+      if (error) throw error;
+
+      if (data?.plan_text) {
+        setNextPlan(data.plan_text);
+        toast.success('AI lesson plan generated');
+      } else if (data?.error) {
+        toast.error(data.error);
+      }
+    } catch (error) {
+      console.error('Error generating plan:', error);
+      toast.error('Failed to generate lesson plan');
+    } finally {
+      setGeneratingPlan(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      // 1. Find changed competencies
       const changes = DVSA_SYLLABUS.filter(
         (c) => (updatedLevels[c.id] || 0) !== (currentProgress[c.id] || 0)
       );
 
-      // 2. Upsert pupil_syllabus_progress for changed items
       if (changes.length > 0) {
         const upserts = changes.map((c) => ({
           pupil_id: pupilId,
@@ -105,7 +126,6 @@ export function PostLessonReview({
 
         if (upsertError) throw upsertError;
 
-        // 3. Insert audit records into lesson_syllabus_updates
         const auditRecords = changes.map((c) => ({
           lesson_history_id: lessonId,
           pupil_id: pupilId,
@@ -121,7 +141,6 @@ export function PostLessonReview({
         if (auditError) throw auditError;
       }
 
-      // 4. Update lesson_history with notes and next_lesson_plan
       const updatePayload: Record<string, any> = {};
       if (notes) updatePayload.notes = notes;
       if (nextPlan) updatePayload.next_lesson_plan = nextPlan;
@@ -241,13 +260,29 @@ export function PostLessonReview({
 
       {/* Next Lesson Plan */}
       <div className="space-y-2">
-        <Label htmlFor="next-plan">Plan for next lesson</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="next-plan">Plan for next lesson</Label>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleGeneratePlan}
+            disabled={generatingPlan}
+            className="h-7 text-xs gap-1.5 text-primary"
+          >
+            {generatingPlan ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+            {generatingPlan ? 'Generating...' : 'AI Suggest'}
+          </Button>
+        </div>
         <Textarea
           id="next-plan"
           value={nextPlan}
           onChange={(e) => setNextPlan(e.target.value)}
           placeholder="What to cover in the next lesson..."
-          rows={2}
+          rows={3}
         />
       </div>
 
