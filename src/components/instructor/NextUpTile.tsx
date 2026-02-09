@@ -220,7 +220,11 @@ export function NextUpTile({
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/60 dark:border-emerald-800/30 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
                 {formatDuration()} lesson
               </span>
-              <span className={`text-xs font-bold ${effectiveBalance < 0 ? "text-destructive" : "text-foreground"}`}>
+              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[11px] font-semibold ${
+                effectiveBalance < 0
+                  ? "bg-destructive/10 border border-destructive/30 text-destructive"
+                  : "bg-blue-50 dark:bg-blue-900/20 border border-blue-200/60 dark:border-blue-800/30 text-blue-700 dark:text-blue-300"
+              }`}>
                 £{Math.abs(effectiveBalance).toFixed(0)}{effectiveBalance < 0 ? " due" : ""}
               </span>
             </div>
