@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { format, addDays, startOfDay, isSameDay, isAfter, isBefore, parse } from "date-fns";
+import { format, addDays, startOfDay, startOfMonth, isSameDay, isAfter, isBefore, parse } from "date-fns";
 import { Calendar, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -78,6 +78,7 @@ export function RescheduleLessonSheet({
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [viewMonth, setViewMonth] = useState<Date>(new Date());
 
   const bookingAdvanceDays = 365;
 
@@ -157,6 +158,7 @@ export function RescheduleLessonSheet({
         const candidate = addDays(today, i);
         if (isDateAvailable(candidate)) {
           setSelectedDate(candidate);
+          setViewMonth(startOfMonth(candidate));
           break;
         }
       }
@@ -336,7 +338,8 @@ export function RescheduleLessonSheet({
                 <CalendarComponent
                   mode="single"
                   selected={selectedDate}
-                  defaultMonth={selectedDate}
+                  month={viewMonth}
+                  onMonthChange={setViewMonth}
                   onSelect={(date) => {
                     setSelectedDate(date);
                     setSelectedTime(null);
