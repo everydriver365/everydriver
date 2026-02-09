@@ -43,7 +43,7 @@ import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
 import { InstructorSetupChecklist } from "@/components/instructor/InstructorSetupChecklist";
 import { PlanWidget } from "@/components/instructor/dashboard/PlanWidget";
-import { ReminderStatusWidget } from "@/components/instructor/dashboard/ReminderStatusWidget";
+import { UnifiedAgendaTile } from "@/components/instructor/dashboard/UnifiedAgendaTile";
 import { ReferralStatsWidget } from "@/components/instructor/dashboard/ReferralStatsWidget";
 import { NextUpTile } from "@/components/instructor/NextUpTile";
 import { DrivingAlertsStrip } from "@/components/instructor/DrivingAlertsStrip";
@@ -487,7 +487,7 @@ export function InstructorMobileHome({
 
       {/* Plan, Reminders & Referrals Widgets */}
       <div className="mt-4 space-y-3">
-        <ReminderStatusWidget />
+        <UnifiedAgendaTile instructorId={instructor?.id} />
         <PlanWidget />
         
       </div>
