@@ -230,12 +230,14 @@ export function RescheduleLessonSheet({
             );
           });
 
-          // Check against Google Calendar events
+          // Check against Google Calendar events (skip all-day events)
           const conflictsWithCalendar = calendarEvents.some((e) => {
             const eventDate = e.start_time.slice(0, 10);
             if (eventDate !== dateStr) return false;
             const eventStart = e.start_time.slice(11, 16);
             const eventEnd = e.end_time.slice(11, 16);
+            // Skip all-day events (00:00 to 23:59) - these are informational, not time-specific blocks
+            if (eventStart === "00:00" && (eventEnd === "23:59" || eventEnd === "00:00")) return false;
             return (
               (time >= eventStart && time < eventEnd) ||
               (slotEnd > eventStart && slotEnd <= eventEnd) ||

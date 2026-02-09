@@ -301,6 +301,12 @@ export function LessonScheduler({
         const eventStart = new Date(event.start_time);
         const eventEnd = new Date(event.end_time);
         
+        // Skip all-day events (informational, not time-specific blocks)
+        const startHour = eventStart.getHours() + eventStart.getMinutes();
+        const diffMs = eventEnd.getTime() - eventStart.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        if (startHour === 0 && diffHours >= 23) return false;
+        
         // Check if the slot overlaps with the external event
         return (
           (slotStartDateTime >= eventStart && slotStartDateTime < eventEnd) ||
