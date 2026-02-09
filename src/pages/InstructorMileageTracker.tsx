@@ -118,7 +118,9 @@ export default function InstructorMileageTracker() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Car className="h-5 w-5 text-primary" />
+              <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <Car className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
               <h1 className="text-xl font-bold">Mileage Tracker</h1>
             </div>
             <p className="text-sm text-muted-foreground mt-1">Track miles for HMRC tax deductions</p>

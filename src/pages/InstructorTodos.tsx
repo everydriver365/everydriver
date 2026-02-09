@@ -120,7 +120,12 @@ export default function InstructorTodos() {
         {/* Header */}
         <div className="px-4 md:px-0 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold">To Do</h1>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                <Check className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+              </div>
+              To Do
+            </h1>
             <p className="text-sm text-muted-foreground">
               {activeTodos.length} task{activeTodos.length !== 1 ? "s" : ""} remaining
             </p>

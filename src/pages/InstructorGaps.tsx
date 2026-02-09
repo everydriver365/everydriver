@@ -23,7 +23,9 @@ export default function InstructorGaps() {
     <InstructorPortalLayout>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-primary" />
+          <div className="h-8 w-8 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
+            <MapPin className="h-4 w-4 text-pink-600 dark:text-pink-400" />
+          </div>
           <h1 className="text-xl font-bold">Gaps & Waitlist</h1>
         </div>
 

@@ -201,7 +201,9 @@ export default function InstructorJobs() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-primary" />
+            <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <Briefcase className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
             Available Jobs
           </h1>
           <Badge variant="secondary">{jobs.length} open</Badge>

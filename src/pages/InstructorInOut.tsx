@@ -135,9 +135,8 @@ export default function InstructorInOut() {
       <div className="space-y-4 pb-24">
         <div>
           <div className="flex items-center gap-2">
-            <div className="flex -space-x-1">
-              <ArrowUpRight className="h-4 w-4 text-emerald-600" />
-              <ArrowDownLeft className="h-4 w-4 text-red-500" />
+            <div className="h-8 w-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
+              <ArrowUpRight className="h-4 w-4 text-sky-600 dark:text-sky-400" />
             </div>
             <h1 className="text-xl font-bold">In & Out</h1>
           </div>

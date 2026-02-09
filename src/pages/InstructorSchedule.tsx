@@ -119,7 +119,9 @@ export default function InstructorSchedule() {
       <div className="space-y-4 h-full flex flex-col">
         <div className="flex items-center justify-between gap-2 sticky top-0 z-20 bg-background py-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 border-b sm:border-b-0">
           <div className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
+            <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
             <h1 className="text-xl font-bold">Schedule</h1>
           </div>
 

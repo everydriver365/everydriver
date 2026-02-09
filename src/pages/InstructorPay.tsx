@@ -103,7 +103,9 @@ export default function InstructorPay() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold flex items-center gap-2">
-            <PoundSterling className="h-5 w-5 text-primary" />
+            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+              <PoundSterling className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
             Money
           </h1>
           <Button size="sm" onClick={() => setPaymentSheetOpen(true)}>
@@ -150,7 +152,9 @@ export default function InstructorPay() {
             transition={{ delay: 0.1 }}
             className="bg-card rounded-xl border p-3 text-center"
           >
-            <Calendar className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+            <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-1">
+              <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
             <p className="text-lg font-bold">£{earnings?.thisWeek || 0}</p>
             <p className="text-[10px] text-muted-foreground">This Week</p>
           </motion.div>
@@ -160,7 +164,9 @@ export default function InstructorPay() {
             transition={{ delay: 0.15 }}
             className="bg-card rounded-xl border p-3 text-center"
           >
-            <History className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-1">
+              <History className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            </div>
             <p className="text-lg font-bold">£{earnings?.lastMonth || 0}</p>
             <p className="text-[10px] text-muted-foreground">Last Month</p>
           </motion.div>
@@ -170,7 +176,9 @@ export default function InstructorPay() {
             transition={{ delay: 0.2 }}
             className="bg-card rounded-xl border p-3 text-center"
           >
-            <Clock className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+            <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-1">
+              <Clock className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            </div>
             <p className="text-lg font-bold">£{earnings?.hourlyRate || 40}</p>
             <p className="text-[10px] text-muted-foreground">Per Hour</p>
           </motion.div>

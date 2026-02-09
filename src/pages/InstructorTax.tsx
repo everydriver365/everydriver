@@ -212,7 +212,9 @@ export default function InstructorTax() {
       <div className="space-y-4 pb-24">
         <div>
           <div className="flex items-center gap-2">
-            <Calculator className="h-5 w-5 text-purple-600" />
+            <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+              <Calculator className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
             <h1 className="text-xl font-bold">Tax Summary</h1>
           </div>
           <p className="text-sm text-muted-foreground mt-1">Estimated tax liability</p>
