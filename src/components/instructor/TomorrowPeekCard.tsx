@@ -1,6 +1,7 @@
 import { format, parse } from "date-fns";
 import { motion } from "framer-motion";
-import { Calendar, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import calendarIcon from "@/assets/calendar-icon.png";
 import { useNavigate } from "react-router-dom";
 
 interface TomorrowPeekCardProps {
@@ -44,7 +45,7 @@ export function TomorrowPeekCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-primary" />
+              <img src={calendarIcon} alt="Calendar" className="h-6 w-6" />
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">
