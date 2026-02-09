@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PupilAvatar } from "./PupilAvatar";
 import { PaymentStatusBadge } from "./PaymentStatusBadge";
 import { CancelLessonDialog } from "./CancelLessonDialog";
+import { RescheduleLessonSheet } from "./RescheduleLessonSheet";
 import { PostcodeMapPreview } from "./PostcodeMapPreview";
 import { useTrafficETA } from "@/hooks/useTrafficETA";
 import { usePupilUnreadCount } from "@/hooks/usePupilUnreadCount";
@@ -53,6 +54,7 @@ export function NextUpTile({
   instructorId,
 }: NextUpTileProps) {
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -345,7 +347,7 @@ export function NextUpTile({
                   className="overflow-hidden"
                 >
                   <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border mt-2">
-                    <Button size="sm" variant="outline" onClick={() => navigate(`/instructor/schedule?date=${lessonDate}`)} className="rounded-xl gap-1.5">
+                    <Button size="sm" variant="outline" onClick={() => setRescheduleOpen(true)} className="rounded-xl gap-1.5">
                       <CalendarClock className="h-3.5 w-3.5" /> Reschedule
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setCancelOpen(true)} className="rounded-xl gap-1.5 text-destructive hover:text-destructive">
@@ -375,6 +377,21 @@ export function NextUpTile({
           endTime={getEndTime()}
           instructorId={instructorId}
           onCancelled={handleCancelled}
+        />
+      )}
+
+      {/* Reschedule sheet with live availability */}
+      {instructorId && (
+        <RescheduleLessonSheet
+          open={rescheduleOpen}
+          onOpenChange={setRescheduleOpen}
+          lessonId={lessonId}
+          instructorId={instructorId}
+          pupilName={pupilName}
+          currentDate={lessonDate}
+          currentTime={startTime}
+          durationMinutes={durationMinutes}
+          onRescheduled={handleCancelled}
         />
       )}
     </>
