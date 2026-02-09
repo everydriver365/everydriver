@@ -12,6 +12,7 @@ import { format, addDays } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Plus, Trash2, Loader2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { CompetencyPicker } from "./CompetencyPicker";
 
 interface LessonSlot {
   id: string;
@@ -66,6 +67,7 @@ export function ScheduleLessonsDialog({
   const [pickupLocation, setPickupLocation] = useState(
     (pupil as any).pickup_address || pupil.address || ""
   );
+  const [plannedCompetencies, setPlannedCompetencies] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   const totalScheduledHours = slots.reduce((sum, s) => sum + s.duration, 0);
@@ -117,6 +119,7 @@ export function ScheduleLessonsDialog({
         pickup_postcode: pupil.postcode,
         status: 'scheduled',
         payment_status: 'pending',
+        planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
       }));
 
       const { error: lessonsError } = await supabase
@@ -214,6 +217,15 @@ export function ScheduleLessonsDialog({
               value={pickupLocation}
               onChange={(e) => setPickupLocation(e.target.value)}
               placeholder="Enter pickup address"
+            />
+          </div>
+
+          {/* Planned Competencies */}
+          <div className="space-y-2">
+            <Label>Skills to Practice (optional)</Label>
+            <CompetencyPicker
+              selected={plannedCompetencies}
+              onChange={setPlannedCompetencies}
             />
           </div>
 

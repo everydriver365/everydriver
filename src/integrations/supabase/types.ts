@@ -7843,6 +7843,7 @@ export type Database = {
           pickup_location: string | null
           pickup_postcode: string | null
           pickup_what3words: string | null
+          planned_competencies: string[] | null
           prepaid_hours_used: number | null
           pupil_id: string
           recurrence_parent_id: string | null
@@ -7874,6 +7875,7 @@ export type Database = {
           pickup_location?: string | null
           pickup_postcode?: string | null
           pickup_what3words?: string | null
+          planned_competencies?: string[] | null
           prepaid_hours_used?: number | null
           pupil_id: string
           recurrence_parent_id?: string | null
@@ -7905,6 +7907,7 @@ export type Database = {
           pickup_location?: string | null
           pickup_postcode?: string | null
           pickup_what3words?: string | null
+          planned_competencies?: string[] | null
           prepaid_hours_used?: number | null
           pupil_id?: string
           recurrence_parent_id?: string | null
@@ -8268,6 +8271,7 @@ export type Database = {
           id: string
           latitude: number | null
           longitude: number | null
+          related_competency_id: string | null
           road_name: string | null
           severity: string | null
           speed_delta: number | null
@@ -8283,6 +8287,7 @@ export type Database = {
           id?: string
           latitude?: number | null
           longitude?: number | null
+          related_competency_id?: string | null
           road_name?: string | null
           severity?: string | null
           speed_delta?: number | null
@@ -8298,6 +8303,7 @@ export type Database = {
           id?: string
           latitude?: number | null
           longitude?: number | null
+          related_competency_id?: string | null
           road_name?: string | null
           severity?: string | null
           speed_delta?: number | null

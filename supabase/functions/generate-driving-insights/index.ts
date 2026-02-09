@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface DrivingInsight {
@@ -45,14 +45,23 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch recent telematics sessions for the pupil
-    const { data: sessions, error: sessionsError } = await supabase
-      .from("lesson_telematics")
-      .select("*")
-      .eq("pupil_id", pupilId)
-      .eq("instructor_id", instructorId)
-      .order("started_at", { ascending: false })
-      .limit(sessionCount);
+    // Fetch telematics sessions and syllabus progress in parallel
+    const [sessionsRes, progressRes] = await Promise.all([
+      supabase
+        .from("lesson_telematics")
+        .select("*")
+        .eq("pupil_id", pupilId)
+        .eq("instructor_id", instructorId)
+        .order("started_at", { ascending: false })
+        .limit(sessionCount),
+      supabase
+        .from("pupil_syllabus_progress")
+        .select("competency_id, level")
+        .eq("pupil_id", pupilId),
+    ]);
+
+    const sessions = sessionsRes.data;
+    const sessionsError = sessionsRes.error;
 
     if (sessionsError) {
       throw new Error(`Failed to fetch sessions: ${sessionsError.message}`);
@@ -97,21 +106,25 @@ serve(async (req) => {
       .eq("id", pupilId)
       .single();
 
+    // Build syllabus context
+    const syllabusProgress = progressRes.data || [];
+    const syllabusContext = buildSyllabusContext(syllabusProgress, telematicsData);
+
     // Generate insights using Lovable AI
-    const aiPrompt = buildAIPrompt(telematicsData, pupil, sessions);
+    const aiPrompt = buildAIPrompt(telematicsData, pupil, sessions, syllabusContext);
     
-    const aiResponse = await fetch("https://llm.lovable.ai/v1/chat/completions", {
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY") || ""}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           {
             role: "system",
-            content: `You are an expert driving instructor AI assistant. Analyze the driving telemetry data and provide personalized coaching insights. Be specific, actionable, and encouraging. Focus on safety first. Always respond with valid JSON matching this structure:
+            content: `You are an expert DVSA driving instructor AI assistant. Analyze the driving telemetry data and syllabus progress to provide personalized coaching insights. Be specific, actionable, and encouraging. Focus on safety first. Link telematics patterns to specific DVSA competencies where relevant. Always respond with valid JSON matching this structure:
 {
   "overallScore": number (0-100),
   "strengths": string[] (2-4 items),
@@ -132,7 +145,18 @@ serve(async (req) => {
     });
 
     if (!aiResponse.ok) {
-      // Fallback to rule-based insights if AI fails
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded, please try again later" }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI credits exhausted" }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       const fallbackInsights = generateFallbackInsights(telematicsData);
       return new Response(JSON.stringify(fallbackInsights), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -152,7 +176,6 @@ serve(async (req) => {
     // Parse AI response
     let insights: DrivingInsight;
     try {
-      // Extract JSON from potential markdown code blocks
       const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/) || 
                        content.match(/```\n?([\s\S]*?)\n?```/);
       const jsonStr = jsonMatch ? jsonMatch[1] : content;
@@ -177,10 +200,63 @@ serve(async (req) => {
   }
 });
 
+// Competency mapping for telematics
+const TELEMATICS_COMPETENCY_MAP: Record<string, string[]> = {
+  speeding: ["use_of_speed", "response_signs"],
+  harsh_brake: ["following_distance", "awareness_planning"],
+  harsh_accel: ["controls", "moving_off"],
+};
+
+function buildSyllabusContext(
+  progress: { competency_id: string; level: number }[],
+  telematics: TelematicsData
+): string {
+  if (progress.length === 0) return "";
+
+  const progressMap: Record<string, number> = {};
+  progress.forEach((p) => { progressMap[p.competency_id] = p.level; });
+
+  const relevantSkills: string[] = [];
+
+  // Map telematics issues to competencies
+  if (telematics.speedingPercentage > 5) {
+    const speedLevel = progressMap["use_of_speed"] ?? "not tracked";
+    relevantSkills.push(`'Use of Speed' at Level ${speedLevel} — speeding ${telematics.speedingPercentage.toFixed(1)}% of the time`);
+  }
+  if (telematics.harshBrakingEvents > 2) {
+    const distLevel = progressMap["following_distance"] ?? "not tracked";
+    relevantSkills.push(`'Following Distance' at Level ${distLevel} — ${telematics.harshBrakingEvents} harsh braking events`);
+  }
+  if (telematics.harshAccelerationEvents > 2) {
+    const ctrlLevel = progressMap["controls"] ?? "not tracked";
+    relevantSkills.push(`'Controls' at Level ${ctrlLevel} — ${telematics.harshAccelerationEvents} harsh acceleration events`);
+  }
+
+  // Low-level skills
+  const lowSkills = progress
+    .filter((p) => p.level <= 2 && p.level > 0)
+    .map((p) => `${p.competency_id}: Level ${p.level}`);
+
+  let context = "\n\nDVSA SYLLABUS PROGRESS:";
+  if (relevantSkills.length > 0) {
+    context += "\nTelematics-linked competencies:\n- " + relevantSkills.join("\n- ");
+  }
+  if (lowSkills.length > 0) {
+    context += "\nSkills needing development:\n- " + lowSkills.join("\n- ");
+  }
+
+  const totalCompetencies = 27;
+  const atLevel4Plus = progress.filter((p) => p.level >= 4).length;
+  context += `\nTest readiness: ${atLevel4Plus}/${totalCompetencies} skills at Level 4+`;
+
+  return context;
+}
+
 function buildAIPrompt(
   data: TelematicsData,
   pupil: { first_name: string; experience_level: string } | null,
-  sessions: unknown[]
+  sessions: unknown[],
+  syllabusContext: string
 ): string {
   const pupilName = pupil?.first_name || "the learner";
   const level = pupil?.experience_level || "intermediate";
@@ -195,12 +271,14 @@ DRIVING STATISTICS (last ${data.totalSessions} sessions):
 - Speeding percentage: ${data.speedingPercentage.toFixed(1)}% of time over limit
 - Harsh braking events: ${data.harshBrakingEvents} total
 - Harsh acceleration events: ${data.harshAccelerationEvents} total
+${syllabusContext}
 
 Based on this data, provide personalized coaching insights. Consider:
 1. Safety implications of the driving patterns
 2. Areas where the learner excels
-3. Specific, actionable improvement tips
+3. Specific, actionable improvement tips linked to DVSA competencies
 4. Whether the overall trend shows improvement
+5. How telematics patterns relate to specific syllabus skills
 
 Respond with JSON only.`;
 }
@@ -211,7 +289,6 @@ function generateFallbackInsights(data: TelematicsData): DrivingInsight {
   const areasToImprove: string[] = [];
   const coachingTips: DrivingInsight["coachingTips"] = [];
 
-  // Analyze speed compliance
   if (data.speedComplianceRate >= 90) {
     strengths.push("Excellent speed limit awareness");
   } else if (data.speedComplianceRate < 80) {
@@ -223,7 +300,6 @@ function generateFallbackInsights(data: TelematicsData): DrivingInsight {
     });
   }
 
-  // Analyze braking
   const brakingPerSession = data.harshBrakingEvents / data.totalSessions;
   if (brakingPerSession < 1) {
     strengths.push("Smooth braking technique");
@@ -236,7 +312,6 @@ function generateFallbackInsights(data: TelematicsData): DrivingInsight {
     });
   }
 
-  // Analyze acceleration
   const accelPerSession = data.harshAccelerationEvents / data.totalSessions;
   if (accelPerSession < 1) {
     strengths.push("Progressive acceleration control");
@@ -248,7 +323,6 @@ function generateFallbackInsights(data: TelematicsData): DrivingInsight {
     });
   }
 
-  // Add distance-based tip
   if (data.totalDistance < 50) {
     coachingTips.push({
       priority: "medium",
@@ -259,13 +333,8 @@ function generateFallbackInsights(data: TelematicsData): DrivingInsight {
     strengths.push("Building solid road experience");
   }
 
-  // Ensure we have some content
-  if (strengths.length === 0) {
-    strengths.push("Showing commitment to learning");
-  }
-  if (areasToImprove.length === 0) {
-    areasToImprove.push("Continue building consistency");
-  }
+  if (strengths.length === 0) strengths.push("Showing commitment to learning");
+  if (areasToImprove.length === 0) areasToImprove.push("Continue building consistency");
   if (coachingTips.length === 0) {
     coachingTips.push({
       priority: "low",
@@ -285,20 +354,16 @@ function generateFallbackInsights(data: TelematicsData): DrivingInsight {
 }
 
 function calculateOverallScore(data: TelematicsData): number {
-  let score = 70; // Base score
-
-  // Speed compliance impact (max ±20 points)
+  let score = 70;
   if (data.speedComplianceRate >= 95) score += 20;
   else if (data.speedComplianceRate >= 90) score += 15;
   else if (data.speedComplianceRate >= 80) score += 5;
   else if (data.speedComplianceRate < 70) score -= 15;
 
-  // Harsh braking impact (max ±10 points)
   const brakingPerSession = data.harshBrakingEvents / data.totalSessions;
   if (brakingPerSession < 0.5) score += 10;
   else if (brakingPerSession >= 3) score -= 10;
 
-  // Harsh acceleration impact (max ±5 points)
   const accelPerSession = data.harshAccelerationEvents / data.totalSessions;
   if (accelPerSession < 0.5) score += 5;
   else if (accelPerSession >= 2) score -= 5;

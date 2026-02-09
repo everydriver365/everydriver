@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { CompetencyPicker } from './CompetencyPicker';
 
 interface AddLessonSheetProps {
   open: boolean;
@@ -52,6 +53,7 @@ export function AddLessonSheet({
   // Recurring lesson options
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceWeeks, setRecurrenceWeeks] = useState('4');
+  const [plannedCompetencies, setPlannedCompetencies] = useState<string[]>([]);
 
   // New pupil form state
   const [newPupilName, setNewPupilName] = useState('');
@@ -93,6 +95,7 @@ export function AddLessonSheet({
     setLessonDuration('1');
     setIsRecurring(false);
     setRecurrenceWeeks('4');
+    setPlannedCompetencies([]);
   };
 
   // Auto-fill pickup address when selecting an existing pupil
@@ -130,6 +133,7 @@ export function AddLessonSheet({
         status: 'scheduled',
         payment_status: 'not_paid',
         recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
+        planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
       };
       lessons.push(parentLesson);
 
@@ -147,6 +151,7 @@ export function AddLessonSheet({
             status: 'scheduled',
             payment_status: 'not_paid',
             recurrence_rule: `WEEKLY;COUNT=${weeks}`,
+            planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
           });
         }
       }
@@ -214,6 +219,7 @@ export function AddLessonSheet({
           status: 'scheduled',
           payment_status: 'not_paid',
           recurrence_rule: isRecurring ? `WEEKLY;COUNT=${weeks}` : null,
+          planned_competencies: plannedCompetencies.length > 0 ? plannedCompetencies : null,
         });
       }
 
@@ -395,6 +401,15 @@ export function AddLessonSheet({
                   </div>
                 )}
               </div>
+
+              {/* Planned Competencies */}
+              <div className="space-y-2">
+                <Label>Skills to Practice (optional)</Label>
+                <CompetencyPicker
+                  selected={plannedCompetencies}
+                  onChange={setPlannedCompetencies}
+                />
+              </div>
             </TabsContent>
 
             {/* New Pupil Tab */}
@@ -527,6 +542,15 @@ export function AddLessonSheet({
                     </p>
                   </div>
                 )}
+              </div>
+
+              {/* Planned Competencies */}
+              <div className="space-y-2">
+                <Label>Skills to Practice (optional)</Label>
+                <CompetencyPicker
+                  selected={plannedCompetencies}
+                  onChange={setPlannedCompetencies}
+                />
               </div>
             </TabsContent>
           </Tabs>
