@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Calendar, Clock, Phone, MessageSquare, CreditCard, 
   BookOpen, Car, History, ChevronRight, ChevronDown, X, AlertCircle,
-  Loader2, Moon, Sun, MapPin, CheckCircle2, User, StickyNote
+  Loader2, Moon, Sun, MapPin, CheckCircle2, User, StickyNote, Sparkles
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ import { PupilNotes } from "@/components/pupil-portal/PupilNotes";
 import { PortalIOSInstallBanner } from "@/components/pwa/PortalIOSInstallBanner";
 import { PupilDetailsDrawer } from "@/components/pupil-portal/PupilDetailsDrawer";
 import { usePaymentInvalidation } from "@/hooks/usePaymentInvalidation";
+import { PupilDashboardInsights } from "@/components/pupil-portal/PupilDashboardInsights";
+import { PupilAICoaching } from "@/components/pupil-portal/PupilAICoaching";
 
 interface InstructorBranding {
   id: string;
@@ -54,7 +56,7 @@ interface Pupil {
   profile_image_url: string | null;
 }
 
-type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes';
+type ActiveSection = 'home' | 'schedule' | 'payments' | 'theory' | 'progress' | 'history' | 'gaps' | 'test-info' | 'messages' | 'profile' | 'notes' | 'coaching';
 
 export default function BrandedPupilPortal() {
   const { slug } = useParams<{ slug: string }>();
@@ -436,6 +438,13 @@ export default function BrandedPupilPortal() {
                   </Card>
                 </div>
 
+                {/* AI Driving Insights Summary */}
+                <PupilDashboardInsights
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
+                  brandColour={instructor.brand_colour}
+                />
+
                 {/* Navigation Menu */}
                 <div className="space-y-2">
                   {[
@@ -446,6 +455,7 @@ export default function BrandedPupilPortal() {
                     { id: 'notes' as const, icon: StickyNote, label: 'My Notes', desc: 'Personal notes & instructor shared' },
                     { id: 'payments' as const, icon: CreditCard, label: 'Payments', desc: 'Balance & payment history' },
                     { id: 'theory' as const, icon: BookOpen, label: 'Theory', desc: 'Practice tests & book exam' },
+                    { id: 'coaching' as const, icon: Sparkles, label: 'AI Coaching', desc: 'Personalised driving insights' },
                     { id: 'progress' as const, icon: Car, label: 'My Progress', desc: 'Skills & driving report' },
                     { id: 'history' as const, icon: History, label: 'Lesson History', desc: 'Past lessons & notes' },
                   ].map((item) => (
@@ -594,6 +604,33 @@ export default function BrandedPupilPortal() {
                 </div>
                 <PupilPortalProgress 
                   pupilId={pupil.id}
+                  brandColour={instructor.brand_colour}
+                  darkMode={instructor.pupil_app_dark_mode}
+                />
+              </motion.div>
+            )}
+
+            {activeSection === 'coaching' && (
+              <motion.div
+                key="coaching"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div className="p-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setActiveSection('home')}
+                    className="mb-4"
+                    style={{ color: 'var(--brand-text)' }}
+                  >
+                    ← Back
+                  </Button>
+                </div>
+                <PupilAICoaching 
+                  pupilId={pupil.id}
+                  instructorId={instructor.id}
                   brandColour={instructor.brand_colour}
                   darkMode={instructor.pupil_app_dark_mode}
                 />
