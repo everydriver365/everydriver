@@ -206,6 +206,13 @@ export function PupilCardStack({
   // Syllabus sheet state
   const [showSyllabusSheet, setShowSyllabusSheet] = useState(false);
 
+  // Notes with lesson linking
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const [noteLessonId, setNoteLessonId] = useState<string>("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteLessons, setNoteLessons] = useState<ScheduledLesson[]>([]);
+
   // Fetch test stats on mount
   useEffect(() => {
     fetchTestStats();
@@ -225,6 +232,67 @@ export function PupilCardStack({
       fetchAvailableTrackingSessions();
     }
   }, [isAddingFeedback, pupil.id]);
+
+  // Fetch lessons when adding a note
+  useEffect(() => {
+    if (isAddingNote) {
+      fetchNoteLessons();
+    }
+  }, [isAddingNote, pupil.id]);
+
+  const fetchNoteLessons = async () => {
+    try {
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+      const { data, error } = await supabase
+        .from("scheduled_lessons")
+        .select("id, lesson_date, start_time, duration_minutes")
+        .eq("pupil_id", pupil.id)
+        .gte("lesson_date", format(sixtyDaysAgo, "yyyy-MM-dd"))
+        .order("lesson_date", { ascending: false });
+      if (!error && data) setNoteLessons(data);
+    } catch (err) {
+      console.error("Error fetching note lessons:", err);
+    }
+  };
+
+  const handleSaveNote = async () => {
+    if (!noteText.trim()) return;
+    setSavingNote(true);
+    try {
+      if (noteLessonId) {
+        // Save to lesson_history linked to the scheduled lesson
+        const selectedLesson = noteLessons.find(l => l.id === noteLessonId);
+        const { error } = await supabase.from("lesson_history").insert({
+          instructor_id: instructorId!,
+          pupil_id: pupil.id,
+          lesson_date: selectedLesson?.lesson_date || format(new Date(), "yyyy-MM-dd"),
+          start_time: selectedLesson?.start_time || null,
+          duration_minutes: selectedLesson?.duration_minutes || 60,
+          notes: noteText,
+          scheduled_lesson_id: noteLessonId,
+        });
+        if (error) throw error;
+        toast.success("Note saved to lesson");
+      } else {
+        // Append to general pupil notes
+        const existing = pupil.notes ? pupil.notes + "\n\n" : "";
+        const dated = `[${format(new Date(), "dd MMM yyyy")}] ${noteText}`;
+        const { error } = await supabase.from("pupils").update({ notes: existing + dated }).eq("id", pupil.id);
+        if (error) throw error;
+        toast.success("Note saved");
+      }
+      setNoteText("");
+      setNoteLessonId("");
+      setIsAddingNote(false);
+      queryClient.invalidateQueries({ queryKey: ["pupils"] });
+    } catch (err) {
+      console.error("Save note error:", err);
+      toast.error("Failed to save note");
+    } finally {
+      setSavingNote(false);
+    }
+  };
 
   const fetchAvailableLessons = async () => {
     try {
@@ -748,17 +816,80 @@ export function PupilCardStack({
                     })()
                   )}
 
-                  {/* Notes - Inline Editable */}
-                  <div className="bg-muted/30 rounded-xl p-3">
-                    <InlineEditField
-                      value={pupil.notes || ""}
-                      onSave={(v) => saveField("notes", v || null)}
-                      type="textarea"
-                      icon={<FileText className="h-4 w-4 text-muted-foreground" />}
-                      placeholder="Add notes..."
-                      textClassName="text-sm text-muted-foreground"
-                      emptyText="Tap to add notes"
-                    />
+                  {/* Notes with optional lesson linking */}
+                  <div className="bg-muted/30 rounded-xl p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Notes</span>
+                      </div>
+                      {!isAddingNote && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={(e) => { e.stopPropagation(); setIsAddingNote(true); }}
+                        >
+                          + Add Note
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Existing general notes */}
+                    {pupil.notes && (
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pupil.notes}</p>
+                    )}
+
+                    {/* Add note form */}
+                    {isAddingNote && (
+                      <div className="space-y-2 pt-1">
+                        <Select value={noteLessonId} onValueChange={setNoteLessonId}>
+                          <SelectTrigger className="w-full" onClick={(e) => e.stopPropagation()}>
+                            <SelectValue placeholder="Link to lesson (optional)" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background z-50">
+                            <SelectItem value="general">General note (no lesson)</SelectItem>
+                            {noteLessons.map((lesson) => (
+                              <SelectItem key={lesson.id} value={lesson.id}>
+                                {format(parseISO(lesson.lesson_date), 'EEE, d MMM')} at {lesson.start_time.slice(0, 5)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Textarea
+                          value={noteText}
+                          onChange={(e) => setNoteText(e.target.value)}
+                          placeholder="Enter note..."
+                          className="min-h-[80px]"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsAddingNote(false);
+                              setNoteText("");
+                              setNoteLessonId("");
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={(e) => { e.stopPropagation(); handleSaveNote(); }}
+                            disabled={savingNote || !noteText.trim()}
+                          >
+                            {savingNote ? "Saving..." : "Save"}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Lesson Feedback Section */}
