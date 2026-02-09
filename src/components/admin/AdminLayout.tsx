@@ -23,6 +23,7 @@ interface AdminLayoutProps {
   groupTitle: string;
   onSectionChange: (section: string) => void;
   onLogout: () => void;
+  tabCounts?: Record<string, number>;
 }
 
 const navTabs = [
@@ -46,6 +47,7 @@ export function AdminLayout({
   groupTitle,
   onSectionChange,
   onLogout,
+  tabCounts = {},
 }: AdminLayoutProps) {
   // Determine which tab is active based on the current section
   const getActiveTab = () => {
@@ -112,7 +114,7 @@ export function AdminLayout({
                 key={tab.id}
                 onClick={() => onSectionChange(tab.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors relative",
                   activeTab === tab.id
                     ? "bg-white/20 text-white"
                     : "text-white/70 hover:text-white hover:bg-white/10"
@@ -120,6 +122,11 @@ export function AdminLayout({
               >
                 <tab.icon className="h-4 w-4" />
                 {tab.label}
+                {(tabCounts[tab.id] ?? 0) > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-white/25 text-white leading-none">
+                    {tabCounts[tab.id] > 99 ? "99+" : tabCounts[tab.id]}
+                  </span>
+                )}
               </button>
             ))}
           </nav>
@@ -151,6 +158,11 @@ export function AdminLayout({
             >
               <tab.icon className="h-3 w-3" />
               {tab.label}
+              {(tabCounts[tab.id] ?? 0) > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[9px] font-bold rounded-full bg-white/25 text-white leading-none">
+                  {tabCounts[tab.id] > 99 ? "99+" : tabCounts[tab.id]}
+                </span>
+              )}
             </button>
           ))}
         </nav>
