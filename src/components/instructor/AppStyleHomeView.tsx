@@ -95,46 +95,9 @@ export function AppStyleHomeView({
 
   return (
     <div className="fixed inset-0 flex flex-col" style={{ backgroundColor: wallpaperColor || "#E8F1FE" }}>
-      {/* Status bar spacer */}
-      <div className="pt-safe-top" style={{ paddingTop: "env(safe-area-inset-top, 44px)" }} />
+      <div style={{ paddingTop: "env(safe-area-inset-top, 44px)" }} />
 
-      {/* Top bar: time/profile */}
-      <div className="flex items-center justify-between px-5 py-3">
-        <div>
-          <p className="text-sm font-semibold text-foreground/90">
-            {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}
-          </p>
-          <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-2xl font-bold text-foreground">{hoursThisWeek}h</span>
-            <span className="text-sm text-muted-foreground font-medium">/ {hoursGoal}h</span>
-          </div>
-        </div>
-        {profileImageUrl && (
-          <img
-            src={profileImageUrl}
-            alt="Profile"
-            className="w-10 h-10 rounded-full border-2 border-white/60 object-cover shadow-lg"
-          />
-        )}
-      </div>
-
-      {/* Progress bar */}
-      <div className="px-5 pb-4">
-        <div className="h-2 rounded-full bg-foreground/10 overflow-hidden">
-          <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(100, progressPercent)}%` }}
-            transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          {hoursRemaining > 0 ? `${hoursRemaining.toFixed(1)} hours remaining` : "Goal reached! 🎉"}
-        </p>
-      </div>
-
-      {/* ── Full-screen Icon Grid ── */}
-      <div className="flex-1 overflow-y-auto px-5 pb-24">
+      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-24">
         <div className="grid grid-cols-4 gap-x-4 gap-y-5">
           {orderedTiles.map((action, index) => {
             const badgeCount = getBadgeCount(action);
@@ -151,7 +114,6 @@ export function AppStyleHomeView({
                 onClick={() => navigate(action.route)}
                 className="flex flex-col items-center gap-1.5 relative"
               >
-                {/* Icon tile */}
                 <div
                   className={cn(
                     "relative w-[60px] h-[60px] rounded-[16px] flex items-center justify-center overflow-hidden",
@@ -169,7 +131,6 @@ export function AppStyleHomeView({
                     <FallbackIcon className="h-7 w-7 text-primary" />
                   )}
 
-                  {/* Notification badge */}
                   {badgeCount > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
@@ -181,7 +142,6 @@ export function AppStyleHomeView({
                   )}
                 </div>
 
-                {/* Label */}
                 <span className="text-[11px] font-medium text-foreground/70 leading-tight text-center line-clamp-1 max-w-[64px]">
                   {action.title}
                 </span>
