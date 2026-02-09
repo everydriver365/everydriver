@@ -180,6 +180,12 @@ export function NextUpTile({
                 onClick={handleNavigate}
               />
             )}
+            {/* Floating "Next Up" label on map */}
+            <div className="absolute top-3 left-3 z-10">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-card/90 backdrop-blur-sm border border-border/60 text-[11px] font-bold text-foreground shadow-md">
+                <Clock className="h-3 w-3 text-primary" /> Next Up
+              </span>
+            </div>
             {/* Floating countdown chip on map */}
             <div className="absolute top-3 right-3 z-10">
               <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md ${
