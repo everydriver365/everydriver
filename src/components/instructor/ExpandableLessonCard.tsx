@@ -15,7 +15,8 @@ import {
   Trash2,
   Palette,
   Repeat,
-  Zap
+  Zap,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -334,22 +336,40 @@ export function ExpandableLessonCard({
                         On Way
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuItem onClick={() => onOnWay(lesson)}>
                         <Check className="h-4 w-4 mr-2" />
                         On my way!
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => onOnWay(lesson, 5)}>
                         <Clock className="h-4 w-4 mr-2" />
-                        5 mins late
+                        I'll be 5 mins
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onOnWay(lesson, 10)}>
                         <Clock className="h-4 w-4 mr-2" />
-                        10 mins late
+                        I'll be 10 mins
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onOnWay(lesson, 15)}>
                         <Clock className="h-4 w-4 mr-2" />
-                        15 mins late
+                        I'll be 15 mins
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onOnWay(lesson, 20)}>
+                        <Clock className="h-4 w-4 mr-2" />
+                        I'll be 20 mins
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onOnWay(lesson, 30)}>
+                        <Clock className="h-4 w-4 mr-2" />
+                        I'll be 30 mins
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onOnWay(lesson, -1)}>
+                        <Phone className="h-4 w-4 mr-2" />
+                        I'll call you ASAP
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onOnWay(lesson, -2)}>
+                        <Send className="h-4 w-4 mr-2 text-primary" />
+                        Send current ETA
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

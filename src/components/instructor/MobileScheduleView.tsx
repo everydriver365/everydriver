@@ -15,7 +15,8 @@ import {
   ChevronRight,
   AlertCircle,
   Check,
-  Loader2
+  Loader2,
+  Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,6 +32,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
@@ -230,10 +232,17 @@ export function MobileScheduleView({ instructorId }: MobileScheduleViewProps) {
 
     setSendingMessage(lesson.id);
     
-    let message = "Hi! I'm on my way to pick you up for your driving lesson. See you soon!";
+    const firstName = (lesson.pupil?.name || "").split(" ")[0];
+    let message: string;
     
-    if (delayMinutes) {
-      message = `Hi! I'm running about ${delayMinutes} minutes late for your driving lesson. I'll be with you as soon as possible. Sorry for any inconvenience!`;
+    if (delayMinutes === -1) {
+      message = `Hi ${firstName}, I'll call you as soon as I can!`;
+    } else if (delayMinutes === -2) {
+      message = `Hi ${firstName}, I'm on my way to you now!`;
+    } else if (delayMinutes) {
+      message = `Hi ${firstName}, I'm on my way! I'll be with you in about ${delayMinutes} minutes.`;
+    } else {
+      message = `Hi ${firstName}, I'm on my way to you!`;
     }
     
     // Open SMS with pre-filled message
@@ -414,30 +423,40 @@ export function MobileScheduleView({ instructorId }: MobileScheduleViewProps) {
                             <span className="text-xs">On Way</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-52">
                           <DropdownMenuItem onClick={() => handleOnWay(lesson)}>
                             <Check className="h-4 w-4 mr-2" />
                             On my way!
                           </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleOnWay(lesson, 5)}>
                             <Clock className="h-4 w-4 mr-2" />
-                            Delayed 5 mins
+                            I'll be 5 mins
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOnWay(lesson, 10)}>
                             <Clock className="h-4 w-4 mr-2" />
-                            Delayed 10 mins
+                            I'll be 10 mins
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOnWay(lesson, 15)}>
                             <Clock className="h-4 w-4 mr-2" />
-                            Delayed 15 mins
+                            I'll be 15 mins
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOnWay(lesson, 20)}>
                             <Clock className="h-4 w-4 mr-2" />
-                            Delayed 20 mins
+                            I'll be 20 mins
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOnWay(lesson, 30)}>
                             <Clock className="h-4 w-4 mr-2" />
-                            Delayed 30 mins
+                            I'll be 30 mins
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleOnWay(lesson, -1)}>
+                            <Phone className="h-4 w-4 mr-2" />
+                            I'll call you ASAP
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOnWay(lesson, -2)}>
+                            <Send className="h-4 w-4 mr-2 text-primary" />
+                            Send current ETA
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
