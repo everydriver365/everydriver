@@ -207,7 +207,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
                 <Plus className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-36 p-1" align="end" side="bottom">
+            <PopoverContent className="w-36 p-1 z-50 bg-card border border-border shadow-lg" align="end" side="bottom">
               <button
                 onClick={() => { setAddMode("task"); setShowInput(true); }}
                 className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-md hover:bg-muted transition-colors"
