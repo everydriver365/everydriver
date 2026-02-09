@@ -192,7 +192,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
       {/* Header */}
       <div className="flex items-center justify-between p-4 pb-3">
         <div className="flex items-center gap-2.5">
-          <img src={agendaIcon} alt="Agenda" className="h-8 w-8" />
+          <img src={agendaIcon} alt="Agenda" className="h-12 w-12" />
           <div>
             <h3 className="font-semibold text-sm text-foreground">Agenda</h3>
             <p className="text-[10px] text-muted-foreground">
