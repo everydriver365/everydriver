@@ -54,56 +54,62 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </div>
 
-        {/* Metrics row */}
-        <div className="flex items-center justify-between gap-2">
+        {/* Metrics grid */}
+        <div className="grid grid-cols-4 gap-2">
           {/* Battery */}
-          <div className="flex flex-col items-center gap-1 flex-1">
-            <BatteryIcon className={cn("h-5 w-5", getBatteryColor(battery))} />
-            <span className={cn("text-sm font-semibold", getBatteryColor(battery))}>
-              {battery !== null ? `${battery}%` : "—"}
-            </span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Battery</span>
+          <div className={cn("flex items-center gap-2 p-2.5 rounded-xl", 
+            battery !== null && battery <= 20 ? "bg-red-500/10" : battery !== null && battery <= 50 ? "bg-amber-500/10" : "bg-blue-500/10"
+          )}>
+            <BatteryIcon className={cn("h-4 w-4", getBatteryColor(battery))} />
+            <div>
+              <p className={cn("text-sm font-bold leading-none", getBatteryColor(battery))}>
+                {battery !== null ? `${battery}%` : "—"}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Battery</p>
+            </div>
           </div>
-
-          {/* Divider */}
-          <div className="h-10 w-px bg-border" />
 
           {/* Ignition */}
-          <div className="flex flex-col items-center gap-1 flex-1">
-            <Key className={cn("h-5 w-5", isIgnitionOn ? "text-primary" : "text-muted-foreground")} />
-            <span className={cn("text-sm font-semibold", isIgnitionOn ? "text-primary" : "text-muted-foreground")}>
-              {isIgnitionOn ? "ON" : "OFF"}
-            </span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Ignition</span>
+          <div className={cn("flex items-center gap-2 p-2.5 rounded-xl",
+            isIgnitionOn ? "bg-emerald-500/10" : "bg-muted/50"
+          )}>
+            <Key className={cn("h-4 w-4", isIgnitionOn ? "text-emerald-500" : "text-muted-foreground")} />
+            <div>
+              <p className={cn("text-sm font-bold leading-none", isIgnitionOn ? "text-emerald-500" : "text-muted-foreground")}>
+                {isIgnitionOn ? "ON" : "OFF"}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Ignition</p>
+            </div>
           </div>
-
-          {/* Divider */}
-          <div className="h-10 w-px bg-border" />
 
           {/* Connection */}
-          <div className="flex flex-col items-center gap-1 flex-1">
+          <div className={cn("flex items-center gap-2 p-2.5 rounded-xl",
+            isOnline ? "bg-violet-500/10" : "bg-muted/50"
+          )}>
             {isOnline ? (
-              <Wifi className="h-5 w-5 text-primary" />
+              <Wifi className="h-4 w-4 text-violet-500" />
             ) : (
-              <WifiOff className="h-5 w-5 text-muted-foreground" />
+              <WifiOff className="h-4 w-4 text-muted-foreground" />
             )}
-            <span className={cn("text-sm font-semibold", isOnline ? "text-primary" : "text-muted-foreground")}>
-              {isOnline ? "Online" : "Offline"}
-            </span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Status</span>
+            <div>
+              <p className={cn("text-sm font-bold leading-none", isOnline ? "text-violet-500" : "text-muted-foreground")}>
+                {isOnline ? "Live" : "Off"}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Status</p>
+            </div>
           </div>
 
-          {/* Divider */}
-          <div className="h-10 w-px bg-border" />
-
           {/* Last Seen */}
-          <div className="flex flex-col items-center gap-1 flex-1">
-            <span className="text-xs text-muted-foreground text-center leading-tight">
-              {device.last_seen_at
-                ? formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: true })
-                : "Unknown"}
-            </span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Last Seen</span>
+          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10">
+            <Car className="h-4 w-4 text-amber-500" />
+            <div>
+              <p className="text-xs font-bold text-amber-500 leading-none">
+                {device.last_seen_at
+                  ? formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: false })
+                  : "—"}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Seen</p>
+            </div>
           </div>
         </div>
       </div>
