@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export type LayoutStyle = "dashboard" | "schedule";
 
@@ -10,22 +11,22 @@ export interface AppearanceSettings {
   wallpaperColor: string | null;
 }
 
+const QUERY_KEY = "instructor-appearance";
+
+const defaultAppearance: AppearanceSettings = {
+  layoutStyle: "dashboard",
+  heroImageUrl: null,
+  wallpaperColor: null,
+};
+
 export function useInstructorAppearance(instructorId: string | undefined) {
-  const [appearance, setAppearance] = useState<AppearanceSettings>({
-    layoutStyle: "dashboard",
-    heroImageUrl: null,
-    wallpaperColor: null,
-  });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
 
-  const fetchAppearance = useCallback(async () => {
-    if (!instructorId) {
-      setLoading(false);
-      return;
-    }
+  const { data: appearance = defaultAppearance, isLoading: loading } = useQuery({
+    queryKey: [QUERY_KEY, instructorId],
+    queryFn: async (): Promise<AppearanceSettings> => {
+      if (!instructorId) return defaultAppearance;
 
-    try {
       const { data, error } = await supabase
         .from("instructor_tile_preferences")
         .select("home_layout_style, hero_image_url, wallpaper_color")
@@ -34,29 +35,33 @@ export function useInstructorAppearance(instructorId: string | undefined) {
 
       if (error) {
         console.error("Error fetching appearance:", error);
-      } else if (data) {
-        setAppearance({
+        return defaultAppearance;
+      }
+
+      if (data) {
+        return {
           layoutStyle: (data.home_layout_style as LayoutStyle) || "dashboard",
           heroImageUrl: data.hero_image_url as string | null,
           wallpaperColor: data.wallpaper_color as string | null,
-        });
+        };
       }
-    } catch (error) {
-      console.error("Error fetching appearance:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [instructorId]);
 
-  useEffect(() => {
-    fetchAppearance();
-  }, [fetchAppearance]);
+      return defaultAppearance;
+    },
+    enabled: !!instructorId,
+    staleTime: 1000 * 60 * 5,
+  });
 
   const updateAppearance = useCallback(
     async (changes: Partial<AppearanceSettings>) => {
       if (!instructorId) return false;
 
-      setSaving(true);
+      // Optimistic update
+      queryClient.setQueryData<AppearanceSettings>(
+        [QUERY_KEY, instructorId],
+        (prev) => ({ ...(prev || defaultAppearance), ...changes })
+      );
+
       try {
         const dbChanges: Record<string, unknown> = {
           instructor_id: instructorId,
@@ -76,18 +81,17 @@ export function useInstructorAppearance(instructorId: string | undefined) {
 
         if (error) throw error;
 
-        setAppearance((prev) => ({ ...prev, ...changes }));
         toast.success("Appearance saved");
         return true;
       } catch (error) {
         console.error("Error saving appearance:", error);
+        // Revert on error
+        queryClient.invalidateQueries({ queryKey: [QUERY_KEY, instructorId] });
         toast.error("Failed to save appearance");
         return false;
-      } finally {
-        setSaving(false);
       }
     },
-    [instructorId]
+    [instructorId, queryClient]
   );
 
   const uploadHeroImage = useCallback(
@@ -128,9 +132,9 @@ export function useInstructorAppearance(instructorId: string | undefined) {
   return {
     ...appearance,
     loading,
-    saving,
+    saving: false,
     updateAppearance,
     uploadHeroImage,
-    refetch: fetchAppearance,
+    refetch: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY, instructorId] }),
   };
 }
