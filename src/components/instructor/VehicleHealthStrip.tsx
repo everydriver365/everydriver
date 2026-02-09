@@ -46,7 +46,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
             <Car className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold text-foreground">Vehicle Health</span>
             {registration && (
-              <span className="text-xs font-medium bg-muted text-muted-foreground rounded px-1.5 py-0.5">
+              <span className="text-xs font-medium bg-primary text-primary-foreground rounded px-1.5 py-0.5">
                 {registration}
               </span>
             )}
