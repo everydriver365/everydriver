@@ -1,63 +1,49 @@
 
 
-# Fix: Live Map Not Initializing on Desktop
+# Fix: Live Map Blank on Fleet Dashboard
 
-## Root Cause
+## Problem
 
-The map fails because of a timing conflict between loading state and map initialization:
+The `IntersectionObserver`-based map initialization is unreliable. When the Live Map tab uses `forceMount` + `data-[state=inactive]:hidden`, the observer doesn't consistently detect the visibility change from `display: none` to visible. This means `initMap()` is never called, leaving the map container as a blank gray box.
 
-1. The component mounts with `forceMount` (always in the DOM)
-2. While `loading=true`, it renders a spinner -- the map `div` doesn't exist yet
-3. The map init `useEffect` runs once (empty `[]` deps), sees no container, and exits
-4. When loading finishes and the map `div` finally appears, the `useEffect` never re-runs
+## Solution
 
-The map container appears in the DOM but Leaflet is never attached to it.
+Replace the `IntersectionObserver` approach with **explicit React state tracking** of the active tab. The parent page tracks which tab is selected and passes an `isVisible` prop to `FleetLiveMap`. When the prop becomes `true`, the map initializes (or invalidates its size if already initialized).
 
-## Fix
+This is deterministic -- no reliance on browser intersection behavior.
 
-**File: `src/components/instructor/FleetLiveMap.tsx`**
+## Changes
 
-Move the loading/empty states so the map container is **always rendered** in the DOM, and overlay the loading spinner on top. This ensures `mapRef` is never null when the init effect runs.
+### 1. InstructorFleetDashboard.tsx
 
-### Changes:
-- Remove the early `if (loading)` and `if (devices.length === 0)` returns that replace the map div with other UI
-- Instead, always render the map container div
-- Overlay the loading spinner and empty-state message on top of/beside the map using absolute positioning or conditional overlays
-- The map init effect will always find a valid container
+- Add `useState` to track the active tab value
+- Wire `onValueChange` to the `Tabs` component
+- Pass `isVisible={activeTab === "livemap"}` to `FleetLiveMap`
 
-### Approach:
-```
-return (
-  <div className="space-y-3">
-    {/* Legend bar */}
-    ...
-    <Card className="overflow-hidden relative">
-      {/* Map container is ALWAYS in the DOM */}
-      <div ref={mapRef} className="h-[500px] w-full" style={{ background: "#f2f2f2" }} />
+### 2. FleetLiveMap.tsx
 
-      {/* Loading overlay */}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-          <spinner />
-        </div>
-      )}
-
-      {/* Empty state overlay */}
-      {!loading && devices.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-          <empty message />
-        </div>
-      )}
-    </Card>
-  </div>
-);
-```
-
-This is a single-file fix in `FleetLiveMap.tsx`. No other files need changes.
+- Add `isVisible` prop to the interface
+- Remove the `IntersectionObserver` logic entirely
+- Add a new `useEffect` that watches `isVisible`:
+  - When `true` and no map exists: create the map after a `requestAnimationFrame` (ensures container has layout dimensions)
+  - When `true` and map exists: call `invalidateSize()` to fix any stale tile rendering
+- Keep the `ResizeObserver` for handling window/container resizes
+- Keep the map cleanup on unmount
 
 ## Technical Detail
 
-- The key issue is that the early returns on lines 233-251 prevent the `ref={mapRef}` div from being in the DOM
-- With the map div always present, the `IntersectionObserver` and `initMap()` logic will work correctly on first visibility
-- The loading/empty states become overlays rather than replacements
+```text
+BEFORE (unreliable):
+  forceMount -> display:none -> IntersectionObserver -> (may not fire) -> initMap()
 
+AFTER (deterministic):
+  forceMount -> display:none -> React state: isVisible=false
+  User clicks tab -> React state: isVisible=true -> useEffect -> initMap()
+```
+
+The key change is moving from a browser API (IntersectionObserver) that has edge cases with `display: none` parents, to React-controlled state that fires reliably on every tab switch.
+
+## Files Changed
+
+- **`src/pages/InstructorFleetDashboard.tsx`** -- Track active tab state, pass `isVisible` prop
+- **`src/components/instructor/FleetLiveMap.tsx`** -- Replace IntersectionObserver with `isVisible`-driven initialization
