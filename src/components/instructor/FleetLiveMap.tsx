@@ -110,20 +110,26 @@ export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
   // Init map
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
-    mapInstance.current = L.map(mapRef.current, {
+    const map = L.map(mapRef.current, {
       center: [DEFAULT_LAT, DEFAULT_LNG],
       zoom: 13,
       zoomControl: true,
       attributionControl: false,
     });
-    L.tileLayer(getMapTileUrl(), { maxZoom: 19, attribution: getMapAttribution() }).addTo(mapInstance.current);
-    mapInstance.current.zoomControl?.setPosition("topright");
+    mapInstance.current = map;
 
-    const ro = new ResizeObserver(() => mapInstance.current?.invalidateSize());
+    L.tileLayer(getMapTileUrl(), { maxZoom: 19, attribution: getMapAttribution() }).addTo(map);
+    map.zoomControl?.setPosition("topright");
+
+    // Force invalidate after mount to ensure tiles render
+    setTimeout(() => map.invalidateSize(), 200);
+    setTimeout(() => map.invalidateSize(), 600);
+
+    const ro = new ResizeObserver(() => map.invalidateSize());
     ro.observe(mapRef.current);
     return () => {
       ro.disconnect();
-      mapInstance.current?.remove();
+      map.remove();
       mapInstance.current = null;
       markersRef.current.clear();
     };
@@ -228,7 +234,7 @@ export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
         <span className="ml-auto text-[10px]">Auto-refreshes every 10s</span>
       </div>
       <Card className="overflow-hidden">
-        <div ref={mapRef} className="h-[500px] w-full" />
+        <div ref={mapRef} className="h-[500px] w-full" style={{ background: "#f2f2f2" }} />
       </Card>
       <style>{`.fleet-live-marker{background:transparent!important;border:none!important;}`}</style>
     </div>
