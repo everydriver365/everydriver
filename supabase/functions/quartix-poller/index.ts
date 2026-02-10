@@ -6,6 +6,40 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const QUARTIX_BASE = "https://qws.quartix.net/v2/api";
+
+async function authenticate(): Promise<string> {
+  const customerId = Deno.env.get("QUARTIX_CUSTOMER_ID");
+  const username = Deno.env.get("QUARTIX_USERNAME");
+  const password = Deno.env.get("QUARTIX_PASSWORD");
+
+  if (!customerId || !username || !password) {
+    throw new Error("Quartix credentials not configured. Add QUARTIX_CUSTOMER_ID, QUARTIX_USERNAME, QUARTIX_PASSWORD secrets.");
+  }
+
+  const body = new URLSearchParams({
+    CustomerID: customerId,
+    UserName: username,
+    Password: password,
+  });
+
+  const res = await fetch(`${QUARTIX_BASE}/auth`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Quartix auth failed [${res.status}]: ${text}`);
+  }
+
+  const json = await res.json();
+  const token = json?.Data?.AccessToken;
+  if (!token) throw new Error("No AccessToken in Quartix auth response");
+  return token;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -14,145 +48,159 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const QUARTIX_API_KEY = Deno.env.get("QUARTIX_API_KEY");
-    const QUARTIX_ACCOUNT_ID = Deno.env.get("QUARTIX_ACCOUNT_ID");
-    const QUARTIX_API_URL = Deno.env.get("QUARTIX_API_URL");
-
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Check if Quartix credentials are configured
-    if (!QUARTIX_API_KEY || !QUARTIX_ACCOUNT_ID || !QUARTIX_API_URL) {
-      console.log("[QuartixPoller] Quartix API credentials not configured yet. Skipping.");
+    // Authenticate with Quartix
+    let accessToken: string;
+    try {
+      accessToken = await authenticate();
+    } catch (authErr) {
+      console.error("[QuartixPoller] Auth error:", authErr);
       return new Response(
-        JSON.stringify({
-          success: false,
-          message: "Quartix API credentials not configured. Add QUARTIX_API_KEY, QUARTIX_ACCOUNT_ID, and QUARTIX_API_URL secrets.",
-          processed: 0,
-          skipped: 0,
-          registered_devices: 0,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, message: String(authErr), processed: 0, skipped: 0, registered_devices: 0 }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get all instructors configured for Quartix
-    const { data: configs, error: configError } = await supabase
+    const qHeaders = { AccessToken: accessToken };
+
+    // Step 1: Auto-sync vehicles — fetch all vehicles from Quartix
+    const vehiclesRes = await fetch(`${QUARTIX_BASE}/vehicles`, { headers: qHeaders });
+    let quartixVehicles: any[] = [];
+    if (vehiclesRes.ok) {
+      const vehiclesJson = await vehiclesRes.json();
+      quartixVehicles = vehiclesJson?.Data || [];
+      console.log(`[QuartixPoller] Found ${quartixVehicles.length} Quartix vehicles`);
+    } else {
+      console.warn(`[QuartixPoller] Failed to fetch vehicles list: ${vehiclesRes.status}`);
+    }
+
+    // Get all existing Quartix devices
+    const { data: existingDevices } = await supabase
+      .from("gps_devices")
+      .select("id, instructor_id, quartix_vehicle_id")
+      .eq("tracking_provider", "quartix");
+
+    // Get instructor tracking configs for Quartix
+    const { data: configs } = await supabase
       .from("instructor_tracking_config")
-      .select("instructor_id, quartix_account_id, quartix_api_key")
+      .select("instructor_id")
       .eq("provider", "quartix");
 
-    if (configError) {
-      console.error("[QuartixPoller] Error fetching configs:", configError);
-      throw configError;
+    const configuredInstructorIds = configs?.map((c: any) => c.instructor_id) || [];
+
+    // Auto-register new vehicles for configured instructors
+    const existingVehicleIds = new Set((existingDevices || []).map((d: any) => d.quartix_vehicle_id));
+    let newDevicesRegistered = 0;
+
+    for (const vehicle of quartixVehicles) {
+      const vehicleId = String(vehicle.VehicleID);
+      if (existingVehicleIds.has(vehicleId)) continue;
+
+      // Register for the first configured instructor (or skip if none)
+      if (configuredInstructorIds.length === 0) continue;
+
+      const { error: insertErr } = await supabase.from("gps_devices").insert({
+        instructor_id: configuredInstructorIds[0],
+        device_identifier: `quartix-${vehicleId}`,
+        device_name: vehicle.RegistrationNumber || vehicle.Description || `Vehicle ${vehicleId}`,
+        tracking_provider: "quartix",
+        quartix_vehicle_id: vehicleId,
+        is_active: true,
+      });
+
+      if (!insertErr) {
+        newDevicesRegistered++;
+        existingVehicleIds.add(vehicleId);
+      } else {
+        console.warn(`[QuartixPoller] Failed to register vehicle ${vehicleId}:`, insertErr);
+      }
     }
 
-    if (!configs || configs.length === 0) {
-      console.log("[QuartixPoller] No instructors configured for Quartix");
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "No instructors configured for Quartix tracking",
-          processed: 0,
-          skipped: 0,
-          registered_devices: 0,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (newDevicesRegistered > 0) {
+      console.log(`[QuartixPoller] Auto-registered ${newDevicesRegistered} new vehicles`);
     }
 
-    // Get all Quartix-linked devices
-    const instructorIds = configs.map(c => c.instructor_id);
-    const { data: devices, error: devicesError } = await supabase
+    // Refresh devices list after potential inserts
+    const { data: devices } = await supabase
       .from("gps_devices")
-      .select("*")
-      .eq("tracking_provider", "quartix")
-      .in("instructor_id", instructorIds);
+      .select("id, instructor_id, quartix_vehicle_id, quartix_driver_id")
+      .eq("tracking_provider", "quartix");
 
-    if (devicesError) {
-      console.error("[QuartixPoller] Error fetching devices:", devicesError);
-      throw devicesError;
-    }
-
+    // Step 2: Fetch live positions
+    const liveRes = await fetch(`${QUARTIX_BASE}/vehicles/live`, { headers: qHeaders });
     let processed = 0;
     let skipped = 0;
 
-    // ========================================
-    // QUARTIX API INTEGRATION POINT
-    // ========================================
-    // When you receive your Quartix partner API credentials and documentation,
-    // replace the placeholder code below with actual API calls.
-    //
-    // Typical Quartix API endpoints (exact URLs depend on your partner agreement):
-    //
-    // 1. LIVE POSITIONS
-    //    GET {QUARTIX_API_URL}/vehicles/positions
-    //    Returns current lat/lng/speed/heading for all vehicles
-    //
-    // 2. TRIP HISTORY  
-    //    GET {QUARTIX_API_URL}/vehicles/{vehicleId}/trips?from=DATE&to=DATE
-    //    Returns completed trips with waypoints
-    //
-    // 3. DRIVER SCORES
-    //    GET {QUARTIX_API_URL}/drivers/{driverId}/scores?from=DATE&to=DATE
-    //    Returns driving style scores (speed, braking, acceleration, cornering)
-    //
-    // 4. ALERTS/EVENTS
-    //    GET {QUARTIX_API_URL}/vehicles/{vehicleId}/events?from=DATE&to=DATE
-    //    Returns speeding, harsh braking, etc.
-    //
-    // 5. ODOMETER
-    //    GET {QUARTIX_API_URL}/vehicles/{vehicleId}/odometer
-    //    Returns current odometer reading
-    //
-    // Example implementation pattern:
-    //
-    // const headers = {
-    //   "Authorization": `Bearer ${QUARTIX_API_KEY}`,
-    //   "X-Account-Id": QUARTIX_ACCOUNT_ID,
-    //   "Content-Type": "application/json",
-    // };
-    //
-    // const positionsResponse = await fetch(`${QUARTIX_API_URL}/vehicles/positions`, { headers });
-    // const positions = await positionsResponse.json();
-    //
-    // for (const vehicle of positions) {
-    //   // Find matching device by quartix_vehicle_id
-    //   const device = devices?.find(d => d.quartix_vehicle_id === String(vehicle.id));
-    //   if (!device) continue;
-    //
-    //   await supabase.from("gps_devices").update({
-    //     last_latitude: vehicle.latitude,
-    //     last_longitude: vehicle.longitude,
-    //     last_speed_kmh: vehicle.speed_kmh,
-    //     last_heading: vehicle.heading,
-    //     last_seen_at: new Date().toISOString(),
-    //     last_ignition_status: vehicle.ignition,
-    //     last_road_name: vehicle.road_name || null,
-    //   }).eq("id", device.id);
-    //
-    //   processed++;
-    // }
-    //
-    // // Fetch and store driver scores
-    // const scoresResponse = await fetch(`${QUARTIX_API_URL}/drivers/scores`, { headers });
-    // const scores = await scoresResponse.json();
-    // for (const score of scores) {
-    //   await supabase.from("quartix_driver_scores").upsert({
-    //     instructor_id: device.instructor_id,
-    //     quartix_driver_id: score.driver_id,
-    //     score_date: score.date,
-    //     overall_score: score.overall,
-    //     speed_score: score.speed,
-    //     acceleration_score: score.acceleration,
-    //     braking_score: score.braking,
-    //     cornering_score: score.cornering,
-    //     fatigue_score: score.fatigue,
-    //     raw_data: score,
-    //   }, { onConflict: "instructor_id,quartix_driver_id,score_date" });
-    // }
-    // ========================================
+    if (liveRes.ok) {
+      const liveJson = await liveRes.json();
+      const positions = liveJson?.Data || [];
 
-    console.log(`[QuartixPoller] Complete. Processed: ${processed}, Skipped: ${skipped}, Devices: ${devices?.length || 0}`);
+      for (const pos of positions) {
+        const vehicleId = String(pos.VehicleID);
+        const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
+        if (!device) {
+          skipped++;
+          continue;
+        }
+
+        const { error: updateErr } = await supabase.from("gps_devices").update({
+          last_latitude: pos.Latitude,
+          last_longitude: pos.Longitude,
+          last_speed_kmh: pos.Speed != null ? pos.Speed * 1.60934 : null, // mph to kmh
+          last_heading: pos.Heading,
+          last_seen_at: new Date().toISOString(),
+          last_ignition_status: pos.Ignition ?? null,
+          last_road_name: pos.LocationText || null,
+        }).eq("id", device.id);
+
+        if (!updateErr) {
+          processed++;
+        } else {
+          console.warn(`[QuartixPoller] Update failed for device ${device.id}:`, updateErr);
+          skipped++;
+        }
+      }
+    } else {
+      console.warn(`[QuartixPoller] Failed to fetch live positions: ${liveRes.status}`);
+    }
+
+    // Step 3: Fetch driving style scores (today's summary)
+    const today = new Date().toISOString().split("T")[0];
+    const scoresRes = await fetch(
+      `${QUARTIX_BASE}/vehicles/tripsummary?StartDay=${today}&EndDay=${today}&Include=drivingStyle&GroupBy=vehicle`,
+      { headers: qHeaders }
+    );
+
+    if (scoresRes.ok) {
+      const scoresJson = await scoresRes.json();
+      const summaries = scoresJson?.Data || [];
+
+      for (const summary of summaries) {
+        const vehicleId = String(summary.VehicleID);
+        const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
+        if (!device) continue;
+
+        const ds = summary.DrivingStyle;
+        if (!ds) continue;
+
+        await supabase.from("quartix_driver_scores").upsert({
+          instructor_id: device.instructor_id,
+          quartix_driver_id: device.quartix_driver_id || vehicleId,
+          score_date: today,
+          overall_score: ds.Score ?? null,
+          speed_score: ds.RelativeSpeed?.Score ?? null,
+          acceleration_score: ds.Accel?.Score ?? null,
+          braking_score: ds.Braking?.Score ?? null,
+          cornering_score: ds.Cornering?.Score ?? null,
+          raw_data: ds,
+        }, { onConflict: "instructor_id,quartix_driver_id,score_date" });
+      }
+    } else {
+      console.warn(`[QuartixPoller] Failed to fetch driving scores: ${scoresRes.status}`);
+    }
+
+    console.log(`[QuartixPoller] Complete. Processed: ${processed}, Skipped: ${skipped}, Devices: ${devices?.length || 0}, New: ${newDevicesRegistered}`);
 
     return new Response(
       JSON.stringify({
@@ -160,7 +208,8 @@ serve(async (req) => {
         processed,
         skipped,
         registered_devices: devices?.length || 0,
-        total_quartix_instructors: configs.length,
+        new_devices: newDevicesRegistered,
+        total_quartix_instructors: configuredInstructorIds.length,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

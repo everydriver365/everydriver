@@ -180,6 +180,9 @@ verify_jwt = false
 [functions.quartix-trips]
 verify_jwt = false
 
+[functions.quartix-route]
+verify_jwt = false
+
 [functions.extract-invoice-data]
 verify_jwt = false
 
