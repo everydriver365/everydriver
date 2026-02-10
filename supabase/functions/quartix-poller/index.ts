@@ -239,7 +239,7 @@ serve(async (req) => {
       console.warn(`[QuartixPoller] Failed to fetch live positions: ${liveRes.status}`);
     }
 
-    // Step 3: Fetch driving style scores (today's summary)
+    // Step 3: Fetch driving style scores AND build timesheets (today's summary)
     const today = new Date().toISOString().split("T")[0];
     const scoresRes = await fetch(
       `${QUARTIX_BASE}/vehicles/tripsummary?StartDay=${today}&EndDay=${today}&Include=drivingStyle&GroupBy=vehicle`,
@@ -250,26 +250,89 @@ serve(async (req) => {
       const scoresJson = await scoresRes.json();
       const summaries = scoresJson?.Data || [];
 
+      // Group trips by instructor for timesheet aggregation
+      const timesheetMap = new Map<string, {
+        instructor_id: string;
+        quartix_vehicle_id: string;
+        first_start: string | null;
+        last_end: string | null;
+        total_driving: number;
+        total_idle: number;
+        total_distance: number;
+        trip_count: number;
+      }>();
+
       for (const summary of summaries) {
         const vehicleId = String(summary.VehicleId || summary.VehicleID);
         const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
         if (!device) continue;
 
+        // Upsert driving scores
         const ds = summary.DrivingStyle;
-        if (!ds) continue;
+        if (ds) {
+          await supabase.from("quartix_driver_scores").upsert({
+            instructor_id: device.instructor_id,
+            quartix_driver_id: device.quartix_driver_id || vehicleId,
+            score_date: today,
+            overall_score: ds.Score ?? null,
+            speed_score: ds.RelativeSpeed?.Score ?? null,
+            acceleration_score: ds.Accel?.Score ?? null,
+            braking_score: ds.Braking?.Score ?? null,
+            cornering_score: ds.Cornering?.Score ?? null,
+            raw_data: ds,
+          }, { onConflict: "instructor_id,quartix_driver_id,score_date" });
+        }
 
-        await supabase.from("quartix_driver_scores").upsert({
-          instructor_id: device.instructor_id,
-          quartix_driver_id: device.quartix_driver_id || vehicleId,
-          score_date: today,
-          overall_score: ds.Score ?? null,
-          speed_score: ds.RelativeSpeed?.Score ?? null,
-          acceleration_score: ds.Accel?.Score ?? null,
-          braking_score: ds.Braking?.Score ?? null,
-          cornering_score: ds.Cornering?.Score ?? null,
-          raw_data: ds,
-        }, { onConflict: "instructor_id,quartix_driver_id,score_date" });
+        // Aggregate timesheet data
+        const key = `${device.instructor_id}|${vehicleId}`;
+        const existing = timesheetMap.get(key);
+        const travelTime = summary.TravelTime || 0;
+        const idleTime = summary.IdleTime ?? summary.IdlingTime ?? 0;
+        const distance = summary.Distance != null ? summary.Distance * 1.60934 : 0;
+        const startTime = summary.StartTime || null;
+        const endTime = summary.EndTime || null;
+
+        if (existing) {
+          existing.total_driving += travelTime;
+          existing.total_idle += idleTime;
+          existing.total_distance += distance;
+          existing.trip_count += 1;
+          if (startTime && (!existing.first_start || startTime < existing.first_start)) {
+            existing.first_start = startTime;
+          }
+          if (endTime && (!existing.last_end || endTime > existing.last_end)) {
+            existing.last_end = endTime;
+          }
+        } else {
+          timesheetMap.set(key, {
+            instructor_id: device.instructor_id,
+            quartix_vehicle_id: vehicleId,
+            first_start: startTime,
+            last_end: endTime,
+            total_driving: travelTime,
+            total_idle: idleTime,
+            total_distance: distance,
+            trip_count: 1,
+          });
+        }
       }
+
+      // Upsert timesheets
+      for (const [, ts] of timesheetMap) {
+        await supabase.from("driver_timesheets").upsert({
+          instructor_id: ts.instructor_id,
+          sheet_date: today,
+          quartix_vehicle_id: ts.quartix_vehicle_id,
+          first_trip_start: ts.first_start,
+          last_trip_end: ts.last_end,
+          total_driving_minutes: ts.total_driving,
+          total_idle_minutes: ts.total_idle,
+          total_distance_km: ts.total_distance,
+          trip_count: ts.trip_count,
+        }, { onConflict: "instructor_id,sheet_date,quartix_vehicle_id" });
+      }
+
+      console.log(`[QuartixPoller] Upserted ${timesheetMap.size} timesheet entries`);
     } else {
       console.warn(`[QuartixPoller] Failed to fetch driving scores: ${scoresRes.status}`);
     }
