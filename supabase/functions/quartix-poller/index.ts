@@ -102,7 +102,7 @@ serve(async (req) => {
     if (vehiclesRes.ok) {
       const vehiclesJson = await vehiclesRes.json();
       quartixVehicles = vehiclesJson?.Data || [];
-      console.log(`[QuartixPoller] Found ${quartixVehicles.length} Quartix vehicles`);
+      console.log(`[QuartixPoller] Found ${quartixVehicles.length} Quartix vehicles (raw):`, JSON.stringify(quartixVehicles[0]));
     } else {
       console.warn(`[QuartixPoller] Failed to fetch vehicles list: ${vehiclesRes.status}`);
     }
@@ -126,7 +126,7 @@ serve(async (req) => {
     let newDevicesRegistered = 0;
 
     for (const vehicle of quartixVehicles) {
-      const vehicleId = String(vehicle.VehicleID);
+      const vehicleId = String(vehicle.VehicleId || vehicle.VehicleID);
       if (existingVehicleIds.has(vehicleId)) continue;
 
       // Register for the first configured instructor (or skip if none)
@@ -167,9 +167,10 @@ serve(async (req) => {
     if (liveRes.ok) {
       const liveJson = await liveRes.json();
       const positions = liveJson?.Data || [];
+      console.log(`[QuartixPoller] Live positions: ${positions.length}`, positions.length > 0 ? JSON.stringify(Object.keys(positions[0])) : 'none');
 
       for (const pos of positions) {
-        const vehicleId = String(pos.VehicleID);
+        const vehicleId = String(pos.VehicleId || pos.VehicleID);
         const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
         if (!device) {
           skipped++;
@@ -209,7 +210,7 @@ serve(async (req) => {
       const summaries = scoresJson?.Data || [];
 
       for (const summary of summaries) {
-        const vehicleId = String(summary.VehicleID);
+        const vehicleId = String(summary.VehicleId || summary.VehicleID);
         const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
         if (!device) continue;
 
