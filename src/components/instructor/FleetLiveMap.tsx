@@ -230,27 +230,6 @@ export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
     }
   }, [devices]);
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (devices.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-16 text-center space-y-2">
-          <MapPin className="h-10 w-10 text-muted-foreground" />
-          <p className="text-muted-foreground">No GPS devices found. Connect a tracker to see your vehicles here.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -259,8 +238,21 @@ export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
         <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-gray-400" /> Parked</span>
         <span className="ml-auto text-[10px]">Auto-refreshes every 10s</span>
       </div>
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden relative">
         <div ref={mapRef} className="h-[500px] w-full" style={{ background: "#f2f2f2" }} />
+
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+            <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
+        {!loading && devices.length === 0 && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 z-10 space-y-2">
+            <MapPin className="h-10 w-10 text-muted-foreground" />
+            <p className="text-muted-foreground text-center px-4">No GPS devices found. Connect a tracker to see your vehicles here.</p>
+          </div>
+        )}
       </Card>
       <style>{`.fleet-live-marker{background:transparent!important;border:none!important;}`}</style>
     </div>
