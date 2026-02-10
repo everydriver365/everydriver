@@ -48,6 +48,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
   const [testingConnection, setTestingConnection] = useState(false);
   const [quartixVehicleId, setQuartixVehicleId] = useState("");
   const [quartixDriverId, setQuartixDriverId] = useState("");
+  const [quartixDeviceName, setQuartixDeviceName] = useState("");
   const [gpsStatus, setGpsStatus] = useState<{
     isConnected: boolean;
     lastSeenAt: string | null;
@@ -96,13 +97,14 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     try {
       const { data: device } = await supabase
         .from("gps_devices")
-        .select("quartix_vehicle_id, quartix_driver_id")
+        .select("quartix_vehicle_id, quartix_driver_id, device_name")
         .eq("instructor_id", instructorId)
         .maybeSingle();
 
       if (device) {
         setQuartixVehicleId((device as any).quartix_vehicle_id || "");
         setQuartixDriverId((device as any).quartix_driver_id || "");
+        setQuartixDeviceName((device as any).device_name || "");
       }
     } catch (err) {
       console.error("Error fetching tracking config:", err);
@@ -120,9 +122,10 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
       if (device) {
         await supabase
           .from("gps_devices")
-          .update({
+           .update({
             quartix_vehicle_id: quartixVehicleId || null,
             quartix_driver_id: quartixDriverId || null,
+            device_name: quartixDeviceName || "Quartix Tracker",
             tracking_provider: "quartix",
           } as any)
           .eq("id", device.id);
@@ -133,7 +136,7 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
           .insert({
             instructor_id: instructorId,
             device_identifier: `quartix-${quartixVehicleId}`,
-            device_name: "Quartix Tracker",
+            device_name: quartixDeviceName || "Quartix Tracker",
             quartix_vehicle_id: quartixVehicleId || null,
             quartix_driver_id: quartixDriverId || null,
             tracking_provider: "quartix",
@@ -239,12 +242,21 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
     return (
       <div className="space-y-4">
         <div className="space-y-2">
+          <Label>Tracker Name</Label>
+          <Input
+            placeholder="e.g., Toyota Yaris - Roller Skate"
+            value={quartixDeviceName}
+            onChange={(e) => setQuartixDeviceName(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">A friendly name for this instructor's tracker</p>
+        </div>
+        <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Satellite className="h-4 w-4" />
             Quartix Vehicle ID
           </Label>
           <Input
-            placeholder="Enter your Quartix vehicle ID"
+            placeholder="Enter the Quartix vehicle ID"
             value={quartixVehicleId}
             onChange={(e) => setQuartixVehicleId(e.target.value)}
           />
@@ -252,13 +264,13 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         <div className="space-y-2">
           <Label>Quartix Driver ID (optional)</Label>
           <Input
-            placeholder="Enter your Quartix driver ID"
+            placeholder="Enter the Quartix driver ID"
             value={quartixDriverId}
             onChange={(e) => setQuartixDriverId(e.target.value)}
           />
         </div>
         <Button onClick={saveQuartixIds} variant="outline" className="w-full">
-          Save Quartix IDs
+          Save Quartix Settings
         </Button>
 
         <Card>
@@ -521,12 +533,21 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
       {/* GPS Tracking Tab - Quartix Only */}
       <TabsContent value="gps" className="space-y-4 mt-4">
         <div className="space-y-2">
+          <Label>Tracker Name</Label>
+          <Input
+            placeholder="e.g., Toyota Yaris - Roller Skate"
+            value={quartixDeviceName}
+            onChange={(e) => setQuartixDeviceName(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">A friendly name for this instructor's tracker</p>
+        </div>
+        <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Satellite className="h-4 w-4" />
             Quartix Vehicle ID
           </Label>
           <Input
-            placeholder="Enter your Quartix vehicle ID"
+            placeholder="Enter the Quartix vehicle ID"
             value={quartixVehicleId}
             onChange={(e) => setQuartixVehicleId(e.target.value)}
           />
@@ -534,13 +555,13 @@ export function InstructorDetailsEditor({ instructorId, defaultTab = "vehicle" }
         <div className="space-y-2">
           <Label>Quartix Driver ID (optional)</Label>
           <Input
-            placeholder="Enter your Quartix driver ID"
+            placeholder="Enter the Quartix driver ID"
             value={quartixDriverId}
             onChange={(e) => setQuartixDriverId(e.target.value)}
           />
         </div>
         <Button onClick={saveQuartixIds} variant="outline" className="w-full">
-          Save Quartix IDs
+          Save Quartix Settings
         </Button>
 
         <Card>
