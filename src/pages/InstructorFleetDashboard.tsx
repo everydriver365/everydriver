@@ -10,7 +10,8 @@ import { RouteHeatmap } from "@/components/instructor/RouteHeatmap";
 import { ScheduledReportsSettings } from "@/components/instructor/ScheduledReportsSettings";
 import { TrackedLessons } from "@/components/instructor/TrackedLessons";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
-import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play, FileText } from "lucide-react";
+import { FleetMileageTracker } from "@/components/instructor/FleetMileageTracker";
+import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play, FileText, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -72,7 +73,7 @@ export default function InstructorFleetDashboard() {
           </Card>
         ) : instructor?.id ? (
           <Tabs defaultValue="overview">
-            <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 text-[10px]">
+            <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 text-[10px]">
               <TabsTrigger value="overview" className="flex items-center gap-1">
                 <Gauge className="h-3 w-3" />
                 Overview
@@ -80,6 +81,10 @@ export default function InstructorFleetDashboard() {
               <TabsTrigger value="lessons" className="flex items-center gap-1">
                 <Play className="h-3 w-3" />
                 Lessons
+              </TabsTrigger>
+              <TabsTrigger value="mileage" className="flex items-center gap-1">
+                <Route className="h-3 w-3" />
+                Mileage
               </TabsTrigger>
               <TabsTrigger value="analytics" className="flex items-center gap-1">
                 <BarChart3 className="h-3 w-3" />
@@ -116,8 +121,10 @@ export default function InstructorFleetDashboard() {
                 </div>
               </div>
             </TabsContent>
+            <TabsContent value="mileage" className="mt-4">
+              <FleetMileageTracker instructorId={instructor.id} />
+            </TabsContent>
             <TabsContent value="analytics" className="mt-4">
-              <UsageAnalytics instructorId={instructor.id} />
             </TabsContent>
             <TabsContent value="heatmap" className="mt-4">
               <RouteHeatmap instructorId={instructor.id} />
