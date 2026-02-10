@@ -42,6 +42,7 @@ interface GPSDevice {
   current_session_id: string | null;
   current_pupil_id: string | null;
   is_test_route_mode?: boolean;
+  last_ignition_status?: boolean | null;
 }
 
 interface Pupil {
@@ -744,10 +745,14 @@ export default function InstructorLiveSession() {
   const secondsSinceTrack = trackTime
     ? Math.floor((Date.now() - new Date(trackTime).getTime()) / 1000)
     : 9999;
-  // Active session: need fresh GPS within 30s. Idle: within 60s for "active", 1800s (30min) for "stationary"
+  // Quartix hardwired trackers only report on events (ignition, movement).
+  // When parked with ignition off, the tracker goes silent — that's NOT "offline".
+  // Connected: fresh data within 60s (active) or ignition off within 24h (parked).
+  const ignitionOff = device?.last_ignition_status === false;
   const isConnected = isSessionActive
     ? secondsSinceTrack < 30
-    : secondsSinceTrack < 60 || (secondsSinceTrack < 1800 && device?.last_seen_at && Math.floor((Date.now() - new Date(device.last_seen_at).getTime()) / 1000) < 120);
+    : secondsSinceTrack < 120 || (ignitionOff && secondsSinceTrack < 86400);
+  const isParked = !isSessionActive && ignitionOff && secondsSinceTrack >= 120 && secondsSinceTrack < 86400;
 
   const lastSeenAtDate = device?.last_seen_at ? new Date(device.last_seen_at) : null;
   const secondsSinceLastSeen = lastSeenAtDate
@@ -928,15 +933,16 @@ export default function InstructorLiveSession() {
 
            {/* GPS Status Hero Card */}
            <GPSStatusHero
-             deviceName={device.device_name}
-             isConnected={isConnected}
-             lastSeenLabel={lastSeenLabel}
-             speedKmh={device.last_speed_kmh}
-             roadName={device.last_road_name}
-             isReconnecting={isReconnecting}
-             retryCount={retryCount}
-             onManualReconnect={manualReconnect}
-           />
+              deviceName={device.device_name}
+              isConnected={isConnected}
+              isParked={isParked}
+              lastSeenLabel={lastSeenLabel}
+              speedKmh={device.last_speed_kmh}
+              roadName={device.last_road_name}
+              isReconnecting={isReconnecting}
+              retryCount={retryCount}
+              onManualReconnect={manualReconnect}
+            />
  
            {/* Session Start Panel */}
            <SessionStartPanel

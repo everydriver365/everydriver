@@ -1,11 +1,12 @@
  import { motion, AnimatePresence } from "framer-motion";
- import { WifiOff, RefreshCw, ExternalLink, Radio } from "lucide-react";
+ import { WifiOff, RefreshCw, Radio, Car } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import { formatMph } from "@/lib/utils";
  
  interface GPSStatusHeroProps {
    deviceName: string | null;
    isConnected: boolean;
+   isParked?: boolean;
    lastSeenLabel: string;
    speedKmh: number | null;
    roadName: string | null;
@@ -14,11 +15,10 @@
    onManualReconnect?: () => void;
  }
  
- // Removed GPSgate app link - Quartix only
- 
  export function GPSStatusHero({
    deviceName,
    isConnected,
+   isParked = false,
    lastSeenLabel,
    speedKmh,
    roadName,
@@ -26,7 +26,7 @@
    retryCount = 0,
    onManualReconnect,
  }: GPSStatusHeroProps) {
-   const showReconnecting = isReconnecting && !isConnected;
+   const showReconnecting = isReconnecting && !isConnected && !isParked;
  
    return (
      <div className="space-y-4">
@@ -41,9 +41,11 @@
         <div className={`relative px-4 py-4 ${
           isConnected 
             ? "bg-gradient-to-br from-primary to-primary/80" 
-            : showReconnecting 
-              ? "bg-gradient-to-br from-slate-600 to-slate-700"
-              : "bg-gradient-to-br from-primary/70 to-primary/50"
+            : isParked
+              ? "bg-gradient-to-br from-slate-500 to-slate-600"
+              : showReconnecting 
+                ? "bg-gradient-to-br from-slate-600 to-slate-700"
+                : "bg-gradient-to-br from-primary/70 to-primary/50"
         }`}>
           {/* Animated background pattern */}
           {!showReconnecting && (
@@ -57,15 +59,11 @@
             <div className={`flex items-center ${showReconnecting ? "gap-2" : "gap-3"}`}>
               {/* Status Icon */}
               <div className="relative">
-                <div className={`flex items-center justify-center ${
-                  isConnected 
-                    ? "w-11 h-11 rounded-xl bg-white/20" 
-                    : showReconnecting 
-                      ? "w-9 h-9 rounded-lg bg-white/20" 
-                      : "w-11 h-11 rounded-xl bg-white/20"
-                }`}>
+                <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-white/20">
                   {isConnected ? (
                     <Radio className="h-5 w-5 text-white" />
+                  ) : isParked ? (
+                    <Car className="h-5 w-5 text-white" />
                   ) : showReconnecting ? (
                     <RefreshCw className="h-4 w-4 text-white animate-spin" />
                   ) : (
@@ -74,38 +72,45 @@
                 </div>
                 
                 {/* Green connected indicator dot */}
-                {isConnected && (
+                {(isConnected || isParked) && (
                   <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-white"></span>
+                    {isConnected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
+                    <span className={`relative inline-flex rounded-full h-3.5 w-3.5 border-2 border-white ${isParked ? "bg-amber-400" : "bg-emerald-500"}`}></span>
                   </span>
                 )}
               </div>
               
               <div className="text-white">
                 <h2 className={`font-bold ${showReconnecting ? "text-base" : "text-lg"}`}>
-                  {isConnected ? "Connected" : showReconnecting ? "Reconnecting" : "Offline"}
+                  {isConnected ? "Connected" : isParked ? "Parked" : showReconnecting ? "Reconnecting" : "Offline"}
                 </h2>
                 {!showReconnecting && (
                   <p className="text-white/80 text-xs font-medium">
-                    {deviceName || "GPS Tracker"}
+                    {isParked ? (roadName || deviceName || "Ignition Off") : (deviceName || "GPS Tracker")}
                   </p>
                 )}
               </div>
             </div>
             
-            {/* Live indicator badge */}
+            {/* Status badge */}
             <div className={`rounded-full font-semibold ${
               isConnected 
                 ? "px-3 py-1 text-xs bg-white/90 text-primary ring-2 ring-white/30" 
-                : showReconnecting 
-                  ? "px-2 py-1 text-[10px] bg-white/90 text-slate-700 font-bold shadow-sm"
-                  : "px-3 py-1 text-xs bg-white text-primary/70"
+                : isParked
+                  ? "px-3 py-1 text-xs bg-white/90 text-slate-600"
+                  : showReconnecting 
+                    ? "px-2 py-1 text-[10px] bg-white/90 text-slate-700 font-bold shadow-sm"
+                    : "px-3 py-1 text-xs bg-white text-primary/70"
             }`}>
               {isConnected ? (
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
                   LIVE
+                </span>
+              ) : isParked ? (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-amber-400 rounded-full" />
+                  {lastSeenLabel}
                 </span>
               ) : showReconnecting ? (
                 `#${retryCount + 1}`
