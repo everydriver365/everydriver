@@ -12,8 +12,9 @@ async function authenticate(): Promise<string> {
   const customerId = Deno.env.get("QUARTIX_CUSTOMER_ID");
   const username = Deno.env.get("QUARTIX_USERNAME");
   const password = Deno.env.get("QUARTIX_PASSWORD");
+  const application = Deno.env.get("QUARTIX_APPLICATION");
 
-  if (!customerId || !username || !password) {
+  if (!customerId || !username || !password || !application) {
     throw new Error("Quartix credentials not configured");
   }
 
@@ -21,6 +22,7 @@ async function authenticate(): Promise<string> {
     CustomerID: customerId,
     UserName: username,
     Password: password,
+    Application: application,
   });
 
   const res = await fetch(`${QUARTIX_BASE}/auth`, {
