@@ -27,6 +27,7 @@ import {
   ClipboardList,
   Award,
   ChevronRight,
+  ChevronDown,
   Radio,
   Menu,
   X,
@@ -156,6 +157,13 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [openGroups, setOpenGroups] = useState<string[]>(() => {
+    const activeGroup = sidebarGroups.find(g => g.items.some(item => location.pathname === item.href));
+    return activeGroup ? [activeGroup.label] : [];
+  });
+  const toggleGroup = (label: string) => {
+    setOpenGroups(prev => prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]);
+  };
   const { alerts: urgentAlerts, dismissAlert: dismissUrgentAlert } = useUrgentAlerts(instructor?.id);
   
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -175,6 +183,14 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   // Check for fullscreen mode (used when tracking is active)
   const searchParams = new URLSearchParams(location.search);
   const isFullscreenMode = isTrackingPage && searchParams.get("fullscreen") === "true";
+
+  // Auto-open sidebar group when navigating to a new page
+  useEffect(() => {
+    const activeGroup = sidebarGroups.find(g => g.items.some(item => location.pathname === item.href));
+    if (activeGroup && !openGroups.includes(activeGroup.label)) {
+      setOpenGroups(prev => [...prev, activeGroup.label]);
+    }
+  }, [location.pathname]);
 
   // Fetch pupils for payment sheet
   useEffect(() => {
@@ -811,63 +827,82 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             sidebarCollapsed ? "w-14" : "w-52"
           )}>
             <nav className="flex-1 py-2 px-2 overflow-y-auto">
-              {sidebarGroups.map((group) => (
-                <div key={group.label} className="mb-3">
-                  {!sidebarCollapsed && (
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-2 mb-1">
-                      {group.label}
-                    </p>
-                  )}
-                  <div className="space-y-0.5">
-                    {group.items.map((link) => {
-                      const isActive = location.pathname === link.href;
-                      const isMessages = link.href === "/instructor/messages";
-                      const isAdminChat = link.href === "/instructor/admin-chat";
-                      const isVisitorChats = link.href === "/instructor/visitor-chats";
-                      const isPendingScheduling = link.href === "/instructor/pending-scheduling";
-                      const isHighlighted = 'highlight' in link && link.highlight;
-                      return (
-                        <Link
-                          key={link.href}
-                          to={link.href}
-                          title={sidebarCollapsed ? link.label : undefined}
-                          className={cn(
-                            "flex items-center gap-2.5 py-1.5 text-sm transition-all rounded-md",
-                            sidebarCollapsed ? "justify-center px-0" : "px-2.5",
-                            isActive
-                              ? "text-foreground font-medium bg-primary/10 border-l-2 border-primary"
-                              : isHighlighted
-                              ? "text-emerald-600 dark:text-emerald-400 hover:bg-muted/50"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                          )}
-                        >
-                          <span className="relative shrink-0">
-                            <link.icon className={cn(
-                              "h-4 w-4",
-                              isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
-                            )} />
-                            {isAdminChat && !isActive && <AdminMessageBadge />}
-                          </span>
-                          {!sidebarCollapsed && (
-                            <>
-                              <span className="flex-1 truncate text-[13px]">{link.label}</span>
-                              {isVisitorChats && !isActive && (
-                                <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
-                              )}
-                              {isMessages && !isActive && (
-                                <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
-                              )}
-                              {isPendingScheduling && !isActive && (
-                                <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
-                              )}
-                            </>
-                          )}
-                        </Link>
-                      );
-                    })}
+              {sidebarGroups.map((group) => {
+                const isGroupOpen = openGroups.includes(group.label);
+                const hasActiveItem = group.items.some(item => location.pathname === item.href);
+                return (
+                  <div key={group.label} className="mb-1">
+                    {!sidebarCollapsed ? (
+                      <button
+                        onClick={() => toggleGroup(group.label)}
+                        className="w-full flex items-center justify-between px-2 py-1.5 group hover:bg-muted/30 rounded-md transition-colors"
+                      >
+                        <span className={cn(
+                          "text-[10px] font-bold uppercase tracking-widest",
+                          hasActiveItem ? "text-primary/80" : "text-muted-foreground/60"
+                        )}>
+                          {group.label}
+                        </span>
+                        <ChevronDown className={cn(
+                          "h-3 w-3 text-muted-foreground/40 transition-transform duration-200",
+                          isGroupOpen && "rotate-180"
+                        )} />
+                      </button>
+                    ) : null}
+                    <div className={cn(
+                      "space-y-0.5 overflow-hidden transition-all duration-200",
+                      !sidebarCollapsed && !isGroupOpen ? "max-h-0 opacity-0" : "max-h-[500px] opacity-100"
+                    )}>
+                      {group.items.map((link) => {
+                        const isActive = location.pathname === link.href;
+                        const isMessages = link.href === "/instructor/messages";
+                        const isAdminChat = link.href === "/instructor/admin-chat";
+                        const isVisitorChats = link.href === "/instructor/visitor-chats";
+                        const isPendingScheduling = link.href === "/instructor/pending-scheduling";
+                        const isHighlighted = 'highlight' in link && link.highlight;
+                        return (
+                          <Link
+                            key={link.href}
+                            to={link.href}
+                            title={sidebarCollapsed ? link.label : undefined}
+                            className={cn(
+                              "flex items-center gap-2.5 py-1.5 text-sm transition-all rounded-md",
+                              sidebarCollapsed ? "justify-center px-0" : "px-2.5",
+                              isActive
+                                ? "text-foreground font-medium bg-primary/10 border-l-2 border-primary"
+                                : isHighlighted
+                                ? "text-emerald-600 dark:text-emerald-400 hover:bg-muted/50"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                            )}
+                          >
+                            <span className="relative shrink-0">
+                              <link.icon className={cn(
+                                "h-4 w-4",
+                                isActive ? "text-primary" : isHighlighted ? "text-emerald-500" : ""
+                              )} />
+                              {isAdminChat && !isActive && <AdminMessageBadge />}
+                            </span>
+                            {!sidebarCollapsed && (
+                              <>
+                                <span className="flex-1 truncate text-[13px]">{link.label}</span>
+                                {isVisitorChats && !isActive && (
+                                  <VisitorChatBadge instructorId={instructor?.id} className="ml-auto" />
+                                )}
+                                {isMessages && !isActive && (
+                                  <MessageNotificationBadge instructorId={instructor?.id} className="ml-auto" />
+                                )}
+                                {isPendingScheduling && !isActive && (
+                                  <PendingSchedulingBadge instructorId={instructor?.id} className="ml-auto" />
+                                )}
+                              </>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </nav>
 
             {/* User info at bottom */}
