@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useDriverTimesheets } from "@/hooks/useDriverTimesheets";
+import { TrackedLessons } from "./TrackedLessons";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { format, subDays } from "date-fns";
 
@@ -318,6 +319,9 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Recent tracked lessons widget */}
+      <TrackedLessons instructorId={instructorId} compact limit={5} />
     </div>
   );
 }
