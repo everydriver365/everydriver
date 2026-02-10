@@ -96,6 +96,8 @@ import InstructorNotes from "./pages/InstructorNotes";
 import InstructorPlans from "./pages/InstructorPlans";
 import InstructorResources from "./pages/InstructorResources";
 import PupilCardDemo from "./pages/PupilCardDemo";
+import SubmitReview from "./pages/mini-website/SubmitReview";
+import InstructorReviews from "./pages/InstructorReviews";
 
 // Instructor SaaS pages
 import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
@@ -156,6 +158,7 @@ const App = () => (
               <Route path="/i/:slug/courses" element={<MiniWebsiteCourses />} />
               <Route path="/i/:slug/reviews" element={<MiniWebsiteReviews />} />
               <Route path="/i/:slug/contact" element={<MiniWebsiteContact />} />
+              <Route path="/review/:slug" element={<SubmitReview />} />
               
               {/* Public Availability Calendar */}
               <Route path="/availability/:shareToken" element={<PublicAvailability />} />
@@ -229,6 +232,7 @@ const App = () => (
               <Route path="/instructor/notes" element={<InstructorNotes />} />
               <Route path="/instructor/plans" element={<InstructorPlans />} />
               <Route path="/instructor/resources" element={<InstructorResources />} />
+              <Route path="/instructor/reviews" element={<InstructorReviews />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />

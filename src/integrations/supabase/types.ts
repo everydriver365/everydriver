@@ -588,9 +588,12 @@ export type Database = {
           instructor_id: string
           is_verified: boolean | null
           is_visible: boolean | null
+          moderation_note: string | null
+          moderation_status: string
           rating: number
           review_date: string | null
           review_text: string
+          reviewer_email: string | null
           reviewer_name: string
         }
         Insert: {
@@ -600,9 +603,12 @@ export type Database = {
           instructor_id: string
           is_verified?: boolean | null
           is_visible?: boolean | null
+          moderation_note?: string | null
+          moderation_status?: string
           rating: number
           review_date?: string | null
           review_text: string
+          reviewer_email?: string | null
           reviewer_name: string
         }
         Update: {
@@ -612,9 +618,12 @@ export type Database = {
           instructor_id?: string
           is_verified?: boolean | null
           is_visible?: boolean | null
+          moderation_note?: string | null
+          moderation_status?: string
           rating?: number
           review_date?: string | null
           review_text?: string
+          reviewer_email?: string | null
           reviewer_name?: string
         }
         Relationships: [

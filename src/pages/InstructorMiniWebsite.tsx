@@ -103,7 +103,7 @@ export default function InstructorMiniWebsite() {
           .from("course_reviews")
           .select("*")
           .eq("instructor_id", instructorData.id)
-          .eq("is_visible", true)
+          .eq("moderation_status", "approved")
           .order("review_date", { ascending: false })
           .limit(6)
       ]);

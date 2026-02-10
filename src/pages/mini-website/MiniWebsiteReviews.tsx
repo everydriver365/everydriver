@@ -37,7 +37,7 @@ export default function MiniWebsiteReviews({ subdomainSlug }: MiniWebsiteReviews
         .from("course_reviews")
         .select("*")
         .eq("instructor_id", instructor.id)
-        .eq("is_visible", true)
+        .eq("moderation_status", "approved")
         .order("review_date", { ascending: false })
         .then(({ data }) => {
           if (data) setReviews(data);

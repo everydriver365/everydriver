@@ -33,7 +33,7 @@ export default function MiniWebsiteHome({ subdomainSlug }: MiniWebsiteHomeProps 
           .from("course_reviews")
           .select("rating")
           .eq("instructor_id", instructor.id)
-          .eq("is_visible", true),
+          .eq("moderation_status", "approved"),
         supabase
           .from("instructor_courses")
           .select("*")
