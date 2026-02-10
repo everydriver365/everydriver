@@ -22,6 +22,7 @@ interface GpsDevice {
 
 interface FleetLiveMapProps {
   instructorId: string;
+  isVisible?: boolean;
 }
 
 const DEFAULT_LAT = 52.48;
@@ -91,7 +92,7 @@ function buildPopupHtml(device: GpsDevice) {
   </div>`;
 }
 
-export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
+export function FleetLiveMap({ instructorId, isVisible = false }: FleetLiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<string, L.Marker>>(new Map());
@@ -107,18 +108,22 @@ export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
     setLoading(false);
   }, [instructorId]);
 
-  // Init map - use IntersectionObserver to detect when tab becomes visible
+  // Init map when isVisible becomes true (deterministic, no IntersectionObserver)
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!isVisible || !mapRef.current) return;
     const container = mapRef.current;
-    let map: L.Map | null = null;
 
-    const initMap = () => {
-      if (mapInstance.current) {
-        mapInstance.current.invalidateSize();
-        return;
-      }
-      map = L.map(container, {
+    if (mapInstance.current) {
+      // Already initialized — just fix tile rendering after tab switch
+      requestAnimationFrame(() => {
+        mapInstance.current?.invalidateSize();
+      });
+      return;
+    }
+
+    // Delay init to ensure container has layout dimensions after display:none removal
+    const raf = requestAnimationFrame(() => {
+      const map = L.map(container, {
         center: [DEFAULT_LAT, DEFAULT_LNG],
         zoom: 13,
         zoomControl: true,
@@ -127,33 +132,21 @@ export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
       mapInstance.current = map;
       L.tileLayer(getMapTileUrl(), { maxZoom: 19, attribution: getMapAttribution() }).addTo(map);
       map.zoomControl?.setPosition("topright");
-      // Multiple invalidations to handle rendering delays
-      setTimeout(() => map?.invalidateSize(), 100);
-      setTimeout(() => map?.invalidateSize(), 400);
-      setTimeout(() => map?.invalidateSize(), 1000);
-    };
+      setTimeout(() => map.invalidateSize(), 100);
+      setTimeout(() => map.invalidateSize(), 400);
+    });
 
-    // Use IntersectionObserver to detect visibility (handles Radix tabs display:none)
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          // Small delay to ensure container has non-zero dimensions after tab switch
-          setTimeout(() => {
-            requestAnimationFrame(() => {
-              initMap();
-            });
-          }, 50);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(container);
+    return () => cancelAnimationFrame(raf);
+  }, [isVisible]);
 
+  // ResizeObserver for container resizes + cleanup on unmount
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const container = mapRef.current;
     const ro = new ResizeObserver(() => mapInstance.current?.invalidateSize());
     ro.observe(container);
 
     return () => {
-      observer.disconnect();
       ro.disconnect();
       mapInstance.current?.remove();
       mapInstance.current = null;
