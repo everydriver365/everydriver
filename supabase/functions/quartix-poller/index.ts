@@ -11,30 +11,22 @@ const QUARTIX_BASE = "https://qws.quartix.net/v2/api";
 // Fetch speed limit from OpenStreetMap Overpass API
 async function fetchSpeedLimit(lat: number, lng: number): Promise<number | null> {
   try {
-    const radius = 30; // meters
+    const radius = 30;
     const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})["highway"]["maxspeed"];out tags 1;`;
     const res = await fetch("https://overpass-api.de/api/interpreter", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: `data=${encodeURIComponent(query)}`,
     });
-
     if (!res.ok) return null;
-
     const data = await res.json();
     const way = data?.elements?.[0];
     if (!way?.tags?.maxspeed) return null;
-
     const raw = way.tags.maxspeed;
-    // Parse "30 mph", "30", "national" etc.
     const match = raw.match(/(\d+)/);
     if (!match) return null;
-
     const value = parseInt(match[1], 10);
-    // If it contains "mph", convert to kmh; otherwise assume kmh
-    if (raw.toLowerCase().includes("mph")) {
-      return value * 1.60934;
-    }
+    if (raw.toLowerCase().includes("mph")) return value * 1.60934;
     return value;
   } catch (err) {
     console.warn("[QuartixPoller] Speed limit fetch failed:", err);
@@ -49,61 +41,157 @@ async function authenticate(): Promise<string> {
   const application = Deno.env.get("QUARTIX_APPLICATION");
 
   if (!customerId || !username || !password || !application) {
-    throw new Error("Quartix credentials not configured. Add QUARTIX_CUSTOMER_ID, QUARTIX_USERNAME, QUARTIX_PASSWORD, QUARTIX_APPLICATION secrets.");
+    throw new Error("Quartix credentials not configured.");
   }
 
-  console.log(`[QuartixAuth] Attempting auth with CustomerID=${customerId}, UserName=${username}, Application=${application}`);
-
-  // Try JSON body format first
   const jsonBody = JSON.stringify({
-    CustomerID: customerId,
-    UserName: username,
-    Password: password,
-    Application: application,
+    CustomerID: customerId, UserName: username, Password: password, Application: application,
   });
 
   let res = await fetch(`${QUARTIX_BASE}/auth`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: jsonBody,
+    method: "POST", headers: { "Content-Type": "application/json" }, body: jsonBody,
   });
-
   let text = await res.text();
-  console.log(`[QuartixAuth] JSON attempt: status=${res.status}, body=${text}`);
 
   if (!res.ok) {
-    // Fallback: try form-encoded
-    const formBody = new URLSearchParams({
-      CustomerID: customerId,
-      UserName: username,
-      Password: password,
-      Application: application,
-    });
-
+    const formBody = new URLSearchParams({ CustomerID: customerId, UserName: username, Password: password, Application: application });
     res = await fetch(`${QUARTIX_BASE}/auth`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formBody,
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: formBody,
     });
-
     text = await res.text();
-    console.log(`[QuartixAuth] Form attempt: status=${res.status}, body=${text}`);
   }
 
-  if (!res.ok) {
-    throw new Error(`Quartix auth failed [${res.status}]: ${text}`);
-  }
+  if (!res.ok) throw new Error(`Quartix auth failed [${res.status}]: ${text}`);
 
   let json: any;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    throw new Error(`Quartix auth returned non-JSON: ${text}`);
-  }
-  
+  try { json = JSON.parse(text); } catch { throw new Error(`Quartix auth returned non-JSON: ${text}`); }
   const token = json?.Data?.AccessToken;
   if (!token) throw new Error(`No AccessToken in Quartix auth response: ${text}`);
   return token;
+}
+
+// Haversine distance in meters
+function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Check geofences for a position
+async function checkGeofences(
+  supabase: any, instructorId: string, deviceId: string,
+  lat: number, lng: number
+) {
+  try {
+    const { data: fences } = await supabase
+      .from("geofences")
+      .select("id, latitude, longitude, radius_m, alert_on_enter, alert_on_exit, active_hours_start, active_hours_end")
+      .eq("instructor_id", instructorId)
+      .eq("is_active", true);
+
+    if (!fences || fences.length === 0) return;
+
+    // Get recent alerts for this device to avoid duplicates (last 10 min)
+    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { data: recentAlerts } = await supabase
+      .from("geofence_alerts")
+      .select("geofence_id, alert_type")
+      .eq("device_id", deviceId)
+      .gte("triggered_at", tenMinAgo);
+
+    const recentSet = new Set((recentAlerts || []).map((a: any) => `${a.geofence_id}:${a.alert_type}`));
+
+    for (const fence of fences) {
+      const dist = haversineM(lat, lng, fence.latitude, fence.longitude);
+      const inside = dist <= fence.radius_m;
+
+      // Check active hours
+      if (fence.active_hours_start && fence.active_hours_end) {
+        const now = new Date();
+        const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        if (hhmm < fence.active_hours_start || hhmm > fence.active_hours_end) continue;
+      }
+
+      if (inside && fence.alert_on_enter && !recentSet.has(`${fence.id}:enter`)) {
+        await supabase.from("geofence_alerts").insert({
+          geofence_id: fence.id, device_id: deviceId, instructor_id: instructorId,
+          alert_type: "enter", latitude: lat, longitude: lng,
+        });
+      } else if (!inside && fence.alert_on_exit && !recentSet.has(`${fence.id}:exit`)) {
+        // Only alert exit if device was recently inside (check last alert was enter)
+        const { data: lastAlert } = await supabase
+          .from("geofence_alerts")
+          .select("alert_type")
+          .eq("geofence_id", fence.id)
+          .eq("device_id", deviceId)
+          .order("triggered_at", { ascending: false })
+          .limit(1);
+        if (lastAlert?.[0]?.alert_type === "enter") {
+          await supabase.from("geofence_alerts").insert({
+            geofence_id: fence.id, device_id: deviceId, instructor_id: instructorId,
+            alert_type: "exit", latitude: lat, longitude: lng,
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[QuartixPoller] Geofence check error:", err);
+  }
+}
+
+// Check for unauthorised movement outside working hours
+async function checkUnauthorisedMovement(
+  supabase: any, instructorId: string, deviceId: string,
+  lat: number, lng: number, speedKmh: number, roadName: string | null,
+  ignition: boolean | null
+) {
+  try {
+    if (!ignition && (!speedKmh || speedKmh < 2)) return; // No movement
+
+    const { data: config } = await supabase
+      .from("instructor_tracking_config")
+      .select("working_hours_start, working_hours_end, working_days")
+      .eq("instructor_id", instructorId)
+      .maybeSingle();
+
+    if (!config) return;
+
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0=Sun
+    const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:00`;
+
+    const workingDays: number[] = config.working_days || [1, 2, 3, 4, 5, 6];
+    const start = config.working_hours_start || "07:00:00";
+    const end = config.working_hours_end || "20:00:00";
+
+    const isWorkingDay = workingDays.includes(dayOfWeek);
+    const isWorkingHour = hhmm >= start && hhmm <= end;
+
+    if (isWorkingDay && isWorkingHour) return; // Within working hours
+
+    // Check if we already alerted in last 30 min for this device
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const { data: recent } = await supabase
+      .from("movement_alerts")
+      .select("id")
+      .eq("device_id", deviceId)
+      .gte("detected_at", thirtyMinAgo)
+      .limit(1);
+
+    if (recent && recent.length > 0) return;
+
+    await supabase.from("movement_alerts").insert({
+      device_id: deviceId, instructor_id: instructorId,
+      latitude: lat, longitude: lng, speed_kmh: speedKmh, road_name: roadName,
+    });
+
+    console.log(`[QuartixPoller] Unauthorised movement detected for device ${deviceId}`);
+  } catch (err) {
+    console.warn("[QuartixPoller] Movement check error:", err);
+  }
 }
 
 serve(async (req) => {
@@ -116,7 +204,6 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Authenticate with Quartix
     let accessToken: string;
     try {
       accessToken = await authenticate();
@@ -130,40 +217,31 @@ serve(async (req) => {
 
     const qHeaders = { AccessToken: accessToken };
 
-    // Step 1: Auto-sync vehicles — fetch all vehicles from Quartix
+    // Step 1: Auto-sync vehicles
     const vehiclesRes = await fetch(`${QUARTIX_BASE}/vehicles`, { headers: qHeaders });
     let quartixVehicles: any[] = [];
     if (vehiclesRes.ok) {
       const vehiclesJson = await vehiclesRes.json();
       quartixVehicles = vehiclesJson?.Data || [];
-      console.log(`[QuartixPoller] Found ${quartixVehicles.length} Quartix vehicles (raw):`, JSON.stringify(quartixVehicles[0]));
-    } else {
-      console.warn(`[QuartixPoller] Failed to fetch vehicles list: ${vehiclesRes.status}`);
     }
 
-    // Get all existing Quartix devices
     const { data: existingDevices } = await supabase
       .from("gps_devices")
       .select("id, instructor_id, quartix_vehicle_id")
       .eq("tracking_provider", "quartix");
 
-    // Get instructor tracking configs for Quartix
     const { data: configs } = await supabase
       .from("instructor_tracking_config")
       .select("instructor_id")
       .eq("provider", "quartix");
 
     const configuredInstructorIds = configs?.map((c: any) => c.instructor_id) || [];
-
-    // Auto-register new vehicles for configured instructors
     const existingVehicleIds = new Set((existingDevices || []).map((d: any) => d.quartix_vehicle_id));
     let newDevicesRegistered = 0;
 
     for (const vehicle of quartixVehicles) {
       const vehicleId = String(vehicle.VehicleId || vehicle.VehicleID);
       if (existingVehicleIds.has(vehicleId)) continue;
-
-      // Register for the first configured instructor (or skip if none)
       if (configuredInstructorIds.length === 0) continue;
 
       const { error: insertErr } = await supabase.from("gps_devices").insert({
@@ -175,19 +253,10 @@ serve(async (req) => {
         is_active: true,
       });
 
-      if (!insertErr) {
-        newDevicesRegistered++;
-        existingVehicleIds.add(vehicleId);
-      } else {
-        console.warn(`[QuartixPoller] Failed to register vehicle ${vehicleId}:`, insertErr);
-      }
+      if (!insertErr) { newDevicesRegistered++; existingVehicleIds.add(vehicleId); }
     }
 
-    if (newDevicesRegistered > 0) {
-      console.log(`[QuartixPoller] Auto-registered ${newDevicesRegistered} new vehicles`);
-    }
-
-    // Refresh devices list after potential inserts
+    // Refresh devices
     const { data: devices } = await supabase
       .from("gps_devices")
       .select("id, instructor_id, quartix_vehicle_id, quartix_driver_id")
@@ -201,26 +270,23 @@ serve(async (req) => {
     if (liveRes.ok) {
       const liveJson = await liveRes.json();
       const positions = liveJson?.Data || [];
-      console.log(`[QuartixPoller] Live positions: ${positions.length}`, positions.length > 0 ? JSON.stringify(Object.keys(positions[0])) : 'none');
 
       for (const pos of positions) {
         const vehicleId = String(pos.VehicleId || pos.VehicleID);
         const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
-        if (!device) {
-          skipped++;
-          continue;
-        }
+        if (!device) { skipped++; continue; }
 
-        // Fetch speed limit from OSM for current position
         let speedLimitKmh: number | null = null;
         if (pos.Latitude && pos.Longitude) {
           speedLimitKmh = await fetchSpeedLimit(pos.Latitude, pos.Longitude);
         }
 
+        const speedKmh = pos.Speed != null ? pos.Speed * 1.60934 : null;
+
         const { error: updateErr } = await supabase.from("gps_devices").update({
           last_latitude: pos.Latitude,
           last_longitude: pos.Longitude,
-          last_speed_kmh: pos.Speed != null ? pos.Speed * 1.60934 : null, // mph to kmh
+          last_speed_kmh: speedKmh,
           last_heading: pos.Heading,
           last_seen_at: pos.LastEventDateTime || new Date().toISOString(),
           last_ignition_status: pos.Ignition ?? null,
@@ -230,16 +296,23 @@ serve(async (req) => {
 
         if (!updateErr) {
           processed++;
+
+          // Check geofences and unauthorised movement
+          if (pos.Latitude && pos.Longitude) {
+            await checkGeofences(supabase, device.instructor_id, device.id, pos.Latitude, pos.Longitude);
+            await checkUnauthorisedMovement(
+              supabase, device.instructor_id, device.id,
+              pos.Latitude, pos.Longitude, speedKmh || 0,
+              pos.LocationText || null, pos.Ignition ?? null
+            );
+          }
         } else {
-          console.warn(`[QuartixPoller] Update failed for device ${device.id}:`, updateErr);
           skipped++;
         }
       }
-    } else {
-      console.warn(`[QuartixPoller] Failed to fetch live positions: ${liveRes.status}`);
     }
 
-    // Step 3: Fetch driving style scores AND build timesheets (today's summary)
+    // Step 3: Driving style scores + timesheets
     const today = new Date().toISOString().split("T")[0];
     const scoresRes = await fetch(
       `${QUARTIX_BASE}/vehicles/tripsummary?StartDay=${today}&EndDay=${today}&Include=drivingStyle&GroupBy=vehicle`,
@@ -250,16 +323,10 @@ serve(async (req) => {
       const scoresJson = await scoresRes.json();
       const summaries = scoresJson?.Data || [];
 
-      // Group trips by instructor for timesheet aggregation
       const timesheetMap = new Map<string, {
-        instructor_id: string;
-        quartix_vehicle_id: string;
-        first_start: string | null;
-        last_end: string | null;
-        total_driving: number;
-        total_idle: number;
-        total_distance: number;
-        trip_count: number;
+        instructor_id: string; quartix_vehicle_id: string;
+        first_start: string | null; last_end: string | null;
+        total_driving: number; total_idle: number; total_distance: number; trip_count: number;
       }>();
 
       for (const summary of summaries) {
@@ -267,7 +334,6 @@ serve(async (req) => {
         const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
         if (!device) continue;
 
-        // Upsert driving scores
         const ds = summary.DrivingStyle;
         if (ds) {
           await supabase.from("quartix_driver_scores").upsert({
@@ -283,7 +349,6 @@ serve(async (req) => {
           }, { onConflict: "instructor_id,quartix_driver_id,score_date" });
         }
 
-        // Aggregate timesheet data
         const key = `${device.instructor_id}|${vehicleId}`;
         const existing = timesheetMap.get(key);
         const travelTime = summary.TravelTime || 0;
@@ -297,57 +362,31 @@ serve(async (req) => {
           existing.total_idle += idleTime;
           existing.total_distance += distance;
           existing.trip_count += 1;
-          if (startTime && (!existing.first_start || startTime < existing.first_start)) {
-            existing.first_start = startTime;
-          }
-          if (endTime && (!existing.last_end || endTime > existing.last_end)) {
-            existing.last_end = endTime;
-          }
+          if (startTime && (!existing.first_start || startTime < existing.first_start)) existing.first_start = startTime;
+          if (endTime && (!existing.last_end || endTime > existing.last_end)) existing.last_end = endTime;
         } else {
           timesheetMap.set(key, {
-            instructor_id: device.instructor_id,
-            quartix_vehicle_id: vehicleId,
-            first_start: startTime,
-            last_end: endTime,
-            total_driving: travelTime,
-            total_idle: idleTime,
-            total_distance: distance,
-            trip_count: 1,
+            instructor_id: device.instructor_id, quartix_vehicle_id: vehicleId,
+            first_start: startTime, last_end: endTime,
+            total_driving: travelTime, total_idle: idleTime,
+            total_distance: distance, trip_count: 1,
           });
         }
       }
 
-      // Upsert timesheets
       for (const [, ts] of timesheetMap) {
         await supabase.from("driver_timesheets").upsert({
-          instructor_id: ts.instructor_id,
-          sheet_date: today,
+          instructor_id: ts.instructor_id, sheet_date: today,
           quartix_vehicle_id: ts.quartix_vehicle_id,
-          first_trip_start: ts.first_start,
-          last_trip_end: ts.last_end,
-          total_driving_minutes: ts.total_driving,
-          total_idle_minutes: ts.total_idle,
-          total_distance_km: ts.total_distance,
-          trip_count: ts.trip_count,
+          first_trip_start: ts.first_start, last_trip_end: ts.last_end,
+          total_driving_minutes: ts.total_driving, total_idle_minutes: ts.total_idle,
+          total_distance_km: ts.total_distance, trip_count: ts.trip_count,
         }, { onConflict: "instructor_id,sheet_date,quartix_vehicle_id" });
       }
-
-      console.log(`[QuartixPoller] Upserted ${timesheetMap.size} timesheet entries`);
-    } else {
-      console.warn(`[QuartixPoller] Failed to fetch driving scores: ${scoresRes.status}`);
     }
 
-    console.log(`[QuartixPoller] Complete. Processed: ${processed}, Skipped: ${skipped}, Devices: ${devices?.length || 0}, New: ${newDevicesRegistered}`);
-
     return new Response(
-      JSON.stringify({
-        success: true,
-        processed,
-        skipped,
-        registered_devices: devices?.length || 0,
-        new_devices: newDevicesRegistered,
-        total_quartix_instructors: configuredInstructorIds.length,
-      }),
+      JSON.stringify({ success: true, processed, skipped, registered_devices: devices?.length || 0, new_devices: newDevicesRegistered }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
