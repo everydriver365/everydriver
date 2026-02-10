@@ -680,6 +680,8 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     if (["/instructor/admin-chat", "/instructor/visitor-chats"].some(p => path.startsWith(p))) return "/instructor/messages";
     // Website group
     if (path.startsWith("/instructor/domains")) return "/instructor/website";
+    // Fleet dashboard -> GPS tab
+    if (path.startsWith("/instructor/fleet-dashboard")) return "/instructor/traccar";
     return "/instructor";
   };
 
@@ -836,6 +838,37 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               {sidebarGroups.map((group) => {
                 const isGroupOpen = openGroups.includes(group.label);
                 const hasActiveItem = group.items.some(item => location.pathname === item.href);
+                const isSingleHighlightGroup = group.items.length === 1 && 'highlight' in group.items[0] && group.items[0].highlight;
+
+                // Render single-item highlighted groups as standalone prominent links
+                if (isSingleHighlightGroup) {
+                  const link = group.items[0];
+                  const isActive = location.pathname === link.href;
+                  return (
+                    <div key={group.label} className="mb-1">
+                      {!sidebarCollapsed && (
+                        <span className="px-2 py-1.5 block text-[10px] font-bold uppercase tracking-widest text-emerald-600/70 dark:text-emerald-400/70">
+                          {group.label}
+                        </span>
+                      )}
+                      <Link
+                        to={link.href}
+                        title={sidebarCollapsed ? link.label : undefined}
+                        className={cn(
+                          "flex items-center gap-2.5 py-2 text-sm font-medium transition-all rounded-lg border",
+                          sidebarCollapsed ? "justify-center px-0 border-transparent" : "px-3",
+                          isActive
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                            : "bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:border-emerald-500/40 hover:from-emerald-500/15 hover:to-cyan-500/15"
+                        )}
+                      >
+                        <link.icon className="h-4 w-4 text-emerald-500 shrink-0" />
+                        {!sidebarCollapsed && <span className="truncate text-[13px]">{link.label}</span>}
+                      </Link>
+                    </div>
+                  );
+                }
+
                 return (
                   <div key={group.label} className="mb-1">
                     {!sidebarCollapsed ? (
