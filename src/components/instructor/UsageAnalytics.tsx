@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,8 +15,9 @@ const kmToMiles = (km: number) => +(km * 0.621371).toFixed(1);
 
 export function UsageAnalytics({ instructorId }: UsageAnalyticsProps) {
   const [range, setRange] = useState<"7" | "14" | "30">("14");
-  const fromDate = subDays(new Date(), parseInt(range));
-  const { timesheets, loading } = useDriverTimesheets(instructorId, fromDate, new Date());
+  const fromDate = useMemo(() => subDays(new Date(), parseInt(range)), [range]);
+  const toDate = useMemo(() => new Date(), [range]);
+  const { timesheets, loading } = useDriverTimesheets(instructorId, fromDate, toDate);
 
   // Aggregate by date
   const byDate = timesheets.reduce((acc, ts) => {
