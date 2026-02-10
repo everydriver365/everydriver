@@ -40,15 +40,15 @@ export default function InstructorFleetDashboard() {
 
   return (
     <InstructorPortalLayout>
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 pb-24">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <h1 className="text-lg sm:text-2xl font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
               <Gauge className="h-4 w-4 text-primary" />
             </div>
             Fleet Dashboard
           </h1>
-          <p className="text-muted-foreground text-sm ml-10">Vehicle intelligence, alerts & analytics</p>
+          <p className="text-muted-foreground text-xs sm:text-sm ml-10 hidden sm:block">Vehicle intelligence, alerts & analytics</p>
         </div>
 
         {isFreePlan ? (
@@ -74,44 +74,46 @@ export default function InstructorFleetDashboard() {
           </Card>
         ) : instructor?.id ? (
           <Tabs defaultValue="overview">
-            <TabsList className="grid w-full grid-cols-4 md:grid-cols-9 text-[10px]">
-              <TabsTrigger value="overview" className="flex items-center gap-1">
-                <Gauge className="h-3 w-3" />
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="livemap" className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                Live Map
-              </TabsTrigger>
-              <TabsTrigger value="lessons" className="flex items-center gap-1">
-                <Play className="h-3 w-3" />
-                Lessons
-              </TabsTrigger>
-              <TabsTrigger value="mileage" className="flex items-center gap-1">
-                <Route className="h-3 w-3" />
-                Mileage
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="flex items-center gap-1">
-                <BarChart3 className="h-3 w-3" />
-                Analytics
-              </TabsTrigger>
-              <TabsTrigger value="heatmap" className="flex items-center gap-1">
-                <Flame className="h-3 w-3" />
-                Heatmap
-              </TabsTrigger>
-              <TabsTrigger value="geofences" className="flex items-center gap-1">
-                <Shield className="h-3 w-3" />
-                Geofences
-              </TabsTrigger>
-              <TabsTrigger value="movement" className="flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                Alerts
-              </TabsTrigger>
-              <TabsTrigger value="reports" className="flex items-center gap-1">
-                <Mail className="h-3 w-3" />
-                Reports
-              </TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
+              <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-9 gap-1 text-[10px]">
+                <TabsTrigger value="overview" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <Gauge className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Overview</span>
+                </TabsTrigger>
+                <TabsTrigger value="livemap" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Live Map</span>
+                </TabsTrigger>
+                <TabsTrigger value="lessons" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <Play className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Lessons</span>
+                </TabsTrigger>
+                <TabsTrigger value="mileage" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <Route className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Mileage</span>
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <BarChart3 className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Analytics</span>
+                </TabsTrigger>
+                <TabsTrigger value="heatmap" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <Flame className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Heatmap</span>
+                </TabsTrigger>
+                <TabsTrigger value="geofences" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <Shield className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Geofences</span>
+                </TabsTrigger>
+                <TabsTrigger value="movement" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <AlertTriangle className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Alerts</span>
+                </TabsTrigger>
+                <TabsTrigger value="reports" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
+                  <Mail className="h-3 w-3 shrink-0" />
+                  <span className="hidden xs:inline sm:inline">Reports</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="overview" className="mt-4">
               <FleetDashboard instructorId={instructor.id} />
