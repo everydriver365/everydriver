@@ -25,6 +25,7 @@ export default function InstructorFleetDashboard() {
   const planSlug = subscription?.plan_slug || "free";
   const isFreePlan = planSlug === "free";
   const [pupils, setPupils] = useState<Array<{ id: string; name: string }>>([]);
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
     if (!instructor?.id) return;
@@ -73,7 +74,7 @@ export default function InstructorFleetDashboard() {
             </CardContent>
           </Card>
         ) : instructor?.id ? (
-          <Tabs defaultValue="overview">
+          <Tabs defaultValue="overview" onValueChange={setActiveTab}>
             <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
               <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-9 gap-1 text-[10px]">
                 <TabsTrigger value="overview" className="flex items-center gap-1 px-2 sm:px-3 whitespace-nowrap">
@@ -119,7 +120,7 @@ export default function InstructorFleetDashboard() {
               <FleetDashboard instructorId={instructor.id} />
             </TabsContent>
             <TabsContent value="livemap" className="mt-4 data-[state=inactive]:hidden" forceMount>
-              <FleetLiveMap instructorId={instructor.id} />
+              <FleetLiveMap instructorId={instructor.id} isVisible={activeTab === "livemap"} />
             </TabsContent>
             <TabsContent value="lessons" className="mt-4">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
