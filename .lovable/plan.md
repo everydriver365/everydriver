@@ -1,70 +1,48 @@
 
-# Tint Tiles on Instructor Mobile Home
+
+# Show Both Nearest and Cheapest Fuel on the Dashboard Card
 
 ## Overview
-Apply the same tinted icon background pill pattern (used on sub-pages like Schedule, Pay, Expenses, etc.) to all tiles and widget cards on the instructor mobile home page. This creates visual consistency across the entire mobile experience.
+Redesign the `FuelFinderCard` component to display both the cheapest and nearest fuel stations side-by-side, instead of toggling between them with buttons.
 
-## Components to Update
+## Current Behavior
+- A toggle switches between "Cheapest" and "Nearest" modes
+- Only one station is shown at a time
 
-### 1. TodayMiniTimeline (`src/components/instructor/TodayMiniTimeline.tsx`)
-- Add a tinted header icon pill: `h-8 w-8 rounded-lg bg-blue-100` with a `Clock` or `Calendar` icon in `text-blue-600`
-- Currently just has a plain text header "Today's Schedule"
+## New Design
+Two compact rows stacked vertically inside the card, each showing one station:
 
-### 2. TomorrowPeekCard (`src/components/instructor/TomorrowPeekCard.tsx`)
-- Already has a tinted icon pill (`bg-primary/10`) -- update to use a specific color like `bg-indigo-100` with `text-indigo-600` for more visual variety
+**Row 1 -- Cheapest:** Green accent, shows price prominently, station name, and distance  
+**Row 2 -- Nearest:** Blue accent, shows distance prominently, station name, and price  
 
-### 3. VehicleHealthStrip (`src/components/instructor/VehicleHealthStrip.tsx`)
-- Currently uses a plain `Car` icon with `text-primary`
-- Wrap in a tinted pill: `h-8 w-8 rounded-lg bg-sky-100` with `text-sky-600`
+Each row has its own "Go" navigate button. The header toggle buttons are removed entirely.
 
-### 4. UnifiedAgendaTile (`src/components/instructor/dashboard/UnifiedAgendaTile.tsx`)
-- Already uses a custom PNG icon (`agendaIcon`) -- no change needed (custom image icons are exempt)
+## Layout
 
-### 5. PlanWidget (`src/components/instructor/dashboard/PlanWidget.tsx`)
-- Currently uses a plain `Crown` icon with `text-muted-foreground`
-- Wrap in a tinted pill: `h-8 w-8 rounded-lg bg-amber-100` with `text-amber-600`
-
-### 6. ReferralStatsWidget (`src/components/instructor/dashboard/ReferralStatsWidget.tsx`)
-- Currently uses a plain `Gift` icon with `text-muted-foreground`
-- Wrap in a tinted pill: `h-8 w-8 rounded-lg bg-pink-100` with `text-pink-600`
-
-### 7. MessagesWidget (`src/components/instructor/dashboard/MessagesWidget.tsx`)
-- Currently uses a plain `MessageSquare` icon with `text-blue-500`
-- Wrap in a tinted pill: `h-8 w-8 rounded-lg bg-blue-100` with `text-blue-600`
-
-### 8. GapFillerCard (`src/components/instructor/GapFillerCard.tsx`)
-- Currently has no icon in the header area
-- Add a tinted icon pill: `h-8 w-8 rounded-lg bg-violet-100` with a `CalendarPlus` icon in `text-violet-600`
-
-### 9. TodayRoutePreview (`src/components/instructor/TodayRoutePreview.tsx`)
-- This is a map preview card -- the header/title area will get a tinted icon pill if it has one
-
-## Technical Details
-
-The pattern applied to each component follows this structure:
-```tsx
-<div className="h-8 w-8 rounded-lg bg-{color}-100 dark:bg-{color}-900/30 flex items-center justify-center">
-  <Icon className="h-4 w-4 text-{color}-600 dark:text-{color}-400" />
-</div>
+```text
++------------------------------------------+
+| [Fuel icon] Fuel Finder          [>]     |
++------------------------------------------+
+| [Green] Cheapest                         |
+| [Brand] 142.9p E10  StationName  [Go]   |
+|         2.3 miles away                   |
++------------------------------------------+
+| [Blue]  Nearest                          |
+| [Brand] 0.8 mi      StationName  [Go]   |
+|         145.2p E10                       |
++------------------------------------------+
 ```
 
-### Color Assignments
-| Component | Color | Icon |
-|-----------|-------|------|
-| TodayMiniTimeline | Blue | Calendar |
-| TomorrowPeekCard | Indigo | Calendar |
-| VehicleHealthStrip | Sky | Car |
-| PlanWidget | Amber | Crown |
-| ReferralStatsWidget | Pink | Gift |
-| MessagesWidget | Blue | MessageSquare |
-| GapFillerCard | Violet | CalendarPlus |
+If cheapest and nearest are the same station, show a single row with both badges.
 
-### Files Modified (8 files)
-- `src/components/instructor/TodayMiniTimeline.tsx`
-- `src/components/instructor/TomorrowPeekCard.tsx`
-- `src/components/instructor/VehicleHealthStrip.tsx`
-- `src/components/instructor/dashboard/PlanWidget.tsx`
-- `src/components/instructor/dashboard/ReferralStatsWidget.tsx`
-- `src/components/instructor/dashboard/MessagesWidget.tsx`
-- `src/components/instructor/GapFillerCard.tsx`
-- `src/components/instructor/TodayRoutePreview.tsx`
+## Technical Changes
+
+### File: `src/components/instructor/FuelFinderCard.tsx`
+- Remove the `mode` state and toggle buttons
+- Render both `cheapest` and `nearest` stations in separate styled rows
+- Green-tinted row for cheapest (price-first layout)
+- Blue-tinted row for nearest (distance-first layout)
+- Each row gets its own brand badge and "Go" button
+- If `cheapest` and `nearest` are the same station (same lat/lng), show a single combined row with both "Cheapest" and "Nearest" badges
+- Keep the card clickable to navigate to `/instructor/fuel`
+- Keep loading and error states as-is
