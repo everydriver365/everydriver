@@ -95,6 +95,7 @@ import InstructorTodos from "./pages/InstructorTodos";
 import InstructorNotes from "./pages/InstructorNotes";
 import InstructorPlans from "./pages/InstructorPlans";
 import InstructorResources from "./pages/InstructorResources";
+import InstructorDocumentTemplates from "./pages/InstructorDocumentTemplates";
 import PupilCardDemo from "./pages/PupilCardDemo";
 import SubmitReview from "./pages/mini-website/SubmitReview";
 import InstructorReviews from "./pages/InstructorReviews";
@@ -232,6 +233,7 @@ const App = () => (
               <Route path="/instructor/notes" element={<InstructorNotes />} />
               <Route path="/instructor/plans" element={<InstructorPlans />} />
               <Route path="/instructor/resources" element={<InstructorResources />} />
+              <Route path="/instructor/document-templates" element={<InstructorDocumentTemplates />} />
               <Route path="/instructor/reviews" element={<InstructorReviews />} />
 
               {/* Other portals */}

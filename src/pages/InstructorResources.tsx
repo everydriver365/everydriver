@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Upload, FileText, Trash2, Download, FolderOpen, Plus, File, Image, FileSpreadsheet } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Upload, FileText, Trash2, Download, FolderOpen, Plus, File, Image, FileSpreadsheet, FileEdit } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,6 +56,7 @@ interface Resource {
 export default function InstructorResources() {
   const { instructor } = useInstructorAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [showUpload, setShowUpload] = useState(false);
   const [filterCategory, setFilterCategory] = useState("all");
   const [title, setTitle] = useState("");
@@ -154,13 +156,18 @@ export default function InstructorResources() {
             <h1 className="text-xl font-bold">Resources</h1>
             <p className="text-sm text-muted-foreground">Documents & reference materials</p>
           </div>
-          <Dialog open={showUpload} onOpenChange={setShowUpload}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-1.5">
-                <Plus className="h-4 w-4" />
-                Upload
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/instructor/document-templates")}>
+              <FileEdit className="h-4 w-4" />
+              Templates
+            </Button>
+            <Dialog open={showUpload} onOpenChange={setShowUpload}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  Upload
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Upload Resource</DialogTitle>
@@ -195,7 +202,8 @@ export default function InstructorResources() {
                 </Button>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {resources.length > 0 && (
