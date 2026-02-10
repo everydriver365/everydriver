@@ -177,24 +177,36 @@ export default function InstructorDocumentTemplates() {
   };
 
   const handleSaveToResources = async () => {
-    if (!instructor?.id) return;
+    if (!instructor?.id) {
+      console.error("Save failed: no instructor id");
+      toast.error("Not logged in as instructor");
+      return;
+    }
     setSaving(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log("Auth user:", user?.id);
       if (!user) throw new Error("Not authenticated");
 
       const pdfBlob = generatePDF();
+      console.log("PDF generated, size:", pdfBlob.size);
       const fileName = `${title.replace(/[^a-zA-Z0-9]/g, "-").substring(0, 50)}.pdf`;
       const filePath = `${user.id}/${Date.now()}-${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      console.log("Uploading to path:", filePath);
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from("instructor-resources")
         .upload(filePath, pdfBlob, { contentType: "application/pdf" });
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Storage upload error:", uploadError);
+        throw uploadError;
+      }
+      console.log("Upload success:", uploadData);
 
       const { data: { publicUrl } } = supabase.storage
         .from("instructor-resources")
         .getPublicUrl(filePath);
+      console.log("Public URL:", publicUrl);
 
       const { error: dbError } = await supabase
         .from("instructor_resources" as any)
@@ -208,11 +220,15 @@ export default function InstructorDocumentTemplates() {
           file_size_bytes: pdfBlob.size,
           category: "training",
         }]);
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error("DB insert error:", dbError);
+        throw dbError;
+      }
 
       toast.success("Document saved to Resources!");
       navigate("/instructor/resources");
     } catch (err: any) {
+      console.error("Save to resources failed:", err);
       toast.error(err.message || "Failed to save document");
     } finally {
       setSaving(false);
