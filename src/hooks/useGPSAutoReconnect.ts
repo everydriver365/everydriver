@@ -17,14 +17,6 @@ interface GPSAutoReconnectReturn {
   cancelReconnect: () => void;
 }
 
-// Exponential backoff: 1s, 2s, 4s, 8s, 16s, max 30s
-const getBackoffDelay = (retryCount: number): number => {
-  const baseDelay = 1000;
-  const maxDelay = 30000;
-  const delay = Math.min(baseDelay * Math.pow(2, retryCount), maxDelay);
-  return delay;
-};
-
 export function useGPSAutoReconnect(options: GPSAutoReconnectOptions): GPSAutoReconnectReturn {
   const {
     instructorId,
@@ -37,38 +29,21 @@ export function useGPSAutoReconnect(options: GPSAutoReconnectOptions): GPSAutoRe
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [lastSuccessfulConnection, setLastSuccessfulConnection] = useState<Date | null>(null);
-  const [wasOffline, setWasOffline] = useState(false);
 
+  const retryCountRef = useRef(0);
+  const wasConnectedRef = useRef(false);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const onReconnectedRef = useRef(onReconnected);
+  const onMaxRetriesRef = useRef(onMaxRetriesReached);
 
-  // Request wake lock to prevent device sleep during reconnection
-  const requestWakeLock = async () => {
-    if ('wakeLock' in navigator && !wakeLockRef.current) {
-      try {
-        wakeLockRef.current = await navigator.wakeLock.request('screen');
-        console.log('[GPS Auto-Reconnect] Wake lock acquired');
-      } catch (err) {
-        console.log('[GPS Auto-Reconnect] Wake lock not available:', err);
-      }
-    }
-  };
+  useEffect(() => { onReconnectedRef.current = onReconnected; }, [onReconnected]);
+  useEffect(() => { onMaxRetriesRef.current = onMaxRetriesReached; }, [onMaxRetriesReached]);
 
-  // Release wake lock
-  const releaseWakeLock = () => {
-    if (wakeLockRef.current) {
-      wakeLockRef.current.release();
-      wakeLockRef.current = null;
-      console.log('[GPS Auto-Reconnect] Wake lock released');
-    }
-  };
-
-  // Check GPS connection status
+  // Check if device has recent data (within 60s = active, within 30min = idle but linked)
   const checkConnection = useCallback(async (): Promise<boolean> => {
     if (!instructorId) return false;
-
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("gps_devices")
         .select("last_seen_at")
         .eq("instructor_id", instructorId)
@@ -76,113 +51,108 @@ export function useGPSAutoReconnect(options: GPSAutoReconnectOptions): GPSAutoRe
         .limit(1)
         .maybeSingle();
 
-      if (error) throw error;
-
       if (data?.last_seen_at) {
-        const lastSeen = new Date(data.last_seen_at);
-        const now = new Date();
-        const diffSeconds = (now.getTime() - lastSeen.getTime()) / 1000;
-        
-        // Connected if last seen within 5 minutes
-        return diffSeconds < 300;
+        const diffSeconds = (Date.now() - new Date(data.last_seen_at).getTime()) / 1000;
+        // Consider "connected" if data received within 2 minutes
+        return diffSeconds < 120;
       }
       return false;
-    } catch (err) {
-      console.error('[GPS Auto-Reconnect] Connection check failed:', err);
+    } catch {
       return false;
     }
   }, [instructorId]);
 
-  // Attempt reconnection with exponential backoff
-  const attemptReconnect = useCallback(async () => {
-    if (!enabled || !instructorId) return;
-
-    setIsReconnecting(true);
-    await requestWakeLock();
-
-    const isConnected = await checkConnection();
-
-    if (isConnected) {
-      // Successfully reconnected
-      setIsReconnecting(false);
-      setRetryCount(0);
-      setLastSuccessfulConnection(new Date());
-      setWasOffline(false);
-      releaseWakeLock();
-      onReconnected?.();
-      console.log('[GPS Auto-Reconnect] Connection restored');
-      return;
-    }
-
-    // Failed to reconnect, schedule retry
-    if (retryCount < maxRetries) {
-      const delay = getBackoffDelay(retryCount);
-      console.log(`[GPS Auto-Reconnect] Retry ${retryCount + 1}/${maxRetries} in ${delay}ms`);
-      
-      retryTimeoutRef.current = setTimeout(() => {
-        setRetryCount(prev => prev + 1);
-        attemptReconnect();
-      }, delay);
-    } else {
-      // Max retries reached
-      setIsReconnecting(false);
-      releaseWakeLock();
-      onMaxRetriesReached?.();
-      console.log('[GPS Auto-Reconnect] Max retries reached');
-    }
-  }, [enabled, instructorId, retryCount, maxRetries, checkConnection, onReconnected, onMaxRetriesReached]);
-
-  // Monitor connection status
+  // Monitor connection — only reconnect if we WERE connected and lost it
   useEffect(() => {
     if (!enabled || !instructorId) return;
 
-    const monitorConnection = async () => {
-      const isConnected = await checkConnection();
-      
-      if (isConnected) {
-        if (wasOffline) {
-          setLastSuccessfulConnection(new Date());
-          setWasOffline(false);
-        } else if (!lastSuccessfulConnection) {
-          setLastSuccessfulConnection(new Date());
+    const monitor = async () => {
+      const connected = await checkConnection();
+
+      if (connected) {
+        // If we were reconnecting, we've recovered
+        if (isReconnecting) {
+          setIsReconnecting(false);
+          retryCountRef.current = 0;
+          setRetryCount(0);
+          onReconnectedRef.current?.();
         }
-      } else if (!wasOffline && !isReconnecting) {
-        // Just went offline, start reconnection
-        setWasOffline(true);
-        attemptReconnect();
+        wasConnectedRef.current = true;
+        setLastSuccessfulConnection(new Date());
+        return;
       }
+
+      // Only trigger reconnection if we previously HAD a connection
+      // Don't reconnect if the tracker has simply never been online this session
+      if (!wasConnectedRef.current) return;
+      if (isReconnecting) return; // Already reconnecting
+
+      // Connection was lost — start reconnecting
+      setIsReconnecting(true);
+      retryCountRef.current = 0;
+      setRetryCount(0);
     };
 
-    // Check every 10 seconds
-    const interval = setInterval(monitorConnection, 10000);
-    monitorConnection(); // Initial check
+    monitor();
+    const interval = setInterval(monitor, 15000); // Check every 15s
 
     return () => {
       clearInterval(interval);
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
-      releaseWakeLock();
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
     };
-  }, [enabled, instructorId, checkConnection, wasOffline, isReconnecting, attemptReconnect, lastSuccessfulConnection]);
+  }, [enabled, instructorId, checkConnection, isReconnecting]);
 
-  // Manual reconnect trigger
+  // Reconnection loop — separate from monitoring
+  useEffect(() => {
+    if (!isReconnecting) return;
+
+    const tryReconnect = async () => {
+      const connected = await checkConnection();
+      if (connected) {
+        setIsReconnecting(false);
+        retryCountRef.current = 0;
+        setRetryCount(0);
+        setLastSuccessfulConnection(new Date());
+        onReconnectedRef.current?.();
+        return;
+      }
+
+      if (retryCountRef.current >= maxRetries) {
+        setIsReconnecting(false);
+        onMaxRetriesRef.current?.();
+        return;
+      }
+
+      const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 30000);
+      console.log(`[GPS Auto-Reconnect] Retry ${retryCountRef.current + 1}/${maxRetries} in ${delay}ms`);
+
+      retryTimeoutRef.current = setTimeout(() => {
+        retryCountRef.current++;
+        setRetryCount(retryCountRef.current);
+        tryReconnect();
+      }, delay);
+    };
+
+    tryReconnect();
+
+    return () => {
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+    };
+  }, [isReconnecting, maxRetries, checkConnection]);
+
   const manualReconnect = useCallback(() => {
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-    }
+    if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+    wasConnectedRef.current = true; // Force reconnection attempt
+    retryCountRef.current = 0;
     setRetryCount(0);
-    attemptReconnect();
-  }, [attemptReconnect]);
+    setIsReconnecting(true);
+  }, []);
 
-  // Cancel reconnection attempts
   const cancelReconnect = useCallback(() => {
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-    }
+    if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
     setIsReconnecting(false);
+    retryCountRef.current = 0;
     setRetryCount(0);
-    releaseWakeLock();
   }, []);
 
   return {
