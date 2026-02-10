@@ -1,39 +1,31 @@
 
+# Fix: Live Map Not Displaying on Fleet Dashboard
 
-# Add Live Map to Fleet Dashboard
+## Problem
+The Radix UI Tabs component completely **unmounts** inactive tab content. When you click "Live Map", the component mounts and Leaflet tries to initialize, but there's a race condition -- the `IntersectionObserver` may not fire reliably because the container transitions from unmounted to visible too quickly, and the map ends up with zero-size tiles.
 
-## What You'll Get
-A new **Live Map** tab on the Fleet Dashboard showing your vehicle's real-time position on an interactive map -- the same live tracking data from Quartix, displayed directly in your app.
+## Solution
+Two changes to guarantee the map always renders:
 
-## Features
-- Interactive map showing all your vehicles with live position markers
-- Auto-refreshing every 10 seconds to keep positions current
-- Vehicle status indicators (moving/idle/parked) with color-coded markers
-- Current road name, speed, and ignition status displayed in a popup
-- Click a vehicle to center the map and see details
-- "Navigate to" button to open directions in Google/Apple Maps
+### 1. Force-mount the Live Map tab (InstructorFleetDashboard.tsx)
+Add `forceMount` to the Live Map `TabsContent` so the component stays in the DOM (but hidden when inactive). This lets the `IntersectionObserver` properly detect when the tab becomes visible.
 
-## How It Works
-The app already pulls live GPS data from Quartix via your backend. This feature reuses that data and renders it on a Leaflet map inside the Fleet Dashboard -- no iframe or external portal needed.
-
-## Technical Details
-
-### New File
-- **`src/components/instructor/FleetLiveMap.tsx`** -- A new component that:
-  - Fetches all active devices from `gps_devices` table for the instructor
-  - Subscribes to Supabase Realtime for live position updates
-  - Renders a full-height Leaflet `MapContainer` with car markers (reusing existing icon patterns from `HomeMapHero` and `AdminLiveMapView`)
-  - Shows vehicle name, speed (mph), road name, and last-seen time in marker popups
-  - Color-codes markers: green (moving), amber (idle), grey (parked)
-  - Auto-fits map bounds to show all vehicles
-
-### Modified File
-- **`src/pages/InstructorFleetDashboard.tsx`** -- Add a "Live Map" tab (with `MapPin` icon) to the existing tab bar, rendering the `FleetLiveMap` component
-
-### Data Flow
-```text
-Quartix API --> quartix-poller edge function --> gps_devices table --> Realtime subscription --> FleetLiveMap component
+```
+<TabsContent value="livemap" className="mt-4" forceMount style when inactive>
 ```
 
-No new database tables, edge functions, or API keys are needed -- this purely surfaces existing data on a new map view.
+The tab content will use `hidden` styling when not the active tab, keeping it in the DOM but invisible.
 
+### 2. Strengthen map initialization (FleetLiveMap.tsx)
+- Add a small delay (50ms) before the first `IntersectionObserver` callback initializes the map, ensuring the container has non-zero dimensions
+- Add a `requestAnimationFrame` wrapper around `invalidateSize` calls for more reliable rendering
+- These are defensive measures that work alongside the `forceMount` fix
+
+## Why This Works
+- `forceMount` keeps the map container in the DOM at all times
+- The `IntersectionObserver` (already in place) detects when the tab becomes visible and initializes/invalidates the map
+- This is the same pattern used by other map components in the app that live inside tabs
+
+## Files Changed
+- **`src/pages/InstructorFleetDashboard.tsx`** -- Add `forceMount` and conditional visibility to the livemap `TabsContent`
+- **`src/components/instructor/FleetLiveMap.tsx`** -- Add a short delay before init to guarantee container has layout dimensions
