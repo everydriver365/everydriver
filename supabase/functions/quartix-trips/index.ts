@@ -109,24 +109,37 @@ serve(async (req) => {
     const rawTrips = tripsJson?.Data || [];
 
     // Map trips to our format
-    const trips = rawTrips.map((trip: any) => ({
-      id: `${trip.VehicleID}-${trip.StartTime}`,
-      vehicleId: String(trip.VehicleID),
-      startTime: trip.StartTime,
-      endTime: trip.EndTime,
-      startAddress: trip.StartLocation || trip.StartText || "",
-      endAddress: trip.EndLocation || trip.EndText || "",
-      distanceKm: trip.Distance != null ? trip.Distance * 1.60934 : 0, // miles to km
-      durationMinutes: trip.TravelTime || 0,
-      avgSpeedKmh: trip.AvgSpeed != null ? trip.AvgSpeed * 1.60934 : 0,
-      maxSpeedKmh: trip.MaxSpeed != null ? trip.MaxSpeed * 1.60934 : 0,
-      startLat: trip.StartLatitude || null,
-      startLng: trip.StartLongitude || null,
-      endLat: trip.EndLatitude || null,
-      endLng: trip.EndLongitude || null,
-      drivingStyle: trip.DrivingStyle || null,
-      hasOverspeeding: trip.DrivingStyle?.RelativeSpeed?.Score != null && trip.DrivingStyle.RelativeSpeed.Score < 80,
-    }));
+    const trips = rawTrips.map((trip: any) => {
+      const ds = trip.DrivingStyle;
+      const hasOverspeeding = ds?.RelativeSpeed?.Score != null && ds.RelativeSpeed.Score < 80;
+      const idleMinutes = trip.IdleTime ?? trip.IdlingTime ?? null;
+
+      return {
+        id: `${trip.VehicleID}-${trip.StartTime}`,
+        vehicleId: String(trip.VehicleID),
+        startTime: trip.StartTime,
+        endTime: trip.EndTime,
+        startAddress: trip.StartLocation || trip.StartText || "",
+        endAddress: trip.EndLocation || trip.EndText || "",
+        distanceKm: trip.Distance != null ? trip.Distance * 1.60934 : 0,
+        durationMinutes: trip.TravelTime || 0,
+        idleMinutes: idleMinutes != null ? idleMinutes : null,
+        avgSpeedKmh: trip.AvgSpeed != null ? trip.AvgSpeed * 1.60934 : 0,
+        maxSpeedKmh: trip.MaxSpeed != null ? trip.MaxSpeed * 1.60934 : 0,
+        startLat: trip.StartLatitude || null,
+        startLng: trip.StartLongitude || null,
+        endLat: trip.EndLatitude || null,
+        endLng: trip.EndLongitude || null,
+        drivingStyle: ds || null,
+        hasOverspeeding,
+        // Driving style sub-scores
+        overallScore: ds?.Score ?? null,
+        speedScore: ds?.RelativeSpeed?.Score ?? null,
+        accelerationScore: ds?.Accel?.Score ?? null,
+        brakingScore: ds?.Braking?.Score ?? null,
+        corneringScore: ds?.Cornering?.Score ?? null,
+      };
+    });
 
     // Calculate meta
     const totalDistanceKm = trips.reduce((sum: number, t: any) => sum + (t.distanceKm || 0), 0);
