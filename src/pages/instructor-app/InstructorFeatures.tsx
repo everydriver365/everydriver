@@ -241,6 +241,34 @@ export default function InstructorFeatures() {
   return (
     <InstructorSaaSLayout>
       <FeatureHero heroImage={featuresHeroImg} />
+
+      {/* Explainer Video Section */}
+      <section className="py-16 md:py-24 bg-muted/30">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              See EveryDriver in Action
+            </h2>
+            <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+              Watch how EveryDriver helps driving instructors save time, earn more, and deliver better lessons.
+            </p>
+            <div className="relative aspect-video rounded-2xl overflow-hidden border border-border bg-card shadow-xl">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-primary/5 to-primary/10">
+                <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg cursor-pointer hover:bg-emerald-600 transition-colors">
+                  <Video className="w-8 h-8 text-white ml-1" />
+                </div>
+                <p className="text-muted-foreground text-sm font-medium">Explainer video coming soon</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <StatsBar />
 
       {/* Feature Categories with interleaved showcases and testimonials */}
