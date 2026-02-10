@@ -29,6 +29,7 @@ import {
   StickyNote,
   FolderOpen,
   Star,
+  Gauge,
 } from "lucide-react";
 
 // Custom PNG icons from the mobile app
@@ -110,6 +111,7 @@ export default function InstructorMenu() {
     {
       title: "Tools",
       items: [
+        { icon: Gauge, label: "Fleet Dashboard", description: "Vehicle intelligence", iconColor: "text-emerald-600", gateKey: "fleet-dashboard", path: "/instructor/fleet-dashboard" },
         { icon: Star, label: "Reviews", description: "Moderate reviews", iconColor: "text-amber-500", gateKey: "reviews", path: "/instructor/reviews" },
         { icon: Car, label: "Vehicle Health", description: "Fleet compliance", iconColor: "text-cyan-600", gateKey: "vehicle-health", path: "/instructor/vehicle-health", customIcon: vehicleHealthIcon },
         { icon: Award, label: "Quick Test Result", description: "Record result", iconColor: "text-emerald-600", gateKey: "test-result-quick", action: () => setShowTestResultForm(true) },
