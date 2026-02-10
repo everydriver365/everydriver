@@ -1775,6 +1775,137 @@ export type Database = {
           },
         ]
       }
+      geofence_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          device_id: string
+          geofence_id: string
+          id: string
+          instructor_id: string
+          is_read: boolean
+          latitude: number | null
+          longitude: number | null
+          triggered_at: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          device_id: string
+          geofence_id: string
+          id?: string
+          instructor_id: string
+          is_read?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          triggered_at?: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          device_id?: string
+          geofence_id?: string
+          id?: string
+          instructor_id?: string
+          is_read?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          triggered_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geofence_alerts_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geofence_alerts_geofence_id_fkey"
+            columns: ["geofence_id"]
+            isOneToOne: false
+            referencedRelation: "geofences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geofence_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geofence_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      geofences: {
+        Row: {
+          active_hours_end: string | null
+          active_hours_start: string | null
+          alert_on_enter: boolean
+          alert_on_exit: boolean
+          created_at: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          latitude: number
+          longitude: number
+          name: string
+          radius_m: number
+          updated_at: string
+        }
+        Insert: {
+          active_hours_end?: string | null
+          active_hours_start?: string | null
+          alert_on_enter?: boolean
+          alert_on_exit?: boolean
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          latitude: number
+          longitude: number
+          name: string
+          radius_m?: number
+          updated_at?: string
+        }
+        Update: {
+          active_hours_end?: string | null
+          active_hours_start?: string | null
+          alert_on_enter?: boolean
+          alert_on_exit?: boolean
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          latitude?: number
+          longitude?: number
+          name?: string
+          radius_m?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "geofences_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "geofences_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gps_battery_history: {
         Row: {
           battery_percent: number
@@ -4117,6 +4248,9 @@ export type Database = {
           quartix_account_id: string | null
           quartix_api_key: string | null
           updated_at: string
+          working_days: number[] | null
+          working_hours_end: string | null
+          working_hours_start: string | null
         }
         Insert: {
           created_at?: string
@@ -4126,6 +4260,9 @@ export type Database = {
           quartix_account_id?: string | null
           quartix_api_key?: string | null
           updated_at?: string
+          working_days?: number[] | null
+          working_hours_end?: string | null
+          working_hours_start?: string | null
         }
         Update: {
           created_at?: string
@@ -4135,6 +4272,9 @@ export type Database = {
           quartix_account_id?: string | null
           quartix_api_key?: string | null
           updated_at?: string
+          working_days?: number[] | null
+          working_hours_end?: string | null
+          working_hours_start?: string | null
         }
         Relationships: [
           {
@@ -5802,6 +5942,67 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movement_alerts: {
+        Row: {
+          created_at: string
+          detected_at: string
+          device_id: string
+          id: string
+          instructor_id: string
+          is_read: boolean
+          latitude: number | null
+          longitude: number | null
+          road_name: string | null
+          speed_kmh: number | null
+        }
+        Insert: {
+          created_at?: string
+          detected_at?: string
+          device_id: string
+          id?: string
+          instructor_id: string
+          is_read?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          road_name?: string | null
+          speed_kmh?: number | null
+        }
+        Update: {
+          created_at?: string
+          detected_at?: string
+          device_id?: string
+          id?: string
+          instructor_id?: string
+          is_read?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          road_name?: string | null
+          speed_kmh?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movement_alerts_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movement_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movement_alerts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
@@ -8088,6 +8289,60 @@ export type Database = {
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "instructor_vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_reports: {
+        Row: {
+          config: Json | null
+          created_at: string
+          email: string
+          frequency: string
+          id: string
+          instructor_id: string
+          is_active: boolean
+          last_sent_at: string | null
+          report_type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          email: string
+          frequency?: string
+          id?: string
+          instructor_id: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          report_type: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          email?: string
+          frequency?: string
+          id?: string
+          instructor_id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          report_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_reports_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_reports_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
             referencedColumns: ["id"]
           },
         ]
