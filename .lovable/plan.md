@@ -1,31 +1,63 @@
 
-# Fix: Live Map Not Displaying on Fleet Dashboard
 
-## Problem
-The Radix UI Tabs component completely **unmounts** inactive tab content. When you click "Live Map", the component mounts and Leaflet tries to initialize, but there's a race condition -- the `IntersectionObserver` may not fire reliably because the container transitions from unmounted to visible too quickly, and the map ends up with zero-size tiles.
+# Fix: Live Map Not Initializing on Desktop
 
-## Solution
-Two changes to guarantee the map always renders:
+## Root Cause
 
-### 1. Force-mount the Live Map tab (InstructorFleetDashboard.tsx)
-Add `forceMount` to the Live Map `TabsContent` so the component stays in the DOM (but hidden when inactive). This lets the `IntersectionObserver` properly detect when the tab becomes visible.
+The map fails because of a timing conflict between loading state and map initialization:
 
+1. The component mounts with `forceMount` (always in the DOM)
+2. While `loading=true`, it renders a spinner -- the map `div` doesn't exist yet
+3. The map init `useEffect` runs once (empty `[]` deps), sees no container, and exits
+4. When loading finishes and the map `div` finally appears, the `useEffect` never re-runs
+
+The map container appears in the DOM but Leaflet is never attached to it.
+
+## Fix
+
+**File: `src/components/instructor/FleetLiveMap.tsx`**
+
+Move the loading/empty states so the map container is **always rendered** in the DOM, and overlay the loading spinner on top. This ensures `mapRef` is never null when the init effect runs.
+
+### Changes:
+- Remove the early `if (loading)` and `if (devices.length === 0)` returns that replace the map div with other UI
+- Instead, always render the map container div
+- Overlay the loading spinner and empty-state message on top of/beside the map using absolute positioning or conditional overlays
+- The map init effect will always find a valid container
+
+### Approach:
 ```
-<TabsContent value="livemap" className="mt-4" forceMount style when inactive>
+return (
+  <div className="space-y-3">
+    {/* Legend bar */}
+    ...
+    <Card className="overflow-hidden relative">
+      {/* Map container is ALWAYS in the DOM */}
+      <div ref={mapRef} className="h-[500px] w-full" style={{ background: "#f2f2f2" }} />
+
+      {/* Loading overlay */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+          <spinner />
+        </div>
+      )}
+
+      {/* Empty state overlay */}
+      {!loading && devices.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+          <empty message />
+        </div>
+      )}
+    </Card>
+  </div>
+);
 ```
 
-The tab content will use `hidden` styling when not the active tab, keeping it in the DOM but invisible.
+This is a single-file fix in `FleetLiveMap.tsx`. No other files need changes.
 
-### 2. Strengthen map initialization (FleetLiveMap.tsx)
-- Add a small delay (50ms) before the first `IntersectionObserver` callback initializes the map, ensuring the container has non-zero dimensions
-- Add a `requestAnimationFrame` wrapper around `invalidateSize` calls for more reliable rendering
-- These are defensive measures that work alongside the `forceMount` fix
+## Technical Detail
 
-## Why This Works
-- `forceMount` keeps the map container in the DOM at all times
-- The `IntersectionObserver` (already in place) detects when the tab becomes visible and initializes/invalidates the map
-- This is the same pattern used by other map components in the app that live inside tabs
+- The key issue is that the early returns on lines 233-251 prevent the `ref={mapRef}` div from being in the DOM
+- With the map div always present, the `IntersectionObserver` and `initMap()` logic will work correctly on first visibility
+- The loading/empty states become overlays rather than replacements
 
-## Files Changed
-- **`src/pages/InstructorFleetDashboard.tsx`** -- Add `forceMount` and conditional visibility to the livemap `TabsContent`
-- **`src/components/instructor/FleetLiveMap.tsx`** -- Add a short delay before init to guarantee container has layout dimensions
