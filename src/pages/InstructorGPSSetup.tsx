@@ -252,49 +252,6 @@ export default function InstructorTraccarSetup() {
         {/* Hardware Tracker Setup - Primary focus */}
         <HardwareTrackerSetup />
 
-        {/* Register Device */}
-        <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 space-y-4">
-          <div>
-            <h3 className="flex items-center gap-2 text-base font-semibold">
-              <Cpu className="h-4 w-4" />
-              Register Your Tracker
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">Enter your Quartix vehicle ID to register it</p>
-          </div>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="deviceName">Device Name</Label>
-              <Input
-                id="deviceName"
-                value={deviceName}
-                onChange={(e) => setDeviceName(e.target.value)}
-                placeholder="e.g., Quartix Tracker, Car Tracker"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="deviceId">Device ID</Label>
-              <Input
-                id="deviceId"
-                value={deviceId}
-                onChange={(e) => setDeviceId(e.target.value)}
-                placeholder="e.g., 7018524391"
-              />
-              <p className="text-xs text-muted-foreground">
-                Your Quartix vehicle ID — this is set up automatically when your tracker connects
-              </p>
-            </div>
-            
-            <Button onClick={createDevice} disabled={isCreating || !deviceId.trim()}>
-              {isCreating ? (
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Cpu className="h-4 w-4 mr-2" />
-              )}
-              Register Device
-            </Button>
-          </div>
-        </div>
 
         {/* Devices List */}
         <div className="space-y-3">

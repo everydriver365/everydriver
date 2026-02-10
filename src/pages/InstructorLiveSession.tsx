@@ -925,10 +925,6 @@ export default function InstructorLiveSession() {
              />
            )}
 
-           {/* Mobile GPS Tracking Settings Banner */}
-           {instructor?.id && (
-             <MobileTrackingSettingsBanner instructorId={instructor.id} />
-           )}
 
            {/* GPS Status Hero Card */}
            <GPSStatusHero
