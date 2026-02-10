@@ -905,9 +905,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
               })}
             </nav>
 
-            {/* User info at bottom */}
-            {!sidebarCollapsed && (
-              <div className="border-t p-2">
+            {/* User info & logout at bottom */}
+            <div className="border-t p-2">
+              {!sidebarCollapsed ? (
                 <div className="flex items-center gap-2.5 px-2 py-1.5">
                   <Avatar className="h-7 w-7">
                     <AvatarImage src={instructor?.profile_image_url || undefined} />
@@ -919,9 +919,24 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     <p className="text-xs font-medium truncate">{instructor?.name || "Instructor"}</p>
                     <p className="text-[10px] text-muted-foreground truncate">{instructor?.email}</p>
                   </div>
+                  <button
+                    onClick={handleSignOut}
+                    title="Sign out"
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <button
+                  onClick={handleSignOut}
+                  title="Sign out"
+                  className="w-full flex justify-center p-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </aside>
 
           {/* Main Content */}
