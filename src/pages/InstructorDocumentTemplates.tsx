@@ -177,6 +177,7 @@ export default function InstructorDocumentTemplates() {
   };
 
   const handleSaveToResources = async () => {
+    console.log("Save button clicked, instructor:", instructor?.id);
     if (!instructor?.id) {
       console.error("Save failed: no instructor id");
       toast.error("Not logged in as instructor");
