@@ -11,7 +11,8 @@ import { ScheduledReportsSettings } from "@/components/instructor/ScheduledRepor
 import { TrackedLessons } from "@/components/instructor/TrackedLessons";
 import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
 import { FleetMileageTracker } from "@/components/instructor/FleetMileageTracker";
-import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play, FileText, Route } from "lucide-react";
+import { FleetLiveMap } from "@/components/instructor/FleetLiveMap";
+import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play, FileText, Route, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,10 +74,14 @@ export default function InstructorFleetDashboard() {
           </Card>
         ) : instructor?.id ? (
           <Tabs defaultValue="overview">
-            <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 text-[10px]">
+            <TabsList className="grid w-full grid-cols-4 md:grid-cols-9 text-[10px]">
               <TabsTrigger value="overview" className="flex items-center gap-1">
                 <Gauge className="h-3 w-3" />
                 Overview
+              </TabsTrigger>
+              <TabsTrigger value="livemap" className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                Live Map
               </TabsTrigger>
               <TabsTrigger value="lessons" className="flex items-center gap-1">
                 <Play className="h-3 w-3" />
@@ -110,6 +115,9 @@ export default function InstructorFleetDashboard() {
 
             <TabsContent value="overview" className="mt-4">
               <FleetDashboard instructorId={instructor.id} />
+            </TabsContent>
+            <TabsContent value="livemap" className="mt-4">
+              <FleetLiveMap instructorId={instructor.id} />
             </TabsContent>
             <TabsContent value="lessons" className="mt-4">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
