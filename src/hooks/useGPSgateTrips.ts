@@ -8,6 +8,7 @@ export interface GPSgateTripSummary {
   endTime: string;
   distanceKm: number;
   durationMinutes: number;
+  idleMinutes: number | null;
   avgSpeedKmh: number;
   maxSpeedKmh: number;
   startLat: number | null;
@@ -18,6 +19,12 @@ export interface GPSgateTripSummary {
   speedingTimeMinutes: number;
   speedingMaxExcessKmh: number;
   hasOverspeeding: boolean;
+  // Driving style sub-scores (0-100)
+  overallScore: number | null;
+  speedScore: number | null;
+  accelerationScore: number | null;
+  brakingScore: number | null;
+  corneringScore: number | null;
 }
 
 export interface GPSgateTripsMeta {

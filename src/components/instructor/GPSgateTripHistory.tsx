@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { 
   MapPin, 
   Clock, 
@@ -15,7 +16,10 @@ import {
   AlertTriangle,
   Calendar,
   TrendingUp,
-  RefreshCw
+  RefreshCw,
+  Timer,
+  ShieldCheck,
+  Zap
 } from "lucide-react";
 import { useGPSgateTrips, GPSgateTripSummary } from "@/hooks/useGPSgateTrips";
 import { kmToMiles, kmhToMph } from "@/lib/utils";
@@ -164,6 +168,20 @@ function TripCard({ trip, onClick }: TripCardProps) {
     return `${hours}h ${remainingMins}m`;
   };
 
+  const scoreColor = (score: number | null) => {
+    if (score == null) return "text-muted-foreground";
+    if (score >= 80) return "text-emerald-600";
+    if (score >= 60) return "text-amber-500";
+    return "text-destructive";
+  };
+
+  const scoreProgressColor = (score: number | null) => {
+    if (score == null) return "bg-muted";
+    if (score >= 80) return "bg-emerald-500";
+    if (score >= 60) return "bg-amber-500";
+    return "bg-destructive";
+  };
+
   return (
     <button
       onClick={onClick}
@@ -206,11 +224,46 @@ function TripCard({ trip, onClick }: TripCardProps) {
           Avg {Math.round(kmhToMph(trip.avgSpeedKmh))} mph
         </div>
 
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 text-xs font-medium text-foreground">
           <TrendingUp className="h-3 w-3" />
           Max {Math.round(kmhToMph(trip.maxSpeedKmh))} mph
         </div>
+
+        {trip.idleMinutes != null && trip.idleMinutes > 0 && (
+          <div className="flex items-center gap-1 text-xs text-amber-600">
+            <Timer className="h-3 w-3" />
+            {formatDuration(trip.idleMinutes)} idle
+          </div>
+        )}
       </div>
+
+      {/* Driving Style Scores */}
+      {trip.overallScore != null && (
+        <div className="mt-2 grid grid-cols-5 gap-1.5">
+          {([
+            { label: "Overall", score: trip.overallScore },
+            { label: "Speed", score: trip.speedScore },
+            { label: "Accel", score: trip.accelerationScore },
+            { label: "Brake", score: trip.brakingScore },
+            { label: "Corner", score: trip.corneringScore },
+          ] as const).map(({ label, score }) => (
+            <div key={label} className="text-center">
+              <div className={`text-xs font-bold ${scoreColor(score)}`}>
+                {score != null ? score : "–"}
+              </div>
+              <div className="h-1 rounded-full bg-muted mt-0.5 overflow-hidden">
+                {score != null && (
+                  <div 
+                    className={`h-full rounded-full ${scoreProgressColor(score)}`} 
+                    style={{ width: `${score}%` }} 
+                  />
+                )}
+              </div>
+              <div className="text-[9px] text-muted-foreground mt-0.5">{label}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Speeding Warning */}
       {trip.hasOverspeeding && (
