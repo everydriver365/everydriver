@@ -989,14 +989,14 @@ export default function InstructorSettings() {
                 id="traccar" 
                 icon={Navigation} 
                 title="Vehicle GPS Device" 
-                description="OBD-II hardware tracker setup"
+                description="Quartix hardware tracker"
                 iconColor="text-amber-600"
                 iconBg="bg-amber-100 dark:bg-amber-900/30"
               >
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Use the ST-902L OBD-II tracker for reliable GPS tracking during lessons. 
-                    Plugs directly into your vehicle's diagnostic port.
+                    Your Quartix tracker provides reliable GPS tracking during lessons. 
+                    Professionally installed and works automatically.
                   </p>
                   <div className="flex flex-col gap-2">
                     <Button 

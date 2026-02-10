@@ -55,7 +55,7 @@ export default function InstructorTraccarSetup() {
   
   const [devices, setDevices] = useState<TraccarDevice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [deviceName, setDeviceName] = useState("ST-902L");
+  const [deviceName, setDeviceName] = useState("Quartix Tracker");
   const [deviceId, setDeviceId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -121,7 +121,7 @@ export default function InstructorTraccarSetup() {
     if (!deviceId.trim()) {
       toast({
         title: "Device ID required",
-        description: "Please enter your ST-902L device ID",
+        description: "Please enter your device ID",
         variant: "destructive",
       });
       return;
@@ -142,12 +142,12 @@ export default function InstructorTraccarSetup() {
       if (error) throw error;
 
       setDevices([data, ...devices]);
-      setDeviceName("ST-902L");
+      setDeviceName("Quartix Tracker");
       setDeviceId("");
       
       toast({
         title: "Device registered",
-        description: "Your ST-902L has been registered. Follow the SMS setup steps above.",
+        description: "Your tracker has been registered.",
       });
     } catch (err: any) {
       console.error("Error creating device:", err);
@@ -250,7 +250,7 @@ export default function InstructorTraccarSetup() {
         )}
 
         {/* Hardware Tracker Setup - Primary focus */}
-        <HardwareTrackerSetup supabaseHost={supabaseHost} />
+        <HardwareTrackerSetup />
 
         {/* Register Device */}
         <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 space-y-4">
@@ -259,7 +259,7 @@ export default function InstructorTraccarSetup() {
               <Cpu className="h-4 w-4" />
               Register Your Tracker
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">Enter your ST-902L device ID to register it</p>
+            <p className="text-sm text-muted-foreground mt-1">Enter your Quartix vehicle ID to register it</p>
           </div>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -268,7 +268,7 @@ export default function InstructorTraccarSetup() {
                 id="deviceName"
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
-                placeholder="e.g., ST-902L, Car Tracker"
+                placeholder="e.g., Quartix Tracker, Car Tracker"
               />
             </div>
             
@@ -281,7 +281,7 @@ export default function InstructorTraccarSetup() {
                 placeholder="e.g., 7018524391"
               />
               <p className="text-xs text-muted-foreground">
-                Find this on the sticker on your ST-902L device or in the documentation
+                Your Quartix vehicle ID — this is set up automatically when your tracker connects
               </p>
             </div>
             
@@ -304,7 +304,7 @@ export default function InstructorTraccarSetup() {
             <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] py-8 text-center text-muted-foreground">
               <Cpu className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>No devices configured yet</p>
-              <p className="text-sm">Register your ST-902L above to get started</p>
+              <p className="text-sm">Your Quartix tracker will appear here automatically</p>
             </div>
           ) : (
             devices.map((device) => (
