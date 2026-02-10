@@ -8,10 +8,16 @@ import { GeofenceAlertsList } from "@/components/instructor/GeofenceAlertsList";
 import { UnauthorisedMovementAlerts } from "@/components/instructor/UnauthorisedMovementAlerts";
 import { RouteHeatmap } from "@/components/instructor/RouteHeatmap";
 import { ScheduledReportsSettings } from "@/components/instructor/ScheduledReportsSettings";
-import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail } from "lucide-react";
+import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function InstructorFleetDashboard() {
-  const { instructor } = useInstructorAuth();
+  const { instructor, subscription } = useInstructorAuth();
+  const navigate = useNavigate();
+  const planSlug = subscription?.plan_slug || "free";
+  const isFreePlan = planSlug === "free";
 
   return (
     <InstructorPortalLayout>
@@ -26,7 +32,28 @@ export default function InstructorFleetDashboard() {
           <p className="text-muted-foreground text-sm ml-10">Vehicle intelligence, alerts & analytics</p>
         </div>
 
-        {instructor?.id ? (
+        {isFreePlan ? (
+          <Card className="border-dashed border-2 border-muted-foreground/30">
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+              <div className="h-16 w-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <Lock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold text-foreground">Fleet Dashboard is a Pro Feature</h2>
+                <p className="text-muted-foreground max-w-md">
+                  Upgrade your plan to access real-time fleet analytics, geofencing, route heatmaps, unauthorised movement alerts and scheduled reports.
+                </p>
+              </div>
+              <Button
+                onClick={() => navigate("/instructor/plans")}
+                className="gap-2"
+              >
+                <Crown className="h-4 w-4" />
+                Upgrade Your Plan
+              </Button>
+            </CardContent>
+          </Card>
+        ) : instructor?.id ? (
           <Tabs defaultValue="overview">
             <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 text-[10px]">
               <TabsTrigger value="overview" className="flex items-center gap-1">

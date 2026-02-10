@@ -122,6 +122,7 @@ const sidebarGroups = [
       { href: "/instructor/website", label: "Mini Website", icon: Globe },
       { href: "/instructor/domains", label: "Domains", icon: Globe2 },
       { href: "/instructor/traccar", label: "GPS Tracking", icon: Radio },
+      { href: "/instructor/fleet-dashboard", label: "Fleet Dashboard", icon: Car },
       { href: "/instructor/settings", label: "Settings", icon: Settings },
     ],
   },
