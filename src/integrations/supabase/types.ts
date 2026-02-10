@@ -1081,6 +1081,66 @@ export type Database = {
           },
         ]
       }
+      driver_timesheets: {
+        Row: {
+          created_at: string
+          first_trip_start: string | null
+          id: string
+          instructor_id: string
+          last_trip_end: string | null
+          quartix_vehicle_id: string | null
+          sheet_date: string
+          total_distance_km: number | null
+          total_driving_minutes: number | null
+          total_idle_minutes: number | null
+          trip_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          first_trip_start?: string | null
+          id?: string
+          instructor_id: string
+          last_trip_end?: string | null
+          quartix_vehicle_id?: string | null
+          sheet_date: string
+          total_distance_km?: number | null
+          total_driving_minutes?: number | null
+          total_idle_minutes?: number | null
+          trip_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          first_trip_start?: string | null
+          id?: string
+          instructor_id?: string
+          last_trip_end?: string | null
+          quartix_vehicle_id?: string | null
+          sheet_date?: string
+          total_distance_km?: number | null
+          total_driving_minutes?: number | null
+          total_idle_minutes?: number | null
+          trip_count?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_timesheets_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_timesheets_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driving_behavior_events: {
         Row: {
           dismissed_at: string | null

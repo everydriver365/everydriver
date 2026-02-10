@@ -53,6 +53,7 @@ import {
 import { GPSgateTripHistory } from "@/components/instructor/GPSgateTripHistory";
 import { GPSgateTripsTabContent } from "@/components/instructor/GPSgateTripsTabContent";
 import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
+import { DriverTimesheets } from "@/components/instructor/DriverTimesheets";
 
 interface SavedRoute {
   id: string;
@@ -514,11 +515,15 @@ export default function InstructorRoutes() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="gpsgate" className="text-blue-600">
                 <Satellite className="h-3 w-3 mr-1" />
                 GPS
+              </TabsTrigger>
+              <TabsTrigger value="timesheets">
+                <Clock className="h-3 w-3 mr-1" />
+                Hours
               </TabsTrigger>
               <TabsTrigger value="driving_test" className="text-emerald-600">
                 <CheckCircle className="h-3 w-3 mr-1" />
@@ -536,6 +541,12 @@ export default function InstructorRoutes() {
               <div className="mt-4">
                 {instructor?.id && (
                   <GPSgateTripsTabContent instructorId={instructor.id} />
+                )}
+              </div>
+            ) : activeTab === "timesheets" ? (
+              <div className="mt-4">
+                {instructor?.id && (
+                  <DriverTimesheets instructorId={instructor.id} />
                 )}
               </div>
             ) : (
