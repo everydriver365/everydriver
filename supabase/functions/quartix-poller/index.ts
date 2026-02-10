@@ -17,26 +17,55 @@ async function authenticate(): Promise<string> {
     throw new Error("Quartix credentials not configured. Add QUARTIX_CUSTOMER_ID, QUARTIX_USERNAME, QUARTIX_PASSWORD secrets.");
   }
 
-  const body = new URLSearchParams({
+  console.log(`[QuartixAuth] Attempting auth with CustomerID=${customerId}, UserName=${username}, Password length=${password.length}`);
+
+  // Try JSON body format first
+  const jsonBody = JSON.stringify({
     CustomerID: customerId,
     UserName: username,
     Password: password,
   });
 
-  const res = await fetch(`${QUARTIX_BASE}/auth`, {
+  let res = await fetch(`${QUARTIX_BASE}/auth`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
+    headers: { "Content-Type": "application/json" },
+    body: jsonBody,
   });
 
+  let text = await res.text();
+  console.log(`[QuartixAuth] JSON attempt: status=${res.status}, body=${text}`);
+
   if (!res.ok) {
-    const text = await res.text();
+    // Fallback: try form-encoded
+    const formBody = new URLSearchParams({
+      CustomerID: customerId,
+      UserName: username,
+      Password: password,
+    });
+
+    res = await fetch(`${QUARTIX_BASE}/auth`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formBody,
+    });
+
+    text = await res.text();
+    console.log(`[QuartixAuth] Form attempt: status=${res.status}, body=${text}`);
+  }
+
+  if (!res.ok) {
     throw new Error(`Quartix auth failed [${res.status}]: ${text}`);
   }
 
-  const json = await res.json();
+  let json: any;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Quartix auth returned non-JSON: ${text}`);
+  }
+  
   const token = json?.Data?.AccessToken;
-  if (!token) throw new Error("No AccessToken in Quartix auth response");
+  if (!token) throw new Error(`No AccessToken in Quartix auth response: ${text}`);
   return token;
 }
 
