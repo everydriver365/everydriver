@@ -107,29 +107,50 @@ export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
     setLoading(false);
   }, [instructorId]);
 
-  // Init map
+  // Init map - use IntersectionObserver to detect when tab becomes visible
   useEffect(() => {
-    if (!mapRef.current || mapInstance.current) return;
-    const map = L.map(mapRef.current, {
-      center: [DEFAULT_LAT, DEFAULT_LNG],
-      zoom: 13,
-      zoomControl: true,
-      attributionControl: false,
-    });
-    mapInstance.current = map;
+    if (!mapRef.current) return;
+    const container = mapRef.current;
+    let map: L.Map | null = null;
 
-    L.tileLayer(getMapTileUrl(), { maxZoom: 19, attribution: getMapAttribution() }).addTo(map);
-    map.zoomControl?.setPosition("topright");
+    const initMap = () => {
+      if (mapInstance.current) {
+        mapInstance.current.invalidateSize();
+        return;
+      }
+      map = L.map(container, {
+        center: [DEFAULT_LAT, DEFAULT_LNG],
+        zoom: 13,
+        zoomControl: true,
+        attributionControl: false,
+      });
+      mapInstance.current = map;
+      L.tileLayer(getMapTileUrl(), { maxZoom: 19, attribution: getMapAttribution() }).addTo(map);
+      map.zoomControl?.setPosition("topright");
+      // Multiple invalidations to handle rendering delays
+      setTimeout(() => map?.invalidateSize(), 100);
+      setTimeout(() => map?.invalidateSize(), 400);
+      setTimeout(() => map?.invalidateSize(), 1000);
+    };
 
-    // Force invalidate after mount to ensure tiles render
-    setTimeout(() => map.invalidateSize(), 200);
-    setTimeout(() => map.invalidateSize(), 600);
+    // Use IntersectionObserver to detect visibility (handles Radix tabs display:none)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          initMap();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(container);
 
-    const ro = new ResizeObserver(() => map.invalidateSize());
-    ro.observe(mapRef.current);
+    const ro = new ResizeObserver(() => mapInstance.current?.invalidateSize());
+    ro.observe(container);
+
     return () => {
+      observer.disconnect();
       ro.disconnect();
-      map.remove();
+      mapInstance.current?.remove();
       mapInstance.current = null;
       markersRef.current.clear();
     };
