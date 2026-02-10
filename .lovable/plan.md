@@ -1,38 +1,39 @@
 
 
-## Duplicating Quartix Data Screens — COMPLETE
+# Add Live Map to Fleet Dashboard
 
-All features from the original plan have been implemented.
+## What You'll Get
+A new **Live Map** tab on the Fleet Dashboard showing your vehicle's real-time position on an interactive map -- the same live tracking data from Quartix, displayed directly in your app.
 
-### Coverage
+## Features
+- Interactive map showing all your vehicles with live position markers
+- Auto-refreshing every 10 seconds to keep positions current
+- Vehicle status indicators (moving/idle/parked) with color-coded markers
+- Current road name, speed, and ignition status displayed in a popup
+- Click a vehicle to center the map and see details
+- "Navigate to" button to open directions in Google/Apple Maps
 
+## How It Works
+The app already pulls live GPS data from Quartix via your backend. This feature reuses that data and renders it on a Leaflet map inside the Fleet Dashboard -- no iframe or external portal needed.
+
+## Technical Details
+
+### New File
+- **`src/components/instructor/FleetLiveMap.tsx`** -- A new component that:
+  - Fetches all active devices from `gps_devices` table for the instructor
+  - Subscribes to Supabase Realtime for live position updates
+  - Renders a full-height Leaflet `MapContainer` with car markers (reusing existing icon patterns from `HomeMapHero` and `AdminLiveMapView`)
+  - Shows vehicle name, speed (mph), road name, and last-seen time in marker popups
+  - Color-codes markers: green (moving), amber (idle), grey (parked)
+  - Auto-fits map bounds to show all vehicles
+
+### Modified File
+- **`src/pages/InstructorFleetDashboard.tsx`** -- Add a "Live Map" tab (with `MapPin` icon) to the existing tab bar, rendering the `FleetLiveMap` component
+
+### Data Flow
 ```text
-+-------------------------------+------------------+-----------------------------------+
-| Quartix Screen                | Status           | Your App Equivalent               |
-+-------------------------------+------------------+-----------------------------------+
-| Live Tracking Map             | BUILT            | LiveTrackingMap + GlanceableMode  |
-| Route Map / Trip Replay       | BUILT            | Trip Replay with speed overlay    |
-| Tracking Log (Trip History)   | BUILT            | GPSgateTripHistory                |
-| Driving Style Scores          | BUILT            | TripCard scorecard + QuartixCard  |
-| Driver Timesheets             | BUILT            | DriverTimesheets tab              |
-| Pupil Leaderboard             | BUILT            | PupilDrivingLeaderboard           |
-| Speed / Overspeeding          | BUILT            | Trip cards + replay speed overlay |
-| Max Speed per Trip            | BUILT            | Shown in trip card stats          |
-| Idle Time                     | BUILT            | Shown in trip cards + timesheets  |
-| Fleet Management Dashboard    | BUILT            | FleetDashboard at /fleet-dashboard|
-| Usage Profile / Utilisation   | BUILT            | UsageAnalytics component          |
-| Real-Time Fleet Status        | BUILT            | FleetDashboard status pie + list  |
-| Business/Private Mileage Mode | BUILT            | mileage_logs trip_type + hook     |
-| Route Heatmap                 | BUILT            | RouteHeatmap with leaflet.heat    |
-| Geofence Alerts               | BUILT            | GeofenceEditor + GeofenceAlerts   |
-| Unauthorised Movement Alerts  | BUILT            | UnauthorisedMovementAlerts        |
-| Scheduled Email Reports       | BUILT            | ScheduledReportsSettings          |
-+-------------------------------+------------------+-----------------------------------+
+Quartix API --> quartix-poller edge function --> gps_devices table --> Realtime subscription --> FleetLiveMap component
 ```
 
-### Architecture
+No new database tables, edge functions, or API keys are needed -- this purely surfaces existing data on a new map view.
 
-**New database tables:** `geofences`, `geofence_alerts`, `movement_alerts`, `scheduled_reports`
-**Modified tables:** `instructor_tracking_config` (added working_hours_start, working_hours_end, working_days)
-**Updated edge function:** `quartix-poller` (geofence proximity check + after-hours movement detection)
-**New route:** `/instructor/fleet-dashboard` with 6 tabs (Overview, Analytics, Heatmap, Geofences, Alerts, Reports)
