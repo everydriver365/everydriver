@@ -99,6 +99,7 @@ import InstructorDocumentTemplates from "./pages/InstructorDocumentTemplates";
 import PupilCardDemo from "./pages/PupilCardDemo";
 import SubmitReview from "./pages/mini-website/SubmitReview";
 import InstructorReviews from "./pages/InstructorReviews";
+import InstructorFleetDashboard from "./pages/InstructorFleetDashboard";
 
 // Instructor SaaS pages
 import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
@@ -213,6 +214,7 @@ const App = () => (
               <Route path="/instructor/pending-scheduling" element={<InstructorPendingScheduling />} />
               <Route path="/instructor/test-results" element={<InstructorTestResults />} />
               <Route path="/instructor/routes" element={<InstructorRoutes />} />
+              <Route path="/instructor/fleet-dashboard" element={<InstructorFleetDashboard />} />
               <Route path="/instructor/trip-replay/:routeId" element={<InstructorTripReplay />} />
               <Route path="/instructor/trip-replay" element={<InstructorTripReplay />} />
               <Route path="/instructor/menu" element={<InstructorMenu />} />
