@@ -61,7 +61,7 @@ export function TrackedLessons({ instructorId, compact = false, limit = 50 }: Tr
 
       const { data, error } = await supabase
         .from("lesson_telematics")
-        .select("id, started_at, ended_at, total_distance_km, avg_speed_kmh, max_speed_kmh, local_score, harsh_brake_count, speeding_events_count, pupil_id, pupils!lesson_telematics_pupil_id_fkey(name)")
+        .select("id, started_at, ended_at, total_distance_km, avg_speed_kmh, max_speed_kmh, local_score, harsh_brake_count, speeding_events_count, pupil_id")
         .eq("instructor_id", instructorId)
         .not("ended_at", "is", null)
         .gte("started_at", fromDate)
@@ -69,9 +69,22 @@ export function TrackedLessons({ instructorId, compact = false, limit = 50 }: Tr
         .limit(limit);
 
       if (data) {
+        // Fetch pupil names separately (no FK join available)
+        const pupilIds = [...new Set(data.map((d: any) => d.pupil_id).filter(Boolean))];
+        let pupilMap: Record<string, string> = {};
+        if (pupilIds.length > 0) {
+          const { data: pupils } = await supabase
+            .from("pupils")
+            .select("id, name")
+            .in("id", pupilIds);
+          if (pupils) {
+            pupilMap = Object.fromEntries(pupils.map(p => [p.id, p.name]));
+          }
+        }
+
         setLessons(data.map((d: any) => ({
           ...d,
-          pupil_name: d.pupils?.name || null,
+          pupil_name: d.pupil_id ? (pupilMap[d.pupil_id] || null) : null,
         })));
       }
       setLoading(false);
