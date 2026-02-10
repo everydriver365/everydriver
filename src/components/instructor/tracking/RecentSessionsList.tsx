@@ -28,35 +28,42 @@
      const fetchRecentSessions = async () => {
        setIsLoading(true);
        try {
-         const { data, error } = await supabase
-           .from("lesson_telematics")
-           .select(`
-             id,
-             started_at,
-             ended_at,
-             total_distance_km,
-             pupils:pupil_id (name)
-           `)
-           .eq("instructor_id", instructorId)
-           .not("ended_at", "is", null)
-           .order("started_at", { ascending: false })
-           .limit(5);
- 
-         if (error) throw error;
- 
-         const formatted = (data || []).map((s: any) => {
-           const startedAt = new Date(s.started_at);
-           const endedAt = new Date(s.ended_at);
-           const durationMinutes = Math.floor((endedAt.getTime() - startedAt.getTime()) / 60000);
-           
-           return {
-             id: s.id,
-             pupilName: s.pupils?.name || null,
-             startedAt,
-             distanceKm: s.total_distance_km || 0,
-             durationMinutes,
-           };
-         });
+        const { data, error } = await supabase
+            .from("lesson_telematics")
+            .select("id, started_at, ended_at, total_distance_km, pupil_id")
+            .eq("instructor_id", instructorId)
+            .not("ended_at", "is", null)
+            .order("started_at", { ascending: false })
+            .limit(5);
+
+          if (error) throw error;
+
+          // Fetch pupil names for sessions that have a pupil_id
+          const pupilIds = [...new Set((data || []).map((s: any) => s.pupil_id).filter(Boolean))];
+          let pupilMap: Record<string, string> = {};
+          if (pupilIds.length > 0) {
+            const { data: pupils } = await supabase
+              .from("pupils")
+              .select("id, name")
+              .in("id", pupilIds);
+            if (pupils) {
+              pupilMap = Object.fromEntries(pupils.map(p => [p.id, p.name]));
+            }
+          }
+
+          const formatted = (data || []).map((s: any) => {
+            const startedAt = new Date(s.started_at);
+            const endedAt = new Date(s.ended_at);
+            const durationMinutes = Math.floor((endedAt.getTime() - startedAt.getTime()) / 60000);
+            
+            return {
+              id: s.id,
+              pupilName: s.pupil_id ? (pupilMap[s.pupil_id] || null) : null,
+              startedAt,
+              distanceKm: s.total_distance_km || 0,
+              durationMinutes,
+            };
+          });
  
          setSessions(formatted);
        } catch (err) {

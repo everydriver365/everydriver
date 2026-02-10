@@ -207,12 +207,7 @@ export function useVehicleHealth() {
 
       const { data: sessions, error } = await supabase
         .from("lesson_telematics")
-        .select(`
-          id,
-          created_at,
-          total_distance_km,
-          pupils:pupil_id (name)
-        `)
+        .select("id, created_at, total_distance_km, pupil_id")
         .eq("instructor_id", instructor.id)
         .not("total_distance_km", "is", null)
         .gt("total_distance_km", 0)
@@ -221,10 +216,18 @@ export function useVehicleHealth() {
 
       if (error) throw error;
 
-      return (sessions || []).map(s => ({
+      // Fetch pupil names separately
+      const pupilIds = [...new Set((sessions || []).map((s: any) => s.pupil_id).filter(Boolean))];
+      let pupilMap: Record<string, string> = {};
+      if (pupilIds.length > 0) {
+        const { data: pupils } = await supabase.from("pupils").select("id, name").in("id", pupilIds);
+        if (pupils) pupilMap = Object.fromEntries(pupils.map(p => [p.id, p.name]));
+      }
+
+      return (sessions || []).map((s: any) => ({
         id: s.id,
         session_date: s.created_at,
-        pupil_name: (s.pupils as any)?.name || null,
+        pupil_name: s.pupil_id ? (pupilMap[s.pupil_id] || null) : null,
         distance_km: s.total_distance_km || 0,
         vehicle_registration: null,
       }));
