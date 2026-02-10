@@ -137,7 +137,12 @@ export function FleetLiveMap({ instructorId }: FleetLiveMapProps) {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          initMap();
+          // Small delay to ensure container has non-zero dimensions after tab switch
+          setTimeout(() => {
+            requestAnimationFrame(() => {
+              initMap();
+            });
+          }, 50);
         }
       },
       { threshold: 0.1 }

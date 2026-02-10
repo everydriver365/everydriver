@@ -116,7 +116,7 @@ export default function InstructorFleetDashboard() {
             <TabsContent value="overview" className="mt-4">
               <FleetDashboard instructorId={instructor.id} />
             </TabsContent>
-            <TabsContent value="livemap" className="mt-4">
+            <TabsContent value="livemap" className="mt-4 data-[state=inactive]:hidden" forceMount>
               <FleetLiveMap instructorId={instructor.id} />
             </TabsContent>
             <TabsContent value="lessons" className="mt-4">
