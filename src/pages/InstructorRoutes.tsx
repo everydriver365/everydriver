@@ -54,6 +54,7 @@ import { GPSgateTripHistory } from "@/components/instructor/GPSgateTripHistory";
 import { GPSgateTripsTabContent } from "@/components/instructor/GPSgateTripsTabContent";
 import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
 import { DriverTimesheets } from "@/components/instructor/DriverTimesheets";
+import { PupilDrivingLeaderboard } from "@/components/instructor/PupilDrivingLeaderboard";
 
 interface SavedRoute {
   id: string;
@@ -515,22 +516,26 @@ export default function InstructorRoutes() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7 text-[10px]">
               <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="gpsgate" className="text-blue-600">
-                <Satellite className="h-3 w-3 mr-1" />
+              <TabsTrigger value="gpsgate">
+                <Satellite className="h-3 w-3 mr-0.5" />
                 GPS
               </TabsTrigger>
               <TabsTrigger value="timesheets">
-                <Clock className="h-3 w-3 mr-1" />
+                <Clock className="h-3 w-3 mr-0.5" />
                 Hours
               </TabsTrigger>
-              <TabsTrigger value="driving_test" className="text-emerald-600">
-                <CheckCircle className="h-3 w-3 mr-1" />
+              <TabsTrigger value="leaderboard">
+                <TrendingUp className="h-3 w-3 mr-0.5" />
+                Scores
+              </TabsTrigger>
+              <TabsTrigger value="driving_test">
+                <CheckCircle className="h-3 w-3 mr-0.5" />
                 Tests
               </TabsTrigger>
               <TabsTrigger value="test">
-                <Flag className="h-3 w-3 mr-1" />
+                <Flag className="h-3 w-3 mr-0.5" />
                 Routes
               </TabsTrigger>
               <TabsTrigger value="practice">Practice</TabsTrigger>
@@ -547,6 +552,12 @@ export default function InstructorRoutes() {
               <div className="mt-4">
                 {instructor?.id && (
                   <DriverTimesheets instructorId={instructor.id} />
+                )}
+              </div>
+            ) : activeTab === "leaderboard" ? (
+              <div className="mt-4">
+                {instructor?.id && (
+                  <PupilDrivingLeaderboard instructorId={instructor.id} />
                 )}
               </div>
             ) : (
