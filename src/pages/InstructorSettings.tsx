@@ -87,7 +87,7 @@ export default function InstructorSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [openSections, setOpenSections] = useState<string[]>(["profile"]);
+  const [openSections, setOpenSections] = useState<string[]>([]);
   const [openCategories, setOpenCategories] = useState<string[]>(["profile"]);
   const [selectedCategory, setSelectedCategory] = useState<string>("profile");
   
