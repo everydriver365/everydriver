@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode, Layout, Calendar as CalendarLucide } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode, Layout, Calendar as CalendarLucide, Satellite } from "lucide-react";
 import { CalendarConnect } from "@/components/instructor/CalendarConnect";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
@@ -135,6 +135,11 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
   const [selectedTestCentres, setSelectedTestCentres] = useState<string[]>([]);
   const [allowedLessonLengths, setAllowedLessonLengths] = useState<number[]>([60, 120]);
   const [addressVerified, setAddressVerified] = useState(false);
+  
+  // Quartix tracker state
+  const [quartixDeviceName, setQuartixDeviceName] = useState("");
+  const [quartixVehicleId, setQuartixVehicleId] = useState("");
+  const [quartixDriverId, setQuartixDriverId] = useState("");
 
   const form = useForm<InstructorFormData>({
     resolver: zodResolver(instructorSchema),
@@ -222,6 +227,25 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
     };
     fetchInstructorData();
   }, [initialData?.id, initialData?.allowed_lesson_lengths]);
+
+  // Fetch Quartix tracker config for existing instructor
+  useEffect(() => {
+    if (!initialData?.id) return;
+    const fetchQuartixConfig = async () => {
+      const { data: device } = await supabase
+        .from("gps_devices")
+        .select("device_name, quartix_vehicle_id, quartix_driver_id")
+        .eq("instructor_id", initialData.id!)
+        .eq("tracking_provider", "quartix")
+        .maybeSingle();
+      if (device) {
+        setQuartixDeviceName((device as any).device_name || "");
+        setQuartixVehicleId((device as any).quartix_vehicle_id || "");
+        setQuartixDriverId((device as any).quartix_driver_id || "");
+      }
+    };
+    fetchQuartixConfig();
+  }, [initialData?.id]);
 
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -418,6 +442,39 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           }));
 
           await supabase.from("instructor_test_centres").insert(centresToInsert);
+        }
+
+        // Save Quartix tracker config
+        if (quartixVehicleId) {
+          const { data: existingDevice } = await supabase
+            .from("gps_devices")
+            .select("id")
+            .eq("instructor_id", instructorId)
+            .eq("tracking_provider", "quartix")
+            .maybeSingle();
+
+          if (existingDevice) {
+            await supabase
+              .from("gps_devices")
+              .update({
+                device_name: quartixDeviceName || "Quartix Tracker",
+                quartix_vehicle_id: quartixVehicleId,
+                quartix_driver_id: quartixDriverId || null,
+              } as any)
+              .eq("id", existingDevice.id);
+          } else {
+            await supabase
+              .from("gps_devices")
+              .insert({
+                instructor_id: instructorId,
+                device_identifier: `quartix-${quartixVehicleId}`,
+                device_name: quartixDeviceName || "Quartix Tracker",
+                quartix_vehicle_id: quartixVehicleId,
+                quartix_driver_id: quartixDriverId || null,
+                tracking_provider: "quartix",
+                is_active: true,
+              } as any);
+          }
         }
       }
 
@@ -1398,7 +1455,43 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
           </div>
         )}
 
-        {/* Actions */}
+        {/* Quartix Tracker - Only show for existing instructors */}
+        {initialData?.id && (
+          <div className="rounded-lg border p-4">
+            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
+              <Satellite className="h-5 w-5" /> Quartix Tracker
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Tracker Name</Label>
+                <Input
+                  placeholder="e.g., Toyota Yaris - Roller Skate"
+                  value={quartixDeviceName}
+                  onChange={(e) => setQuartixDeviceName(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">A friendly name for this instructor's vehicle tracker</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Quartix Vehicle ID</Label>
+                <Input
+                  placeholder="e.g., 6877225"
+                  value={quartixVehicleId}
+                  onChange={(e) => setQuartixVehicleId(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">The numeric vehicle ID from Quartix</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Quartix Driver ID (optional)</Label>
+                <Input
+                  placeholder="Driver ID if different from vehicle"
+                  value={quartixDriverId}
+                  onChange={(e) => setQuartixDriverId(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-end gap-3 sticky bottom-0 bg-background pt-4 border-t">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
