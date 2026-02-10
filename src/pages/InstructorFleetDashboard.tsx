@@ -9,16 +9,32 @@ import { UnauthorisedMovementAlerts } from "@/components/instructor/Unauthorised
 import { RouteHeatmap } from "@/components/instructor/RouteHeatmap";
 import { ScheduledReportsSettings } from "@/components/instructor/ScheduledReportsSettings";
 import { TrackedLessons } from "@/components/instructor/TrackedLessons";
-import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play } from "lucide-react";
+import { PupilProgressReportGenerator } from "@/components/instructor/PupilProgressReportGenerator";
+import { Gauge, BarChart3, Shield, AlertTriangle, Flame, Mail, Lock, Crown, Play, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function InstructorFleetDashboard() {
   const { instructor, subscription } = useInstructorAuth();
   const navigate = useNavigate();
   const planSlug = subscription?.plan_slug || "free";
   const isFreePlan = planSlug === "free";
+  const [pupils, setPupils] = useState<Array<{ id: string; name: string }>>([]);
+
+  useEffect(() => {
+    if (!instructor?.id) return;
+    supabase
+      .from("pupils")
+      .select("id, name")
+      .eq("instructor_id", instructor.id)
+      .order("name")
+      .then(({ data }) => {
+        if (data) setPupils(data.filter(p => p.name));
+      });
+  }, [instructor?.id]);
 
   return (
     <InstructorPortalLayout>
@@ -91,7 +107,14 @@ export default function InstructorFleetDashboard() {
               <FleetDashboard instructorId={instructor.id} />
             </TabsContent>
             <TabsContent value="lessons" className="mt-4">
-              <TrackedLessons instructorId={instructor.id} />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2">
+                  <TrackedLessons instructorId={instructor.id} />
+                </div>
+                <div>
+                  <PupilProgressReportGenerator instructorId={instructor.id} pupils={pupils} />
+                </div>
+              </div>
             </TabsContent>
             <TabsContent value="analytics" className="mt-4">
               <UsageAnalytics instructorId={instructor.id} />
