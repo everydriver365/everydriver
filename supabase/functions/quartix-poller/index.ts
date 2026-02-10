@@ -12,18 +12,20 @@ async function authenticate(): Promise<string> {
   const customerId = Deno.env.get("QUARTIX_CUSTOMER_ID");
   const username = Deno.env.get("QUARTIX_USERNAME");
   const password = Deno.env.get("QUARTIX_PASSWORD");
+  const application = Deno.env.get("QUARTIX_APPLICATION");
 
-  if (!customerId || !username || !password) {
-    throw new Error("Quartix credentials not configured. Add QUARTIX_CUSTOMER_ID, QUARTIX_USERNAME, QUARTIX_PASSWORD secrets.");
+  if (!customerId || !username || !password || !application) {
+    throw new Error("Quartix credentials not configured. Add QUARTIX_CUSTOMER_ID, QUARTIX_USERNAME, QUARTIX_PASSWORD, QUARTIX_APPLICATION secrets.");
   }
 
-  console.log(`[QuartixAuth] Attempting auth with CustomerID=${customerId}, UserName=${username}, Password length=${password.length}`);
+  console.log(`[QuartixAuth] Attempting auth with CustomerID=${customerId}, UserName=${username}, Application=${application}`);
 
   // Try JSON body format first
   const jsonBody = JSON.stringify({
     CustomerID: customerId,
     UserName: username,
     Password: password,
+    Application: application,
   });
 
   let res = await fetch(`${QUARTIX_BASE}/auth`, {
@@ -41,6 +43,7 @@ async function authenticate(): Promise<string> {
       CustomerID: customerId,
       UserName: username,
       Password: password,
+      Application: application,
     });
 
     res = await fetch(`${QUARTIX_BASE}/auth`, {
