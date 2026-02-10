@@ -19,15 +19,15 @@ Based on the Quartix 2025 platform walkthrough, here is a comparison of every ma
 | Speed / Overspeeding          | BUILT            | Trip cards + replay speed overlay |
 | Max Speed per Trip            | BUILT            | Shown in trip card stats          |
 | Idle Time                     | BUILT            | Shown in trip cards + timesheets  |
+| Fleet Management Dashboard    | BUILT            | FleetDashboard at /fleet-dashboard|
+| Usage Profile / Utilisation   | BUILT            | UsageAnalytics component          |
+| Real-Time Fleet Status        | BUILT            | FleetDashboard status pie + list  |
+| Business/Private Mileage Mode | BUILT            | mileage_logs trip_type + hook     |
 +-------------------------------+------------------+-----------------------------------+
-| Fleet Management Dashboard    | NOT BUILT        | --                                |
 | Route Heatmap                 | NOT BUILT        | --                                |
 | Geofence Alerts               | NOT BUILT        | --                                |
 | Unauthorised Movement Alerts  | NOT BUILT        | --                                |
 | Scheduled Email Reports       | NOT BUILT        | --                                |
-| Usage Profile / Utilisation   | NOT BUILT        | --                                |
-| Real-Time Fleet Status        | NOT BUILT        | --                                |
-| Business/Private Mileage Mode | PARTIALLY BUILT  | Mileage log exists, no app toggle |
 | Incident / Inspection Records | NOT BUILT        | --                                |
 | Custom Locations / Geofences  | NOT BUILT        | FavouriteLocations exists (basic) |
 +-------------------------------+------------------+-----------------------------------+
