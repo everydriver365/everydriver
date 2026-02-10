@@ -125,10 +125,10 @@ export default function InstructorLiveSession() {
     onError: handlePollerError,
   });
 
-  // Auto-reconnect when connection is lost
+  // Auto-reconnect when connection is lost (disabled when parked — Quartix doesn't report while ignition is off)
   const { isReconnecting, retryCount, manualReconnect } = useGPSAutoReconnect({
     instructorId: instructor?.id ?? null,
-    enabled: isPageVisible && !!device?.id,
+    enabled: isPageVisible && !!device?.id && device?.last_ignition_status !== false,
     maxRetries: 10, // More retries for persistent reconnection
     onReconnected: () => {
       toast({
