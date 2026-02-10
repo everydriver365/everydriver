@@ -36,7 +36,8 @@ import {
   Search,
   PanelLeftClose,
   PanelLeft,
-  Bell
+  Bell,
+  FileText
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -116,6 +117,7 @@ const sidebarGroups = [
     items: [
       { href: "/instructor/gaps", label: "Fill Gaps", icon: MapPin },
       { href: "/instructor/routes", label: "Saved Routes", icon: Navigation },
+      { href: "/instructor/resources", label: "Resources", icon: FileText },
       { href: "/instructor/website", label: "Mini Website", icon: Globe },
       { href: "/instructor/domains", label: "Domains", icon: Globe2 },
       { href: "/instructor/traccar", label: "GPS Tracking", icon: Radio },
