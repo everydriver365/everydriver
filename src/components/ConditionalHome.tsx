@@ -1,6 +1,6 @@
 import { isDrive365Domain, isInstructorSubdomain, getInstructorSubdomain } from "./DomainRouter";
 import Index from "@/pages/Index";
-import EveryDriverInstructorHome from "@/pages/instructor-app/EveryDriverInstructorHome";
+import InstructorFeatures from "@/pages/instructor-app/InstructorFeatures";
 import MiniWebsiteHome from "@/pages/mini-website/MiniWebsiteHome";
 
 /**
@@ -24,5 +24,5 @@ export function ConditionalHome() {
   }
   
   // SWAPPED: EveryDriver = Instructor site (default for localhost, lovable.app, etc.)
-  return <EveryDriverInstructorHome />;
+  return <InstructorFeatures />;
 }
