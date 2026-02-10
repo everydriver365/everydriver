@@ -31,18 +31,7 @@ export function useActiveSession(instructorId: string | null | undefined) {
           current_session_id,
           current_pupil_id,
           last_speed_kmh,
-          last_seen_at,
-          lesson_telematics:current_session_id (
-            id,
-            lesson_id,
-            start_time,
-            distance_km,
-            pupils:pupil_id (
-              id,
-              name,
-              profile_image_url
-            )
-          )
+          last_seen_at
         `)
         .eq("instructor_id", instructorId)
         .eq("is_active", true)
@@ -53,14 +42,35 @@ export function useActiveSession(instructorId: string | null | undefined) {
         return null;
       }
 
-      const telematics = device.lesson_telematics as any;
+      // Fetch telematics session
+      const { data: telematics } = await supabase
+        .from("lesson_telematics")
+        .select("id, lesson_id, started_at, total_distance_km, pupil_id")
+        .eq("id", device.current_session_id)
+        .maybeSingle();
+
       if (!telematics) return null;
 
-      const startTime = new Date(telematics.start_time);
+      // Fetch pupil info if available
+      let pupilName: string | null = null;
+      let pupilAvatar: string | null = null;
+      const pupilId = telematics.pupil_id || device.current_pupil_id;
+      if (pupilId) {
+        const { data: pupil } = await supabase
+          .from("pupils")
+          .select("id, name, profile_image_url")
+          .eq("id", pupilId)
+          .maybeSingle();
+        if (pupil) {
+          pupilName = pupil.name;
+          pupilAvatar = pupil.profile_image_url;
+        }
+      }
+
+      const startTime = new Date(telematics.started_at);
       const now = new Date();
       const elapsed = Math.floor((now.getTime() - startTime.getTime()) / 60000);
 
-      // Check if session is stale (no update in last 5 minutes)
       const lastSeen = device.last_seen_at ? new Date(device.last_seen_at) : null;
       const isLive = lastSeen 
         ? (now.getTime() - lastSeen.getTime()) < 5 * 60 * 1000 
@@ -69,13 +79,13 @@ export function useActiveSession(instructorId: string | null | undefined) {
       return {
         sessionId: telematics.id,
         lessonId: telematics.lesson_id,
-        pupilId: telematics.pupils?.id || device.current_pupil_id,
-        pupilName: telematics.pupils?.name || null,
-        pupilAvatar: telematics.pupils?.profile_image_url || null,
+        pupilId: pupilId,
+        pupilName,
+        pupilAvatar,
         startedAt: startTime,
         elapsedMinutes: elapsed,
         currentSpeed: device.last_speed_kmh,
-        distanceKm: telematics.distance_km,
+        distanceKm: telematics.total_distance_km,
         isLive,
       } as ActiveSession;
     },
