@@ -8,6 +8,40 @@ const corsHeaders = {
 
 const QUARTIX_BASE = "https://qws.quartix.net/v2/api";
 
+// Fetch speed limit from OpenStreetMap Overpass API
+async function fetchSpeedLimit(lat: number, lng: number): Promise<number | null> {
+  try {
+    const radius = 30; // meters
+    const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})["highway"]["maxspeed"];out tags 1;`;
+    const res = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `data=${encodeURIComponent(query)}`,
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const way = data?.elements?.[0];
+    if (!way?.tags?.maxspeed) return null;
+
+    const raw = way.tags.maxspeed;
+    // Parse "30 mph", "30", "national" etc.
+    const match = raw.match(/(\d+)/);
+    if (!match) return null;
+
+    const value = parseInt(match[1], 10);
+    // If it contains "mph", convert to kmh; otherwise assume kmh
+    if (raw.toLowerCase().includes("mph")) {
+      return value * 1.60934;
+    }
+    return value;
+  } catch (err) {
+    console.warn("[QuartixPoller] Speed limit fetch failed:", err);
+    return null;
+  }
+}
+
 async function authenticate(): Promise<string> {
   const customerId = Deno.env.get("QUARTIX_CUSTOMER_ID");
   const username = Deno.env.get("QUARTIX_USERNAME");
@@ -177,14 +211,21 @@ serve(async (req) => {
           continue;
         }
 
+        // Fetch speed limit from OSM for current position
+        let speedLimitKmh: number | null = null;
+        if (pos.Latitude && pos.Longitude) {
+          speedLimitKmh = await fetchSpeedLimit(pos.Latitude, pos.Longitude);
+        }
+
         const { error: updateErr } = await supabase.from("gps_devices").update({
           last_latitude: pos.Latitude,
           last_longitude: pos.Longitude,
           last_speed_kmh: pos.Speed != null ? pos.Speed * 1.60934 : null, // mph to kmh
           last_heading: pos.Heading,
-          last_seen_at: new Date().toISOString(),
+          last_seen_at: pos.LastEventDateTime || new Date().toISOString(),
           last_ignition_status: pos.Ignition ?? null,
           last_road_name: pos.LocationText || null,
+          ...(speedLimitKmh !== null ? { last_speed_limit_kmh: speedLimitKmh } : {}),
         }).eq("id", device.id);
 
         if (!updateErr) {
