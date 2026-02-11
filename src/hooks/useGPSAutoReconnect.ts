@@ -35,6 +35,7 @@ export function useGPSAutoReconnect(options: GPSAutoReconnectOptions): GPSAutoRe
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const onReconnectedRef = useRef(onReconnected);
   const onMaxRetriesRef = useRef(onMaxRetriesReached);
+  const mountTimeRef = useRef(Date.now());
 
   useEffect(() => { onReconnectedRef.current = onReconnected; }, [onReconnected]);
   useEffect(() => { onMaxRetriesRef.current = onMaxRetriesReached; }, [onMaxRetriesReached]);
@@ -53,8 +54,8 @@ export function useGPSAutoReconnect(options: GPSAutoReconnectOptions): GPSAutoRe
 
       if (data?.last_seen_at) {
         const diffSeconds = (Date.now() - new Date(data.last_seen_at).getTime()) / 1000;
-        // Consider "connected" if data received within 2 minutes
-        return diffSeconds < 120;
+        // Consider "connected" if data received within 5 minutes
+        return diffSeconds < 300;
       }
       return false;
     } catch {
@@ -86,6 +87,11 @@ export function useGPSAutoReconnect(options: GPSAutoReconnectOptions): GPSAutoRe
       // Don't reconnect if the tracker has simply never been online this session
       if (!wasConnectedRef.current) return;
       if (isReconnecting) return; // Already reconnecting
+
+      // Grace period: don't show reconnecting within first 15s of mount
+      // to allow the poller to fetch fresh data
+      const secondsSinceMount = (Date.now() - mountTimeRef.current) / 1000;
+      if (secondsSinceMount < 15) return;
 
       // Connection was lost — start reconnecting
       setIsReconnecting(true);

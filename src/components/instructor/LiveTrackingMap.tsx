@@ -466,8 +466,8 @@ export default function TraccarLiveMap({
         </div>
       )}
 
-      {/* Loading state */}
-      {(latitude === null || longitude === null) && (
+      {/* Loading state - only show when truly no position data exists */}
+      {latitude === null && longitude === null && filteredPoints.length === 0 && !livePosition && (
         <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center z-10">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-foreground font-medium">Waiting for GPS...</p>
