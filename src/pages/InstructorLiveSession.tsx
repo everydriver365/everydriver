@@ -6,8 +6,6 @@ import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayo
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useGPSPoller } from "@/hooks/useGPSPoller";
-import { useGPSAutoReconnect } from "@/hooks/useGPSAutoReconnect";
 import { 
   Square,
   WifiOff,
@@ -96,54 +94,20 @@ export default function InstructorLiveSession() {
     examinerId: string | null;
   } | null>(null);
 
-  // Stable error handler for GPS poller (prevents effect restarts)
-  const handlePollerError = useCallback((error: Error) => {
-    console.error("[GPSPoller] Error:", error);
-  }, []);
-
-  // Track page visibility to pause polling when hidden (mobile optimization)
-  const [isPageVisible, setIsPageVisible] = useState(true);
-  
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsPageVisible(document.visibilityState === 'visible');
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
-
-  // Poll GPS server aggressively while this page is open for instant tracking
-  // Only poll when page is visible to reduce background churn on mobile
   const isSessionActive = !!device?.current_session_id;
-  
-  // Use aggressive 2-second polling during active sessions for instant tracking
-  // Poll immediately when session starts, use slower polling when idle
-  useGPSPoller({
-    enabled: !!device?.id && isPageVisible,
-    intervalMs: isSessionActive ? 2000 : 10000,
-    onError: handlePollerError,
-  });
 
-  // Auto-reconnect when connection is lost (disabled when parked — Quartix doesn't report while ignition is off)
-  const { isReconnecting, retryCount, manualReconnect } = useGPSAutoReconnect({
-    instructorId: instructor?.id ?? null,
-    enabled: isPageVisible && !!device?.id && device?.last_ignition_status !== false,
-    maxRetries: 10, // More retries for persistent reconnection
-    onReconnected: () => {
-      toast({
-        title: "Connection Restored",
-        description: "GPS tracking reconnected successfully",
-      });
-    },
-    onMaxRetriesReached: () => {
-      toast({
-        title: "Connection Lost",
-        description: "Unable to reconnect. Tap to retry manually.",
-        variant: "destructive",
-      });
-    },
-  });
+  // Connection status derived from last_seen_at (no client polling needed)
+  // Server-side quartix-sync runs every 15s via pg_cron
+  const isReconnecting = false;
+  const retryCount = 0;
+  const manualReconnect = useCallback(() => {
+    // No-op: server-side sync handles reconnection automatically
+    toast({
+      title: "Server Sync Active",
+      description: "GPS data is synced automatically every 15 seconds",
+      duration: 2000,
+    });
+  }, [toast]);
 
   useEffect(() => {
     if (!loading && !instructor) {

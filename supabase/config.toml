@@ -191,3 +191,6 @@ verify_jwt = false
 
 [functions.send-pupil-welcome]
 verify_jwt = false
+
+[functions.quartix-sync]
+verify_jwt = false
