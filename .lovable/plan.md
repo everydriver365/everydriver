@@ -1,61 +1,70 @@
 
+# Fix Live Tracking: Root Cause Analysis and Comprehensive Solution
 
-# Fix Live Tracking: Connection Status, Speed Display, and Map Rendering
+## Root Causes Identified
 
-## Problems Identified
+After investigating the database, edge function, and client code, three critical issues are preventing live tracking from working:
 
-After thorough investigation, the GPS tracking data is flowing correctly from Quartix through the edge function into the database. The device shows valid data (coordinates, speed at 45 km/h, speed limit at 64 km/h, last seen ~4 min ago). The issues are all on the **client side**:
+### 1. `last_seen_at` Uses Quartix Event Time, Not Poll Time
+The quartix-poller edge function sets `last_seen_at` to `pos.LastEventDateTime` from the Quartix API. When the vehicle is stationary or between events, Quartix stops updating this timestamp. The database currently shows `last_seen_at` is **493 seconds old** even though the poller successfully fetched data moments ago.
 
-### 1. Connection Status Shows "Reconnecting" Incorrectly
-The connection check uses a 120-second threshold for idle mode, but when the page first loads, the poller hasn't run yet so `last_seen_at` may be older than 120 seconds. This causes:
-- The status to show "Offline" or "Reconnecting" even though the tracker is working fine
-- The `useGPSAutoReconnect` hook enters a reconnection loop that just checks `last_seen_at` but doesn't actually trigger a poll
+Since the client uses `last_seen_at` to determine connection status (must be within 300 seconds), the device appears "Offline" even though the poller is working fine and the device data is valid.
 
-**Fix**: On page load, immediately invoke the poller before evaluating connection status. Also increase the idle threshold to 5 minutes (300s) since the poller only runs every 10s when idle and Quartix itself may report on longer intervals.
+**Fix:** Always set `last_seen_at` to `new Date().toISOString()` when the poller receives data from the live API. Store the original Quartix event time in a separate field if needed.
 
-### 2. Speed and Speed Limit Hidden When "Disconnected"
-Lines 843-844 in `InstructorLiveSession.tsx` pass `null` for speed and speed limit when `isConnected` is false:
-```
-speedKmh={isConnected ? device.last_speed_kmh : null}
-speedLimitKmh={isConnected ? (device.last_speed_limit_kmh ?? speedLimitKmh) : null}
-```
-This means any brief "disconnected" state hides all telemetry data.
+### 2. Ignition Status is Always `null`
+The Quartix live API field `pos.Ignition` comes through as `null`/`undefined`, even when the LocationText clearly says "Ignition OFF". The poller uses `pos.Ignition ?? null`, so `last_ignition_status` stays null. This breaks the "Parked" detection logic on the client, which checks `device.last_ignition_status === false`.
 
-**Fix**: Always pass the actual device values regardless of connection status. The speed display panel and map already handle null/zero values gracefully.
+**Fix:** Parse ignition state from LocationText as a fallback. If LocationText contains "Ignition OFF" or "Stationary with Ignition OFF", set ignition to `false`. If it contains "Ignition ON" or speed > 0, set to `true`.
 
-### 3. Map Shows "Waiting for GPS" When Data Exists
-The `LiveTrackingMap` shows a loading spinner overlay when `latitude === null || longitude === null`, blocking the entire map even if valid coordinates exist in the device record but haven't been passed through yet.
+### 3. Road Name Shows Raw Quartix LocationText
+The `last_road_name` field stores the full Quartix LocationText, e.g.:
+> "Stationary with Ignition OFF at Threesixfive (365) Ltd since 11 February 2026 08:36:06 GMT."
 
-**Fix**: Remove the connection-gate on coordinate props so the map always receives the latest known position.
+This is displayed verbatim in the UI instead of a clean road name like "Maunsell Way, Eastleigh".
 
-### 4. Poller Not Triggering Fast Enough on Page Load
-The `useGPSPoller` hook fires on mount but the first poll may take a moment. Meanwhile, the connection status is evaluated against stale `last_seen_at` data, causing a flash of "Reconnecting".
+**Fix:** Parse the LocationText to extract just the road/location portion. Quartix LocationText follows patterns like:
+- "Travelling SE at 21.1 mph on [date]. [Road], [Town], [County]..."
+- "Stationary with Ignition OFF at [Place] since [date]."
 
-**Fix**: Trigger an immediate poll on page mount, and don't show "Reconnecting" until at least 2 poll cycles have completed without fresh data.
+Extract the meaningful location after the date/status prefix.
 
 ## Technical Changes
 
-### File: `src/pages/InstructorLiveSession.tsx`
-- Change idle connection threshold from 120s to 300s (5 minutes) to account for Quartix reporting intervals
-- Always pass actual speed/speedLimit/coordinates to `LiveTrackingMap` regardless of connection state
-- Add a brief grace period on mount before showing "Reconnecting" (suppress reconnect animation for first 10 seconds)
-- Pass speed and speed limit props directly without the `isConnected` gate
+### File: `supabase/functions/quartix-poller/index.ts`
 
-### File: `src/hooks/useGPSAutoReconnect.ts`
-- Add an initial grace period (15 seconds) before triggering reconnection logic on first mount
-- This prevents the "Reconnecting" flash when the page loads and the poller hasn't had time to refresh the device data
-- Increase the connection check threshold from 120s to 300s to match the page
+1. **Add `parseLocationText` helper function** that extracts a clean road name from Quartix's verbose LocationText:
+   - For "Travelling..." format: extract the address after the date portion
+   - For "Stationary at [Place]..." format: extract the place name
+   - Falls back to the full text if parsing fails
 
-### File: `src/components/instructor/tracking/GPSStatusHero.tsx`
-- Show speed and road name in the telemetry section even when status is not "connected" (just dim it slightly to indicate it may be stale)
-- This ensures the user always sees the last known speed and location
+2. **Add `parseIgnitionStatus` helper function** that detects ignition state from LocationText when `pos.Ignition` is null:
+   - "Ignition OFF" or "Stationary" in text = `false`
+   - Speed > 0 or "Ignition ON" = `true`
+   - Otherwise = `null`
 
-### File: `src/components/instructor/LiveTrackingMap.tsx`
-- Only show the "Waiting for GPS" overlay when there is truly no position data at all (not just when briefly disconnected)
-- Show the map with last known position even during brief disconnections
+3. **Change `last_seen_at` to always use current timestamp** when the poller receives live data from Quartix, instead of `pos.LastEventDateTime`. This ensures the "connection" status reflects whether the poller can reach the device, not when the device last generated an event.
+
+4. **Use parsed road name and ignition status** in the database update:
+```
+last_road_name: parseLocationText(pos.LocationText) || null,
+last_ignition_status: pos.Ignition ?? parseIgnitionStatus(pos.LocationText, speedKmh),
+last_seen_at: new Date().toISOString(),
+```
+
+### No Client-Side Changes Required
+
+The previous round of fixes already:
+- Passes speed/coordinates regardless of connection status
+- Shows telemetry section when data exists even if "disconnected"
+- Uses 300-second threshold with grace period
+
+Once the poller correctly sets `last_seen_at` to the current time, the client will see `secondsSinceTrack` as ~10 seconds (matching the poll interval), making `isConnected = true`. The speed, road name, and map will all render correctly with the existing client code.
 
 ## Expected Outcome
-- The tracking page will load and immediately show the last known position on the map
-- Speed and speed limit will always be visible (with the last known values)
-- "Reconnecting" will only appear after a genuine extended loss of data (not on every page load)
-- The map will render immediately with the device's stored coordinates instead of showing a spinner
+
+- **Connection Status**: Will show "Connected" with green LIVE badge whenever the poller successfully fetches data (every 10 seconds idle, every 2 seconds during session)
+- **Speed Display**: Will show actual speed (already in DB, just wasn't visible due to "Offline" status hiding telemetry)
+- **Road Name**: Will show clean road names like "Maunsell Way, Eastleigh" instead of the full Quartix description
+- **Map Movement**: Map will track the vehicle position since coordinates are being passed through correctly
+- **Parked Detection**: When ignition is off, status will correctly show "Parked" instead of "Offline"
