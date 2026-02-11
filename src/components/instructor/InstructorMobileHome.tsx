@@ -331,7 +331,7 @@ export function InstructorMobileHome({
           className="bg-card shadow-xl overflow-hidden"
         >
           {/* Gradient header */}
-          <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-4 text-white">
+          <div className="relative bg-gradient-to-br from-primary/70 to-primary/50 px-4 py-4 text-white">
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -412,7 +412,7 @@ export function InstructorMobileHome({
             onClick={() => navigate("/instructor/jobs")}
             className="w-full bg-card shadow-xl overflow-hidden active:scale-[0.99] transition-all"
           >
-            <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+            <div className="relative bg-gradient-to-br from-primary/70 to-primary/50 px-4 py-3 text-white">
               <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
                 <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -436,7 +436,7 @@ export function InstructorMobileHome({
           onClick={() => navigate("/instructor/messages")}
           className="w-full bg-card shadow-xl overflow-hidden active:scale-[0.99] transition-all"
         >
-          <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+          <div className="relative bg-gradient-to-br from-primary/70 to-primary/50 px-4 py-3 text-white">
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
