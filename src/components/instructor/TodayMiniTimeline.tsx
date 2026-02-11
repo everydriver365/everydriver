@@ -37,15 +37,23 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
 
   return (
     <div className={className}>
-      <div className="bg-white rounded-xl border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-            <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+      <div className="bg-card shadow-xl overflow-hidden">
+        {/* Gradient header */}
+        <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
           </div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Today's Schedule
-          </h3>
+          <div className="relative flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-white" />
+            </div>
+            <h3 className="text-xs font-bold uppercase tracking-wider">
+              Today's Schedule
+            </h3>
+          </div>
         </div>
+        <div className="p-4">
         <div className="relative">
           {/* Vertical line */}
           <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-border" />
@@ -117,6 +125,7 @@ export function TodayMiniTimeline({ lessons, className = "" }: TodayMiniTimeline
               );
             })}
           </div>
+        </div>
         </div>
       </div>
     </div>

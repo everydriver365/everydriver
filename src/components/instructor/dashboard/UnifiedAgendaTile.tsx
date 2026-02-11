@@ -186,47 +186,53 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
 
   return (
     <div className={cn(
-      "bg-card rounded-2xl border border-border/40 shadow-[0_2px_12px_rgba(20,37,66,0.10)]",
+      "bg-card shadow-xl overflow-hidden",
       className
     )}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 pb-3">
-        <div className="flex items-center gap-2.5">
-          <img src={agendaIcon} alt="Agenda" className="h-12 w-12" />
-          <div>
-            <h3 className="font-semibold text-sm text-foreground">Agenda</h3>
-            <p className="text-[10px] text-muted-foreground">
-              {totalItems > 0 ? `${totalItems} item${totalItems !== 1 ? "s" : ""} today` : "Nothing scheduled"}
-            </p>
-          </div>
+      {/* Gradient header */}
+      <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+          <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
         </div>
-        <div className="flex items-center gap-1">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-36 p-1 z-50 bg-card border border-border shadow-lg" align="end" side="bottom">
-              <button
-                onClick={() => { setAddMode("task"); setShowInput(true); }}
-                className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-md hover:bg-muted transition-colors"
-              >
-                <Flag className="h-3.5 w-3.5 text-muted-foreground" />
-                Add Task
-              </button>
-              <button
-                onClick={() => { setAddMode("reminder"); setShowInput(true); }}
-                className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-md hover:bg-muted transition-colors"
-              >
-                <Bell className="h-3.5 w-3.5 text-amber-500" />
-                Add Reminder
-              </button>
-            </PopoverContent>
-          </Popover>
-          <Link to="/instructor/todos">
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </Link>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img src={agendaIcon} alt="Agenda" className="h-10 w-10" />
+            <div>
+              <h3 className="font-semibold text-sm">Agenda</h3>
+              <p className="text-white/70 text-[10px]">
+                {totalItems > 0 ? `${totalItems} item${totalItems !== 1 ? "s" : ""} today` : "Nothing scheduled"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-white hover:bg-white/20">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-36 p-1 z-50 bg-card border border-border shadow-lg" align="end" side="bottom">
+                <button
+                  onClick={() => { setAddMode("task"); setShowInput(true); }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                >
+                  <Flag className="h-3.5 w-3.5 text-muted-foreground" />
+                  Add Task
+                </button>
+                <button
+                  onClick={() => { setAddMode("reminder"); setShowInput(true); }}
+                  className="w-full flex items-center gap-2 px-2.5 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                >
+                  <Bell className="h-3.5 w-3.5 text-amber-500" />
+                  Add Reminder
+                </button>
+              </PopoverContent>
+            </Popover>
+            <Link to="/instructor/todos">
+              <ChevronRight className="h-4 w-4 text-white/60" />
+            </Link>
+          </div>
         </div>
       </div>
 

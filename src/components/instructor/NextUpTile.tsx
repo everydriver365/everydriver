@@ -173,8 +173,28 @@ export function NextUpTile({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="rounded-2xl bg-card border border-border/40 shadow-[0_2px_12px_rgba(20,37,66,0.10)] overflow-hidden">
-          {/* Map with floating countdown chip */}
+        <div className="bg-card shadow-xl overflow-hidden">
+          {/* Gradient header with NEXT UP badge */}
+          <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+              <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+            </div>
+            <div className="relative flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 text-primary text-xs font-extrabold tracking-wide shadow-sm">
+                <Clock className="h-3 w-3" /> NEXT UP
+              </span>
+              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${
+                isUrgent
+                  ? "bg-amber-400/30 text-white animate-pulse"
+                  : "bg-white/20 text-white"
+              }`}>
+                <Timer className="h-3 w-3" /> {getCountdownText()}
+              </span>
+            </div>
+          </div>
+
+          {/* Map */}
           <div className="relative">
             {pickupPostcode && (
               <PostcodeMapPreview
@@ -182,22 +202,6 @@ export function NextUpTile({
                 onClick={handleNavigate}
               />
             )}
-            {/* Floating "Next Up" label on map */}
-            <div className="absolute top-3 left-3 z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-extrabold tracking-wide shadow-lg">
-                <Clock className="h-3.5 w-3.5" /> NEXT UP
-              </span>
-            </div>
-            {/* Floating countdown chip on map */}
-            <div className="absolute top-3 right-3 z-10">
-              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md ${
-                isUrgent
-                  ? "bg-amber-50 dark:bg-amber-900/80 border border-amber-200/60 text-amber-700 dark:text-amber-300 animate-pulse"
-                  : "bg-card/90 backdrop-blur-sm border border-border/60 text-foreground"
-              }`}>
-                <Timer className="h-3 w-3" /> {getCountdownText()}
-              </span>
-            </div>
           </div>
 
           {/* Avatar overlapping map, name below */}

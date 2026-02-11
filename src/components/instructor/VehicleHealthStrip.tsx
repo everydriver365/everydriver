@@ -3,6 +3,7 @@ import { BatteryLow, BatteryMedium, BatteryFull, Battery, Key, Wifi, WifiOff, Ch
 import { cn } from "@/lib/utils";
 import { useVehicleHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
+import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
 
 interface VehicleHealthStripProps {
   instructorId: string;
@@ -39,78 +40,89 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
 
   return (
     <Link to="/instructor/vehicle-health" className="block mt-4">
-      <div className="bg-card rounded-2xl shadow-[0_2px_12px_rgba(20,37,66,0.10)] border border-border/40 p-4 space-y-3">
-        {/* Header row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center">
-              <Car className="h-4 w-4 text-sky-600 dark:text-sky-400" />
-            </div>
-            <span className="text-sm font-semibold text-foreground">Vehicle Health</span>
-            {registration && (
-              <span className="text-xs font-medium bg-primary text-primary-foreground rounded px-1.5 py-0.5">
-                {registration}
-              </span>
-            )}
+      <div className="bg-card shadow-xl overflow-hidden">
+        {/* Gradient header */}
+        <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
           </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <img src={vehicleHealthIcon} alt="Vehicle Health" className="h-10 w-10 object-cover" />
+              <div>
+                <span className="font-semibold text-sm">Vehicle Health</span>
+                <p className="text-white/70 text-[10px]">All systems normal</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {registration && (
+                <span className="text-xs font-medium bg-white/90 text-primary rounded px-2 py-0.5 shadow-sm">
+                  {registration}
+                </span>
+              )}
+              <ChevronRight className="h-4 w-4 text-white/60" />
+            </div>
+          </div>
         </div>
 
         {/* Metrics grid */}
-        <div className="grid grid-cols-4 gap-2">
-          {/* Battery */}
-          <div className={cn("flex items-center gap-2 p-2.5 rounded-xl", 
-            battery !== null && battery <= 20 ? "bg-red-500/10" : battery !== null && battery <= 50 ? "bg-amber-500/10" : "bg-blue-500/10"
-          )}>
-            <BatteryIcon className={cn("h-4 w-4", getBatteryColor(battery))} />
-            <div>
-              <p className={cn("text-sm font-bold leading-none", getBatteryColor(battery))}>
-                {battery !== null ? `${battery}%` : "—"}
-              </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Battery</p>
+        <div className="p-4">
+          <div className="grid grid-cols-4 gap-2">
+            {/* Battery */}
+            <div className={cn("flex items-center gap-2 p-2.5 rounded-xl", 
+              battery !== null && battery <= 20 ? "bg-red-500/10" : battery !== null && battery <= 50 ? "bg-amber-500/10" : "bg-blue-500/10"
+            )}>
+              <BatteryIcon className={cn("h-4 w-4", getBatteryColor(battery))} />
+              <div>
+                <p className={cn("text-sm font-bold leading-none", getBatteryColor(battery))}>
+                  {battery !== null ? `${battery}%` : "—"}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Battery</p>
+              </div>
             </div>
-          </div>
 
-          {/* Ignition */}
-          <div className={cn("flex items-center gap-2 p-2.5 rounded-xl",
-            isIgnitionOn ? "bg-emerald-500/10" : "bg-muted/50"
-          )}>
-            <Key className={cn("h-4 w-4", isIgnitionOn ? "text-emerald-500" : "text-muted-foreground")} />
-            <div>
-              <p className={cn("text-sm font-bold leading-none", isIgnitionOn ? "text-emerald-500" : "text-muted-foreground")}>
-                {isIgnitionOn ? "ON" : "OFF"}
-              </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Ignition</p>
+            {/* Ignition */}
+            <div className={cn("flex items-center gap-2 p-2.5 rounded-xl",
+              isIgnitionOn ? "bg-emerald-500/10" : "bg-muted/50"
+            )}>
+              <Key className={cn("h-4 w-4", isIgnitionOn ? "text-emerald-500" : "text-muted-foreground")} />
+              <div>
+                <p className={cn("text-sm font-bold leading-none", isIgnitionOn ? "text-emerald-500" : "text-muted-foreground")}>
+                  {isIgnitionOn ? "ON" : "OFF"}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Ignition</p>
+              </div>
             </div>
-          </div>
 
-          {/* Connection */}
-          <div className={cn("flex items-center gap-2 p-2.5 rounded-xl",
-            isOnline ? "bg-emerald-500/10" : "bg-muted/50"
-          )}>
-            {isOnline ? (
-              <Wifi className="h-4 w-4 text-emerald-500" />
-            ) : (
-              <WifiOff className="h-4 w-4 text-muted-foreground" />
-            )}
-            <div>
-              <p className={cn("text-sm font-bold leading-none", isOnline ? "text-emerald-500" : "text-muted-foreground")}>
-                {isOnline ? "Live" : "Off"}
-              </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Status</p>
+            {/* Connection */}
+            <div className={cn("flex items-center gap-2 p-2.5 rounded-xl",
+              isOnline ? "bg-emerald-500/10" : "bg-muted/50"
+            )}>
+              {isOnline ? (
+                <Wifi className="h-4 w-4 text-emerald-500" />
+              ) : (
+                <WifiOff className="h-4 w-4 text-muted-foreground" />
+              )}
+              <div>
+                <p className={cn("text-sm font-bold leading-none", isOnline ? "text-emerald-500" : "text-muted-foreground")}>
+                  {isOnline ? "Live" : "Off"}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Status</p>
+              </div>
             </div>
-          </div>
 
-          {/* Last Seen */}
-          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10">
-            <Car className="h-4 w-4 text-amber-500" />
-            <div>
-              <p className="text-xs font-bold text-amber-500 leading-none">
-                {device.last_seen_at
-                  ? formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: false })
-                  : "—"}
-              </p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Seen</p>
+            {/* Last Seen */}
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10">
+              <Car className="h-4 w-4 text-amber-500" />
+              <div>
+                <p className="text-xs font-bold text-amber-500 leading-none">
+                  {device.last_seen_at
+                    ? formatDistanceToNow(new Date(device.last_seen_at), { addSuffix: false })
+                    : "—"}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Seen</p>
+              </div>
             </div>
           </div>
         </div>
