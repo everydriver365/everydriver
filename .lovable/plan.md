@@ -1,43 +1,67 @@
 
+# Fix: `quartix-route` Edge Function — `rawHops.map is not a function`
 
-# Enhance Live Tracking Map with Car Icon and Smooth Rotation
+## Problem
+The trip replay page at `/instructor/trip-replay/:id` fails with "Failed to load trip data". The `quartix-route` edge function crashes on line 97-99 because `routeJson.Data` is not an array -- it's likely an object with a nested structure (e.g., `Data.Hops` or `Data.Route`), unlike the `vehicles/trips` and `vehicles/live` endpoints which return `Data` as a flat array.
 
-## Overview
-Replace the current arrow/navigation marker with a proper car icon that rotates based on heading, inspired by the shared HTML example. The current implementation rotates an SVG arrow inside a div -- this plan upgrades it to a cleaner car icon with smoother visual rotation.
-
-## Changes
-
-### File: `src/components/instructor/LiveTrackingMap.tsx`
-
-**1. Replace the arrow SVG with a car SVG icon**
-- Swap the navigation arrow (`path d="M12 2L4.5 20.29..."`) with a top-down car SVG (similar to the one used in `FleetLiveMap.tsx`)
-- Keep the existing CSS rotation approach (`transform: rotate(${rotation}deg)`) which works well without needing a third-party plugin
-
-**2. Improve the marker styling**
-- Use a colored circular background (blue for connected, grey for disconnected) matching the fleet map style
-- Add a subtle directional indicator (heading line or pointer) so rotation is clearly visible even at a glance
-- Increase contrast with a white car icon on the colored background
-
-**3. Add smooth rotation transition**
-- Add `transition: transform 0.5s ease` to the rotating inner element so heading changes animate smoothly rather than snapping instantly
-
-## Technical Details
-
-The `leaflet-rotate` plugin from the example is not needed -- it rotates the entire map canvas, which is a different use case. The existing approach of rotating the icon SVG via CSS `transform: rotate()` is correct and lighter weight. The improvement is purely visual (better icon + smooth CSS transition).
-
-### Updated marker HTML (lines 310-339):
-```html
-<div style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
-  <div style="position:absolute;width:44px;height:44px;border-radius:50%;background:#3b82f6;box-shadow:0 3px 12px rgba(0,0,0,0.25);"></div>
-  <div style="position:relative;width:24px;height:24px;transform:rotate(${rotation}deg);transition:transform 0.5s ease;z-index:1;">
-    <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-      <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-    </svg>
-  </div>
-</div>
+## Root Cause
+Line 97 assumes `Data` is always an array:
+```typescript
+const rawHops = routeJson?.Data || [];
+const route = rawHops.map(...)  // crashes if Data is an object
 ```
 
-- Blue circle background when connected, grey when disconnected
-- White car SVG rotates smoothly with heading
-- Consistent with FleetLiveMap marker style
+## Solution
 
+### File: `supabase/functions/quartix-route/index.ts`
+
+1. **Add debug logging** to capture the actual Quartix response structure (keys of `Data`, type, etc.)
+
+2. **Handle multiple possible response formats** for `Data`:
+   - If `Data` is already an array, use it directly (current assumption)
+   - If `Data` is an object, look for nested arrays in common Quartix property names: `Data.Hops`, `Data.Route`, `Data.Points`, or iterate object values for the first array found
+   - If `Data` is null/undefined, return empty route gracefully instead of crashing
+
+3. **Add `Array.isArray` guard** before calling `.map()` to prevent the TypeError
+
+Updated logic (replacing lines 96-98):
+```typescript
+const routeJson = await routeRes.json();
+console.log("[QuartixRoute] Response keys:", JSON.stringify(Object.keys(routeJson || {})));
+console.log("[QuartixRoute] Data type:", typeof routeJson?.Data, 
+  Array.isArray(routeJson?.Data) ? "array" : "not-array",
+  routeJson?.Data ? JSON.stringify(Object.keys(routeJson.Data)).substring(0, 200) : "null");
+
+// Extract hops array - handle multiple possible response structures
+let rawHops: any[] = [];
+const data = routeJson?.Data;
+
+if (Array.isArray(data)) {
+  rawHops = data;
+} else if (data && typeof data === "object") {
+  // Try known nested properties
+  const nested = data.Hops || data.Route || data.Points || data.Items;
+  if (Array.isArray(nested)) {
+    rawHops = nested;
+  } else {
+    // Last resort: find the first array value in the object
+    for (const val of Object.values(data)) {
+      if (Array.isArray(val) && val.length > 0) {
+        rawHops = val;
+        break;
+      }
+    }
+  }
+}
+
+if (rawHops.length === 0) {
+  console.log("[QuartixRoute] No hops found. Full response sample:", 
+    JSON.stringify(routeJson).substring(0, 500));
+}
+```
+
+This will:
+- Fix the crash immediately by guarding against non-array `Data`
+- Log the actual response structure so we can see exactly what Quartix returns
+- Automatically extract hops from nested structures
+- Return an empty route gracefully if no data found (the client already handles this case)
