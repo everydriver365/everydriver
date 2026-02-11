@@ -751,8 +751,8 @@ export default function InstructorLiveSession() {
   const ignitionOff = device?.last_ignition_status === false;
   const isConnected = isSessionActive
     ? secondsSinceTrack < 30
-    : secondsSinceTrack < 120 || (ignitionOff && secondsSinceTrack < 86400);
-  const isParked = !isSessionActive && ignitionOff && secondsSinceTrack >= 120 && secondsSinceTrack < 86400;
+    : secondsSinceTrack < 300 || (ignitionOff && secondsSinceTrack < 86400);
+  const isParked = !isSessionActive && ignitionOff && secondsSinceTrack >= 300 && secondsSinceTrack < 86400;
 
   const lastSeenAtDate = device?.last_seen_at ? new Date(device.last_seen_at) : null;
   const secondsSinceLastSeen = lastSeenAtDate
@@ -840,8 +840,8 @@ export default function InstructorLiveSession() {
             latitude={device.last_latitude}
             longitude={device.last_longitude}
             heading={device.last_heading}
-            speedKmh={isConnected ? device.last_speed_kmh : null}
-            speedLimitKmh={isConnected ? (device.last_speed_limit_kmh ?? speedLimitKmh) : null}
+            speedKmh={device.last_speed_kmh}
+            speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
             isConnected={isConnected}
             sessionId={device.current_session_id}
             roadName={device.last_road_name}

@@ -121,11 +121,11 @@
           </div>
         </div>
  
-         {/* Telemetry Section - Visible when connected */}
+         {/* Telemetry Section - Always visible with last known data */}
          <AnimatePresence>
-           {isConnected && (
+           {(isConnected || speedKmh != null || roadName) && (
           <motion.div 
-             className="px-4 py-3"
+             className={`px-4 py-3 ${!isConnected ? "opacity-60" : ""}`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
