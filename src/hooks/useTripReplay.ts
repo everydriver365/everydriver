@@ -82,11 +82,17 @@ export function useTripReplay({ routeId, telematicsId }: UseTripReplayOptions) {
               pupil:pupil_id (name)
             `)
             .eq("id", routeId)
-            .single();
+            .maybeSingle();
 
           if (routeError) throw routeError;
-          setRoute(routeData as RouteData);
-          sessionId = routeData.telematics_id;
+
+          if (routeData) {
+            setRoute(routeData as RouteData);
+            sessionId = routeData.telematics_id;
+          } else {
+            // routeId is likely a lesson_telematics ID, use it directly
+            sessionId = routeId;
+          }
         }
 
         if (!sessionId) {
