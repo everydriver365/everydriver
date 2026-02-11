@@ -12,6 +12,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 const navLinks = [
   { href: "/instructor-app", label: "Home" },
   { href: "/instructor-app/features", label: "Features" },
+  { href: "/instructor-app/telematics", label: "Telematics" },
   { href: "/instructor-app/pricing", label: "Pricing" },
   { href: "/instructor-app/domains", label: "Domains" },
   { href: "/instructor-app/about", label: "About" },
