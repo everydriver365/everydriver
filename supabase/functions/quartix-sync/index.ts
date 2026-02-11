@@ -345,12 +345,12 @@ serve(async (req) => {
         if (!pos.Latitude || !pos.Longitude) { skipped++; continue; }
 
         // Parse speed (Quartix Speed is mph -> km/h)
-        let speedKmh = pos.Speed != null ? pos.Speed * 1.60934 : 0;
-        const parsedIgnition = pos.Ignition ?? parseIgnitionStatus(pos.LocationText, speedKmh);
-
-        if (parsedIgnition === false) {
-          speedKmh = 0;
-        }
+        const rawSpeedKmh = pos.Speed != null ? pos.Speed * 1.60934 : 0;
+        const parsedIgnition = pos.Ignition ?? parseIgnitionStatus(pos.LocationText, rawSpeedKmh);
+        
+        // Only zero speed if ignition is definitely off AND raw speed is near zero
+        // This prevents zeroing valid speed readings when ignition status is ambiguous
+        const speedKmh = (parsedIgnition === false && rawSpeedKmh < 3) ? 0 : rawSpeedKmh;
 
         // Parse road name (fast, string-only)
         const parsedRoadName = parseLocationText(pos.LocationText);
@@ -377,6 +377,12 @@ serve(async (req) => {
 
         // ===== GPS POINT RECORDING (if session active) =====
         if (device.current_session_id && pos.Latitude && pos.Longitude) {
+          // Fetch speed limit inline so it's stored with the GPS point
+          let pointSpeedLimit: number | null = null;
+          try {
+            pointSpeedLimit = await fetchSpeedLimit(pos.Latitude, pos.Longitude);
+          } catch { /* non-critical */ }
+
           await supabase.from("telematics_gps_points").insert({
             telematics_id: device.current_session_id,
             latitude: pos.Latitude,
@@ -384,8 +390,14 @@ serve(async (req) => {
             speed_kmh: speedKmh,
             heading: pos.Heading || 0,
             road_name: parsedRoadName || null,
+            speed_limit_kmh: pointSpeedLimit,
             recorded_at: new Date().toISOString(),
           });
+
+          // Update device speed limit too
+          if (pointSpeedLimit !== null) {
+            await supabase.from("gps_devices").update({ last_speed_limit_kmh: pointSpeedLimit }).eq("id", device.id);
+          }
 
           // Distance accumulation (3m minimum, 2km max per segment)
           if (device.last_latitude && device.last_longitude) {
@@ -415,9 +427,13 @@ serve(async (req) => {
             pos.Latitude, pos.Longitude, speedKmh, parsedRoadName, parsedIgnition
           );
 
-          const speedLimitKmh = await fetchSpeedLimit(pos.Latitude, pos.Longitude);
-          if (speedLimitKmh !== null) {
-            await supabase.from("gps_devices").update({ last_speed_limit_kmh: speedLimitKmh }).eq("id", device.id);
+          // Speed limit fetch moved to GPS point recording above (only when session active)
+          // For non-session devices, fetch speed limit for display only
+          if (!device.current_session_id) {
+            const speedLimitKmh = await fetchSpeedLimit(pos.Latitude, pos.Longitude);
+            if (speedLimitKmh !== null) {
+              await supabase.from("gps_devices").update({ last_speed_limit_kmh: speedLimitKmh }).eq("id", device.id);
+            }
           }
         } catch (deferredErr) {
           console.warn("[QuartixSync] Deferred ops error (non-critical):", deferredErr);
