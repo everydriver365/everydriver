@@ -208,8 +208,10 @@ const App = () => (
               <Route path="/instructor/gaps" element={<InstructorGaps />} />
               <Route path="/instructor/expenses" element={<InstructorExpenses />} />
               <Route path="/instructor/live" element={<InstructorLiveSession />} />
+              <Route path="/instructor/tracking" element={<InstructorLiveSession />} />
               <Route path="/instructor/traccar" element={<InstructorLiveSession />} />
               <Route path="/instructor/settings/gps" element={<InstructorGPSSetup />} />
+              <Route path="/instructor/settings/tracking" element={<InstructorGPSSetup />} />
               <Route path="/instructor/settings/traccar" element={<InstructorGPSSetup />} />
               <Route path="/instructor/satnav" element={<InstructorSatNav />} />
               <Route path="/instructor/find-my-car" element={<InstructorFindMyCar />} />

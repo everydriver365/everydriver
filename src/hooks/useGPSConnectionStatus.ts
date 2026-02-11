@@ -148,4 +148,4 @@ export function useGPSConnectionStatus(instructorId: string | null): GPSConnecti
   };
 }
 
-export { useGPSConnectionStatus as useTraccarConnectionStatus };
+

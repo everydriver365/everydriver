@@ -36,7 +36,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-interface TraccarDevice {
+interface GPSDevice {
   id: string;
   device_identifier: string;
   device_name: string;
@@ -48,12 +48,12 @@ interface TraccarDevice {
   current_session_id: string | null;
 }
 
-export default function InstructorTraccarSetup() {
+export default function InstructorGPSSetup() {
   const { instructor, loading } = useInstructorAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [devices, setDevices] = useState<TraccarDevice[]>([]);
+  const [devices, setDevices] = useState<GPSDevice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deviceName, setDeviceName] = useState("Quartix Tracker");
   const [deviceId, setDeviceId] = useState("");
@@ -209,7 +209,7 @@ export default function InstructorTraccarSetup() {
     }
   };
 
-  const getConnectionStatus = (device: TraccarDevice) => {
+  const getConnectionStatus = (device: GPSDevice) => {
     // MUST have valid GPS coordinates to be considered "live" - no fake status
     const hasValidGPS = device.last_latitude !== null && device.last_longitude !== null;
     if (!hasValidGPS || !device.last_seen_at) return 'offline';

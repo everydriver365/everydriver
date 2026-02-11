@@ -21,7 +21,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminTodoList } from "./AdminTodoList";
 import { WebsitesNeededList } from "./WebsitesNeededList";
-import { TraccarStatusPanel } from "./TraccarStatusPanel";
+import { GPSStatusPanel } from "./GPSStatusPanel";
 import { AdminEmailClient } from "./AdminEmailClient";
 interface SettingsLink {
   key: string;
@@ -410,7 +410,7 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <AdminTodoList />
         <WebsitesNeededList />
-        <TraccarStatusPanel />
+        <GPSStatusPanel />
       </div>
 
       {/* Settings Grid */}

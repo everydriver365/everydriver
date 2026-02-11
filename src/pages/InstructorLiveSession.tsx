@@ -159,7 +159,7 @@ export default function InstructorLiveSession() {
           // Auto-enter fullscreen mode if session is active
           const searchParams = new URLSearchParams(window.location.search);
           if (searchParams.get("fullscreen") !== "true") {
-            navigate("/instructor/traccar?fullscreen=true", { replace: true });
+            navigate("/instructor/tracking?fullscreen=true", { replace: true });
           }
         }
       }
@@ -479,7 +479,7 @@ export default function InstructorLiveSession() {
       setTotalDistance(0);
 
       // Enter fullscreen mode for tracking
-      navigate("/instructor/traccar?fullscreen=true", { replace: true });
+      navigate("/instructor/tracking?fullscreen=true", { replace: true });
 
       // Close dialog if open
       setShowDrivingTestDialog(false);
@@ -673,7 +673,7 @@ export default function InstructorLiveSession() {
       setDrivingTestDetails(null); // Clear driving test details
 
       // Exit fullscreen mode
-      navigate("/instructor/traccar", { replace: true });
+      navigate("/instructor/tracking", { replace: true });
 
       const toastDescription = pendingRouteType === "driving_test" 
         ? "Driving test route saved" 

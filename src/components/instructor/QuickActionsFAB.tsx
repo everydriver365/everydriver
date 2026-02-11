@@ -39,7 +39,7 @@ const quickActions: QuickAction[] = [
     id: "track-live",
     icon: MapPin,
     label: "Track Live",
-    route: "/instructor/traccar",
+    route: "/instructor/tracking",
     color: "bg-emerald-500 hover:bg-emerald-600",
   },
   {

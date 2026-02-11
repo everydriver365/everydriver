@@ -11,7 +11,7 @@ export function HomeQuickActions({ onTakePayment }: HomeQuickActionsProps) {
 
   const actions = [
     { id: "fill-gaps", label: "Fill Gaps", subtitle: "Schedule gaps", icon: Calendar, iconColor: "text-violet-600", route: "/instructor/gaps" },
-    { id: "track-live", label: "Track Live", subtitle: "GPS tracking", icon: MapPin, iconColor: "text-emerald-600", route: "/instructor/traccar" },
+    { id: "track-live", label: "Track Live", subtitle: "GPS tracking", icon: MapPin, iconColor: "text-emerald-600", route: "/instructor/tracking" },
     { id: "add-lesson", label: "Add Lesson", subtitle: "New booking", icon: Plus, iconColor: "text-blue-600", route: "/instructor/schedule?action=add" },
     { id: "take-payment", label: "Take Payment", subtitle: "Record income", icon: PoundSterling, iconColor: "text-rose-600", onClick: onTakePayment },
     { id: "find-my-car", label: "Find My Car", subtitle: "Car location", icon: Car, iconColor: "text-sky-600", route: "/instructor/find-my-car" },

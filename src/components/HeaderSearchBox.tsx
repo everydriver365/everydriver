@@ -110,7 +110,7 @@ export function HeaderSearchBox({ variant, instructorId }: HeaderSearchBoxProps)
           { label: "Visitor Chats", href: "/instructor/visitor-chats" },
           { label: "Mini Website", href: "/instructor/website" },
           { label: "Domains", href: "/instructor/domains" },
-          { label: "GPS Tracking", href: "/instructor/traccar" },
+          { label: "GPS Tracking", href: "/instructor/tracking" },
           { label: "Settings", href: "/instructor/settings" },
         ];
         const matchedPages = instructorPages.filter((p) =>

@@ -4,11 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
+import { GPSDeviceHealth } from "@/hooks/useVehicleHealth";
 import { formatDistanceToNow } from "date-fns";
 
 interface DeviceStatusCardProps {
-  device: TraccarDeviceHealth;
+  device: GPSDeviceHealth;
   onLinkClick: () => void;
 }
 

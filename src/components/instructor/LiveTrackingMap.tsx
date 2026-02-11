@@ -12,7 +12,7 @@ interface GPSPoint {
   lng: number;
 }
 
-interface TraccarLiveMapProps {
+interface LiveMapProps {
   latitude: number | null;
   longitude: number | null;
   heading: number | null;
@@ -35,7 +35,7 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 // ========== Component ==========
-export default function TraccarLiveMap({
+export default function LiveTrackingMap({
   latitude,
   longitude,
   heading,
@@ -45,7 +45,7 @@ export default function TraccarLiveMap({
   sessionId,
   roadName,
   className = "",
-}: TraccarLiveMapProps) {
+}: LiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -158,7 +158,7 @@ export default function TraccarLiveMap({
     const rotation = heading ?? 0;
     const bgColor = isConnected ? '#3b82f6' : '#9ca3af';
     const iconHtml = `
-      <div class="traccar-car-marker" style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
+      <div class="gps-car-marker" style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
         <div style="position:absolute;width:44px;height:44px;border-radius:50%;background:${bgColor};box-shadow:0 3px 12px rgba(0,0,0,0.25);"></div>
         <div style="position:relative;width:24px;height:24px;transform:rotate(${rotation}deg);transition:transform 0.5s ease;z-index:1;">
           <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -170,7 +170,7 @@ export default function TraccarLiveMap({
 
     const icon = L.divIcon({
       html: iconHtml,
-      className: "traccar-marker-icon",
+      className: "gps-marker-icon",
       iconSize: [48, 48],
       iconAnchor: [24, 24],
     });
@@ -293,8 +293,8 @@ export default function TraccarLiveMap({
       )}
 
       <style>{`
-        .traccar-marker-icon { background: transparent !important; border: none !important; }
-        .traccar-car-marker { pointer-events: none; }
+        .gps-marker-icon { background: transparent !important; border: none !important; }
+        .gps-car-marker { pointer-events: none; }
         .leaflet-marker-icon { background: transparent !important; border: none !important; }
       `}</style>
     </div>

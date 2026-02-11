@@ -18,7 +18,7 @@ import { SecurityAlertsTab } from "@/components/instructor/vehicle-health/Securi
 import { ServiceRemindersTab } from "@/components/instructor/vehicle-health/ServiceRemindersTab";
 import { LiveTelemetryTab } from "@/components/instructor/vehicle-health/LiveTelemetryTab";
 import { RunningCostsTab } from "@/components/instructor/vehicle-health/RunningCostsTab";
-import { useVehicleHealth, TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
+import { useVehicleHealth, GPSDeviceHealth } from "@/hooks/useVehicleHealth";
 import { useVehicleSecurity } from "@/hooks/useVehicleSecurity";
 import { useVehicleService } from "@/hooks/useVehicleService";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -32,7 +32,7 @@ export default function InstructorVehicleHealth() {
   const { unacknowledgedCount, refetch: refetchSecurity } = useVehicleSecurity();
   const { upcomingReminders } = useVehicleService();
   const [activeTab, setActiveTab] = useState("compliance");
-  const [linkingDevice, setLinkingDevice] = useState<TraccarDeviceHealth | null>(null);
+  const [linkingDevice, setLinkingDevice] = useState<GPSDeviceHealth | null>(null);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<VehicleToEdit | null>(null);
 
@@ -218,7 +218,7 @@ export default function InstructorVehicleHealth() {
               devices={devices}
               isLoading={isLoading}
               onLinkClick={(device) => setLinkingDevice(device)}
-              onNavigateToSettings={() => navigate("/instructor/settings/traccar")}
+              onNavigateToSettings={() => navigate("/instructor/settings/tracking")}
             />
           </TabsContent>
 

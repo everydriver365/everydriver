@@ -1012,7 +1012,7 @@ export default function InstructorSettings() {
 
               {/* Hardware GPS Tracking Section */}
               <SettingsTile 
-                id="traccar" 
+                id="gps-device" 
                 icon={Navigation} 
                 title="Vehicle GPS Device" 
                 description="Quartix hardware tracker"
@@ -1026,7 +1026,7 @@ export default function InstructorSettings() {
                   </p>
                   <div className="flex flex-col gap-2">
                     <Button 
-                      onClick={() => navigate('/instructor/settings/traccar')}
+                      onClick={() => navigate('/instructor/settings/tracking')}
                       className="w-full justify-between"
                     >
                       <span className="flex items-center gap-2">
@@ -1037,7 +1037,7 @@ export default function InstructorSettings() {
                     </Button>
                     <Button 
                       variant="outline"
-                      onClick={() => navigate('/instructor/traccar')}
+                      onClick={() => navigate('/instructor/tracking')}
                       className="w-full justify-between"
                     >
                       <span className="flex items-center gap-2">

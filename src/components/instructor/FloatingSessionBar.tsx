@@ -40,7 +40,7 @@ export function FloatingSessionBar({ instructorId, className }: FloatingSessionB
 
   const handleTap = () => {
     haptics.selection();
-    navigate("/instructor/traccar");
+    navigate("/instructor/tracking");
   };
 
   const getInitials = (name: string | null) => {

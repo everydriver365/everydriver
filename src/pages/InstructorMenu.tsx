@@ -87,7 +87,7 @@ export default function InstructorMenu() {
         { icon: Briefcase, label: "Job Offers", description: "Pending jobs", iconColor: "text-purple-600", gateKey: "jobs", path: "/instructor/jobs", customIcon: jobOffersIcon },
         { icon: CalendarPlus, label: "New Bookings", description: "Pending schedule", iconColor: "text-amber-600", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling" },
         { icon: QrCode, label: "Take Payment", description: "QR code payment", iconColor: "text-emerald-600", gateKey: "pay", path: "/instructor/pay", customIcon: takePaymentIcon },
-        { icon: Car, label: "Live Tracking", description: "GPS tracking", iconColor: "text-cyan-600", gateKey: "traccar", path: "/instructor/traccar", customIcon: trackIcon },
+        { icon: Car, label: "Live Tracking", description: "GPS tracking", iconColor: "text-cyan-600", gateKey: "tracking", path: "/instructor/tracking", customIcon: trackIcon },
         { icon: Navigation, label: "Find My Car", description: "Car location", iconColor: "text-rose-500", gateKey: "find-my-car", path: "/instructor/find-my-car", customIcon: findMyCarIcon },
         { icon: Receipt, label: "Expenses", description: "Track costs", iconColor: "text-amber-600", gateKey: "expenses", path: "/instructor/expenses", customIcon: expensesIcon },
       ],
