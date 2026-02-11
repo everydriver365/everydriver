@@ -1,93 +1,69 @@
 
 
-# Make the Live Map Work + Quartix Fallback
+# Remove All Traccar References
 
-## What We Know
+Traccar was never properly integrated — the edge functions fail, no `traccar_devices` table exists, and the actual GPS tracking runs entirely through **Quartix sync** and the `gps_devices` table. This plan removes all Traccar-specific code and renames remaining references to generic "GPS Tracking" terminology.
 
-1. The server-side `quartix-sync` IS working -- it updates `gps_devices` every 15 seconds with real coordinates
-2. The `InstructorLiveSession` page already subscribes to `gps_devices` changes via Realtime + 5s polling fallback
-3. The `LiveTrackingMap` component renders a marker at the position from props
-4. Quartix does NOT offer an embeddable iframe or map widget -- their portal is a closed web app
+---
 
-**The live map should already be working.** The vehicle was simply parked during testing, so nothing moved. The architecture is sound.
+## What Will Be Removed
 
-## What to Improve
+### Edge Functions (delete entirely)
+- `supabase/functions/traccar-poller/` — non-functional, references missing tables
+- `supabase/functions/traccar-webhook/` — unused webhook handler
 
-### 1. Show vehicle position BEFORE starting a session
-Currently the map only renders during an active session. Add a mini live map on the pre-session screen so instructors can see their vehicle's last known position and confirm tracking is working before they start.
+### Components
+- `src/components/admin/TraccarStatusPanel.tsx` — rename to `GPSStatusPanel` and remove all "Traccar" text labels
 
-### 2. Add "Open in Quartix" button as fallback
-A simple button that opens `https://qws4.quartix.com` in a new tab. This gives instructors access to Quartix's own real-time map (with sub-second updates) when they want a second view.
+### CSS/Marker Classes
+- Rename CSS classes like `.traccar-car-marker` and `.traccar-marker-icon` in `LiveTrackingMap.tsx` to generic names (e.g., `.gps-car-marker`)
 
-### 3. Show "Last updated X seconds ago" indicator
-Add a visible timestamp showing when the position last updated, so instructors can see the server sync is actively working.
+---
 
-## Changes
+## What Will Be Renamed (Traccar to GPS/Tracking)
 
-### File: `src/components/instructor/tracking/MiniLiveMap.tsx` (New)
-A compact Leaflet map component (200px tall) that:
-- Shows the vehicle marker at its last known position from `gps_devices`
-- Displays a status badge: "Live" (green pulse) if last_seen_at < 30s ago, "Last seen X ago" otherwise
-- Renders on the pre-session screen so the instructor sees their car before starting
+### Routes in `App.tsx`
+- `/instructor/traccar` stays as the path (to avoid breaking bookmarks) but all visible "Traccar" labels removed
+- `/instructor/settings/traccar` same approach
 
-### File: `src/components/instructor/tracking/QuartixLiveButton.tsx` (New)
-A styled card/button component that:
-- Opens `https://qws4.quartix.com` in a new browser tab
-- Shows "Open Quartix Live Tracking" with a brief description
-- Appears on the pre-session screen below the mini map
+### Navigation & UI Labels (text changes only)
+| File | Change |
+|------|--------|
+| `InstructorBottomNav.tsx` | Path already generic ("Track") — no change needed |
+| `CommandPalette.tsx` | Remove "traccar" from keywords |
+| `HomeQuickActions.tsx` | Route stays, label already "Track Live" |
+| `QuickActionsFAB.tsx` | Route stays, label already "Track Live" |
+| `FloatingSessionBar.tsx` | Route reference stays |
+| `InstructorMenu.tsx` | Change gateKey from "traccar" to "tracking" |
+| `TodayRouteMiniMap.tsx` | Route reference stays |
+| `InstructorSettings.tsx` | Change tile id from "traccar" to "gps-device", remove "Traccar" text |
+| `AdminSettingsGrid.tsx` | Import renamed component |
+| `TraccarStatusPanel.tsx` | Rename file, change title to "Live GPS Tracking" |
 
-### File: `src/pages/InstructorLiveSession.tsx` (Modify)
-- Import and render `MiniLiveMap` in the pre-session view, passing `device.last_latitude`, `device.last_longitude`, and `device.last_seen_at`
-- Import and render `QuartixLiveButton` below the mini map
-- Add a "Last synced X seconds ago" text indicator near the GPS status hero using `device.last_seen_at`
+### Hooks & Types
+- `useGPSConnectionStatus.ts` — remove the `useTraccarConnectionStatus` alias export
+- `useVehicleHealth.ts` — remove the `TraccarDeviceHealth` alias, use `GPSDeviceHealth` directly
+- Update all files importing `TraccarDeviceHealth` to use `GPSDeviceHealth`
+
+### Pages
+- `InstructorGPSSetup.tsx` — rename `InstructorTraccarSetup` function to `InstructorGPSSetup`, rename internal `TraccarDevice` interface to `GPSDevice`
+- `InstructorLiveSession.tsx` — update route references in navigate calls from "traccar" to "tracking" (or keep path but remove label text)
+- `InstructorVehicleHealth.tsx` — update imports to `GPSDeviceHealth`
+
+### Component Files
+- `LiveTrackingMap.tsx` — rename `TraccarLiveMapProps` to `LiveMapProps`, rename CSS classes
+- `DeviceStatusCard.tsx` — update `TraccarDeviceHealth` import
+- `LinkDeviceDialog.tsx` — update `TraccarDeviceHealth` import
+- `LiveTelemetryTab.tsx` — update `TraccarDeviceHealth` import
+- `EnhancedDeviceStatusCard.tsx` — update `TraccarDeviceHealth` import
+
+---
 
 ## Technical Details
 
-### MiniLiveMap Component
-```text
-Props:
-  - latitude: number | null
-  - longitude: number | null  
-  - heading: number | null
-  - lastSeenAt: string | null
-  - isActive: boolean
+- **No database changes needed** — there are no `traccar_*` tables; everything uses `gps_devices`
+- **No Quartix changes** — the working Quartix sync remains completely untouched
+- **Edge functions** `traccar-poller` and `traccar-webhook` will be deleted from deployment
+- **Route paths** like `/instructor/traccar` will be updated to `/instructor/tracking` across all navigation references for consistency
+- Approximately **25 files** will be touched, mostly for find-and-replace of type names and labels
 
-Rendering:
-  - Leaflet map (non-interactive, no zoom controls)
-  - Car marker icon (same style as LiveTrackingMap)
-  - Status badge overlay in top-left corner
-  - "No position yet" placeholder if lat/lng are null
-```
-
-### QuartixLiveButton Component
-```text
-- Opens https://qws4.quartix.com in new tab via window.open()
-- Styled as a Card with an ExternalLink icon
-- Secondary text: "View real-time tracking in the Quartix portal"
-```
-
-### InstructorLiveSession Layout (pre-session view)
-```text
-Current:                          Updated:
-+---------------------------+     +---------------------------+
-| GPS Status Hero           |     | GPS Status Hero           |
-+---------------------------+     | Last synced 5s ago        |
-| Tracker Selector          |     +---------------------------+
-+---------------------------+     | Mini Live Map (200px)     |
-| Session Start Panel       |     | [Live] badge              |
-+---------------------------+     +---------------------------+
-| Recent Sessions           |     | Tracker Selector          |
-+---------------------------+     +---------------------------+
-                                  | Open Quartix Live [->]    |
-                                  +---------------------------+
-                                  | Session Start Panel       |
-                                  +---------------------------+
-                                  | Recent Sessions           |
-                                  +---------------------------+
-```
-
-## Summary
-- 2 new small components (~60 lines each)
-- 1 modified file (add imports + render in pre-session view)
-- No database changes needed
-- No edge function changes needed
