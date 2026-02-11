@@ -1,60 +1,122 @@
 
-# Instructor Home Page Design Demo
 
-## What We're Building
+# Alternative Tracking Architecture: Server-Side Polling
 
-A new self-contained demo page at `/instructor-home-demo` showing 4 design variations of the instructor mobile home page in phone mockup frames. You can tab between them to compare and pick your favourite.
+## The Problem
 
-## The 4 Variations
+The current tracking system relies on **client-side polling** -- the instructor's phone calls the `quartix-poller` backend function every 2-10 seconds. This creates several failure points:
 
-### Variation A: "Track-Style Cards" (No Hero)
-- Clean `#E8F1FE` background, no hero image at all
-- Top card: gradient blue header (matching the track page GPSStatusHero) with avatar, name, online status, weather
-- Second card: white `rounded-3xl shadow-xl` with 2x2 stat grid (Lessons, Earnings, Weekly %, Next Up)
-- Third card: Quick Actions as horizontal scrollable icon chips
-- Fourth card: Mini timeline of today's lessons
+- If the user switches apps, locks their phone, or refreshes the page, polling stops and tracking breaks
+- Every poll re-authenticates with Quartix (slow, wasteful, and prone to rate-limiting)
+- If the user's login session expires, tracking silently dies
+- Orphaned sessions pile up (168 found and cleaned today) because there's no server-side session management
+- The single poller function does too much: auth + vehicle sync + position fetch + GPS recording + geofencing + speed limits + reverse geocoding
 
-### Variation B: "Hero + Gradient Overlap"
-- Full-bleed hero image at top (similar to current design)
-- Modernised overlap card with gradient blue header instead of plain white
-- Stats inside the overlap card use tinted-icon pill backgrounds
-- Quick actions and timeline in white cards below
+## The Solution: Server-Side Cron Polling
 
-### Variation C: "Split Hero"
-- Compact hero image (rounded corners, inset margins) -- not full bleed
-- Status card directly below (no overlap), with gradient header
-- Horizontal scroll strip for at-a-glance stats (compact pills)
-- Quick actions in a 2-column grid card below
+Move ALL polling to the server using `pg_cron` (already enabled). The instructor's phone becomes a **read-only display** that subscribes to real-time database updates -- it never calls Quartix directly.
 
-### Variation D: "Immersive Hero + Floating Stats"
-- Large hero image (50vh) with dark gradient overlay
-- Name, weather, status overlaid directly on the hero in white text
-- Glassmorphism-style floating stat pills at bottom of hero
-- Card stack below for quick actions and timeline
+```text
+CURRENT (broken):                    PROPOSED (reliable):
+
+Phone --> quartix-poller --> Quartix  pg_cron --> quartix-sync --> Quartix
+  |           |                            |
+  |     (every 2-10s)                 (every 15s, always running)
+  |           |                            |
+  |     gps_devices table             gps_devices table
+  |           |                            |
+  +--- reads from DB                  Phone <-- realtime subscription
+```
+
+## Implementation Steps
+
+### Step 1: Create a new `quartix-sync` edge function
+A streamlined server-side function that:
+- **Caches the Quartix auth token** in the database (tokens last ~30 minutes) instead of authenticating every call
+- Fetches live positions from Quartix API
+- Updates `gps_devices` with latest position data
+- Records GPS points for active sessions
+- Handles distance accumulation
+- Runs geofence and movement checks
+
+Deferred operations (speed limit lookups, reverse geocoding) run on a **separate, slower schedule** (every 60s) to avoid overloading external APIs.
+
+### Step 2: Set up pg_cron schedules
+- **Core position sync**: Every 15 seconds via `pg_cron` calling the `quartix-sync` function using `pg_net`
+- **Deferred enrichment**: Every 60 seconds for speed limits and reverse geocoding
+- Schedules automatically start/stop based on whether any devices are active
+
+### Step 3: Add auto session cleanup
+A database function that automatically ends sessions that have been idle for more than 30 minutes (no position updates), preventing the orphaned session problem.
+
+### Step 4: Simplify the client (InstructorLiveSession)
+- **Remove** `useGPSPoller` from the tracking page entirely
+- **Remove** `useGPSAutoReconnect` (no longer needed)
+- Keep only the existing **realtime subscription** to `gps_devices` table (already in place)
+- The page becomes a pure display: subscribe to DB changes, render map
+- Starting/stopping sessions just updates the database -- the server-side poller handles the rest
+
+### Step 5: Add Quartix token caching
+Create a `quartix_auth_cache` table to store the access token with an expiry timestamp. The sync function checks this first and only re-authenticates when the token has expired (~every 30 minutes instead of every 2 seconds).
 
 ## Technical Details
 
-### New File
-- `src/pages/InstructorHomeDesignDemo.tsx` -- self-contained page with all 4 variations using hardcoded/static data, rendered inside phone mockup frames (`w-[375px] h-[812px]`)
+### New table: `quartix_auth_cache`
+| Column | Type | Purpose |
+|--------|------|---------|
+| id | text (PK) | Always 'default' (single row) |
+| access_token | text | Cached Quartix API token |
+| expires_at | timestamptz | When to refresh |
 
-### Modified File
-- `src/App.tsx` -- add import and route `/instructor-home-demo` pointing to the new page (added alongside existing demo routes)
+### New table: `cron_sync_config`  
+| Column | Type | Purpose |
+|--------|------|---------|
+| id | text (PK) | Config key |
+| is_enabled | boolean | Master on/off switch |
+| interval_seconds | int | Poll frequency |
+| last_run_at | timestamptz | Monitoring |
 
-### Static Demo Data
-- Name: "Ken", 4 lessons, GBP 180 expected, 72% weekly progress, next lesson "Sarah 14:30 SO31"
-- Weather: 14 degrees C, Partly Cloudy
-- Online status: true
-- Uses existing `instructor-hero.jpeg` asset for hero image variations
-- Uses existing custom tile icon assets for quick action icons
+### pg_cron schedule
+```sql
+SELECT cron.schedule(
+  'quartix-position-sync',
+  '15 seconds',
+  $$ SELECT net.http_post(
+    url := '<edge-function-url>/quartix-sync',
+    headers := '{"Authorization": "Bearer <service-role-key>"}'
+  ) $$
+);
+```
 
-### Visual Language (matching Track Page)
-- Background: `bg-[#E8F1FE]`
-- Cards: `bg-white rounded-3xl shadow-xl overflow-hidden`
-- Gradient headers: `bg-gradient-to-br from-primary to-primary/80` with white text
-- Animated emerald pulse dot for online status
-- Decorative circles (`bg-white/10`) in gradient headers
-- `framer-motion` fade-up entrance animations with staggered delays
-- Tab switcher at top to switch between A / B / C / D
+### Auto-cleanup function
+```sql
+-- Automatically end sessions idle for >30 minutes
+CREATE FUNCTION auto_cleanup_stale_sessions() ...
+  UPDATE lesson_telematics SET ended_at = now()
+  WHERE ended_at IS NULL
+    AND started_at < now() - interval '30 minutes'
+    AND id NOT IN (
+      SELECT current_session_id FROM gps_devices
+      WHERE current_session_id IS NOT NULL
+    );
+```
 
-### No Backend Changes
-This is a purely visual demo page with hardcoded data -- no database queries, no hooks, no auth required.
+## Files to Create/Modify
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `supabase/functions/quartix-sync/index.ts` | Create | New streamlined server-side poller |
+| `src/pages/InstructorLiveSession.tsx` | Modify | Remove client polling, keep realtime only |
+| `src/hooks/useGPSPoller.ts` | Remove | No longer needed |
+| `src/hooks/useGPSAutoReconnect.ts` | Remove | No longer needed |
+| Database migration | Create | Add token cache table, cron schedule, cleanup function |
+
+## Benefits
+
+- **Tracking never stops** -- runs server-side regardless of what the user does on their phone
+- **Page refresh safe** -- the phone just re-subscribes to realtime updates, session continues
+- **No auth dependency** -- tracking runs with service role key, not user's session
+- **Fewer API calls** -- token cached for 30 mins, single poll every 15s (not per-client)
+- **Auto-cleanup** -- stale sessions automatically ended after 30 min idle
+- **Simpler client code** -- ~200 lines removed from InstructorLiveSession
+
