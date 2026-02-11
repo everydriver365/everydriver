@@ -93,7 +93,7 @@ export function useTripReplay({ routeId, telematicsId }: UseTripReplayOptions) {
           throw new Error("No telematics session ID available");
         }
 
-        // Fetch GPS points
+        // Fetch GPS points from telematics_gps_points
         const { data: points, error: pointsError } = await supabase
           .from("telematics_gps_points")
           .select("*")
@@ -102,22 +102,85 @@ export function useTripReplay({ routeId, telematicsId }: UseTripReplayOptions) {
 
         if (pointsError) throw pointsError;
 
-        if (!points || points.length === 0) {
+        // If we have points from the DB, use them
+        if (points && points.length > 0) {
+          setGpsPoints(points as GpsPoint[]);
+          const startTime = new Date(points[0].recorded_at);
+          const endTime = new Date(points[points.length - 1].recorded_at);
+          const totalSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
+          setState(prev => ({ ...prev, currentTime: startTime, totalSeconds }));
+          return;
+        }
+
+        // Fallback: try Quartix route data for hardware tracker sessions
+        const { data: session } = await supabase
+          .from("lesson_telematics")
+          .select("instructor_id, started_at, ended_at")
+          .eq("id", sessionId)
+          .single();
+
+        if (!session?.instructor_id) {
           throw new Error("No GPS data available for this route");
         }
 
-        setGpsPoints(points as GpsPoint[]);
+        // Find the Quartix device for this instructor
+        const { data: device } = await supabase
+          .from("gps_devices")
+          .select("id, quartix_vehicle_id")
+          .eq("instructor_id", session.instructor_id)
+          .eq("tracking_provider", "quartix")
+          .limit(1)
+          .maybeSingle();
 
-        // Calculate total duration
-        const startTime = new Date(points[0].recorded_at);
-        const endTime = new Date(points[points.length - 1].recorded_at);
+        if (!device?.quartix_vehicle_id) {
+          throw new Error("No GPS data available for this route");
+        }
+
+        // Fetch route hops from Quartix
+        const sessionDate = session.started_at
+          ? new Date(session.started_at).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0];
+
+        const { data: routeResp, error: routeErr } = await supabase.functions.invoke("quartix-route", {
+          body: { deviceId: device.id, date: sessionDate },
+        });
+
+        if (routeErr || !routeResp?.route || routeResp.route.length === 0) {
+          throw new Error("No GPS data available for this route");
+        }
+
+        // Filter hops to the session time window
+        const sessionStart = session.started_at ? new Date(session.started_at).getTime() : 0;
+        const sessionEnd = session.ended_at ? new Date(session.ended_at).getTime() : Date.now();
+
+        const quartixHops = routeResp.route
+          .filter((hop: any) => {
+            if (!hop.timestamp) return true; // include if no timestamp
+            const hopTime = new Date(hop.timestamp).getTime();
+            // Allow 5min buffer around session start/end
+            return hopTime >= (sessionStart - 300000) && hopTime <= (sessionEnd + 300000);
+          })
+          .map((hop: any, idx: number) => ({
+            id: `quartix-${idx}`,
+            latitude: hop.latitude,
+            longitude: hop.longitude,
+            speed_kmh: hop.speed,
+            speed_limit_kmh: hop.speedLimit,
+            heading: hop.heading,
+            road_name: hop.location,
+            recorded_at: hop.timestamp || new Date(sessionStart + idx * 1000).toISOString(),
+            accuracy_m: null,
+          }));
+
+        if (quartixHops.length === 0) {
+          throw new Error("No GPS data available for this route");
+        }
+
+        setGpsPoints(quartixHops);
+        const startTime = new Date(quartixHops[0].recorded_at);
+        const endTime = new Date(quartixHops[quartixHops.length - 1].recorded_at);
         const totalSeconds = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
-
-        setState(prev => ({
-          ...prev,
-          currentTime: startTime,
-          totalSeconds,
-        }));
+        setState(prev => ({ ...prev, currentTime: startTime, totalSeconds }));
 
       } catch (err) {
         console.error("Error fetching trip data:", err);
