@@ -262,6 +262,36 @@ serve(async (req) => {
       console.error("Calendar sync error (non-fatal):", calendarError);
     }
 
+    // 8. Send pupil welcome/onboarding email
+    try {
+      const firstLesson = sortedLessons?.[0];
+      await fetch(
+        `${supabaseUrl}/functions/v1/send-pupil-welcome`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            pupilId: pupil.id,
+            pupilName: booking.pupilName,
+            pupilEmail: booking.pupilEmail,
+            pupilPhone: booking.pupilPhone,
+            instructorId: booking.instructorId,
+            courseType: booking.courseType,
+            courseHours: booking.courseHours,
+            firstLessonDate: firstLesson?.lesson_date || null,
+            firstLessonTime: firstLesson?.start_time || null,
+            pickupAddress: booking.pupilAddress,
+          }),
+        }
+      );
+      console.log("Pupil welcome email triggered");
+    } catch (welcomeError) {
+      console.error("Welcome email error (non-fatal):", welcomeError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

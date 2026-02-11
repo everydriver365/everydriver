@@ -188,3 +188,6 @@ verify_jwt = false
 
 [functions.generate-lesson-plan]
 verify_jwt = false
+
+[functions.send-pupil-welcome]
+verify_jwt = false
