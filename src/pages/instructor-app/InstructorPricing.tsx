@@ -102,7 +102,7 @@ export default function InstructorPricing() {
                     <p className="text-muted-foreground text-sm">{plan.description}</p>
                     <div className="pt-4">
                       {plan.slug === 'enterprise' ? (
-                        <span className="text-3xl font-bold text-foreground">Contact Us</span>
+                        <span className="text-3xl font-bold text-foreground">£Call</span>
                       ) : plan.price_monthly === 0 ? (
                         <span className="text-4xl font-bold text-foreground">Free</span>
                       ) : (
