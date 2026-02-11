@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { PayoutStatusBadge } from "./PayoutStatusBadge";
 
 interface PaymentRecord {
   id: string;
@@ -25,6 +26,7 @@ interface PaymentRecord {
   payment_method: string;
   notes: string | null;
   recorded_at: string;
+  payout_status: string | null;
   pupil: {
     name: string;
   };
@@ -51,6 +53,7 @@ export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps
           payment_method,
           notes,
           recorded_at,
+          payout_status,
           pupils (name)
         `)
         .eq("instructor_id", instructorId)
@@ -66,6 +69,7 @@ export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps
         payment_method: p.payment_method,
         notes: p.notes,
         recorded_at: p.recorded_at,
+        payout_status: p.payout_status,
         pupil: {
           name: p.pupils?.name || "Unknown Pupil",
         },
@@ -177,6 +181,7 @@ export function PaymentHistory({ instructorId, limit = 10 }: PaymentHistoryProps
                         {payment.payment_method}
                       </div>
                     </div>
+                    <PayoutStatusBadge status={payment.payout_status} />
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button

@@ -67,6 +67,7 @@ const settingsCategories: SettingsCategory[] = [
     links: [
       { key: "bookings", title: "All Bookings", description: "View and manage all course bookings." },
       { key: "payments", title: "Payment History", description: "Track all payment transactions." },
+      { key: "instructor-payouts", title: "Instructor Payouts", description: "Transfer payments received by instructors.", badgeKey: "pendingPayouts" },
       { key: "commission", title: "Commission Earned", description: "View platform commission from payments & subscriptions." },
     ],
   },
@@ -140,6 +141,7 @@ interface BadgeCounts {
   instructorMessages: number;
   enquiries: number;
   emails: number;
+  pendingPayouts: number;
 }
 
 interface DashboardStats {
@@ -155,6 +157,7 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
     instructorMessages: 0,
     enquiries: 0,
     emails: 0,
+    pendingPayouts: 0,
   });
   
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
@@ -207,31 +210,33 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
         instructorUnreadRes,
         bespokeRes,
         callbackRes,
+        pendingPayoutsRes,
       ] = await Promise.all([
-        // Active live chat sessions with unread messages
         supabase
           .from("live_chat_sessions")
           .select("id")
           .eq("session_type", "admin")
           .eq("status", "active"),
-        // Unread instructor messages
         supabase
           .from("admin_messages")
           .select("id", { count: "exact", head: true })
           .eq("sender_type", "instructor")
           .is("read_at", null),
-        // Pending bespoke requests
         supabase
           .from("course_enquiries")
           .select("id", { count: "exact", head: true })
           .eq("status", "pending")
           .not("course_type", "in", '("callback","general")'),
-        // Pending callback requests
         supabase
           .from("course_enquiries")
           .select("id", { count: "exact", head: true })
           .eq("status", "pending")
           .in("course_type", ["callback", "general"]),
+        supabase
+          .from("payment_history")
+          .select("id", { count: "exact", head: true })
+          .eq("payout_status", "pending")
+          .is("deleted_at", null),
       ]);
 
       const activeSessionIds = (activeSessionsRes.data ?? []).map((s) => s.id);
@@ -253,6 +258,7 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
         liveChats: liveChatUnreadCount,
         instructorMessages: instructorUnreadRes.count || 0,
         enquiries: (bespokeRes.count || 0) + (callbackRes.count || 0),
+        pendingPayouts: pendingPayoutsRes.count || 0,
       }));
     } catch (error) {
       console.error("Error fetching notification counts:", error);
@@ -299,6 +305,11 @@ export function AdminSettingsGrid({ onNavigate }: AdminSettingsGridProps) {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "course_enquiries" },
+        () => fetchCounts()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "payment_history" },
         () => fetchCounts()
       )
       .subscribe();

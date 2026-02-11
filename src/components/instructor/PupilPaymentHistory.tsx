@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { History, PoundSterling, CreditCard, Banknote, Smartphone, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { PayoutStatusBadge } from "./PayoutStatusBadge";
 
 interface PaymentRecord {
   id: string;
@@ -10,6 +11,7 @@ interface PaymentRecord {
   payment_method: string;
   notes: string | null;
   recorded_at: string;
+  payout_status: string | null;
 }
 
 interface PupilPaymentHistoryProps {
@@ -93,7 +95,7 @@ export function PupilPaymentHistory({
     try {
       const { data, error } = await supabase
         .from("payment_history")
-        .select("id, amount, payment_method, notes, recorded_at")
+        .select("id, amount, payment_method, notes, recorded_at, payout_status")
         .eq("pupil_id", pupilId)
         .order("recorded_at", { ascending: false })
         .limit(limit);
@@ -161,10 +163,11 @@ export function PupilPaymentHistory({
                   </div>
                 </div>
                 {payment.notes && (
-                  <span className="text-[10px] text-muted-foreground max-w-[100px] truncate">
+                  <span className="text-[10px] text-muted-foreground max-w-[80px] truncate">
                     {payment.notes}
                   </span>
                 )}
+                <PayoutStatusBadge status={payment.payout_status} />
               </div>
             );
           })}
