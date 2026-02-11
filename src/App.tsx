@@ -110,6 +110,7 @@ import InstructorSignup from "./pages/instructor-app/InstructorSignup";
 import InstructorAbout from "./pages/instructor-app/InstructorAbout";
 import InstructorContactPage from "./pages/instructor-app/InstructorContact";
 import InstructorDomains from "./pages/instructor-app/InstructorDomains";
+import InstructorTelematics from "./pages/instructor-app/InstructorTelematics";
 import InstructorDesignDemo from "./pages/instructor-app/DesignDemo";
 import PortalLayoutDemo from "./pages/instructor-app/PortalLayoutDemo";
 import InstructorOnboarding from "./pages/instructor-app/onboarding/InstructorOnboarding";
@@ -174,6 +175,7 @@ const App = () => (
               {/* Instructor SaaS Marketing (Drive365 branding) */}
               <Route path="/instructor-app" element={<InstructorAppHome />} />
               <Route path="/instructor-app/features" element={<InstructorFeatures />} />
+              <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
               <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
               <Route path="/instructor-app/about" element={<InstructorAbout />} />
               <Route path="/instructor-app/contact" element={<InstructorContactPage />} />
