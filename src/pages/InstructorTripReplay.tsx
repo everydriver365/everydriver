@@ -14,6 +14,14 @@ export default function InstructorTripReplay() {
   const telematicsId = searchParams.get("session");
   const navigate = useNavigate();
 
+  const goBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/instructor/dashboard");
+    }
+  };
+
   const {
     route,
     gpsPoints,
@@ -54,7 +62,7 @@ export default function InstructorTripReplay() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(-1)}
+              onClick={goBack}
               className="h-9 w-9"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -65,7 +73,7 @@ export default function InstructorTripReplay() {
             <p className="text-muted-foreground">{error}</p>
             <Button
               variant="outline"
-              onClick={() => navigate(-1)}
+              onClick={goBack}
               className="mt-4"
             >
               Go Back
@@ -85,7 +93,7 @@ export default function InstructorTripReplay() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(-1)}
+              onClick={goBack}
               className="h-9 w-9"
             >
               <ArrowLeft className="h-5 w-5" />
