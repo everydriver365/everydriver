@@ -63,6 +63,36 @@ function parseIgnitionStatus(text: string | null | undefined, speedKmh: number |
   return null;
 }
 
+// Reverse geocode to get actual road name from OSM Nominatim
+async function reverseGeocodeRoadName(lat: number, lng: number): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      { headers: { "User-Agent": "EveryDriver/1.0" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const addr = data?.address;
+    if (!addr) return null;
+    // Prefer road, then pedestrian, then neighbourhood
+    const road = addr.road || addr.pedestrian || addr.neighbourhood;
+    if (!road) return null;
+    // Append town/city for context
+    const town = addr.village || addr.town || addr.city || addr.suburb;
+    return town ? `${road}, ${town}` : road;
+  } catch (err) {
+    console.warn("[QuartixPoller] Reverse geocode failed:", err);
+    return null;
+  }
+}
+
+// Check if a parsed location looks like a business name rather than a road
+function looksLikeBusinessName(name: string): boolean {
+  const businessPatterns = /\b(ltd|llc|inc|plc|limited|corp|group|solutions|services|consulting|holdings)\b/i;
+  const hasNumbers = /\(\d+\)/.test(name); // e.g. "(365)"
+  return businessPatterns.test(name) || hasNumbers;
+}
+
 // Fetch speed limit from OpenStreetMap Overpass API
 async function fetchSpeedLimit(lat: number, lng: number): Promise<number | null> {
   try {
@@ -338,7 +368,14 @@ serve(async (req) => {
 
         const speedKmh = pos.Speed != null ? pos.Speed * 1.60934 : null;
 
-        const parsedRoadName = parseLocationText(pos.LocationText);
+        let parsedRoadName = parseLocationText(pos.LocationText);
+        
+        // If parsed name looks like a business, use reverse geocoding instead
+        if (pos.Latitude && pos.Longitude && (!parsedRoadName || looksLikeBusinessName(parsedRoadName))) {
+          const geoRoadName = await reverseGeocodeRoadName(pos.Latitude, pos.Longitude);
+          if (geoRoadName) parsedRoadName = geoRoadName;
+        }
+        
         const parsedIgnition = pos.Ignition ?? parseIgnitionStatus(pos.LocationText, speedKmh);
 
         const { error: updateErr } = await supabase.from("gps_devices").update({
