@@ -436,7 +436,11 @@ export function QuickActionTiles({
               whileTap={{ scale: 0.98 }}
             >
               <Link to={localTiles[0].route}>
-                 <div className="relative overflow-hidden bg-white rounded-none p-4 shadow-[0_2px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-all">
+                 <div className="relative overflow-hidden bg-white rounded-none shadow-[0_2px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-all">
+                  <div className="bg-gradient-to-r from-primary to-primary/70 px-4 py-1.5">
+                    <span className="text-white text-[10px] font-semibold uppercase tracking-wider">Top Action</span>
+                  </div>
+                  <div className="p-4">
                   <div className="flex items-center gap-4">
                     <div className={`relative ${largeIconTiles.has(localTiles[0].id) ? 'w-16 h-16' : 'w-14 h-14'} rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-primary/40 shadow-[0_0_12px_rgba(59,130,246,0.3)]`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
                       {(() => {
@@ -489,6 +493,7 @@ export function QuickActionTiles({
                   
 
 
+                  </div>
                 </div>
               </Link>
             </motion.div>
