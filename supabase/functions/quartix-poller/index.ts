@@ -403,38 +403,46 @@ serve(async (req) => {
 
             // Record GPS point during active sessions for tracking line + distance
             if (device.current_session_id) {
-              try {
-                // Insert GPS point
-                await supabase.from("telematics_gps_points").insert({
-                  telematics_id: device.current_session_id,
-                  latitude: pos.Latitude,
-                  longitude: pos.Longitude,
-                  speed_kmh: speedKmh || 0,
-                  heading: pos.Heading || 0,
-                  road_name: parsedRoadName || null,
-                  speed_limit_kmh: speedLimitKmh,
-                  recorded_at: new Date().toISOString(),
-                });
+              console.log(`[QuartixPoller] Session ${device.current_session_id} active for device ${device.id}, inserting GPS point: ${pos.Latitude}, ${pos.Longitude}, speed=${speedKmh}`);
+              
+              // Insert GPS point
+              const { error: gpsInsertErr } = await supabase.from("telematics_gps_points").insert({
+                telematics_id: device.current_session_id,
+                latitude: pos.Latitude,
+                longitude: pos.Longitude,
+                speed_kmh: speedKmh || 0,
+                heading: pos.Heading || 0,
+                road_name: parsedRoadName || null,
+                speed_limit_kmh: speedLimitKmh,
+                recorded_at: new Date().toISOString(),
+              });
 
-                // Update total distance
-                if (device.last_latitude && device.last_longitude) {
-                  const segmentM = haversineM(device.last_latitude, device.last_longitude, pos.Latitude, pos.Longitude);
-                  if (segmentM > 5 && segmentM < 2000) {
-                    const segmentKm = segmentM / 1000;
-                    const { data: session } = await supabase
-                      .from("lesson_telematics")
-                      .select("total_distance_km")
-                      .eq("id", device.current_session_id)
-                      .single();
+              if (gpsInsertErr) {
+                console.error("[QuartixPoller] GPS point insert FAILED:", JSON.stringify(gpsInsertErr));
+              } else {
+                console.log("[QuartixPoller] GPS point inserted successfully");
+              }
 
-                    const currentDist = session?.total_distance_km || 0;
-                    await supabase.from("lesson_telematics").update({
-                      total_distance_km: currentDist + segmentKm,
-                    }).eq("id", device.current_session_id);
+              // Update total distance using RPC to avoid race conditions
+              if (device.last_latitude && device.last_longitude) {
+                const segmentM = haversineM(device.last_latitude, device.last_longitude, pos.Latitude, pos.Longitude);
+                if (segmentM > 5 && segmentM < 2000) {
+                  const segmentKm = segmentM / 1000;
+                  const { error: rpcErr } = await supabase.rpc("increment_total_distance", {
+                    p_id: device.current_session_id,
+                    p_distance: segmentKm,
+                  });
+                  if (rpcErr) {
+                    console.error("[QuartixPoller] Distance increment error:", JSON.stringify(rpcErr));
+                  } else {
+                    console.log(`[QuartixPoller] Distance incremented by ${segmentKm.toFixed(3)} km`);
                   }
                 }
-              } catch (gpsErr) {
-                console.warn("[QuartixPoller] GPS point insert error:", gpsErr);
+              }
+            } else {
+              // Log when no session is active (for debugging)
+              if (processed === 1) {
+                console.log(`[QuartixPoller] No active session for device ${device.id}`);
               }
             }
           }
