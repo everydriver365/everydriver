@@ -159,24 +159,31 @@ export function useTripReplay({ routeId, telematicsId }: UseTripReplayOptions) {
         const sessionStart = session.started_at ? new Date(session.started_at).getTime() : 0;
         const sessionEnd = session.ended_at ? new Date(session.ended_at).getTime() : Date.now();
 
-        const quartixHops = routeResp.route
+        const mapHop = (hop: any, idx: number) => ({
+          id: `quartix-${idx}`,
+          latitude: hop.latitude,
+          longitude: hop.longitude,
+          speed_kmh: hop.speed,
+          speed_limit_kmh: hop.speedLimit,
+          heading: hop.heading,
+          road_name: hop.location,
+          recorded_at: hop.timestamp || new Date(sessionStart + idx * 1000).toISOString(),
+          accuracy_m: null,
+        });
+
+        // Try filtering to session window first (with 5min buffer)
+        let quartixHops = routeResp.route
           .filter((hop: any) => {
-            if (!hop.timestamp) return true; // include if no timestamp
+            if (!hop.timestamp) return true;
             const hopTime = new Date(hop.timestamp).getTime();
-            // Allow 5min buffer around session start/end
             return hopTime >= (sessionStart - 300000) && hopTime <= (sessionEnd + 300000);
           })
-          .map((hop: any, idx: number) => ({
-            id: `quartix-${idx}`,
-            latitude: hop.latitude,
-            longitude: hop.longitude,
-            speed_kmh: hop.speed,
-            speed_limit_kmh: hop.speedLimit,
-            heading: hop.heading,
-            road_name: hop.location,
-            recorded_at: hop.timestamp || new Date(sessionStart + idx * 1000).toISOString(),
-            accuracy_m: null,
-          }));
+          .map(mapHop);
+
+        // If no hops matched the time window, use all hops for the day
+        if (quartixHops.length === 0) {
+          quartixHops = routeResp.route.map(mapHop);
+        }
 
         if (quartixHops.length === 0) {
           throw new Error("No GPS data available for this route");
