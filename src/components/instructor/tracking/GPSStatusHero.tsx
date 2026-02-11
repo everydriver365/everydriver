@@ -3,29 +3,31 @@
  import { Button } from "@/components/ui/button";
  import { formatMph } from "@/lib/utils";
  
- interface GPSStatusHeroProps {
-   deviceName: string | null;
-   isConnected: boolean;
-   isParked?: boolean;
-   lastSeenLabel: string;
-   speedKmh: number | null;
-   roadName: string | null;
-   isReconnecting?: boolean;
-   retryCount?: number;
-   onManualReconnect?: () => void;
- }
+interface GPSStatusHeroProps {
+  deviceName: string | null;
+  isConnected: boolean;
+  isParked?: boolean;
+  lastSeenLabel: string;
+  speedKmh: number | null;
+  speedLimitKmh?: number | null;
+  roadName: string | null;
+  isReconnecting?: boolean;
+  retryCount?: number;
+  onManualReconnect?: () => void;
+}
  
- export function GPSStatusHero({
-   deviceName,
-   isConnected,
-   isParked = false,
-   lastSeenLabel,
-   speedKmh,
-   roadName,
-   isReconnecting = false,
-   retryCount = 0,
-   onManualReconnect,
- }: GPSStatusHeroProps) {
+export function GPSStatusHero({
+  deviceName,
+  isConnected,
+  isParked = false,
+  lastSeenLabel,
+  speedKmh,
+  speedLimitKmh,
+  roadName,
+  isReconnecting = false,
+  retryCount = 0,
+  onManualReconnect,
+}: GPSStatusHeroProps) {
    const showReconnecting = isReconnecting && !isConnected && !isParked;
  
    return (
@@ -135,6 +137,11 @@
                <div>
                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Speed</p>
                  <p className="text-2xl font-bold text-foreground">{speedKmh != null ? formatMph(speedKmh) : "0 mph"}</p>
+                 {speedLimitKmh != null && speedLimitKmh > 0 && (
+                   <p className="text-[10px] font-medium text-muted-foreground">
+                     Limit: {formatMph(speedLimitKmh)}
+                   </p>
+                 )}
               </div>
                <div className="h-10 w-px bg-border mx-3" />
                <div className="flex-1 min-w-0 text-right">
