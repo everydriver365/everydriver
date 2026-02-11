@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush } from "lucide-react";
+import { User, Clock, Bell, FileText, Camera, Loader2, Settings, Palette, Eye, Calendar, PoundSterling, ChevronRight, ChevronDown, Globe, Layout, Sparkles, Car, QrCode, ImageIcon, Video, ImagePlus, Award, Database, FileSignature, Banknote, Shield, CalendarClock, BookOpen, MapPin, Trash2, Navigation, ExternalLink, Route, GraduationCap, LayoutGrid, Satellite, AlertTriangle, Gift, CreditCard, Paintbrush, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CMSImageUpload } from "@/components/admin/CMSImageUpload";
 import { BulkSMSDialog } from "@/components/instructor/BulkSMSDialog";
@@ -20,6 +20,7 @@ import { DepositSettingsEditor } from "@/components/instructor/DepositSettingsEd
 import { BookingModeSelector } from "@/components/instructor/BookingModeSelector";
 import { ComplianceTracker } from "@/components/instructor/ComplianceTracker";
 import { InstructorCoursesManager } from "@/components/instructor/InstructorCoursesManager";
+import { InstructorDiscountCodesManager } from "@/components/instructor/InstructorDiscountCodesManager";
 import { TestCentresAndExaminersManager } from "@/components/instructor/TestCentresAndExaminersManager";
 import { InstructorDetailsEditor } from "@/components/instructor/InstructorDetailsEditor";
 import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
@@ -845,6 +846,18 @@ export default function InstructorSettings() {
                 iconBg="bg-pink-100 dark:bg-pink-900/30"
               >
                 <PaymentOptionsSettings instructorId={instructorId} compact />
+              </SettingsTile>
+
+              {/* Discount Codes */}
+              <SettingsTile 
+                id="discount-codes" 
+                icon={Tag} 
+                title="Discount Codes" 
+                description="Create promo codes for pupils"
+                iconColor="text-orange-600"
+                iconBg="bg-orange-100 dark:bg-orange-900/30"
+              >
+                <InstructorDiscountCodesManager instructorId={instructorId} />
               </SettingsTile>
           </div>
         </div>
