@@ -99,8 +99,8 @@ function processSpeed(speedKmh: number | null | undefined): number {
   // Cap unrealistic speeds (> 160 km/h = ~100 mph)
   if (speedKmh > 160) return 0;
   
-  // Filter GPS noise (speeds below 3 km/h are likely stationary)
-  if (speedKmh < 3) return 0;
+  // Filter GPS noise (speeds below 2 km/h are likely stationary)
+  if (speedKmh < 2) return 0;
   
   return speedKmh;
 }
@@ -267,6 +267,7 @@ export default function TraccarLiveMap({
 
   // ========== Add points from props for instant tracking line ==========
   // This catches position updates from polling before they hit the database
+  // Uses relaxed validation for prop-based updates (no max distance filter)
   useEffect(() => {
     if (!sessionId || latitude === null || longitude === null) return;
     
@@ -276,9 +277,19 @@ export default function TraccarLiveMap({
       speedKmh: speedKmh ?? undefined,
     };
     
-    const { isValid } = validatePoint(point, lastValidPointRef.current);
+    // Use relaxed validation - only check min distance, not max
+    // Max distance filter causes issues when tracker jumps after signal loss
+    const lastValid = lastValidPointRef.current;
+    let shouldAdd = false;
     
-    if (isValid) {
+    if (!lastValid) {
+      shouldAdd = true;
+    } else {
+      const distance = haversineDistance(lastValid.lat, lastValid.lng, point.lat, point.lng);
+      shouldAdd = distance >= 5; // Only filter GPS jitter
+    }
+    
+    if (shouldAdd) {
       // Check if this point is different from the last one in filteredPoints
       const lastPoint = filteredPoints[filteredPoints.length - 1];
       if (!lastPoint || lastPoint.lat !== latitude || lastPoint.lng !== longitude) {
@@ -286,6 +297,9 @@ export default function TraccarLiveMap({
         lastValidPointRef.current = point;
         setLivePosition({ lat: latitude, lng: longitude });
       }
+    } else {
+      // Even if we don't add to the path, update the live marker position
+      setLivePosition({ lat: latitude, lng: longitude });
     }
   }, [sessionId, latitude, longitude, speedKmh]);
 
@@ -293,7 +307,7 @@ export default function TraccarLiveMap({
   const markerLat = livePosition?.lat ?? latitude;
   const markerLng = livePosition?.lng ?? longitude;
 
-  // ========== Update Marker ==========
+  // ========== Update Marker + Auto-center ==========
   useEffect(() => {
     const map = mapInstance.current;
     if (!map) return;
@@ -333,11 +347,11 @@ export default function TraccarLiveMap({
       markerRef.current.setIcon(icon);
     }
 
-    // Auto-center unless user dragged
+    // Always auto-center on position unless user has manually dragged
     if (!userDragged) {
-      map.setView([markerLat, markerLng], map.getZoom(), { animate: true });
+      map.panTo([markerLat, markerLng], { animate: true, duration: 0.5 });
     }
-  }, [markerLat, markerLng, heading, userDragged]);
+  }, [markerLat, markerLng, heading, userDragged, isConnected]);
 
   // ========== Update Polyline ==========
   useEffect(() => {
