@@ -1,122 +1,93 @@
 
 
-# Alternative Tracking Architecture: Server-Side Polling
+# Make the Live Map Work + Quartix Fallback
 
-## The Problem
+## What We Know
 
-The current tracking system relies on **client-side polling** -- the instructor's phone calls the `quartix-poller` backend function every 2-10 seconds. This creates several failure points:
+1. The server-side `quartix-sync` IS working -- it updates `gps_devices` every 15 seconds with real coordinates
+2. The `InstructorLiveSession` page already subscribes to `gps_devices` changes via Realtime + 5s polling fallback
+3. The `LiveTrackingMap` component renders a marker at the position from props
+4. Quartix does NOT offer an embeddable iframe or map widget -- their portal is a closed web app
 
-- If the user switches apps, locks their phone, or refreshes the page, polling stops and tracking breaks
-- Every poll re-authenticates with Quartix (slow, wasteful, and prone to rate-limiting)
-- If the user's login session expires, tracking silently dies
-- Orphaned sessions pile up (168 found and cleaned today) because there's no server-side session management
-- The single poller function does too much: auth + vehicle sync + position fetch + GPS recording + geofencing + speed limits + reverse geocoding
+**The live map should already be working.** The vehicle was simply parked during testing, so nothing moved. The architecture is sound.
 
-## The Solution: Server-Side Cron Polling
+## What to Improve
 
-Move ALL polling to the server using `pg_cron` (already enabled). The instructor's phone becomes a **read-only display** that subscribes to real-time database updates -- it never calls Quartix directly.
+### 1. Show vehicle position BEFORE starting a session
+Currently the map only renders during an active session. Add a mini live map on the pre-session screen so instructors can see their vehicle's last known position and confirm tracking is working before they start.
 
-```text
-CURRENT (broken):                    PROPOSED (reliable):
+### 2. Add "Open in Quartix" button as fallback
+A simple button that opens `https://qws4.quartix.com` in a new tab. This gives instructors access to Quartix's own real-time map (with sub-second updates) when they want a second view.
 
-Phone --> quartix-poller --> Quartix  pg_cron --> quartix-sync --> Quartix
-  |           |                            |
-  |     (every 2-10s)                 (every 15s, always running)
-  |           |                            |
-  |     gps_devices table             gps_devices table
-  |           |                            |
-  +--- reads from DB                  Phone <-- realtime subscription
-```
+### 3. Show "Last updated X seconds ago" indicator
+Add a visible timestamp showing when the position last updated, so instructors can see the server sync is actively working.
 
-## Implementation Steps
+## Changes
 
-### Step 1: Create a new `quartix-sync` edge function
-A streamlined server-side function that:
-- **Caches the Quartix auth token** in the database (tokens last ~30 minutes) instead of authenticating every call
-- Fetches live positions from Quartix API
-- Updates `gps_devices` with latest position data
-- Records GPS points for active sessions
-- Handles distance accumulation
-- Runs geofence and movement checks
+### File: `src/components/instructor/tracking/MiniLiveMap.tsx` (New)
+A compact Leaflet map component (200px tall) that:
+- Shows the vehicle marker at its last known position from `gps_devices`
+- Displays a status badge: "Live" (green pulse) if last_seen_at < 30s ago, "Last seen X ago" otherwise
+- Renders on the pre-session screen so the instructor sees their car before starting
 
-Deferred operations (speed limit lookups, reverse geocoding) run on a **separate, slower schedule** (every 60s) to avoid overloading external APIs.
+### File: `src/components/instructor/tracking/QuartixLiveButton.tsx` (New)
+A styled card/button component that:
+- Opens `https://qws4.quartix.com` in a new browser tab
+- Shows "Open Quartix Live Tracking" with a brief description
+- Appears on the pre-session screen below the mini map
 
-### Step 2: Set up pg_cron schedules
-- **Core position sync**: Every 15 seconds via `pg_cron` calling the `quartix-sync` function using `pg_net`
-- **Deferred enrichment**: Every 60 seconds for speed limits and reverse geocoding
-- Schedules automatically start/stop based on whether any devices are active
-
-### Step 3: Add auto session cleanup
-A database function that automatically ends sessions that have been idle for more than 30 minutes (no position updates), preventing the orphaned session problem.
-
-### Step 4: Simplify the client (InstructorLiveSession)
-- **Remove** `useGPSPoller` from the tracking page entirely
-- **Remove** `useGPSAutoReconnect` (no longer needed)
-- Keep only the existing **realtime subscription** to `gps_devices` table (already in place)
-- The page becomes a pure display: subscribe to DB changes, render map
-- Starting/stopping sessions just updates the database -- the server-side poller handles the rest
-
-### Step 5: Add Quartix token caching
-Create a `quartix_auth_cache` table to store the access token with an expiry timestamp. The sync function checks this first and only re-authenticates when the token has expired (~every 30 minutes instead of every 2 seconds).
+### File: `src/pages/InstructorLiveSession.tsx` (Modify)
+- Import and render `MiniLiveMap` in the pre-session view, passing `device.last_latitude`, `device.last_longitude`, and `device.last_seen_at`
+- Import and render `QuartixLiveButton` below the mini map
+- Add a "Last synced X seconds ago" text indicator near the GPS status hero using `device.last_seen_at`
 
 ## Technical Details
 
-### New table: `quartix_auth_cache`
-| Column | Type | Purpose |
-|--------|------|---------|
-| id | text (PK) | Always 'default' (single row) |
-| access_token | text | Cached Quartix API token |
-| expires_at | timestamptz | When to refresh |
+### MiniLiveMap Component
+```text
+Props:
+  - latitude: number | null
+  - longitude: number | null  
+  - heading: number | null
+  - lastSeenAt: string | null
+  - isActive: boolean
 
-### New table: `cron_sync_config`  
-| Column | Type | Purpose |
-|--------|------|---------|
-| id | text (PK) | Config key |
-| is_enabled | boolean | Master on/off switch |
-| interval_seconds | int | Poll frequency |
-| last_run_at | timestamptz | Monitoring |
-
-### pg_cron schedule
-```sql
-SELECT cron.schedule(
-  'quartix-position-sync',
-  '15 seconds',
-  $$ SELECT net.http_post(
-    url := '<edge-function-url>/quartix-sync',
-    headers := '{"Authorization": "Bearer <service-role-key>"}'
-  ) $$
-);
+Rendering:
+  - Leaflet map (non-interactive, no zoom controls)
+  - Car marker icon (same style as LiveTrackingMap)
+  - Status badge overlay in top-left corner
+  - "No position yet" placeholder if lat/lng are null
 ```
 
-### Auto-cleanup function
-```sql
--- Automatically end sessions idle for >30 minutes
-CREATE FUNCTION auto_cleanup_stale_sessions() ...
-  UPDATE lesson_telematics SET ended_at = now()
-  WHERE ended_at IS NULL
-    AND started_at < now() - interval '30 minutes'
-    AND id NOT IN (
-      SELECT current_session_id FROM gps_devices
-      WHERE current_session_id IS NOT NULL
-    );
+### QuartixLiveButton Component
+```text
+- Opens https://qws4.quartix.com in new tab via window.open()
+- Styled as a Card with an ExternalLink icon
+- Secondary text: "View real-time tracking in the Quartix portal"
 ```
 
-## Files to Create/Modify
+### InstructorLiveSession Layout (pre-session view)
+```text
+Current:                          Updated:
++---------------------------+     +---------------------------+
+| GPS Status Hero           |     | GPS Status Hero           |
++---------------------------+     | Last synced 5s ago        |
+| Tracker Selector          |     +---------------------------+
++---------------------------+     | Mini Live Map (200px)     |
+| Session Start Panel       |     | [Live] badge              |
++---------------------------+     +---------------------------+
+| Recent Sessions           |     | Tracker Selector          |
++---------------------------+     +---------------------------+
+                                  | Open Quartix Live [->]    |
+                                  +---------------------------+
+                                  | Session Start Panel       |
+                                  +---------------------------+
+                                  | Recent Sessions           |
+                                  +---------------------------+
+```
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `supabase/functions/quartix-sync/index.ts` | Create | New streamlined server-side poller |
-| `src/pages/InstructorLiveSession.tsx` | Modify | Remove client polling, keep realtime only |
-| `src/hooks/useGPSPoller.ts` | Remove | No longer needed |
-| `src/hooks/useGPSAutoReconnect.ts` | Remove | No longer needed |
-| Database migration | Create | Add token cache table, cron schedule, cleanup function |
-
-## Benefits
-
-- **Tracking never stops** -- runs server-side regardless of what the user does on their phone
-- **Page refresh safe** -- the phone just re-subscribes to realtime updates, session continues
-- **No auth dependency** -- tracking runs with service role key, not user's session
-- **Fewer API calls** -- token cached for 30 mins, single poll every 15s (not per-client)
-- **Auto-cleanup** -- stale sessions automatically ended after 30 min idle
-- **Simpler client code** -- ~200 lines removed from InstructorLiveSession
-
+## Summary
+- 2 new small components (~60 lines each)
+- 1 modified file (add imports + render in pre-session view)
+- No database changes needed
+- No edge function changes needed
