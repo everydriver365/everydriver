@@ -1,89 +1,153 @@
 
 
-# Enable Klarna and Clearpay on Instructor Mini-Websites (Pro+ Only)
+# Instructor Payout Management System
 
 ## Overview
 
-Allow instructors on the **Pro plan and above** to toggle Klarna ("Pay in 3") and Clearpay ("Pay in 4") as payment options on their mini-website course cards. When enabled, the BNPL logos and instalment messaging appear on the public-facing mini-website. The instructor absorbs the provider fees, which are clearly displayed when toggling each option on.
+Create a full payout tracking system where admin can see all pupil payments received by instructors, mark them as "transferred" (paid out), and instructors can see which payments have been paid to them by admin. Also allow the system to show who the payment was received from so it updates the pupil balance sitewide
 
 ## Database Changes
 
-Add two new boolean columns to the `instructors` table:
+### New table: `instructor_payouts`
 
-- `klarna_enabled` (boolean, default `false`) -- whether Klarna appears on their mini-website
-- `clearpay_enabled` (boolean, default `false`) -- whether Clearpay appears on their mini-website
+Tracks admin payouts to instructors. Each row links to one or more `payment_history` records.
 
-## UI Changes
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | uuid (PK) | Auto-generated |
+| `instructor_id` | uuid (FK -> instructors) | Who is being paid |
+| `amount` | numeric | Total payout amount |
+| `payment_ids` | uuid[] | Array of `payment_history.id` values included |
+| `notes` | text | Optional admin notes |
+| `transferred_at` | timestamptz | When admin marked as paid |
+| `created_at` | timestamptz | Default now() |
 
-### 1. Instructor Settings (Desktop) -- `AccountSettings.tsx`
+### New column on `payment_history`
 
-Add a new **"Payment Options"** card (or section) containing:
+| Column | Type | Notes |
+|--------|------|-------|
+| `payout_status` | text | Default `'pending'` -- values: `pending`, `transferred` |
+| `payout_id` | uuid | FK to `instructor_payouts.id`, nullable |
+| `transferred_at` | timestamptz | When admin marked this payment as transferred |
 
-- **Klarna toggle** (Switch component)
-  - When toggled ON, show an info box:
-    > "Klarna charges 3.29% + 20p per transaction. You (the instructor) will pay these fees."
-  - Gated: disabled with lock icon + "Pro plan required" if on Free plan
-- **Clearpay toggle** (Switch component)
-  - When toggled ON, show an info box:
-    > "Clearpay charges 4-6% + 30p per transaction. You (the instructor) will pay these fees."
-  - Gated: disabled with lock icon + "Pro plan required" if on Free plan
+## Admin Portal Changes
 
-Both toggles save directly to the `instructors` table (`klarna_enabled`, `clearpay_enabled`).
+### 1. New section: "Instructor Payouts" (key: `instructor-payouts`)
 
-### 2. Instructor Settings (Mobile App) -- `InstructorSettings.tsx`
+Add a new tile in the "Finance & Payments" category of `AdminSettingsGrid.tsx` and a new section in `AdminPortal.tsx`.
 
-Add the same Payment Options toggles in the settings page, with the same fee info boxes and plan gating.
+### 2. New component: `AdminInstructorPayouts.tsx`
 
-### 3. Mini-Website Public Page -- `InstructorMiniWebsite.tsx`
+Two-tab layout:
 
-When `klarna_enabled` or `clearpay_enabled` is true on the instructor record:
+**"Pending" tab (default):**
+- Table grouped by instructor showing all `payment_history` records where `payout_status = 'pending'`
+- Summary row per instructor with total owed
+- Checkbox selection to pick payments
+- "Mark as Transferred" button opens a confirmation dialog, sets `payout_status = 'transferred'`, `transferred_at = now()`, and creates an `instructor_payouts` record
+- Realtime subscription for new payments (shows notification badge)
 
-- Show Klarna/Clearpay instalment badges below each course price (e.g., "3 x GBP33.33 with Klarna" / "4 x GBP25.00 with Clearpay")
-- Show the provider logos in the footer or near the booking CTA
-- These use the existing `KlarnaExpressButton` and `ClearpayInstalmentBadge` components already in the codebase
+**"Paid" tab:**
+- Table of completed payouts from `instructor_payouts`
+- Shows instructor name, amount, date transferred, and which payments were included
+- Expandable row to see individual payment details
 
-### 4. Plan Gating
+### 3. Badge count on the tile
 
-Use the existing `useMenuFeatureGates` / subscription features pattern:
+Show count of pending (untransferred) payments as a notification badge on the "Instructor Payouts" tile.
 
-- Check `subscription?.features` for `payment_tracking` (which Pro and above already have)
-- If the instructor is on Free, the toggles are disabled with a subtle upgrade prompt
-- If the instructor somehow has the flags enabled but downgrades, the mini-website should not show BNPL options (check plan server-side or at render time)
+## Instructor Portal Changes
+
+### 4. New component: `PayoutStatusBadge.tsx`
+
+Small badge shown on payment history items indicating "Pending" (amber) or "Transferred" (green).
+
+### 5. Update `PaymentHistory.tsx` and `PupilPaymentHistory.tsx`
+
+Add the payout status badge next to each payment record so instructors can see which payments have been paid out to them by admin.
+
+### 6. New section on Instructor Pay page (`InstructorPay.tsx`)
+
+Add a "Payouts from Admin" card showing:
+- Recent payouts received (from `instructor_payouts` table)
+- Total transferred this month
+- Pending amount awaiting transfer
+
+### 7. Mobile app: `InstructorSettings.tsx`
+
+Add a "Payouts" tile in the settings/finance area linking to payout history.
 
 ## Technical Details
 
 ### Migration SQL
 
 ```sql
-ALTER TABLE public.instructors 
-  ADD COLUMN IF NOT EXISTS klarna_enabled boolean DEFAULT false,
-  ADD COLUMN IF NOT EXISTS clearpay_enabled boolean DEFAULT false;
+-- Add payout tracking columns to payment_history
+ALTER TABLE public.payment_history 
+  ADD COLUMN IF NOT EXISTS payout_status text DEFAULT 'pending',
+  ADD COLUMN IF NOT EXISTS payout_id uuid,
+  ADD COLUMN IF NOT EXISTS transferred_at timestamptz;
+
+-- Create instructor payouts table
+CREATE TABLE IF NOT EXISTS public.instructor_payouts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  instructor_id uuid NOT NULL REFERENCES public.instructors(id),
+  amount numeric NOT NULL,
+  payment_ids uuid[] NOT NULL DEFAULT '{}',
+  notes text,
+  transferred_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.instructor_payouts ENABLE ROW LEVEL SECURITY;
+
+-- Admin can do everything (using has_role)
+CREATE POLICY "Admins can manage payouts"
+  ON public.instructor_payouts FOR ALL
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+
+-- Instructors can view their own payouts
+CREATE POLICY "Instructors can view own payouts"
+  ON public.instructor_payouts FOR SELECT
+  TO authenticated
+  USING (instructor_id = public.get_instructor_id_for_user(auth.uid()));
+
+-- Enable realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE public.instructor_payouts;
+
+-- Index for performance
+CREATE INDEX idx_payment_history_payout_status ON public.payment_history(payout_status);
+CREATE INDEX idx_instructor_payouts_instructor ON public.instructor_payouts(instructor_id);
 ```
 
-### Files to Create/Modify
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/components/admin/AdminInstructorPayouts.tsx` | Main admin payout dashboard with Pending/Paid tabs |
+| `src/components/instructor/PayoutStatusBadge.tsx` | Reusable badge showing pending/transferred status |
+| `src/components/instructor/InstructorPayoutHistory.tsx` | Card for instructor portal showing their payout history |
+
+### Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/components/instructor/AccountSettings.tsx` | Add Payment Options section with Klarna/Clearpay toggles and fee info |
-| `src/pages/InstructorSettings.tsx` | Add same Payment Options toggles for mobile app settings |
-| `src/pages/InstructorMiniWebsite.tsx` | Read `klarna_enabled`/`clearpay_enabled` from instructor data; conditionally render instalment badges on course cards |
-| `src/context/InstructorAuthContext.tsx` | Add `klarna_enabled` and `clearpay_enabled` to the instructor select query |
+| `src/pages/AdminPortal.tsx` | Add `instructor-payouts` section + sectionMeta entry |
+| `src/components/admin/AdminSettingsGrid.tsx` | Add "Instructor Payouts" tile to Finance & Payments category with badge count |
+| `src/pages/InstructorPay.tsx` | Add InstructorPayoutHistory card |
+| `src/components/instructor/PaymentHistory.tsx` | Show payout status badge on each row |
+| `src/components/instructor/PupilPaymentHistory.tsx` | Show payout status badge on each row |
 
-### Fee Display Details
-
-When a toggle is turned ON, a coloured info card appears below it:
-
-- **Klarna**: Pink-tinted card with Klarna logo, text: "Klarna charges **3.29% + 20p** per transaction. These fees are deducted from your payment. Example: On a GBP500 course, the fee would be GBP16.65."
-- **Clearpay**: Mint-tinted card with Clearpay badge, text: "Clearpay charges **4--6% + 30p** per transaction. These fees are deducted from your payment. Example: On a GBP500 course, the fee would be approx GBP20--30."
-
-### Flow Summary
+### Flow
 
 ```text
-Instructor enables Klarna/Clearpay in Settings
-  --> Saved to instructors table (klarna_enabled / clearpay_enabled)
-  --> Mini-website reads these flags
-  --> Course cards show instalment badges + BNPL buttons
-  --> Pupil pays via Klarna/Clearpay at checkout
-  --> Instructor absorbs the transaction fees
+1. Pupil pays instructor (payment_history record created, payout_status = 'pending')
+2. Admin sees pending payment in "Instructor Payouts" section
+3. Admin selects payments and clicks "Mark as Transferred"
+4. System creates instructor_payouts record and updates payment_history rows
+5. Instructor sees "Transferred" badge on their payment history
+6. Instructor sees payout summary on their Pay page
 ```
 
