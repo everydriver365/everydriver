@@ -1,6 +1,5 @@
 import { Crown, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlanBadge } from "@/components/instructor/PlanBadge";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
@@ -14,18 +13,29 @@ export function PlanWidget() {
   const isFreePlan = planSlug === "free";
 
   return (
-    <Card className="border-border">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-              <Crown className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+    <div className="bg-card shadow-xl overflow-hidden">
+      {/* Gradient header */}
+      <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+          <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+        </div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
+              <Crown className="h-4 w-4 text-white" />
             </div>
-            <h3 className="font-medium text-sm text-foreground">Your Plan</h3>
+            <div>
+              <h3 className="font-semibold text-sm">Your Plan</h3>
+              <p className="text-white/70 text-[10px]">Current subscription</p>
+            </div>
           </div>
           <PlanBadge planSlug={planSlug} size="md" />
         </div>
+      </div>
 
+      {/* Content */}
+      <div className="p-4">
         {features.length > 0 && (
           <ul className="space-y-1 mb-3">
             {features.slice(0, 3).map((feature, i) => (
@@ -51,7 +61,7 @@ export function PlanWidget() {
           {isFreePlan ? "Upgrade Plan" : "View Plans"}
           <ChevronRight className="h-3.5 w-3.5" />
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

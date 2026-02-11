@@ -55,6 +55,8 @@ import { TrackerReminderBanner } from "@/components/instructor/TrackerReminderBa
 import { ContextualHomeHero } from "@/components/instructor/ContextualHomeHero";
 import { ReadyToTeachTile } from "@/components/instructor/ReadyToTeachTile";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
+import jobOffersIcon from "@/assets/job-offers-icon.png";
+import messagesIcon from "@/assets/messages-icon.png";
 import { RadialFAB } from "@/components/instructor/RadialFAB";
 import { UrgentAlertOverlay } from "@/components/instructor/UrgentAlertOverlay";
 import { TodayRoutePreview } from "@/components/instructor/TodayRoutePreview";
@@ -345,7 +347,7 @@ export function InstructorMobileHome({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
-          className="bg-card rounded-3xl shadow-xl overflow-hidden"
+          className="bg-card shadow-xl overflow-hidden"
         >
           {/* Gradient header */}
           <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-4 text-white">
@@ -422,40 +424,59 @@ export function InstructorMobileHome({
           </div>
         </motion.div>
       </div>
-      {/* Job Offers & Messages buttons - right under hero */}
+      {/* Job Offers & Messages — gradient style */}
       <div className="px-4 flex flex-col gap-2 mt-3">
         {pendingJobsCount > 0 && (
           <button
             onClick={() => navigate("/instructor/jobs")}
-            className="flex items-center justify-between w-full bg-gradient-to-r from-amber-100 to-card dark:from-amber-950/20 dark:to-card border border-amber-200/60 dark:border-amber-800/30 rounded-xl px-4 py-3 shadow-[0_2px_12px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.12)] hover:ring-1 hover:ring-amber-300/50 active:scale-[0.99] transition-all"
+            className="w-full bg-card shadow-xl overflow-hidden active:scale-[0.99] transition-all"
           >
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+                <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
               </div>
-              <span className="font-medium text-sm text-amber-900 dark:text-amber-100">View Job Offers</span>
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <img src={jobOffersIcon} alt="Job Offers" className="h-10 w-10 object-cover" />
+                  <div>
+                    <span className="font-semibold text-sm">Job Offers</span>
+                    <p className="text-white/70 text-[10px]">{pendingJobsCount} pending offer{pendingJobsCount !== 1 ? "s" : ""}</p>
+                  </div>
+                </div>
+                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-primary text-xs font-bold flex items-center justify-center shadow-sm">
+                  {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
+                </span>
+              </div>
             </div>
-            <span className="min-w-[24px] h-6 px-2 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">
-              {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
-            </span>
           </button>
         )}
         <button
           onClick={() => navigate("/instructor/messages")}
-          className="flex items-center justify-between w-full bg-gradient-to-r from-blue-100 to-card dark:from-blue-950/20 dark:to-card border border-blue-200/60 dark:border-blue-800/30 rounded-xl px-4 py-3 shadow-[0_2px_12px_rgba(20,37,66,0.08)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.12)] hover:ring-1 hover:ring-blue-300/50 active:scale-[0.99] transition-all"
+          className="w-full bg-card shadow-xl overflow-hidden active:scale-[0.99] transition-all"
         >
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-blue-500/20 flex items-center justify-center">
-              <Mail className="h-5 w-5 text-primary" />
+          <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-3 text-white">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+              <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
             </div>
-            <span className="font-medium text-sm text-blue-900 dark:text-blue-100">View Messages</span>
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <img src={messagesIcon} alt="Messages" className="h-10 w-10 object-cover" />
+                <div>
+                  <span className="font-semibold text-sm">Messages</span>
+                  <p className="text-white/70 text-[10px]">
+                    {(unreadCount || 0) > 0 ? `${unreadCount} unread` : "No unread messages"}
+                  </p>
+                </div>
+              </div>
+              {(unreadCount || 0) > 0 && (
+                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center shadow-sm">
+                  {(unreadCount || 0) > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </div>
           </div>
-          {(unreadCount || 0) > 0 && (
-            <span className="min-w-[24px] h-6 px-2 rounded-full bg-destructive text-destructive-foreground text-xs font-bold flex items-center justify-center">
-              {(unreadCount || 0) > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
 
