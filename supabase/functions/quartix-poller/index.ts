@@ -361,12 +361,16 @@ serve(async (req) => {
         const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
         if (!device) { skipped++; continue; }
 
+        // Log raw Quartix data for debugging
+        console.log(`[QuartixPoller] Raw Quartix data: VehicleId=${vehicleId}, Speed=${pos.Speed}, Lat=${pos.Latitude}, Lng=${pos.Longitude}, Ignition=${pos.Ignition}, LocationText=${pos.LocationText?.substring(0, 80)}`);
+
         let speedLimitKmh: number | null = null;
         if (pos.Latitude && pos.Longitude) {
           speedLimitKmh = await fetchSpeedLimit(pos.Latitude, pos.Longitude);
         }
 
-        const speedKmh = pos.Speed != null ? pos.Speed * 1.60934 : null;
+        // Quartix Speed is in mph - convert to km/h
+        let speedKmh = pos.Speed != null ? pos.Speed * 1.60934 : null;
 
         let parsedRoadName = parseLocationText(pos.LocationText);
         
@@ -377,6 +381,20 @@ serve(async (req) => {
         }
         
         const parsedIgnition = pos.Ignition ?? parseIgnitionStatus(pos.LocationText, speedKmh);
+
+        // Force speed to 0 when ignition is off or LocationText says stationary
+        // Quartix sometimes reports stale speed values when the vehicle is parked
+        if (parsedIgnition === false) {
+          speedKmh = 0;
+        }
+
+        // Also force speed to 0 if position hasn't changed (GPS jitter while stationary)
+        if (device.last_latitude && device.last_longitude && pos.Latitude && pos.Longitude) {
+          const movedM = haversineM(device.last_latitude, device.last_longitude, pos.Latitude, pos.Longitude);
+          if (movedM < 5) {
+            speedKmh = 0;
+          }
+        }
 
         const { error: updateErr } = await supabase.from("gps_devices").update({
           last_latitude: pos.Latitude,
