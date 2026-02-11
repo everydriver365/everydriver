@@ -79,8 +79,9 @@ serve(async (req) => {
     const accessToken = await authenticate();
     const day = new Date(date).toISOString().split("T")[0];
 
+    // Fetch route for the full day — the /vehicles/route endpoint returns hops directly
     const routeRes = await fetch(
-      `${QUARTIX_BASE}/vehicles/route?VehicleID=${device.quartix_vehicle_id}&StartDay=${day}`,
+      `${QUARTIX_BASE}/vehicles/route?VehicleID=${device.quartix_vehicle_id}&StartDay=${day}&EndDay=${day}`,
       { headers: { AccessToken: accessToken } }
     );
 
@@ -94,13 +95,70 @@ serve(async (req) => {
     }
 
     const routeJson = await routeRes.json();
-    const rawHops = routeJson?.Data || [];
+    const routeData = routeJson?.Data;
+    console.log("[QuartixRoute] Response keys:", JSON.stringify(Object.keys(routeJson || {})));
+    console.log("[QuartixRoute] Data type:", typeof routeData,
+      Array.isArray(routeData) ? "array" : "not-array");
+
+    // The /vehicles/route endpoint returns Data as an object with Trips array
+    // Each trip contains trip-level data but NOT individual route hops
+    // We need to check if Data has route points or just trip summaries
+    let rawHops: any[] = [];
+
+    if (Array.isArray(routeData)) {
+      rawHops = routeData;
+    } else if (routeData && typeof routeData === "object") {
+      // Check all nested arrays - find one with lat/lng data (actual hops, not trip summaries)
+      for (const [key, val] of Object.entries(routeData)) {
+        if (Array.isArray(val) && (val as any[]).length > 0) {
+          const sample = (val as any[])[0];
+          // Check if this looks like route hops (has coordinates)
+          if (sample.Latitude || sample.Lat || sample.StartLat) {
+            // If items have StartLat/EndLat but no Latitude, these are trip summaries
+            // Convert trip start/end points into hops
+            if (!sample.Latitude && !sample.Lat && sample.StartLat) {
+              console.log(`[QuartixRoute] Found trip summaries in Data.${key}, converting to route points`);
+              for (const trip of (val as any[])) {
+                rawHops.push({
+                  Latitude: trip.StartLat,
+                  Longitude: trip.StartLong || trip.StartLng,
+                  Speed: trip.AvgSpeed || null,
+                  SpeedLimit: null,
+                  Heading: null,
+                  Time: trip.StartDateTime || trip.StartDateTimeLocal,
+                  Location: trip.StartLocation || null,
+                });
+                if (trip.EndLat) {
+                  rawHops.push({
+                    Latitude: trip.EndLat,
+                    Longitude: trip.EndLong || trip.EndLng,
+                    Speed: 0,
+                    SpeedLimit: null,
+                    Heading: null,
+                    Time: trip.EndDateTime || trip.EndDateTimeLocal,
+                    Location: trip.EndLocation || null,
+                  });
+                }
+              }
+            } else {
+              rawHops = val as any[];
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    if (rawHops.length === 0) {
+      console.log("[QuartixRoute] No hops found. Full response sample:",
+        JSON.stringify(routeJson).substring(0, 500));
+    }
 
     const route = rawHops.map((hop: any) => ({
-      latitude: hop.Latitude,
-      longitude: hop.Longitude,
+      latitude: hop.Latitude || hop.Lat,
+      longitude: hop.Longitude || hop.Lng || hop.Lon,
       heading: hop.Heading,
-      speed: hop.Speed != null ? hop.Speed * 1.60934 : null, // mph to kmh
+      speed: hop.Speed != null ? hop.Speed * 1.60934 : null,
       speedLimit: hop.SpeedLimit != null ? hop.SpeedLimit * 1.60934 : null,
       timestamp: hop.Time || hop.DateTime,
       location: hop.Location || hop.LocationText || null,
