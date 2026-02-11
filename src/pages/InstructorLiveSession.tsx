@@ -938,6 +938,7 @@ export default function InstructorLiveSession() {
               isParked={isParked}
               lastSeenLabel={lastSeenLabel}
               speedKmh={device.last_speed_kmh}
+              speedLimitKmh={device.last_speed_limit_kmh ?? speedLimitKmh}
               roadName={device.last_road_name}
               isReconnecting={isReconnecting}
               retryCount={retryCount}

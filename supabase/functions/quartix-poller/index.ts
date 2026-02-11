@@ -13,15 +13,30 @@ function parseLocationText(text: string | null | undefined): string | null {
   if (!text || typeof text !== "string") return null;
   const trimmed = text.trim().replace(/\.+$/, "").trim();
 
-  // "Travelling SE at 21.1 mph on 11 February 2026 10:15:32 GMT. Maunsell Way, Eastleigh, Hampshire"
-  const travelMatch = trimmed.match(/Travelling\s.+?\sGMT[\.\s]*(.+)/i);
-  if (travelMatch && travelMatch[1]) return travelMatch[1].trim().replace(/\.+$/, "").trim();
+  // "Travelling SE at 21.1 mph on 11 February 2026 10:15:32 GMT. Maunsell Way, Eastleigh"
+  const travelGmtMatch = trimmed.match(/Travelling\s.+?\sGMT[\.\s]+(.+)/i);
+  if (travelGmtMatch && travelGmtMatch[1]) return travelGmtMatch[1].trim().replace(/\.+$/, "").trim();
+
+  // "Travelling North at 30 mph near Maunsell Way, Eastleigh, Hampshire"
+  const travelNearMatch = trimmed.match(/Travelling\s.+?\snear\s+(.+)/i);
+  if (travelNearMatch && travelNearMatch[1]) return travelNearMatch[1].trim().replace(/\.+$/, "").replace(/\s+since\s.*/i, "").trim();
+
+  // "Travelling North at 30 mph on Maunsell Way, Eastleigh" (no date, just road)
+  const travelOnMatch = trimmed.match(/Travelling\s.+?\son\s+(?!\d{1,2}\s+\w+\s+\d{4})(.+)/i);
+  if (travelOnMatch && travelOnMatch[1]) return travelOnMatch[1].trim().replace(/\.+$/, "").trim();
+
+  // "Travelling North at 30 mph at Some Place" 
+  const travelAtMatch = trimmed.match(/Travelling\s.+?\bat\s+(?:\d[\d.]*\s*mph\s+)?(?:at\s+|on\s+|near\s+)?(.+)/i);
+  // Only use this if the captured part doesn't start with a speed number
+  if (travelAtMatch && travelAtMatch[1] && !/^\d/.test(travelAtMatch[1].trim())) {
+    return travelAtMatch[1].trim().replace(/\.+$/, "").replace(/\s+since\s.*/i, "").trim();
+  }
 
   // "Stationary with Ignition OFF at Some Place since 11 February 2026 08:36:06 GMT"
   const stationaryAtMatch = trimmed.match(/(?:Stationary|Stopped)\s.*?\bat\s+(.+?)\s+since\s/i);
   if (stationaryAtMatch && stationaryAtMatch[1]) return stationaryAtMatch[1].trim();
 
-  // "Stationary at Some Place since ..."
+  // Generic "at [Place] since" pattern
   const simpleAtMatch = trimmed.match(/\bat\s+(.+?)\s+since\s/i);
   if (simpleAtMatch && simpleAtMatch[1]) return simpleAtMatch[1].trim();
 
@@ -29,12 +44,12 @@ function parseLocationText(text: string | null | undefined): string | null {
   const nearMatch = trimmed.match(/near\s+(.+?)(?:\s+since\s|$)/i);
   if (nearMatch && nearMatch[1]) return nearMatch[1].trim().replace(/\.+$/, "").trim();
 
-  // If it contains a date pattern, try to extract text after it
+  // If it contains a date pattern, extract text after it
   const afterDateMatch = trimmed.match(/\d{1,2}\s+\w+\s+\d{4}\s+\d{2}:\d{2}:\d{2}\s+GMT[\.\s]*(.+)/i);
   if (afterDateMatch && afterDateMatch[1]) return afterDateMatch[1].trim().replace(/\.+$/, "").trim();
 
-  // Fallback: if text is short enough, use it as-is
-  if (trimmed.length <= 60) return trimmed;
+  // Fallback: if text is short enough and doesn't start with "Travelling", use as-is
+  if (trimmed.length <= 60 && !trimmed.toLowerCase().startsWith("travelling")) return trimmed;
   return null;
 }
 
