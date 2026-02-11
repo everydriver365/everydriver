@@ -101,11 +101,17 @@ export default function InstructorPricing() {
                     <CardTitle className="text-foreground">{plan.name}</CardTitle>
                     <p className="text-muted-foreground text-sm">{plan.description}</p>
                     <div className="pt-4">
-                      <span className="text-4xl font-bold text-foreground">
-                        £{plan.price_monthly}
-                      </span>
-                      {plan.price_monthly > 0 && (
-                        <span className="text-muted-foreground">/month</span>
+                      {plan.slug === 'enterprise' ? (
+                        <span className="text-3xl font-bold text-foreground">Contact Us</span>
+                      ) : plan.price_monthly === 0 ? (
+                        <span className="text-4xl font-bold text-foreground">Free</span>
+                      ) : (
+                        <>
+                          <span className="text-4xl font-bold text-foreground">
+                            £{plan.price_monthly}
+                          </span>
+                          <span className="text-muted-foreground">/month</span>
+                        </>
                       )}
                     </div>
                     {plan.price_monthly > 0 && (
