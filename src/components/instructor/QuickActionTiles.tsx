@@ -436,9 +436,9 @@ export function QuickActionTiles({
               whileTap={{ scale: 0.98 }}
             >
               <Link to={localTiles[0].route}>
-                 <div className="relative overflow-hidden bg-white rounded-xl p-4 shadow-[0_2px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-all">
+                 <div className="relative overflow-hidden bg-white rounded-none p-4 shadow-[0_2px_12px_rgba(20,37,66,0.12)] active:shadow-sm transition-all">
                   <div className="flex items-center gap-4">
-                    <div className={`relative ${largeIconTiles.has(localTiles[0].id) ? 'w-16 h-16' : 'w-14 h-14'} rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
+                    <div className={`relative ${largeIconTiles.has(localTiles[0].id) ? 'w-16 h-16' : 'w-14 h-14'} rounded-none ${customIconImages[localTiles[0].id] ? '' : tileStyles[0].iconBg} flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-primary/40 shadow-[0_0_12px_rgba(59,130,246,0.3)]`} style={customIconRadius[localTiles[0].id] ? { borderRadius: customIconRadius[localTiles[0].id] } : undefined}>
                       {(() => {
                         const Icon = getIcon(localTiles[0].icon);
                         const isSchedule = isScheduleAction(localTiles[0]);
@@ -475,14 +475,16 @@ export function QuickActionTiles({
                     <div className="relative flex-1 min-w-0">
                       <span className="font-semibold text-foreground text-lg">{localTiles[0].title}</span>
                        {/* Simple subtitle */}
-                       <p className="text-muted-foreground text-xs mt-0.5">
+                       <p className="text-primary/70 text-xs font-medium mt-0.5">
                          {isScheduleAction(localTiles[0]) && todayOverview && todayOverview.lessonCount > 0
                            ? `${todayOverview.lessonCount} lesson${todayOverview.lessonCount !== 1 ? 's' : ''} today`
                            : 'Tap to view'
                          }
                        </p>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground relative shrink-0" />
+                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center relative shrink-0">
+                      <ChevronRight className="h-3.5 w-3.5 text-white" />
+                    </div>
                   </div>
                   
 
@@ -507,9 +509,9 @@ export function QuickActionTiles({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + index * 0.03 }}
                     whileTap={{ scale: 0.97 }}
-                     className={`relative overflow-hidden ${style.bg} rounded-xl px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_12px_rgba(20,37,66,0.12)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.16)] active:shadow-sm transition-shadow`}
+                     className={`relative overflow-hidden ${style.bg} rounded-none px-3 py-2.5 flex items-center gap-2.5 shadow-[0_2px_12px_rgba(20,37,66,0.12)] hover:shadow-[0_4px_16px_rgba(20,37,66,0.16)] active:shadow-sm transition-shadow`}
                   >
-                    <div className={`relative ${largeIconTiles.has(action.id) ? 'w-12 h-12' : 'w-10 h-10'} rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
+                    <div className={`relative ${largeIconTiles.has(action.id) ? 'w-12 h-12' : 'w-10 h-10'} rounded-none ${customIconImages[action.id] ? '' : style.iconBg} flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-primary/30 shadow-[0_0_8px_rgba(59,130,246,0.2)]`} style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined}>
                       {customIconImages[action.id] ? <img src={customIconImages[action.id]} alt={action.title} className="w-full h-full object-cover" style={customIconRadius[action.id] ? { borderRadius: customIconRadius[action.id] } : undefined} /> : <Icon className={`h-4 w-4 ${style.iconColor}`} />}
                     </div>
                     {showBadge && (
