@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { PaymentQRModal } from "@/components/instructor/PaymentQRModal";
 import { TakePaymentSheet } from "@/components/instructor/TakePaymentSheet";
 import { PaymentHistory } from "@/components/instructor/PaymentHistory";
+import { InstructorPayoutHistory } from "@/components/instructor/InstructorPayoutHistory";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -258,6 +259,15 @@ export default function InstructorPay() {
           <div className="p-4">
             <PaymentHistory instructorId={instructorId} limit={5} />
           </div>
+        </motion.div>
+
+        {/* Payouts from Admin */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.42 }}
+        >
+          <InstructorPayoutHistory instructorId={instructorId} />
         </motion.div>
 
         {/* Pupil Balances */}

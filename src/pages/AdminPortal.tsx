@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, Calendar, CreditCard, 
-  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote
+  UserPlus, AlertTriangle, CheckCircle, Clock, TrendingUp, Plus, BookOpen, ImageIcon, Video, Megaphone, Gift, Sparkles, LayoutDashboard, MessageSquareQuote, MessageCircle, Type, Smartphone, Download, Globe, Layers, Rocket, Trophy, Award, Coins, HelpCircle, Zap, FileEdit, CalendarClock, Shield, Mail, Tag, MapPin, Search, StickyNote, PoundSterling
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useNavigate } from "react-router-dom";
@@ -46,6 +46,7 @@ import { SystemAlertsCard } from "@/components/admin/SystemAlertsCard";
 import { ComplianceDashboard } from "@/components/admin/ComplianceDashboard";
 import { AdminBookingsManager } from "@/components/admin/AdminBookingsManager";
 import { AdminPaymentsManager } from "@/components/admin/AdminPaymentsManager";
+import { AdminInstructorPayouts } from "@/components/admin/AdminInstructorPayouts";
 
 import { AdminSettingsGrid } from "@/components/admin/AdminSettingsGrid";
 import { SubscribersManager } from "@/components/admin/SubscribersManager";
@@ -154,6 +155,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   // Analytics
   analytics: { title: "Revenue Analytics", group: "Dashboard", icon: TrendingUp },
   commission: { title: "Commission Earned", group: "Dashboard", icon: Coins },
+  "instructor-payouts": { title: "Instructor Payouts", group: "Finance & Payments", icon: PoundSterling },
 };
 
 export default function AdminPortal() {
@@ -862,6 +864,15 @@ export default function AdminPortal() {
             <AdminBackButton onClick={() => setActiveSection("overview")} />
             <AdminSectionNotes sectionKey="commission" className="mb-4" />
             <CommissionDashboard />
+          </motion.div>
+        );
+
+      case "instructor-payouts":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="instructor-payouts" className="mb-4" />
+            <AdminInstructorPayouts />
           </motion.div>
         );
 

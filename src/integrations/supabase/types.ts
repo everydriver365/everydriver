@@ -3672,6 +3672,51 @@ export type Database = {
           },
         ]
       }
+      instructor_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          instructor_id: string
+          notes: string | null
+          payment_ids: string[]
+          transferred_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          instructor_id: string
+          notes?: string | null
+          payment_ids?: string[]
+          transferred_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          notes?: string | null
+          payment_ids?: string[]
+          transferred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_payouts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_payouts_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_referral_settings: {
         Row: {
           created_at: string | null
@@ -6181,8 +6226,11 @@ export type Database = {
           instructor_id: string
           notes: string | null
           payment_method: string | null
+          payout_id: string | null
+          payout_status: string | null
           pupil_id: string
           recorded_at: string
+          transferred_at: string | null
         }
         Insert: {
           amount: number
@@ -6192,8 +6240,11 @@ export type Database = {
           instructor_id: string
           notes?: string | null
           payment_method?: string | null
+          payout_id?: string | null
+          payout_status?: string | null
           pupil_id: string
           recorded_at?: string
+          transferred_at?: string | null
         }
         Update: {
           amount?: number
@@ -6203,8 +6254,11 @@ export type Database = {
           instructor_id?: string
           notes?: string | null
           payment_method?: string | null
+          payout_id?: string | null
+          payout_status?: string | null
           pupil_id?: string
           recorded_at?: string
+          transferred_at?: string | null
         }
         Relationships: [
           {
