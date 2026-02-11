@@ -8,52 +8,42 @@ const corsHeaders = {
 
 const QUARTIX_BASE = "https://qws.quartix.net/v2/api";
 
-// Parse clean road/location name from Quartix LocationText
+// ========== Utilities ==========
+
 function parseLocationText(text: string | null | undefined): string | null {
   if (!text || typeof text !== "string") return null;
   const trimmed = text.trim().replace(/\.+$/, "").trim();
 
-  // "Travelling SE at 21.1 mph on 11 February 2026 10:15:32 GMT. Maunsell Way, Eastleigh"
   const travelGmtMatch = trimmed.match(/Travelling\s.+?\sGMT[\.\s]+(.+)/i);
-  if (travelGmtMatch && travelGmtMatch[1]) return travelGmtMatch[1].trim().replace(/\.+$/, "").trim();
+  if (travelGmtMatch?.[1]) return travelGmtMatch[1].trim().replace(/\.+$/, "").trim();
 
-  // "Travelling North at 30 mph near Maunsell Way, Eastleigh, Hampshire"
   const travelNearMatch = trimmed.match(/Travelling\s.+?\snear\s+(.+)/i);
-  if (travelNearMatch && travelNearMatch[1]) return travelNearMatch[1].trim().replace(/\.+$/, "").replace(/\s+since\s.*/i, "").trim();
+  if (travelNearMatch?.[1]) return travelNearMatch[1].trim().replace(/\.+$/, "").replace(/\s+since\s.*/i, "").trim();
 
-  // "Travelling North at 30 mph on Maunsell Way, Eastleigh" (no date, just road)
   const travelOnMatch = trimmed.match(/Travelling\s.+?\son\s+(?!\d{1,2}\s+\w+\s+\d{4})(.+)/i);
-  if (travelOnMatch && travelOnMatch[1]) return travelOnMatch[1].trim().replace(/\.+$/, "").trim();
+  if (travelOnMatch?.[1]) return travelOnMatch[1].trim().replace(/\.+$/, "").trim();
 
-  // "Travelling North at 30 mph at Some Place" 
   const travelAtMatch = trimmed.match(/Travelling\s.+?\bat\s+(?:\d[\d.]*\s*mph\s+)?(?:at\s+|on\s+|near\s+)?(.+)/i);
-  // Only use this if the captured part doesn't start with a speed number
-  if (travelAtMatch && travelAtMatch[1] && !/^\d/.test(travelAtMatch[1].trim())) {
+  if (travelAtMatch?.[1] && !/^\d/.test(travelAtMatch[1].trim())) {
     return travelAtMatch[1].trim().replace(/\.+$/, "").replace(/\s+since\s.*/i, "").trim();
   }
 
-  // "Stationary with Ignition OFF at Some Place since 11 February 2026 08:36:06 GMT"
   const stationaryAtMatch = trimmed.match(/(?:Stationary|Stopped)\s.*?\bat\s+(.+?)\s+since\s/i);
-  if (stationaryAtMatch && stationaryAtMatch[1]) return stationaryAtMatch[1].trim();
+  if (stationaryAtMatch?.[1]) return stationaryAtMatch[1].trim();
 
-  // Generic "at [Place] since" pattern
   const simpleAtMatch = trimmed.match(/\bat\s+(.+?)\s+since\s/i);
-  if (simpleAtMatch && simpleAtMatch[1]) return simpleAtMatch[1].trim();
+  if (simpleAtMatch?.[1]) return simpleAtMatch[1].trim();
 
-  // "near Some Road, Town" pattern
   const nearMatch = trimmed.match(/near\s+(.+?)(?:\s+since\s|$)/i);
-  if (nearMatch && nearMatch[1]) return nearMatch[1].trim().replace(/\.+$/, "").trim();
+  if (nearMatch?.[1]) return nearMatch[1].trim().replace(/\.+$/, "").trim();
 
-  // If it contains a date pattern, extract text after it
   const afterDateMatch = trimmed.match(/\d{1,2}\s+\w+\s+\d{4}\s+\d{2}:\d{2}:\d{2}\s+GMT[\.\s]*(.+)/i);
-  if (afterDateMatch && afterDateMatch[1]) return afterDateMatch[1].trim().replace(/\.+$/, "").trim();
+  if (afterDateMatch?.[1]) return afterDateMatch[1].trim().replace(/\.+$/, "").trim();
 
-  // Fallback: if text is short enough and doesn't start with "Travelling", use as-is
   if (trimmed.length <= 60 && !trimmed.toLowerCase().startsWith("travelling")) return trimmed;
   return null;
 }
 
-// Parse ignition status from LocationText when pos.Ignition is null
 function parseIgnitionStatus(text: string | null | undefined, speedKmh: number | null): boolean | null {
   if (speedKmh && speedKmh > 2) return true;
   if (!text || typeof text !== "string") return null;
@@ -63,60 +53,18 @@ function parseIgnitionStatus(text: string | null | undefined, speedKmh: number |
   return null;
 }
 
-// Reverse geocode to get actual road name from OSM Nominatim
-async function reverseGeocodeRoadName(lat: number, lng: number): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
-      { headers: { "User-Agent": "EveryDriver/1.0" } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const addr = data?.address;
-    if (!addr) return null;
-    // Prefer road, then pedestrian, then neighbourhood
-    const road = addr.road || addr.pedestrian || addr.neighbourhood;
-    if (!road) return null;
-    // Append town/city for context
-    const town = addr.village || addr.town || addr.city || addr.suburb;
-    return town ? `${road}, ${town}` : road;
-  } catch (err) {
-    console.warn("[QuartixPoller] Reverse geocode failed:", err);
-    return null;
-  }
-}
-
-// Check if a parsed location looks like a business name rather than a road
 function looksLikeBusinessName(name: string): boolean {
   const businessPatterns = /\b(ltd|llc|inc|plc|limited|corp|group|solutions|services|consulting|holdings)\b/i;
-  const hasNumbers = /\(\d+\)/.test(name); // e.g. "(365)"
-  return businessPatterns.test(name) || hasNumbers;
+  return businessPatterns.test(name) || /\(\d+\)/.test(name);
 }
 
-// Fetch speed limit from OpenStreetMap Overpass API
-async function fetchSpeedLimit(lat: number, lng: number): Promise<number | null> {
-  try {
-    const radius = 30;
-    const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})["highway"]["maxspeed"];out tags 1;`;
-    const res = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `data=${encodeURIComponent(query)}`,
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const way = data?.elements?.[0];
-    if (!way?.tags?.maxspeed) return null;
-    const raw = way.tags.maxspeed;
-    const match = raw.match(/(\d+)/);
-    if (!match) return null;
-    const value = parseInt(match[1], 10);
-    if (raw.toLowerCase().includes("mph")) return value * 1.60934;
-    return value;
-  } catch (err) {
-    console.warn("[QuartixPoller] Speed limit fetch failed:", err);
-    return null;
-  }
+function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 async function authenticate(): Promise<string> {
@@ -155,20 +103,49 @@ async function authenticate(): Promise<string> {
   return token;
 }
 
-// Haversine distance in meters
-function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371000;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+// ========== Deferred / Background Operations ==========
+
+async function reverseGeocodeRoadName(lat: number, lng: number): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      { headers: { "User-Agent": "EveryDriver/1.0" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const addr = data?.address;
+    if (!addr) return null;
+    const road = addr.road || addr.pedestrian || addr.neighbourhood;
+    if (!road) return null;
+    const town = addr.village || addr.town || addr.city || addr.suburb;
+    return town ? `${road}, ${town}` : road;
+  } catch { return null; }
 }
 
-// Check geofences for a position
+async function fetchSpeedLimit(lat: number, lng: number): Promise<number | null> {
+  try {
+    const radius = 30;
+    const query = `[out:json][timeout:5];way(around:${radius},${lat},${lng})["highway"]["maxspeed"];out tags 1;`;
+    const res = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `data=${encodeURIComponent(query)}`,
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const way = data?.elements?.[0];
+    if (!way?.tags?.maxspeed) return null;
+    const raw = way.tags.maxspeed;
+    const match = raw.match(/(\d+)/);
+    if (!match) return null;
+    const value = parseInt(match[1], 10);
+    if (raw.toLowerCase().includes("mph")) return value * 1.60934;
+    return value;
+  } catch { return null; }
+}
+
 async function checkGeofences(
-  supabase: any, instructorId: string, deviceId: string,
-  lat: number, lng: number
+  supabase: any, instructorId: string, deviceId: string, lat: number, lng: number
 ) {
   try {
     const { data: fences } = await supabase
@@ -176,44 +153,34 @@ async function checkGeofences(
       .select("id, latitude, longitude, radius_m, alert_on_enter, alert_on_exit, active_hours_start, active_hours_end")
       .eq("instructor_id", instructorId)
       .eq("is_active", true);
-
     if (!fences || fences.length === 0) return;
 
-    // Get recent alerts for this device to avoid duplicates (last 10 min)
     const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const { data: recentAlerts } = await supabase
       .from("geofence_alerts")
       .select("geofence_id, alert_type")
       .eq("device_id", deviceId)
       .gte("triggered_at", tenMinAgo);
-
     const recentSet = new Set((recentAlerts || []).map((a: any) => `${a.geofence_id}:${a.alert_type}`));
 
     for (const fence of fences) {
       const dist = haversineM(lat, lng, fence.latitude, fence.longitude);
       const inside = dist <= fence.radius_m;
-
-      // Check active hours
       if (fence.active_hours_start && fence.active_hours_end) {
         const now = new Date();
         const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
         if (hhmm < fence.active_hours_start || hhmm > fence.active_hours_end) continue;
       }
-
       if (inside && fence.alert_on_enter && !recentSet.has(`${fence.id}:enter`)) {
         await supabase.from("geofence_alerts").insert({
           geofence_id: fence.id, device_id: deviceId, instructor_id: instructorId,
           alert_type: "enter", latitude: lat, longitude: lng,
         });
       } else if (!inside && fence.alert_on_exit && !recentSet.has(`${fence.id}:exit`)) {
-        // Only alert exit if device was recently inside (check last alert was enter)
         const { data: lastAlert } = await supabase
-          .from("geofence_alerts")
-          .select("alert_type")
-          .eq("geofence_id", fence.id)
-          .eq("device_id", deviceId)
-          .order("triggered_at", { ascending: false })
-          .limit(1);
+          .from("geofence_alerts").select("alert_type")
+          .eq("geofence_id", fence.id).eq("device_id", deviceId)
+          .order("triggered_at", { ascending: false }).limit(1);
         if (lastAlert?.[0]?.alert_type === "enter") {
           await supabase.from("geofence_alerts").insert({
             geofence_id: fence.id, device_id: deviceId, instructor_id: instructorId,
@@ -227,57 +194,42 @@ async function checkGeofences(
   }
 }
 
-// Check for unauthorised movement outside working hours
 async function checkUnauthorisedMovement(
   supabase: any, instructorId: string, deviceId: string,
-  lat: number, lng: number, speedKmh: number, roadName: string | null,
-  ignition: boolean | null
+  lat: number, lng: number, speedKmh: number, roadName: string | null, ignition: boolean | null
 ) {
   try {
-    if (!ignition && (!speedKmh || speedKmh < 2)) return; // No movement
-
+    if (!ignition && (!speedKmh || speedKmh < 2)) return;
     const { data: config } = await supabase
       .from("instructor_tracking_config")
       .select("working_hours_start, working_hours_end, working_days")
-      .eq("instructor_id", instructorId)
-      .maybeSingle();
-
+      .eq("instructor_id", instructorId).maybeSingle();
     if (!config) return;
 
     const now = new Date();
-    const dayOfWeek = now.getDay(); // 0=Sun
+    const dayOfWeek = now.getDay();
     const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:00`;
-
     const workingDays: number[] = config.working_days || [1, 2, 3, 4, 5, 6];
     const start = config.working_hours_start || "07:00:00";
     const end = config.working_hours_end || "20:00:00";
+    if (workingDays.includes(dayOfWeek) && hhmm >= start && hhmm <= end) return;
 
-    const isWorkingDay = workingDays.includes(dayOfWeek);
-    const isWorkingHour = hhmm >= start && hhmm <= end;
-
-    if (isWorkingDay && isWorkingHour) return; // Within working hours
-
-    // Check if we already alerted in last 30 min for this device
     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
     const { data: recent } = await supabase
-      .from("movement_alerts")
-      .select("id")
-      .eq("device_id", deviceId)
-      .gte("detected_at", thirtyMinAgo)
-      .limit(1);
-
+      .from("movement_alerts").select("id")
+      .eq("device_id", deviceId).gte("detected_at", thirtyMinAgo).limit(1);
     if (recent && recent.length > 0) return;
 
     await supabase.from("movement_alerts").insert({
       device_id: deviceId, instructor_id: instructorId,
       latitude: lat, longitude: lng, speed_kmh: speedKmh, road_name: roadName,
     });
-
-    console.log(`[QuartixPoller] Unauthorised movement detected for device ${deviceId}`);
   } catch (err) {
     console.warn("[QuartixPoller] Movement check error:", err);
   }
 }
+
+// ========== Main Handler ==========
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -302,7 +254,7 @@ serve(async (req) => {
 
     const qHeaders = { AccessToken: accessToken };
 
-    // Step 1: Auto-sync vehicles
+    // ===== Step 1: Auto-sync vehicles =====
     const vehiclesRes = await fetch(`${QUARTIX_BASE}/vehicles`, { headers: qHeaders });
     let quartixVehicles: any[] = [];
     if (vehiclesRes.ok) {
@@ -337,17 +289,10 @@ serve(async (req) => {
         quartix_vehicle_id: vehicleId,
         is_active: true,
       });
-
       if (!insertErr) { newDevicesRegistered++; existingVehicleIds.add(vehicleId); }
     }
 
-    // Refresh devices
-    const { data: devices } = await supabase
-      .from("gps_devices")
-      .select("id, instructor_id, quartix_vehicle_id, quartix_driver_id, current_session_id, last_latitude, last_longitude")
-      .eq("tracking_provider", "quartix");
-
-    // Step 2: Fetch live positions
+    // ===== Step 2: Fetch live positions & CORE UPDATE =====
     const liveRes = await fetch(`${QUARTIX_BASE}/vehicles/live`, { headers: qHeaders });
     let processed = 0;
     let skipped = 0;
@@ -358,44 +303,34 @@ serve(async (req) => {
 
       for (const pos of positions) {
         const vehicleId = String(pos.VehicleId || pos.VehicleID);
-        const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
+
+        // CRITICAL: Fetch device fresh for EACH vehicle to get latest current_session_id
+        const { data: device } = await supabase
+          .from("gps_devices")
+          .select("id, instructor_id, quartix_vehicle_id, quartix_driver_id, current_session_id, last_latitude, last_longitude")
+          .eq("quartix_vehicle_id", vehicleId)
+          .eq("tracking_provider", "quartix")
+          .maybeSingle();
+
         if (!device) { skipped++; continue; }
 
-        // Log raw Quartix data for debugging
-        console.log(`[QuartixPoller] Raw Quartix data: VehicleId=${vehicleId}, Speed=${pos.Speed}, Lat=${pos.Latitude}, Lng=${pos.Longitude}, Ignition=${pos.Ignition}, LocationText=${pos.LocationText?.substring(0, 80)}`);
+        if (!pos.Latitude || !pos.Longitude) { skipped++; continue; }
 
-        let speedLimitKmh: number | null = null;
-        if (pos.Latitude && pos.Longitude) {
-          speedLimitKmh = await fetchSpeedLimit(pos.Latitude, pos.Longitude);
-        }
-
-        // Quartix Speed is in mph - convert to km/h
-        let speedKmh = pos.Speed != null ? pos.Speed * 1.60934 : null;
-
-        let parsedRoadName = parseLocationText(pos.LocationText);
-        
-        // If parsed name looks like a business, use reverse geocoding instead
-        if (pos.Latitude && pos.Longitude && (!parsedRoadName || looksLikeBusinessName(parsedRoadName))) {
-          const geoRoadName = await reverseGeocodeRoadName(pos.Latitude, pos.Longitude);
-          if (geoRoadName) parsedRoadName = geoRoadName;
-        }
-        
+        // --- Parse speed (Quartix Speed is mph -> km/h) ---
+        let speedKmh = pos.Speed != null ? pos.Speed * 1.60934 : 0;
         const parsedIgnition = pos.Ignition ?? parseIgnitionStatus(pos.LocationText, speedKmh);
 
-        // Force speed to 0 when ignition is off or LocationText says stationary
-        // Quartix sometimes reports stale speed values when the vehicle is parked
+        // Force speed to 0 when ignition is off or text says stationary
         if (parsedIgnition === false) {
           speedKmh = 0;
         }
 
-        // Also force speed to 0 if position hasn't changed (GPS jitter while stationary)
-        if (device.last_latitude && device.last_longitude && pos.Latitude && pos.Longitude) {
-          const movedM = haversineM(device.last_latitude, device.last_longitude, pos.Latitude, pos.Longitude);
-          if (movedM < 5) {
-            speedKmh = 0;
-          }
-        }
+        // --- Parse road name (fast, string-only) ---
+        let parsedRoadName = parseLocationText(pos.LocationText);
 
+        console.log(`[QuartixPoller] Vehicle=${vehicleId} | speed=${speedKmh.toFixed(1)}kmh | ignition=${parsedIgnition} | session=${device.current_session_id || 'none'} | pos=${pos.Latitude},${pos.Longitude}`);
+
+        // ===== CORE UPDATE: Update gps_devices immediately =====
         const { error: updateErr } = await supabase.from("gps_devices").update({
           last_latitude: pos.Latitude,
           last_longitude: pos.Longitude,
@@ -404,73 +339,77 @@ serve(async (req) => {
           last_seen_at: new Date().toISOString(),
           last_ignition_status: parsedIgnition,
           last_road_name: parsedRoadName || null,
-          ...(speedLimitKmh !== null ? { last_speed_limit_kmh: speedLimitKmh } : {}),
         }).eq("id", device.id);
 
-        if (!updateErr) {
-          processed++;
+        if (updateErr) {
+          console.error(`[QuartixPoller] Device update FAILED for ${device.id}:`, JSON.stringify(updateErr));
+          skipped++;
+          continue;
+        }
+        processed++;
 
-          // Check geofences and unauthorised movement
-          if (pos.Latitude && pos.Longitude) {
-            await checkGeofences(supabase, device.instructor_id, device.id, pos.Latitude, pos.Longitude);
-            await checkUnauthorisedMovement(
-              supabase, device.instructor_id, device.id,
-              pos.Latitude, pos.Longitude, speedKmh || 0,
-              parsedRoadName || null, parsedIgnition
-            );
+        // ===== GPS POINT RECORDING (if session active) =====
+        if (device.current_session_id && pos.Latitude && pos.Longitude) {
+          const { error: gpsInsertErr } = await supabase.from("telematics_gps_points").insert({
+            telematics_id: device.current_session_id,
+            latitude: pos.Latitude,
+            longitude: pos.Longitude,
+            speed_kmh: speedKmh,
+            heading: pos.Heading || 0,
+            road_name: parsedRoadName || null,
+            recorded_at: new Date().toISOString(),
+          });
 
-            // Record GPS point during active sessions for tracking line + distance
-            if (device.current_session_id) {
-              console.log(`[QuartixPoller] Session ${device.current_session_id} active for device ${device.id}, inserting GPS point: ${pos.Latitude}, ${pos.Longitude}, speed=${speedKmh}`);
-              
-              // Insert GPS point
-              const { error: gpsInsertErr } = await supabase.from("telematics_gps_points").insert({
-                telematics_id: device.current_session_id,
-                latitude: pos.Latitude,
-                longitude: pos.Longitude,
-                speed_kmh: speedKmh || 0,
-                heading: pos.Heading || 0,
-                road_name: parsedRoadName || null,
-                speed_limit_kmh: speedLimitKmh,
-                recorded_at: new Date().toISOString(),
+          if (gpsInsertErr) {
+            console.error("[QuartixPoller] GPS point insert FAILED:", JSON.stringify(gpsInsertErr));
+          }
+
+          // Distance accumulation (3m minimum, 2km max per segment)
+          if (device.last_latitude && device.last_longitude) {
+            const segmentM = haversineM(device.last_latitude, device.last_longitude, pos.Latitude, pos.Longitude);
+            if (segmentM > 3 && segmentM < 2000) {
+              const segmentKm = segmentM / 1000;
+              const { error: rpcErr } = await supabase.rpc("increment_total_distance", {
+                p_id: device.current_session_id,
+                p_distance: segmentKm,
               });
-
-              if (gpsInsertErr) {
-                console.error("[QuartixPoller] GPS point insert FAILED:", JSON.stringify(gpsInsertErr));
-              } else {
-                console.log("[QuartixPoller] GPS point inserted successfully");
-              }
-
-              // Update total distance using RPC to avoid race conditions
-              if (device.last_latitude && device.last_longitude) {
-                const segmentM = haversineM(device.last_latitude, device.last_longitude, pos.Latitude, pos.Longitude);
-                if (segmentM > 5 && segmentM < 2000) {
-                  const segmentKm = segmentM / 1000;
-                  const { error: rpcErr } = await supabase.rpc("increment_total_distance", {
-                    p_id: device.current_session_id,
-                    p_distance: segmentKm,
-                  });
-                  if (rpcErr) {
-                    console.error("[QuartixPoller] Distance increment error:", JSON.stringify(rpcErr));
-                  } else {
-                    console.log(`[QuartixPoller] Distance incremented by ${segmentKm.toFixed(3)} km`);
-                  }
-                }
-              }
-            } else {
-              // Log when no session is active (for debugging)
-              if (processed === 1) {
-                console.log(`[QuartixPoller] No active session for device ${device.id}`);
+              if (rpcErr) {
+                console.error("[QuartixPoller] Distance increment error:", JSON.stringify(rpcErr));
               }
             }
           }
-        } else {
-          skipped++;
+        }
+
+        // ===== DEFERRED OPS: Run AFTER core update, non-blocking =====
+        // These run in the background and don't block the next vehicle
+        try {
+          // Reverse geocode if road name looks like a business or is missing
+          if (!parsedRoadName || looksLikeBusinessName(parsedRoadName)) {
+            const geoRoadName = await reverseGeocodeRoadName(pos.Latitude, pos.Longitude);
+            if (geoRoadName) {
+              await supabase.from("gps_devices").update({ last_road_name: geoRoadName }).eq("id", device.id);
+            }
+          }
+
+          // Geofence + unauthorised movement checks
+          await checkGeofences(supabase, device.instructor_id, device.id, pos.Latitude, pos.Longitude);
+          await checkUnauthorisedMovement(
+            supabase, device.instructor_id, device.id,
+            pos.Latitude, pos.Longitude, speedKmh, parsedRoadName, parsedIgnition
+          );
+
+          // Speed limit (only update DB, don't block core update)
+          const speedLimitKmh = await fetchSpeedLimit(pos.Latitude, pos.Longitude);
+          if (speedLimitKmh !== null) {
+            await supabase.from("gps_devices").update({ last_speed_limit_kmh: speedLimitKmh }).eq("id", device.id);
+          }
+        } catch (deferredErr) {
+          console.warn("[QuartixPoller] Deferred ops error (non-critical):", deferredErr);
         }
       }
     }
 
-    // Step 3: Driving style scores + timesheets
+    // ===== Step 3: Driving style scores + timesheets =====
     const today = new Date().toISOString().split("T")[0];
     const scoresRes = await fetch(
       `${QUARTIX_BASE}/vehicles/tripsummary?StartDay=${today}&EndDay=${today}&Include=drivingStyle&GroupBy=vehicle`,
@@ -481,6 +420,12 @@ serve(async (req) => {
       const scoresJson = await scoresRes.json();
       const summaries = scoresJson?.Data || [];
 
+      // Fetch devices once for score matching
+      const { data: allDevices } = await supabase
+        .from("gps_devices")
+        .select("id, instructor_id, quartix_vehicle_id, quartix_driver_id")
+        .eq("tracking_provider", "quartix");
+
       const timesheetMap = new Map<string, {
         instructor_id: string; quartix_vehicle_id: string;
         first_start: string | null; last_end: string | null;
@@ -489,7 +434,7 @@ serve(async (req) => {
 
       for (const summary of summaries) {
         const vehicleId = String(summary.VehicleId || summary.VehicleID);
-        const device = (devices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
+        const device = (allDevices || []).find((d: any) => d.quartix_vehicle_id === vehicleId);
         if (!device) continue;
 
         const ds = summary.DrivingStyle;
@@ -544,7 +489,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, processed, skipped, registered_devices: devices?.length || 0, new_devices: newDevicesRegistered }),
+      JSON.stringify({ success: true, processed, skipped, registered_devices: newDevicesRegistered }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
