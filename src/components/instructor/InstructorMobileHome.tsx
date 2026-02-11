@@ -21,6 +21,8 @@ import {
   CheckCircle,
   Calendar,
   Mail,
+  Target,
+  Timer,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
@@ -337,24 +339,88 @@ export function InstructorMobileHome({
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
 
-      {/* Ready to Teach tile — overlapping hero */}
-      <div className="relative -mt-8 mx-4">
-        <ReadyToTeachTile
-          firstName={firstName}
-          profileImageUrl={instructor?.profile_image_url}
-          lessonCount={todayOverview?.lessonCount || 0}
-          totalHours={todayOverview?.totalHours || 0}
-          expectedEarnings={todayOverview?.expectedEarnings || 0}
-          progressPercent={weeklyGoals?.progressPercent || 0}
-          temperature={currentWeather?.temperature ?? null}
-          weatherIcon={currentWeather?.icon || "Cloud"}
-          weatherDesc={currentWeather?.description || ""}
-          nextMinutesUntil={nextLesson?.minutesUntil}
-          nextPupilFirstName={nextLesson?.pupilName}
-          nextLessonTime={nextLesson?.startTime ? nextLesson.startTime.substring(0, 5) : undefined}
-          nextPostcode={nextLesson?.pickupPostcode ?? undefined}
-          isOnline={isGPSConnected}
-        />
+      {/* Gradient Overlap Card */}
+      <div className="relative -mt-10 mx-4">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="bg-card rounded-3xl shadow-xl overflow-hidden"
+        >
+          {/* Gradient header */}
+          <div className="relative bg-gradient-to-br from-primary to-primary/80 px-4 py-4 text-white">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+              <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+            </div>
+            <div className="relative flex items-center gap-3">
+              {instructor?.profile_image_url ? (
+                <img src={instructor.profile_image_url} alt={firstName} className="h-11 w-11 rounded-full object-cover ring-2 ring-white/30" />
+              ) : (
+                <div className="h-11 w-11 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
+                  {firstName[0]}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-bold truncate">{getGreeting(firstName)}</h2>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                    isGPSConnected
+                      ? "bg-emerald-500/30 text-emerald-100"
+                      : "bg-white/20 text-white/70"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isGPSConnected ? "bg-emerald-400 animate-pulse" : "bg-white/50"}`} />
+                    {isGPSConnected ? "Online" : "Offline"}
+                  </span>
+                  {currentWeather?.temperature != null && (
+                    <span className="text-white/70 text-xs flex items-center gap-1">
+                      <WeatherIcon icon={currentWeather.icon || "Cloud"} className="h-3.5 w-3.5 text-white/70" />
+                      {currentWeather.temperature}°C
+                      {currentWeather.description ? ` • ${currentWeather.description}` : ""}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Stats grid */}
+          <div className="p-4">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-blue-500/10">
+                <BookOpen className="h-4 w-4 text-blue-500" />
+                <div>
+                  <p className="text-sm font-bold text-foreground leading-none">{todayOverview?.lessonCount || 0}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Lessons</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-emerald-500/10">
+                <PoundSterling className="h-4 w-4 text-emerald-500" />
+                <div>
+                  <p className="text-sm font-bold text-foreground leading-none">£{todayOverview?.expectedEarnings || 0}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Expected</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-violet-500/10">
+                <Target className="h-4 w-4 text-violet-500" />
+                <div>
+                  <p className="text-sm font-bold text-foreground leading-none">{Math.min(weeklyGoals?.progressPercent || 0, 100)}%</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Weekly</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-amber-500/10">
+                <Timer className="h-4 w-4 text-amber-500" />
+                <div>
+                  <p className="text-sm font-bold text-foreground leading-none">
+                    {nextLesson?.startTime ? `${nextLesson.startTime.substring(0, 5)}${nextLesson.pickupPostcode ? ` • ${nextLesson.pickupPostcode}` : ""}` : "--"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{nextLesson?.pupilName || "Next up"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
       {/* Job Offers & Messages buttons - right under hero */}
       <div className="px-4 flex flex-col gap-2 mt-3">
