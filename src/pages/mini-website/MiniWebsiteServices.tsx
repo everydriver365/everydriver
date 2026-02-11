@@ -5,8 +5,9 @@ import { MiniWebsiteLayout } from "@/components/mini-website/MiniWebsiteLayout";
 import { PageContentRenderer } from "@/components/mini-website/PageContentRenderer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock, CheckCircle2 } from "lucide-react";
+import { Clock, CheckCircle2, Tag, X, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -31,6 +32,10 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
   const { page, instructor, loading, notFound } = useWebsitePage(slug, "services");
   const links = useMiniWebsiteLinks(slug);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<{ type: string; value: number; code: string } | null>(null);
+  const [validating, setValidating] = useState(false);
+  const [discountError, setDiscountError] = useState("");
 
   useEffect(() => {
     if (instructor?.id) {
@@ -44,6 +49,38 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
         });
     }
   }, [instructor?.id]);
+
+  const validateDiscount = async () => {
+    if (!discountCode.trim() || !instructor?.id) return;
+    setValidating(true);
+    setDiscountError("");
+    try {
+      const { data, error } = await supabase
+        .from("instructor_discount_codes")
+        .select("*")
+        .eq("instructor_id", instructor.id)
+        .eq("code", discountCode.toUpperCase().trim())
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) { setDiscountError("Invalid code"); setValidating(false); return; }
+      if (data.valid_until && new Date(data.valid_until) < new Date()) { setDiscountError("Code expired"); setValidating(false); return; }
+      if (data.valid_from && new Date(data.valid_from) > new Date()) { setDiscountError("Code not yet valid"); setValidating(false); return; }
+      if (data.max_uses && (data.times_used ?? 0) >= data.max_uses) { setDiscountError("Code fully redeemed"); setValidating(false); return; }
+
+      setAppliedDiscount({ type: data.discount_type, value: data.discount_value, code: data.code });
+    } catch {
+      setDiscountError("Could not validate code");
+    }
+    setValidating(false);
+  };
+
+  const getDiscountedPrice = (price: number) => {
+    if (!appliedDiscount) return price;
+    if (appliedDiscount.type === "percentage") return Math.max(0, price - (price * appliedDiscount.value / 100));
+    return Math.max(0, price - appliedDiscount.value);
+  };
 
   if (loading) {
     return (
@@ -97,6 +134,41 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
           textColor={textColor}
         />
 
+        {/* Discount Code Input */}
+        {courses.length > 0 && (
+          <div className="rounded-lg border p-4" style={{ borderColor: `${primaryColor}33` }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Tag className="h-4 w-4" style={{ color: primaryColor }} />
+              <span className="text-sm font-medium">Have a discount code?</span>
+            </div>
+            {appliedDiscount ? (
+              <div className="flex items-center gap-2 rounded-md bg-green-50 p-2">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <span className="text-sm text-green-700 font-medium">
+                  {appliedDiscount.code} applied — {appliedDiscount.type === "percentage" ? `${appliedDiscount.value}% off` : `£${appliedDiscount.value} off`}
+                </span>
+                <Button variant="ghost" size="icon" className="h-6 w-6 ml-auto" onClick={() => { setAppliedDiscount(null); setDiscountCode(""); }}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  value={discountCode}
+                  onChange={(e) => { setDiscountCode(e.target.value.toUpperCase()); setDiscountError(""); }}
+                  placeholder="Enter code"
+                  className="font-mono text-sm"
+                  onKeyDown={(e) => e.key === "Enter" && validateDiscount()}
+                />
+                <Button size="sm" onClick={validateDiscount} disabled={validating || !discountCode.trim()} style={{ backgroundColor: primaryColor }} className="text-white">
+                  {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                </Button>
+              </div>
+            )}
+            {discountError && <p className="text-xs text-red-500 mt-1">{discountError}</p>}
+          </div>
+        )}
+
         {/* Courses Grid */}
         {courses.length > 0 && (
           <div>
@@ -126,9 +198,14 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
                           {course.course_hours} hours
                         </span>
                         {course.discounted_price && (
-                          <span className="text-xl font-bold" style={{ color: primaryColor }}>
-                            £{course.discounted_price}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {appliedDiscount && getDiscountedPrice(course.discounted_price) < course.discounted_price && (
+                              <span className="text-sm line-through text-gray-400">£{course.discounted_price}</span>
+                            )}
+                            <span className="text-xl font-bold" style={{ color: primaryColor }}>
+                              £{appliedDiscount ? getDiscountedPrice(course.discounted_price).toFixed(2) : course.discounted_price}
+                            </span>
+                          </div>
                         )}
                       </div>
                       {course.discounted_price && (instructor as any).klarna_enabled && (
