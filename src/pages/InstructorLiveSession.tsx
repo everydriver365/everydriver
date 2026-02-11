@@ -24,6 +24,8 @@ import { SessionStartPanel } from "@/components/instructor/tracking/SessionStart
  import { FloatingSessionTimer } from "@/components/instructor/tracking/FloatingSessionTimer";
 import { TrackerSelectorTile } from "@/components/instructor/tracking/TrackerSelectorTile";
 import { MobileTrackingSettingsBanner } from "@/components/instructor/MobileTrackingSettingsBanner";
+import { MiniLiveMap } from "@/components/instructor/tracking/MiniLiveMap";
+import { QuartixLiveButton } from "@/components/instructor/tracking/QuartixLiveButton";
 
 interface GPSDevice {
   id: string;
@@ -908,17 +910,29 @@ export default function InstructorLiveSession() {
               retryCount={retryCount}
               onManualReconnect={manualReconnect}
             />
- 
+
+           {/* Mini Live Map Preview */}
+           <MiniLiveMap
+             latitude={device.last_latitude}
+             longitude={device.last_longitude}
+             heading={device.last_heading}
+             lastSeenAt={device.last_seen_at}
+             isActive={isConnected}
+           />
+
+           {/* Open Quartix Live Tracking */}
+           <QuartixLiveButton />
+
            {/* Session Start Panel */}
            <SessionStartPanel
-             pupils={pupils}
-             selectedPupilId={selectedPupilId}
-             onPupilChange={setSelectedPupilId}
-             onStartSession={(type) => startSession(type)}
-             onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
-             isStarting={isStarting}
-             isConnected={isConnected}
-           />
+              pupils={pupils}
+              selectedPupilId={selectedPupilId}
+              onPupilChange={setSelectedPupilId}
+              onStartSession={(type) => startSession(type)}
+              onOpenDrivingTestDialog={() => setShowDrivingTestDialog(true)}
+              isStarting={isStarting}
+              isConnected={isConnected}
+            />
  
            {/* Recent Sessions */}
            {instructor?.id && (
