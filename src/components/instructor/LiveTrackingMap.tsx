@@ -10,8 +10,6 @@ import { Crosshair } from "lucide-react";
 interface GPSPoint {
   lat: number;
   lng: number;
-  speedKmh?: number;
-  accuracy?: number;
 }
 
 interface TraccarLiveMapProps {
@@ -27,82 +25,13 @@ interface TraccarLiveMapProps {
 }
 
 // ========== Haversine Distance (meters) ==========
-function haversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 6371000; // Earth's radius in meters
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371000;
   const toRad = (deg: number) => (deg * Math.PI) / 180;
-
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c;
-}
-
-// ========== GPS Point Validator ==========
-interface ValidationResult {
-  isValid: boolean;
-  distance: number;
-}
-
-function validatePoint(
-  point: GPSPoint,
-  lastValidPoint: GPSPoint | null,
-  accuracyThreshold = 20, // Tighter accuracy filter (was 25)
-  minDistanceThreshold = 5, // Minimum movement (was 10)
-  maxDistanceThreshold = 500 // NEW: Max distance to prevent GPS jumps (500m)
-): ValidationResult {
-  // 1. Check GPS accuracy (reject poor signals)
-  if (point.accuracy !== undefined && point.accuracy > accuracyThreshold) {
-    return { isValid: false, distance: 0 };
-  }
-
-  // 2. First point is always valid
-  if (!lastValidPoint) {
-    return { isValid: true, distance: 0 };
-  }
-
-  // 3. Calculate distance from last valid point
-  const distance = haversineDistance(
-    lastValidPoint.lat,
-    lastValidPoint.lng,
-    point.lat,
-    point.lng
-  );
-
-  // 4. Reject if distance is below minimum threshold (GPS jitter)
-  if (distance < minDistanceThreshold) {
-    return { isValid: false, distance };
-  }
-
-  // 5. NEW: Reject if distance is too large (GPS jump/signal loss)
-  // This prevents straight lines across the map when GPS signal is lost
-  if (distance > maxDistanceThreshold) {
-    console.log(`[GPS] Rejecting point: distance ${distance.toFixed(0)}m exceeds max ${maxDistanceThreshold}m`);
-    return { isValid: false, distance };
-  }
-
-  return { isValid: true, distance };
-}
-
-// ========== Speed Processing ==========
-function processSpeed(speedKmh: number | null | undefined): number {
-  if (speedKmh === null || speedKmh === undefined) return 0;
-  
-  // Cap unrealistic speeds (> 160 km/h = ~100 mph)
-  if (speedKmh > 160) return 0;
-  
-  // Filter GPS noise (speeds below 2 km/h are likely stationary)
-  if (speedKmh < 2) return 0;
-  
-  return speedKmh;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 // ========== Component ==========
@@ -121,12 +50,17 @@ export default function TraccarLiveMap({
   const mapInstance = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
   const polylineRef = useRef<L.Polyline | null>(null);
+  const routePointsRef = useRef<GPSPoint[]>([]);
+  const lastPolyPointRef = useRef<GPSPoint | null>(null);
 
-  const [filteredPoints, setFilteredPoints] = useState<GPSPoint[]>([]);
-  const [displaySpeed, setDisplaySpeed] = useState(0);
   const [userDragged, setUserDragged] = useState(false);
-  const [livePosition, setLivePosition] = useState<{lat: number; lng: number} | null>(null);
-  const lastValidPointRef = useRef<GPSPoint | null>(null);
+
+  // ========== Speed: simple filter ==========
+  const displaySpeedKmh = (speedKmh !== null && speedKmh !== undefined && speedKmh >= 2 && speedKmh <= 160)
+    ? speedKmh : 0;
+  const speedMph = Math.round(displaySpeedKmh * 0.621371);
+  const speedLimitMph = speedLimitKmh !== null ? Math.round(speedLimitKmh * 0.621371) : null;
+  const isSpeeding = speedLimitMph !== null && speedMph > speedLimitMph;
 
   // ========== Initialize Map ==========
   useEffect(() => {
@@ -147,12 +81,8 @@ export default function TraccarLiveMap({
       attribution: getMapAttribution(),
     }).addTo(mapInstance.current);
 
-    // Track user drag to disable auto-center
-    mapInstance.current.on("dragstart", () => {
-      setUserDragged(true);
-    });
+    mapInstance.current.on("dragstart", () => setUserDragged(true));
 
-    // Handle resize
     const resizeObserver = new ResizeObserver(() => {
       mapInstance.current?.invalidateSize();
     });
@@ -165,12 +95,11 @@ export default function TraccarLiveMap({
     };
   }, []);
 
-  // ========== Load Route History ==========
+  // ========== Load Route History on session start ==========
   useEffect(() => {
     if (!sessionId) {
-      setFilteredPoints([]);
-      lastValidPointRef.current = null;
-      setLivePosition(null);
+      routePointsRef.current = [];
+      lastPolyPointRef.current = null;
       polylineRef.current?.remove();
       polylineRef.current = null;
       return;
@@ -179,148 +108,54 @@ export default function TraccarLiveMap({
     const loadHistory = async () => {
       const { data } = await supabase
         .from("telematics_gps_points")
-        .select("latitude, longitude, speed_kmh, accuracy_m")
+        .select("latitude, longitude")
         .eq("telematics_id", sessionId)
         .order("recorded_at", { ascending: true })
         .limit(2000);
 
-      if (data) {
-        const validPoints: GPSPoint[] = [];
+      if (data && data.length > 0) {
+        const points: GPSPoint[] = [];
         let lastValid: GPSPoint | null = null;
 
         for (const row of data) {
           if (!row.latitude || !row.longitude) continue;
+          const point: GPSPoint = { lat: row.latitude, lng: row.longitude };
 
-          const point: GPSPoint = {
-            lat: row.latitude,
-            lng: row.longitude,
-            speedKmh: row.speed_kmh ?? undefined,
-            accuracy: row.accuracy_m ?? undefined,
-          };
-
-          const { isValid } = validatePoint(point, lastValid);
-          if (isValid) {
-            validPoints.push(point);
+          if (!lastValid) {
+            points.push(point);
             lastValid = point;
+          } else {
+            const dist = haversineDistance(lastValid.lat, lastValid.lng, point.lat, point.lng);
+            if (dist >= 3) { // 3m jitter filter
+              points.push(point);
+              lastValid = point;
+            }
           }
         }
 
-        setFilteredPoints(validPoints);
-        lastValidPointRef.current = lastValid;
+        routePointsRef.current = points;
+        lastPolyPointRef.current = points[points.length - 1] || null;
+        updatePolyline();
       }
     };
 
     loadHistory();
   }, [sessionId]);
 
-  // ========== Realtime GPS Subscription ==========
-  useEffect(() => {
-    if (!sessionId) return;
-
-    const channel = supabase
-      .channel(`live-tracking-${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "telematics_gps_points",
-          filter: `telematics_id=eq.${sessionId}`,
-        },
-        (payload) => {
-          const row = payload.new as {
-            latitude: number;
-            longitude: number;
-            speed_kmh?: number;
-            accuracy_m?: number;
-          };
-
-          if (!row.latitude || !row.longitude) return;
-
-          const point: GPSPoint = {
-            lat: row.latitude,
-            lng: row.longitude,
-            speedKmh: row.speed_kmh,
-            accuracy: row.accuracy_m,
-          };
-
-          const { isValid } = validatePoint(point, lastValidPointRef.current);
-
-          if (isValid) {
-            setFilteredPoints((prev) => [...prev, point]);
-            lastValidPointRef.current = point;
-            setDisplaySpeed(processSpeed(point.speedKmh));
-            // Update live position for marker (real-time movement)
-            setLivePosition({ lat: point.lat, lng: point.lng });
-          } else {
-            // Point rejected - set speed to 0 (stationary)
-            setDisplaySpeed(0);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [sessionId]);
-
-  // ========== Add points from props for instant tracking line ==========
-  // This catches position updates from polling before they hit the database
-  // Uses relaxed validation for prop-based updates (no max distance filter)
-  useEffect(() => {
-    if (!sessionId || latitude === null || longitude === null) return;
-    
-    const point: GPSPoint = {
-      lat: latitude,
-      lng: longitude,
-      speedKmh: speedKmh ?? undefined,
-    };
-    
-    // Use relaxed validation - only check min distance, not max
-    // Max distance filter causes issues when tracker jumps after signal loss
-    const lastValid = lastValidPointRef.current;
-    let shouldAdd = false;
-    
-    if (!lastValid) {
-      shouldAdd = true;
-    } else {
-      const distance = haversineDistance(lastValid.lat, lastValid.lng, point.lat, point.lng);
-      shouldAdd = distance >= 5; // Only filter GPS jitter
-    }
-    
-    if (shouldAdd) {
-      // Check if this point is different from the last one in filteredPoints
-      const lastPoint = filteredPoints[filteredPoints.length - 1];
-      if (!lastPoint || lastPoint.lat !== latitude || lastPoint.lng !== longitude) {
-        setFilteredPoints((prev) => [...prev, point]);
-        lastValidPointRef.current = point;
-        setLivePosition({ lat: latitude, lng: longitude });
-      }
-    } else {
-      // Even if we don't add to the path, update the live marker position
-      setLivePosition({ lat: latitude, lng: longitude });
-    }
-  }, [sessionId, latitude, longitude, speedKmh]);
-
-  // ========== Compute Marker Position (live > props) ==========
-  const markerLat = livePosition?.lat ?? latitude;
-  const markerLng = livePosition?.lng ?? longitude;
-
-  // ========== Update Marker + Auto-center ==========
+  // ========== SINGLE DATA FLOW: props change -> marker + polyline ==========
   useEffect(() => {
     const map = mapInstance.current;
-    if (!map) return;
-
-    if (markerLat === null || markerLng === null) {
-      markerRef.current?.remove();
-      markerRef.current = null;
+    if (!map || latitude === null || longitude === null) {
+      // Remove marker if no position
+      if (latitude === null && longitude === null) {
+        markerRef.current?.remove();
+        markerRef.current = null;
+      }
       return;
     }
 
+    // --- Update marker ---
     const rotation = heading ?? 0;
-
-    // Car icon SVG - points up by default
     const bgColor = isConnected ? '#3b82f6' : '#9ca3af';
     const iconHtml = `
       <div class="traccar-car-marker" style="position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">
@@ -341,61 +176,69 @@ export default function TraccarLiveMap({
     });
 
     if (!markerRef.current) {
-      markerRef.current = L.marker([markerLat, markerLng], { icon }).addTo(map);
+      markerRef.current = L.marker([latitude, longitude], { icon }).addTo(map);
     } else {
-      markerRef.current.setLatLng([markerLat, markerLng]);
+      markerRef.current.setLatLng([latitude, longitude]);
       markerRef.current.setIcon(icon);
     }
 
-    // Always auto-center on position unless user has manually dragged
+    // --- Auto-center ---
     if (!userDragged) {
-      map.panTo([markerLat, markerLng], { animate: true, duration: 0.5 });
+      map.panTo([latitude, longitude], { animate: true, duration: 0.5 });
     }
-  }, [markerLat, markerLng, heading, userDragged, isConnected]);
 
-  // ========== Update Polyline ==========
-  useEffect(() => {
+    // --- Add to polyline (3m jitter filter) ---
+    if (sessionId) {
+      const lastPoly = lastPolyPointRef.current;
+      let shouldAdd = false;
+
+      if (!lastPoly) {
+        shouldAdd = true;
+      } else {
+        const dist = haversineDistance(lastPoly.lat, lastPoly.lng, latitude, longitude);
+        shouldAdd = dist >= 3;
+      }
+
+      if (shouldAdd) {
+        const newPoint: GPSPoint = { lat: latitude, lng: longitude };
+        routePointsRef.current.push(newPoint);
+        lastPolyPointRef.current = newPoint;
+        updatePolyline();
+      }
+    }
+  }, [latitude, longitude, heading, isConnected, userDragged, sessionId]);
+
+  // ========== Polyline updater ==========
+  const updatePolyline = useCallback(() => {
     const map = mapInstance.current;
-    if (!map || filteredPoints.length < 2) return;
+    if (!map) return;
+    const points = routePointsRef.current;
+    if (points.length < 2) return;
 
-    polylineRef.current?.remove();
-    polylineRef.current = L.polyline(
-      filteredPoints.map((p) => [p.lat, p.lng] as L.LatLngExpression),
-      { color: "#3b82f6", weight: 5, opacity: 0.8 }
-    ).addTo(map);
-  }, [filteredPoints]);
-
-  // ========== Update Display Speed from Props - Instant ==========
-  useEffect(() => {
-    // Use prop speed immediately for instant updates
-    if (speedKmh !== null && speedKmh !== undefined) {
-      setDisplaySpeed(processSpeed(speedKmh));
-    } else if (!isConnected) {
-      setDisplaySpeed(0);
+    if (polylineRef.current) {
+      polylineRef.current.setLatLngs(points.map(p => [p.lat, p.lng] as L.LatLngExpression));
+    } else {
+      polylineRef.current = L.polyline(
+        points.map(p => [p.lat, p.lng] as L.LatLngExpression),
+        { color: "#3b82f6", weight: 5, opacity: 0.8 }
+      ).addTo(map);
     }
-  }, [speedKmh, isConnected]);
+  }, []);
 
   // ========== Re-center Handler ==========
   const handleRecenter = useCallback(() => {
     setUserDragged(false);
-    if (mapInstance.current && markerLat !== null && markerLng !== null) {
-      mapInstance.current.setView([markerLat, markerLng], mapInstance.current.getZoom(), {
-        animate: true,
-      });
+    if (mapInstance.current && latitude !== null && longitude !== null) {
+      mapInstance.current.setView([latitude, longitude], mapInstance.current.getZoom(), { animate: true });
     }
-  }, [markerLat, markerLng]);
-
-  // ========== Speed Display Calculations ==========
-  const speedMph = Math.round(displaySpeed * 0.621371);
-  const speedLimitMph = speedLimitKmh !== null ? Math.round(speedLimitKmh * 0.621371) : null;
-  const isSpeeding = speedLimitMph !== null && speedMph > speedLimitMph;
+  }, [latitude, longitude]);
 
   return (
     <div className={`relative w-full h-full ${className}`}>
       <div ref={mapRef} className="absolute inset-0" />
 
-      {/* Re-center button - shows when user has dragged */}
-      {userDragged && markerLat !== null && markerLng !== null && (
+      {/* Re-center button */}
+      {userDragged && latitude !== null && longitude !== null && (
         <Button
           variant="secondary"
           size="sm"
@@ -407,62 +250,42 @@ export default function TraccarLiveMap({
         </Button>
       )}
 
-      {/* Speed display panel - only visible during active session */}
-      {sessionId && (isConnected || markerLat !== null) && (
+      {/* Speed display panel */}
+      {sessionId && (isConnected || latitude !== null) && (
         <div className="absolute bottom-4 left-4 right-4 z-20">
           <div className={`backdrop-blur-sm rounded-2xl px-4 py-3 shadow-lg border ${
-            isSpeeding 
-              ? "bg-destructive/10 border-destructive/50" 
-              : "bg-background/95"
+            isSpeeding ? "bg-destructive/10 border-destructive/50" : "bg-background/95"
           }`}>
             <div className="flex items-center justify-between gap-3">
-              {/* Current Speed */}
               <div className="flex items-baseline gap-1 shrink-0">
-                <span
-                  className={`text-4xl font-bold transition-colors ${
-                    isSpeeding ? "text-destructive" : "text-foreground"
-                  }`}
-                >
+                <span className={`text-4xl font-bold transition-colors ${isSpeeding ? "text-destructive" : "text-foreground"}`}>
                   {speedMph}
                 </span>
                 <span className="text-muted-foreground text-sm">mph</span>
               </div>
 
-              {/* Road Name */}
               <div className="flex-1 min-w-0 text-center">
-              <p className="text-foreground font-medium truncate">
-                  {roadName || "—"}
-                </p>
+                <p className="text-foreground font-medium truncate">{roadName || "—"}</p>
               </div>
 
-              {/* Speed Limit Roundel */}
-              <div className={`w-12 h-12 shrink-0 rounded-full bg-background border-4 flex items-center justify-center transition-colors ${
-                isSpeeding ? "border-destructive" : "border-destructive"
-              }`}>
-                <span
-                  className={`text-lg font-bold transition-colors ${
-                    isSpeeding ? "text-destructive" : "text-foreground"
-                  }`}
-                >
+              <div className={`w-12 h-12 shrink-0 rounded-full bg-background border-4 flex items-center justify-center border-destructive`}>
+                <span className={`text-lg font-bold transition-colors ${isSpeeding ? "text-destructive" : "text-foreground"}`}>
                   {speedLimitMph ?? "—"}
                 </span>
               </div>
             </div>
-            
-            {/* Overspeeding warning banner */}
+
             {isSpeeding && (
               <div className="mt-2 pt-2 border-t border-destructive/30 text-center">
-                <p className="text-sm font-semibold text-destructive animate-pulse">
-                  ⚠️ OVER SPEED LIMIT
-                </p>
+                <p className="text-sm font-semibold text-destructive animate-pulse">⚠️ OVER SPEED LIMIT</p>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Loading state - only show when truly no position data exists */}
-      {latitude === null && longitude === null && filteredPoints.length === 0 && !livePosition && (
+      {/* Loading state */}
+      {latitude === null && longitude === null && routePointsRef.current.length === 0 && (
         <div className="absolute inset-0 bg-muted flex flex-col items-center justify-center z-10">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-foreground font-medium">Waiting for GPS...</p>
@@ -470,17 +293,9 @@ export default function TraccarLiveMap({
       )}
 
       <style>{`
-        .traccar-marker-icon {
-          background: transparent !important;
-          border: none !important;
-        }
-        .traccar-car-marker {
-          pointer-events: none;
-        }
-        .leaflet-marker-icon {
-          background: transparent !important;
-          border: none !important;
-        }
+        .traccar-marker-icon { background: transparent !important; border: none !important; }
+        .traccar-car-marker { pointer-events: none; }
+        .leaflet-marker-icon { background: transparent !important; border: none !important; }
       `}</style>
     </div>
   );
