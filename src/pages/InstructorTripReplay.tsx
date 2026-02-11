@@ -15,7 +15,7 @@ export default function InstructorTripReplay() {
   const navigate = useNavigate();
 
   const goBack = () => {
-    navigate("/instructor/telematics");
+    navigate("/instructor/fleet-dashboard");
   };
 
   const {
