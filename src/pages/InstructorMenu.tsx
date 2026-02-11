@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Settings,
+  Camera,
   User,
   Calendar,
   Users,
@@ -112,6 +113,7 @@ export default function InstructorMenu() {
       title: "Tools",
       items: [
         { icon: Gauge, label: "Fleet Dashboard", description: "Vehicle intelligence", iconColor: "text-emerald-600", gateKey: "fleet-dashboard", path: "/instructor/fleet-dashboard" },
+        { icon: Camera, label: "Dashcam", description: "Recording & protection", iconColor: "text-sky-600", gateKey: "dashcam", path: "/instructor-app/dashcam" },
         { icon: Star, label: "Reviews", description: "Moderate reviews", iconColor: "text-amber-500", gateKey: "reviews", path: "/instructor/reviews" },
         { icon: Car, label: "Vehicle Health", description: "Fleet compliance", iconColor: "text-cyan-600", gateKey: "vehicle-health", path: "/instructor/vehicle-health", customIcon: vehicleHealthIcon },
         { icon: Award, label: "Quick Test Result", description: "Record result", iconColor: "text-emerald-600", gateKey: "test-result-quick", action: () => setShowTestResultForm(true) },
