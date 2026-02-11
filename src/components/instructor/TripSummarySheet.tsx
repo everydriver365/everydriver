@@ -227,7 +227,7 @@ Roads Visited: ${report.stats.roadsVisited}
 
         {/* Content */}
         <ScrollArea className="flex-1">
-          <div className="p-4 space-y-4 pb-24">
+          <div className="p-4 space-y-4 pb-4">
             {/* Loading State */}
             {loading && (
               <div className="space-y-4">
@@ -413,10 +413,10 @@ Roads Visited: ${report.stats.roadsVisited}
 
         {/* Footer Actions */}
         {report && !loading && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t border-border flex gap-2">
+          <div className="sticky bottom-0 left-0 right-0 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-background border-t border-border flex gap-2 flex-shrink-0">
             <Button 
               variant="outline" 
-              className="flex-1 h-12"
+              className="flex-1 h-12 text-sm"
               onClick={handleDownloadPDF}
             >
               <Download className="h-4 w-4 mr-2" />
@@ -424,14 +424,14 @@ Roads Visited: ${report.stats.roadsVisited}
             </Button>
             <Button 
               variant="outline" 
-              className="flex-1 h-12"
+              className="flex-1 h-12 text-sm"
               onClick={handleShare}
             >
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>
             <Button 
-              className="flex-1 h-12"
+              className="flex-1 h-12 text-sm"
               onClick={() => onOpenChange(false)}
             >
               Done
