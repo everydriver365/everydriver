@@ -15,11 +15,7 @@ export default function InstructorTripReplay() {
   const navigate = useNavigate();
 
   const goBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate("/instructor/dashboard");
-    }
+    navigate("/instructor/telematics");
   };
 
   const {
