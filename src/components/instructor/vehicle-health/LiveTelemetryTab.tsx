@@ -3,16 +3,16 @@ import { Radio, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TraccarDeviceHealth } from "@/hooks/useVehicleHealth";
+import { GPSDeviceHealth } from "@/hooks/useVehicleHealth";
 import { useDeviceBatteryHistory, useAllIgnitionEvents } from "@/hooks/useDeviceTelemetryHistory";
 import { EnhancedDeviceStatusCard } from "./EnhancedDeviceStatusCard";
 import { BatteryHistoryChart } from "./BatteryHistoryChart";
 import { IgnitionEventsLog } from "./IgnitionEventsLog";
 
 interface LiveTelemetryTabProps {
-  devices: TraccarDeviceHealth[];
+  devices: GPSDeviceHealth[];
   isLoading: boolean;
-  onLinkClick: (device: TraccarDeviceHealth) => void;
+  onLinkClick: (device: GPSDeviceHealth) => void;
   onNavigateToSettings: () => void;
 }
 

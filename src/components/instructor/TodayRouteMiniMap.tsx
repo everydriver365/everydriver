@@ -133,7 +133,7 @@ export function TodayRouteMiniMap({ locations }: TodayRouteMiniMapProps) {
                   variant="secondary"
                   size="sm"
                   className="absolute bottom-2 right-2 z-10 h-7 text-xs shadow-md"
-                  onClick={() => navigate("/instructor/traccar")}
+                  onClick={() => navigate("/instructor/tracking")}
                 >
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Full Map

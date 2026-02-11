@@ -36,8 +36,6 @@ export interface GPSDeviceHealth {
   } | null;
 }
 
-// Backwards compatibility alias
-export type TraccarDeviceHealth = GPSDeviceHealth;
 
 export interface InstructorVehicle {
   id: string;

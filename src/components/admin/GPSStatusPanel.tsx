@@ -16,7 +16,7 @@ interface LiveSession {
   instructor_name?: string;
 }
 
-interface TraccarDevice {
+interface GPSDeviceInfo {
   id: string;
   instructor_id: string;
   device_id: string;
@@ -25,9 +25,9 @@ interface TraccarDevice {
   instructor_name?: string;
 }
 
-export function TraccarStatusPanel() {
+export function GPSStatusPanel() {
   const [liveSessions, setLiveSessions] = useState<LiveSession[]>([]);
-  const [devices, setDevices] = useState<TraccarDevice[]>([]);
+  const [devices, setDevices] = useState<GPSDeviceInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function TraccarStatusPanel() {
     const interval = setInterval(fetchData, 2000); // Refresh every 2 seconds for instant updates
 
     const channel = supabase
-      .channel("admin-traccar-status")
+      .channel("admin-gps-status")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "live_pupil_positions" },
@@ -128,7 +128,7 @@ export function TraccarStatusPanel() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Radio className="h-5 w-5 text-green-500" />
-            Traccar Live Tracking
+            Live GPS Tracking
           </CardTitle>
           <div className="flex gap-2">
             {activeSessions > 0 && (
@@ -191,7 +191,7 @@ export function TraccarStatusPanel() {
               
               {devices.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  No Traccar devices registered yet
+                  No GPS devices registered yet
                 </p>
               ) : (
                 <div className="space-y-1 max-h-[180px] overflow-y-auto">
@@ -238,7 +238,7 @@ export function TraccarStatusPanel() {
                 <MapPin className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">No active tracking sessions</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Instructors can set up Traccar in their portal
+                  Instructors can set up GPS tracking in their portal
                 </p>
               </div>
             )}

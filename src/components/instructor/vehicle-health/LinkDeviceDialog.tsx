@@ -10,12 +10,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { TraccarDeviceHealth, InstructorVehicle } from "@/hooks/useVehicleHealth";
+import { GPSDeviceHealth, InstructorVehicle } from "@/hooks/useVehicleHealth";
 
 interface LinkDeviceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  device: TraccarDeviceHealth | null;
+  device: GPSDeviceHealth | null;
   vehicles: InstructorVehicle[];
   onLink: (deviceId: string, vehicleId: string | null) => Promise<void>;
 }

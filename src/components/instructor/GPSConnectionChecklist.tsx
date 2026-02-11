@@ -108,5 +108,5 @@ export function GPSConnectionChecklist({
 }
 
 // Re-export with old name for backwards compatibility
-export { GPSConnectionChecklist as TraccarConnectionChecklist };
+
 

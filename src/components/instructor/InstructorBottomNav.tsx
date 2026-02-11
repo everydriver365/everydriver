@@ -55,7 +55,7 @@ const navItems: NavItem[] = [
   { 
     label: "Track", 
     icon: Radio, 
-    path: "/instructor/traccar",
+    path: "/instructor/tracking",
     isTrack: true
   },
   { 

@@ -62,7 +62,7 @@ export function QuickStatsChips({
       icon: Car,
       value: `${milesDriven}mi`,
       label: "",
-      route: "/instructor/traccar",
+      route: "/instructor/tracking",
     });
   }
 

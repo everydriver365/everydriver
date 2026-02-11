@@ -121,7 +121,7 @@ const sidebarGroups = [
       { href: "/instructor/resources", label: "Resources", icon: FileText },
       { href: "/instructor/website", label: "Mini Website", icon: Globe },
       { href: "/instructor/domains", label: "Domains", icon: Globe2 },
-      { href: "/instructor/traccar", label: "GPS Tracking", icon: Radio },
+      { href: "/instructor/tracking", label: "GPS Tracking", icon: Radio },
       { href: "/instructor/settings", label: "Settings", icon: Settings },
     ],
   },
@@ -143,7 +143,7 @@ const desktopNavTabs = [
   { id: "/instructor/messages", label: "Messages", icon: MessageCircle },
   { id: "/instructor/pay", label: "Money", icon: CreditCard },
   { id: "/instructor/test-results", label: "Tests", icon: Award },
-  { id: "/instructor/traccar", label: "GPS", icon: Radio },
+  { id: "/instructor/tracking", label: "GPS", icon: Radio },
   { id: "/instructor/website", label: "Website", icon: Globe },
   { id: "/instructor/settings", label: "Settings", icon: Settings },
 ];
@@ -184,7 +184,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
   const appStyleBg = isAppStyle ? (wallpaperColor || "#E8F1FE") : undefined;
   const headerContrast = appStyleBg ? getContrastColor(appStyleBg) : null;
 
-  const isTrackingPage = location.pathname.startsWith("/instructor/traccar");
+  const isTrackingPage = location.pathname.startsWith("/instructor/tracking") || location.pathname.startsWith("/instructor/traccar");
   
   // Check for fullscreen mode (used when tracking is active)
   const searchParams = new URLSearchParams(location.search);
@@ -681,7 +681,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
     // Website group
     if (path.startsWith("/instructor/domains")) return "/instructor/website";
     // Fleet dashboard -> GPS tab
-    if (path.startsWith("/instructor/fleet-dashboard")) return "/instructor/traccar";
+    if (path.startsWith("/instructor/fleet-dashboard")) return "/instructor/tracking";
     return "/instructor";
   };
 
