@@ -309,7 +309,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
             <header
               className={cn(
                 "sticky top-0 z-40 shadow-sm",
-                isAppStyle ? "border-b border-border/30" : "bg-background border-b border-border"
+                isAppStyle ? "border-b border-border/30" : "bg-gradient-to-r from-primary via-primary/90 to-primary/75 border-b border-primary/20"
               )}
               style={isAppStyle ? { backgroundColor: appStyleBg } : undefined}
             >
@@ -323,7 +323,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                         size="icon"
                         className={cn(
                           "-ml-2 h-8 w-8 sm:h-9 sm:w-9 shrink-0",
-                          !headerContrast && "text-primary/80 hover:text-primary hover:bg-[#D1E4FC]"
+                          !headerContrast && "text-white/90 hover:text-white hover:bg-white/15"
                         )}
                         style={headerContrast ? { color: headerContrast } : undefined}
                       >
@@ -415,11 +415,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       EVERY DRIVER
                     </span>
                   ) : (
-                    <img 
-                      src={instructorLogo}
-                      alt="EveryDriver" 
-                      className="h-4 sm:h-5 object-contain"
-                    />
+                    <span className="font-bold text-sm tracking-wide text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                      EVERY DRIVER
+                    </span>
                   )}
 
 
@@ -432,7 +430,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className={cn("h-7 w-7 sm:h-8 sm:w-8 shrink-0", !headerContrast && "text-foreground hover:bg-[#D1E4FC]")}
+                        className={cn("h-7 w-7 sm:h-8 sm:w-8 shrink-0", !headerContrast && "text-white/90 hover:text-white hover:bg-white/15")}
                         style={headerContrast ? { color: headerContrast } : undefined}
                         title="Settings"
                       >
@@ -488,7 +486,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => { setMobileSearchOpen(prev => !prev); setMobileSearchQuery(""); setMobileSearchResults([]); }}
-                    className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8 shrink-0"
+                    className={cn("h-7 w-7 sm:h-8 sm:w-8 shrink-0", headerContrast ? "" : "text-white/90 hover:text-white hover:bg-white/15")}
                     title="Search"
                   >
                     <Search className="h-4 w-4" />
@@ -499,7 +497,9 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     onClick={() => setShowPaymentSheet(true)}
                     className={cn(
                       "h-7 sm:h-8 px-3 shrink-0 text-xs font-semibold",
-                      isAppStyle && "bg-emerald-400/80 hover:bg-emerald-400 text-white border-emerald-300/50"
+                      isAppStyle 
+                        ? "bg-emerald-400/80 hover:bg-emerald-400 text-white border-emerald-300/50"
+                        : "bg-white/20 hover:bg-white/30 text-white border-white/30"
                     )}
                     title="Take Payment"
                   >
@@ -509,7 +509,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate("/instructor/availability")}
-                    className="text-foreground hover:bg-[#D1E4FC] h-7 w-7 sm:h-8 sm:w-8"
+                    className={cn("h-7 w-7 sm:h-8 sm:w-8", headerContrast ? "" : "text-white/90 hover:text-white hover:bg-white/15")}
                     title="Availability"
                   >
                     <Calendar className="h-4 w-4" />
