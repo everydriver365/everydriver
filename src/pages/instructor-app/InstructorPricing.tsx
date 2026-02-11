@@ -4,7 +4,7 @@ import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -108,6 +108,14 @@ export default function InstructorPricing() {
                         <span className="text-muted-foreground">/month</span>
                       )}
                     </div>
+                    {plan.price_monthly > 0 && (
+                      <div className="flex items-center justify-center gap-1 mt-2">
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                          30-day money-back guarantee
+                        </span>
+                      </div>
+                    )}
                   </CardHeader>
                   
                   <CardContent>
@@ -133,6 +141,18 @@ export default function InstructorPricing() {
                 </Card>
               </motion.div>
             ))}
+          </div>
+
+          {/* Trust Banner */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+              <span>30-Day Money-Back Guarantee</span>
+            </div>
+            <span className="text-border">|</span>
+            <span>Cancel Anytime</span>
+            <span className="text-border">|</span>
+            <span>No Tie-In</span>
           </div>
 
           {/* FAQ or additional info */}
