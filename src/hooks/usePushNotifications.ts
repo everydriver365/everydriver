@@ -127,7 +127,7 @@ export function usePushNotifications(instructorId: string) {
       await navigator.serviceWorker.ready;
 
       // Subscribe to push
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
@@ -190,7 +190,7 @@ export function usePushNotifications(instructorId: string) {
       // Unsubscribe from browser
       const registration = await navigator.serviceWorker.getRegistration();
       if (registration) {
-        const subscription = await registration.pushManager.getSubscription();
+        const subscription = await (registration as any).pushManager.getSubscription();
         if (subscription) {
           await subscription.unsubscribe();
         }
