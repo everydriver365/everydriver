@@ -51,6 +51,7 @@ import DesignDemo from "./pages/DesignDemo";
 import InstructorHeroDemo from "./pages/InstructorHeroDemo";
 import InstructorHomeDesignDemo from "./pages/InstructorHomeDesignDemo";
 import InstructorBlueStyleDemo from "./pages/InstructorBlueStyleDemo";
+import QuickActionGradientDemo from "./pages/QuickActionGradientDemo";
 
 
 import Theory from "./pages/Theory";
@@ -272,6 +273,7 @@ const App = () => (
               <Route path="/instructor-hero-demo" element={<InstructorHeroDemo />} />
               <Route path="/instructor-home-demo" element={<InstructorHomeDesignDemo />} />
               <Route path="/instructor-blue-demo" element={<InstructorBlueStyleDemo />} />
+              <Route path="/quick-action-gradient-demo" element={<QuickActionGradientDemo />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
