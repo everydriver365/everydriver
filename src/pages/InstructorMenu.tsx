@@ -166,11 +166,12 @@ export default function InstructorMenu() {
 
         {/* Menu Sections */}
         {menuSections.map((section) => (
-          <div key={section.title} className="space-y-2">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
-              {section.title}
-            </h2>
-            <div className="grid grid-cols-1 gap-2">
+          <div key={section.title} className="overflow-hidden shadow-[0_2px_12px_rgba(20,37,66,0.12)]">
+            {/* Gradient section header */}
+            <div className="bg-gradient-to-r from-primary to-primary/70 px-4 py-2">
+              <span className="text-white text-[10px] font-semibold uppercase tracking-wider">{section.title}</span>
+            </div>
+            <div className="bg-white divide-y divide-border/50">
               {section.items.map((item) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
@@ -195,21 +196,21 @@ export default function InstructorMenu() {
                       }
                     }}
                     className={cn(
-                      "bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors text-left",
+                      "w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left",
                       locked && "opacity-60 cursor-not-allowed"
                     )}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={cn(
-                          "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
-                          locked ? "bg-muted" : "bg-primary/10"
+                          "h-10 w-10 rounded-[7px] flex items-center justify-center shrink-0 overflow-hidden",
+                          locked ? "bg-muted" : "ring-1 ring-primary/30 shadow-[0_0_8px_rgba(59,130,246,0.2)]"
                         )}
                       >
                         {locked ? (
                           <Lock className="h-5 w-5 text-muted-foreground" />
                         ) : item.customIcon ? (
-                          <img src={item.customIcon} alt={item.label} className="h-8 w-8 object-cover rounded-lg" />
+                          <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
                         ) : (
                           <item.icon className={cn("h-5 w-5", item.iconColor || "text-primary")} />
                         )}
@@ -223,7 +224,7 @@ export default function InstructorMenu() {
                             <Lock className="h-2.5 w-2.5" /> Upgrade
                           </p>
                         ) : item.description ? (
-                          <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+                          <p className="text-xs text-primary/70 font-medium truncate">{item.description}</p>
                         ) : null}
                       </div>
                       {locked ? (
@@ -231,7 +232,9 @@ export default function InstructorMenu() {
                           PRO
                         </Badge>
                       ) : (
-                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shrink-0">
+                          <ChevronRight className="h-3 w-3 text-white" />
+                        </div>
                       )}
                     </div>
                   </motion.button>
