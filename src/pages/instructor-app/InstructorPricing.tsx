@@ -102,11 +102,9 @@ export default function InstructorPricing() {
                     <p className="text-muted-foreground text-sm">{plan.description}</p>
                     <div className="pt-4">
                       <span className="text-4xl font-bold text-foreground">
-                        {plan.price_monthly === 0 ? "FREE" : `£${plan.price_monthly}`}
+                        £{plan.price_monthly}
                       </span>
-                      {plan.price_monthly === 0 ? (
-                        <span className="block text-sm font-semibold text-emerald-500 mt-1">Forever</span>
-                      ) : (
+                      {plan.price_monthly > 0 && (
                         <span className="text-muted-foreground">/month</span>
                       )}
                     </div>
