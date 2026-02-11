@@ -8,6 +8,46 @@ const corsHeaders = {
 
 const QUARTIX_BASE = "https://qws.quartix.net/v2/api";
 
+// Parse clean road/location name from Quartix LocationText
+function parseLocationText(text: string | null | undefined): string | null {
+  if (!text || typeof text !== "string") return null;
+  const trimmed = text.trim().replace(/\.+$/, "").trim();
+
+  // "Travelling SE at 21.1 mph on 11 February 2026 10:15:32 GMT. Maunsell Way, Eastleigh, Hampshire"
+  const travelMatch = trimmed.match(/Travelling\s.+?\sGMT[\.\s]*(.+)/i);
+  if (travelMatch && travelMatch[1]) return travelMatch[1].trim().replace(/\.+$/, "").trim();
+
+  // "Stationary with Ignition OFF at Some Place since 11 February 2026 08:36:06 GMT"
+  const stationaryAtMatch = trimmed.match(/(?:Stationary|Stopped)\s.*?\bat\s+(.+?)\s+since\s/i);
+  if (stationaryAtMatch && stationaryAtMatch[1]) return stationaryAtMatch[1].trim();
+
+  // "Stationary at Some Place since ..."
+  const simpleAtMatch = trimmed.match(/\bat\s+(.+?)\s+since\s/i);
+  if (simpleAtMatch && simpleAtMatch[1]) return simpleAtMatch[1].trim();
+
+  // "near Some Road, Town" pattern
+  const nearMatch = trimmed.match(/near\s+(.+?)(?:\s+since\s|$)/i);
+  if (nearMatch && nearMatch[1]) return nearMatch[1].trim().replace(/\.+$/, "").trim();
+
+  // If it contains a date pattern, try to extract text after it
+  const afterDateMatch = trimmed.match(/\d{1,2}\s+\w+\s+\d{4}\s+\d{2}:\d{2}:\d{2}\s+GMT[\.\s]*(.+)/i);
+  if (afterDateMatch && afterDateMatch[1]) return afterDateMatch[1].trim().replace(/\.+$/, "").trim();
+
+  // Fallback: if text is short enough, use it as-is
+  if (trimmed.length <= 60) return trimmed;
+  return null;
+}
+
+// Parse ignition status from LocationText when pos.Ignition is null
+function parseIgnitionStatus(text: string | null | undefined, speedKmh: number | null): boolean | null {
+  if (speedKmh && speedKmh > 2) return true;
+  if (!text || typeof text !== "string") return null;
+  const lower = text.toLowerCase();
+  if (lower.includes("ignition off") || lower.includes("stationary")) return false;
+  if (lower.includes("ignition on") || lower.includes("travelling")) return true;
+  return null;
+}
+
 // Fetch speed limit from OpenStreetMap Overpass API
 async function fetchSpeedLimit(lat: number, lng: number): Promise<number | null> {
   try {
@@ -283,14 +323,17 @@ serve(async (req) => {
 
         const speedKmh = pos.Speed != null ? pos.Speed * 1.60934 : null;
 
+        const parsedRoadName = parseLocationText(pos.LocationText);
+        const parsedIgnition = pos.Ignition ?? parseIgnitionStatus(pos.LocationText, speedKmh);
+
         const { error: updateErr } = await supabase.from("gps_devices").update({
           last_latitude: pos.Latitude,
           last_longitude: pos.Longitude,
           last_speed_kmh: speedKmh,
           last_heading: pos.Heading,
-          last_seen_at: pos.LastEventDateTime || new Date().toISOString(),
-          last_ignition_status: pos.Ignition ?? null,
-          last_road_name: pos.LocationText || null,
+          last_seen_at: new Date().toISOString(),
+          last_ignition_status: parsedIgnition,
+          last_road_name: parsedRoadName || null,
           ...(speedLimitKmh !== null ? { last_speed_limit_kmh: speedLimitKmh } : {}),
         }).eq("id", device.id);
 
@@ -303,7 +346,7 @@ serve(async (req) => {
             await checkUnauthorisedMovement(
               supabase, device.instructor_id, device.id,
               pos.Latitude, pos.Longitude, speedKmh || 0,
-              pos.LocationText || null, pos.Ignition ?? null
+              parsedRoadName || null, parsedIgnition
             );
           }
         } else {
