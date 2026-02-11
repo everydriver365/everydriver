@@ -50,6 +50,7 @@ import InstructorTileDemo from "./pages/InstructorTileDemo";
 import DesignDemo from "./pages/DesignDemo";
 import InstructorHeroDemo from "./pages/InstructorHeroDemo";
 import InstructorHomeDesignDemo from "./pages/InstructorHomeDesignDemo";
+import InstructorBlueStyleDemo from "./pages/InstructorBlueStyleDemo";
 
 
 import Theory from "./pages/Theory";
@@ -270,6 +271,7 @@ const App = () => (
               <Route path="/instructor-tile-demo" element={<InstructorTileDemo />} />
               <Route path="/instructor-hero-demo" element={<InstructorHeroDemo />} />
               <Route path="/instructor-home-demo" element={<InstructorHomeDesignDemo />} />
+              <Route path="/instructor-blue-demo" element={<InstructorBlueStyleDemo />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
