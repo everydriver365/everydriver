@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,8 +59,8 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<"7" | "14" | "30">("7");
 
-  const fromDate = subDays(new Date(), parseInt(range));
-  const toDate = new Date();
+  const fromDate = useMemo(() => subDays(new Date(), parseInt(range)), [range]);
+  const toDate = useMemo(() => new Date(), [range]);
   const { timesheets, loading: tsLoading } = useDriverTimesheets(instructorId, fromDate, toDate);
 
   // Also fetch mileage_logs for daily mileage (more comprehensive than timesheets alone)
