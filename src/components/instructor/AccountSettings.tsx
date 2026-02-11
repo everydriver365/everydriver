@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecurringExpensesManager } from "./RecurringExpensesManager";
+import { PaymentOptionsSettings } from "./PaymentOptionsSettings";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface AccountSettingsProps {
@@ -335,6 +336,9 @@ export function AccountSettings({ instructorId }: AccountSettingsProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Payment Options (Klarna/Clearpay) */}
+      <PaymentOptionsSettings instructorId={instructorId} />
 
       <Button onClick={handleSave} disabled={saving} className="w-full sm:w-auto">
         {saving ? (

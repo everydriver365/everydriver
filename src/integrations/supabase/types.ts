@@ -4580,6 +4580,7 @@ export type Database = {
           car_mot_expiry: string | null
           car_tax_expiry: string | null
           car_type: string
+          clearpay_enabled: boolean | null
           commission_payer: string | null
           cpd_certified: boolean | null
           cpd_hours_logged: number | null
@@ -4615,6 +4616,7 @@ export type Database = {
           instructor_grade: string | null
           is_active: boolean
           is_online: boolean | null
+          klarna_enabled: boolean | null
           last_calendar_sync: string | null
           last_compliance_reminder_sent: string | null
           last_seen_at: string | null
@@ -4685,6 +4687,7 @@ export type Database = {
           car_mot_expiry?: string | null
           car_tax_expiry?: string | null
           car_type: string
+          clearpay_enabled?: boolean | null
           commission_payer?: string | null
           cpd_certified?: boolean | null
           cpd_hours_logged?: number | null
@@ -4720,6 +4723,7 @@ export type Database = {
           instructor_grade?: string | null
           is_active?: boolean
           is_online?: boolean | null
+          klarna_enabled?: boolean | null
           last_calendar_sync?: string | null
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null
@@ -4790,6 +4794,7 @@ export type Database = {
           car_mot_expiry?: string | null
           car_tax_expiry?: string | null
           car_type?: string
+          clearpay_enabled?: boolean | null
           commission_payer?: string | null
           cpd_certified?: boolean | null
           cpd_hours_logged?: number | null
@@ -4825,6 +4830,7 @@ export type Database = {
           instructor_grade?: string | null
           is_active?: boolean
           is_online?: boolean | null
+          klarna_enabled?: boolean | null
           last_calendar_sync?: string | null
           last_compliance_reminder_sent?: string | null
           last_seen_at?: string | null

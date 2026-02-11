@@ -26,6 +26,7 @@ import { ResetStatsDialog } from "@/components/instructor/ResetStatsDialog";
 import { DashboardLayoutManager } from "@/components/instructor/DashboardLayoutManager";
 import { AppearanceSettings } from "@/components/instructor/AppearanceSettings";
 import { CommissionPayerSettings } from "@/components/instructor/CommissionPayerSettings";
+import { PaymentOptionsSettings } from "@/components/instructor/PaymentOptionsSettings";
 import { SyllabusBuilder } from "@/components/instructor/SyllabusBuilder";
 import { TrainingResources } from "@/components/instructor/TrainingResources";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -832,6 +833,18 @@ export default function InstructorSettings() {
                   instructorId={instructorId} 
                   initialPayer={profile?.commission_payer}
                 />
+              </SettingsTile>
+
+              {/* BNPL Payment Options */}
+              <SettingsTile 
+                id="bnpl" 
+                icon={CreditCard} 
+                title="Buy Now, Pay Later" 
+                description="Klarna & Clearpay on your mini-website"
+                iconColor="text-pink-600"
+                iconBg="bg-pink-100 dark:bg-pink-900/30"
+              >
+                <PaymentOptionsSettings instructorId={instructorId} compact />
               </SettingsTile>
           </div>
         </div>

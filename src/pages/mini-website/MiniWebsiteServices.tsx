@@ -10,6 +10,7 @@ import { Clock, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
+import { ClearpayInstalmentBadge } from "@/components/payments/ClearpayOSMWidget";
 
 interface Course {
   id: string;
@@ -130,6 +131,17 @@ export default function MiniWebsiteServices({ subdomainSlug }: MiniWebsiteServic
                           </span>
                         )}
                       </div>
+                      {course.discounted_price && (instructor as any).klarna_enabled && (
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="rounded-md bg-[#ffb3c7] px-2 py-0.5 text-xs font-bold text-black">Klarna</span>
+                          <span className="text-xs text-gray-600">
+                            3 × £{(course.discounted_price / 3).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      {course.discounted_price && (instructor as any).clearpay_enabled && (
+                        <ClearpayInstalmentBadge amount={course.discounted_price} />
+                      )}
                       {course.custom_features && course.custom_features.length > 0 && (
                         <ul className="space-y-2 mb-4">
                           {course.custom_features.slice(0, 4).map((feature, i) => (
