@@ -60,7 +60,28 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
   const [range, setRange] = useState<"7" | "14" | "30">("7");
 
   const fromDate = subDays(new Date(), parseInt(range));
-  const { timesheets, loading: tsLoading } = useDriverTimesheets(instructorId, fromDate, new Date());
+  const toDate = new Date();
+  const { timesheets, loading: tsLoading } = useDriverTimesheets(instructorId, fromDate, toDate);
+
+  // Also fetch mileage_logs for daily mileage (more comprehensive than timesheets alone)
+  const [mileageLogs, setMileageLogs] = useState<{ log_date: string; distance_km: number }[]>([]);
+  const [mileageLoading, setMileageLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMileage() {
+      setMileageLoading(true);
+      const { data } = await supabase
+        .from("mileage_logs")
+        .select("log_date, distance_km")
+        .eq("instructor_id", instructorId)
+        .gte("log_date", fromDate.toISOString().split("T")[0])
+        .lte("log_date", toDate.toISOString().split("T")[0])
+        .order("log_date", { ascending: true });
+      setMileageLogs(data || []);
+      setMileageLoading(false);
+    }
+    fetchMileage();
+  }, [instructorId, range]);
 
   useEffect(() => {
     async function fetchDevices() {
@@ -85,12 +106,12 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
     { name: "Parked", value: statusCounts.parked },
   ].filter(d => d.value > 0);
 
-  // Daily mileage chart from timesheets
-  const dailyMileage = timesheets
-    .reduce((acc, ts) => {
-      const date = ts.sheet_date;
+  // Daily mileage chart from mileage_logs (more comprehensive data source)
+  const dailyMileage = mileageLogs
+    .reduce((acc, log) => {
+      const date = log.log_date;
       const existing = acc.find(a => a.date === date);
-      const miles = kmToMiles(ts.total_distance_km || 0);
+      const miles = kmToMiles(log.distance_km || 0);
       if (existing) {
         existing.miles += miles;
       } else {
@@ -200,7 +221,7 @@ export function FleetDashboard({ instructorId }: FleetDashboardProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-3">
-            {tsLoading ? (
+            {tsLoading || mileageLoading ? (
               <Skeleton className="h-48" />
             ) : dailyMileage.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-12">No trip data for this period</p>
