@@ -6465,6 +6465,42 @@ export type Database = {
           },
         ]
       }
+      plan_feature_descriptions: {
+        Row: {
+          created_at: string | null
+          display_name: string
+          display_order: number | null
+          feature_key: string
+          icon_name: string | null
+          id: string
+          long_description: string | null
+          short_description: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string
+          display_order?: number | null
+          feature_key: string
+          icon_name?: string | null
+          id?: string
+          long_description?: string | null
+          short_description?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string
+          display_order?: number | null
+          feature_key?: string
+          icon_name?: string | null
+          id?: string
+          long_description?: string | null
+          short_description?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       platform_commission_config: {
         Row: {
           commission_type: string

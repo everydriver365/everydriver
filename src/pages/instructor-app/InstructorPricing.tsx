@@ -74,8 +74,8 @@ export default function InstructorPricing() {
           </motion.div>
 
           {/* Plans Grid */}
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {plans.slice(0, 3).map((plan, index) => (
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
+            {plans.map((plan, index) => (
               <motion.div
                 key={plan.slug}
                 initial={{ opacity: 0, y: 20 }}
@@ -125,8 +125,8 @@ export default function InstructorPricing() {
                       variant={plan.is_popular ? undefined : "outline"}
                       asChild
                     >
-                      <Link to={`/instructor-app/signup?plan=${plan.slug}`}>
-                        {plan.cta_text || "Get Started"}
+                      <Link to={`/instructor-app/plan/${plan.slug}`}>
+                        Continue
                       </Link>
                     </Button>
                   </CardContent>
