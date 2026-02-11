@@ -766,6 +766,36 @@ export type Database = {
           },
         ]
       }
+      cron_sync_config: {
+        Row: {
+          created_at: string
+          id: string
+          interval_seconds: number
+          is_enabled: boolean
+          last_error: string | null
+          last_run_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          interval_seconds?: number
+          is_enabled?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interval_seconds?: number
+          is_enabled?: boolean
+          last_error?: string | null
+          last_run_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       data_audit_log: {
         Row: {
           action: string
@@ -7831,6 +7861,30 @@ export type Database = {
         }
         Relationships: []
       }
+      quartix_auth_cache: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quartix_driver_scores: {
         Row: {
           acceleration_score: number | null
@@ -9769,6 +9823,7 @@ export type Database = {
       }
     }
     Functions: {
+      auto_cleanup_stale_sessions: { Args: never; Returns: undefined }
       cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_parent_otp_codes: { Args: never; Returns: undefined }
       generate_calendar_share_token: { Args: never; Returns: string }

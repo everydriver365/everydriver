@@ -28,7 +28,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePendingJobsCount } from "@/hooks/usePendingJobsCount";
 import { useInstructorHomepageContent } from "@/hooks/useInstructorHomepageContent";
 import { useGPSConnectionStatus } from "@/hooks/useGPSConnectionStatus";
-import { useGPSAutoReconnect } from "@/hooks/useGPSAutoReconnect";
+
 import { useTodayOverview } from "@/hooks/useTodayOverview";
 import { useNextLessonDetails } from "@/hooks/useNextLessonDetails";
 import { useUnreadMessagesCount } from "@/hooks/useUnreadMessagesCount";
@@ -39,7 +39,7 @@ import { useTomorrowPreview } from "@/hooks/useTomorrowPreview";
 import { useRealGapSlots } from "@/hooks/useRealGapSlots";
 import { useLastWeekComparison } from "@/hooks/useLastWeekComparison";
 import { useInstructorLastPosition } from "@/hooks/useInstructorLastPosition";
-import { useGPSPoller } from "@/hooks/useGPSPoller";
+
 import { useUrgentAlerts } from "@/hooks/useUrgentAlerts";
 import { QuickActionTiles } from "@/components/instructor/QuickActionTiles";
 import { SmartRemindersCard } from "@/components/instructor/SmartRemindersCard";
@@ -187,35 +187,16 @@ export function InstructorMobileHome({
     manualReconnect: manualGPSReconnect 
   } = useGPSConnectionStatus(instructorId || null);
   
-  // Auto-reconnect when GPS drops
-  const { 
-    isReconnecting: isGPSReconnecting, 
-    retryCount: gpsRetryCount,
-    manualReconnect: triggerManualReconnect 
-  } = useGPSAutoReconnect({
-    instructorId: instructorId || null,
-    enabled: true,
-    maxRetries: 5,
-    onReconnected: () => {
-      console.log("[Home] GPS auto-reconnected successfully");
-      manualGPSReconnect(); // Refresh the status hook
-    },
-    onMaxRetriesReached: () => {
-      console.log("[Home] GPS auto-reconnect max retries reached");
-    },
-  });
-  
+  // Server-side quartix-sync handles polling automatically via pg_cron
+  const isGPSReconnecting = false;
+  const gpsRetryCount = 0;
+  const triggerManualReconnect = manualGPSReconnect;
+
   const { data: todayOverview, isLoading: todayLoading } = useTodayOverview(instructorId);
   const { data: nextLesson } = useNextLessonDetails(instructorId);
   const { data: unreadCount } = useUnreadMessagesCount(instructorId);
   const { alerts, dismissAlert, location: alertsLocation, currentWeather } = useDrivingAlerts(instructorId);
   const { roadName: gpsRoadName } = useInstructorLastPosition(instructorId || null);
-  
-  // Poll GPS server every 10 seconds on home screen for fresh connection status
-  useGPSPoller({
-    enabled: !!instructorId,
-    intervalMs: 10000,
-  });
   
   // New enhancement hooks
   const { data: streak } = useInstructorStreak(instructorId);
