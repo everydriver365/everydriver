@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { PlanFeatureDescriptionsManager } from "./PlanFeatureDescriptionsManager";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -615,6 +616,11 @@ export function SubscriptionPlansManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Feature Descriptions Section */}
+      <div className="border-t pt-6">
+        <PlanFeatureDescriptionsManager />
+      </div>
     </div>
   );
 }

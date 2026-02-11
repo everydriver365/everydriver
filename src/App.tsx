@@ -105,6 +105,7 @@ import InstructorFleetDashboard from "./pages/InstructorFleetDashboard";
 import InstructorAppHome from "./pages/instructor-app/InstructorAppHome";
 import InstructorFeatures from "./pages/instructor-app/InstructorFeatures";
 import InstructorPricing from "./pages/instructor-app/InstructorPricing";
+import InstructorPlanDetail from "./pages/instructor-app/InstructorPlanDetail";
 import InstructorLogin from "./pages/instructor-app/InstructorLogin";
 import InstructorSignup from "./pages/instructor-app/InstructorSignup";
 import InstructorAbout from "./pages/instructor-app/InstructorAbout";
@@ -177,6 +178,7 @@ const App = () => (
               <Route path="/instructor-app/features" element={<InstructorFeatures />} />
               <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
               <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
+              <Route path="/instructor-app/plan/:slug" element={<InstructorPlanDetail />} />
               <Route path="/instructor-app/about" element={<InstructorAbout />} />
               <Route path="/instructor-app/contact" element={<InstructorContactPage />} />
               <Route path="/instructor-app/domains" element={<InstructorDomains />} />
