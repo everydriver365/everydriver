@@ -331,7 +331,7 @@ export function InstructorMobileHome({
           className="bg-card shadow-xl overflow-hidden"
         >
           {/* Gradient header */}
-          <div className="relative bg-gradient-to-br from-primary via-primary/85 to-primary/70 px-4 py-4 text-white">
+          <div className="relative bg-gradient-to-br from-sky-500 via-blue-500 to-blue-600 px-4 py-4 text-white">
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -412,7 +412,7 @@ export function InstructorMobileHome({
             onClick={() => navigate("/instructor/jobs")}
             className="w-full bg-card shadow-xl overflow-hidden active:scale-[0.99] transition-all"
           >
-            <div className="relative bg-gradient-to-br from-primary via-primary/85 to-primary/70 px-4 py-3 text-white">
+            <div className="relative bg-gradient-to-br from-sky-500 via-blue-500 to-blue-600 px-4 py-3 text-white">
               <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
                 <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
@@ -425,7 +425,7 @@ export function InstructorMobileHome({
                     <p className="text-white/70 text-[10px]">{pendingJobsCount} pending offer{pendingJobsCount !== 1 ? "s" : ""}</p>
                   </div>
                 </div>
-                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-primary text-xs font-bold flex items-center justify-center shadow-sm">
+                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-blue-600 text-xs font-bold flex items-center justify-center shadow-sm">
                   {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                 </span>
               </div>
@@ -436,7 +436,7 @@ export function InstructorMobileHome({
           onClick={() => navigate("/instructor/messages")}
           className="w-full bg-card shadow-xl overflow-hidden active:scale-[0.99] transition-all"
         >
-          <div className="relative bg-gradient-to-br from-primary via-primary/85 to-primary/70 px-4 py-3 text-white">
+          <div className="relative bg-gradient-to-br from-sky-500 via-blue-500 to-blue-600 px-4 py-3 text-white">
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
               <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
