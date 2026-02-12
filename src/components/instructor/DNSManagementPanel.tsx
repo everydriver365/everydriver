@@ -186,7 +186,7 @@ export function DNSManagementPanel({
   const getRecordTypeColor = (type: string) => {
     switch (type) {
       case "A":
-        return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+        return "bg-[#0075c9]/10 text-[#0075c9] border-[#0075c9]/20";
       case "AAAA":
         return "bg-indigo-500/10 text-indigo-600 border-indigo-500/20";
       case "CNAME":

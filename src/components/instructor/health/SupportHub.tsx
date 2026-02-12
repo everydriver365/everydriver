@@ -84,7 +84,7 @@ export function SupportHub() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "article": return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+      case "article": return "bg-[#0075c9]/10 text-[#0075c9]";
       case "video": return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
       case "pdf": return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
       case "link": return "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";

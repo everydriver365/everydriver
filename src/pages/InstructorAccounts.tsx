@@ -135,11 +135,11 @@ export default function InstructorAccounts() {
                   fuelCostPerLitre={accountSettings.fuel_cost_per_litre}
                 />
                 <div className="space-y-4">
-                  <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                    <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  <div className="p-4 rounded-lg bg-[#0075c9]/5 dark:bg-[#0075c9]/10 border border-[#0075c9]/20 dark:border-[#0075c9]/30">
+                    <h3 className="font-medium text-[#0075c9] mb-2">
                       Tax Report Includes
                     </h3>
-                    <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                    <ul className="text-sm text-[#0075c9]/80 space-y-1">
                       <li>• Gross income from all lessons</li>
                       <li>• HMRC mileage allowance calculation</li>
                       <li>• Expenses breakdown by category</li>

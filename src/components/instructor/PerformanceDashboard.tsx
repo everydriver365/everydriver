@@ -247,7 +247,7 @@ export function PerformanceDashboard({ instructorId }: PerformanceDashboardProps
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+              <div className="p-2 rounded-lg bg-[#0075c9]/10 text-[#0075c9]">
                 <Users className="h-5 w-5" />
               </div>
               <div>

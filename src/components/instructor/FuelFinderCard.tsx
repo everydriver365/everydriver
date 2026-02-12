@@ -10,12 +10,12 @@ interface FuelFinderCardProps {
 }
 
 const brandColors: Record<string, { bg: string; text: string }> = {
-  "Tesco": { bg: "bg-blue-500", text: "T" },
+  "Tesco": { bg: "bg-[#0075c9]", text: "T" },
   "Sainsbury's": { bg: "bg-orange-500", text: "S" },
   "Asda": { bg: "bg-green-500", text: "A" },
   "Morrisons": { bg: "bg-yellow-500", text: "M" },
   "BP": { bg: "bg-green-600", text: "BP" },
-  "Esso": { bg: "bg-blue-600", text: "E" },
+  "Esso": { bg: "bg-[#0075c9]", text: "E" },
   "Shell": { bg: "bg-red-500", text: "SH" },
   "JET": { bg: "bg-purple-500", text: "J" },
   "Motor Fuel Group": { bg: "bg-slate-600", text: "MFG" },
@@ -50,8 +50,8 @@ function StationRow({ station, type, badges, onNavigate }: StationRowProps) {
     <div className={cn(
       "px-4 py-3",
       isGreen && "bg-emerald-50/50",
-      isBlue && "bg-blue-50/50",
-      badges && "bg-gradient-to-r from-emerald-50/40 to-blue-50/40"
+      isBlue && "bg-[#0075c9]/5",
+      badges && "bg-gradient-to-r from-emerald-50/40 to-[#0075c9]/5"
     )}>
       {/* Badge row */}
       <div className="flex items-center gap-1.5 mb-1.5">
@@ -61,7 +61,7 @@ function StationRow({ station, type, badges, onNavigate }: StationRowProps) {
             className={cn(
               "text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded",
               b === "Cheapest" && "bg-emerald-100 text-emerald-700",
-              b === "Nearest" && "bg-blue-100 text-blue-700"
+              b === "Nearest" && "bg-[#0075c9]/10 text-[#0075c9]"
             )}
           >
             {b}

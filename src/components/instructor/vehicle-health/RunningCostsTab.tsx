@@ -48,16 +48,16 @@ export function RunningCostsTab() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+        <Card className="bg-gradient-to-br from-[#0075c9]/5 to-[#0075c9]/10 dark:from-[#0075c9]/10 dark:to-[#0075c9]/5 border-[#0075c9]/20 dark:border-[#0075c9]/30">
           <CardContent className="p-3">
             <div className="flex items-center gap-1.5 mb-1">
-              <Calendar className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-              <span className="text-[10px] font-medium text-blue-700 dark:text-blue-300">This Month</span>
+              <Calendar className="h-3.5 w-3.5 text-[#0075c9]" />
+              <span className="text-[10px] font-medium text-[#0075c9]">This Month</span>
             </div>
-            <p className="text-lg font-bold text-blue-800 dark:text-blue-200">
+            <p className="text-lg font-bold text-[#0075c9]">
               £{summary.thisMonth.fuelCost.toFixed(2)}
             </p>
-            <p className="text-[10px] text-blue-600 dark:text-blue-400">
+            <p className="text-[10px] text-[#0075c9]/70">
               {summary.thisMonth.miles.toFixed(0)} mi
             </p>
           </CardContent>
@@ -163,7 +163,7 @@ export function RunningCostsTab() {
                         "shrink-0",
                         trip.trip_type === "business"
                           ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
-                          : "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
+                          : "bg-[#0075c9]/10 text-[#0075c9] dark:bg-[#0075c9]/20"
                       )}
                     >
                       {trip.trip_type === "business" ? (

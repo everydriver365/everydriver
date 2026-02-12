@@ -575,7 +575,7 @@ export function DesktopPupilDetailPanel({
               </div>
               <div className="flex gap-1.5">
                 <QuickAction icon={Phone} label="Call" color="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600" onClick={() => pupil.phone && window.open(`tel:${pupil.phone}`)} disabled={!pupil.phone} />
-                <QuickAction icon={MessageSquare} label="Text" color="bg-blue-100 dark:bg-blue-900/30 text-blue-600" onClick={() => pupil.phone && window.open(`sms:${pupil.phone}`)} disabled={!pupil.phone} />
+                <QuickAction icon={MessageSquare} label="Text" color="bg-[#0075c9]/10 dark:bg-[#0075c9]/20 text-[#0075c9]" onClick={() => pupil.phone && window.open(`sms:${pupil.phone}`)} disabled={!pupil.phone} />
                 <QuickAction icon={Navigation} label="Nav" color="bg-purple-100 dark:bg-purple-900/30 text-purple-600" onClick={handleNavigate} />
                 <QuickAction icon={Mail} label="Chat" color="bg-primary/10 text-primary" onClick={() => onStartChat?.(pupil)} />
                 <QuickAction icon={PoundSterling} label="Pay" color="bg-amber-100 dark:bg-amber-900/30 text-amber-600" onClick={() => setShowRecordPaymentModal(true)} />
@@ -625,10 +625,10 @@ export function DesktopPupilDetailPanel({
                 )}
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+            <Card className="bg-gradient-to-br from-[#0075c9]/5 to-[#0075c9]/10 dark:from-[#0075c9]/10 dark:to-[#0075c9]/5 border-[#0075c9]/20 dark:border-[#0075c9]/30">
               <CardContent className="p-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <Award className="h-4 w-4 text-blue-600" />
+                  <Award className="h-4 w-4 text-[#0075c9]" />
                   <span className="text-xs text-muted-foreground">Tests</span>
                 </div>
                 <div className="text-lg font-bold">{testStats.mockTests} mock</div>

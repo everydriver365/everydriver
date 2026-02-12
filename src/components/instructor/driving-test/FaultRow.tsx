@@ -40,7 +40,7 @@ const colorPresets = [
   { label: "Orange", bg: "bg-orange-100", hex: "#ffedd5" },
   { label: "Red", bg: "bg-red-100", hex: "#fee2e2" },
   { label: "Green", bg: "bg-green-100", hex: "#dcfce7" },
-  { label: "Blue", bg: "bg-blue-100", hex: "#dbeafe" },
+  { label: "Blue", bg: "bg-[#0075c9]/10", hex: "#0075c9" },
   { label: "Purple", bg: "bg-purple-100", hex: "#f3e8ff" },
   { label: "Pink", bg: "bg-pink-100", hex: "#fce7f3" },
   { label: "Teal", bg: "bg-teal-100", hex: "#ccfbf1" },

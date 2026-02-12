@@ -376,11 +376,11 @@ export function UpcomingTestsView({ instructorId }: UpcomingTestsViewProps) {
   };
 
   return (
-    <Card className="border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-cyan-500/5">
+    <Card className="border-[#0075c9]/30 bg-gradient-to-br from-[#0075c9]/5 to-cyan-500/5">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Car className="h-5 w-5 text-blue-500" />
+            <Car className="h-5 w-5 text-[#0075c9]" />
             Upcoming Tests
           </CardTitle>
           <AddTestDialog instructorId={instructorId} onSuccess={fetchPupilsWithTests} />
@@ -389,7 +389,7 @@ export function UpcomingTestsView({ instructorId }: UpcomingTestsViewProps) {
       <CardContent>
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#0075c9] border-t-transparent" />
           </div>
         ) : pupils.length === 0 ? (
           <div className="text-center py-6">

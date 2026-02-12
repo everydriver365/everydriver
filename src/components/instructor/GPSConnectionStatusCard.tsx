@@ -31,11 +31,11 @@ export function GPSConnectionStatusCard({
   const getColorScheme = () => {
     if (showReconnecting) {
       return {
-        bg: "bg-blue-50/95 border-blue-300 dark:bg-blue-950/80 dark:border-blue-700",
-        iconBg: "bg-blue-100 dark:bg-blue-900/50",
-        iconColor: "text-blue-600 dark:text-blue-400",
-        textColor: "text-blue-900 dark:text-blue-100",
-        statusColor: "text-blue-700 dark:text-blue-300",
+        bg: "bg-[#0075c9]/5 border-[#0075c9]/30 dark:bg-[#0075c9]/10 dark:border-[#0075c9]/40",
+        iconBg: "bg-[#0075c9]/10 dark:bg-[#0075c9]/20",
+        iconColor: "text-[#0075c9]",
+        textColor: "text-[#0075c9] dark:text-[#0075c9]/80",
+        statusColor: "text-[#0075c9]/80 dark:text-[#0075c9]/70",
       };
     }
     if (showStationary) {
@@ -100,7 +100,7 @@ export function GPSConnectionStatusCard({
           </div>
           <div className="flex items-center gap-2">
             {showReconnecting ? (
-              <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+              <Loader2 className="h-4 w-4 animate-spin text-[#0075c9]" />
             ) : (
               <span className="relative flex h-3 w-3">
                 {(isConnected && !showStationary) && (

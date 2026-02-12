@@ -101,10 +101,10 @@ const PupilGamificationStats: React.FC<PupilGamificationStatsProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-center p-3 bg-blue-500/10 rounded-lg"
+            className="text-center p-3 bg-[#0075c9]/10 rounded-lg"
           >
-            <Target className="h-5 w-5 mx-auto text-blue-500 mb-1" />
-            <p className="text-xl font-bold text-blue-600">{stats.total_trips || 0}</p>
+            <Target className="h-5 w-5 mx-auto text-[#0075c9] mb-1" />
+            <p className="text-xl font-bold text-[#0075c9]">{stats.total_trips || 0}</p>
             <p className="text-xs text-muted-foreground">Lessons</p>
           </motion.div>
         </div>

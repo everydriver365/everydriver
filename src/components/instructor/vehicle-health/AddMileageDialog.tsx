@@ -116,7 +116,7 @@ export function AddMileageDialog({ open, onOpenChange }: AddMileageDialogProps) 
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="personal" id="personal" />
                 <Label htmlFor="personal" className="flex items-center gap-1 cursor-pointer">
-                  <Home className="h-4 w-4 text-blue-600" />
+                  <Home className="h-4 w-4 text-[#0075c9]" />
                   Personal
                 </Label>
               </div>

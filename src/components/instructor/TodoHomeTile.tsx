@@ -27,14 +27,14 @@ import { motion, AnimatePresence } from "framer-motion";
 const PRIORITY_COLORS: Record<number, string> = {
   1: "text-red-500 border-red-500",
   2: "text-orange-500 border-orange-500",
-  3: "text-blue-500 border-blue-500",
+  3: "text-[#0075c9] border-[#0075c9]",
   4: "text-muted-foreground/40 border-muted-foreground/30",
 };
 
 const PRIORITY_FLAGS: Record<number, string> = {
   1: "text-red-500",
   2: "text-orange-500",
-  3: "text-blue-500",
+  3: "text-[#0075c9]",
   4: "text-muted-foreground/30",
 };
 

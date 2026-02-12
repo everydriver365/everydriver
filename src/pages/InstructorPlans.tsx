@@ -37,7 +37,7 @@ const tierAccents: Record<string, string> = {
   free: "from-slate-500/20 to-slate-400/10 border-slate-300/40",
   pro: "from-emerald-500/20 to-teal-400/10 border-emerald-400/50",
   max: "from-violet-500/20 to-purple-400/10 border-violet-400/50",
-  multi: "from-blue-500/20 to-cyan-400/10 border-blue-400/50",
+  multi: "from-[#0075c9]/20 to-cyan-400/10 border-[#0075c9]/50",
   enterprise: "from-amber-500/20 to-orange-400/10 border-amber-400/50",
 };
 
@@ -45,7 +45,7 @@ const tierHeaderBg: Record<string, string> = {
   free: "bg-gradient-to-br from-slate-600 to-slate-800",
   pro: "bg-gradient-to-br from-emerald-600 to-teal-800",
   max: "bg-gradient-to-br from-violet-600 to-purple-800",
-  multi: "bg-gradient-to-br from-blue-600 to-cyan-800",
+  multi: "bg-gradient-to-br from-[#0075c9] to-cyan-800",
   enterprise: "bg-gradient-to-br from-amber-600 to-orange-800",
 };
 
