@@ -1,38 +1,89 @@
 
 
-## Add Postcode Lookup and Address Autocomplete to the Add Lesson Sheet
+## TrueLayer Open Banking Integration
 
-### What Changes
+### What This Does
+Adds TrueLayer as a payment option so pupils can pay directly from their bank app (via Faster Payments). When a pupil pays, the money lands in your TrueLayer merchant account almost instantly, and a payout is automatically triggered to the instructor's bank account -- giving you near-instant, low-fee, bank-to-bank payments.
 
-The "Pickup Address" field in the Add Lesson sheet on the schedule page will be upgraded from a plain text input to a two-step address lookup:
+### Prerequisites (You Need to Do First)
+1. **Sign up at [TrueLayer Console](https://console.truelayer.com)** -- create a business account
+2. **Complete KYB verification** -- TrueLayer needs to verify your business identity
+3. **Get your API credentials** from the Console:
+   - Client ID
+   - Client Secret
+   - Signing Key ID + Private Key (needed for the Payouts API)
+4. **Set up a merchant account** in TrueLayer (this is where pupil payments land before being paid out)
 
-1. **Postcode field** -- Uses the existing `PostcodeAutocomplete` component for type-ahead postcode search (powered by postcodes.io).
-2. **Address dropdown** -- Once a postcode is selected, calls the existing `address-lookup` backend function (HERE API) to fetch addresses at that postcode, letting the instructor pick one from a dropdown.
+### How the Flow Works
 
-The selected address auto-fills the pickup address field. Manual typing remains possible as a fallback.
+```text
+Pupil clicks "Pay"
+       |
+       v
++-----------------------------+
+| truelayer-checkout (edge fn)|  <-- Creates a payment via TrueLayer API
+| Returns hosted payment link |
++-----------------------------+
+       |
+       v
+Pupil completes payment in their banking app
+       |
+       v
++-----------------------------+
+| truelayer-webhook (edge fn) |  <-- TrueLayer sends payment status update
+| Records payment_history     |
+| Updates pupil balance       |
+| Triggers instructor payout  |
++-----------------------------+
+       |
+       v
++-----------------------------+
+| truelayer-payout (edge fn)  |  <-- Sends money to instructor's bank
+| Records in instructor_payouts|
++-----------------------------+
+       |
+       v
+Instructor receives funds via Faster Payments
+```
 
-### User Experience
+### What Gets Built
 
-1. Instructor taps "Pickup Address" area.
-2. A postcode input appears with autocomplete suggestions (existing component).
-3. After selecting a postcode, a dropdown of addresses at that postcode loads.
-4. Selecting an address fills the pickup address and postcode fields.
-5. The instructor can still manually type/edit the address if preferred.
+**1. Database Changes**
+- Add `instructor_bank_details` table (sort code, account number, stored securely, RLS protected so only the instructor can see their own)
+- Add `truelayer` as a payment gateway option
 
----
+**2. Three Edge Functions**
+- `truelayer-checkout` -- Authenticates with TrueLayer, creates a payment request, returns the hosted payment page URL for the pupil
+- `truelayer-webhook` -- Receives payment status webhooks from TrueLayer, records the payment, updates pupil balance, and triggers instructor payout
+- `truelayer-payout` -- Calls TrueLayer Payouts API to send funds to the instructor's bank account
+
+**3. Instructor Bank Details UI**
+- New section in instructor settings to enter sort code and account number
+- Required before TrueLayer payouts can be sent to them
+
+**4. Pupil Payment Integration**
+- Add "Pay by Bank" as an option alongside existing card/BNPL methods
+- Uses TrueLayer's Hosted Payment Page (no card details needed)
+
+**5. Secrets Required**
+- `TRUELAYER_CLIENT_ID`
+- `TRUELAYER_CLIENT_SECRET`
+- `TRUELAYER_SIGNING_KEY_ID`
+- `TRUELAYER_SIGNING_PRIVATE_KEY`
+- `TRUELAYER_WEBHOOK_SECRET`
 
 ### Technical Details
 
-**File: `src/components/instructor/AddLessonSheet.tsx`**
+**TrueLayer API Flow:**
+1. Get access token: POST to `https://auth.truelayer.com/connect/token` with client credentials
+2. Create payment: POST to `https://api.truelayer.com/v3/payments` with amount, currency (GBP), beneficiary (merchant account)
+3. Return `hosted_payment_page_link` to pupil's browser
+4. Receive webhook on payment completion
+5. Create payout: POST to `https://api.truelayer.com/v3/payouts` with instructor's sort code and account number
 
-- Add a new `pickupPostcode` state variable.
-- Replace the plain `<Input>` for pickup address (lines 358-365) with:
-  - The existing `PostcodeAutocomplete` component for postcode entry.
-  - A new address selector that calls `supabase.functions.invoke('address-lookup', { body: { postcode } })` when a postcode is selected.
-  - A `<Select>` dropdown populated with the returned addresses.
-  - The selected address populates `pickupAddress`; the postcode populates `pickupPostcode`.
-- When an existing pupil is selected and auto-fills the address, also extract/set the postcode separately.
-- Pass `pickup_postcode` alongside `pickup_location` when inserting the scheduled lesson.
+**Request signing:** TrueLayer's Payouts API requires request signing using ES512 (ECDSA with P-521). The signing key private key will be stored as a secret and used in the edge function.
 
-**No new components or backend functions needed** -- everything reuses existing infrastructure (`PostcodeAutocomplete`, `address-lookup` edge function).
+**Commission handling:** The platform commission will be deducted before the instructor payout, matching the existing `platform_commission_config` logic.
+
+**Sandbox vs Production:** A `TRUELAYER_SANDBOX` secret flag will control whether sandbox or production endpoints are used, matching how Clearpay/Klarna sandbox flags work in the existing codebase.
 
