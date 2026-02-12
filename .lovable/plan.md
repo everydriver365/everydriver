@@ -1,69 +1,97 @@
 
 
-# Remove All Traccar References
+# Restyle Instructor Features Page to Capacitor-Inspired Design
 
-Traccar was never properly integrated — the edge functions fail, no `traccar_devices` table exists, and the actual GPS tracking runs entirely through **Quartix sync** and the `gps_devices` table. This plan removes all Traccar-specific code and renames remaining references to generic "GPS Tracking" terminology.
-
----
-
-## What Will Be Removed
-
-### Edge Functions (delete entirely)
-- `supabase/functions/traccar-poller/` — non-functional, references missing tables
-- `supabase/functions/traccar-webhook/` — unused webhook handler
-
-### Components
-- `src/components/admin/TraccarStatusPanel.tsx` — rename to `GPSStatusPanel` and remove all "Traccar" text labels
-
-### CSS/Marker Classes
-- Rename CSS classes like `.traccar-car-marker` and `.traccar-marker-icon` in `LiveTrackingMap.tsx` to generic names (e.g., `.gps-car-marker`)
+Redesign the InstructorFeatures marketing page to match the clean, minimal aesthetic shown in the Capacitor website reference image: white backgrounds, bold black typography, generous whitespace, and a modern split-layout hero.
 
 ---
 
-## What Will Be Renamed (Traccar to GPS/Tracking)
+## Design Changes
 
-### Routes in `App.tsx`
-- `/instructor/traccar` stays as the path (to avoid breaking bookmarks) but all visible "Traccar" labels removed
-- `/instructor/settings/traccar` same approach
+### 1. Hero Section (FeatureHero.tsx) -- Major Rework
+- Replace the dark full-bleed background image with a **clean white/light gray background**
+- **Left-right split layout**: bold headline text on the left, a product mockup/illustration on the right
+- Typography: **extra-bold black text**, very large heading (similar to Capacitor's massive font weight)
+- Subtitle in lighter gray below the heading
+- CTA buttons: **rounded pill buttons** -- one filled (brand blue/emerald), one outlined
+- Remove the background image overlay entirely
+- Add subtle platform icons (Apple, Android, PWA) below the CTAs like Capacitor does
 
-### Navigation & UI Labels (text changes only)
-| File | Change |
-|------|--------|
-| `InstructorBottomNav.tsx` | Path already generic ("Track") — no change needed |
-| `CommandPalette.tsx` | Remove "traccar" from keywords |
-| `HomeQuickActions.tsx` | Route stays, label already "Track Live" |
-| `QuickActionsFAB.tsx` | Route stays, label already "Track Live" |
-| `FloatingSessionBar.tsx` | Route reference stays |
-| `InstructorMenu.tsx` | Change gateKey from "traccar" to "tracking" |
-| `TodayRouteMiniMap.tsx` | Route reference stays |
-| `InstructorSettings.tsx` | Change tile id from "traccar" to "gps-device", remove "Traccar" text |
-| `AdminSettingsGrid.tsx` | Import renamed component |
-| `TraccarStatusPanel.tsx` | Rename file, change title to "Live GPS Tracking" |
+### 2. Navigation Header (InstructorSaaSLayout.tsx) -- Restyle
+- Change from dark navy (`bg-[#142040]`) to a **clean white header** with subtle bottom border
+- Nav links become **dark text** on white background
+- Logo stays the same
+- CTA button keeps the emerald accent
+- This matches the Capacitor site's light, airy nav
 
-### Hooks & Types
-- `useGPSConnectionStatus.ts` — remove the `useTraccarConnectionStatus` alias export
-- `useVehicleHealth.ts` — remove the `TraccarDeviceHealth` alias, use `GPSDeviceHealth` directly
-- Update all files importing `TraccarDeviceHealth` to use `GPSDeviceHealth`
+### 3. Stats Bar (StatsBar.tsx) -- Lighten
+- Keep the same data but ensure it sits on a clean white/very light background
+- Use darker text for values, lighter for labels
+- Minimal border or a very subtle divider
 
-### Pages
-- `InstructorGPSSetup.tsx` — rename `InstructorTraccarSetup` function to `InstructorGPSSetup`, rename internal `TraccarDevice` interface to `GPSDevice`
-- `InstructorLiveSession.tsx` — update route references in navigate calls from "traccar" to "tracking" (or keep path but remove label text)
-- `InstructorVehicleHealth.tsx` — update imports to `GPSDeviceHealth`
+### 4. Feature Category Sections (FeatureCategorySection.tsx) -- Simplify
+- Alternate between pure white and very light gray (`bg-gray-50`) backgrounds instead of themed colors
+- Keep the split text/image layout but with more whitespace
+- Cards get a cleaner, flatter look: white background, subtle border, no heavy shadows
+- Feature highlight pills stay but get a lighter treatment
 
-### Component Files
-- `LiveTrackingMap.tsx` — rename `TraccarLiveMapProps` to `LiveMapProps`, rename CSS classes
-- `DeviceStatusCard.tsx` — update `TraccarDeviceHealth` import
-- `LinkDeviceDialog.tsx` — update `TraccarDeviceHealth` import
-- `LiveTelemetryTab.tsx` — update `TraccarDeviceHealth` import
-- `EnhancedDeviceStatusCard.tsx` — update `TraccarDeviceHealth` import
+### 5. Product Showcase (ProductShowcase.tsx) -- Clean Up
+- Remove gradient backgrounds, use plain white
+- Keep the split layout with generous padding
+- Badges get a lighter, more minimal style
+
+### 6. Testimonial Strip (TestimonialStrip.tsx) -- Lighten
+- Change from dark primary background to a light gray or white section
+- Testimonial cards: white cards with subtle borders on light background
+- Dark text instead of light-on-dark
+
+### 7. Comparison Section (ComparisonSection.tsx) -- Already Light
+- Minor refinements to match the overall cleaner aesthetic
+
+### 8. CTA Section (FeatureCTA.tsx) -- Soften
+- Option A: Keep dark CTA for contrast (common pattern even on light sites)
+- Option B: Switch to a light blue/brand-tinted background
+- Will go with Option A as a visual anchor at the page bottom
+
+### 9. Extra Features (ExtraFeatures.tsx) -- Minimal
+- Clean white/light background
+- Simpler card styling
+
+---
+
+## Summary of the Visual Shift
+
+| Element | Current | New |
+|---------|---------|-----|
+| Hero BG | Dark navy with image overlay | White with split layout |
+| Nav | Dark navy header | White with dark text |
+| Typography | White on dark | Bold black on white |
+| Section BGs | Dark alternating | White / very light gray |
+| Cards | Shadowed with colored accents | Flat, subtle borders |
+| CTAs | Emerald on dark | Rounded pills, emerald on white |
+| Testimonials | Dark primary background | Light background, white cards |
 
 ---
 
 ## Technical Details
 
-- **No database changes needed** — there are no `traccar_*` tables; everything uses `gps_devices`
-- **No Quartix changes** — the working Quartix sync remains completely untouched
-- **Edge functions** `traccar-poller` and `traccar-webhook` will be deleted from deployment
-- **Route paths** like `/instructor/traccar` will be updated to `/instructor/tracking` across all navigation references for consistency
-- Approximately **25 files** will be touched, mostly for find-and-replace of type names and labels
+### Files to Modify
 
+| File | Change |
+|------|--------|
+| `src/components/instructor-features/FeatureHero.tsx` | Full rewrite to split-layout, white BG, bold black text, pill buttons |
+| `src/components/layout/InstructorSaaSLayout.tsx` | Header from dark navy to white, dark text nav links |
+| `src/components/instructor-features/StatsBar.tsx` | Lighter background, darker text |
+| `src/components/instructor-features/FeatureCategorySection.tsx` | White/gray alternating BGs, cleaner cards |
+| `src/components/instructor-features/ProductShowcase.tsx` | Remove gradient BG, cleaner style |
+| `src/components/instructor-features/TestimonialStrip.tsx` | Light background, white cards, dark text |
+| `src/components/instructor-features/ExtraFeatures.tsx` | Lighter, flatter card styling |
+| `src/components/instructor-features/FeatureCTA.tsx` | Minor refinements |
+| `src/components/instructor-features/ComparisonSection.tsx` | Minor alignment tweaks |
+
+### Approach
+- Keep all existing content, data, and functionality intact
+- Only change visual styling (colors, backgrounds, typography weights, border radius)
+- Use the existing mockup images in the hero right-side panel
+- All framer-motion animations remain
+- Mobile responsiveness preserved (hero stacks vertically on small screens)
