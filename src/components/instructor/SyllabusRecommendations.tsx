@@ -71,7 +71,7 @@ export function SyllabusRecommendations({ pupilId }: SyllabusRecommendationsProp
       title: 'Ready to Progress',
       icon: TrendingUp,
       items: readyToProgress,
-      color: 'text-blue-500',
+      color: 'text-[#0075c9]',
       show: readyToProgress.length > 0,
     },
     {

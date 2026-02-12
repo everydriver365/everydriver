@@ -55,7 +55,7 @@ export function SSLStatusBadge({
         return {
           icon: Loader2,
           label: "Provisioning",
-          className: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+          className: "bg-[#0075c9]/10 text-[#0075c9] border-[#0075c9]/20",
           description: "SSL certificate is being issued...",
           iconClassName: "animate-spin",
         };

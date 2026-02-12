@@ -75,7 +75,7 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
               className={cn(
                 "relative overflow-hidden rounded-xl border shadow-sm",
                 isWeather
-                  ? "border-blue-200 dark:border-blue-800"
+                  ? "border-[#0075c9]/20 dark:border-[#0075c9]/30"
                   : isSevere
                     ? "bg-gradient-to-r from-destructive/10 to-destructive/5 border-destructive/30 dark:from-destructive/20 dark:to-destructive/10"
                     : "bg-gradient-to-r from-warning/10 to-warning/5 border-warning/30 dark:from-warning/20 dark:to-warning/10"

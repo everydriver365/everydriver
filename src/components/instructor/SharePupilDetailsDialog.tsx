@@ -138,7 +138,7 @@ export function SharePupilDetailsDialog({ pupil, instructorName, trigger }: Shar
           {!sendMethod ? (
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" onClick={() => { setSendMethod("sms"); setRecipient(pupil.phone || ""); }} className="h-20 flex-col gap-2">
-                <MessageSquare className="h-6 w-6 text-blue-600" />
+                <MessageSquare className="h-6 w-6 text-[#0075c9]" />
                 <span className="text-xs">Send via SMS</span>
               </Button>
               <Button variant="outline" onClick={() => { setSendMethod("email"); setRecipient(pupil.email || ""); }} className="h-20 flex-col gap-2">

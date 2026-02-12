@@ -67,7 +67,7 @@ export function PupilCreditBreakdown({
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 rounded-lg p-3">
+      <div className="bg-gradient-to-br from-[#0075c9]/5 to-[#0075c9]/10 dark:from-[#0075c9]/10 dark:to-[#0075c9]/5 rounded-lg p-3">
         <div className="flex items-center justify-center py-2">
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
@@ -80,10 +80,10 @@ export function PupilCreditBreakdown({
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50/50 to-blue-100/30 dark:from-blue-950/20 dark:to-blue-900/10 rounded-lg p-3 space-y-2">
+    <div className="bg-gradient-to-br from-[#0075c9]/5 to-[#0075c9]/10 dark:from-[#0075c9]/10 dark:to-[#0075c9]/5 rounded-lg p-3 space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CreditCard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <CreditCard className="h-4 w-4 text-[#0075c9]" />
           <span className="font-medium text-sm">Credits & Purchases</span>
         </div>
       </div>

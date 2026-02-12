@@ -199,7 +199,7 @@ export function SmartInsightsPanel({ instructorId }: SmartInsightsPanelProps) {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
+              <Users className="h-4 w-4 text-[#0075c9]" />
               Pupil Retention
             </CardTitle>
             <Badge className={getRiskColor(insights.retentionInsights.riskLevel)}>

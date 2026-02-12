@@ -105,7 +105,7 @@ export default function InstructorMenu() {
     {
       title: "Schedule & Pupils",
       items: [
-        { icon: Calendar, label: "Schedule", description: "View calendar", iconColor: "text-blue-600", gateKey: "schedule", path: "/instructor/schedule", customIcon: scheduleIcon },
+        { icon: Calendar, label: "Schedule", description: "View calendar", iconColor: "text-[#0075c9]", gateKey: "schedule", path: "/instructor/schedule", customIcon: scheduleIcon },
         { icon: Users, label: "Pupils", description: "Manage pupils", iconColor: "text-indigo-600", gateKey: "pupils", path: "/instructor/pupils", customIcon: pupilsIcon },
       ],
     },
@@ -127,7 +127,7 @@ export default function InstructorMenu() {
     {
       title: "Resources",
       items: [
-        { icon: FolderOpen, label: "Resources", description: "Documents & files", iconColor: "text-blue-600", gateKey: "resources", path: "/instructor/resources" },
+        { icon: FolderOpen, label: "Resources", description: "Documents & files", iconColor: "text-[#0075c9]", gateKey: "resources", path: "/instructor/resources" },
       ],
     },
     {
@@ -141,7 +141,7 @@ export default function InstructorMenu() {
       items: [
         { icon: Settings, label: "All Settings", description: "Preferences", iconColor: "text-gray-600", gateKey: "settings", path: "/instructor/settings", customIcon: settingsIcon },
         { icon: Globe, label: "Mini-Website", description: "Your website", iconColor: "text-violet-600", gateKey: "website", path: "/instructor/website" },
-        { icon: HelpCircle, label: "FAQs & Help", description: "Get support", iconColor: "text-blue-600", gateKey: "faqs", path: "/instructor/faqs" },
+        { icon: HelpCircle, label: "FAQs & Help", description: "Get support", iconColor: "text-[#0075c9]", gateKey: "faqs", path: "/instructor/faqs" },
       ],
     },
     {

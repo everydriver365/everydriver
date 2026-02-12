@@ -123,16 +123,16 @@ export function AutoMileageLog() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+        <Card className="bg-gradient-to-br from-[#0075c9]/5 to-[#0075c9]/10 dark:from-[#0075c9]/10 dark:to-[#0075c9]/5 border-[#0075c9]/20 dark:border-[#0075c9]/30">
           <CardContent className="p-3 sm:p-4">
             <div className="flex items-center gap-1.5 mb-0.5 sm:mb-1">
-              <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-[10px] sm:text-xs font-medium text-blue-700 dark:text-blue-300">Personal</span>
+              <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#0075c9]" />
+              <span className="text-[10px] sm:text-xs font-medium text-[#0075c9]">Personal</span>
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-blue-800 dark:text-blue-200">
+            <p className="text-lg sm:text-2xl font-bold text-[#0075c9]">
               {summary.totalPersonal.toFixed(0)} mi
             </p>
-            <p className="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400">
+            <p className="text-[10px] sm:text-xs text-[#0075c9]/70">
               {(100 - summary.businessPercentage).toFixed(0)}% of total
             </p>
           </CardContent>
@@ -245,7 +245,7 @@ export function AutoMileageLog() {
                                   "cursor-pointer transition-colors",
                                   log.trip_type === "business" 
                                     ? "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300"
-                                    : "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300"
+                                    : "bg-[#0075c9]/10 text-[#0075c9] hover:bg-[#0075c9]/20 dark:bg-[#0075c9]/20"
                                 )}
                                 onClick={() => handleToggleTripType(log)}
                               >

@@ -48,7 +48,7 @@ const messageTemplates: MessageTemplate[] = [
     icon: AlertCircle,
     label: "Please be ready",
     message: "Hi {name}, just a reminder to be ready for your lesson. I'll be arriving shortly!",
-    color: "text-blue-500",
+    color: "text-[#0075c9]",
   },
   {
     id: "cancelled",

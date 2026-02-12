@@ -368,7 +368,7 @@ export function MiniWebsiteShare({ instructorId }: MiniWebsiteShareProps) {
             size="sm"
             onClick={shareOnFacebook}
             disabled={!displayUrl}
-            className="text-blue-600 hover:text-blue-700"
+            className="text-[#0075c9] hover:text-[#005a9e]"
           >
             <Facebook className="h-4 w-4 mr-2" />
             Facebook

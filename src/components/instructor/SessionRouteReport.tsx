@@ -143,7 +143,7 @@ const SessionRouteReport: React.FC<SessionRouteReportProps> = ({ telematicsId, o
     switch (severity) {
       case 'high': return 'text-red-500 bg-red-500/10';
       case 'medium': return 'text-amber-500 bg-amber-500/10';
-      default: return 'text-blue-500 bg-blue-500/10';
+      default: return 'text-[#0075c9] bg-[#0075c9]/10';
     }
   };
 
@@ -170,7 +170,7 @@ const SessionRouteReport: React.FC<SessionRouteReportProps> = ({ telematicsId, o
     switch (severity) {
       case 'high': return <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />;
       case 'medium': return <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0" />;
-      default: return <Gauge className="h-4 w-4 text-blue-500 flex-shrink-0" />;
+      default: return <Gauge className="h-4 w-4 text-[#0075c9] flex-shrink-0" />;
     }
   };
 

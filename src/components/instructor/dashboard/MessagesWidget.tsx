@@ -34,8 +34,8 @@ export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="h-8 w-8 rounded-lg bg-[#0075c9]/10 dark:bg-[#0075c9]/20 flex items-center justify-center">
+              <MessageSquare className="h-4 w-4 text-[#0075c9]" />
             </div>
             <h3 className="font-medium text-sm text-foreground">Messages</h3>
             {unreadCount > 0 && (
@@ -63,7 +63,7 @@ export function MessagesWidget({ instructorId }: MessagesWidgetProps) {
                 to="/instructor/messages"
                 className="flex items-start gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
               >
-                <div className="h-7 w-7 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center text-[10px] font-medium shrink-0">
+                <div className="h-7 w-7 rounded-full bg-[#0075c9]/10 text-[#0075c9] flex items-center justify-center text-[10px] font-medium shrink-0">
                   {convo.pupils?.name?.split(" ").map((n: string) => n[0]).join("") || "?"}
                 </div>
                 <div className="flex-1 min-w-0">

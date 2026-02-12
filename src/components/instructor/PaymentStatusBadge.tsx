@@ -36,7 +36,7 @@ export function PaymentStatusBadge({
     return (
       <Badge
         variant="outline"
-        className={`border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 ${
+        className={`border-[#0075c9]/30 bg-[#0075c9]/10 text-[#0075c9] ${
           size === "sm" ? "text-[10px] px-1.5 py-0" : "text-xs px-2 py-0.5"
         } ${className}`}
       >

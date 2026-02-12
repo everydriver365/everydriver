@@ -141,13 +141,13 @@ export function InstructorNotificationsDropdown({
                     "h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0",
                     notification.type === "gap_filled" 
                       ? "bg-green-100 dark:bg-green-900/30" 
-                      : "bg-blue-100 dark:bg-blue-900/30"
+                      : "bg-[#0075c9]/10 dark:bg-[#0075c9]/20"
                   )}>
                     <Icon className={cn(
                       "h-4 w-4",
                       notification.type === "gap_filled" 
                         ? "text-green-600 dark:text-green-400" 
-                        : "text-blue-600 dark:text-blue-400"
+                        : "text-[#0075c9]"
                     )} />
                   </div>
                   <div className="flex-1 min-w-0">

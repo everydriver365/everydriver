@@ -235,7 +235,7 @@ export default function InstructorTestResults() {
           </Card>
           <Card>
             <CardContent className="pt-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{stats.mockTests}</div>
+              <div className="text-2xl font-bold text-[#0075c9]">{stats.mockTests}</div>
               <p className="text-xs text-muted-foreground">Mock Tests</p>
             </CardContent>
           </Card>

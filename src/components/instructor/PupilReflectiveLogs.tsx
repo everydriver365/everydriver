@@ -168,8 +168,8 @@ export function PupilReflectiveLogs({ pupilId, pupilName }: PupilReflectiveLogsP
               )}
 
               {log.next_goals && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                  <p className="text-xs font-medium text-blue-700 dark:text-blue-400 mb-1">
+                <div className="bg-[#0075c9]/5 dark:bg-[#0075c9]/10 p-3 rounded-lg">
+                  <p className="text-xs font-medium text-[#0075c9] mb-1">
                     Goals for next lesson
                   </p>
                   <p className="text-sm">{log.next_goals}</p>
