@@ -48,12 +48,12 @@ export function ScheduleDayTabs({ selectedDate, onSelectDate }: ScheduleDayTabsP
               flex-shrink-0 flex flex-col items-center justify-center
               px-2.5 py-1.5 rounded-lg min-w-[56px] transition-all
               ${selected 
-                ? "bg-primary text-primary-foreground shadow-md" 
+                ? "bg-[#0075c9] text-white shadow-md" 
                 : "bg-card text-foreground hover:bg-muted border border-border"
               }
             `}
           >
-            <span className={`text-[10px] font-medium ${selected ? "text-primary-foreground" : "text-muted-foreground"}`}>
+            <span className={`text-[10px] font-medium ${selected ? "text-white" : "text-muted-foreground"}`}>
               {getDateLabel(date)}
             </span>
             <span className={`text-xs font-bold ${selected ? "" : ""}`}>

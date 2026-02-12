@@ -157,7 +157,7 @@ export default function InstructorSchedule() {
 
             <Button
               size="sm"
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 bg-[#0075c9] hover:bg-[#005a9e] text-white"
               onClick={() => setFabLessonSheetOpen(true)}
             >
               <Plus className="h-4 w-4" />
