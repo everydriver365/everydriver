@@ -486,7 +486,7 @@ export function QuickActionTiles({
                          }
                        </p>
                     </div>
-                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center relative shrink-0">
+                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center relative shrink-0">
                       <ChevronRight className="h-3.5 w-3.5 text-white" />
                     </div>
                   </div>

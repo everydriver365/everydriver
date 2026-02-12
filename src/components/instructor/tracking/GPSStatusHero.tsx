@@ -42,12 +42,12 @@ export function GPSStatusHero({
         {/* Connection Status Header */}
         <div className={`relative px-4 py-4 ${
           isConnected 
-            ? "bg-gradient-to-br from-primary via-primary/85 to-primary/70" 
+            ? "bg-gradient-to-br from-sky-500 via-blue-500 to-blue-600" 
             : isParked
               ? "bg-gradient-to-br from-slate-500 to-slate-600"
               : showReconnecting 
                 ? "bg-gradient-to-br from-slate-600 to-slate-700"
-                : "bg-gradient-to-br from-primary/70 via-primary/55 to-primary/40"
+                : "bg-gradient-to-br from-sky-500/70 via-blue-500/55 to-blue-600/40"
         }`}>
           {/* Animated background pattern */}
           {!showReconnecting && (

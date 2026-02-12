@@ -36,7 +36,7 @@ export function MoneyHeroCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/90 p-4 text-primary-foreground"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 via-blue-500 to-blue-600 p-4 text-white"
     >
       {/* Animated background patterns */}
       <div className="absolute inset-0 overflow-hidden">
