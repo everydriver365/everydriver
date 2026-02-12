@@ -109,7 +109,7 @@ export default function InstructorPay() {
             </div>
             Money
           </h1>
-          <Button size="sm" onClick={() => setPaymentSheetOpen(true)}>
+          <Button size="sm" className="bg-[#0075c9] hover:bg-[#005a9e] text-white" onClick={() => setPaymentSheetOpen(true)}>
             <QrCode className="h-4 w-4 mr-1.5" />
             Take Payment
           </Button>
@@ -119,11 +119,11 @@ export default function InstructorPay() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl p-4 text-white bg-gradient-to-br from-primary via-primary/85 to-primary/70"
+          className="rounded-2xl p-4 text-white bg-gradient-to-br from-[#0075c9] via-[#0075c9]/85 to-[#0075c9]/70"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-primary-foreground/70 text-xs">This Month</p>
+              <p className="text-white/70 text-xs">This Month</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold">
                   £{isLoading ? "—" : earnings?.thisMonth || 0}
@@ -139,7 +139,7 @@ export default function InstructorPay() {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-primary-foreground/70 text-xs">Hours</p>
+              <p className="text-white/70 text-xs">Hours</p>
               <p className="text-xl font-bold">{earnings?.hoursThisMonth || 0}h</p>
             </div>
           </div>
@@ -153,8 +153,8 @@ export default function InstructorPay() {
             transition={{ delay: 0.1 }}
             className="bg-card rounded-xl border p-3 text-center"
           >
-            <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-1">
-              <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="h-8 w-8 rounded-lg bg-[#0075c9]/10 flex items-center justify-center mx-auto mb-1">
+              <Calendar className="h-4 w-4 text-[#0075c9]" />
             </div>
             <p className="text-lg font-bold">£{earnings?.thisWeek || 0}</p>
             <p className="text-[10px] text-muted-foreground">This Week</p>
@@ -208,8 +208,8 @@ export default function InstructorPay() {
               className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
             >
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Wallet className="h-5 w-5 text-primary" />
+                <div className="h-10 w-10 rounded-xl bg-[#0075c9]/10 flex items-center justify-center">
+                  <Wallet className="h-5 w-5 text-[#0075c9]" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-sm">Accounts</p>
@@ -227,8 +227,8 @@ export default function InstructorPay() {
               className="bg-card rounded-xl border p-4 hover:bg-muted/50 transition-colors h-full"
             >
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Receipt className="h-5 w-5 text-primary" />
+                <div className="h-10 w-10 rounded-xl bg-[#0075c9]/10 flex items-center justify-center">
+                  <Receipt className="h-5 w-5 text-[#0075c9]" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-sm">Expenses</p>
@@ -249,10 +249,10 @@ export default function InstructorPay() {
         >
           <div className="flex items-center justify-between p-4 border-b">
             <h3 className="font-semibold text-sm flex items-center gap-2">
-              <Receipt className="h-4 w-4 text-primary" />
+              <Receipt className="h-4 w-4 text-[#0075c9]" />
               Recent Payments
             </h3>
-            <Link to="/instructor/accounts" className="text-xs text-primary font-medium">
+            <Link to="/instructor/accounts" className="text-xs text-[#0075c9] font-medium">
               See all
             </Link>
           </div>
@@ -279,10 +279,10 @@ export default function InstructorPay() {
         >
           <div className="flex items-center justify-between p-4 border-b">
             <h3 className="font-semibold text-sm flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
+              <Users className="h-4 w-4 text-[#0075c9]" />
               Pupil Balances
             </h3>
-            <Link to="/instructor/accounts" className="text-xs text-primary font-medium">
+            <Link to="/instructor/accounts" className="text-xs text-[#0075c9] font-medium">
               View all
             </Link>
           </div>
