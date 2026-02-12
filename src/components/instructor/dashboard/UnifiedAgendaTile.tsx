@@ -48,7 +48,7 @@ function isOverdue(dateStr: string) {
 const PRIORITY_FLAGS: Record<number, string> = {
   1: "text-red-500",
   2: "text-orange-500",
-  3: "text-blue-500",
+  3: "text-[#0075c9]",
   4: "text-muted-foreground/30",
 };
 
@@ -360,7 +360,7 @@ export function UnifiedAgendaTile({ instructorId, className }: UnifiedAgendaTile
                     : entry.todo?.priority === 2
                     ? "border-orange-500 bg-orange-500/20"
                     : entry.todo?.priority === 3
-                    ? "border-blue-500 bg-blue-500/20"
+                    ? "border-[#0075c9] bg-[#0075c9]/20"
                     : "border-muted-foreground/30 bg-muted"
                 )} />
                 {idx < timeline.length - 1 && <div className="w-px flex-1 bg-border/60 my-0.5" />}

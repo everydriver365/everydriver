@@ -34,7 +34,7 @@ const defaultActions: RadialFABAction[] = [
     icon: Navigation,
     label: "Navigate",
     onClick: () => {},
-    color: "bg-blue-500 hover:bg-blue-600",
+    color: "bg-[#0075c9] hover:bg-[#005a9e]",
   },
   {
     id: "message",
@@ -82,7 +82,7 @@ export function RadialFAB({
         onNavigate?.();
         setIsOpen(false);
       },
-      color: "bg-blue-500 hover:bg-blue-600",
+      color: "bg-[#0075c9] hover:bg-[#005a9e]",
     },
     {
       id: "message",

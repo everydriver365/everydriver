@@ -87,7 +87,7 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
                 <div className={cn(
                   "flex-shrink-0 p-2 rounded-lg",
                   isWeather
-                    ? "bg-blue-500/20 text-blue-600"
+                    ? "bg-[#0075c9]/20 text-[#0075c9]"
                     : isSevere 
                       ? "bg-destructive/20 text-destructive" 
                       : "bg-warning/20 text-warning-foreground"
@@ -112,7 +112,7 @@ export function DrivingAlertsStrip({ alerts, onDismiss, className, location }: D
                     <span className={cn(
                       "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded",
                       isWeather
-                        ? "text-blue-700 bg-blue-500/20 font-bold text-[11px]"
+                        ? "text-[#0075c9] bg-[#0075c9]/20 font-bold text-[11px]"
                         : isSevere 
                           ? "text-destructive bg-destructive/15" 
                           : "text-warning-foreground bg-warning/20"
