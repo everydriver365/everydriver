@@ -116,6 +116,7 @@ import InstructorContactPage from "./pages/instructor-app/InstructorContact";
 import InstructorDomains from "./pages/instructor-app/InstructorDomains";
 import InstructorTelematics from "./pages/instructor-app/InstructorTelematics";
 import InstructorDashcam from "./pages/instructor-app/InstructorDashcam";
+import DashcamGallery from "./pages/instructor/DashcamGallery";
 import InstructorDesignDemo from "./pages/instructor-app/DesignDemo";
 import PortalLayoutDemo from "./pages/instructor-app/PortalLayoutDemo";
 import InstructorOnboarding from "./pages/instructor-app/onboarding/InstructorOnboarding";
@@ -248,6 +249,7 @@ const App = () => (
               <Route path="/instructor/resources" element={<InstructorResources />} />
               <Route path="/instructor/document-templates" element={<InstructorDocumentTemplates />} />
               <Route path="/instructor/reviews" element={<InstructorReviews />} />
+              <Route path="/instructor/dashcam" element={<DashcamGallery />} />
 
               {/* Other portals */}
               <Route path="/parent" element={<ParentPortal />} />
