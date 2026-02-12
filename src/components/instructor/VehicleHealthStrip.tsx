@@ -71,7 +71,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
           <div className="grid grid-cols-4 gap-2">
             {/* Battery */}
             <div className={cn("flex items-center gap-2 p-2.5 rounded-xl", 
-              battery !== null && battery <= 20 ? "bg-red-500/10" : battery !== null && battery <= 50 ? "bg-amber-500/10" : "bg-blue-500/10"
+              battery !== null && battery <= 20 ? "bg-red-500/10" : battery !== null && battery <= 50 ? "bg-amber-500/10" : "bg-[#0075c9]/10"
             )}>
               <BatteryIcon className={cn("h-4 w-4", getBatteryColor(battery))} />
               <div>

@@ -126,7 +126,7 @@ export function WeeklyGoalRing({
             </motion.div>
           ) : (
             <>
-              <span className="text-[11px] font-bold leading-none text-blue-600">{hoursThisWeek}h</span>
+              <span className="text-[11px] font-bold leading-none text-[#0075c9]">{hoursThisWeek}h</span>
               <span className="text-[7px] leading-tight text-muted-foreground">of {hoursGoal}h</span>
             </>
           )}

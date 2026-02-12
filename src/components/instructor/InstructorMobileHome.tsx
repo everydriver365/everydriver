@@ -111,7 +111,7 @@ const getWeatherIconColor = (icon: string): string => {
       return "text-slate-400";
     case "CloudRain":
     case "CloudDrizzle":
-      return "text-blue-500";
+      return "text-[#0075c9]";
     case "CloudFog":
       return "text-slate-500";
     case "CloudLightning":
@@ -371,8 +371,8 @@ export function InstructorMobileHome({
           {/* Stats grid */}
           <div className="p-4">
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-blue-500/10">
-                <BookOpen className="h-4 w-4 text-blue-500" />
+              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0075c9]/10">
+                <BookOpen className="h-4 w-4 text-[#0075c9]" />
                 <div>
                   <p className="text-sm font-bold text-foreground leading-none">{todayOverview?.lessonCount || 0}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">Lessons</p>
@@ -425,7 +425,7 @@ export function InstructorMobileHome({
                     <p className="text-white/70 text-[10px]">{pendingJobsCount} pending offer{pendingJobsCount !== 1 ? "s" : ""}</p>
                   </div>
                 </div>
-                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-blue-600 text-xs font-bold flex items-center justify-center shadow-sm">
+                <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-[#0075c9] text-xs font-bold flex items-center justify-center shadow-sm">
                   {pendingJobsCount > 9 ? "9+" : pendingJobsCount}
                 </span>
               </div>
