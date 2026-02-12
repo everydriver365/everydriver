@@ -38,7 +38,8 @@ import {
   PanelLeftClose,
   PanelLeft,
   Bell,
-  FileText
+  FileText,
+  Camera
 } from "lucide-react";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { Button } from "@/components/ui/button";
@@ -129,6 +130,7 @@ const sidebarGroups = [
     label: "VEHICLE INTELLIGENCE",
     items: [
       { href: "/instructor/fleet-dashboard", label: "Fleet Dashboard", icon: Car, highlight: true },
+      { href: "/instructor/dashcam", label: "Dashcam", icon: Camera, highlight: true },
     ],
   },
 ];
