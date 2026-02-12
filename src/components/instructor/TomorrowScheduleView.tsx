@@ -135,7 +135,7 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-accent" />
+            <Calendar className="h-4 w-4 text-[#0075c9]" />
             Tomorrow
           </CardTitle>
         </CardHeader>
@@ -150,9 +150,9 @@ export function TomorrowScheduleView({ instructorId }: TomorrowScheduleViewProps
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-accent" />
-          Tomorrow
-          <Badge variant="secondary" className="ml-auto">
+            <Calendar className="h-4 w-4 text-[#0075c9]" />
+            Tomorrow
+            <Badge variant="secondary" className="ml-auto">
             {lessons.length} lesson{lessons.length !== 1 ? "s" : ""}
           </Badge>
         </CardTitle>

@@ -125,7 +125,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
 
   const getIconColor = (_item: NavItem, isActive: boolean) => {
     if (contrast) return ""; // handled via inline style
-    return isActive ? "text-primary" : "text-muted-foreground";
+    return isActive ? "text-[#0075c9]" : "text-muted-foreground";
   };
 
   return (
@@ -161,7 +161,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               onClick={() => handleNavClick(item.path)}
               className={`relative flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 ${
                 !contrast
-                  ? (isActive ? "text-primary" : "text-muted-foreground hover:text-foreground")
+                  ? (isActive ? "text-[#0075c9]" : "text-muted-foreground hover:text-foreground")
                   : ""
               }`}
               style={contrast ? { color: isActive ? contrast.active : contrast.inactive } : undefined}
@@ -170,7 +170,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className={cn("absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full", !contrast && "bg-primary")}
+                  className={cn("absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full", !contrast && "bg-[#0075c9]")}
                   style={contrast ? { backgroundColor: contrast.active } : undefined}
                   initial={false}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -202,18 +202,18 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 )}
                 {/* Schedule badge - today's lesson count */}
                 {isSchedule && badgeCount > 0 && !isActive && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center shadow-lg ring-2 ring-background">
+                  <span className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-[#0075c9] text-white text-[10px] font-semibold flex items-center justify-center shadow-lg ring-2 ring-background">
                     {badgeCount > 9 ? "9+" : badgeCount}
                   </span>
                 )}
                 {/* More menu dot indicator */}
                 {showMoreDot && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-primary ring-2 ring-background" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#0075c9] ring-2 ring-background" />
                 )}
               </div>
               <span className={`text-[11px] tracking-tight transition-all duration-200 ${
                 !contrast
-                  ? (isActive ? "font-medium text-primary" : "font-normal text-muted-foreground")
+                  ? (isActive ? "font-medium text-[#0075c9]" : "font-normal text-muted-foreground")
                   : (isActive ? "font-medium" : "font-normal")
               }`}
               style={contrast ? { color: isActive ? contrast.active : contrast.inactive } : undefined}
