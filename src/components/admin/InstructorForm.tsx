@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
-import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode, Layout, Calendar as CalendarLucide, Satellite } from "lucide-react";
+import { X, Car, User, Clock, MapPin, GraduationCap, Palette, Globe, Link, Image, CalendarIcon, Award, Video, Upload, QrCode, Layout, Calendar as CalendarLucide, Satellite, Camera } from "lucide-react";
 import { CalendarConnect } from "@/components/instructor/CalendarConnect";
 import { WorkingHoursEditor } from "./WorkingHoursEditor";
 import { TestCentreCombobox } from "./TestCentreCombobox";
@@ -141,6 +141,10 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
   const [quartixVehicleId, setQuartixVehicleId] = useState("");
   const [quartixDriverId, setQuartixDriverId] = useState("");
 
+  // Geotab tracker state
+  const [geotabDeviceName, setGeotabDeviceName] = useState("");
+  const [geotabDeviceId, setGeotabDeviceId] = useState("");
+
   const form = useForm<InstructorFormData>({
     resolver: zodResolver(instructorSchema),
     defaultValues: {
@@ -245,6 +249,24 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
       }
     };
     fetchQuartixConfig();
+  }, [initialData?.id]);
+
+  // Fetch Geotab tracker config for existing instructor
+  useEffect(() => {
+    if (!initialData?.id) return;
+    const fetchGeotabConfig = async () => {
+      const { data: device } = await supabase
+        .from("gps_devices")
+        .select("device_name, geotab_device_id")
+        .eq("instructor_id", initialData.id!)
+        .eq("tracking_provider", "geotab")
+        .maybeSingle();
+      if (device) {
+        setGeotabDeviceName((device as any).device_name || "");
+        setGeotabDeviceId((device as any).geotab_device_id || "");
+      }
+    };
+    fetchGeotabConfig();
   }, [initialData?.id]);
 
   const handleImageChange = (
@@ -472,6 +494,37 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                 quartix_vehicle_id: quartixVehicleId,
                 quartix_driver_id: quartixDriverId || null,
                 tracking_provider: "quartix",
+                is_active: true,
+              } as any);
+          }
+        }
+
+        // Save Geotab tracker config
+        if (geotabDeviceId) {
+          const { data: existingGeotab } = await supabase
+            .from("gps_devices")
+            .select("id")
+            .eq("instructor_id", instructorId)
+            .eq("tracking_provider", "geotab")
+            .maybeSingle();
+
+          if (existingGeotab) {
+            await supabase
+              .from("gps_devices")
+              .update({
+                device_name: geotabDeviceName || "Geotab Device",
+                geotab_device_id: geotabDeviceId,
+              } as any)
+              .eq("id", existingGeotab.id);
+          } else {
+            await supabase
+              .from("gps_devices")
+              .insert({
+                instructor_id: instructorId,
+                device_identifier: `geotab-${geotabDeviceId}`,
+                device_name: geotabDeviceName || "Geotab Device",
+                geotab_device_id: geotabDeviceId,
+                tracking_provider: "geotab",
                 is_active: true,
               } as any);
           }
@@ -1487,6 +1540,35 @@ export function InstructorForm({ onSuccess, onCancel, initialData }: InstructorF
                   value={quartixDriverId}
                   onChange={(e) => setQuartixDriverId(e.target.value)}
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Geotab Tracker - Only show for existing instructors */}
+        {initialData?.id && (
+          <div className="rounded-lg border p-4">
+            <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
+              <Camera className="h-5 w-5" /> Geotab Device
+            </h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Device Name</Label>
+                <Input
+                  placeholder="e.g., Geotab GO9 - Front Car"
+                  value={geotabDeviceName}
+                  onChange={(e) => setGeotabDeviceName(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">A friendly name for this Geotab device</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Geotab Device Serial / ID</Label>
+                <Input
+                  placeholder="e.g., G9XXXXXXXX"
+                  value={geotabDeviceId}
+                  onChange={(e) => setGeotabDeviceId(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">The Geotab device serial number — enables tracking + dashcam</p>
               </div>
             </div>
           </div>

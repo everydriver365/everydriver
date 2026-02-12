@@ -194,3 +194,9 @@ verify_jwt = false
 
 [functions.quartix-sync]
 verify_jwt = false
+
+[functions.geotab-poller]
+verify_jwt = false
+
+[functions.geotab-media-download]
+verify_jwt = false
