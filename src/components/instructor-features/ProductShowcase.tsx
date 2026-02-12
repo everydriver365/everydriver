@@ -10,7 +10,7 @@ interface ProductShowcaseProps {
 
 export function ProductShowcase({ title, description, image, badges, reverse }: ProductShowcaseProps) {
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-primary/5 via-background to-emerald-500/5">
+    <section className="py-16 md:py-24 bg-background">
       <div className="container">
         <div className={`grid md:grid-cols-2 gap-10 md:gap-16 items-center ${reverse ? "md:[direction:rtl]" : ""}`}>
           <motion.div

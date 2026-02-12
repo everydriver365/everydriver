@@ -14,7 +14,7 @@ interface TestimonialStripProps {
 
 export function TestimonialStrip({ testimonials }: TestimonialStripProps) {
   return (
-    <section className="py-16 bg-primary">
+    <section className="py-16 bg-secondary/50">
       <div className="container">
         <motion.div
           initial={{ opacity: 0 }}
@@ -22,8 +22,8 @@ export function TestimonialStrip({ testimonials }: TestimonialStripProps) {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <h3 className="text-2xl md:text-3xl font-bold text-primary-foreground mb-2">Loved by Instructors</h3>
-          <p className="text-primary-foreground/60">Real feedback from real ADIs</p>
+          <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Loved by Instructors</h3>
+          <p className="text-muted-foreground">Real feedback from real ADIs</p>
         </motion.div>
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
@@ -33,17 +33,17 @@ export function TestimonialStrip({ testimonials }: TestimonialStripProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="bg-primary-foreground/10 backdrop-blur-sm rounded-2xl p-6 border border-primary-foreground/10"
+              className="bg-background rounded-2xl p-6 border border-border"
             >
               <div className="flex gap-0.5 mb-4">
                 {Array.from({ length: t.stars }).map((_, si) => (
                   <Star key={si} className="h-4 w-4 fill-emerald-400 text-emerald-400" />
                 ))}
               </div>
-              <p className="text-primary-foreground/90 italic mb-4 leading-relaxed">"{t.quote}"</p>
+              <p className="text-foreground/80 italic mb-4 leading-relaxed">"{t.quote}"</p>
               <div>
-                <p className="text-primary-foreground font-semibold text-sm">{t.name}</p>
-                <p className="text-primary-foreground/50 text-xs">{t.role}</p>
+                <p className="text-foreground font-semibold text-sm">{t.name}</p>
+                <p className="text-muted-foreground text-xs">{t.role}</p>
               </div>
             </motion.div>
           ))}

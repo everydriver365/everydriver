@@ -14,7 +14,7 @@ interface ExtraFeaturesProps {
 
 export function ExtraFeatures({ features }: ExtraFeaturesProps) {
   return (
-    <section className="py-16 bg-secondary">
+    <section className="py-16 bg-background">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

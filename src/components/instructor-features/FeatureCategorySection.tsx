@@ -19,7 +19,7 @@ interface FeatureCategorySectionProps {
 
 export function FeatureCategorySection({ category, index }: FeatureCategorySectionProps) {
   return (
-    <section className={`py-16 md:py-20 ${index % 2 === 0 ? "bg-background" : "bg-secondary"}`}>
+    <section className={`py-16 md:py-20 ${index % 2 === 0 ? "bg-background" : "bg-secondary/50"}`}>
       <div className="container">
         {/* Section header with image */}
         <div className={`grid md:grid-cols-2 gap-8 items-center mb-12 ${index % 2 === 1 ? "md:[direction:rtl]" : ""}`}>
@@ -62,7 +62,7 @@ export function FeatureCategorySection({ category, index }: FeatureCategorySecti
               variants={cardVariants}
               viewport={{ once: true }}
             >
-              <Card className="h-full border-border hover:shadow-lg transition-shadow">
+              <Card className="h-full border-border hover:shadow-md transition-shadow bg-background">
                 <CardContent className="p-5 flex gap-4">
                   <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                     <feature.icon className="h-5 w-5 text-primary" />

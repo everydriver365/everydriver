@@ -30,8 +30,8 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Header - Navy Blue to match brand */}
-      <header className="sticky top-0 z-50 w-full border-b border-[#0f1a30] bg-[#142040]">
+      {/* Header - Clean white */}
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
         <nav className="container max-w-7xl flex h-16 items-center justify-between">
           <Link to="/instructor-app" className="flex items-center">
             <img src={logo} alt="EveryDriver" className="h-10" />
@@ -43,8 +43,8 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-sm font-medium transition-colors hover:text-emerald-400 ${
-                  location.pathname === link.href ? "text-emerald-400" : "text-white/80"
+                className={`text-sm font-medium transition-colors hover:text-emerald-500 ${
+                  location.pathname === link.href ? "text-emerald-500" : "text-foreground/70"
                 }`}
               >
                 {link.label}
@@ -55,7 +55,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
           <div className="hidden items-center gap-2 md:flex">
             <LanguageToggle />
             <ThemeToggle />
-            <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10" asChild>
+            <Button variant="ghost" className="text-foreground/70 hover:text-foreground hover:bg-secondary" asChild>
               <Link to="/instructor-app/login">Log in</Link>
             </Button>
             <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" asChild>
@@ -67,7 +67,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden text-white hover:bg-white/10"
+            className="md:hidden text-foreground hover:bg-secondary"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
