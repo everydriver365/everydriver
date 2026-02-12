@@ -147,7 +147,7 @@ export default function InstructorMenu() {
     {
       title: "Account",
       items: [
-        { icon: User, label: "My Profile", description: "View profile", iconColor: "text-primary", path: "/instructor/settings" },
+        { icon: User, label: "My Profile", description: "View profile", iconColor: "text-[#0075c9]", path: "/instructor/settings" },
         { icon: LogOut, label: "Sign Out", description: "Log out", iconColor: "text-destructive", action: handleLogout },
       ],
     },
@@ -168,10 +168,10 @@ export default function InstructorMenu() {
         {menuSections.map((section) => (
           <div key={section.title} className="overflow-hidden shadow-[0_2px_12px_rgba(20,37,66,0.12)]">
             {/* Gradient section header */}
-            <div className="bg-gradient-to-r from-primary to-primary/70 px-4 py-2">
+            <div className="bg-gradient-to-r from-[#0075c9] to-[#0075c9]/70 px-4 py-2">
               <span className="text-white text-[10px] font-semibold uppercase tracking-wider">{section.title}</span>
             </div>
-            <div className="bg-white divide-y divide-border/50">
+            <div className="bg-white dark:bg-card divide-y divide-border/50">
               {section.items.map((item) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
@@ -204,7 +204,7 @@ export default function InstructorMenu() {
                       <div
                         className={cn(
                           "h-10 w-10 rounded-[7px] flex items-center justify-center shrink-0 overflow-hidden",
-                          locked ? "bg-muted" : "ring-1 ring-primary/30 shadow-[0_0_8px_rgba(59,130,246,0.2)]"
+                          locked ? "bg-muted" : "ring-1 ring-[#0075c9]/30 shadow-[0_0_8px_rgba(0,117,201,0.2)]"
                         )}
                       >
                         {locked ? (
@@ -212,7 +212,7 @@ export default function InstructorMenu() {
                         ) : item.customIcon ? (
                           <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
                         ) : (
-                          <item.icon className={cn("h-5 w-5", item.iconColor || "text-primary")} />
+                          <item.icon className={cn("h-5 w-5", item.iconColor || "text-[#0075c9]")} />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -224,7 +224,7 @@ export default function InstructorMenu() {
                             <Lock className="h-2.5 w-2.5" /> Upgrade
                           </p>
                         ) : item.description ? (
-                          <p className="text-xs text-primary/70 font-medium truncate">{item.description}</p>
+                          <p className="text-xs text-[#0075c9]/70 font-medium truncate">{item.description}</p>
                         ) : null}
                       </div>
                       {locked ? (
@@ -232,7 +232,7 @@ export default function InstructorMenu() {
                           PRO
                         </Badge>
                       ) : (
-                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shrink-0">
+                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#0075c9] to-[#0075c9]/60 flex items-center justify-center shrink-0">
                           <ChevronRight className="h-3 w-3 text-white" />
                         </div>
                       )}
