@@ -202,7 +202,7 @@ export function TestDayPrep({ pupilId, pupilName }: TestDayPrepProps) {
             {/* Countdown Banner */}
             <div className={cn(
               "rounded-xl p-4 text-center",
-              isUrgent ? "bg-gradient-to-br from-amber-500 to-orange-600" : "bg-gradient-to-br from-sky-500 via-blue-500 to-blue-600"
+              isUrgent ? "bg-gradient-to-br from-amber-500 to-orange-600" : "bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e]"
             )}>
               <Car className="h-8 w-8 mx-auto mb-1 text-white/90" />
               <div className="text-3xl font-bold text-white">{getCountdownLabel()}</div>
