@@ -796,6 +796,92 @@ export type Database = {
         }
         Relationships: []
       }
+      dashcam_media: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          duration_seconds: number | null
+          file_name: string | null
+          geotab_media_file_id: string
+          id: string
+          instructor_id: string
+          is_incident: boolean
+          latitude: number | null
+          lesson_telematics_id: string | null
+          longitude: number | null
+          media_type: string
+          recorded_at: string
+          status: string
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          duration_seconds?: number | null
+          file_name?: string | null
+          geotab_media_file_id: string
+          id?: string
+          instructor_id: string
+          is_incident?: boolean
+          latitude?: number | null
+          lesson_telematics_id?: string | null
+          longitude?: number | null
+          media_type?: string
+          recorded_at?: string
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          duration_seconds?: number | null
+          file_name?: string | null
+          geotab_media_file_id?: string
+          id?: string
+          instructor_id?: string
+          is_incident?: boolean
+          latitude?: number | null
+          lesson_telematics_id?: string | null
+          longitude?: number | null
+          media_type?: string
+          recorded_at?: string
+          status?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashcam_media_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "gps_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dashcam_media_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dashcam_media_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dashcam_media_lesson_telematics_id_fkey"
+            columns: ["lesson_telematics_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_telematics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_audit_log: {
         Row: {
           action: string
@@ -1991,6 +2077,7 @@ export type Database = {
           daily_start_odometer_m: number | null
           device_identifier: string
           device_name: string | null
+          geotab_device_id: string | null
           gpsgate_engine_hours_s: number | null
           gpsgate_odometer_m: number | null
           gpsgate_user_id: number | null
@@ -2026,6 +2113,7 @@ export type Database = {
           daily_start_odometer_m?: number | null
           device_identifier: string
           device_name?: string | null
+          geotab_device_id?: string | null
           gpsgate_engine_hours_s?: number | null
           gpsgate_odometer_m?: number | null
           gpsgate_user_id?: number | null
@@ -2061,6 +2149,7 @@ export type Database = {
           daily_start_odometer_m?: number | null
           device_identifier?: string
           device_name?: string | null
+          geotab_device_id?: string | null
           gpsgate_engine_hours_s?: number | null
           gpsgate_odometer_m?: number | null
           gpsgate_user_id?: number | null
