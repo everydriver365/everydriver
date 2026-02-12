@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, Calendar, Users, MapPin, PoundSterling, MessageSquare, Settings, FileText, Car, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { haptics } from "@/lib/haptics";
+import { useInstructorAuth } from "@/context/InstructorAuthContext";
+import { AddLessonSheet } from "@/components/instructor/AddLessonSheet";
 
 interface QuickAction {
   id: string;
@@ -20,12 +22,12 @@ interface QuickActionsFABProps {
   position?: "bottom-right" | "bottom-left";
 }
 
-const quickActions: QuickAction[] = [
+const getQuickActions = (onAddLesson: () => void): QuickAction[] => [
   {
     id: "add-lesson",
     icon: Calendar,
     label: "Add Lesson",
-    route: "/instructor/schedule?action=add",
+    onClick: onAddLesson,
     color: "bg-violet-500 hover:bg-violet-600",
   },
   {
@@ -74,7 +76,15 @@ const quickActions: QuickAction[] = [
 
 export function QuickActionsFAB({ className, position = "bottom-right" }: QuickActionsFABProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [addLessonOpen, setAddLessonOpen] = useState(false);
   const navigate = useNavigate();
+  const { instructor } = useInstructorAuth();
+
+  const handleOpenAddLesson = useCallback(() => {
+    setAddLessonOpen(true);
+  }, []);
+
+  const quickActions = getQuickActions(handleOpenAddLesson);
 
   const handleActionClick = (action: QuickAction) => {
     haptics.selection();
@@ -180,6 +190,14 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
           <Plus className="h-8 w-8" strokeWidth={3} />
         </Button>
       </motion.div>
+      {instructor?.id && (
+        <AddLessonSheet
+          open={addLessonOpen}
+          onOpenChange={setAddLessonOpen}
+          instructorId={instructor.id}
+          onSuccess={() => {}}
+        />
+      )}
     </div>
   );
 }
