@@ -19,14 +19,14 @@ export function FeatureHero({ heroImage }: FeatureHeroProps) {
             transition={{ duration: 0.7 }}
           >
             <span className="inline-block px-4 py-1.5 bg-emerald-500/10 text-emerald-600 rounded-full text-sm font-medium mb-6">
-              50+ Powerful Tools
+              Free Forever — No Card Required
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-foreground mb-6 leading-tight tracking-tight">
-              Everything You Need to{" "}
-              <span className="text-emerald-500">Run & Grow</span> Your Driving School
+              Your Free Instructor Diary —{" "}
+              <span className="text-emerald-500">No Catches</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-lg">
-              From smart scheduling and GPS tracking to payments, telematics, and your own professional website — all in one app built exclusively for driving instructors.
+              Manage lessons, pupils, and payments from your phone. Then grow with domains, telematics, and dashcams when you're ready.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600 h-14 px-10 text-lg rounded-full" asChild>
@@ -41,7 +41,7 @@ export function FeatureHero({ heroImage }: FeatureHeroProps) {
                 className="border-border text-foreground hover:bg-secondary h-14 px-10 text-lg rounded-full"
                 asChild
               >
-                <Link to="/instructor-app/pricing">View Pricing</Link>
+                <Link to="/instructor-app/features">See All Features</Link>
               </Button>
             </div>
             {/* Platform icons */}
@@ -69,7 +69,7 @@ export function FeatureHero({ heroImage }: FeatureHeroProps) {
           >
             <img
               src={heroImage}
-              alt="EveryDriver features overview"
+              alt="EveryDriver free instructor diary app"
               className="w-full rounded-2xl shadow-xl border border-border"
             />
           </motion.div>
