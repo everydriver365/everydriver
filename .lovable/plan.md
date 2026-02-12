@@ -1,35 +1,35 @@
 
 
-## Add Real Dashcam Footage to the Video Window
+## Make the Instructor App Landing Page Light
 
-Replace the placeholder Camera icon in the hero section of the Dashcam marketing page with an embedded dashcam video showing real driving instructor footage.
+The `/instructor-app` page currently uses hardcoded dark navy backgrounds throughout. This plan converts it to a clean, light design while keeping the brand blue (#0075c9) as an accent.
 
----
+### Changes to `src/pages/instructor-app/EveryDriverInstructorHome.tsx`
 
-### What Changes
+**1. Header** - Change from dark navy (`bg-[#142040]`) to white with a subtle border:
+   - `bg-white border-b border-gray-200`
+   - Update button text colors from white to dark/brand blue
+   - Keep the "Get Started Free" button as brand blue
 
-**File:** `src/pages/instructor-app/InstructorDashcam.tsx`
+**2. Hero Section** - Convert from dark gradient to a light design:
+   - Use a white/light gray background (e.g., `bg-gradient-to-b from-white to-gray-50`)
+   - Change text from white to dark (`text-foreground`)
+   - Keep the emerald/brand accent on the highlighted word
+   - Update trust badges and subtext to use muted foreground colors
 
-The hero section currently shows a dark gradient box with a large Camera icon as a placeholder (lines 176-178). This will be replaced with a real dashcam video using an HTML `<video>` element or a YouTube embed.
+**3. CTA Section** - Convert from dark navy to brand blue gradient:
+   - Use `bg-gradient-to-r from-[#0075c9] to-[#005a9e]` to keep visual interest while aligning with brand
+   - Keep white text here for contrast against the blue
 
----
+**4. Footer** - Lighten to match the rest:
+   - Change from `bg-[#142040]` to `bg-gray-50 border-t border-gray-200`
+   - Update text colors from white to dark/muted foreground
 
-### Approach
-
-Since there's no dashcam footage file currently in the project, the best approach is to embed a publicly available dashcam demonstration video using a YouTube/Vimeo iframe. This avoids storing large video files in the codebase and loads quickly.
-
-The video window will:
-- Use a royalty-free dashcam clip embedded via YouTube (a typical driving lesson POV clip)
-- Keep the existing rounded styling, border, and aspect-video ratio
-- Add playback controls (muted autoplay with loop for a polished demo feel)
-- Retain the "HD 1080p" badge and "Recording" indicator overlay on top of the real footage
-
-If you'd prefer to use your own footage instead, you can upload an MP4 to file storage and we'll swap the URL.
-
----
+**5. Mobile Menu** - Update overlay colors from dark navy to white/light
 
 ### Technical Details
 
-- Replace the `<Camera>` icon placeholder div with an `<iframe>` pointing to a YouTube dashcam clip, or a `<video>` tag with a hosted MP4
-- Use `allow="autoplay; encrypted-media"` and `muted autoPlay loop playsInline` attributes for a seamless looping demo
-- Keep the overlay badges ("HD 1080p" and "Recording") positioned absolutely on top of the video
+- Only one file needs editing: `src/pages/instructor-app/EveryDriverInstructorHome.tsx`
+- All changes are CSS class swaps -- no structural changes
+- The features grid section already uses theme-aware classes (`bg-background`, `text-foreground`) so it requires no changes
+
