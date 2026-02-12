@@ -5985,6 +5985,95 @@ export type Database = {
           },
         ]
       }
+      marketing_page_sections: {
+        Row: {
+          content: Json | null
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_visible: boolean | null
+          page_id: string
+          section_key: string
+          section_type: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_visible?: boolean | null
+          page_id: string
+          section_key: string
+          section_type?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_visible?: boolean | null
+          page_id?: string
+          section_key?: string
+          section_type?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_page_sections_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_pages: {
+        Row: {
+          created_at: string
+          id: string
+          is_published: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          page_key: string
+          page_title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          page_key: string
+          page_title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          page_key?: string
+          page_title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       menu_feature_gates: {
         Row: {
           created_at: string

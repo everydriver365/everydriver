@@ -82,6 +82,7 @@ export function AdminLayout({
       "instructor-home": "hero",
       "instructor-marketing": "hero",
       "instructor-faqs": "hero",
+      "page-builder": "hero",
       "rewards-config": "overview",
       "reward-tiers": "overview",
       bonuses: "overview",
