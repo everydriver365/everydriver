@@ -2713,6 +2713,54 @@ export type Database = {
         }
         Relationships: []
       }
+      instructor_bank_details: {
+        Row: {
+          account_holder_name: string
+          account_number: string
+          created_at: string
+          id: string
+          instructor_id: string
+          is_verified: boolean
+          sort_code: string
+          updated_at: string
+        }
+        Insert: {
+          account_holder_name: string
+          account_number: string
+          created_at?: string
+          id?: string
+          instructor_id: string
+          is_verified?: boolean
+          sort_code: string
+          updated_at?: string
+        }
+        Update: {
+          account_holder_name?: string
+          account_number?: string
+          created_at?: string
+          id?: string
+          instructor_id?: string
+          is_verified?: boolean
+          sort_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructor_bank_details_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instructor_bank_details_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: true
+            referencedRelation: "public_instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructor_blood_glucose_logs: {
         Row: {
           created_at: string
@@ -4786,6 +4834,7 @@ export type Database = {
           special_skills: string | null
           stripe_account_id: string | null
           tax_code: string | null
+          truelayer_enabled: boolean | null
           twitter_url: string | null
           updated_at: string
           vehicle_mpg: number | null
@@ -4893,6 +4942,7 @@ export type Database = {
           special_skills?: string | null
           stripe_account_id?: string | null
           tax_code?: string | null
+          truelayer_enabled?: boolean | null
           twitter_url?: string | null
           updated_at?: string
           vehicle_mpg?: number | null
@@ -5000,6 +5050,7 @@ export type Database = {
           special_skills?: string | null
           stripe_account_id?: string | null
           tax_code?: string | null
+          truelayer_enabled?: boolean | null
           twitter_url?: string | null
           updated_at?: string
           vehicle_mpg?: number | null
