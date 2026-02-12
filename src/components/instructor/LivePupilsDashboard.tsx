@@ -48,8 +48,8 @@ export default function LivePupilsDashboard({ instructorId, compact = false }: L
   const [showList, setShowList] = useState(!compact);
   
   const { positions, isLoading, error, lastUpdate, refetch, stats } = useLivePupilPositions(instructorId, {
-    refreshIntervalMs: 3000, // 3 second refresh for live tracking
-    staleThresholdMs: 180000, // 3 minutes stale threshold
+    refreshIntervalMs: 2000, // 2 second refresh for near-realtime tracking
+    staleThresholdMs: 60000, // 60 seconds stale threshold
   });
 
   // Initialize map

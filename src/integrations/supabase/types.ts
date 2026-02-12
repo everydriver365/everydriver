@@ -798,10 +798,16 @@ export type Database = {
       }
       dashcam_media: {
         Row: {
+          camera_angle: string | null
           created_at: string
           device_id: string | null
+          driver_id: string | null
+          driver_name: string | null
           duration_seconds: number | null
+          event_tags: string[] | null
           file_name: string | null
+          file_size_bytes: number | null
+          g_force: number | null
           geotab_media_file_id: string
           id: string
           instructor_id: string
@@ -810,16 +816,26 @@ export type Database = {
           lesson_telematics_id: string | null
           longitude: number | null
           media_type: string
+          processing_status: string | null
           recorded_at: string
+          resolution: string | null
+          road_name: string | null
+          speed_at_event_kmh: number | null
           status: string
           thumbnail_url: string | null
           updated_at: string
         }
         Insert: {
+          camera_angle?: string | null
           created_at?: string
           device_id?: string | null
+          driver_id?: string | null
+          driver_name?: string | null
           duration_seconds?: number | null
+          event_tags?: string[] | null
           file_name?: string | null
+          file_size_bytes?: number | null
+          g_force?: number | null
           geotab_media_file_id: string
           id?: string
           instructor_id: string
@@ -828,16 +844,26 @@ export type Database = {
           lesson_telematics_id?: string | null
           longitude?: number | null
           media_type?: string
+          processing_status?: string | null
           recorded_at?: string
+          resolution?: string | null
+          road_name?: string | null
+          speed_at_event_kmh?: number | null
           status?: string
           thumbnail_url?: string | null
           updated_at?: string
         }
         Update: {
+          camera_angle?: string | null
           created_at?: string
           device_id?: string | null
+          driver_id?: string | null
+          driver_name?: string | null
           duration_seconds?: number | null
+          event_tags?: string[] | null
           file_name?: string | null
+          file_size_bytes?: number | null
+          g_force?: number | null
           geotab_media_file_id?: string
           id?: string
           instructor_id?: string
@@ -846,7 +872,11 @@ export type Database = {
           lesson_telematics_id?: string | null
           longitude?: number | null
           media_type?: string
+          processing_status?: string | null
           recorded_at?: string
+          resolution?: string | null
+          road_name?: string | null
+          speed_at_event_kmh?: number | null
           status?: string
           thumbnail_url?: string | null
           updated_at?: string

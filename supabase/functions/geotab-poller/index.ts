@@ -43,7 +43,7 @@ async function authenticate(): Promise<GeotabSession> {
   cachedSession = {
     sessionId: credentials.sessionId,
     serverUrl: `https://${path}/apiv1`,
-    expiresAt: Date.now() + 20 * 60 * 1000, // 20 min TTL
+    expiresAt: Date.now() + 20 * 60 * 1000,
   };
 
   return cachedSession;
@@ -69,6 +69,20 @@ async function geotabCall(session: GeotabSession, method: string, params: Record
   const data = await res.json();
   if (data.error) throw new Error(`Geotab ${method} failed: ${data.error.message}`);
   return data.result;
+}
+
+// Fetch driver names in bulk
+async function fetchDriverMap(session: GeotabSession): Promise<Map<string, string>> {
+  const driverMap = new Map<string, string>();
+  try {
+    const drivers = await geotabCall(session, "Get", { typeName: "Driver" });
+    for (const d of drivers || []) {
+      if (d.id && d.name) driverMap.set(d.id, d.name);
+    }
+  } catch (e) {
+    console.log("Driver fetch failed (non-critical):", e);
+  }
+  return driverMap;
 }
 
 Deno.serve(async (req) => {
@@ -98,11 +112,10 @@ Deno.serve(async (req) => {
     }
 
     const session = await authenticate();
-
-    // Build device ID list
+    const deviceMap = new Map(devices.map((d) => [d.geotab_device_id, d]));
     const geotabDeviceIds = devices.map((d) => d.geotab_device_id);
 
-    // --- Fetch device status (position, speed, ignition) ---
+    // --- Fetch device status (position, speed, heading, ignition) ---
     const statusResults = await geotabCall(session, "Get", {
       typeName: "DeviceStatusInfo",
       search: {
@@ -112,10 +125,7 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Map Geotab device ID -> our device record
-    const deviceMap = new Map(devices.map((d) => [d.geotab_device_id, d]));
-
-    // Update positions
+    // Update positions with heading and ignition
     for (const status of statusResults || []) {
       const device = deviceMap.get(status.device?.id);
       if (!device) continue;
@@ -126,6 +136,8 @@ Deno.serve(async (req) => {
           last_latitude: status.latitude,
           last_longitude: status.longitude,
           last_speed_kmh: status.speed,
+          last_heading: status.bearing ?? null,
+          last_ignition_status: status.isDeviceCommunicating ?? null,
           last_seen_at: new Date().toISOString(),
         })
         .eq("id", device.id);
@@ -144,24 +156,23 @@ Deno.serve(async (req) => {
         .eq("is_active", true);
     }
 
+    // --- Fetch driver map for media enrichment ---
+    const driverMap = await fetchDriverMap(session);
+
     // --- Fetch new media files (dashcam clips) ---
-    // Get the last media sync token from cron_sync_config
     const { data: syncConfig } = await supabase
       .from("cron_sync_config")
       .select("*")
       .eq("id", "geotab_media_feed")
       .maybeSingle();
 
-    const fromVersion = (syncConfig as any)?.last_error || null; // Reusing last_error to store feed version token
+    const fromVersion = (syncConfig as any)?.last_error || null;
 
     const mediaParams: Record<string, unknown> = {
       typeName: "MediaFile",
       resultsLimit: 100,
     };
-
-    if (fromVersion) {
-      mediaParams.fromVersion = fromVersion;
-    }
+    if (fromVersion) mediaParams.fromVersion = fromVersion;
 
     let mediaResults: any[] = [];
     let newVersion: string | null = null;
@@ -171,26 +182,26 @@ Deno.serve(async (req) => {
       mediaResults = feedResult?.data || [];
       newVersion = feedResult?.toVersion || null;
     } catch (e) {
-      // GetFeed may not be supported for MediaFile on all databases
       console.log("MediaFile GetFeed not available, trying Get:", e);
       try {
-        const since = new Date(Date.now() - 60 * 60 * 1000).toISOString(); // Last hour
+        const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
         mediaResults = await geotabCall(session, "Get", {
           typeName: "MediaFile",
-          search: {
-            fromDate: since,
-          },
+          search: { fromDate: since },
         }) || [];
       } catch (e2) {
         console.log("MediaFile Get also failed:", e2);
       }
     }
 
-    // Store new media files
+    // Store new media files with enriched metadata
     let mediaInserted = 0;
     for (const media of mediaResults) {
       const device = deviceMap.get(media.device?.id);
       if (!device) continue;
+
+      const driverName = media.driver?.id ? driverMap.get(media.driver.id) : null;
+      const eventTags = Array.isArray(media.tags) ? media.tags : null;
 
       const { error: insertErr } = await supabase
         .from("dashcam_media")
@@ -205,8 +216,19 @@ Deno.serve(async (req) => {
             latitude: media.latitude || null,
             longitude: media.longitude || null,
             recorded_at: media.dateTime || new Date().toISOString(),
-            is_incident: media.tags?.includes("Incident") || false,
+            is_incident: eventTags?.includes("Incident") || false,
             status: "available",
+            // Enriched fields
+            driver_id: media.driver?.id || null,
+            driver_name: driverName || null,
+            event_tags: eventTags,
+            g_force: media.gForce ?? null,
+            camera_angle: media.cameraAngle || media.channel || null,
+            resolution: media.resolution || null,
+            file_size_bytes: media.fileSize || null,
+            processing_status: media.processingStatus || media.status || null,
+            speed_at_event_kmh: media.speed ?? null,
+            road_name: media.roadName || null,
           },
           { onConflict: "geotab_media_file_id" }
         );
@@ -218,10 +240,10 @@ Deno.serve(async (req) => {
     if (newVersion) {
       await supabase.from("cron_sync_config").upsert({
         id: "geotab_media_feed",
-        last_error: newVersion, // Storing feed version in last_error field
+        last_error: newVersion,
         last_run_at: new Date().toISOString(),
         is_enabled: true,
-        interval_seconds: 60,
+        interval_seconds: 10,
       });
     }
 
