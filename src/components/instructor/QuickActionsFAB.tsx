@@ -168,11 +168,11 @@ export function QuickActionsFAB({ className, position = "bottom-right" }: QuickA
           size="lg"
           className={cn(
             "h-14 w-14 rounded-full",
-            "bg-[#00C853] hover:bg-[#00B84D] text-white",
-            "shadow-[0_4px_20px_rgba(0,200,83,0.5)] hover:shadow-[0_6px_25px_rgba(0,200,83,0.6)]",
+            "bg-[#0075c9] hover:bg-[#005a9e] text-white",
+            "shadow-[0_4px_20px_rgba(0,117,201,0.5)] hover:shadow-[0_6px_25px_rgba(0,117,201,0.6)]",
             "flex items-center justify-center p-0",
             "touch-manipulation active:scale-95 transition-all",
-            !isOpen && "ring-4 ring-[#00C853]/30",
+            !isOpen && "ring-4 ring-[#0075c9]/30",
             isOpen && "bg-muted-foreground hover:bg-muted-foreground/90 shadow-lg"
           )}
           aria-label={isOpen ? "Close quick actions" : "Open quick actions"}

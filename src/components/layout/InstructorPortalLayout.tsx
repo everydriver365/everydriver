@@ -519,7 +519,7 @@ export function InstructorPortalLayout({ children }: InstructorPortalLayoutProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[#00C853] hover:bg-[#00B84D] text-white shrink-0"
+                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-[#0075c9] hover:bg-[#005a9e] text-white shrink-0"
                         title="Quick Actions"
                       >
                         <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={3} />
