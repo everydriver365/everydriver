@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import dashcamVideo from "@/assets/dashcam-uk-lesson.mp4";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -174,13 +175,13 @@ export default function InstructorDashcam() {
             >
               <div className="relative rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 p-8 backdrop-blur-sm">
                 <div className="aspect-video rounded-xl overflow-hidden border border-white/5">
-                  <iframe
-                    src="https://www.youtube.com/embed/7HaJArMDKgI?autoplay=1&mute=1&loop=1&playlist=7HaJArMDKgI&controls=0&showinfo=0&rel=0&modestbranding=1"
-                    title="Dashcam footage demo"
-                    className="w-full h-full"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                    loading="lazy"
+                  <video
+                    src={dashcamVideo}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
                   />
                 </div>
                 <div className="absolute -top-3 -right-3 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
