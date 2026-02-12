@@ -1,101 +1,130 @@
 
 
-## Geotab Dashcam Integration Plan
+## Redesigning the Marketing Website to Promote Key Products
 
-This plan adds real Geotab dashcam functionality to your platform, building on the existing Geotab tracking concept and connecting it to the dashcam pages already in your instructor portal.
-
----
-
-### What This Delivers
-
-Instructors with Geotab devices (that have camera add-ins) will be able to:
-- View dashcam video clips linked to their lessons and trips
-- Download incident footage triggered by G-force events
-- See thumbnail previews of recorded clips in the fleet dashboard
-- Access footage from the existing "Dashcam" menu item in the instructor portal
+The current site has a strong features listing, but the homepage tries to showcase 50+ features equally, which dilutes the impact of your four core revenue-driving products. This plan restructures the marketing site around a **product-led storytelling approach** -- guiding visitors through a clear narrative of how each product supports their business.
 
 ---
 
-### Step 1: Database Schema Changes
+### The Problem Today
 
-Add Geotab-specific columns and a new dashcam media table:
-
-| Change | Details |
-|--------|---------|
-| Add `geotab_device_id` to `gps_devices` | Links Geotab device serial to our tracking system |
-| Create `dashcam_media` table | Stores media file metadata (video/image), timestamps, device link, lesson link, thumbnail URLs, Geotab media file ID |
-
-The `dashcam_media` table will include:
-- `id`, `instructor_id`, `device_id` (FK to gps_devices), `lesson_telematics_id` (optional FK)
-- `geotab_media_file_id` (the Geotab MediaFile ID)
-- `media_type` (video/image), `file_name`, `duration_seconds`
-- `thumbnail_url`, `latitude`, `longitude`, `recorded_at`
-- `is_incident` (flagged by G-sensor), `status` (pending/available/expired)
-- RLS policies restricting access to the owning instructor
+- The homepage (InstructorFeatures) is a long scrolling list of 13 feature categories -- visitors have to scroll through everything to find what matters
+- The four key products (Free Diary App, Domains/Website, Telematics, Dashcam) are buried among other features rather than headlined as standalone offerings
+- There's no clear "journey" showing how the products work together
+- The hero talks generically about "50+ tools" rather than leading with the free offer
 
 ---
 
-### Step 2: Geotab API Secrets
+### Proposed Site Structure
 
-You'll need to provide Geotab API credentials. Required secrets:
-- `GEOTAB_DATABASE` -- your Geotab database name
-- `GEOTAB_USERNAME` -- API username  
-- `GEOTAB_PASSWORD` -- API password
-
-These will be stored securely and used only by backend functions.
-
----
-
-### Step 3: Backend Function -- `geotab-poller`
-
-A new backend function that:
-1. Authenticates with the Geotab API (session-based auth with caching)
-2. Fetches device status data (GPS, speed, ignition) for linked Geotab devices
-3. Fetches new MediaFile entries (dashcam clips) since last sync
-4. Stores media metadata in `dashcam_media` table
-5. Updates `gps_devices` with latest position data
-
-This will be triggered by `pg_cron` every 15 seconds for position data, and every 60 seconds for media file checks.
+```text
+Homepage (new)
+|
+|-- Hero: Lead with the FREE diary app offer
+|-- "How It Works" 3-step section
+|-- Product Spotlight Cards (4 products)
+|-- Social Proof / Testimonials
+|-- CTA: Start Free
+|
++-- /features (existing, keep as the deep-dive page)
++-- /telematics (existing dedicated page)
++-- /dashcam (existing dedicated page)
++-- /domains (existing dedicated page)
++-- /pricing (existing)
+```
 
 ---
 
-### Step 4: Backend Function -- `geotab-media-download`
+### Section-by-Section Design
 
-A separate function for on-demand video retrieval:
-- Called when an instructor clicks to view/download a clip
-- Proxies the `DownloadMediaFile` Geotab API call
-- Streams the video back or generates a temporary signed URL
-- Respects Geotab rate limits (240 downloads/minute)
+#### 1. New Hero Section -- Lead with Free
+
+Replace the current generic hero with a specific, benefit-driven message:
+
+- **Headline**: "Your Free Instructor Diary -- No Catches, No Card Required"
+- **Subtext**: "Manage lessons, pupils, and payments from your phone. Then grow with domains, telematics, and dashcams when you're ready."
+- **Primary CTA**: "Start Free Today" (links to signup)
+- **Secondary CTA**: "See All Features" (links to /features)
+- **Right side**: Phone mockup showing the diary app
+
+This immediately communicates the free offer and positions the paid products as natural upgrades.
+
+#### 2. "How It Works" -- 3-Step Journey
+
+A clean horizontal strip with three numbered steps:
+
+| Step | Title | Description |
+|------|-------|-------------|
+| 1 | Sign Up Free | Create your account in 60 seconds. No card needed. |
+| 2 | Set Up Your Diary | Add your availability, import pupils, and start taking bookings. |
+| 3 | Grow Your Business | Add your own website, GPS tracking, and dashcam when you're ready. |
+
+This reassures visitors that it's genuinely free to start and shows the upgrade path.
+
+#### 3. Product Spotlight Cards -- The Core Four
+
+Four large, visually distinct cards arranged in a 2x2 grid (stacked on mobile). Each card has:
+- A product icon and name
+- A short benefit headline
+- 3-4 bullet points
+- A "Learn More" link to the dedicated page
+- A pricing indicator (Free / From X/month)
+
+| Product | Headline | Key Benefits | Link |
+|---------|----------|-------------|------|
+| Smart Diary | "Your lessons, your way" | Drag-and-drop calendar, Google Calendar sync, gap filling, payment tracking | /features |
+| Professional Website & Domain | "Get found online" | Mini-website builder, custom .co.uk domain, direct bookings, SEO | /domains |
+| Telematics | "Teach with data" | Live speed monitoring, driver scoring, trip replay, progress tracking | /telematics |
+| Dashcam | "Eyes on every lesson" | Geotab integration, incident recording, clip sharing, cloud storage | /dashcam |
+
+The Diary card is highlighted with a "FREE" badge. The other three show their tier pricing.
+
+#### 4. "Better Together" -- Connected Value Strip
+
+A horizontal section showing how the four products connect:
+
+```text
+[Diary] --> [Website brings pupils] --> [Telematics improves lessons] --> [Dashcam protects you]
+```
+
+Short copy: "Each product works on its own, but together they create the complete instructor platform. Start with the free diary, add what you need as you grow."
+
+#### 5. Testimonials -- Product-Specific
+
+Three testimonial cards, each tied to a specific product (reuse existing testimonials but tag them):
+- Sarah M. -- Diary ("I just teach")
+- James T. -- Telematics ("Pupils see their improvement")
+- Priya K. -- Tracking/Dashcam ("Parents love the live tracking")
+
+#### 6. Final CTA
+
+"Start Your Free Diary Today" with signup button.
 
 ---
 
-### Step 5: Instructor Portal -- Dashcam Tab
+### Navigation Updates
 
-Replace the current marketing-only dashcam page with a functional dashcam viewer within the instructor portal:
+Reorder the nav links to match the product story:
 
-- **Media Gallery**: Grid of video thumbnails sorted by date, filterable by vehicle
-- **Video Player**: In-app playback with map overlay showing where the clip was recorded
-- **Incident Clips**: Highlighted section for G-force triggered recordings
-- **Lesson Linking**: Auto-associate clips with lessons based on timestamp overlap
-- **Download Button**: Direct download of original footage
+**Current**: Home | Features | Telematics | Dashcam | Pricing | Domains | About | Contact
 
-This will be accessible from the existing "Dashcam" menu item in the instructor portal.
+**Proposed**: Home | Features | Websites & Domains | Telematics | Dashcam | Pricing | About | Contact
+
+This groups the website/domain offering more clearly as a product.
 
 ---
 
-### Step 6: Admin Panel -- Geotab Device Linking
+### Technical Implementation
 
-Extend the existing admin instructor form to allow linking Geotab device IDs (similar to how Quartix Vehicle/Driver IDs are linked today):
-- Add `geotab_device_id` field to the instructor admin form
-- Admin can paste the Geotab serial number to link a device
+**Files to create:**
+- `src/components/instructor-features/HowItWorks.tsx` -- 3-step section
+- `src/components/instructor-features/ProductSpotlightGrid.tsx` -- 4 product cards
+- `src/components/instructor-features/ConnectedValueStrip.tsx` -- "Better Together" section
 
----
+**Files to modify:**
+- `src/pages/instructor-app/InstructorFeatures.tsx` -- Replace the current homepage layout with the new product-led structure
+- `src/components/instructor-features/FeatureHero.tsx` -- Update hero copy and layout to lead with free diary
+- `src/components/layout/InstructorSaaSLayout.tsx` -- Reorder nav links
 
-### Technical Notes
-
-- The Geotab API uses session-based authentication (not API keys), requiring `Authenticate` then using the returned session ID and server URL for subsequent calls
-- MediaFile entities support `GetFeed` for incremental polling (only fetching new files since last check)
-- Video files are MP4 format, images are JPEG -- both natively supported by browsers
-- Rate limits: 350 Get requests/min, 240 download requests/min -- well within our polling frequency
-- The existing `tracking_provider` column in `gps_devices` will be set to `'geotab'` for Geotab-linked devices
+**No database changes required** -- this is purely a frontend restructure using existing components and patterns.
 
