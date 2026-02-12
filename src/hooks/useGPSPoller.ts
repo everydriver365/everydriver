@@ -19,7 +19,7 @@ interface GPSPollerResult {
 
 export function useGPSPoller({
   enabled,
-  intervalMs = 5000,
+  intervalMs = 3000,
   onData,
   onError,
 }: UseGPSPollerOptions) {

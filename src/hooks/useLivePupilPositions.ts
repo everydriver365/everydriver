@@ -61,8 +61,8 @@ export function useLivePupilPositions(
         trip_status: pos.trip_status || 'idle',
         updated_at: pos.updated_at,
         telematics_session_id: pos.telematics_session_id,
-        // Mark as stale for UI indication only (30 seconds threshold for visual warning)
-        isStale: now - new Date(pos.updated_at).getTime() > 30000,
+        // Mark as stale if no update within threshold (default 30s, configurable)
+        isStale: now - new Date(pos.updated_at).getTime() > staleThresholdMs,
       }));
 
       // Trust the database is_active flag - show all active positions immediately
