@@ -10,7 +10,7 @@ const stats = [
 
 export function StatsBar() {
   return (
-    <section className="bg-card border-y border-border">
+    <section className="bg-secondary/50 border-y border-border">
       <div className="container py-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {stats.map((stat, i) => (
