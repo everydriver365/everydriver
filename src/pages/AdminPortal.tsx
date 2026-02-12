@@ -66,6 +66,7 @@ import { AdminLiveMapView } from "@/components/admin/AdminLiveMapView";
 import { BespokeBookingModal } from "@/components/admin/BespokeBookingModal";
 import { ActivityLogViewer } from "@/components/admin/ActivityLogViewer";
 import { CampaignManager } from "@/components/admin/CampaignManager";
+import { MarketingPageBuilder } from "@/components/admin/MarketingPageBuilder";
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SendUrgentAlertDialog } from "@/components/admin/SendUrgentAlertDialog";
 import { AdminNotesManager } from "@/components/admin/AdminNotesManager";
@@ -132,6 +133,7 @@ const sectionMeta: Record<string, { title: string; group: string; icon: React.El
   "instructor-marketing": { title: "Marketing Page", group: "Instructor Platform", icon: Globe },
   "instructor-onboarding": { title: "Signup Wizard", group: "Instructor Platform", icon: Rocket },
   "instructor-faqs": { title: "Instructor FAQs", group: "Instructor Platform", icon: HelpCircle },
+  "page-builder": { title: "Marketing Page Builder", group: "Instructor Platform", icon: FileEdit },
   // Products & Booking
   courses: { title: "Course Templates", group: "Products & Booking", icon: BookOpen },
   "booking-modes": { title: "Booking Modes", group: "Products & Booking", icon: CalendarClock },
@@ -543,6 +545,28 @@ export default function AdminPortal() {
               </CardHeader>
               <CardContent>
                 <InstructorAppCMSManager />
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+
+      case "page-builder":
+        return (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <AdminBackButton onClick={() => setActiveSection("overview")} />
+            <AdminSectionNotes sectionKey="page-builder" className="mb-4" />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileEdit className="h-5 w-5 text-primary" />
+                  Marketing Page Builder
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Build and manage all marketing pages with images, videos, and content sections
+                </p>
+              </CardHeader>
+              <CardContent>
+                <MarketingPageBuilder />
               </CardContent>
             </Card>
           </motion.div>

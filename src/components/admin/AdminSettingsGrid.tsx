@@ -107,6 +107,7 @@ const settingsCategories: SettingsCategory[] = [
       { key: "instructor-home", title: "App Homepage", description: "Configure instructor app home screen." },
       { key: "instructor-marketing", title: "Marketing Page", description: "EveryDriver landing page content." },
       { key: "instructor-faqs", title: "Instructor FAQs", description: "Help content for instructors." },
+      { key: "page-builder", title: "Page Builder", description: "Build marketing pages with images & sections." },
     ],
   },
   {
