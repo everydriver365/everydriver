@@ -109,41 +109,41 @@ export default function InstructorAppHome() {
   return (
     <InstructorSaaSLayout>
       {/* ═══════════════════ HERO ═══════════════════ */}
-      <section className="relative overflow-hidden bg-[#0a1628]">
+      <section className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50">
         {/* Background image with overlay */}
         <div className="absolute inset-0">
-          <img src={heroBanner} alt="" className="w-full h-full object-cover opacity-30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628] via-[#0a1628]/90 to-[#0a1628]/60" />
+          <img src={heroBanner} alt="" className="w-full h-full object-cover opacity-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/80" />
         </div>
 
         <div className="relative container py-20 md:py-32">
           <div className="max-w-3xl">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/15 border border-emerald-500/30 mb-8">
-                <Sparkles className="h-4 w-4 text-emerald-400" />
-                <span className="text-sm font-medium text-emerald-300">{hero.badge_text}</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0075c9]/10 border border-[#0075c9]/30 mb-8">
+                <Sparkles className="h-4 w-4 text-[#0075c9]" />
+                <span className="text-sm font-medium text-[#0075c9]">{hero.badge_text}</span>
               </div>
 
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-[1.1] tracking-tight">
                 {hero.headline_part1}{" "}
-                <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
+                <span className="text-[#0075c9]">
                   {hero.headline_highlight}
                 </span>
               </h1>
 
-              <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-2xl leading-relaxed">
+              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl leading-relaxed">
                 {hero.subtext}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white h-14 px-10 text-lg shadow-lg shadow-emerald-500/25" asChild>
+                <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-14 px-10 text-lg shadow-lg shadow-[#0075c9]/25" asChild>
                   <Link to={hero.primary_cta_link}>
                     {hero.primary_cta_text}
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 h-14 px-10 text-lg" asChild>
+                <Button size="lg" variant="outline" className="border-gray-300 text-foreground hover:bg-gray-100 h-14 px-10 text-lg" asChild>
                   <Link to={hero.demo_cta_link}>
                     <Play className="mr-2 h-5 w-5" />
                     {hero.demo_cta_text}
@@ -152,19 +152,19 @@ export default function InstructorAppHome() {
               </div>
 
               {/* Trust row */}
-              <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400">
+              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                   ))}
-                  <span className="ml-2 font-medium text-white">4.9/5</span>
+                  <span className="ml-2 font-medium text-foreground">4.9/5</span>
                 </div>
                 <span className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-emerald-400" />
+                  <CheckCircle className="h-4 w-4 text-[#0075c9]" />
                   {hero.trust_badge1}
                 </span>
                 <span className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-emerald-400" />
+                  <CheckCircle className="h-4 w-4 text-[#0075c9]" />
                   {hero.trust_badge2}
                 </span>
               </div>
@@ -191,7 +191,7 @@ export default function InstructorAppHome() {
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <stat.icon className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
+                <stat.icon className="h-6 w-6 text-[#0075c9] mx-auto mb-2" />
                 <p className="text-3xl md:text-4xl font-bold text-foreground mb-1">{stat.value}</p>
                 <p className="text-muted-foreground text-sm">{stat.label}</p>
               </motion.div>
@@ -209,7 +209,7 @@ export default function InstructorAppHome() {
             viewport={{ once: true }}
             className="text-center mb-14"
           >
-            <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 mb-4">Why EveryDriver</Badge>
+            <Badge className="bg-[#0075c9]/10 text-[#0075c9] mb-4">Why EveryDriver</Badge>
             <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
               More Than Just a Diary App
             </h2>
@@ -227,9 +227,9 @@ export default function InstructorAppHome() {
                 transition={{ delay: i * 0.08 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full border-border bg-card hover:shadow-xl hover:border-emerald-500/40 transition-all duration-300 group">
+                <Card className="h-full border-border bg-card hover:shadow-xl hover:border-[#0075c9]/40 transition-all duration-300 group">
                   <CardContent className="p-6">
-                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-5 shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#0075c9] to-[#005a9e] flex items-center justify-center mb-5 shadow-lg shadow-[#0075c9]/20 group-hover:scale-110 transition-transform">
                       <item.icon className="h-6 w-6 text-white" />
                     </div>
                     <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
@@ -302,7 +302,7 @@ export default function InstructorAppHome() {
                       <CardContent className="p-5">
                         <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
-                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-3 font-medium">Click to learn more →</p>
+                        <p className="text-xs text-[#0075c9] mt-3 font-medium">Click to learn more →</p>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -312,18 +312,18 @@ export default function InstructorAppHome() {
 
             {/* Domains promo */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-12">
-              <Card className="bg-gradient-to-r from-[#142040] to-[#1a2d52] border-0 overflow-hidden">
+              <Card className="bg-gradient-to-r from-[#0075c9] to-[#005a9e] border-0 overflow-hidden">
                 <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 rounded-xl bg-white/10 flex items-center justify-center">
+                    <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
                       <Globe className="h-7 w-7 text-white" />
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white mb-1">Get Your Professional Domain</h3>
-                      <p className="text-white/70">Secure your .com, .co.uk or any TLD for your driving school website</p>
+                      <p className="text-white/80">Secure your .com, .co.uk or any TLD for your driving school website</p>
                     </div>
                   </div>
-                  <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100 whitespace-nowrap" asChild>
+                  <Button size="lg" className="bg-white text-[#0075c9] hover:bg-gray-100 whitespace-nowrap" asChild>
                     <Link to="/instructor-app/domains">
                       Browse Domains
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -337,7 +337,7 @@ export default function InstructorAppHome() {
       )}
 
       {/* ═══════════════════ FREE FOREVER BANNER ═══════════════════ */}
-      <section className="py-16 bg-gradient-to-r from-emerald-600 to-teal-600">
+      <section className="py-16 bg-gradient-to-r from-[#0075c9] to-[#005a9e]">
         <div className="container">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="flex items-center gap-4">
@@ -346,10 +346,10 @@ export default function InstructorAppHome() {
               </div>
               <div>
                 <h3 className="text-2xl md:text-3xl font-bold text-white">FREE Forever Plan Available</h3>
-                <p className="text-emerald-100 text-lg">No credit card required. Upgrade when you're ready.</p>
+                <p className="text-white/80 text-lg">No credit card required. Upgrade when you're ready.</p>
               </div>
             </div>
-            <Button size="lg" className="bg-white text-emerald-700 hover:bg-slate-100 h-14 px-10 text-lg shadow-lg" asChild>
+            <Button size="lg" className="bg-white text-[#0075c9] hover:bg-gray-100 h-14 px-10 text-lg shadow-lg" asChild>
               <Link to="/instructor-app/signup">
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -361,13 +361,13 @@ export default function InstructorAppHome() {
 
       {/* ═══════════════════ TESTIMONIALS ═══════════════════ */}
       {isSectionVisible('testimonials') && (
-        <section className="py-20 bg-[#0a1628]">
+        <section className="py-20 bg-gray-50">
           <div className="container">
             <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                 {testimonialsSection?.title || 'Loved by Instructors Across the UK'}
               </h2>
-              <p className="text-lg text-slate-400">
+              <p className="text-lg text-muted-foreground">
                 {testimonialsSection?.subtitle || 'See what other driving instructors are saying.'}
               </p>
             </div>
@@ -381,21 +381,21 @@ export default function InstructorAppHome() {
                   transition={{ delay: index * 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <Card className="bg-white/5 border-white/10 h-full backdrop-blur-sm">
+                  <Card className="bg-white border-border h-full shadow-sm">
                     <CardContent className="p-6">
                       <div className="flex gap-1 mb-4">
                         {[...Array(testimonial.rating)].map((_, i) => (
                           <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                         ))}
                       </div>
-                      <p className="text-slate-300 mb-4 leading-relaxed">"{testimonial.content}"</p>
-                      <div className="flex items-center gap-3 pt-3 border-t border-white/10">
-                        <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-sm">
+                      <p className="text-muted-foreground mb-4 leading-relaxed">"{testimonial.content}"</p>
+                      <div className="flex items-center gap-3 pt-3 border-t border-border">
+                        <div className="h-10 w-10 rounded-full bg-[#0075c9]/10 flex items-center justify-center text-[#0075c9] font-bold text-sm">
                           {testimonial.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div>
-                          <p className="font-semibold text-white">{testimonial.name}</p>
-                          <p className="text-sm text-slate-400">{testimonial.role}</p>
+                          <p className="font-semibold text-foreground">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -424,7 +424,7 @@ export default function InstructorAppHome() {
                 {ctaSection?.subtitle || 'Join hundreds of instructors who\'ve already made the switch.'}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white h-14 px-10 text-lg shadow-lg shadow-emerald-500/25" asChild>
+                <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-14 px-10 text-lg shadow-lg shadow-[#0075c9]/25" asChild>
                   <Link to={hero.primary_cta_link}>
                     {hero.primary_cta_text}
                     <ArrowRight className="ml-2 h-5 w-5" />
@@ -451,7 +451,7 @@ export default function InstructorAppHome() {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3 text-xl">
-                  <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", featureColorMap[selectedFeature.icon_name] || "bg-emerald-500")}>
+                  <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center", featureColorMap[selectedFeature.icon_name] || "bg-[#0075c9]")}>
                     <selectedFeature.icon className="h-5 w-5 text-white" />
                   </div>
                   {selectedFeature.title}
