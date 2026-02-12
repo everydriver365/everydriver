@@ -76,7 +76,7 @@ interface ExpandableLessonCardProps {
 
 const colorPresets = [
   { label: "Default", bg: "bg-card", border: "border-border" },
-  { label: "Blue", bg: "bg-blue-50", border: "border-blue-200" },
+  { label: "Blue", bg: "bg-[#0075c9]/5", border: "border-[#0075c9]/20" },
   { label: "Green", bg: "bg-emerald-50", border: "border-emerald-200" },
   { label: "Amber", bg: "bg-amber-50", border: "border-amber-200" },
   { label: "Purple", bg: "bg-purple-50", border: "border-purple-200" },
@@ -137,7 +137,7 @@ export function ExpandableLessonCard({
     
     if (pupil?.account_balance && pupil.account_balance > 0) {
       return (
-        <Badge className="bg-blue-100 text-blue-700 border-0 text-[10px] px-1.5 py-0">
+        <Badge className="bg-[#0075c9]/10 text-[#0075c9] border-0 text-[10px] px-1.5 py-0">
           £{pupil.account_balance.toFixed(0)}
         </Badge>
       );
@@ -276,7 +276,7 @@ export function ExpandableLessonCard({
                       onNavigate(pickupAddress, pickupPostcode);
                     }}
                   >
-                    <Navigation className="h-4 w-4 text-blue-500" />
+                    <Navigation className="h-4 w-4 text-[#0075c9]" />
                     Nav
                   </Button>
 
