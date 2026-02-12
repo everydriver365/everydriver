@@ -173,8 +173,15 @@ export default function InstructorDashcam() {
               className="relative hidden md:block"
             >
               <div className="relative rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 p-8 backdrop-blur-sm">
-                <div className="aspect-video rounded-xl bg-gradient-to-br from-[#1a2d5a] to-[#0a1428] flex items-center justify-center border border-white/5">
-                  <Camera className="h-20 w-20 text-emerald-400/40" />
+                <div className="aspect-video rounded-xl overflow-hidden border border-white/5">
+                  <iframe
+                    src="https://www.youtube.com/embed/7HaJArMDKgI?autoplay=1&mute=1&loop=1&playlist=7HaJArMDKgI&controls=0&showinfo=0&rel=0&modestbranding=1"
+                    title="Dashcam footage demo"
+                    className="w-full h-full"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                    loading="lazy"
+                  />
                 </div>
                 <div className="absolute -top-3 -right-3 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
                   HD 1080p
