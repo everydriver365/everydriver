@@ -56,6 +56,7 @@ import QuickActionGradientDemo from "./pages/QuickActionGradientDemo";
 import HomepageRedesignDemo from "./pages/HomepageRedesignDemo";
 import MobileHomeRedesignDemo from "./pages/MobileHomeRedesignDemo";
 import MobileHomeRedesignDemo2 from "./pages/MobileHomeRedesignDemo2";
+import MobileHomeIOSDemo from "./pages/MobileHomeIOSDemo";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -207,6 +208,7 @@ const App = () => (
               <Route path="/homepage-redesign-demo" element={<HomepageRedesignDemo />} />
               <Route path="/mobile-home-redesign" element={<MobileHomeRedesignDemo />} />
               <Route path="/mobile-home-redesign-2" element={<MobileHomeRedesignDemo2 />} />
+              <Route path="/mobile-home-ios-demo" element={<MobileHomeIOSDemo />} />
 
               {/* Instructor Portal (Authenticated) */}
               <Route path="/instructor/login" element={<InstructorPortalLogin />} />
