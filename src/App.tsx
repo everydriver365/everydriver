@@ -119,6 +119,7 @@ import InstructorTelematics from "./pages/instructor-app/InstructorTelematics";
 import InstructorDashcam from "./pages/instructor-app/InstructorDashcam";
 import DashcamGallery from "./pages/instructor/DashcamGallery";
 import DrivingSchools from "./pages/instructor-app/DrivingSchools";
+import InstructorPayments from "./pages/instructor-app/InstructorPayments";
 import InstructorDesignDemo from "./pages/instructor-app/DesignDemo";
 import PortalLayoutDemo from "./pages/instructor-app/PortalLayoutDemo";
 import InstructorOnboarding from "./pages/instructor-app/onboarding/InstructorOnboarding";
@@ -198,6 +199,7 @@ const App = () => (
               <Route path="/instructor-app/design-demo" element={<InstructorDesignDemo />} />
               <Route path="/instructor-app/portal-layout-demo" element={<PortalLayoutDemo />} />
               <Route path="/driving-schools" element={<DrivingSchools />} />
+              <Route path="/instructor-app/payments" element={<InstructorPayments />} />
               <Route path="/homepage-redesign-demo" element={<HomepageRedesignDemo />} />
 
               {/* Instructor Portal (Authenticated) */}
