@@ -26,7 +26,8 @@ export function CrossfadeImages({ images, alt, interval = 4000, className = "" }
           key={i}
           src={src}
           alt={alt}
-          className={`w-full ${i === 0 ? "relative" : "absolute inset-0"}`}
+          className="w-full block"
+          style={i === 0 ? {} : { position: "absolute", top: 0, left: 0, height: "100%", objectFit: "cover" }}
           animate={{ opacity: i === current ? 1 : 0 }}
           transition={{ duration: 1.5, ease: "easeInOut" }}
         />
