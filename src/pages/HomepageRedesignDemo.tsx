@@ -13,6 +13,9 @@ import paymentsImg from "@/assets/features/payments-tracking.jpg";
 import websiteImg from "@/assets/features/website-showcase.png";
 import telematicsImg from "@/assets/features/telematics-showcase.png";
 import dashcamFeatureImg from "@/assets/dashcam-feature.png";
+import drivingSchool1 from "@/assets/driving-school-1.png";
+import drivingSchool2 from "@/assets/driving-school-2.png";
+import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -231,7 +234,7 @@ export default function HomepageRedesignDemo() {
               title: "Built for Driving Schools",
               description: "Manage your entire fleet of instructors from one dashboard. Track performance, allocate pupils, and scale your driving school with confidence.",
               features: ["Multi-instructor management", "Pupil allocation", "Fleet performance tracking", "Centralised billing"],
-              image: featuresHeroImg,
+              images: [drivingSchool1, drivingSchool2],
               reverse: true,
               link: "/driving-schools",
             },
@@ -272,7 +275,11 @@ export default function HomepageRedesignDemo() {
 
               {/* Image side */}
               <div className="rounded-2xl overflow-hidden border border-border shadow-lg bg-muted/20">
-                <img src={feature.image} alt={feature.title} className="w-full" />
+                {'images' in feature && feature.images ? (
+                  <CrossfadeImages images={feature.images} alt={feature.title} />
+                ) : (
+                  <img src={(feature as any).image} alt={feature.title} className="w-full" />
+                )}
               </div>
             </motion.div>
           ))}
