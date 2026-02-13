@@ -1,60 +1,44 @@
 
+## Website Choice During Onboarding
 
-## Enhance Geotab Integration: Full Dashcam Metadata + Faster Live Map
+Replace the current domain/hosting section in Step 8 (StepWebsite) with a clean three-option toggle selector that lets instructors choose their website type upfront.
 
-### 1. Database Schema Changes
+### The Three Options
 
-Add new columns to `dashcam_media` to capture all available Geotab MediaFile metadata:
+1. **Free Mini-Website** (default, selected)
+   - "Get a professional mini-website included free with your account at yourname.everydriver.co.uk. Includes booking page, reviews, and your profile."
+   - Toggle selects this, flow continues as normal with theme/color choices.
 
-| Column | Type | Purpose |
-|--------|------|---------|
-| `driver_id` | text | Geotab driver ID |
-| `driver_name` | text | Driver name from Geotab |
-| `event_tags` | text[] | Event tags (HarshBraking, Speeding, Incident, etc.) |
-| `g_force` | numeric | Peak G-force value for the event |
-| `camera_angle` | text | Camera position (front, rear, cabin) |
-| `resolution` | text | Video resolution |
-| `file_size_bytes` | bigint | File size |
-| `processing_status` | text | Geotab processing state |
-| `speed_at_event_kmh` | numeric | Vehicle speed when media was captured |
-| `road_name` | text | Road name at capture location |
+2. **Custom Multi-Page Website + Domain**
+   - "Want a full custom website with your own domain (e.g. yourname.co.uk)? We'll build you a bespoke multi-page site with your branding."
+   - When selected, shows a green info box: "Great choice! We'll arrange this with you after sign-up is complete."
+   - Removes the domain search, hosting packages, and related UI from this step.
 
-Also add `last_heading` update to `gps_devices` (already exists in schema) and `last_ignition_status` from Geotab DeviceStatusInfo.
+3. **Book Now Button for Your Own Website**
+   - "Already have your own website? We'll give you a 'Book Now' button you can add to your existing site to accept online bookings."
+   - When selected, shows the same post-signup message: "We'll send you the button code and help you set it up after sign-up."
 
-### 2. Geotab Poller Enhancement
+### How It Works
 
-Update `supabase/functions/geotab-poller/index.ts` to:
+- The three options are presented as clickable cards with a radio-style toggle (similar to the existing theme selector pattern).
+- Only the "Free Mini-Website" option shows the theme picker, color picker, and video upload sections below it.
+- The "Custom" and "Book Now" options hide those sections and show a brief confirmation message instead.
+- A new field `website_choice` (`"free"` | `"custom"` | `"booknow"`) is added to the onboarding data and saved to the instructor profile.
 
-- **Capture heading and ignition** from DeviceStatusInfo (fields: `bearing`, `isDeviceCommunicating`)
-- **Enrich media metadata** with driver info (via `Get` on `Driver` type), event tags, G-force, camera angle, resolution, file size, speed, and processing status from MediaFile properties
-- **Use Geotab `GetFeed` for DeviceStatusInfo** instead of `Get` for more efficient incremental updates
+### Technical Details
 
-### 3. Add Geotab Cron Job (Every 10 Seconds)
+**File changes:**
 
-Create a `pg_cron` job to call `geotab-poller` every 10 seconds (faster than the current 15-second Quartix interval) for near-real-time live map updates:
+1. **`src/pages/instructor-app/onboarding/InstructorOnboarding.tsx`**
+   - Add `website_choice: "free" | "custom" | "booknow"` to `OnboardingData` interface (default: `"free"`).
 
-```text
-Schedule: '10 seconds'
-Target:   geotab-poller edge function
-```
+2. **`src/pages/instructor-app/onboarding/steps/StepWebsite.tsx`**
+   - Replace the domain/hosting section (lines 260-475) with three toggle cards at the top of the step.
+   - Conditionally show theme/color/video sections only when `website_choice === "free"`.
+   - For `"custom"` or `"booknow"`, show a styled info card saying the arrangement happens post-signup.
+   - Remove domain search, hosting packages, and related state/logic (no longer needed in this step).
 
-### 4. Faster Client-Side Refresh
+3. **`src/pages/instructor-app/onboarding/OnboardingPreview.tsx`**
+   - Pass updated data shape if needed (minor prop adjustment).
 
-Reduce client polling intervals for snappier live map updates:
-
-- `useLivePupilPositions`: Keep at 2s (already fast)
-- `useGPSPoller`: Reduce default from 5s to 3s
-- `LivePupilsDashboard`: Reduce from 3s to 2s
-- Stale threshold: Reduce from 3 minutes to 60 seconds for quicker "offline" detection
-
-### 5. Summary of Changes
-
-| Area | Change |
-|------|--------|
-| Database | Add ~10 columns to `dashcam_media` for full metadata |
-| Edge function | Enrich `geotab-poller` with heading, ignition, driver info, event tags, G-force |
-| Cron | New `pg_cron` job every 10 seconds for geotab-poller |
-| Client hooks | Tighten polling intervals and stale thresholds |
-
-No new edge functions needed. No UI changes required -- the existing dashcam gallery and live map components will automatically display the richer data.
-
+**No database migration needed** -- the `website_choice` value can be stored in the existing instructor profile JSON or as a simple text field added later when the feature matures.
