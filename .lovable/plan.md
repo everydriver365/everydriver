@@ -1,77 +1,38 @@
 
 
-## Enhanced WordPress Embed: Course Tiles + In-Page Booking
+## Match the Instructor Marketing Page Header to the Main Website Style
 
-### What changes
+### What this changes
 
-**1. Upgraded course tile design in the embed snippet**
+The homepage (`/`) currently uses `InstructorSaaSLayout` which has a **white background header** with the EveryDriver logo and **emerald-green** accented navigation. The main Drive365 website uses a **navy blue (`bg-primary`) header** with centered navigation, a postcode search bar, and the Drive365 logo.
 
-The current snippet renders basic cards. The new version will produce visually rich tiles matching the style of the main app:
+This plan updates the `InstructorSaaSLayout` header to match the main site's `Header` component style while keeping the instructor-specific navigation links and CTAs.
 
-- Course image (if available from the API)
-- "Popular" badge with instructor brand colour
-- Course name, duration, and feature bullets
-- Price with strike-through for discounted courses
-- Next available date
-- Styled "Book Now" button
+### Changes
 
-**2. Enhanced `public-courses` API response**
+| Element | Current (InstructorSaaSLayout) | Updated (matching main site) |
+|---------|-------------------------------|------------------------------|
+| Header background | White (`bg-background`) | Navy blue (`bg-primary`) |
+| Logo | `/everydriver-logo-full.png` | `/everydriver-logo-full.png` (kept, but could swap to Drive365 if preferred) |
+| Nav link color | Dark text with emerald hover | Light text (`text-nav-foreground/80`) with accent hover |
+| Active link color | Emerald green | Accent color |
+| Nav layout | Right-aligned | Centered (absolute positioned) |
+| CTA buttons | Emerald "Get Started Free" | Brand blue styling |
+| Mobile menu trigger | Dark icon | Light/white icon |
+| Extras | None | Theme toggle and language toggle in header bar (already present but styled differently) |
 
-Add additional fields to the edge function response so the embed snippet has richer data to display:
+### File changed
 
-- `features` array (already returned but not used in the snippet)
-- `courseImageUrl` from `instructor_courses.course_image_url` or `course_templates.default_image_url`
-- `courseName` from templates (already returned as `name`)
-
-**3. In-page booking via iframe modal**
-
-Instead of opening a new tab (`target="_blank"`), clicking "Book Now" will open an iframe overlay **within the WordPress page**. This keeps the entire booking journey on the instructor's website:
-
-- A full-screen semi-transparent overlay appears
-- The booking page (`/book/:instructorId?course=X`) loads inside a centered, responsive iframe
-- A close button lets users dismiss the overlay
-- The WordPress page remains in the background
-
-No changes are needed to the actual booking page -- it already works standalone.
-
-### Files changed
-
-| File | Change |
-|------|--------|
-| `supabase/functions/public-courses/index.ts` | Add `courseImageUrl` field to each course in the response |
-| `src/components/instructor/WordPressEmbedSnippet.tsx` | Rewrite snippet to render richer tiles and include iframe modal booking logic |
+**`src/components/layout/InstructorSaaSLayout.tsx`** -- Update the header section to use the navy `bg-primary` background, white/light nav text, centered desktop navigation, and brand-blue CTA buttons matching the style in `src/components/layout/Header.tsx`.
 
 ### Technical details
 
-**Updated snippet structure (vanilla JS, no dependencies):**
+- Replace `bg-background` with `bg-primary` on the header
+- Change nav link classes from `text-foreground/70 hover:text-emerald-500` to `text-nav-foreground/80 hover:text-accent`
+- Change active link class from `text-emerald-500` to `text-accent`
+- Center the desktop nav using `absolute left-1/2 -translate-x-1/2`
+- Update "Get Started Free" button from emerald to brand blue (`bg-[#0075c9] hover:bg-[#005a9e]`)
+- Update "Log in" button to use light text styling
+- Update mobile menu button to use `text-nav-foreground`
+- Mobile menu dropdown remains `bg-background` for readability
 
-```text
-+--------------------------------------------------+
-|  [Course Image]                                   |
-|  [Popular Badge]                                  |
-|                                                   |
-|  Course Name                                      |
-|  10 hours of instruction                          |
-|                                                   |
-|  * Feature 1                                      |
-|  * Feature 2                                      |
-|  * Feature 3                                      |
-|                                                   |
-|  GBP 299  (was GBP 350)                           |
-|  Next available: 18 Feb 2026                      |
-|                                                   |
-|  [ Book Now ]                                     |
-+--------------------------------------------------+
-```
-
-**Iframe modal behaviour:**
-
-- "Book Now" calls a JS function that creates an overlay `<div>` with an `<iframe>` pointing to `everydriver.lovable.app/book/:instructorId?course=X`
-- Overlay uses `position:fixed; top:0; left:0; width:100%; height:100%; z-index:999999`
-- Iframe is `width:100%; max-width:600px; height:90vh` centered on screen
-- Close button in top-right corner removes the overlay
-- Clicking the dark backdrop also closes it
-
-**Edge function change:**
-
-Add `course_image_url` and `default_image_url` to the query, and include `courseImageUrl` in the response for each course.
