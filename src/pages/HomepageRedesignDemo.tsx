@@ -148,6 +148,26 @@ export default function HomepageRedesignDemo() {
         </div>
       </section>
 
+      {/* ─── WHAT WE DO ─── */}
+      <section className="py-14 md:py-20 bg-muted/20">
+        <div className="container max-w-3xl text-center">
+          <motion.div {...fadeUp}>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
+              Your Diary, Your Way — <span className="text-[#0075c9]">Free for Life</span>
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+              EveryDriver gives every driving instructor a powerful diary and business management app — completely free, forever.
+              Manage your schedule, track pupil progress, handle payments, and communicate with learners all in one place.
+              There's no catch, no tie-in, and no contract. If it's not for you, simply leave at any time — no questions asked.
+            </p>
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed mt-4">
+              Want even more? Optional paid extras like telematics, dashcam integration, and custom websites are available
+              when you're ready — but the core app is yours to keep at absolutely no cost.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ─── SOCIAL PROOF BAR ─── */}
       <section className="py-6 bg-muted/30 border-y border-border">
         <div className="container max-w-5xl">
