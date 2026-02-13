@@ -6,7 +6,7 @@ import { ConnectedValueStrip } from "@/components/instructor-features/ConnectedV
 import { TestimonialStrip } from "@/components/instructor-features/TestimonialStrip";
 import { FeatureCTA } from "@/components/instructor-features/FeatureCTA";
 
-import featuresHeroImg from "@/assets/features/features-hero.jpg";
+import featuresHeroImg from "@/assets/features/features-hero.png";
 
 const testimonials = [
   { quote: "I used to spend Sunday evenings sorting my diary and chasing payments. Now the app does it all — I just teach.", name: "Sarah M.", role: "ADI, Manchester", stars: 5 },
