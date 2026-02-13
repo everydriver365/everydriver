@@ -576,17 +576,27 @@ export function InstructorMobileHome({
           />
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
           <div
-            className="bg-card rounded-2xl shadow-sm p-4 flex items-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
+            className="bg-card rounded-2xl shadow-sm overflow-hidden cursor-pointer"
             onClick={() => navigate("/instructor/gaps")}
           >
-            <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
+            <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+                <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+              </div>
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
+                    <Calendar className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm">Plan Ahead</h3>
+                    <p className="text-white/70 text-[10px]">Nothing scheduled tomorrow</p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-white/60" />
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">Tomorrow</p>
-              <p className="text-xs text-muted-foreground">Nothing scheduled yet</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
           </div>
       ) : null}
 
