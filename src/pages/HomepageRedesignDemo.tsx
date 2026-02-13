@@ -264,7 +264,7 @@ export default function HomepageRedesignDemo() {
               description: "Monitor speed, driver scoring, and trip history in real time. Give your pupils measurable feedback backed by data.",
               features: ["Live speed monitoring", "Driver scoring", "Trip replay & reports", "Progress tracking"],
               image: telematicsImg,
-              reverse: true,
+              reverse: false,
               link: "/instructor-app/telematics",
             },
             {
@@ -273,7 +273,7 @@ export default function HomepageRedesignDemo() {
               description: "AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing.",
               features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"],
               image: dashcamFeatureImg,
-              reverse: false,
+              reverse: true,
               link: "/instructor-app/dashcam",
             },
             {
@@ -282,7 +282,7 @@ export default function HomepageRedesignDemo() {
               description: "Manage your entire fleet of instructors from one dashboard. Track performance, allocate pupils, and scale your driving school with confidence.",
               features: ["Multi-instructor management", "Pupil allocation", "Fleet performance tracking", "Centralised billing"],
               images: [drivingSchool1, drivingSchool2],
-              reverse: true,
+              reverse: false,
               link: "/driving-schools",
             },
           ].map((feature, i) => (
