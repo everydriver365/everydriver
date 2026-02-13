@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
+import diaryAppImg from "@/assets/features/diary-app.png";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -181,7 +182,7 @@ export default function HomepageRedesignDemo() {
               title: "Smart Diary Management",
               description: "Drag-and-drop scheduling, automatic gap detection, and Google Calendar sync. Never miss a booking or double-book again.",
               features: ["Drag & drop calendar", "Google Calendar sync", "Automatic gap filling", "SMS reminders"],
-              image: featuresHeroImg,
+              image: diaryAppImg,
               reverse: false,
             },
             {
