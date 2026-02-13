@@ -200,7 +200,7 @@ export default function HomepageRedesignDemo() {
               features: ["Payment status tracking", "Automatic reminders", "PDF invoices", "Revenue reports"],
               image: paymentsImg,
               reverse: true,
-              link: "/instructor-app/features",
+              link: "/instructor-app/payments",
             },
             {
               icon: Globe,
