@@ -571,6 +571,8 @@ export function InstructorMobileHome({
             totalHours={tomorrowPreview.totalHours}
             expectedEarnings={tomorrowPreview.expectedEarnings}
             firstLessonTime={tomorrowPreview.firstLessonTime}
+            lessons={tomorrowPreview.lessons}
+            instructorId={instructorId}
             className="mt-4"
           />
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
