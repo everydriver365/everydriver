@@ -573,18 +573,20 @@ export function InstructorMobileHome({
             firstLessonTime={tomorrowPreview.firstLessonTime}
             lessons={tomorrowPreview.lessons}
             instructorId={instructorId}
-            className="mt-4"
           />
       ) : tomorrowPreview && tomorrowPreview.lessonCount === 0 ? (
-          <div className="mt-2">
-            <div
-              className="flex items-center gap-2.5 py-2 px-3 bg-muted/50 cursor-pointer"
-              onClick={() => navigate("/instructor/gaps")}
-            >
-              <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-xs text-muted-foreground">Nothing upcoming tomorrow</span>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60 ml-auto flex-shrink-0" />
+          <div
+            className="bg-card rounded-2xl shadow-sm p-4 flex items-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
+            onClick={() => navigate("/instructor/gaps")}
+          >
+            <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-muted-foreground" />
             </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Tomorrow</p>
+              <p className="text-xs text-muted-foreground">Nothing scheduled yet</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
           </div>
       ) : null}
 
