@@ -1,86 +1,77 @@
 
 
-## Public Courses API + WordPress Embed Snippet
+## Enhanced WordPress Embed: Course Tiles + In-Page Booking
 
-### 1. New Edge Function: `public-courses`
+### What changes
 
-Create `supabase/functions/public-courses/index.ts` -- a public API endpoint that accepts an instructor's `app_slug` and returns their course availability as JSON.
+**1. Upgraded course tile design in the embed snippet**
 
-**Request:** `GET /public-courses?slug=jane-smith`
+The current snippet renders basic cards. The new version will produce visually rich tiles matching the style of the main app:
 
-**Response (JSON):**
-```json
-{
-  "instructor": {
-    "name": "Jane Smith",
-    "hourlyRate": 35,
-    "carType": "Manual",
-    "profileImage": "https://..."
-  },
-  "courses": [
-    {
-      "hours": 10,
-      "price": 350,
-      "discountedPrice": 299,
-      "nextAvailable": "2026-02-18",
-      "isPopular": true,
-      "isIntensive": false,
-      "features": ["Free theory app", "Pick-up included"],
-      "bookingUrl": "https://everydriver.lovable.app/i/jane-smith/courses"
-    }
-  ]
-}
-```
+- Course image (if available from the API)
+- "Popular" badge with instructor brand colour
+- Course name, duration, and feature bullets
+- Price with strike-through for discounted courses
+- Next available date
+- Styled "Book Now" button
 
-**Logic mirrors `useFeaturedCourses`**: fetches instructor by slug, their courses, templates, working hours, and date overrides, then calculates the first available date per course.
+**2. Enhanced `public-courses` API response**
 
-**Config:** Add `verify_jwt = false` to `supabase/config.toml` (public endpoint, no auth needed). Includes CORS headers for cross-origin WordPress requests.
+Add additional fields to the edge function response so the embed snippet has richer data to display:
 
-### 2. WordPress Embed Snippet Generator
+- `features` array (already returned but not used in the snippet)
+- `courseImageUrl` from `instructor_courses.course_image_url` or `course_templates.default_image_url`
+- `courseName` from templates (already returned as `name`)
 
-Add a new section to the **Instructor Mini-Website Settings** page (`src/pages/InstructorMiniWebsiteSettings.tsx`) with a "WordPress Embed" card containing:
+**3. In-page booking via iframe modal**
 
-- A ready-to-copy HTML/JavaScript snippet that:
-  - Fetches from the `public-courses` endpoint using the instructor's slug
-  - Renders course cards with name, hours, price, next available date, and a "Book Now" link
-  - Uses inline CSS so it works in any WordPress theme (no external stylesheets)
-  - Includes the instructor's brand colour for button styling
-- A "Copy to Clipboard" button
+Instead of opening a new tab (`target="_blank"`), clicking "Book Now" will open an iframe overlay **within the WordPress page**. This keeps the entire booking journey on the instructor's website:
 
-**Example snippet output:**
-```html
-<div id="everydriver-courses"></div>
-<script>
-(function(){
-  var slug = "jane-smith";
-  var el = document.getElementById("everydriver-courses");
-  fetch("https://qyqeibovdhyohkfagujv.supabase.co/functions/v1/public-courses?slug=" + slug)
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      var html = "";
-      data.courses.forEach(function(c){
-        html += '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:8px 0;">';
-        html += '<h3>' + c.hours + ' Hour Course</h3>';
-        html += '<p>From &pound;' + (c.discountedPrice || c.price) + '</p>';
-        html += '<p>Next available: ' + c.nextAvailable + '</p>';
-        html += '<a href="' + c.bookingUrl + '" target="_blank" '
-              + 'style="background:#1e3a5f;color:#fff;padding:8px 16px;border-radius:4px;text-decoration:none;">'
-              + 'Book Now</a>';
-        html += '</div>';
-      });
-      el.innerHTML = html;
-    });
-})();
-</script>
-```
+- A full-screen semi-transparent overlay appears
+- The booking page (`/book/:instructorId?course=X`) loads inside a centered, responsive iframe
+- A close button lets users dismiss the overlay
+- The WordPress page remains in the background
 
-### 3. Files Changed
+No changes are needed to the actual booking page -- it already works standalone.
+
+### Files changed
 
 | File | Change |
 |------|--------|
-| `supabase/functions/public-courses/index.ts` | **New** -- public API returning course availability JSON |
-| `supabase/config.toml` | Add `[functions.public-courses]` with `verify_jwt = false` |
-| `src/pages/InstructorMiniWebsiteSettings.tsx` | Add "WordPress Embed" card with copyable snippet |
+| `supabase/functions/public-courses/index.ts` | Add `courseImageUrl` field to each course in the response |
+| `src/components/instructor/WordPressEmbedSnippet.tsx` | Rewrite snippet to render richer tiles and include iframe modal booking logic |
 
-No database changes needed -- reads existing tables only.
+### Technical details
 
+**Updated snippet structure (vanilla JS, no dependencies):**
+
+```text
++--------------------------------------------------+
+|  [Course Image]                                   |
+|  [Popular Badge]                                  |
+|                                                   |
+|  Course Name                                      |
+|  10 hours of instruction                          |
+|                                                   |
+|  * Feature 1                                      |
+|  * Feature 2                                      |
+|  * Feature 3                                      |
+|                                                   |
+|  GBP 299  (was GBP 350)                           |
+|  Next available: 18 Feb 2026                      |
+|                                                   |
+|  [ Book Now ]                                     |
++--------------------------------------------------+
+```
+
+**Iframe modal behaviour:**
+
+- "Book Now" calls a JS function that creates an overlay `<div>` with an `<iframe>` pointing to `everydriver.lovable.app/book/:instructorId?course=X`
+- Overlay uses `position:fixed; top:0; left:0; width:100%; height:100%; z-index:999999`
+- Iframe is `width:100%; max-width:600px; height:90vh` centered on screen
+- Close button in top-right corner removes the overlay
+- Clicking the dark backdrop also closes it
+
+**Edge function change:**
+
+Add `course_image_url` and `default_image_url` to the query, and include `courseImageUrl` in the response for each course.
