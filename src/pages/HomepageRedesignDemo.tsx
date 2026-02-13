@@ -267,11 +267,11 @@ export default function HomepageRedesignDemo() {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { step: "01", icon: Zap, title: "Create Your Account", desc: "Sign up with your email in 60 seconds. No credit card needed." },
-              { step: "02", icon: Calendar, title: "Set Up Your Diary", desc: "Add availability, import existing pupils, and configure your preferences." },
-              { step: "03", icon: Users, title: "Start Teaching", desc: "Manage bookings, track payments, and grow your business from day one." },
-            ].map((item, i) => (
+            {([
+              { step: "01", icon: Zap, title: "Create Your Account", desc: "Sign up with your email in 60 seconds. No credit card needed.", bg: "bg-gradient-to-br from-amber-400/20 to-orange-500/10", iconColor: "text-amber-500", badgeBg: "bg-gradient-to-br from-amber-400 to-orange-500" },
+              { step: "02", icon: Calendar, title: "Set Up Your Diary", desc: "Add availability, import existing pupils, and configure your preferences.", bg: "bg-gradient-to-br from-[#0075c9]/20 to-blue-500/10", iconColor: "text-[#0075c9]", badgeBg: "bg-gradient-to-br from-[#0075c9] to-blue-600" },
+              { step: "03", icon: Users, title: "Start Teaching", desc: "Manage bookings, track payments, and grow your business from day one.", bg: "bg-gradient-to-br from-emerald-400/20 to-teal-500/10", iconColor: "text-emerald-500", badgeBg: "bg-gradient-to-br from-emerald-400 to-teal-500" },
+            ] as const).map((item, i) => (
               <motion.div
                 key={item.step}
                 {...fadeUp}
@@ -282,9 +282,9 @@ export default function HomepageRedesignDemo() {
                 {i < 2 && (
                   <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-[#0075c9]/20" />
                 )}
-                <div className="relative z-10 mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-[#0075c9]/10">
-                  <item.icon className="h-8 w-8 text-[#0075c9]" />
-                  <span className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#0075c9] text-xs font-bold text-white">
+                <div className={`relative z-10 mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl ${item.bg} ring-1 ring-black/5`}>
+                  <item.icon className={`h-8 w-8 ${item.iconColor}`} />
+                  <span className={`absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full ${item.badgeBg} text-xs font-bold text-white shadow-lg`}>
                     {item.step}
                   </span>
                 </div>
