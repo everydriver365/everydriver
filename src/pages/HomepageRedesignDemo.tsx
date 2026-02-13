@@ -11,6 +11,7 @@ import featuresHeroImg from "@/assets/features/features-hero.png";
 import diaryAppImg from "@/assets/features/diary-app.png";
 import paymentsImg from "@/assets/features/payments-tracking.jpg";
 import websiteImg from "@/assets/features/website-showcase.png";
+import telematicsImg from "@/assets/features/telematics-showcase.png";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -208,7 +209,7 @@ export default function HomepageRedesignDemo() {
               title: "Telematics & Driving Data",
               description: "Monitor speed, driver scoring, and trip history in real time. Give your pupils measurable feedback backed by data.",
               features: ["Live speed monitoring", "Driver scoring", "Trip replay & reports", "Progress tracking"],
-              image: featuresHeroImg,
+              image: telematicsImg,
               reverse: true,
             },
           ].map((feature, i) => (
