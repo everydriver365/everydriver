@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface CrossfadeImagesProps {
   images: string[];
@@ -21,18 +21,16 @@ export function CrossfadeImages({ images, alt, interval = 4000, className = "" }
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
-      <AnimatePresence mode="wait">
+      {images.map((src, i) => (
         <motion.img
-          key={current}
-          src={images[current]}
+          key={i}
+          src={src}
           alt={alt}
-          className="w-full"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1 }}
+          className={`w-full ${i === 0 ? "relative" : "absolute inset-0"}`}
+          animate={{ opacity: i === current ? 1 : 0 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
         />
-      </AnimatePresence>
+      ))}
     </div>
   );
 }
