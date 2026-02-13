@@ -212,6 +212,22 @@ export default function HomepageRedesignDemo() {
               image: telematicsImg,
               reverse: true,
             },
+            {
+              icon: Camera,
+              title: "Dashcam & Incident Protection",
+              description: "AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing.",
+              features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"],
+              image: featuresHeroImg,
+              reverse: false,
+            },
+            {
+              icon: Users,
+              title: "Built for Driving Schools",
+              description: "Manage your entire fleet of instructors from one dashboard. Track performance, allocate pupils, and scale your driving school with confidence.",
+              features: ["Multi-instructor management", "Pupil allocation", "Fleet performance tracking", "Centralised billing"],
+              image: featuresHeroImg,
+              reverse: true,
+            },
           ].map((feature, i) => (
             <motion.div
               key={feature.title}
