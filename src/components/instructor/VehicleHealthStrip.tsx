@@ -40,7 +40,7 @@ export function VehicleHealthStrip({ instructorId }: VehicleHealthStripProps) {
 
   return (
     <Link to="/instructor/vehicle-health" className="block mt-4">
-      <div className="bg-card shadow-xl overflow-hidden">
+      <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
         {/* Gradient header */}
         <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
           <div className="absolute inset-0 overflow-hidden">
