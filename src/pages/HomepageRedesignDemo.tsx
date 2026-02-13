@@ -149,21 +149,39 @@ export default function HomepageRedesignDemo() {
       </section>
 
       {/* ─── WHAT WE DO ─── */}
-      <section className="py-14 md:py-20 bg-muted/20">
-        <div className="container max-w-3xl text-center">
+      <section className="relative py-16 md:py-24 overflow-hidden bg-[#0a1628]">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-1/4 w-72 h-72 bg-[#0075c9] rounded-full blur-[120px]" />
+          <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#0075c9] rounded-full blur-[150px]" />
+        </div>
+        <div className="container max-w-4xl text-center relative z-10">
           <motion.div {...fadeUp}>
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
-              Your Diary, Your Way — <span className="text-[#0075c9]">Free for Life</span>
+            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase text-[#0075c9] bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-full">
+              No contracts · No tie-in · Leave any time
+            </span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+              Your Diary, Your Way —{" "}
+              <span className="bg-gradient-to-r from-[#0075c9] to-[#00a3ff] bg-clip-text text-transparent">
+                Free for Life
+              </span>
             </h2>
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-300 leading-relaxed max-w-3xl mx-auto">
               EveryDriver gives every driving instructor a powerful diary and business management app — completely free, forever.
               Manage your schedule, track pupil progress, handle payments, and communicate with learners all in one place.
               There's no catch, no tie-in, and no contract. If it's not for you, simply leave at any time — no questions asked.
             </p>
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed mt-4">
+            <p className="text-lg md:text-xl text-gray-300 leading-relaxed mt-5 max-w-3xl mx-auto">
               Want even more? Optional paid extras like telematics, dashcam integration, and custom websites are available
               when you're ready — but the core app is yours to keep at absolutely no cost.
             </p>
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-8 text-sm font-medium text-gray-400">
+              {["✓ Free forever", "✓ No credit card", "✓ No hidden fees", "✓ Cancel any time"].map((item) => (
+                <span key={item} className="flex items-center gap-1">
+                  {item}
+                </span>
+              ))}
+            </div>
           </motion.div>
         </div>
       </section>
