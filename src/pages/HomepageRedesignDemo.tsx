@@ -275,7 +275,11 @@ export default function HomepageRedesignDemo() {
 
               {/* Image side */}
               <div className="rounded-2xl overflow-hidden border border-border shadow-lg bg-muted/20">
-                <img src={feature.image} alt={feature.title} className="w-full" />
+                {'images' in feature && feature.images ? (
+                  <CrossfadeImages images={feature.images} alt={feature.title} />
+                ) : (
+                  <img src={(feature as any).image} alt={feature.title} className="w-full" />
+                )}
               </div>
             </motion.div>
           ))}
