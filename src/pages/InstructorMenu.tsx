@@ -63,6 +63,7 @@ interface MenuItem {
   path?: string;
   action?: () => void;
   iconColor?: string;
+  iconBg?: string;
   gateKey?: string;
   customIcon?: string;
 }
@@ -82,73 +83,73 @@ export default function InstructorMenu() {
     {
       title: "Quick Actions",
       items: [
-        { icon: CheckSquare, label: "To Do", description: "Task list", iconColor: "text-violet-600", gateKey: "todos", path: "/instructor/todos", customIcon: todoIcon },
-        { icon: MessageCircle, label: "Messages", description: "Chat with pupils", iconColor: "text-sky-600", gateKey: "messages", path: "/instructor/messages", customIcon: messagesIcon },
-        { icon: Briefcase, label: "Job Offers", description: "Pending jobs", iconColor: "text-purple-600", gateKey: "jobs", path: "/instructor/jobs", customIcon: jobOffersIcon },
-        { icon: CalendarPlus, label: "New Bookings", description: "Pending schedule", iconColor: "text-amber-600", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling" },
-        { icon: QrCode, label: "Take Payment", description: "QR code payment", iconColor: "text-emerald-600", gateKey: "pay", path: "/instructor/pay", customIcon: takePaymentIcon },
-        { icon: Car, label: "Live Tracking", description: "GPS tracking", iconColor: "text-cyan-600", gateKey: "tracking", path: "/instructor/tracking", customIcon: trackIcon },
-        { icon: Navigation, label: "Find My Car", description: "Car location", iconColor: "text-rose-500", gateKey: "find-my-car", path: "/instructor/find-my-car", customIcon: findMyCarIcon },
-        { icon: Receipt, label: "Expenses", description: "Track costs", iconColor: "text-amber-600", gateKey: "expenses", path: "/instructor/expenses", customIcon: expensesIcon },
+        { icon: CheckSquare, label: "To Do", description: "Task list", iconColor: "text-white", iconBg: "bg-violet-500", gateKey: "todos", path: "/instructor/todos", customIcon: todoIcon },
+        { icon: MessageCircle, label: "Messages", description: "Chat with pupils", iconColor: "text-white", iconBg: "bg-sky-500", gateKey: "messages", path: "/instructor/messages", customIcon: messagesIcon },
+        { icon: Briefcase, label: "Job Offers", description: "Pending jobs", iconColor: "text-white", iconBg: "bg-purple-500", gateKey: "jobs", path: "/instructor/jobs", customIcon: jobOffersIcon },
+        { icon: CalendarPlus, label: "New Bookings", description: "Pending schedule", iconColor: "text-white", iconBg: "bg-amber-500", gateKey: "pending-scheduling", path: "/instructor/pending-scheduling" },
+        { icon: QrCode, label: "Take Payment", description: "QR code payment", iconColor: "text-white", iconBg: "bg-emerald-500", gateKey: "pay", path: "/instructor/pay", customIcon: takePaymentIcon },
+        { icon: Car, label: "Live Tracking", description: "GPS tracking", iconColor: "text-white", iconBg: "bg-cyan-500", gateKey: "tracking", path: "/instructor/tracking", customIcon: trackIcon },
+        { icon: Navigation, label: "Find My Car", description: "Car location", iconColor: "text-white", iconBg: "bg-rose-500", gateKey: "find-my-car", path: "/instructor/find-my-car", customIcon: findMyCarIcon },
+        { icon: Receipt, label: "Expenses", description: "Track costs", iconColor: "text-white", iconBg: "bg-amber-500", gateKey: "expenses", path: "/instructor/expenses", customIcon: expensesIcon },
       ],
     },
     {
       title: "Money & Reports",
       items: [
-        { icon: CreditCard, label: "Payments", description: "Full breakdown", iconColor: "text-emerald-600", gateKey: "payments", path: "/instructor/pay", customIcon: paymentsIcon },
-        { icon: TrendingUp, label: "Income Summary", description: "Earnings overview", iconColor: "text-green-600", gateKey: "income", path: "/instructor/income" },
-        { icon: ArrowUpDown, label: "In vs Out", description: "Income vs expenses", iconColor: "text-sky-600", gateKey: "in-out", path: "/instructor/in-out" },
-        { icon: Car, label: "Mileage Tracker", description: "HMRC deductions", iconColor: "text-green-600", gateKey: "mileage", path: "/instructor/mileage" },
-        { icon: Calculator, label: "Tax Summary", description: "Tax overview", iconColor: "text-purple-600", gateKey: "tax", path: "/instructor/tax" },
+        { icon: CreditCard, label: "Payments", description: "Full breakdown", iconColor: "text-white", iconBg: "bg-emerald-500", gateKey: "payments", path: "/instructor/pay", customIcon: paymentsIcon },
+        { icon: TrendingUp, label: "Income Summary", description: "Earnings overview", iconColor: "text-white", iconBg: "bg-green-500", gateKey: "income", path: "/instructor/income" },
+        { icon: ArrowUpDown, label: "In vs Out", description: "Income vs expenses", iconColor: "text-white", iconBg: "bg-sky-500", gateKey: "in-out", path: "/instructor/in-out" },
+        { icon: Car, label: "Mileage Tracker", description: "HMRC deductions", iconColor: "text-white", iconBg: "bg-green-600", gateKey: "mileage", path: "/instructor/mileage" },
+        { icon: Calculator, label: "Tax Summary", description: "Tax overview", iconColor: "text-white", iconBg: "bg-purple-500", gateKey: "tax", path: "/instructor/tax" },
       ],
     },
     {
       title: "Schedule & Pupils",
       items: [
-        { icon: Calendar, label: "Schedule", description: "View calendar", iconColor: "text-[#0075c9]", gateKey: "schedule", path: "/instructor/schedule", customIcon: scheduleIcon },
-        { icon: Users, label: "Pupils", description: "Manage pupils", iconColor: "text-indigo-600", gateKey: "pupils", path: "/instructor/pupils", customIcon: pupilsIcon },
+        { icon: Calendar, label: "Schedule", description: "View calendar", iconColor: "text-white", iconBg: "bg-[#0075c9]", gateKey: "schedule", path: "/instructor/schedule", customIcon: scheduleIcon },
+        { icon: Users, label: "Pupils", description: "Manage pupils", iconColor: "text-white", iconBg: "bg-indigo-500", gateKey: "pupils", path: "/instructor/pupils", customIcon: pupilsIcon },
       ],
     },
     {
       title: "Tools",
       items: [
-        { icon: Gauge, label: "Fleet Dashboard", description: "Vehicle intelligence", iconColor: "text-emerald-600", gateKey: "fleet-dashboard", path: "/instructor/fleet-dashboard" },
-        { icon: Camera, label: "Dashcam", description: "Recording & protection", iconColor: "text-sky-600", gateKey: "dashcam", path: "/instructor/dashcam" },
-        { icon: Star, label: "Reviews", description: "Moderate reviews", iconColor: "text-amber-500", gateKey: "reviews", path: "/instructor/reviews" },
-        { icon: Car, label: "Vehicle Health", description: "Fleet compliance", iconColor: "text-cyan-600", gateKey: "vehicle-health", path: "/instructor/vehicle-health", customIcon: vehicleHealthIcon },
-        { icon: Award, label: "Quick Test Result", description: "Record result", iconColor: "text-emerald-600", gateKey: "test-result-quick", action: () => setShowTestResultForm(true) },
-        { icon: Award, label: "Full Test Report", description: "DL25A recording", iconColor: "text-teal-600", gateKey: "test-results", path: "/instructor/test-results" },
-        { icon: Route, label: "Saved Routes", description: "Route library", iconColor: "text-rose-600", gateKey: "routes", path: "/instructor/routes" },
-        { icon: MapPin, label: "Jotter", description: "Draw on map", iconColor: "text-orange-600", gateKey: "doodlepad", path: "/instructor/doodlepad" },
-        { icon: MapPin, label: "Fill Gaps", description: "Schedule gaps", iconColor: "text-pink-600", gateKey: "gaps", path: "/instructor/gaps" },
-        { icon: StickyNote, label: "Notes", description: "Notebook", iconColor: "text-yellow-600", gateKey: "notes", path: "/instructor/notes" },
+        { icon: Gauge, label: "Fleet Dashboard", description: "Vehicle intelligence", iconColor: "text-white", iconBg: "bg-emerald-500", gateKey: "fleet-dashboard", path: "/instructor/fleet-dashboard" },
+        { icon: Camera, label: "Dashcam", description: "Recording & protection", iconColor: "text-white", iconBg: "bg-sky-500", gateKey: "dashcam", path: "/instructor/dashcam" },
+        { icon: Star, label: "Reviews", description: "Moderate reviews", iconColor: "text-white", iconBg: "bg-amber-500", gateKey: "reviews", path: "/instructor/reviews" },
+        { icon: Car, label: "Vehicle Health", description: "Fleet compliance", iconColor: "text-white", iconBg: "bg-cyan-500", gateKey: "vehicle-health", path: "/instructor/vehicle-health", customIcon: vehicleHealthIcon },
+        { icon: Award, label: "Quick Test Result", description: "Record result", iconColor: "text-white", iconBg: "bg-emerald-500", gateKey: "test-result-quick", action: () => setShowTestResultForm(true) },
+        { icon: Award, label: "Full Test Report", description: "DL25A recording", iconColor: "text-white", iconBg: "bg-teal-500", gateKey: "test-results", path: "/instructor/test-results" },
+        { icon: Route, label: "Saved Routes", description: "Route library", iconColor: "text-white", iconBg: "bg-rose-500", gateKey: "routes", path: "/instructor/routes" },
+        { icon: MapPin, label: "Jotter", description: "Draw on map", iconColor: "text-white", iconBg: "bg-orange-500", gateKey: "doodlepad", path: "/instructor/doodlepad" },
+        { icon: MapPin, label: "Fill Gaps", description: "Schedule gaps", iconColor: "text-white", iconBg: "bg-pink-500", gateKey: "gaps", path: "/instructor/gaps" },
+        { icon: StickyNote, label: "Notes", description: "Notebook", iconColor: "text-white", iconBg: "bg-yellow-500", gateKey: "notes", path: "/instructor/notes" },
       ],
     },
     {
       title: "Resources",
       items: [
-        { icon: FolderOpen, label: "Resources", description: "Documents & files", iconColor: "text-[#0075c9]", gateKey: "resources", path: "/instructor/resources" },
+        { icon: FolderOpen, label: "Resources", description: "Documents & files", iconColor: "text-white", iconBg: "bg-[#0075c9]", gateKey: "resources", path: "/instructor/resources" },
       ],
     },
     {
       title: "Wellbeing",
       items: [
-        { icon: Heart, label: "Health Hub", description: "Wellness tips", iconColor: "text-rose-600", gateKey: "health", path: "/instructor/health", customIcon: healthHubIcon },
+        { icon: Heart, label: "Health Hub", description: "Wellness tips", iconColor: "text-white", iconBg: "bg-rose-500", gateKey: "health", path: "/instructor/health", customIcon: healthHubIcon },
       ],
     },
     {
       title: "Settings",
       items: [
-        { icon: Settings, label: "All Settings", description: "Preferences", iconColor: "text-gray-600", gateKey: "settings", path: "/instructor/settings", customIcon: settingsIcon },
-        { icon: Globe, label: "Mini-Website", description: "Your website", iconColor: "text-violet-600", gateKey: "website", path: "/instructor/website" },
-        { icon: HelpCircle, label: "FAQs & Help", description: "Get support", iconColor: "text-[#0075c9]", gateKey: "faqs", path: "/instructor/faqs" },
+        { icon: Settings, label: "All Settings", description: "Preferences", iconColor: "text-white", iconBg: "bg-gray-500", gateKey: "settings", path: "/instructor/settings", customIcon: settingsIcon },
+        { icon: Globe, label: "Mini-Website", description: "Your website", iconColor: "text-white", iconBg: "bg-violet-500", gateKey: "website", path: "/instructor/website" },
+        { icon: HelpCircle, label: "FAQs & Help", description: "Get support", iconColor: "text-white", iconBg: "bg-[#0075c9]", gateKey: "faqs", path: "/instructor/faqs" },
       ],
     },
     {
       title: "Account",
       items: [
-        { icon: User, label: "My Profile", description: "View profile", iconColor: "text-[#0075c9]", path: "/instructor/settings" },
-        { icon: LogOut, label: "Sign Out", description: "Log out", iconColor: "text-destructive", action: handleLogout },
+        { icon: User, label: "My Profile", description: "View profile", iconColor: "text-white", iconBg: "bg-[#0075c9]", path: "/instructor/settings" },
+        { icon: LogOut, label: "Sign Out", description: "Log out", iconColor: "text-white", iconBg: "bg-destructive", action: handleLogout },
       ],
     },
   ];
@@ -201,16 +202,16 @@ export default function InstructorMenu() {
                     <div className="flex items-center gap-3">
                       <div
                         className={cn(
-                          "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden",
-                          locked ? "bg-muted" : "bg-muted/40"
+                          "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
+                          locked ? "bg-muted" : (item.iconBg || "bg-[#0075c9]")
                         )}
                       >
                         {locked ? (
-                          <Lock className="h-4.5 w-4.5 text-muted-foreground" />
+                          <Lock className="h-4 w-4 text-muted-foreground" />
                         ) : item.customIcon ? (
                           <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
                         ) : (
-                          <item.icon className={cn("h-4.5 w-4.5", item.iconColor || "text-[#0075c9]")} />
+                          <item.icon className={cn("h-4 w-4", item.iconColor || "text-white")} />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
