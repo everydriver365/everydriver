@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format, parse, addDays, isPast, parseISO } from "date-fns";
+import { format, parse, addDays } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar,
@@ -47,7 +47,6 @@ export function TomorrowPeekCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: allTodos = [] } = useInstructorTodos(instructorId);
 
-  // Filter to-dos due tomorrow
   const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
   const tomorrowTodos = allTodos.filter(
     (t) => t.due_date && t.due_date.startsWith(tomorrow) && !t.is_completed
@@ -64,7 +63,7 @@ export function TomorrowPeekCard({
 
   if (lessonCount === 0 && tomorrowTodos.length === 0) return null;
 
-  const tomorrowLabel = format(addDays(new Date(), 1), "EEEE, d MMM");
+  const tomorrowLabel = format(addDays(new Date(), 1), "EEEE");
 
   return (
     <motion.div
@@ -73,31 +72,37 @@ export function TomorrowPeekCard({
       className={className}
     >
       <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
-        {/* Header - always visible, tappable to expand */}
+        {/* Gradient header - matches Your Plan tile */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full px-4 py-3 text-left hover:bg-muted/30 transition-colors"
+          className="w-full relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white text-left"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" />
+            <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+          </div>
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">
-                  Tomorrow · {lessonCount} lesson{lessonCount !== 1 ? "s" : ""}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {firstLessonTime ? `Starts ${formatTime(firstLessonTime)}` : ""} · {totalHours}h · £{expectedEarnings}
+                <h3 className="font-semibold text-sm">Plan Ahead</h3>
+                <p className="text-white/70 text-[10px]">
+                  {tomorrowLabel} · {lessonCount} lesson{lessonCount !== 1 ? "s" : ""} · £{expectedEarnings}
                 </p>
               </div>
             </div>
-            <motion.div
-              animate={{ rotate: isExpanded ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </motion.div>
+            <div className="flex items-center gap-2">
+              {lessonCount > 0 && (
+                <span className="text-xs font-semibold bg-white/20 rounded-full px-2.5 py-0.5">
+                  {totalHours}h
+                </span>
+              )}
+              <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <ChevronDown className="h-4 w-4 text-white/60" />
+              </motion.div>
+            </div>
           </div>
         </button>
 
@@ -111,7 +116,7 @@ export function TomorrowPeekCard({
               transition={{ duration: 0.25, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="px-4 pb-4 space-y-3">
+              <div className="p-4 space-y-3">
                 {/* Summary stats row */}
                 <div className="grid grid-cols-3 gap-2">
                   <div className="bg-muted/40 rounded-xl p-2.5 text-center">
@@ -135,11 +140,11 @@ export function TomorrowPeekCard({
                 {lessons.length > 0 && (
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Lessons</p>
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       {lessons.map((lesson) => (
                         <div
                           key={lesson.id}
-                          className="flex items-center gap-2.5 py-2 px-3 bg-muted/30 rounded-xl"
+                          className="flex items-center gap-2.5 py-2.5 px-3 bg-muted/30 rounded-xl"
                         >
                           <div className="w-1 h-8 rounded-full bg-[#0075c9]" />
                           <div className="flex-1 min-w-0">
@@ -147,7 +152,7 @@ export function TomorrowPeekCard({
                               <User className="h-3 w-3 text-muted-foreground shrink-0" />
                               {lesson.pupilName}
                             </p>
-                            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                            <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
                               <Clock className="h-2.5 w-2.5" />
                               {formatTime(lesson.startTime)} · {lesson.durationMinutes}min
                               {lesson.pickupPostcode && (
@@ -169,11 +174,11 @@ export function TomorrowPeekCard({
                 {tomorrowTodos.length > 0 && (
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Tasks Due</p>
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       {tomorrowTodos.map((todo) => (
                         <div
                           key={todo.id}
-                          className="flex items-center gap-2.5 py-2 px-3 bg-muted/30 rounded-xl"
+                          className="flex items-center gap-2.5 py-2.5 px-3 bg-muted/30 rounded-xl"
                         >
                           <div className="w-1 h-6 rounded-full bg-violet-500" />
                           <div className="flex-1 min-w-0">
@@ -189,7 +194,7 @@ export function TomorrowPeekCard({
                 {/* View full schedule button */}
                 <button
                   onClick={() => navigate("/instructor/schedule")}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-[#0075c9] hover:bg-muted/30 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-[#0075c9] hover:bg-muted/30 rounded-xl transition-colors"
                 >
                   View full schedule
                   <ChevronRight className="h-3 w-3" />
