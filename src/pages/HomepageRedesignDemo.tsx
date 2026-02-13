@@ -12,6 +12,7 @@ import diaryAppImg from "@/assets/features/diary-app.png";
 import paymentsImg from "@/assets/features/payments-tracking.jpg";
 import websiteImg from "@/assets/features/website-showcase.png";
 import telematicsImg from "@/assets/features/telematics-showcase.png";
+import dashcamFeatureImg from "@/assets/dashcam-feature.png";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -221,7 +222,7 @@ export default function HomepageRedesignDemo() {
               title: "Dashcam & Incident Protection",
               description: "AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing.",
               features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"],
-              image: featuresHeroImg,
+              image: dashcamFeatureImg,
               reverse: false,
               link: "/instructor-app/dashcam",
             },
