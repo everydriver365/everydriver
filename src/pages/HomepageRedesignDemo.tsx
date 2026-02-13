@@ -187,6 +187,7 @@ export default function HomepageRedesignDemo() {
               features: ["Drag & drop calendar", "Google Calendar sync", "Automatic gap filling", "SMS reminders"],
               image: diaryAppImg,
               reverse: false,
+              link: "/instructor-app/features",
             },
             {
               icon: CreditCard,
@@ -195,6 +196,7 @@ export default function HomepageRedesignDemo() {
               features: ["Payment status tracking", "Automatic reminders", "PDF invoices", "Revenue reports"],
               image: paymentsImg,
               reverse: true,
+              link: "/instructor-app/features",
             },
             {
               icon: Globe,
@@ -203,6 +205,7 @@ export default function HomepageRedesignDemo() {
               features: ["Custom domain name", "SEO optimised pages", "Online booking", "Review showcase"],
               image: websiteImg,
               reverse: false,
+              link: "/instructor-app/domains",
             },
             {
               icon: Gauge,
@@ -211,6 +214,7 @@ export default function HomepageRedesignDemo() {
               features: ["Live speed monitoring", "Driver scoring", "Trip replay & reports", "Progress tracking"],
               image: telematicsImg,
               reverse: true,
+              link: "/instructor-app/telematics",
             },
             {
               icon: Camera,
@@ -219,6 +223,7 @@ export default function HomepageRedesignDemo() {
               features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"],
               image: featuresHeroImg,
               reverse: false,
+              link: "/instructor-app/dashcam",
             },
             {
               icon: Users,
@@ -227,6 +232,7 @@ export default function HomepageRedesignDemo() {
               features: ["Multi-instructor management", "Pupil allocation", "Fleet performance tracking", "Centralised billing"],
               image: featuresHeroImg,
               reverse: true,
+              link: "/driving-schools",
             },
           ].map((feature, i) => (
             <motion.div
@@ -257,7 +263,7 @@ export default function HomepageRedesignDemo() {
                   ))}
                 </ul>
                 <Button variant="link" className="text-[#0075c9] p-0 mt-4 h-auto" asChild>
-                  <Link to="/instructor-app/features">
+                  <Link to={feature.link}>
                     Learn more <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
                 </Button>
