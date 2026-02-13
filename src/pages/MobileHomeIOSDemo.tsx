@@ -692,6 +692,219 @@ function ConceptG() {
 }
 
 // ══════════════════════════════════════════════════
+// CONCEPT H: iOS Wallet v2 — Tabbed with Vehicle Health under Messages
+// ══════════════════════════════════════════════════
+function ConceptH() {
+  const [activeTab, setActiveTab] = useState<"home" | "schedule" | "messages" | "agenda">("home");
+  const tabs = [
+    { id: "home" as const, label: "Home", Icon: Heart },
+    { id: "schedule" as const, label: "Schedule", Icon: Calendar },
+    { id: "messages" as const, label: "Messages", Icon: MessageSquare },
+    { id: "agenda" as const, label: "Agenda", Icon: ListTodo },
+  ];
+
+  return (
+    <div style={{ backgroundColor: IOS_BG }} className="min-h-full flex flex-col">
+      {/* Wallet-style stacked header */}
+      <Hero h="h-[170px]" overlay="from-black/40 to-transparent" />
+      <div className="-mt-12 mx-4 relative z-10 space-y-2">
+        {/* Main wallet card */}
+        <div className="bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] rounded-2xl p-4 text-white shadow-xl">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-11 w-11 rounded-full bg-white/15 flex items-center justify-center text-white font-bold text-sm border border-white/10">{mock.initials}</div>
+            <div className="flex-1">
+              <h2 className="text-[15px] font-semibold">{mock.firstName}'s Dashboard</h2>
+              <div className="flex items-center gap-2 text-[11px] text-white/50">
+                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Online</span>
+                <span><CloudSun className="h-3 w-3 inline" /> {mock.weather.temp}°C</span>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { v: mock.lessons, l: "Lessons", accent: "text-sky-300" },
+              { v: `£${mock.earnings}`, l: "Earned", accent: "text-emerald-300" },
+              { v: `${mock.weeklyProgress}%`, l: "Goal", accent: "text-violet-300" },
+              { v: `${mock.streak}🔥`, l: "Streak", accent: "text-amber-300" },
+            ].map(s => (
+              <div key={s.l} className="text-center">
+                <p className={`text-[17px] font-bold ${s.accent}`}>{s.v}</p>
+                <p className="text-[9px] text-white/40 mt-0.5 uppercase tracking-wider">{s.l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div className="mx-4 mt-3 bg-white rounded-2xl shadow-sm p-1 flex">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[12px] font-semibold transition-all ${
+              activeTab === t.id ? "bg-[#0075c9] text-white shadow-sm" : "text-gray-400"
+            }`}
+          >
+            <t.Icon className="h-3.5 w-3.5" />
+            {t.label}
+            {t.id === "messages" && mock.unread > 0 && (
+              <span className={`min-w-[16px] h-[16px] px-1 rounded-full text-[9px] font-bold flex items-center justify-center ${
+                activeTab === "messages" ? "bg-white/30 text-white" : "bg-red-500 text-white"
+              }`}>{mock.unread}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div className="flex-1 px-4 mt-3 pb-6">
+        <AnimatePresence mode="wait">
+          {activeTab === "home" && (
+            <motion.div key="home" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-3">
+              <Banners />
+              <div>
+                <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Next Up</p>
+                <NextLessonCard />
+              </div>
+              <QuickActionsGrid />
+              <PlanAhead />
+            </motion.div>
+          )}
+
+          {activeTab === "schedule" && (
+            <motion.div key="schedule" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-3">
+              <CollapsibleSchedule defaultOpen />
+              <PlanAhead />
+            </motion.div>
+          )}
+
+          {activeTab === "messages" && (
+            <motion.div key="messages" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-3">
+              {/* Messages section */}
+              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
+                  <span className="text-[15px] font-semibold text-gray-900">Messages</span>
+                  <span className="min-w-[22px] h-[22px] px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center">{mock.unread}</span>
+                </div>
+                {[
+                  { name: "James W.", msg: "Can we move to 11am?", time: "2m ago", unread: true },
+                  { name: "Alice B.", msg: "Thanks for today!", time: "1h ago", unread: true },
+                  { name: "Maria G.", msg: "See you tomorrow", time: "3h ago", unread: true },
+                  { name: "Tom S.", msg: "Running 5 mins late", time: "Yesterday", unread: false },
+                ].map((m, i) => (
+                  <div key={i} className={`flex items-center gap-3 px-4 py-3 ${i < 3 ? "border-b border-gray-50" : ""}`}>
+                    <div className="h-9 w-9 rounded-full bg-[#0075c9]/10 flex items-center justify-center text-[#0075c9] font-bold text-xs shrink-0">
+                      {m.name.split(" ").map(n => n[0]).join("")}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className={`text-[14px] ${m.unread ? "font-semibold text-gray-900" : "font-medium text-gray-600"}`}>{m.name}</p>
+                        <span className="text-[11px] text-gray-400">{m.time}</span>
+                      </div>
+                      <p className={`text-[13px] truncate ${m.unread ? "text-gray-700" : "text-gray-400"}`}>{m.msg}</p>
+                    </div>
+                    {m.unread && <span className="w-2 h-2 rounded-full bg-[#0075c9] shrink-0" />}
+                  </div>
+                ))}
+              </div>
+
+              {/* Vehicle Health — under messages tab */}
+              <div>
+                <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Vehicle Health</p>
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <div className="px-4 py-3 flex items-center gap-3 border-b border-gray-100">
+                    <div className="h-10 w-10 rounded-[12px] overflow-hidden bg-gray-50 flex items-center justify-center shrink-0">
+                      <img src={vehicleHealthIcon} alt="Vehicle" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[15px] font-semibold text-gray-900">Ford Fiesta</p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Connected
+                        </span>
+                        <span className="text-[11px] text-gray-400">• Battery 87%</span>
+                      </div>
+                    </div>
+                    <div className="bg-[#003a70] rounded-lg px-2.5 py-1">
+                      <span className="text-white text-[11px] font-bold tracking-wider">AB12 CDE</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 divide-x divide-gray-100">
+                    {[
+                      { v: "24,350", l: "km total", ic: "text-[#0075c9]" },
+                      { v: "0 km/h", l: "speed", ic: "text-emerald-500" },
+                      { v: "MOT OK", l: "expires Dec", ic: "text-amber-500" },
+                    ].map(s => (
+                      <div key={s.l} className="py-3 text-center">
+                        <p className={`text-[14px] font-bold ${s.ic}`}>{s.v}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{s.l}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-gray-100 px-4 py-2.5 flex items-center justify-between">
+                    <span className="text-[12px] text-gray-500">Service in 1,650 km</span>
+                    <div className="flex-1 mx-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-amber-400 rounded-full" style={{ width: "82%" }} />
+                    </div>
+                    <span className="text-[11px] font-medium text-amber-600">Due Soon</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === "agenda" && (
+            <motion.div key="agenda" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-3">
+              {/* Agenda timeline */}
+              <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <ListTodo className="h-4 w-4 text-[#0075c9]" />
+                    <span className="text-[15px] font-semibold text-gray-900">Today's Agenda</span>
+                  </div>
+                  <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{mock.timeline.length + 2} items</span>
+                </div>
+                {/* Combined lessons + reminders */}
+                <div className="relative">
+                  {/* Vertical timeline line */}
+                  <div className="absolute left-[27px] top-3 bottom-3 w-[2px] bg-gray-100" />
+                  {[
+                    { time: "08:30", title: "Check car & mirrors", type: "reminder", done: true },
+                    ...mock.timeline.map(t => ({ time: t.time, title: `Lesson — ${t.pupil}`, type: "lesson", done: t.done, isNext: t.isNext, postcode: t.postcode })),
+                    { time: "18:00", title: "Log mileage & expenses", type: "reminder", done: false },
+                  ].map((item, i) => (
+                    <div key={i} className={`flex items-start gap-3 px-4 py-2.5 relative ${i === 0 ? "pt-3" : ""}`}>
+                      <div className={`relative z-10 mt-0.5 h-3 w-3 rounded-full shrink-0 border-2 ${
+                        item.done ? "bg-emerald-400 border-emerald-400" :
+                        (item as any).isNext ? "bg-[#0075c9] border-[#0075c9] ring-2 ring-[#0075c9]/20" :
+                        item.type === "reminder" ? "bg-amber-400 border-amber-400" :
+                        "bg-white border-gray-300"
+                      }`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[13px] ${item.done ? "text-gray-400" : "text-gray-500"}`}>{item.time}</span>
+                          {item.type === "reminder" && <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Reminder</span>}
+                          {(item as any).isNext && <span className="text-[9px] font-semibold uppercase tracking-wider text-[#0075c9] bg-[#0075c9]/10 px-1.5 py-0.5 rounded">Next</span>}
+                        </div>
+                        <p className={`text-[14px] font-medium mt-0.5 ${item.done ? "text-gray-400 line-through" : "text-gray-900"}`}>{item.title}</p>
+                        {(item as any).postcode && <p className="text-[11px] text-gray-400 mt-0.5">{(item as any).postcode}</p>}
+                      </div>
+                      {item.done && <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0 mt-1" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Agenda />
+              <PlanAhead />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
 // Demo shell
 // ══════════════════════════════════════════════════
 const concepts = [
@@ -702,6 +915,7 @@ const concepts = [
   { id: "E", name: "iOS Health / Fitness", desc: "Activity ring progress, gradient header, clean cards", Component: ConceptE },
   { id: "F", name: "iOS Wallet Style", desc: "Stacked gradient card, compact stats, wallet feel", Component: ConceptF },
   { id: "G", name: "iOS Music / Podcast", desc: "Large hero art, overlay text, frosted stat pills", Component: ConceptG },
+  { id: "H", name: "iOS Wallet v2 — Tabbed", desc: "Dark wallet card, tabbed nav, vehicle health under messages, agenda tab", Component: ConceptH },
 ];
 
 export default function MobileHomeIOSDemo() {
