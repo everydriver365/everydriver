@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
 const navLinks = [
-  { href: "/instructor-app", label: "Home" },
+  { href: "/", label: "Home" },
   { href: "/instructor-app/features", label: "Features" },
   { href: "/instructor-app/domains", label: "Websites & Domains" },
   { href: "/instructor-app/telematics", label: "Telematics" },
