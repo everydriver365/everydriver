@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import edLogo from "@/assets/ed-black-white-logo.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon, Satellite } from "lucide-react";
+import { ArrowLeft, Settings, Moon, Sun, CalendarClock, Plus, Check, Contrast, LayoutGrid, PoundSterling, Palette, ImageIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,9 +53,6 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   const [selectedPupilForPayment, setSelectedPupilForPayment] = useState<{ id: string; name: string; balance: number } | null>(null);
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const [pupils, setPupils] = useState<Array<{ id: string; name: string; phone?: string | null; email?: string | null; account_balance?: number | null }>>([]);
-  const [quartixOpen, setQuartixOpen] = useState(false);
-  const [quartixIds, setQuartixIds] = useState<{ vehicleId: string; driverId: string } | null>(null);
-  const [quartixLoading, setQuartixLoading] = useState(false);
 
   useEffect(() => {
     if (!instructor?.id) return;
@@ -70,25 +67,6 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
       });
   }, [instructor?.id]);
 
-  const fetchQuartixIds = async () => {
-    if (!instructor?.id) return;
-    setQuartixLoading(true);
-    const { data } = await supabase
-      .from("gps_devices")
-      .select("quartix_vehicle_id, quartix_driver_id")
-      .eq("instructor_id", instructor.id)
-      .eq("tracking_provider", "quartix")
-      .maybeSingle();
-    if (data) {
-      setQuartixIds({
-        vehicleId: (data as any).quartix_vehicle_id || "Not set",
-        driverId: (data as any).quartix_driver_id || "Not set",
-      });
-    } else {
-      setQuartixIds({ vehicleId: "Not set", driverId: "Not set" });
-    }
-    setQuartixLoading(false);
-  };
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -166,11 +144,6 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
                   Screen Layout
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => { setQuartixOpen(true); fetchQuartixIds(); }}>
-                  <Satellite className="mr-2 h-4 w-4" />
-                  Quartix User ID
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/logout")}>Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -202,34 +175,6 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
           </SheetHeader>
           <div className="py-4">
             <AppearanceSettings instructorId={instructor?.id} />
-          </div>
-        </SheetContent>
-      </Sheet>
-      <Sheet open={quartixOpen} onOpenChange={setQuartixOpen}>
-        <SheetContent side="bottom" className="max-h-[60vh]">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <Satellite className="h-5 w-5" />
-              Quartix User ID
-            </SheetTitle>
-          </SheetHeader>
-          <div className="py-4 space-y-4">
-            {quartixLoading ? (
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            ) : quartixIds ? (
-              <>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Vehicle ID</p>
-                  <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md">{quartixIds.vehicleId}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground font-medium">Driver ID</p>
-                  <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md">{quartixIds.driverId}</p>
-                </div>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">No Quartix tracker configured.</p>
-            )}
           </div>
         </SheetContent>
       </Sheet>

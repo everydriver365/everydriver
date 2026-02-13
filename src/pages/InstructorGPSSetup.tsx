@@ -16,7 +16,9 @@ import {
   Wifi, 
   WifiOff,
   RefreshCw,
-  Trash2
+  Trash2,
+  Satellite,
+  Search
 } from "lucide-react";
 import HardwareTrackerSetup from "@/components/instructor/HardwareTrackerSetup";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
@@ -46,6 +48,8 @@ interface GPSDevice {
   last_latitude: number | null;
   last_longitude: number | null;
   current_session_id: string | null;
+  quartix_vehicle_id?: string | null;
+  quartix_driver_id?: string | null;
 }
 
 export default function InstructorGPSSetup() {
@@ -359,6 +363,32 @@ export default function InstructorGPSSetup() {
             ))
           )}
         </div>
+        {/* Quartix User IDs */}
+        {devices.some(d => d.quartix_vehicle_id || d.quartix_driver_id) && (
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Satellite className="h-5 w-5" />
+              Quartix User IDs
+            </h2>
+            {devices.filter(d => d.quartix_vehicle_id || d.quartix_driver_id).map((device) => (
+              <div key={`quartix-${device.id}`} className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 space-y-3">
+                <p className="font-medium text-sm">{device.device_name}</p>
+                {device.quartix_vehicle_id && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground font-medium">Vehicle ID</p>
+                    <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md">{device.quartix_vehicle_id}</p>
+                  </div>
+                )}
+                {device.quartix_driver_id && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground font-medium">Driver ID</p>
+                    <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md">{device.quartix_driver_id}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
     </InstructorPortalLayout>
