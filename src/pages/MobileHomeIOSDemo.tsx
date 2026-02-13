@@ -611,7 +611,6 @@ function ConceptF() {
     <div style={{ backgroundColor: IOS_BG }} className="min-h-full">
       <Hero h="h-[180px]" overlay="from-black/30 to-transparent" />
       <div className="-mt-10 mx-4 relative z-10 space-y-2">
-        {/* Main card */}
         <div className="bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] rounded-2xl p-4 text-white shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">{mock.initials}</div>
@@ -646,6 +645,84 @@ function ConceptF() {
         </div>
         <CollapsibleSchedule />
         <QuickActionsGrid />
+
+        {/* Vehicle Health */}
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Vehicle Health</p>
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-4 py-3 flex items-center gap-3 border-b border-gray-100">
+              <div className="h-10 w-10 rounded-[12px] overflow-hidden bg-gray-50 flex items-center justify-center shrink-0">
+                <img src={vehicleHealthIcon} alt="Vehicle" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[15px] font-semibold text-gray-900">Ford Fiesta</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Connected
+                  </span>
+                  <span className="text-[11px] text-gray-400">• Battery 87%</span>
+                </div>
+              </div>
+              <div className="bg-[#003a70] rounded-lg px-2.5 py-1">
+                <span className="text-white text-[11px] font-bold tracking-wider">AB12 CDE</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 divide-x divide-gray-100">
+              {[
+                { v: "24,350", l: "km total", ic: "text-[#0075c9]" },
+                { v: "0 km/h", l: "speed", ic: "text-emerald-500" },
+                { v: "MOT OK", l: "expires Dec", ic: "text-amber-500" },
+              ].map(s => (
+                <div key={s.l} className="py-3 text-center">
+                  <p className={`text-[14px] font-bold ${s.ic}`}>{s.v}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{s.l}</p>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-gray-100 px-4 py-2.5 flex items-center justify-between">
+              <span className="text-[12px] text-gray-500">Service in 1,650 km</span>
+              <div className="flex-1 mx-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-amber-400 rounded-full" style={{ width: "82%" }} />
+              </div>
+              <span className="text-[11px] font-medium text-amber-600">Due Soon</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Agenda */}
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Agenda</p>
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <div className="relative">
+              <div className="absolute left-[27px] top-3 bottom-3 w-[2px] bg-gray-100" />
+              {[
+                { time: "08:30", title: "Check car & mirrors", type: "reminder", done: true },
+                ...mock.timeline.map(t => ({ time: t.time, title: `Lesson — ${t.pupil}`, type: "lesson", done: t.done, isNext: t.isNext, postcode: t.postcode })),
+                { time: "18:00", title: "Log mileage & expenses", type: "reminder", done: false },
+              ].map((item, i) => (
+                <div key={i} className={`flex items-start gap-3 px-4 py-2.5 relative ${i === 0 ? "pt-3" : ""}`}>
+                  <div className={`relative z-10 mt-0.5 h-3 w-3 rounded-full shrink-0 border-2 ${
+                    item.done ? "bg-emerald-400 border-emerald-400" :
+                    (item as any).isNext ? "bg-[#0075c9] border-[#0075c9] ring-2 ring-[#0075c9]/20" :
+                    item.type === "reminder" ? "bg-amber-400 border-amber-400" :
+                    "bg-white border-gray-300"
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[13px] ${item.done ? "text-gray-400" : "text-gray-500"}`}>{item.time}</span>
+                      {item.type === "reminder" && <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Reminder</span>}
+                      {(item as any).isNext && <span className="text-[9px] font-semibold uppercase tracking-wider text-[#0075c9] bg-[#0075c9]/10 px-1.5 py-0.5 rounded">Next</span>}
+                    </div>
+                    <p className={`text-[14px] font-medium mt-0.5 ${item.done ? "text-gray-400 line-through" : "text-gray-900"}`}>{item.title}</p>
+                    {(item as any).postcode && <p className="text-[11px] text-gray-400 mt-0.5">{(item as any).postcode}</p>}
+                  </div>
+                  {item.done && <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0 mt-1" />}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         <Agenda />
         <PlanAhead />
       </div>
