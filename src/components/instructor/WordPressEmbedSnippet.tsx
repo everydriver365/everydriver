@@ -21,7 +21,7 @@ export function WordPressEmbedSnippet({ slug, brandColour }: WordPressEmbedSnipp
   var el = document.getElementById("everydriver-courses");
   el.innerHTML = '<p style="text-align:center;padding:40px;color:#666;">Loading courses...</p>';
 
-  function openBooking(url) {
+  window.openBooking = function(url) {
     var overlay = document.createElement("div");
     overlay.id = "ed-booking-overlay";
     overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;";
