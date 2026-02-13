@@ -4,7 +4,7 @@ import { TestimonialStrip } from "@/components/instructor-features/TestimonialSt
 import { FeatureCTA } from "@/components/instructor-features/FeatureCTA";
 import { Megaphone, Search, MapPin, Star, Share2, TrendingUp, FileText, Users } from "lucide-react";
 import { motion } from "framer-motion";
-import websiteImg from "@/assets/features/website-showcase.png";
+import marketingImg from "@/assets/features/marketing-website-mockup.png";
 
 const testimonials = [
   { quote: "I went from zero Google presence to getting enquiries every week — and I didn't pay a penny for marketing.", name: "James T.", role: "ADI, Birmingham", stars: 5 },
@@ -31,7 +31,7 @@ export default function InstructorMarketing() {
         title="Free Marketing & Promotion"
         description="We help you get found by new learners — for free. From Google-optimised profiles to area page listings, your next pupil is already searching."
         features={["SEO-optimised profile", "Area page listings", "Review showcase", "Social sharing tools"]}
-        image={websiteImg}
+        image={marketingImg}
       />
 
       {/* Detail grid */}

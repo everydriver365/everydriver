@@ -13,6 +13,7 @@ import paymentsImg from "@/assets/features/payments-tracking.jpg";
 import websiteImg from "@/assets/features/website-showcase.png";
 import telematicsImg from "@/assets/features/telematics-showcase.png";
 import dashcamFeatureImg from "@/assets/dashcam-feature.png";
+import marketingImg from "@/assets/features/marketing-website-mockup.png";
 import drivingSchool1 from "@/assets/driving-school-1.png";
 import drivingSchool2 from "@/assets/driving-school-2.png";
 import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
@@ -254,7 +255,7 @@ export default function HomepageRedesignDemo() {
               title: "Free Marketing & Promotion",
               description: "We help you get found by new learners — for free. Google-optimised profiles, area page listings, and social sharing tools to grow your business.",
               features: ["SEO-optimised profile", "Area page listings", "Review showcase", "Social sharing"],
-              image: websiteImg,
+              image: marketingImg,
               reverse: true,
               link: "/instructor-app/marketing",
             },
