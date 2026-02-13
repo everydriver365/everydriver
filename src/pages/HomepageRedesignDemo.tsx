@@ -10,6 +10,7 @@ import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
 import diaryAppImg from "@/assets/features/diary-app.png";
 import paymentsImg from "@/assets/features/payments-tracking.jpg";
+import websiteImg from "@/assets/features/website-showcase.png";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -199,7 +200,7 @@ export default function HomepageRedesignDemo() {
               title: "Your Own Professional Website",
               description: "Get a branded .co.uk website with direct pupil booking. Show up in Google searches and stand out from the competition.",
               features: ["Custom domain name", "SEO optimised pages", "Online booking", "Review showcase"],
-              image: featuresHeroImg,
+              image: websiteImg,
               reverse: false,
             },
           ].map((feature, i) => (
