@@ -31,20 +31,21 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header - Clean white */}
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
-        <nav className="container max-w-7xl flex h-16 items-center justify-between">
-          <Link to="/instructor-app" className="flex items-center">
+      <header className="sticky top-0 z-50 w-full">
+        <div className="bg-primary">
+        <nav className="px-4 max-w-7xl mx-auto flex h-16 items-center justify-between relative">
+          <Link to="/instructor-app" className="hidden md:flex items-center">
             <img src={logo} alt="EveryDriver" className="h-10" />
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden items-center gap-6 md:flex">
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden items-center gap-6 md:flex absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-sm font-medium transition-colors hover:text-emerald-500 ${
-                  location.pathname === link.href ? "text-emerald-500" : "text-foreground/70"
+                className={`text-sm font-medium transition-colors hover:text-accent ${
+                  location.pathname === link.href ? "text-accent" : "text-nav-foreground/80"
                 }`}
               >
                 {link.label}
@@ -55,23 +56,28 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
           <div className="hidden items-center gap-2 md:flex">
             <LanguageToggle />
             <ThemeToggle />
-            <Button variant="ghost" className="text-foreground/70 hover:text-foreground hover:bg-secondary" asChild>
+            <Button variant="ghost" className="text-nav-foreground/80 hover:text-nav-foreground hover:bg-nav-foreground/10" asChild>
               <Link to="/instructor-app/login">Log in</Link>
             </Button>
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" asChild>
+            <Button className="bg-[#0075c9] hover:bg-[#005a9e] text-white" asChild>
               <Link to="/instructor-app/signup">Get Started Free</Link>
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-foreground hover:bg-secondary"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+          {/* Mobile Controls */}
+          <div className="flex items-center gap-1 md:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-nav-foreground hover:bg-nav-foreground/10 h-9 w-9"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+            <Link to="/instructor-app" className="flex items-center">
+              <img src={logo} alt="EveryDriver" className="h-8" />
+            </Link>
+          </div>
         </nav>
 
         {/* Mobile Menu */}
@@ -113,6 +119,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
       </header>
 
       {/* Main Content */}
