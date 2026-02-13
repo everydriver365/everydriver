@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
     ] = await Promise.all([
       supabase
         .from("instructor_courses")
-        .select("course_hours, is_active, discounted_price, custom_features")
+        .select("course_hours, is_active, discounted_price, custom_features, course_image_url, course_name")
         .eq("instructor_id", instructor.id)
         .eq("is_active", true),
       supabase
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
       const price = instructor.hourly_rate ? instructor.hourly_rate * hours : null;
 
       return {
-        name: tmpl?.course_name || `${hours} Hour Course`,
+        name: ic?.course_name || tmpl?.course_name || `${hours} Hour Course`,
         hours,
         price,
         discountedPrice: ic?.discounted_price || null,
@@ -159,6 +159,7 @@ Deno.serve(async (req) => {
         isPopular: tmpl?.is_popular || false,
         isIntensive: tmpl?.is_intensive || false,
         features: ic?.custom_features || tmpl?.features || [],
+        courseImageUrl: ic?.course_image_url || tmpl?.default_image_url || null,
         bookingUrl: bookingBaseUrl,
       };
     });
