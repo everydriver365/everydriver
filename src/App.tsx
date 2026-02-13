@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import InstructorGPSSetup from "./pages/InstructorGPSSetup";
 import InstructorLiveSession from "./pages/InstructorLiveSession";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -133,6 +134,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <AdminAuthProvider>
           <InstructorAuthProvider>
             <DomainRouter />
