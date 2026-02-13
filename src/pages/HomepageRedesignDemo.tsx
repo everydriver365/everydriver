@@ -203,6 +203,14 @@ export default function HomepageRedesignDemo() {
               image: websiteImg,
               reverse: false,
             },
+            {
+              icon: Gauge,
+              title: "Telematics & Driving Data",
+              description: "Monitor speed, driver scoring, and trip history in real time. Give your pupils measurable feedback backed by data.",
+              features: ["Live speed monitoring", "Driver scoring", "Trip replay & reports", "Progress tracking"],
+              image: featuresHeroImg,
+              reverse: true,
+            },
           ].map((feature, i) => (
             <motion.div
               key={feature.title}
