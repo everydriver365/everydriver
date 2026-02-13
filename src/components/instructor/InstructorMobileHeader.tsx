@@ -77,7 +77,7 @@ export const InstructorMobileHeader: React.FC<InstructorMobileHeaderProps> = ({
   };
 
   return (
-    <div className="sticky top-0 bg-background z-50 border-b">
+    <div className="sticky top-0 bg-background/80 backdrop-blur-xl z-50 border-b border-border/30">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center">
           {showBackButton && (

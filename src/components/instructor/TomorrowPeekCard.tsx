@@ -39,7 +39,7 @@ export function TomorrowPeekCard({
     >
       <button
         onClick={() => navigate("/instructor/diary")}
-        className="w-full bg-white rounded-xl border border-border shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 text-left hover:bg-muted/30 transition-colors"
+        className="w-full bg-card rounded-2xl shadow-sm p-4 text-left hover:bg-muted/30 transition-colors"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
