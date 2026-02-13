@@ -67,10 +67,10 @@ serve(async (req) => {
     const rawVehicles = json?.Data || [];
 
     const vehicles = rawVehicles.map((v: any) => ({
-      vehicleId: String(v.VehicleID),
-      registration: v.Registration || v.VehicleName || "",
-      vehicleName: v.VehicleName || "",
-      groupName: v.GroupName || "",
+      vehicleId: String(v.VehicleId ?? ""),
+      registration: v.RegistrationNumber || "",
+      vehicleName: v.Description || "",
+      groupName: v.VehicleInitials || "",
     }));
 
     console.log(`[QuartixVehicles] Returning ${vehicles.length} vehicles from Quartix`);
