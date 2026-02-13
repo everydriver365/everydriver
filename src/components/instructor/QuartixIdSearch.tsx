@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Satellite, Search, Copy, Check, Loader2, Car, Link2 } from "lucide-react";
+import { Satellite, Search, Copy, Check, Loader2, Car, Link2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -12,6 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+interface QuartixServerVehicle {
+  vehicleId: string;
+  registration: string;
+  vehicleName: string;
+  groupName: string;
+}
 
 interface QuartixResult {
   id: string;
@@ -40,6 +47,18 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [savingDeviceId, setSavingDeviceId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Fetch vehicles from Quartix server
+  const { data: serverVehicles, isLoading: isLoadingServer, refetch: refetchServer } = useQuery({
+    queryKey: ["quartix-server-vehicles"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("quartix-vehicles");
+      if (error) throw error;
+      return (data?.vehicles || []) as QuartixServerVehicle[];
+    },
+    enabled: !!instructorId,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: vehicles } = useQuery({
     queryKey: ["instructor-vehicles", instructorId],
@@ -150,6 +169,20 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
     }
   };
 
+  // Filter server vehicles by search
+  const filteredServerVehicles = serverVehicles?.filter((v) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.trim().toLowerCase();
+    return (
+      v.vehicleId.toLowerCase().includes(q) ||
+      v.registration.toLowerCase().includes(q) ||
+      v.vehicleName.toLowerCase().includes(q)
+    );
+  });
+
+  // Get set of locally-linked vehicle IDs
+  const linkedVehicleIds = new Set(results.map((r) => r.vehicleId));
+
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -160,7 +193,7 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
       <div className="rounded-lg border bg-white dark:bg-card border-[#E5E7EB] shadow-[0_2px_8px_rgba(20,37,66,0.08)] p-4 space-y-4">
         <div className="flex gap-2">
           <Input
-            placeholder="Search vehicle or driver ID..."
+            placeholder="Search vehicle ID or reg..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -185,14 +218,88 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
           }}
           disabled={isSearching}
         >
-          Show All My Quartix Units
+          Show All My Linked Units
         </Button>
 
+        {/* Server vehicles section */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-muted-foreground">
+              All Quartix Server Units
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetchServer()}
+              disabled={isLoadingServer}
+              className="h-7 px-2"
+            >
+              <RefreshCw className={`h-3 w-3 ${isLoadingServer ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
+
+          {isLoadingServer ? (
+            <div className="flex items-center justify-center py-4 gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm text-muted-foreground">Loading from Quartix...</span>
+            </div>
+          ) : filteredServerVehicles && filteredServerVehicles.length > 0 ? (
+            <div className="space-y-2">
+              {filteredServerVehicles.map((sv) => (
+                <div
+                  key={sv.vehicleId}
+                  className={`rounded-md border p-3 space-y-1 ${
+                    linkedVehicleIds.has(sv.vehicleId)
+                      ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
+                      : "bg-muted/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">
+                      {sv.registration || sv.vehicleName || `Unit ${sv.vehicleId}`}
+                    </p>
+                    {linkedVehicleIds.has(sv.vehicleId) && (
+                      <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">
+                        Linked
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span>ID: <span className="font-mono">{sv.vehicleId}</span></span>
+                    {sv.groupName && <span>Group: {sv.groupName}</span>}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => copyToClipboard(sv.vehicleId, `sv-${sv.vehicleId}`)}
+                  >
+                    {copiedField === `sv-${sv.vehicleId}` ? (
+                      <Check className="h-3 w-3 text-green-500 mr-1" />
+                    ) : (
+                      <Copy className="h-3 w-3 mr-1" />
+                    )}
+                    Copy ID
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-3">
+              {serverVehicles?.length === 0
+                ? "No vehicles found on Quartix server."
+                : "No matching vehicles found."}
+            </p>
+          )}
+        </div>
+
+        {/* Linked devices section */}
         {hasSearched && (
           <div className="space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">My Linked Devices</p>
             {results.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No Quartix trackers found. Your admin needs to link your Quartix IDs.
+                No linked Quartix trackers found. Your admin needs to link your Quartix IDs.
               </p>
             ) : (
               results.map((result) => (
@@ -204,7 +311,6 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
                     <p className="text-sm font-medium">{result.deviceName}</p>
                   )}
 
-                  {/* Quartix IDs */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground font-medium">Vehicle ID</p>
@@ -252,7 +358,6 @@ export function QuartixIdSearch({ instructorId }: QuartixIdSearchProps) {
                     </div>
                   </div>
 
-                  {/* Vehicle Assignment */}
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                       <Car className="h-3 w-3" />
