@@ -9,6 +9,7 @@ import {
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
 import diaryAppImg from "@/assets/features/diary-app.png";
+import paymentsImg from "@/assets/features/payments-tracking.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -190,7 +191,7 @@ export default function HomepageRedesignDemo() {
               title: "Effortless Payment Tracking",
               description: "Track every payment, chase outstanding balances, and generate professional invoices — all built into your diary.",
               features: ["Payment status tracking", "Automatic reminders", "PDF invoices", "Revenue reports"],
-              image: featuresHeroImg,
+              image: paymentsImg,
               reverse: true,
             },
             {
