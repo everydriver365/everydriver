@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight, Check, Star, Shield, Users, Calendar, Globe, Gauge, Camera,
-  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard
+  Play, ChevronRight, Quote, Smartphone, Monitor, Zap, Clock, CreditCard, Megaphone
 } from "lucide-react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
@@ -248,6 +248,15 @@ export default function HomepageRedesignDemo() {
               image: websiteImg,
               reverse: false,
               link: "/instructor-app/domains",
+            },
+            {
+              icon: Megaphone,
+              title: "Free Marketing & Promotion",
+              description: "We help you get found by new learners — for free. Google-optimised profiles, area page listings, and social sharing tools to grow your business.",
+              features: ["SEO-optimised profile", "Area page listings", "Review showcase", "Social sharing"],
+              image: websiteImg,
+              reverse: true,
+              link: "/instructor-app/marketing",
             },
             {
               icon: Gauge,
