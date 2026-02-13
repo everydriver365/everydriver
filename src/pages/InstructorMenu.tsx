@@ -157,21 +157,19 @@ export default function InstructorMenu() {
 
   return (
     <InstructorPortalLayout>
-      <div className="space-y-5 pb-24">
+      <div className="space-y-6 pb-24">
         {/* Page Title */}
         <div>
           <h1 className="text-xl font-bold">Menu</h1>
           <p className="text-sm text-muted-foreground">Quick access to all features</p>
         </div>
 
-        {/* Menu Sections */}
+        {/* Menu Sections - iOS grouped style */}
         {menuSections.map((section) => (
-          <div key={section.title} className="overflow-hidden shadow-[0_2px_12px_rgba(20,37,66,0.12)]">
-            {/* Gradient section header */}
-            <div className="bg-gradient-to-r from-[#0075c9] to-[#0075c9]/70 px-4 py-2">
-              <span className="text-white text-[10px] font-semibold uppercase tracking-wider">{section.title}</span>
-            </div>
-            <div className="bg-white dark:bg-card divide-y divide-border/50">
+          <div key={section.title}>
+            {/* iOS-style section label */}
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-1.5">{section.title}</p>
+            <div className="bg-card rounded-2xl shadow-sm overflow-hidden divide-y divide-border/30">
               {section.items.map((item) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
@@ -179,9 +177,9 @@ export default function InstructorMenu() {
                 return (
                   <motion.button
                     key={idx}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 + idx * 0.02 }}
+                    transition={{ delay: 0.03 + idx * 0.015 }}
                     onClick={() => {
                       if (locked) {
                         toast.info(getUpgradeMessage(item.gateKey || ""), {
@@ -196,23 +194,23 @@ export default function InstructorMenu() {
                       }
                     }}
                     className={cn(
-                      "w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left",
+                      "w-full px-4 py-3 hover:bg-muted/40 active:bg-muted/60 transition-colors text-left",
                       locked && "opacity-60 cursor-not-allowed"
                     )}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={cn(
-                          "h-10 w-10 rounded-[7px] flex items-center justify-center shrink-0 overflow-hidden",
-                          locked ? "bg-muted" : "ring-1 ring-[#0075c9]/30 shadow-[0_0_8px_rgba(0,117,201,0.2)]"
+                          "h-9 w-9 rounded-xl flex items-center justify-center shrink-0 overflow-hidden",
+                          locked ? "bg-muted" : "bg-muted/40"
                         )}
                       >
                         {locked ? (
-                          <Lock className="h-5 w-5 text-muted-foreground" />
+                          <Lock className="h-4.5 w-4.5 text-muted-foreground" />
                         ) : item.customIcon ? (
                           <img src={item.customIcon} alt={item.label} className="h-full w-full object-cover" />
                         ) : (
-                          <item.icon className={cn("h-5 w-5", item.iconColor || "text-[#0075c9]")} />
+                          <item.icon className={cn("h-4.5 w-4.5", item.iconColor || "text-[#0075c9]")} />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -224,7 +222,7 @@ export default function InstructorMenu() {
                             <Lock className="h-2.5 w-2.5" /> Upgrade
                           </p>
                         ) : item.description ? (
-                          <p className="text-xs text-[#0075c9]/70 font-medium truncate">{item.description}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.description}</p>
                         ) : null}
                       </div>
                       {locked ? (
@@ -232,9 +230,7 @@ export default function InstructorMenu() {
                           PRO
                         </Badge>
                       ) : (
-                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#0075c9] to-[#0075c9]/60 flex items-center justify-center shrink-0">
-                          <ChevronRight className="h-3 w-3 text-white" />
-                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
                       )}
                     </div>
                   </motion.button>
