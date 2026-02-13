@@ -167,10 +167,12 @@ export default function InstructorMenu() {
 
         {/* Menu Sections - iOS grouped style */}
         {menuSections.map((section) => (
-          <div key={section.title}>
-            {/* iOS-style section label */}
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-1.5">{section.title}</p>
-            <div className="bg-card rounded-2xl shadow-sm overflow-hidden divide-y divide-border/30">
+          <div key={section.title} className="rounded-2xl overflow-hidden shadow-sm">
+            {/* Gradient section header */}
+            <div className="bg-gradient-to-r from-[#0075c9] to-[#0075c9]/70 px-4 py-2">
+              <span className="text-white text-[10px] font-semibold uppercase tracking-wider">{section.title}</span>
+            </div>
+            <div className="bg-card divide-y divide-border/30">
               {section.items.map((item) => {
                 const locked = item.gateKey ? isFeatureLocked(item.gateKey, subscription?.features) : false;
                 const idx = globalIndex++;
