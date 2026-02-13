@@ -54,6 +54,7 @@ import InstructorHomeDesignDemo from "./pages/InstructorHomeDesignDemo";
 import InstructorBlueStyleDemo from "./pages/InstructorBlueStyleDemo";
 import QuickActionGradientDemo from "./pages/QuickActionGradientDemo";
 import HomepageRedesignDemo from "./pages/HomepageRedesignDemo";
+import MobileHomeRedesignDemo from "./pages/MobileHomeRedesignDemo";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -203,6 +204,7 @@ const App = () => (
               <Route path="/instructor-app/payments" element={<InstructorPayments />} />
               <Route path="/instructor-app/marketing" element={<InstructorMarketing />} />
               <Route path="/homepage-redesign-demo" element={<HomepageRedesignDemo />} />
+              <Route path="/mobile-home-redesign" element={<MobileHomeRedesignDemo />} />
 
               {/* Instructor Portal (Authenticated) */}
               <Route path="/instructor/login" element={<InstructorPortalLogin />} />
