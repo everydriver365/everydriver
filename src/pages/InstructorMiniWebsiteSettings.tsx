@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette } from "lucide-react";
+import { Globe, Layout, Sparkles, Eye, Share2, ExternalLink, Palette, Code } from "lucide-react";
 import { InstructorPortalLayout } from "@/components/layout/InstructorPortalLayout";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { MiniWebsiteShare } from "@/components/instructor/MiniWebsiteShare";
 import { MiniWebsiteCMS } from "@/components/instructor/MiniWebsiteCMS";
 import { MiniWebsiteThemeEditor } from "@/components/instructor/MiniWebsiteThemeEditor";
+import { WordPressEmbedSnippet } from "@/components/instructor/WordPressEmbedSnippet";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -118,7 +119,7 @@ export default function InstructorMiniWebsiteSettings() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="pages" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="pages" className="gap-1.5 text-xs sm:text-sm">
               <Layout className="h-4 w-4" />
               <span className="hidden sm:inline">Pages</span>
@@ -130,6 +131,10 @@ export default function InstructorMiniWebsiteSettings() {
             <TabsTrigger value="share" className="gap-1.5 text-xs sm:text-sm">
               <Share2 className="h-4 w-4" />
               <span className="hidden sm:inline">Share</span>
+            </TabsTrigger>
+            <TabsTrigger value="embed" className="gap-1.5 text-xs sm:text-sm">
+              <Code className="h-4 w-4" />
+              <span className="hidden sm:inline">Embed</span>
             </TabsTrigger>
             <TabsTrigger value="visibility" className="gap-1.5 text-xs sm:text-sm">
               <Eye className="h-4 w-4" />
@@ -213,6 +218,16 @@ export default function InstructorMiniWebsiteSettings() {
                 <MiniWebsiteShare instructorId={instructorId} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Embed Tab */}
+          <TabsContent value="embed">
+            {authInstructor?.app_slug && (
+              <WordPressEmbedSnippet
+                slug={authInstructor.app_slug}
+                brandColour={authInstructor.brand_colour}
+              />
+            )}
           </TabsContent>
 
           {/* Visibility/Settings Tab */}
