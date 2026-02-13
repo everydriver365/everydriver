@@ -52,7 +52,7 @@ import InstructorHeroDemo from "./pages/InstructorHeroDemo";
 import InstructorHomeDesignDemo from "./pages/InstructorHomeDesignDemo";
 import InstructorBlueStyleDemo from "./pages/InstructorBlueStyleDemo";
 import QuickActionGradientDemo from "./pages/QuickActionGradientDemo";
-
+import HomepageRedesignDemo from "./pages/HomepageRedesignDemo";
 
 import Theory from "./pages/Theory";
 import FAQs from "./pages/FAQs";
@@ -194,6 +194,7 @@ const App = () => (
               <Route path="/instructor-app/onboarding-preview" element={<OnboardingPreview />} />
               <Route path="/instructor-app/design-demo" element={<InstructorDesignDemo />} />
               <Route path="/instructor-app/portal-layout-demo" element={<PortalLayoutDemo />} />
+              <Route path="/homepage-redesign-demo" element={<HomepageRedesignDemo />} />
 
               {/* Instructor Portal (Authenticated) */}
               <Route path="/instructor/login" element={<InstructorPortalLogin />} />
