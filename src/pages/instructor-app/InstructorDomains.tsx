@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { FeaturePageHero } from "@/components/instructor-features/FeaturePageHero";
+import websiteImg from "@/assets/features/website-showcase.png";
 import { motion } from "framer-motion";
 import { Search, Globe, Server, Shield, Check, Loader2, ShoppingCart, ExternalLink } from "lucide-react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
@@ -159,57 +161,14 @@ export default function InstructorDomains() {
           onSuccess={() => setSelectedHosting(null)}
         />
       )}
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary via-primary/95 to-primary/90 py-16 md:py-20">
-        <div className="container max-w-6xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <Badge className="mb-4 bg-accent/20 text-accent border-accent/30">
-              <Globe className="w-3 h-3 mr-1" />
-              Domain & Hosting Services
-            </Badge>
-            <h1 className="text-3xl md:text-5xl font-bold text-primary-foreground mb-4">
-              Get Your Perfect Domain
-            </h1>
-            <p className="text-lg text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-              Secure your professional driving school domain and hosting. Build your online presence with trusted, reliable services powered by 20i.
-            </p>
-
-            {/* Domain Search */}
-            <div className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  placeholder="Enter your domain name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-10 h-12 bg-background text-foreground"
-                />
-              </div>
-              <Button 
-                onClick={handleSearch} 
-                disabled={isSearching}
-                size="lg"
-                variant="accent"
-                className="h-12"
-              >
-                {isSearching ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  'Search Domains'
-                )}
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      {/* Hero - Feature Tile */}
+      <FeaturePageHero
+        icon={Globe}
+        title="Your Own Professional Website"
+        description="Get a branded .co.uk website with direct pupil booking. Show up in Google searches and stand out from the competition."
+        features={["Custom domain name", "SEO optimised pages", "Online booking", "Review showcase"]}
+        image={websiteImg}
+      />
 
       {/* Main Content */}
       <section className="py-12">
