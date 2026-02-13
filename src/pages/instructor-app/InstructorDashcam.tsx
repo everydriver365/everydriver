@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import dashcamVideo from "@/assets/dashcam-uk-lesson.mp4";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
+import { FeaturePageHero } from "@/components/instructor-features/FeaturePageHero";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ import {
   FileVideo,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import dashcamFeatureImg from "@/assets/dashcam-feature.png";
 
 const features = [
   {
@@ -112,90 +114,15 @@ const faqs = [
 export default function InstructorDashcam() {
   return (
     <InstructorSaaSLayout>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#142040] via-[#1a2d5a] to-[#0f1a30] text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.15),transparent_60%)]" />
-        <div className="container max-w-6xl relative py-20 md:py-28">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 mb-4">
-                <Camera className="h-3 w-3 mr-1" />
-                New Add-On
-              </Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-                The Instructor
-                <br />
-                <span className="text-emerald-400">Dashcam</span>
-              </h1>
-              <p className="text-lg md:text-xl text-white/70 mb-8 max-w-lg">
-                Purpose-built for driving instructors. Record every lesson, protect
-                your business, and give parents real-time peace of mind.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  size="lg"
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-8"
-                  asChild
-                >
-                  <Link to="/instructor-app/contact">
-                    Enquire Now
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
-                  asChild
-                >
-                  <Link to="/instructor-app/pricing">View Plans</Link>
-                </Button>
-              </div>
-              <div className="flex items-center gap-4 mt-6 text-sm text-white/50">
-                <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                  <span>30-day money-back</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Zap className="h-4 w-4 text-emerald-400" />
-                  <span>Free installation guide</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden md:block"
-            >
-              <div className="relative rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 p-8 backdrop-blur-sm">
-                <div className="aspect-video rounded-xl overflow-hidden border border-white/5">
-                  <video
-                    src={dashcamVideo}
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                  />
-                </div>
-                <div className="absolute -top-3 -right-3 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                  HD 1080p
-                </div>
-                <div className="absolute -bottom-3 -left-3 bg-card text-foreground text-xs font-medium px-3 py-1.5 rounded-full shadow-lg border flex items-center gap-1.5">
-                  <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                  Recording
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <FeaturePageHero
+        icon={Camera}
+        title="Dashcam & Incident Protection"
+        description="AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing."
+        features={["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"]}
+        image={dashcamFeatureImg}
+        ctaLabel="Enquire Now"
+        ctaLink="/instructor-app/contact"
+      />
 
       {/* Features Grid */}
       <section className="py-20 bg-background">

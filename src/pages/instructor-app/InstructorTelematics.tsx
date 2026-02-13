@@ -1,6 +1,7 @@
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { SEOHead } from "@/components/SEOHead";
 import { FeatureCTA } from "@/components/instructor-features/FeatureCTA";
+import { FeaturePageHero } from "@/components/instructor-features/FeaturePageHero";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import {
   Gauge, MapPin, BarChart3, Clock, Smartphone, Shield,
   ArrowRight, Wifi, Route, FileText
 } from "lucide-react";
+import telematicsImg from "@/assets/features/telematics-showcase.png";
 
 const features = [
   {
@@ -53,34 +55,13 @@ export default function InstructorTelematics() {
         description="Professional-grade telematics: live tracking, trip replay, driver scoring, and lesson history for driving instructors."
       />
 
-      {/* Hero */}
-      <section className="relative py-20 md:py-28 bg-gradient-to-br from-[#142040] via-[#1a2d55] to-[#0f1a30] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent" />
-        <div className="container max-w-5xl relative z-10 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <span className="inline-block mb-4 px-4 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-medium">
-              Professional-Grade Telematics
-            </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Data-Driven Lessons,{" "}
-              <span className="text-emerald-400">Better Drivers</span>
-            </h1>
-            <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-8">
-              Real-time driving data, trip replay, and automatic scoring — everything you need to deliver safer, smarter lessons.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white h-12 px-8" asChild>
-                <Link to="/instructor-app/signup">
-                  Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 h-12 px-8" asChild>
-                <Link to="/instructor-app/features">View All Features</Link>
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <FeaturePageHero
+        icon={Gauge}
+        title="Telematics & Driving Data"
+        description="Monitor speed, driver scoring, and trip history in real time. Give your pupils measurable feedback backed by data."
+        features={["Live speed monitoring", "Driver scoring", "Trip replay & reports", "Progress tracking"]}
+        image={telematicsImg}
+      />
 
       {/* Feature Cards */}
       <section className="py-20 bg-background">
