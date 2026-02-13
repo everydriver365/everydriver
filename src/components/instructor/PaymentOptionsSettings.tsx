@@ -88,7 +88,6 @@ export function PaymentOptionsSettings({ instructorId, compact = false }: Paymen
             <Info className="h-4 w-4 mt-0.5 text-pink-600 dark:text-pink-400 flex-shrink-0" />
             <div className="text-xs text-pink-800 dark:text-pink-300">
               <p>Klarna charges <strong>3.29% + 20p</strong> per transaction. These fees are deducted from your payment.</p>
-              <p className="mt-1 text-pink-600 dark:text-pink-400">Example: On a £500 course, the fee would be £16.65.</p>
             </div>
           </div>
         )}
@@ -118,7 +117,6 @@ export function PaymentOptionsSettings({ instructorId, compact = false }: Paymen
             <Info className="h-4 w-4 mt-0.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <div className="text-xs text-emerald-800 dark:text-emerald-300">
               <p>Clearpay charges <strong>4–6% + 30p</strong> per transaction. These fees are deducted from your payment.</p>
-              <p className="mt-1 text-emerald-600 dark:text-emerald-400">Example: On a £500 course, the fee would be approx £20–30.</p>
             </div>
           </div>
         )}
