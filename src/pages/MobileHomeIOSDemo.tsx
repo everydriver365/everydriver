@@ -2,38 +2,90 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen, PoundSterling, Target, Timer, MapPin, Clock, Calendar,
-  ChevronRight, MessageSquare, Briefcase, Heart, Car, Navigation,
-  CheckCircle, CloudSun, ListTodo, Users, ArrowLeft, ArrowRight,
+  ChevronRight, ChevronDown, MessageSquare, Briefcase, Heart, Car, Navigation,
+  CheckCircle, CloudSun, ListTodo, Users, ArrowLeft, ArrowRight, Phone,
+  Award, Receipt, Settings, CreditCard, Mail, Send, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import instructorHeroImg from "@/assets/instructor-hero.jpeg";
-import jobOffersIcon from "@/assets/job-offers-icon.png";
-import messagesIcon from "@/assets/messages-icon.png";
 
-// ── Mock data matching the real InstructorMobileHome exactly ──
+// Real icon assets
+import messagesIcon from "@/assets/messages-icon.png";
+import paymentsIcon from "@/assets/payments-icon-new.png";
+import takePaymentIcon from "@/assets/take-payment-icon.png";
+import scheduleIcon from "@/assets/calendar-icon.png";
+import pupilsIcon from "@/assets/pupils-icon.png";
+import trackIcon from "@/assets/track-icon.png";
+import satnavIcon from "@/assets/satnav-icon.png";
+import findMyCarIcon from "@/assets/find_car2.png";
+import jobOffersIcon from "@/assets/job-offers-icon.png";
+import availabilityIcon from "@/assets/availability-icon.png";
+import healthHubIcon from "@/assets/health-hub-icon.png";
+import findFuelIcon from "@/assets/find-fuel-icon.png";
+import vehicleHealthIcon from "@/assets/vehicle-health-icon.png";
+import expensesIcon from "@/assets/expenses-icon.png";
+import todoIcon from "@/assets/todo-icon.png";
+import settingsIcon from "@/assets/settings-icon.png";
+
+const customIconImages: Record<string, string> = {
+  messages: messagesIcon, "take-payment": takePaymentIcon, payments: paymentsIcon,
+  schedule: scheduleIcon, pupils: pupilsIcon, "track-lesson": trackIcon,
+  satnav: satnavIcon, "find-my-car": findMyCarIcon, jobs: jobOffersIcon,
+  availability: availabilityIcon, "health-hub": healthHubIcon, "find-fuel": findFuelIcon,
+  "vehicle-health": vehicleHealthIcon, expenses: expensesIcon, todos: todoIcon,
+  settings: settingsIcon,
+};
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Calendar, Users, Briefcase, CreditCard, Clock, Settings, Car, Receipt,
+  Navigation, Award, MapPin, MessageSquare, Heart, ListTodo,
+};
+
+// Mock data matching real InstructorMobileHome content
 const mock = {
   name: "Sarah", firstName: "Sarah", initials: "S", isOnline: true,
+  profileImage: null as string | null,
   weather: { temp: 14, desc: "Partly cloudy", icon: "CloudSun" },
-  lessons: 5, earnings: 175, weeklyProgress: 72, streak: 12, unread: 3, pendingJobs: 2,
-  nextLesson: { time: "10:30", pupil: "James W.", postcode: "LS1 4AP", minutesUntil: 25, duration: "1hr" },
+  lessons: 5, earnings: 175, weeklyProgress: 72, streak: 12,
+  unread: 3, pendingJobs: 2,
+  nextLesson: {
+    pupil: "James W.", time: "10:30", postcode: "LS1 4AP",
+    minutesUntil: 25, duration: "1hr", durationMins: 60,
+    phone: "07700 900123", balance: 80, location: "12 Park Lane, Leeds",
+    profileImage: null as string | null,
+  },
   timeline: [
-    { time: "09:00", pupil: "Alice B.", done: true, isNext: false },
-    { time: "10:30", pupil: "James W.", done: false, isNext: true },
-    { time: "12:00", pupil: "Maria G.", done: false, isNext: false },
-    { time: "14:00", pupil: "Tom S.", done: false, isNext: false },
-    { time: "16:00", pupil: "Emma L.", done: false, isNext: false },
+    { time: "09:00", pupil: "Alice B.", done: true, isNext: false, postcode: "LS2 7HY" },
+    { time: "10:30", pupil: "James W.", done: false, isNext: true, postcode: "LS1 4AP" },
+    { time: "12:00", pupil: "Maria G.", done: false, isNext: false, postcode: "LS6 3AA" },
+    { time: "14:00", pupil: "Tom S.", done: false, isNext: false, postcode: "LS8 1NE" },
+    { time: "16:00", pupil: "Emma L.", done: false, isNext: false, postcode: "LS11 5QJ" },
   ],
-  tomorrow: { lessons: 4, hours: 6, earnings: 210 },
+  tomorrow: { lessons: 4, hours: 6, earnings: 210, firstTime: "09:00" },
+  // All quick actions matching real QuickActionTiles
   quickActions: [
-    { label: "Schedule", icon: Calendar, color: "text-[#0075c9]", bg: "bg-[#0075c9]/10" },
-    { label: "Pupils", icon: Users, color: "text-emerald-600", bg: "bg-emerald-500/10" },
-    { label: "Pay", icon: PoundSterling, color: "text-violet-600", bg: "bg-violet-500/10" },
-    { label: "Track", icon: MapPin, color: "text-rose-600", bg: "bg-rose-500/10" },
-    { label: "Gaps", icon: Calendar, color: "text-amber-600", bg: "bg-amber-500/10" },
-    { label: "Vehicle", icon: Car, color: "text-sky-600", bg: "bg-sky-500/10" },
-    { label: "Health", icon: Heart, color: "text-pink-600", bg: "bg-pink-500/10" },
-    { label: "To Do", icon: ListTodo, color: "text-indigo-600", bg: "bg-indigo-500/10" },
+    { id: "schedule", title: "Schedule", icon: "Calendar", route: "/instructor/schedule" },
+    { id: "pupils", title: "Pupils", icon: "Users", route: "/instructor/pupils" },
+    { id: "take-payment", title: "Take Payment", icon: "CreditCard", route: "/instructor/take-payment" },
+    { id: "track-lesson", title: "Track Lesson", icon: "Navigation", route: "/instructor/tracking" },
+    { id: "jobs", title: "Job Offers", icon: "Briefcase", route: "/instructor/jobs" },
+    { id: "satnav", title: "Sat Nav", icon: "Navigation", route: "/instructor/satnav" },
+    { id: "payments", title: "Payments", icon: "CreditCard", route: "/instructor/payments" },
+    { id: "messages", title: "Messages", icon: "MessageSquare", route: "/instructor/messages" },
+    { id: "fill-gaps", title: "Fill Gaps", icon: "Calendar", route: "/instructor/gaps" },
+    { id: "todos", title: "To Do", icon: "ListTodo", route: "/instructor/todos" },
+    { id: "vehicle-health", title: "Vehicle", icon: "Car", route: "/instructor/vehicle-health" },
+    { id: "find-fuel", title: "Find Fuel", icon: "Car", route: "/instructor/fuel" },
+    { id: "find-my-car", title: "Find Car", icon: "Car", route: "/instructor/find-my-car" },
+    { id: "health-hub", title: "Health Hub", icon: "Heart", route: "/instructor/health" },
+    { id: "availability", title: "Availability", icon: "Clock", route: "/instructor/availability" },
+    { id: "expenses", title: "Expenses", icon: "Receipt", route: "/instructor/expenses" },
+    { id: "settings", title: "Settings", icon: "Settings", route: "/instructor/settings" },
+    { id: "test-results", title: "Test Results", icon: "Award", route: "/instructor/test-results" },
+    { id: "cpd-log", title: "CPD Log", icon: "Award", route: "/instructor/cpd" },
+    { id: "referrals", title: "Referrals", icon: "Users", route: "/instructor/referrals" },
+    { id: "locations", title: "Locations", icon: "MapPin", route: "/instructor/locations" },
   ],
 };
 
@@ -45,11 +97,17 @@ const greeting = (() => {
   return `Ready to teach, ${mock.firstName}?`;
 })();
 
-// ── Reusable sub-sections (parameterised for each concept) ──
-
 const IOS_BG = "#f2f2f7";
 
-// Brand gradient header (same as current)
+// ── Shared reusable sections ──
+
+const Hero = ({ h = "h-[200px]", overlay = "from-black/20 to-transparent", rounded = "" }: { h?: string; overlay?: string; rounded?: string }) => (
+  <div className={`w-full ${h} overflow-hidden relative ${rounded}`}>
+    <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
+    <div className={`absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t ${overlay}`} />
+  </div>
+);
+
 const GradientHeader = ({ rounded = false }: { rounded?: boolean }) => (
   <div className={`relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-4 text-white ${rounded ? "rounded-t-2xl" : ""}`}>
     <div className="absolute inset-0 overflow-hidden">
@@ -73,9 +131,8 @@ const GradientHeader = ({ rounded = false }: { rounded?: boolean }) => (
   </div>
 );
 
-// Stats grid (4 stats, same as current)
-const StatsGrid = ({ bg = "bg-white", text = "text-gray-900", sub = "text-gray-500", roundedBottom = false }: { bg?: string; text?: string; sub?: string; roundedBottom?: boolean }) => (
-  <div className={`p-3 ${bg} ${roundedBottom ? "rounded-b-2xl" : ""}`}>
+const StatsGrid = ({ roundedBottom = false }: { roundedBottom?: boolean }) => (
+  <div className={`p-3 bg-white ${roundedBottom ? "rounded-b-2xl" : ""}`}>
     <div className="grid grid-cols-2 gap-2">
       {[
         { Icon: BookOpen, v: mock.lessons, l: "Lessons", ic: "text-[#0075c9]", ibg: "bg-[#0075c9]/8" },
@@ -86,8 +143,8 @@ const StatsGrid = ({ bg = "bg-white", text = "text-gray-900", sub = "text-gray-5
         <div key={s.l} className={`flex items-center gap-2.5 p-2.5 rounded-xl ${s.ibg}`}>
           <s.Icon className={`h-4 w-4 ${s.ic}`} />
           <div>
-            <p className={`text-[15px] font-semibold ${text} leading-none`}>{s.v}</p>
-            <p className={`text-[11px] ${sub} mt-0.5`}>{s.l}</p>
+            <p className="text-[15px] font-semibold text-gray-900 leading-none">{s.v}</p>
+            <p className="text-[11px] text-gray-500 mt-0.5">{s.l}</p>
           </div>
         </div>
       ))}
@@ -95,118 +152,217 @@ const StatsGrid = ({ bg = "bg-white", text = "text-gray-900", sub = "text-gray-5
   </div>
 );
 
-// Job & Message banners (same icons/content as current)
-const Banners = ({ rounded = "rounded-2xl" }: { rounded?: string }) => (
+const Banners = () => (
   <div className="space-y-2">
     {mock.pendingJobs > 0 && (
-      <div className={`bg-white ${rounded} overflow-hidden shadow-sm`}>
+      <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
         <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
           <div className="absolute inset-0 overflow-hidden"><div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" /><div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" /></div>
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <img src={jobOffersIcon} alt="" className="h-10 w-10 object-cover" />
-              <div><span className="font-semibold text-[15px]">Job Offers</span><p className="text-white/70 text-[11px]">{mock.pendingJobs} pending offer{mock.pendingJobs !== 1 ? "s" : ""}</p></div>
+              <div><span className="font-semibold text-[15px]">Job Offers</span><p className="text-white/70 text-[11px]">{mock.pendingJobs} pending</p></div>
             </div>
             <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-white/90 text-[#0075c9] text-xs font-bold flex items-center justify-center">{mock.pendingJobs}</span>
           </div>
         </div>
       </div>
     )}
-    <div className={`bg-white ${rounded} overflow-hidden shadow-sm`}>
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
       <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
         <div className="absolute inset-0 overflow-hidden"><div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" /><div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" /></div>
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src={messagesIcon} alt="" className="h-10 w-10 object-cover" />
-            <div><span className="font-semibold text-[15px]">Messages</span><p className="text-white/70 text-[11px]">{mock.unread > 0 ? `${mock.unread} unread` : "No unread"}</p></div>
+            <div><span className="font-semibold text-[15px]">Messages</span><p className="text-white/70 text-[11px]">{mock.unread} unread</p></div>
           </div>
-          {mock.unread > 0 && <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center">{mock.unread}</span>}
+          <span className="min-w-[28px] h-7 px-2.5 rounded-full bg-red-400 text-white text-xs font-bold flex items-center justify-center">{mock.unread}</span>
         </div>
       </div>
     </div>
   </div>
 );
 
-// YOUR DAY: next lesson + timeline
-const YourDay = ({ cardClass = "bg-white rounded-2xl shadow-sm", text = "text-gray-900", sub = "text-gray-500", sep = "border-gray-50" }: { cardClass?: string; text?: string; sub?: string; sep?: string }) => (
-  <div>
-    <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your Day</p>
-    <div className={`${cardClass} overflow-hidden`}>
-      <div className="p-4">
-        <div className="flex items-center gap-2 text-[13px] text-amber-600 font-medium mb-2.5">
-          <Timer className="h-3.5 w-3.5" /> Next in {mock.nextLesson.minutesUntil} min
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className={`text-[17px] font-semibold ${text}`}>{mock.nextLesson.pupil}</p>
-            <p className={`text-[13px] ${sub} mt-0.5`}>{mock.nextLesson.time} · {mock.nextLesson.postcode} · {mock.nextLesson.duration}</p>
-          </div>
-          <div className="h-10 w-10 rounded-full bg-[#0075c9] flex items-center justify-center">
-            <Navigation className="h-4 w-4 text-white" />
-          </div>
+// NextUpTile-style next lesson card (matching real NextUpTile functionality)
+const NextLessonCard = ({ style = "card" }: { style?: "card" | "inline" }) => {
+  const nl = mock.nextLesson;
+  const isUrgent = nl.minutesUntil <= 30;
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="relative bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] px-4 py-3 text-white">
+        <div className="absolute inset-0 overflow-hidden"><div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10" /></div>
+        <div className="relative flex items-center justify-between">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 text-[#0075c9] text-xs font-extrabold tracking-wide shadow-sm">
+            <Clock className="h-3 w-3" /> NEXT UP
+          </span>
+          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${isUrgent ? "bg-amber-400/30 text-white animate-pulse" : "bg-white/20 text-white"}`}>
+            <Timer className="h-3 w-3" /> in {nl.minutesUntil} min
+          </span>
         </div>
       </div>
-      <div className={`border-t ${sep}`}>
-        {mock.timeline.map((item, i) => (
-          <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < mock.timeline.length - 1 ? `border-b ${sep}` : ""}`}>
-            <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${item.done ? "bg-emerald-400" : item.isNext ? "bg-[#0075c9] ring-2 ring-[#0075c9]/20" : "bg-gray-200"}`} />
-            <span className={`text-[13px] w-12 ${item.done ? "text-gray-400" : sub}`}>{item.time}</span>
-            <span className={`text-[15px] font-medium flex-1 ${item.done ? "text-gray-400 line-through" : text}`}>{item.pupil}</span>
-            {item.isNext && <span className="text-[11px] font-medium text-[#0075c9] bg-[#0075c9]/10 px-2 py-0.5 rounded-full">Next</span>}
-            {item.done && <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />}
-            {!item.done && !item.isNext && <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />}
-          </div>
-        ))}
+      {/* Map placeholder */}
+      <div className="h-[100px] bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+        <MapPin className="h-6 w-6 text-[#0075c9]/40" />
+        <span className="ml-2 text-xs text-[#0075c9]/60">{nl.postcode}</span>
       </div>
-    </div>
-  </div>
-);
-
-// Quick Actions
-const QuickActions = ({ cardClass = "bg-white rounded-2xl shadow-sm", tileRound = "rounded-[14px]" }: { cardClass?: string; tileRound?: string }) => (
-  <div>
-    <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Quick Actions</p>
-    <div className={`${cardClass} p-4`}>
-      <div className="grid grid-cols-4 gap-y-4">
-        {mock.quickActions.map(q => (
-          <div key={q.label} className="flex flex-col items-center gap-1.5">
-            <div className={`h-[52px] w-[52px] ${tileRound} ${q.bg} flex items-center justify-center`}>
-              <q.icon className={`h-5 w-5 ${q.color}`} />
+      {/* Pupil info */}
+      <div className="px-4 pt-3">
+        <div className="-mt-8 mb-2">
+          <div className="ring-4 ring-white rounded-full inline-block">
+            <div className="h-12 w-12 rounded-full bg-[#0075c9] flex items-center justify-center text-white font-bold text-sm">
+              {nl.pupil.split(" ").map(n => n[0]).join("")}
             </div>
-            <span className="text-[11px] text-gray-500 font-medium">{q.label}</span>
           </div>
-        ))}
+        </div>
+        <p className="font-bold text-gray-900 text-base">{nl.pupil}</p>
+        <p className="text-xs text-gray-500">{nl.location}, {nl.postcode}</p>
+      </div>
+      <div className="px-4 pb-4 pt-2">
+        {/* Info badges */}
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#0075c9]/5 border border-[#0075c9]/10 text-xs font-medium text-gray-900">
+            <Clock className="h-3.5 w-3.5 text-[#0075c9]" /> Today · {nl.time}
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-emerald-50 border border-emerald-200/60 text-[11px] font-semibold text-emerald-700">
+            {nl.duration} lesson
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-[#0075c9]/5 border border-[#0075c9]/20 text-[11px] font-semibold text-[#0075c9]">
+            £{nl.balance}
+          </span>
+        </div>
+        {/* Unread messages */}
+        <div className="mb-3 flex items-center gap-2 rounded-lg px-3 py-2 border bg-muted/30 border-gray-100">
+          <Mail className="h-4 w-4 shrink-0 text-gray-400" />
+          <span className="text-xs font-medium text-gray-500">No unread messages from {nl.pupil.split(" ")[0]}</span>
+        </div>
+        {/* Action buttons */}
+        <div className="flex items-center gap-1.5">
+          <button className="flex-1 rounded-xl gap-1 h-8 text-xs bg-[#0075c9] text-white flex items-center justify-center font-medium">
+            <Navigation className="h-3.5 w-3.5" /> Navigate
+          </button>
+          <button className="rounded-xl gap-1 h-8 px-3 text-xs border border-gray-200 flex items-center font-medium text-gray-700">
+            <Check className="h-3.5 w-3.5 text-emerald-600" /> On Way
+          </button>
+          <button className="rounded-full h-8 w-8 border border-gray-200 flex items-center justify-center">
+            <Phone className="h-3.5 w-3.5 text-gray-600" />
+          </button>
+          <button className="rounded-full h-8 w-8 border border-gray-200 flex items-center justify-center">
+            <MessageSquare className="h-3.5 w-3.5 text-gray-600" />
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-// Agenda
-const Agenda = ({ cardClass = "bg-white rounded-2xl shadow-sm", text = "text-gray-900", sub = "text-gray-500" }: { cardClass?: string; text?: string; sub?: string }) => (
-  <div className={`${cardClass} p-4`}>
+// Collapsible schedule/timeline
+const CollapsibleSchedule = ({ defaultOpen = false }: { defaultOpen?: boolean }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3"
+      >
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-[#0075c9]" />
+          <span className="text-[15px] font-semibold text-gray-900">Today's Schedule</span>
+          <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{mock.timeline.length}</span>
+        </div>
+        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown className="h-4 w-4 text-gray-400" />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-gray-100">
+              {mock.timeline.map((item, i) => (
+                <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < mock.timeline.length - 1 ? "border-b border-gray-50" : ""}`}>
+                  <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${item.done ? "bg-emerald-400" : item.isNext ? "bg-[#0075c9] ring-2 ring-[#0075c9]/20" : "bg-gray-200"}`} />
+                  <span className={`text-[13px] w-12 ${item.done ? "text-gray-400" : "text-gray-500"}`}>{item.time}</span>
+                  <span className={`text-[15px] font-medium flex-1 ${item.done ? "text-gray-400 line-through" : "text-gray-900"}`}>{item.pupil}</span>
+                  <span className="text-[11px] text-gray-400">{item.postcode}</span>
+                  {item.isNext && <span className="text-[11px] font-medium text-[#0075c9] bg-[#0075c9]/10 px-2 py-0.5 rounded-full">Next</span>}
+                  {item.done && <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />}
+                  {!item.done && !item.isNext && <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// Quick Actions with REAL icons (all tiles)
+const QuickActionsGrid = ({ cols = 4, maxTiles = 20 }: { cols?: number; maxTiles?: number }) => {
+  const tiles = mock.quickActions.slice(0, maxTiles);
+  return (
+    <div>
+      <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Quick Actions</p>
+      <div className="bg-white rounded-2xl shadow-sm p-4">
+        <div className={`grid grid-cols-${cols} gap-y-4 gap-x-2`}>
+          {tiles.map(q => {
+            const hasCustomIcon = !!customIconImages[q.id];
+            const FallbackIcon = iconMap[q.icon] || Calendar;
+            const badgeCount = q.id === "jobs" ? mock.pendingJobs : q.id === "messages" ? mock.unread : 0;
+            return (
+              <div key={q.id} className="flex flex-col items-center gap-1.5 relative">
+                <div className="relative w-[52px] h-[52px] rounded-[14px] flex items-center justify-center overflow-hidden bg-gray-50">
+                  {hasCustomIcon ? (
+                    <img src={customIconImages[q.id]} alt={q.title} className="w-full h-full object-cover rounded-[14px]" />
+                  ) : (
+                    <FallbackIcon className="h-5 w-5 text-[#0075c9]" />
+                  )}
+                  {badgeCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                      {badgeCount > 9 ? "9+" : badgeCount}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] text-gray-500 font-medium text-center line-clamp-1 max-w-[60px]">{q.title}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Agenda/Weekly progress
+const Agenda = () => (
+  <div className="bg-white rounded-2xl shadow-sm p-4">
     <div className="flex items-center justify-between mb-2.5">
-      <span className={`text-[15px] font-semibold ${text}`}>This Week</span>
+      <span className="text-[15px] font-semibold text-gray-900">This Week</span>
       <ChevronRight className="h-4 w-4 text-gray-300" />
     </div>
     <div className="h-2 bg-gray-100 rounded-full">
       <div className="h-full bg-[#0075c9] rounded-full" style={{ width: `${mock.weeklyProgress}%` }} />
     </div>
-    <p className={`text-[13px] ${sub} mt-1.5`}>{mock.weeklyProgress}% of weekly goal</p>
+    <p className="text-[13px] text-gray-500 mt-1.5">{mock.weeklyProgress}% of weekly goal</p>
   </div>
 );
 
-// Plan Ahead
-const PlanAhead = ({ cardClass = "bg-white rounded-2xl shadow-sm", text = "text-gray-900", sub = "text-gray-500" }: { cardClass?: string; text?: string; sub?: string }) => (
+const PlanAhead = () => (
   <div>
     <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Plan Ahead</p>
-    <div className={`${cardClass} p-4`}>
+    <div className="bg-white rounded-2xl shadow-sm p-4">
       <div className="flex items-center gap-3">
         <div className="h-11 w-11 rounded-[12px] bg-violet-500/10 flex items-center justify-center shrink-0">
           <Calendar className="h-5 w-5 text-violet-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`text-[15px] font-semibold ${text}`}>Tomorrow</p>
-          <p className={`text-[13px] ${sub}`}>{mock.tomorrow.lessons} lessons · {mock.tomorrow.hours}hrs · £{mock.tomorrow.earnings}</p>
+          <p className="text-[15px] font-semibold text-gray-900">Tomorrow</p>
+          <p className="text-[13px] text-gray-500">{mock.tomorrow.lessons} lessons · {mock.tomorrow.hours}hrs · £{mock.tomorrow.earnings}</p>
         </div>
         <ChevronRight className="h-4 w-4 text-gray-300 shrink-0" />
       </div>
@@ -214,22 +370,13 @@ const PlanAhead = ({ cardClass = "bg-white rounded-2xl shadow-sm", text = "text-
   </div>
 );
 
-// Hero image
-const Hero = ({ h = "h-[38vh] min-h-[220px] max-h-[320px]", overlay = "from-black/20 to-transparent", rounded = "" }: { h?: string; overlay?: string; rounded?: string }) => (
-  <div className={`w-full ${h} overflow-hidden relative ${rounded}`}>
-    <img src={instructorHeroImg} alt="Hero" className="w-full h-full object-cover" />
-    <div className={`absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t ${overlay}`} />
-  </div>
-);
-
-// ══════════════════════════════════════════════════════════
-// CONCEPT A: Classic iOS — Grouped Inset
-// System background, rounded-2xl grouped cards, clear separators
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// CONCEPT A: Classic iOS Grouped
+// ══════════════════════════════════════════════════
 function ConceptA() {
   return (
     <div style={{ backgroundColor: IOS_BG }} className="min-h-full">
-      <Hero />
+      <Hero h="h-[200px]" />
       <div className="relative -mt-10 mx-4">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <GradientHeader rounded />
@@ -237,9 +384,13 @@ function ConceptA() {
         </div>
       </div>
       <div className="px-4 mt-3"><Banners /></div>
-      <div className="px-4 mt-5 space-y-5 pb-8">
-        <YourDay />
-        <QuickActions />
+      <div className="px-4 mt-5 space-y-4 pb-8">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your Day</p>
+          <NextLessonCard />
+        </div>
+        <CollapsibleSchedule defaultOpen />
+        <QuickActionsGrid />
         <Agenda />
         <PlanAhead />
       </div>
@@ -247,16 +398,14 @@ function ConceptA() {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// CONCEPT B: iOS Settings Style — Full-width grouped rows
-// Flat header inside hero, list-style settings cards
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// CONCEPT B: iOS Settings / Profile Style
+// ══════════════════════════════════════════════════
 function ConceptB() {
   return (
     <div style={{ backgroundColor: IOS_BG }} className="min-h-full">
-      <Hero h="h-[200px]" overlay="from-black/40 via-black/20 to-transparent" />
-      {/* Floating profile overlapping hero */}
-      <div className="-mt-16 flex flex-col items-center relative z-10 mb-4">
+      <Hero h="h-[180px]" overlay="from-black/40 via-black/20 to-transparent" />
+      <div className="-mt-14 flex flex-col items-center relative z-10 mb-4">
         <div className="h-20 w-20 rounded-full bg-gradient-to-br from-[#0075c9] to-[#005a9e] flex items-center justify-center text-white text-2xl font-bold shadow-lg border-4 border-white">
           {mock.initials}
         </div>
@@ -266,22 +415,22 @@ function ConceptB() {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Online
           </span>
           <span className="text-[11px] text-gray-400 flex items-center gap-1">
-            <CloudSun className="h-3 w-3" /> {mock.weather.temp}°C · {mock.weather.desc}
+            <CloudSun className="h-3 w-3" /> {mock.weather.temp}°C
           </span>
         </div>
       </div>
-      {/* Stats as iOS grouped list */}
+      {/* Stats as iOS list */}
       <div className="mx-4">
         <div className="bg-white rounded-2xl shadow-sm divide-y divide-gray-100">
           {[
-            { Icon: BookOpen, v: `${mock.lessons} lessons today`, l: "Schedule", ic: "text-[#0075c9] bg-[#0075c9]/10" },
-            { Icon: PoundSterling, v: `£${mock.earnings} expected`, l: "Earnings", ic: "text-emerald-600 bg-emerald-500/10" },
-            { Icon: Target, v: `${mock.weeklyProgress}% of goal`, l: "Weekly Progress", ic: "text-violet-600 bg-violet-500/10" },
-            { Icon: Timer, v: `${mock.nextLesson.time} — ${mock.nextLesson.pupil}`, l: "Next Lesson", ic: "text-amber-600 bg-amber-500/10" },
+            { Icon: BookOpen, v: `${mock.lessons} lessons today`, l: "Schedule", ic: "text-[#0075c9]", ibg: "bg-[#0075c9]/10" },
+            { Icon: PoundSterling, v: `£${mock.earnings} expected`, l: "Earnings", ic: "text-emerald-600", ibg: "bg-emerald-500/10" },
+            { Icon: Target, v: `${mock.weeklyProgress}% of goal`, l: "Weekly Progress", ic: "text-violet-600", ibg: "bg-violet-500/10" },
+            { Icon: Timer, v: `${mock.nextLesson.time} — ${mock.nextLesson.pupil}`, l: "Next Lesson", ic: "text-amber-600", ibg: "bg-amber-500/10" },
           ].map(s => (
             <div key={s.l} className="flex items-center gap-3 px-4 py-3">
-              <div className={`h-8 w-8 rounded-lg ${s.ic.split(" ").slice(1).join(" ")} flex items-center justify-center`}>
-                <s.Icon className={`h-4 w-4 ${s.ic.split(" ")[0]}`} />
+              <div className={`h-8 w-8 rounded-lg ${s.ibg} flex items-center justify-center`}>
+                <s.Icon className={`h-4 w-4 ${s.ic}`} />
               </div>
               <div className="flex-1">
                 <p className="text-[15px] font-medium text-gray-900">{s.v}</p>
@@ -293,9 +442,13 @@ function ConceptB() {
         </div>
       </div>
       <div className="px-4 mt-3"><Banners /></div>
-      <div className="px-4 mt-5 space-y-5 pb-8">
-        <YourDay />
-        <QuickActions />
+      <div className="px-4 mt-5 space-y-4 pb-8">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your Day</p>
+          <NextLessonCard />
+        </div>
+        <CollapsibleSchedule />
+        <QuickActionsGrid />
         <Agenda />
         <PlanAhead />
       </div>
@@ -303,23 +456,20 @@ function ConceptB() {
   );
 }
 
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
 // CONCEPT C: iOS Widget Board
-// Large hero, widget-style cards with visible titles
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
 function ConceptC() {
   return (
     <div style={{ backgroundColor: IOS_BG }} className="min-h-full">
-      <Hero />
-      {/* Floating greeting on hero */}
-      <div className="-mt-16 px-5 relative z-10 mb-3">
+      <Hero h="h-[200px]" />
+      <div className="-mt-14 px-5 relative z-10 mb-3">
         <p className="text-white text-[22px] font-bold drop-shadow-lg">{greeting}</p>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="inline-flex items-center gap-1 text-[11px] text-white/80"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Online</span>
           <span className="text-[11px] text-white/60"><CloudSun className="h-3 w-3 inline" /> {mock.weather.temp}°C</span>
         </div>
       </div>
-      {/* Stat widgets */}
       <div className="px-4 grid grid-cols-2 gap-2.5">
         {[
           { Icon: BookOpen, v: mock.lessons, l: "Lessons Today", c: "[#0075c9]" },
@@ -338,9 +488,13 @@ function ConceptC() {
         ))}
       </div>
       <div className="px-4 mt-3"><Banners /></div>
-      <div className="px-4 mt-5 space-y-5 pb-8">
-        <YourDay />
-        <QuickActions />
+      <div className="px-4 mt-5 space-y-4 pb-8">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your Day</p>
+          <NextLessonCard />
+        </div>
+        <CollapsibleSchedule defaultOpen />
+        <QuickActionsGrid />
         <Agenda />
         <PlanAhead />
       </div>
@@ -348,15 +502,13 @@ function ConceptC() {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// CONCEPT D: iOS Maps / Weather style
-// Hero behind header, segmented sections, compact
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// CONCEPT D: iOS Maps / Weather — Glass header
+// ══════════════════════════════════════════════════
 function ConceptD() {
   return (
     <div style={{ backgroundColor: IOS_BG }} className="min-h-full">
       <Hero h="h-[160px]" overlay="from-[#f2f2f7] via-transparent to-transparent" />
-      {/* Compact header card */}
       <div className="-mt-8 mx-4 relative z-10">
         <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-sm border border-white/50 overflow-hidden">
           <div className="px-4 py-3 flex items-center gap-3">
@@ -369,7 +521,6 @@ function ConceptD() {
               </div>
             </div>
           </div>
-          {/* Horizontal stat pills */}
           <div className="px-3 pb-3 flex gap-2 overflow-x-auto no-scrollbar">
             {[
               { v: mock.lessons, l: "Lessons", c: "bg-[#0075c9]/10 text-[#0075c9]" },
@@ -386,9 +537,13 @@ function ConceptD() {
         </div>
       </div>
       <div className="px-4 mt-3"><Banners /></div>
-      <div className="px-4 mt-5 space-y-5 pb-8">
-        <YourDay />
-        <QuickActions />
+      <div className="px-4 mt-5 space-y-4 pb-8">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your Day</p>
+          <NextLessonCard />
+        </div>
+        <CollapsibleSchedule />
+        <QuickActionsGrid />
         <Agenda />
         <PlanAhead />
       </div>
@@ -396,10 +551,9 @@ function ConceptD() {
   );
 }
 
-// ══════════════════════════════════════════════════════════
-// CONCEPT E: iOS Health / Fitness style
-// Gradient ring hero, activity-ring stats, clean cards
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// CONCEPT E: iOS Health / Fitness — Activity Ring
+// ══════════════════════════════════════════════════
 function ConceptE() {
   return (
     <div style={{ backgroundColor: IOS_BG }} className="min-h-full">
@@ -407,9 +561,7 @@ function ConceptE() {
       <div className="-mt-12 mx-4 relative z-10">
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <GradientHeader rounded />
-          {/* Activity ring style stats */}
           <div className="p-4 flex items-center gap-4">
-            {/* Progress ring */}
             <div className="relative h-16 w-16 shrink-0">
               <svg className="h-16 w-16 -rotate-90" viewBox="0 0 64 64">
                 <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="5" />
@@ -437,9 +589,13 @@ function ConceptE() {
         </div>
       </div>
       <div className="px-4 mt-3"><Banners /></div>
-      <div className="px-4 mt-5 space-y-5 pb-8">
-        <YourDay />
-        <QuickActions />
+      <div className="px-4 mt-5 space-y-4 pb-8">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your Day</p>
+          <NextLessonCard />
+        </div>
+        <CollapsibleSchedule defaultOpen />
+        <QuickActionsGrid />
         <Agenda />
         <PlanAhead />
       </div>
@@ -447,15 +603,105 @@ function ConceptE() {
   );
 }
 
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// CONCEPT F: iOS Wallet Style — Stacked cards
+// ══════════════════════════════════════════════════
+function ConceptF() {
+  return (
+    <div style={{ backgroundColor: IOS_BG }} className="min-h-full">
+      <Hero h="h-[180px]" overlay="from-black/30 to-transparent" />
+      <div className="-mt-10 mx-4 relative z-10 space-y-2">
+        {/* Main card */}
+        <div className="bg-gradient-to-br from-[#0075c9] via-[#0068b3] to-[#005a9e] rounded-2xl p-4 text-white shadow-lg">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">{mock.initials}</div>
+            <div>
+              <h2 className="text-[15px] font-semibold">{mock.firstName}'s Dashboard</h2>
+              <div className="flex items-center gap-2 text-[11px] text-white/70">
+                <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Online</span>
+                <span><CloudSun className="h-3 w-3 inline" /> {mock.weather.temp}°C</span>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-3">
+            {[
+              { v: mock.lessons, l: "Lessons" },
+              { v: `£${mock.earnings}`, l: "Earned" },
+              { v: `${mock.weeklyProgress}%`, l: "Goal" },
+              { v: `${mock.streak}🔥`, l: "Streak" },
+            ].map(s => (
+              <div key={s.l} className="text-center">
+                <p className="text-[17px] font-bold">{s.v}</p>
+                <p className="text-[10px] text-white/60 mt-0.5">{s.l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="px-4 mt-3"><Banners /></div>
+      <div className="px-4 mt-5 space-y-4 pb-8">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your Day</p>
+          <NextLessonCard />
+        </div>
+        <CollapsibleSchedule />
+        <QuickActionsGrid />
+        <Agenda />
+        <PlanAhead />
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
+// CONCEPT G: iOS Music / Podcast — Large art, minimal
+// ══════════════════════════════════════════════════
+function ConceptG() {
+  return (
+    <div style={{ backgroundColor: IOS_BG }} className="min-h-full">
+      <Hero h="h-[240px]" overlay="from-black/60 via-black/30 to-transparent" />
+      <div className="-mt-24 px-5 relative z-10 mb-4">
+        <p className="text-white/70 text-[13px] font-medium">Today</p>
+        <h2 className="text-white text-[28px] font-bold leading-tight mt-1">{greeting}</h2>
+        <div className="flex items-center gap-3 mt-3">
+          {[
+            { v: mock.lessons, l: "lessons" },
+            { v: `£${mock.earnings}`, l: "earnings" },
+            { v: `${mock.weeklyProgress}%`, l: "goal" },
+          ].map(s => (
+            <div key={s.l} className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-1.5">
+              <span className="text-white text-[13px] font-bold">{s.v}</span>
+              <span className="text-white/60 text-[11px] ml-1">{s.l}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="px-4"><Banners /></div>
+      <div className="px-4 mt-5 space-y-4 pb-8">
+        <div>
+          <p className="text-[13px] font-semibold uppercase tracking-wide text-gray-400 px-1 mb-2">Your Day</p>
+          <NextLessonCard />
+        </div>
+        <CollapsibleSchedule defaultOpen />
+        <QuickActionsGrid />
+        <Agenda />
+        <PlanAhead />
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════
 // Demo shell
-// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
 const concepts = [
   { id: "A", name: "Classic iOS Grouped", desc: "System bg, grouped inset cards, clear separators", Component: ConceptA },
   { id: "B", name: "iOS Settings Style", desc: "Centred profile, list-row stats, disclosure arrows", Component: ConceptB },
   { id: "C", name: "iOS Widget Board", desc: "Floating greeting on hero, large widget stat cards", Component: ConceptC },
   { id: "D", name: "iOS Maps / Weather", desc: "Blurred glass header, horizontal stat pills", Component: ConceptD },
   { id: "E", name: "iOS Health / Fitness", desc: "Activity ring progress, gradient header, clean cards", Component: ConceptE },
+  { id: "F", name: "iOS Wallet Style", desc: "Stacked gradient card, compact stats, wallet feel", Component: ConceptF },
+  { id: "G", name: "iOS Music / Podcast", desc: "Large hero art, overlay text, frosted stat pills", Component: ConceptG },
 ];
 
 export default function MobileHomeIOSDemo() {
@@ -468,12 +714,11 @@ export default function MobileHomeIOSDemo() {
           <Link to="/instructor" className="text-sm text-gray-400 hover:text-white flex items-center gap-1">
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
-          <h1 className="text-base font-semibold">iOS-Style Redesign Preview</h1>
+          <h1 className="text-base font-semibold">iOS Redesign Preview</h1>
           <span className="text-sm text-gray-500">{selected + 1}/{concepts.length}</span>
         </div>
       </div>
 
-      {/* Concept selector */}
       <div className="max-w-6xl mx-auto px-6 py-4">
         <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
           {concepts.map((c, i) => (
@@ -520,10 +765,9 @@ export default function MobileHomeIOSDemo() {
             </Button>
           </div>
 
-          {/* Thumbnail grid */}
           <div className="w-full mt-12">
             <h3 className="text-lg font-semibold mb-4 text-center">All Concepts</h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {concepts.map((c, i) => (
                 <button key={c.id} onClick={() => { setSelected(i); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                   className={`rounded-2xl overflow-hidden border-2 transition-all ${selected === i ? "border-[#0075c9] shadow-lg shadow-[#0075c9]/20" : "border-white/10 hover:border-white/30"}`}
