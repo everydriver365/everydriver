@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-const logo = "/everydriver-logo-full.png";
+import logo from "@/assets/everydriver-logo.png";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
