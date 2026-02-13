@@ -49,6 +49,7 @@ const previewData = {
   website_theme: "modern",
   primary_color: "#10b981",
   slug: "jane-smith",
+  website_choice: "free" as const,
   wantsDomain: false,
   wantsHosting: false,
   selectedDomain: null,

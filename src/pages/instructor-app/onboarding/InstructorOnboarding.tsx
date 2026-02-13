@@ -54,6 +54,7 @@ interface OnboardingData {
   primary_color: string;
   slug: string;
   welcome_video_url: string | null;
+  website_choice: "free" | "custom" | "booknow";
   // Domain & Hosting
   wantsDomain: boolean;
   wantsHosting: boolean;
@@ -89,6 +90,7 @@ const initialData: OnboardingData = {
   primary_color: "#10b981",
   slug: "",
   welcome_video_url: null,
+  website_choice: "free",
   wantsDomain: false,
   wantsHosting: false,
   selectedDomain: null,
