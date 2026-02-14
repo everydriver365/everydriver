@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import logo from "@/assets/everydriver-logo.png";
 import { Footer } from "./Footer";
-import { MobileBottomNav } from "./MobileBottomNav";
+import { InstructorMarketingBottomNav } from "./InstructorMarketingBottomNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
@@ -126,7 +126,7 @@ export function InstructorSaaSLayout({ children }: InstructorSaaSLayoutProps) {
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
       
       <Footer />
-      <MobileBottomNav />
+      <InstructorMarketingBottomNav />
     </div>
   );
 }
