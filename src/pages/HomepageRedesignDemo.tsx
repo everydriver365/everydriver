@@ -217,12 +217,21 @@ export default function HomepageRedesignDemo() {
               link: "/instructor-app/domains",
             },
             {
+              icon: Smartphone,
+              title: "Apps for Everyone",
+              description: "Dedicated apps for pupils, parents and instructors — free on every plan, no exceptions. Track progress, stay informed, and manage your business from anywhere.",
+              features: ["Pupil progress dashboard", "Parent lesson notifications", "AI coaching tips", "Mock theory tests"],
+              image: pupilAppHero,
+              reverse: true,
+              link: "/instructor-app/features",
+            },
+            {
               icon: Megaphone,
               title: "Free Marketing & Promotion",
               description: "We help you get found by new learners — for free. Google-optimised profiles, area page listings, and social sharing tools to grow your business.",
               features: ["SEO-optimised profile", "Area page listings", "Review showcase", "Social sharing"],
               image: marketingImg,
-              reverse: true,
+              reverse: false,
               link: "/instructor-app/marketing",
             },
             {
@@ -231,7 +240,7 @@ export default function HomepageRedesignDemo() {
               description: "Monitor speed, driver scoring, and trip history in real time. Give your pupils measurable feedback backed by data.",
               features: ["Live speed monitoring", "Driver scoring", "Trip replay & reports", "Progress tracking"],
               image: telematicsImg,
-              reverse: false,
+              reverse: true,
               link: "/instructor-app/telematics",
             },
             {
@@ -240,7 +249,7 @@ export default function HomepageRedesignDemo() {
               description: "AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing.",
               features: ["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"],
               image: dashcamFeatureImg,
-              reverse: true,
+              reverse: false,
               link: "/instructor-app/dashcam",
             },
             {
@@ -249,7 +258,7 @@ export default function HomepageRedesignDemo() {
               description: "Manage your entire fleet of instructors from one dashboard. Track performance, allocate pupils, and scale your driving school with confidence.",
               features: ["Multi-instructor management", "Pupil allocation", "Fleet performance tracking", "Centralised billing"],
               images: [drivingSchool1, drivingSchool2],
-              reverse: false,
+              reverse: true,
               link: "/driving-schools",
             },
           ].map((feature) => (
@@ -298,78 +307,7 @@ export default function HomepageRedesignDemo() {
         </div>
       </section>
 
-      {/* ─── FREE APPS SECTION ─── */}
-      <section className="py-20 md:py-28 bg-[#0a1628] relative">
-        <div className="absolute inset-0 overflow-hidden opacity-15 pointer-events-none">
-          <div className="absolute top-20 right-1/4 w-80 h-80 bg-[#0075c9] rounded-full blur-[140px]" />
-          <div className="absolute bottom-10 left-1/3 w-64 h-64 bg-[#00a3ff] rounded-full blur-[120px]" />
-        </div>
-        <div className="container max-w-5xl relative z-10">
-          <div className="text-center mb-14">
-            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase text-[#0075c9] bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-full">
-              Included on all plans
-            </span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
-              Apps for Everyone
-            </h2>
-            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              Dedicated apps for pupils, parents and instructors — free on every plan, no exceptions.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                emoji: "🎓",
-                image: pupilAppHero,
-                title: "Pupil App",
-                description: "Learners track their progress, view upcoming lessons, access AI coaching, and prepare for theory & practical tests.",
-                features: ["Progress dashboard", "AI coaching tips", "Mock theory tests", "Lesson history"],
-              },
-              {
-                emoji: "👨‍👩‍👧",
-                title: "Parent App",
-                description: "Parents stay in the loop with real-time lesson updates, payment visibility, and progress reports for their learner.",
-                features: ["Lesson notifications", "Payment overview", "Progress tracking", "Direct messaging"],
-              },
-              {
-                emoji: "🚗",
-                title: "Instructor App",
-                description: "Your complete business toolkit — diary, payments, pupil management, and communication all in one place.",
-                features: ["Smart diary", "Payment tracking", "Pupil management", "Gap filling & SMS"],
-              },
-            ].map((app) => (
-              <div
-                key={app.title}
-                className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 text-center hover:bg-white/10 transition-colors"
-              >
-                {'image' in app && app.image ? (
-                  <img src={app.image} alt={app.title} className="w-full h-48 object-cover rounded-xl mb-5" />
-                ) : (
-                  <div className="text-5xl mb-5">{app.emoji}</div>
-                )}
-                <h3 className="text-xl font-bold text-white mb-3">{app.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-5">{app.description}</p>
-                <ul className="space-y-2 text-left">
-                  {app.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                      <div className="h-4 w-4 rounded-full bg-[#0075c9]/20 flex items-center justify-center shrink-0">
-                        <Check className="h-2.5 w-2.5 text-[#0075c9]" />
-                      </div>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-6">
-                  <Badge className="bg-[#0075c9]/15 text-[#0075c9] border-[#0075c9]/20 text-xs font-semibold">
-                    Free on all plans
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Apps section moved into feature showcase above */}
 
       {/* ─── HOW IT WORKS ─── */}
       <section className="py-20 md:py-28 bg-muted/20">
