@@ -16,6 +16,7 @@ import dashcamFeatureImg from "@/assets/dashcam-feature.png";
 import marketingImg from "@/assets/features/marketing-website-mockup.png";
 import drivingSchool1 from "@/assets/driving-school-1.png";
 import drivingSchool2 from "@/assets/driving-school-2.png";
+import pupilAppHero from "@/assets/pupil-app-hero.png";
 import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 
 const fadeUp = {
@@ -357,6 +358,7 @@ export default function HomepageRedesignDemo() {
             {[
               {
                 emoji: "🎓",
+                image: pupilAppHero,
                 title: "Pupil App",
                 description: "Learners track their progress, view upcoming lessons, access AI coaching, and prepare for theory & practical tests.",
                 features: ["Progress dashboard", "AI coaching tips", "Mock theory tests", "Lesson history"],
@@ -380,7 +382,11 @@ export default function HomepageRedesignDemo() {
                 transition={{ delay: i * 0.12, duration: 0.5 }}
                 className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 text-center hover:bg-white/10 transition-colors"
               >
-                <div className="text-5xl mb-5">{app.emoji}</div>
+                {'image' in app && app.image ? (
+                  <img src={app.image} alt={app.title} className="w-full h-48 object-cover rounded-xl mb-5" />
+                ) : (
+                  <div className="text-5xl mb-5">{app.emoji}</div>
+                )}
                 <h3 className="text-xl font-bold text-white mb-3">{app.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed mb-5">{app.description}</p>
                 <ul className="space-y-2 text-left">
