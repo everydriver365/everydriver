@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FeaturePageHero } from "@/components/instructor-features/FeaturePageHero";
 import websiteImg from "@/assets/features/website-showcase.png";
 import { motion } from "framer-motion";
-import { Search, Globe, Server, Shield, Check, Loader2, ShoppingCart, ExternalLink } from "lucide-react";
+import { Search, Globe, Server, Shield, Check, Loader2, ShoppingCart, ExternalLink, Star, Users, TrendingUp, Smartphone, Award, MapPin } from "lucide-react";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,6 +169,104 @@ export default function InstructorDomains() {
         features={["Custom domain name", "SEO optimised pages", "Online booking", "Review showcase"]}
         image={websiteImg}
       />
+
+      {/* Why You Need a Custom Domain & Website */}
+      <section className="py-16 bg-muted/30">
+        <div className="container max-w-5xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">Why It Matters</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Every Instructor Needs Their Own Website & Domain</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              You wouldn't teach without dual controls. So why run your business without a professional online presence?
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-10">
+            <Card className="h-full">
+              <CardContent className="p-6 space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Get Found on Google</h3>
+                <p className="text-muted-foreground">
+                  When a learner searches "driving instructor near me", Google prioritises websites with custom domains over social media pages. A site like <strong>yourname-driving.co.uk</strong> tells Google you're a legitimate local business — not just another profile on a directory.
+                </p>
+                <p className="text-muted-foreground">
+                  Without your own site, you're invisible to the 80% of learners who start their search on Google.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="h-full">
+              <CardContent className="p-6 space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Award className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Look Professional, Win More Pupils</h3>
+                <p className="text-muted-foreground">
+                  Parents check you out before booking. A professional website with your own domain, reviews, pricing, and booking instantly builds trust. A Facebook page or free subdomain doesn't.
+                </p>
+                <p className="text-muted-foreground">
+                  First impressions matter — and your website is your first impression for every new enquiry.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="h-full">
+              <CardContent className="p-6 space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Smartphone className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Take Bookings 24/7</h3>
+                <p className="text-muted-foreground">
+                  Your phone is off during lessons. Your website isn't. With online booking built in, pupils can check your availability and book while you're teaching — no missed calls, no lost revenue.
+                </p>
+                <p className="text-muted-foreground">
+                  Every hour you're not answering your phone is an hour your website is working for you.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="h-full">
+              <CardContent className="p-6 space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Own Your Brand, Not Someone Else's</h3>
+                <p className="text-muted-foreground">
+                  When you rely on directories, aggregators, or social media, you're building <em>their</em> brand — not yours. A custom domain means your name, your reputation, and your pupils stay with you.
+                </p>
+                <p className="text-muted-foreground">
+                  If a directory shuts down or changes its algorithm, you lose nothing — because your website is yours.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-8 text-center space-y-4">
+                <Star className="h-10 w-10 text-primary mx-auto" />
+                <h3 className="text-xl font-bold">The Numbers Don't Lie</h3>
+                <div className="grid sm:grid-cols-3 gap-6 mt-6">
+                  <div>
+                    <p className="text-3xl font-bold text-primary">80%</p>
+                    <p className="text-sm text-muted-foreground mt-1">of learners find instructors via Google — not word of mouth</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-primary">5×</p>
+                    <p className="text-sm text-muted-foreground mt-1">more enquiries with a professional website vs. a directory listing alone</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-primary">24/7</p>
+                    <p className="text-sm text-muted-foreground mt-1">bookings taken automatically — even while you're on a lesson</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Main Content */}
       <section className="py-12">
