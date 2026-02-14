@@ -348,7 +348,7 @@ export default function HomepageRedesignDemo() {
       </section>
 
       {/* ─── PRODUCT GRID ─── */}
-      <section className="py-20 md:py-28 bg-background">
+      <section className="py-20 md:py-28 bg-gradient-to-b from-background to-accent/50">
         <div className="container max-w-6xl">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
