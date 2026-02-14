@@ -13,6 +13,7 @@ import websiteImg from "@/assets/features/website-showcase.png";
 import telematicsImg from "@/assets/features/telematics-showcase.png";
 import dashcamFeatureImg from "@/assets/dashcam-feature.png";
 import marketingImg from "@/assets/features/marketing-website-mockup.png";
+import lifestyleDiaryImg from "@/assets/features/diary-option-lifestyle.png";
 import drivingSchool1 from "@/assets/driving-school-1.png";
 import drivingSchool2 from "@/assets/driving-school-2.png";
 import pupilAppHero from "@/assets/pupil-app-hero.png";
@@ -347,8 +348,14 @@ export default function HomepageRedesignDemo() {
       </section>
 
       {/* ─── PRODUCT GRID ─── */}
-      <section className="py-20 md:py-28 bg-background">
-        <div className="container max-w-6xl">
+      <section className="relative py-20 md:py-28 overflow-hidden">
+        {/* Background image with overlay */}
+        <div className="absolute inset-0">
+          <img src={lifestyleDiaryImg} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/90 dark:bg-background/95 backdrop-blur-sm" />
+        </div>
+
+        <div className="container max-w-6xl relative z-10">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
               Start Free. Grow When Ready.
@@ -368,10 +375,10 @@ export default function HomepageRedesignDemo() {
               <div key={product.name}>
                 <Link
                   to={product.link}
-                  className={`group block h-full rounded-2xl border p-7 transition-all hover:shadow-lg ${
+                  className={`group block h-full rounded-2xl border p-7 transition-all hover:shadow-lg backdrop-blur-md ${
                     product.free
-                      ? "border-[#0075c9]/30 bg-[#0075c9]/[0.03] hover:border-[#0075c9]"
-                      : "border-border bg-card hover:border-[#0075c9]/30"
+                      ? "border-[#0075c9]/30 bg-card/80 hover:border-[#0075c9]"
+                      : "border-border bg-card/70 hover:border-[#0075c9]/30"
                   }`}
                 >
                   <div className="flex items-start justify-between mb-5">
