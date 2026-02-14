@@ -4,7 +4,7 @@ import { TestimonialStrip } from "@/components/instructor-features/TestimonialSt
 import { FeatureCTA } from "@/components/instructor-features/FeatureCTA";
 import { CreditCard, BarChart3, Bell, FileText, Smartphone, PoundSterling, QrCode, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
-import paymentsImg from "@/assets/features/payments-tracking.jpg";
+import paymentsImg from "@/assets/features/pupil-making-payment.png";
 
 const testimonials = [
   { quote: "Chasing payments used to be my least favourite part of the job. Now the app handles it and I just get paid.", name: "Mark D.", role: "ADI, Leeds", stars: 5 },
