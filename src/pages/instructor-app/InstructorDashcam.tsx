@@ -1,130 +1,197 @@
 import { Link } from "react-router-dom";
-import dashcamVideo from "@/assets/dashcam-uk-lesson.mp4";
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import { FeaturePageHero } from "@/components/instructor-features/FeaturePageHero";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Camera,
   Shield,
   Video,
   Eye,
-  Wifi,
-  HardDrive,
   CloudUpload,
   CheckCircle2,
   ArrowRight,
   ShieldCheck,
-  Star,
-  Zap,
   AlertTriangle,
-  FileVideo,
+  Zap,
+  PoundSterling,
+  Bell,
+  Power,
+  Brain,
+  Wifi,
+  Monitor,
+  MapPin,
+  Share2,
+  Users,
+  Route,
+  ClipboardList,
+  Lock,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import dashcamFeatureImg from "@/assets/dashcam-feature.png";
 
-const features = [
+const whyVideoCards = [
   {
-    icon: Video,
-    title: "Dual-Channel Recording",
+    icon: AlertTriangle,
+    title: "Collision Prevention",
     description:
-      "Capture both the road ahead and the cabin simultaneously in crystal-clear 1080p HD, providing complete lesson coverage.",
-    color: "text-sky-500",
-    bg: "bg-sky-500/10",
-  },
-  {
-    icon: Eye,
-    title: "AI Incident Detection",
-    description:
-      "Automatic detection of harsh braking, sudden swerves, and near-misses. Events are flagged and saved for review.",
+      "Video evidence helps analyse near-misses and implement safer lesson plans, reducing risk before incidents occur.",
     color: "text-amber-500",
     bg: "bg-amber-500/10",
   },
   {
-    icon: CloudUpload,
-    title: "Cloud Upload & Sync",
+    icon: Shield,
+    title: "Protecting Instructors",
     description:
-      "Footage automatically syncs to your EveryDriver account via Wi-Fi, linked to the pupil and lesson for easy retrieval.",
-    color: "text-emerald-500",
-    bg: "bg-emerald-500/10",
+      "Cameras capture driving behaviour in real time to safeguard against false accusations and disputed events.",
+    color: "text-sky-500",
+    bg: "bg-sky-500/10",
   },
   {
-    icon: Shield,
-    title: "Insurance Protection",
+    icon: Lock,
+    title: "Risk Reduction",
     description:
-      "Protect yourself from false claims with timestamped, GPS-tagged footage. Many insurers offer discounts for dashcam users.",
+      "Timestamped, GPS-tagged footage provides indisputable evidence for insurance disputes and liability claims.",
     color: "text-violet-500",
     bg: "bg-violet-500/10",
   },
   {
-    icon: Wifi,
-    title: "Live Streaming",
+    icon: Bell,
+    title: "Real-Time Safety Alerts",
     description:
-      "Parents and supervisors can view a live stream of lessons in real-time through the parent portal for total peace of mind.",
-    color: "text-cyan-500",
-    bg: "bg-cyan-500/10",
-  },
-  {
-    icon: FileVideo,
-    title: "Lesson Playback",
-    description:
-      "Review any lesson after the fact. Skip to key moments, annotate clips, and share highlight reels with pupils for self-improvement.",
+      "In-cab voice alerts notify you of harsh braking, sudden swerves, and distracted behaviour as they happen.",
     color: "text-rose-500",
     bg: "bg-rose-500/10",
   },
+  {
+    icon: Brain,
+    title: "Operational Efficiency",
+    description:
+      "AI automatically detects and categorises risky events, streamlining your post-lesson reviews and saving hours.",
+    color: "text-emerald-500",
+    bg: "bg-emerald-500/10",
+  },
+  {
+    icon: PoundSterling,
+    title: "Cost Savings",
+    description:
+      "Reduce insurance premiums and protect against fraudulent claims with verifiable, cloud-stored footage.",
+    color: "text-cyan-500",
+    bg: "bg-cyan-500/10",
+  },
 ];
 
-const benefits = [
-  "Full HD 1080p front and cabin recording",
-  "Automatic incident clip saving with G-sensor",
-  "GPS overlay on all footage",
-  "Night vision for low-light lessons",
-  "Loop recording with 128GB storage",
-  "Seamless EveryDriver integration",
-  "Automatic lesson-to-footage linking",
-  "Parent live-view capability",
-  "GDPR-compliant data handling",
-  "Tamper-proof mounting kit included",
+const howItWorksSteps = [
+  {
+    icon: Power,
+    number: "1",
+    title: "Dashcam Starts Recording",
+    description:
+      "Powers on automatically when the engine starts — no manual intervention needed.",
+  },
+  {
+    icon: Eye,
+    number: "2",
+    title: "AI Detects Key Moments",
+    description:
+      "Harsh braking, swerves, and near-misses are automatically flagged and clipped.",
+  },
+  {
+    icon: CloudUpload,
+    number: "3",
+    title: "Footage Syncs to the Cloud",
+    description:
+      "When connected to Wi-Fi, clips upload and link to the correct pupil and lesson.",
+  },
+  {
+    icon: Monitor,
+    number: "4",
+    title: "Review Inside EveryDriver",
+    description:
+      "Watch HD footage alongside GPS data, speed, and route maps directly in your dashboard.",
+  },
+];
+
+const capabilities = [
+  { icon: Eye, text: "Gain visibility into on-road activities including risky pupil habits" },
+  { icon: Route, text: "Record complete driving routes with GPS overlay" },
+  { icon: Video, text: "Use video clips to support pupil coaching and debrief sessions" },
+  { icon: AlertTriangle, text: "Record and save evidence of incidents or near-misses" },
+  { icon: Bell, text: "Receive instant notifications when critical events are detected" },
+  { icon: Users, text: "Watch live playback during lessons via the parent portal" },
+  { icon: MapPin, text: "See trip and map information for every lesson" },
+  { icon: Share2, text: "Share annotated clips with pupils via a secure link" },
+];
+
+const protectStats = [
+  {
+    icon: ShieldCheck,
+    stat: "74%",
+    label: "of false claims dismissed with dashcam evidence",
+    color: "text-amber-500",
+  },
+  {
+    icon: PoundSterling,
+    stat: "£100k+",
+    label: "in insurance savings reported by driving schools",
+    color: "text-emerald-500",
+  },
 ];
 
 const faqs = [
   {
-    q: "Is the dashcam easy to install?",
-    a: "Yes — it comes with a professional-grade suction mount and a discreet hardwire kit. Most instructors are up and running in under 15 minutes.",
+    q: "What is AI incident detection?",
+    a: "The dashcam uses on-device AI to recognise harsh braking, sudden swerves, tailgating, and near-misses. These events are automatically flagged, clipped, and saved so you can review them without scrubbing through hours of footage.",
   },
   {
-    q: "Does it work with any vehicle?",
-    a: "The dashcam is compatible with all dual-control vehicles. The hardwire kit supports 12V and 24V systems.",
+    q: "How does the dashcam connect to EveryDriver?",
+    a: "When your vehicle connects to Wi-Fi, new footage automatically uploads to your EveryDriver account. Clips are linked to the relevant pupil and lesson for easy retrieval from your dashboard.",
   },
   {
-    q: "How does footage sync to EveryDriver?",
-    a: "When your vehicle connects to Wi-Fi (e.g., at home), new footage automatically uploads and links to the relevant lesson and pupil.",
+    q: "When is video saved?",
+    a: "Video records continuously while the engine is running. AI-flagged events are saved as priority clips. You can also manually trigger a save at any time by pressing the event button on the camera.",
+  },
+  {
+    q: "Can parents watch lessons live?",
+    a: "Yes. With an active Pro plan, parents and supervisors can view a live stream of lessons in real-time through the EveryDriver parent portal.",
   },
   {
     q: "Is recording pupils GDPR compliant?",
-    a: "Yes. EveryDriver provides consent templates and privacy notices. Pupils are informed before recording begins, and footage is encrypted at rest.",
+    a: "Yes. EveryDriver provides consent templates and privacy notices. Pupils are informed before recording begins, and all footage is encrypted at rest and in transit.",
   },
   {
-    q: "Can I use it without an EveryDriver subscription?",
-    a: "The dashcam hardware works standalone, but cloud sync, lesson linking, and parent live-view require an active Pro plan or above.",
+    q: "Does it work with any dual-control vehicle?",
+    a: "The dashcam is compatible with all dual-control vehicles. The hardwire kit supports 12V and 24V systems, and the self-calibrating mount fits any windscreen.",
+  },
+  {
+    q: "How long is footage stored?",
+    a: "Cloud footage is retained for 90 days on the Pro plan. Flagged incident clips are stored indefinitely. On-device loop recording stores over 40 hours of HD video on the 128GB card.",
+  },
+  {
+    q: "Can I download and share clips?",
+    a: "Absolutely. You can download any clip, add annotations, and share a secure link with pupils, parents, or your insurer directly from the EveryDriver dashboard.",
   },
 ];
 
 export default function InstructorDashcam() {
   return (
     <InstructorSaaSLayout>
+      {/* Hero */}
       <FeaturePageHero
         icon={Camera}
-        title="Dashcam & Incident Protection"
-        description="AI-powered dashcam integration captures every lesson. Protect yourself with automatic incident detection, cloud storage, and easy clip sharing."
-        features={["AI incident detection", "Cloud video storage", "Clip sharing with pupils", "Geotab integration"]}
+        title="EveryDriver AI Dashcam for Driving Instructors"
+        description="Smart video telematics built for driving instruction — protect your business, coach your pupils, and capture every lesson in HD."
+        features={[
+          "Compact and purpose-built for dual-control instruction vehicles",
+          "Unified video and telematics integrated with your EveryDriver dashboard",
+          "Easy to install, self-calibrating — up and running in under 15 minutes",
+        ]}
         image={dashcamFeatureImg}
         ctaLabel="Enquire Now"
         ctaLink="/instructor-app/contact"
       />
 
-      {/* Features Grid */}
+      {/* Why EveryDriver Video */}
       <section className="py-20 bg-background">
         <div className="container max-w-6xl">
           <motion.div
@@ -134,18 +201,17 @@ export default function InstructorDashcam() {
             className="text-center mb-14"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need, Built In
+              Why Video for Driving Instruction?
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Designed specifically for the demands of driving instruction — not
-              just another dashcam.
+              Purpose-built dashcam technology that goes beyond basic recording — giving you the tools to protect your business and improve every lesson.
             </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
+            {whyVideoCards.map((card, i) => (
               <motion.div
-                key={feature.title}
+                key={card.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -153,17 +219,11 @@ export default function InstructorDashcam() {
               >
                 <Card className="h-full hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
-                    <div
-                      className={`h-12 w-12 rounded-xl ${feature.bg} flex items-center justify-center mb-4`}
-                    >
-                      <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                    <div className={`h-12 w-12 rounded-xl ${card.bg} flex items-center justify-center mb-4`}>
+                      <card.icon className={`h-6 w-6 ${card.color}`} />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-2">
-                      {feature.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {feature.description}
-                    </p>
+                    <h3 className="font-semibold text-foreground mb-2">{card.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{card.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -172,8 +232,52 @@ export default function InstructorDashcam() {
         </div>
       </section>
 
-      {/* Benefits Checklist */}
+      {/* How It Works */}
       <section className="py-20 bg-muted/30">
+        <div className="container max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+              How It Works
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              From ignition to insight — fully automatic, no extra steps.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {howItWorksSteps.map((step, i) => (
+              <motion.div
+                key={step.number}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.12 }}
+                className="relative text-center"
+              >
+                {i < howItWorksSteps.length - 1 && (
+                  <div className="hidden lg:block absolute top-10 left-[60%] w-[80%] border-t-2 border-dashed border-emerald-300 dark:border-emerald-700" />
+                )}
+                <div className="relative z-10 mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <step.icon className="h-9 w-9" />
+                  <span className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                    {step.number}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">{step.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Strengthen Your Instruction */}
+      <section className="py-20 bg-background">
         <div className="container max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -182,17 +286,17 @@ export default function InstructorDashcam() {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              What's in the Box
+              Strengthen Your Instruction
             </h2>
             <p className="text-muted-foreground">
-              Everything included — no hidden extras.
+              Everything you need to coach smarter, protect yourself, and keep parents informed.
             </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-3">
-            {benefits.map((benefit, i) => (
+            {capabilities.map((cap, i) => (
               <motion.div
-                key={benefit}
+                key={cap.text}
                 initial={{ opacity: 0, x: -10 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -200,37 +304,32 @@ export default function InstructorDashcam() {
                 className="flex items-center gap-3 bg-card rounded-xl border p-4"
               >
                 <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
-                <span className="text-sm text-foreground">{benefit}</span>
+                <span className="text-sm text-foreground">{cap.text}</span>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Social Proof / Why Section */}
-      <section className="py-20 bg-background">
+      {/* Protect Your Business */}
+      <section className="py-20 bg-muted/30">
         <div className="container max-w-5xl">
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            {[
-              {
-                icon: AlertTriangle,
-                stat: "74%",
-                label: "of false claims dismissed with dashcam evidence",
-                color: "text-amber-500",
-              },
-              {
-                icon: Star,
-                stat: "4.9/5",
-                label: "average rating from instructor beta testers",
-                color: "text-emerald-500",
-              },
-              {
-                icon: HardDrive,
-                stat: "128GB",
-                label: "onboard storage — over 40 hours of HD footage",
-                color: "text-sky-500",
-              },
-            ].map((item, i) => (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Protect Your Business
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              HD video evidence that proves what happened in incidents and disputes. Prevent exaggerated claims, exonerate yourself when not at fault, and benefit from insurance premium discounts.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 text-center">
+            {protectStats.map((item, i) => (
               <motion.div
                 key={item.label}
                 initial={{ opacity: 0, y: 20 }}
@@ -239,9 +338,7 @@ export default function InstructorDashcam() {
                 transition={{ delay: i * 0.1 }}
               >
                 <item.icon className={`h-8 w-8 mx-auto mb-3 ${item.color}`} />
-                <p className="text-4xl font-extrabold text-foreground mb-1">
-                  {item.stat}
-                </p>
+                <p className="text-4xl font-extrabold text-foreground mb-1">{item.stat}</p>
                 <p className="text-sm text-muted-foreground">{item.label}</p>
               </motion.div>
             ))}
@@ -250,7 +347,7 @@ export default function InstructorDashcam() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-background">
         <div className="container max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -274,12 +371,8 @@ export default function InstructorDashcam() {
               >
                 <Card>
                   <CardContent className="p-6">
-                    <h3 className="font-semibold text-foreground mb-2">
-                      {faq.q}
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {faq.a}
-                    </p>
+                    <h3 className="font-semibold text-foreground mb-2">{faq.q}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -298,11 +391,10 @@ export default function InstructorDashcam() {
           >
             <Camera className="h-12 w-12 mx-auto mb-6 text-emerald-400" />
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Upgrade Your Lessons?
+              Ready to Protect Your Business and Improve Pupil Outcomes?
             </h2>
             <p className="text-white/60 mb-8 max-w-lg mx-auto">
-              Join hundreds of instructors who are protecting their business and
-              improving pupil outcomes with the EveryDriver Dashcam.
+              Join hundreds of instructors who are using the EveryDriver AI Dashcam to safeguard their livelihood and deliver better lessons.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button
