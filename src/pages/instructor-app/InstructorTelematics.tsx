@@ -105,6 +105,10 @@ const faqs = [
     question: "Can predictive maintenance reduce my running costs?",
     answer: "Yes. By servicing your vehicle at exactly the right time, you avoid both premature maintenance (wasting money) and delayed maintenance (risking expensive repairs). Instructors using data-driven maintenance typically see lower breakdown rates and more predictable monthly costs.",
   },
+  {
+    question: "Can this help me evidence why I have refused a test?",
+    answer: "Absolutely. As an ADI, presenting a pupil for a test when they aren't ready reflects poorly on your professional standards and can affect your DVSA standards check grading. EveryDriver's telematics data gives you objective, time-stamped evidence — speed compliance rates, harsh braking frequency, consistency scores across lessons, and trend analysis — to show a pupil (or their parents) exactly why they aren't yet at test standard. Instead of a subjective opinion, you have hard data proving that key competencies like speed management, following distance, or junction approach haven't reached a safe, consistent level. This protects you professionally, supports honest conversations, and ultimately keeps everyone safer on test day.",
+  },
 ];
 
 export default function InstructorTelematics() {
