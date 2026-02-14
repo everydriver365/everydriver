@@ -417,6 +417,16 @@ export default function HomepageRedesignDemo() {
               </Link>
             ))}
           </div>
+
+          {/* CTA to all features */}
+          <div className="text-center mt-12">
+            <Button size="lg" variant="outline" className="h-13 px-8 text-base rounded-xl border-border" asChild>
+              <Link to="/instructor-app/all-features">
+                See All 50+ Features by Plan
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 

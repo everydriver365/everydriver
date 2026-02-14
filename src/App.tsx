@@ -120,6 +120,7 @@ import InstructorContactPage from "./pages/instructor-app/InstructorContact";
 import InstructorDomains from "./pages/instructor-app/InstructorDomains";
 import InstructorTelematics from "./pages/instructor-app/InstructorTelematics";
 import InstructorDashcam from "./pages/instructor-app/InstructorDashcam";
+import InstructorAllFeatures from "./pages/instructor-app/InstructorAllFeatures";
 import DashcamGallery from "./pages/instructor/DashcamGallery";
 import DrivingSchools from "./pages/instructor-app/DrivingSchools";
 import InstructorPayments from "./pages/instructor-app/InstructorPayments";
@@ -193,6 +194,7 @@ const App = () => (
               <Route path="/instructor-app/features" element={<InstructorFeatures />} />
               <Route path="/instructor-app/telematics" element={<InstructorTelematics />} />
               <Route path="/instructor-app/dashcam" element={<InstructorDashcam />} />
+              <Route path="/instructor-app/all-features" element={<InstructorAllFeatures />} />
               <Route path="/instructor-app/pricing" element={<InstructorPricing />} />
               <Route path="/instructor-app/plan/:slug" element={<InstructorPlanDetail />} />
               <Route path="/instructor-app/about" element={<InstructorAbout />} />

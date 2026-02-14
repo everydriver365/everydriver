@@ -1620,6 +1620,45 @@ export type Database = {
           },
         ]
       }
+      feature_showcase_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          display_order: number
+          icon_name: string | null
+          id: string
+          is_visible: boolean
+          plan_tier: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon_name?: string | null
+          id?: string
+          is_visible?: boolean
+          plan_tier?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          icon_name?: string | null
+          id?: string
+          is_visible?: boolean
+          plan_tier?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       followup_log: {
         Row: {
           booked_lesson_at: string | null
