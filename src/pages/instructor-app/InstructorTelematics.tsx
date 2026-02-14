@@ -75,43 +75,76 @@ const impactStats = [
 const faqs = [
   {
     question: "What is a Pupil Safety Report?",
-    answer: "Pupil safety reports use telematics data to track driving behaviours like speeding, harsh braking, and cornering during every lesson. They give instructors a clear, data-driven view of where each pupil needs coaching — turning subjective assessments into measurable progress.",
+    answer: [
+      "Pupil safety reports use telematics data to track driving behaviours like speeding, harsh braking, and cornering during every lesson.",
+      "They give instructors a clear, data-driven view of where each pupil needs coaching — turning subjective assessments into measurable progress.",
+    ],
   },
   {
     question: "How can safety reports improve pupil outcomes?",
-    answer: "Safety reports capture behaviours that are difficult to assess manually while you're teaching. They identify both strengths and areas for improvement, so you can reward good habits and target coaching where it matters most. Over time, trends reveal whether a pupil is genuinely test-ready.",
+    answer: [
+      "Safety reports capture behaviours that are difficult to assess manually while you're teaching. They identify both strengths and areas for improvement, so you can reward good habits and target coaching where it matters most.",
+      "Over time, trends reveal whether a pupil is genuinely test-ready.",
+    ],
   },
   {
     question: "Why are safety reports important for instructors?",
-    answer: "They help you demonstrate professional, evidence-based teaching to parents, pupils, and your ADI standards check. Reports also support your business reputation — showing measurable safety improvements builds trust and drives referrals.",
+    answer: [
+      "They help you demonstrate professional, evidence-based teaching to parents, pupils, and your ADI standards check.",
+      "Reports also support your business reputation — showing measurable safety improvements builds trust and drives referrals.",
+    ],
   },
   {
     question: "What kinds of safety report does EveryDriver offer?",
-    answer: "EveryDriver offers per-lesson scorecards tracking speed compliance, braking, acceleration, and cornering. You also get trend analysis over multiple lessons, PDF exports for parents, speed-limit compliance breakdowns by road segment, and AI-powered coaching recommendations linked to DVSA syllabus competencies.",
+    answer: [
+      "EveryDriver offers per-lesson scorecards tracking speed compliance, braking, acceleration, and cornering.",
+      "You also get trend analysis over multiple lessons, PDF exports for parents, speed-limit compliance breakdowns by road segment, and AI-powered coaching recommendations linked to DVSA syllabus competencies.",
+    ],
   },
   {
     question: "What is predictive maintenance?",
-    answer: "Predictive maintenance uses telematics data — such as mileage patterns, engine hours, and driving behaviour — to forecast when your teaching vehicle will need servicing before a breakdown occurs. Instead of relying on fixed schedules, EveryDriver analyses real usage data to alert you at the optimal time.",
+    answer: [
+      "Predictive maintenance uses telematics data — such as mileage patterns, engine hours, and driving behaviour — to forecast when your teaching vehicle will need servicing before a breakdown occurs.",
+      "Instead of relying on fixed schedules, EveryDriver analyses real usage data to alert you at the optimal time.",
+    ],
   },
   {
     question: "How does predictive maintenance help driving instructors?",
-    answer: "A breakdown mid-lesson is costly — you lose income, disrupt pupil progress, and risk your professional reputation. Predictive maintenance flags issues like brake wear, tyre degradation, and oil change intervals based on actual driving conditions, so you can schedule servicing during downtime rather than dealing with emergencies.",
+    answer: [
+      "A breakdown mid-lesson is costly — you lose income, disrupt pupil progress, and risk your professional reputation.",
+      "Predictive maintenance flags issues like brake wear, tyre degradation, and oil change intervals based on actual driving conditions, so you can schedule servicing during downtime rather than dealing with emergencies.",
+    ],
   },
   {
     question: "What vehicle data powers predictive maintenance alerts?",
-    answer: "EveryDriver tracks total mileage, trip frequency, harsh braking events, average speed profiles, and engine run-time. These metrics feed into maintenance models that estimate component wear more accurately than calendar-based reminders alone. The more you drive, the smarter the predictions become.",
+    answer: [
+      "EveryDriver tracks total mileage, trip frequency, harsh braking events, average speed profiles, and engine run-time.",
+      "These metrics feed into maintenance models that estimate component wear more accurately than calendar-based reminders alone. The more you drive, the smarter the predictions become.",
+    ],
   },
   {
     question: "Can predictive maintenance reduce my running costs?",
-    answer: "Yes. By servicing your vehicle at exactly the right time, you avoid both premature maintenance (wasting money) and delayed maintenance (risking expensive repairs). Instructors using data-driven maintenance typically see lower breakdown rates and more predictable monthly costs.",
+    answer: [
+      "Yes. By servicing your vehicle at exactly the right time, you avoid both premature maintenance (wasting money) and delayed maintenance (risking expensive repairs).",
+      "Instructors using data-driven maintenance typically see lower breakdown rates and more predictable monthly costs.",
+    ],
   },
   {
     question: "Can this help me evidence why I have refused a test?",
-    answer: "Absolutely. As an ADI, presenting a pupil for a test when they aren't ready reflects poorly on your professional standards and can affect your DVSA standards check grading. EveryDriver's telematics data gives you objective, time-stamped evidence — speed compliance rates, harsh braking frequency, consistency scores across lessons, and trend analysis — to show a pupil (or their parents) exactly why they aren't yet at test standard. Instead of a subjective opinion, you have hard data proving that key competencies like speed management, following distance, or junction approach haven't reached a safe, consistent level. This protects you professionally, supports honest conversations, and ultimately keeps everyone safer on test day.",
+    answer: [
+      "Absolutely. As an ADI, presenting a pupil for a test when they aren't ready reflects poorly on your professional standards and can affect your DVSA standards check grading.",
+      "EveryDriver's telematics data gives you objective, time-stamped evidence — speed compliance rates, harsh braking frequency, consistency scores across lessons, and trend analysis — to show a pupil (or their parents) exactly why they aren't yet at test standard.",
+      "Instead of a subjective opinion, you have hard data proving that key competencies like speed management, following distance, or junction approach haven't reached a safe, consistent level. This protects you professionally, supports honest conversations, and ultimately keeps everyone safer on test day.",
+    ],
   },
   {
     question: "Why do I need telematics as an instructor?",
-    answer: "When you're teaching, your focus is on the road, the pupil, and keeping everyone safe — you simply can't observe and record every driving behaviour at the same time. Telematics fills that gap by capturing data you'd otherwise miss: exact speeds on every road, braking intensity, cornering smoothness, and consistency across lessons. This matters for several reasons. First, it makes your coaching more effective — you can show a pupil precise evidence of improvement (or recurring faults) rather than relying on memory. Second, it strengthens your DVSA standards check position by demonstrating structured, evidence-based teaching with measurable outcomes. Third, it builds trust with parents and pupils — sharing a data-backed progress report is far more convincing than a verbal update. Finally, it protects your business: if a pupil disputes your assessment or you need to justify withholding them from test, you have timestamped, objective records to support your professional judgement. In short, telematics turns good teaching into provably great teaching.",
+    answer: [
+      "When you're teaching, your focus is on the road, the pupil, and keeping everyone safe — you simply can't observe and record every driving behaviour at the same time. Telematics fills that gap by capturing data you'd otherwise miss: exact speeds on every road, braking intensity, cornering smoothness, and consistency across lessons.",
+      "It makes your coaching more effective — you can show a pupil precise evidence of improvement (or recurring faults) rather than relying on memory. It also strengthens your DVSA standards check position by demonstrating structured, evidence-based teaching with measurable outcomes.",
+      "It builds trust with parents and pupils — sharing a data-backed progress report is far more convincing than a verbal update. And it protects your business: if a pupil disputes your assessment or you need to justify withholding them from test, you have timestamped, objective records to support your professional judgement.",
+      "In short, telematics turns good teaching into provably great teaching.",
+    ],
   },
 ];
 
@@ -473,8 +506,10 @@ export default function InstructorTelematics() {
                   <AccordionTrigger className="text-left font-semibold hover:no-underline">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">
-                    {faq.answer}
+                  <AccordionContent className="text-muted-foreground space-y-3">
+                    {faq.answer.map((para, j) => (
+                      <p key={j}>{para}</p>
+                    ))}
                   </AccordionContent>
                 </AccordionItem>
               </motion.div>
