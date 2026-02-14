@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,19 +18,11 @@ import drivingSchool2 from "@/assets/driving-school-2.png";
 import pupilAppHero from "@/assets/pupil-app-hero.png";
 import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 
-const fadeUp = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "100px 0px 0px 0px" },
-  transition: { duration: 0.6 },
-};
-
 export default function HomepageRedesignDemo() {
   return (
     <InstructorSaaSLayout>
       {/* ─── HERO ─── */}
       <section className="relative bg-background py-16 md:py-24 lg:py-32 overflow-hidden">
-        {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)`,
           backgroundSize: '32px 32px'
@@ -39,9 +30,7 @@ export default function HomepageRedesignDemo() {
 
         <div className="container max-w-6xl relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Text */}
-            <motion.div {...fadeUp}>
-
+            <div>
               <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.1] tracking-tight mb-6">
                 The Free Diary App
                 <br />
@@ -53,7 +42,6 @@ export default function HomepageRedesignDemo() {
                 Free forever, no credit card required.
               </p>
 
-              {/* CTA row */}
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <Button size="lg" className="bg-[#0075c9] hover:bg-[#005a9e] text-white h-13 px-8 text-base rounded-xl shadow-lg shadow-[#0075c9]/20" asChild>
                   <Link to="/instructor-app/signup">
@@ -69,7 +57,6 @@ export default function HomepageRedesignDemo() {
                 </Button>
               </div>
 
-              {/* Micro-trust */}
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-emerald-500" />
@@ -84,15 +71,9 @@ export default function HomepageRedesignDemo() {
                   GDPR compliant
                 </span>
               </div>
-            </motion.div>
+            </div>
 
-            {/* Hero image with floating UI elements */}
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
-            >
+            <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border">
                 <img
                   src={featuresHeroImg}
@@ -101,13 +82,7 @@ export default function HomepageRedesignDemo() {
                 />
               </div>
               
-              {/* Floating stat card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="absolute -bottom-4 -left-4 bg-card border border-border rounded-xl shadow-lg p-3 flex items-center gap-3"
-              >
+              <div className="absolute -bottom-4 -left-4 bg-card border border-border rounded-xl shadow-lg p-3 flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                   <Users className="h-5 w-5 text-emerald-600" />
                 </div>
@@ -115,15 +90,9 @@ export default function HomepageRedesignDemo() {
                   <p className="text-sm font-bold text-foreground">500+</p>
                   <p className="text-xs text-muted-foreground">Active instructors</p>
                 </div>
-              </motion.div>
+              </div>
 
-              {/* Floating availability card */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="absolute -top-3 -right-3 bg-card border border-border rounded-xl shadow-lg p-3 flex items-center gap-3"
-              >
+              <div className="absolute -top-3 -right-3 bg-card border border-border rounded-xl shadow-lg p-3 flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-[#0075c9]/10 flex items-center justify-center">
                   <Calendar className="h-5 w-5 text-[#0075c9]" />
                 </div>
@@ -131,23 +100,21 @@ export default function HomepageRedesignDemo() {
                   <p className="text-sm font-bold text-foreground">98%</p>
                   <p className="text-xs text-muted-foreground">Fill rate</p>
                 </div>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ─── WHAT WE DO ─── */}
       <section className="relative py-16 md:py-24 overflow-hidden bg-[#0a1628]">
-        {/* Decorative background elements */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-10 left-1/4 w-72 h-72 bg-[#0075c9] rounded-full blur-[120px]" />
           <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#0075c9] rounded-full blur-[150px]" />
         </div>
         <div className="container max-w-6xl relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Text column */}
-            <motion.div {...fadeUp}>
+            <div>
               <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase text-[#0075c9] bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-full">
                 No contracts · No tie-in · Leave any time
               </span>
@@ -170,12 +137,10 @@ export default function HomepageRedesignDemo() {
                   <span key={item}>{item}</span>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
-            {/* Video column */}
-            <motion.div {...fadeUp} className="relative">
+            <div className="relative">
               <div className="relative rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-2xl aspect-video flex items-center justify-center">
-                {/* Placeholder — replace src with your explainer video URL */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white/50 gap-3">
                   <div className="h-16 w-16 rounded-full border-2 border-white/30 flex items-center justify-center">
                     <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white/50 border-b-[10px] border-b-transparent ml-1" />
@@ -183,7 +148,7 @@ export default function HomepageRedesignDemo() {
                   <span className="text-sm font-medium">Explainer Video</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -198,10 +163,10 @@ export default function HomepageRedesignDemo() {
               { value: "4.9★", label: "Average Rating" },
               { value: "£0", label: "To Get Started" },
             ].map((stat) => (
-              <motion.div key={stat.label} {...fadeUp}>
+              <div key={stat.label}>
                 <p className="text-2xl md:text-3xl font-bold text-foreground">{stat.value}</p>
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -210,7 +175,7 @@ export default function HomepageRedesignDemo() {
       {/* ─── PRODUCT DEMO SECTION ─── */}
       <section className="py-20 md:py-28 bg-background">
         <div className="container max-w-6xl">
-          <motion.div {...fadeUp} className="text-center mb-16">
+          <div className="text-center mb-16">
             <Badge variant="outline" className="mb-4 text-[#0075c9] border-[#0075c9]/30">
               Product Tour
             </Badge>
@@ -220,7 +185,7 @@ export default function HomepageRedesignDemo() {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               From diary management to live telematics — everything you need in one platform.
             </p>
-          </motion.div>
+          </div>
 
           {/* Feature showcase — alternating layout */}
           {[
@@ -287,11 +252,9 @@ export default function HomepageRedesignDemo() {
               reverse: false,
               link: "/driving-schools",
             },
-          ].map((feature, i) => (
-            <motion.div
+          ].map((feature) => (
+            <div
               key={feature.title}
-              {...fadeUp}
-              transition={{ delay: i * 0.1, duration: 0.6 }}
               className={`grid md:grid-cols-2 gap-12 items-center mb-20 last:mb-0 ${
                 feature.reverse ? "md:[&>*:first-child]:order-2" : ""
               }`}
@@ -330,7 +293,7 @@ export default function HomepageRedesignDemo() {
                   <img src={(feature as any).image} alt={feature.title} className="w-full" />
                 )}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>
@@ -375,7 +338,7 @@ export default function HomepageRedesignDemo() {
                 description: "Your complete business toolkit — diary, payments, pupil management, and communication all in one place.",
                 features: ["Smart diary", "Payment tracking", "Pupil management", "Gap filling & SMS"],
               },
-            ].map((app, i) => (
+            ].map((app) => (
               <div
                 key={app.title}
                 className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 text-center hover:bg-white/10 transition-colors"
@@ -411,12 +374,12 @@ export default function HomepageRedesignDemo() {
       {/* ─── HOW IT WORKS ─── */}
       <section className="py-20 md:py-28 bg-muted/20">
         <div className="container max-w-5xl">
-          <motion.div {...fadeUp} className="text-center mb-16">
+          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-4">
               Up and Running in 3 Minutes
             </h2>
             <p className="text-lg text-muted-foreground">No downloads. No setup fees. No hassle.</p>
-          </motion.div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {([
@@ -424,13 +387,10 @@ export default function HomepageRedesignDemo() {
               { step: "02", icon: Calendar, title: "Set Up Your Diary", desc: "Add availability, import existing pupils, and configure your preferences.", bg: "bg-gradient-to-br from-[#0075c9]/20 to-blue-500/10", iconColor: "text-[#0075c9]", badgeBg: "bg-gradient-to-br from-[#0075c9] to-blue-600" },
               { step: "03", icon: Users, title: "Start Teaching", desc: "Manage bookings, track payments, and grow your business from day one.", bg: "bg-gradient-to-br from-emerald-400/20 to-teal-500/10", iconColor: "text-emerald-500", badgeBg: "bg-gradient-to-br from-emerald-400 to-teal-500" },
             ] as const).map((item, i) => (
-              <motion.div
+              <div
                 key={item.step}
-                {...fadeUp}
-                transition={{ delay: i * 0.15, duration: 0.5 }}
                 className="relative text-center"
               >
-                {/* Connector */}
                 {i < 2 && (
                   <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-[#0075c9]/20" />
                 )}
@@ -442,7 +402,7 @@ export default function HomepageRedesignDemo() {
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">{item.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -451,14 +411,14 @@ export default function HomepageRedesignDemo() {
       {/* ─── PRODUCT GRID ─── */}
       <section className="py-20 md:py-28 bg-background">
         <div className="container max-w-6xl">
-          <motion.div {...fadeUp} className="text-center mb-14">
+          <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
               Start Free. Grow When Ready.
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               The diary is free forever. Add premium tools as your business grows.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid sm:grid-cols-2 gap-6">
             {[
@@ -466,8 +426,8 @@ export default function HomepageRedesignDemo() {
               { icon: Globe, name: "Website & Domain", price: "From £4.99", suffix: "/mo", free: false, benefits: ["Custom .co.uk domain", "Online booking", "SEO optimised", "Review showcase"], link: "/instructor-app/domains" },
               { icon: Gauge, name: "Telematics", price: "From £9.99", suffix: "/mo", free: false, benefits: ["Live speed monitoring", "Driver scoring", "Trip replay", "Progress reports"], link: "/instructor-app/telematics" },
               { icon: Camera, name: "Dashcam", price: "From £12.99", suffix: "/mo", free: false, benefits: ["Incident recording", "Clip sharing", "Cloud storage", "Geotab integration"], link: "/instructor-app/dashcam" },
-            ].map((product, i) => (
-              <motion.div key={product.name} {...fadeUp} transition={{ delay: i * 0.1 }}>
+            ].map((product) => (
+              <div key={product.name}>
                 <Link
                   to={product.link}
                   className={`group block h-full rounded-2xl border p-7 transition-all hover:shadow-lg ${
@@ -501,7 +461,7 @@ export default function HomepageRedesignDemo() {
                     Learn more <ArrowRight className="h-4 w-4" />
                   </span>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -510,23 +470,21 @@ export default function HomepageRedesignDemo() {
       {/* ─── TESTIMONIALS ─── */}
       <section className="py-20 md:py-28 bg-muted/20">
         <div className="container max-w-5xl">
-          <motion.div {...fadeUp} className="text-center mb-14">
+          <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
               Loved by Instructors
             </h2>
             <p className="text-muted-foreground text-lg">Real feedback from ADIs using EveryDriver every day.</p>
-          </motion.div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { quote: "I used to spend Sunday evenings sorting my diary and chasing payments. Now the app does it all — I just teach.", name: "Sarah M.", role: "ADI, Manchester" },
               { quote: "The telematics changed how I teach. Pupils can actually see their improvement in data — it's incredibly motivating.", name: "James T.", role: "ADI, Bristol" },
               { quote: "Parents love the live tracking. It's given me a real edge over other instructors in my area.", name: "Priya K.", role: "ADI, Birmingham" },
-            ].map((t, i) => (
-              <motion.div
+            ].map((t) => (
+              <div
                 key={t.name}
-                {...fadeUp}
-                transition={{ delay: i * 0.1 }}
                 className="bg-card border border-border rounded-2xl p-6 hover:shadow-md transition-shadow"
               >
                 <Quote className="h-8 w-8 text-[#0075c9]/20 mb-4" />
@@ -545,7 +503,7 @@ export default function HomepageRedesignDemo() {
                     <Star key={j} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -574,7 +532,7 @@ export default function HomepageRedesignDemo() {
       {/* ─── FINAL CTA ─── */}
       <section className="py-20 md:py-28 bg-primary">
         <div className="container max-w-3xl text-center">
-          <motion.div {...fadeUp}>
+          <div>
             <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
               Ready to Simplify Your Business?
             </h2>
@@ -595,7 +553,7 @@ export default function HomepageRedesignDemo() {
             <p className="mt-6 text-sm text-primary-foreground/50">
               No credit card required • Free plan available forever
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
     </InstructorSaaSLayout>
