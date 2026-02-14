@@ -22,7 +22,7 @@ import { CrossfadeImages } from "@/components/ui/CrossfadeImages";
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true },
+  viewport: { once: true, margin: "100px 0px 0px 0px" },
   transition: { duration: 0.6 },
 };
 
@@ -342,7 +342,7 @@ export default function HomepageRedesignDemo() {
           <div className="absolute bottom-10 left-1/3 w-64 h-64 bg-[#00a3ff] rounded-full blur-[120px]" />
         </div>
         <div className="container max-w-5xl relative z-10">
-          <motion.div {...fadeUp} className="text-center mb-14">
+          <div className="text-center mb-14">
             <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase text-[#0075c9] bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-full">
               Included on all plans
             </span>
@@ -352,7 +352,7 @@ export default function HomepageRedesignDemo() {
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
               Dedicated apps for pupils, parents and instructors — free on every plan, no exceptions.
             </p>
-          </motion.div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
@@ -376,10 +376,8 @@ export default function HomepageRedesignDemo() {
                 features: ["Smart diary", "Payment tracking", "Pupil management", "Gap filling & SMS"],
               },
             ].map((app, i) => (
-              <motion.div
+              <div
                 key={app.title}
-                {...fadeUp}
-                transition={{ delay: i * 0.12, duration: 0.5 }}
                 className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 text-center hover:bg-white/10 transition-colors"
               >
                 {'image' in app && app.image ? (
@@ -404,7 +402,7 @@ export default function HomepageRedesignDemo() {
                     Free on all plans
                   </Badge>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
