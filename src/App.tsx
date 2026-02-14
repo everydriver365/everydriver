@@ -130,6 +130,7 @@ import InstructorOnboarding from "./pages/instructor-app/onboarding/InstructorOn
 import OnboardingPreview from "./pages/instructor-app/onboarding/OnboardingPreview";
 import InstructorPortalLogin from "./pages/InstructorPortalLogin";
 import CalendarCallback from "./pages/CalendarCallback";
+import DiaryImageDemo from "./pages/DiaryImageDemo";
 
 const queryClient = new QueryClient();
 
@@ -292,7 +293,8 @@ const App = () => (
               <Route path="/instructor-hero-demo" element={<InstructorHeroDemo />} />
               <Route path="/instructor-home-demo" element={<InstructorHomeDesignDemo />} />
               <Route path="/instructor-blue-demo" element={<InstructorBlueStyleDemo />} />
-              <Route path="/quick-action-gradient-demo" element={<QuickActionGradientDemo />} />
+               <Route path="/quick-action-gradient-demo" element={<QuickActionGradientDemo />} />
+              <Route path="/diary-image-demo" element={<DiaryImageDemo />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
