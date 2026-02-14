@@ -486,7 +486,78 @@ export default function InstructorTelematics() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* Stand Out From The Crowd */}
+      <section className="py-20 bg-background">
+        <div className="container max-w-4xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Stand Out from the Crowd</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              How many driving instructors in your area use telematics? Almost none. That's your advantage.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+              <Card className="h-full">
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Users className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold">Less Than 1% of ADIs Use Telematics</h3>
+                  <p className="text-muted-foreground">
+                    There are over 40,000 approved driving instructors in the UK, yet the vast majority still rely on pen-and-paper assessments and gut instinct. By adopting telematics, you immediately differentiate yourself from virtually every competitor in your postcode.
+                  </p>
+                  <p className="text-muted-foreground">
+                    When a parent is choosing between two instructors, which one sounds more professional — the one who says "they're doing well" or the one who shows a data report proving it?
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+              <Card className="h-full">
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Target className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold">A Superb Marketing Tool</h3>
+                  <p className="text-muted-foreground">
+                    Telematics isn't just a teaching aid — it's a marketing weapon. Share anonymised progress charts on social media, highlight your pass-rate data in Google reviews, and give parents shareable PDF reports they'll forward to other parents.
+                  </p>
+                  <p className="text-muted-foreground">
+                    Every report you send is a walking advert for your professionalism. Word-of-mouth referrals increase when parents can see measurable proof that their child is learning safely — not just taking lessons.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-8 text-center space-y-4">
+                <Award className="h-10 w-10 text-primary mx-auto" />
+                <h3 className="text-xl font-bold">Your Competitive Edge, Summarised</h3>
+                <div className="grid sm:grid-cols-3 gap-6 mt-6">
+                  <div>
+                    <p className="text-3xl font-bold text-primary">99%</p>
+                    <p className="text-sm text-muted-foreground mt-1">of local instructors don't offer data-backed lessons</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-primary">3×</p>
+                    <p className="text-sm text-muted-foreground mt-1">more likely to get referrals when parents see progress reports</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-primary">£0</p>
+                    <p className="text-sm text-muted-foreground mt-1">extra marketing spend — your data does the selling</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </section>
+
+
       <section className="py-20 bg-muted/30">
         <div className="container max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-14">
