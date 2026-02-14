@@ -40,19 +40,6 @@ export default function HomepageRedesignDemo() {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Text */}
             <motion.div {...fadeUp}>
-              {/* Trust badge */}
-              <div className="flex items-center gap-3 mb-6">
-                <Badge variant="outline" className="border-[#0075c9]/30 text-[#0075c9] bg-[#0075c9]/5 px-3 py-1 text-xs font-medium">
-                  <Shield className="h-3 w-3 mr-1.5" />
-                  Trusted by 500+ ADIs
-                </Badge>
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  ))}
-                  <span className="text-xs text-muted-foreground ml-1">4.9/5</span>
-                </div>
-              </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground leading-[1.1] tracking-tight mb-6">
                 The Free Diary App
