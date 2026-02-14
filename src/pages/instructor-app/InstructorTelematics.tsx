@@ -89,6 +89,22 @@ const faqs = [
     question: "What kinds of safety report does EveryDriver offer?",
     answer: "EveryDriver offers per-lesson scorecards tracking speed compliance, braking, acceleration, and cornering. You also get trend analysis over multiple lessons, PDF exports for parents, speed-limit compliance breakdowns by road segment, and AI-powered coaching recommendations linked to DVSA syllabus competencies.",
   },
+  {
+    question: "What is predictive maintenance?",
+    answer: "Predictive maintenance uses telematics data — such as mileage patterns, engine hours, and driving behaviour — to forecast when your teaching vehicle will need servicing before a breakdown occurs. Instead of relying on fixed schedules, EveryDriver analyses real usage data to alert you at the optimal time.",
+  },
+  {
+    question: "How does predictive maintenance help driving instructors?",
+    answer: "A breakdown mid-lesson is costly — you lose income, disrupt pupil progress, and risk your professional reputation. Predictive maintenance flags issues like brake wear, tyre degradation, and oil change intervals based on actual driving conditions, so you can schedule servicing during downtime rather than dealing with emergencies.",
+  },
+  {
+    question: "What vehicle data powers predictive maintenance alerts?",
+    answer: "EveryDriver tracks total mileage, trip frequency, harsh braking events, average speed profiles, and engine run-time. These metrics feed into maintenance models that estimate component wear more accurately than calendar-based reminders alone. The more you drive, the smarter the predictions become.",
+  },
+  {
+    question: "Can predictive maintenance reduce my running costs?",
+    answer: "Yes. By servicing your vehicle at exactly the right time, you avoid both premature maintenance (wasting money) and delayed maintenance (risking expensive repairs). Instructors using data-driven maintenance typically see lower breakdown rates and more predictable monthly costs.",
+  },
 ];
 
 export default function InstructorTelematics() {
