@@ -334,6 +334,76 @@ export default function HomepageRedesignDemo() {
         </div>
       </section>
 
+      {/* ─── FREE APPS SECTION ─── */}
+      <section className="py-20 md:py-28 bg-[#0a1628] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-15">
+          <div className="absolute top-20 right-1/4 w-80 h-80 bg-[#0075c9] rounded-full blur-[140px]" />
+          <div className="absolute bottom-10 left-1/3 w-64 h-64 bg-[#00a3ff] rounded-full blur-[120px]" />
+        </div>
+        <div className="container max-w-5xl relative z-10">
+          <motion.div {...fadeUp} className="text-center mb-14">
+            <span className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold tracking-wide uppercase text-[#0075c9] bg-[#0075c9]/10 border border-[#0075c9]/20 rounded-full">
+              Included on all plans
+            </span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
+              Apps for Everyone
+            </h2>
+            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+              Dedicated apps for pupils, parents and instructors — free on every plan, no exceptions.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                emoji: "🎓",
+                title: "Pupil App",
+                description: "Learners track their progress, view upcoming lessons, access AI coaching, and prepare for theory & practical tests.",
+                features: ["Progress dashboard", "AI coaching tips", "Mock theory tests", "Lesson history"],
+              },
+              {
+                emoji: "👨‍👩‍👧",
+                title: "Parent App",
+                description: "Parents stay in the loop with real-time lesson updates, payment visibility, and progress reports for their learner.",
+                features: ["Lesson notifications", "Payment overview", "Progress tracking", "Direct messaging"],
+              },
+              {
+                emoji: "🚗",
+                title: "Instructor App",
+                description: "Your complete business toolkit — diary, payments, pupil management, and communication all in one place.",
+                features: ["Smart diary", "Payment tracking", "Pupil management", "Gap filling & SMS"],
+              },
+            ].map((app, i) => (
+              <motion.div
+                key={app.title}
+                {...fadeUp}
+                transition={{ delay: i * 0.12, duration: 0.5 }}
+                className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 text-center hover:bg-white/10 transition-colors"
+              >
+                <div className="text-5xl mb-5">{app.emoji}</div>
+                <h3 className="text-xl font-bold text-white mb-3">{app.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-5">{app.description}</p>
+                <ul className="space-y-2 text-left">
+                  {app.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
+                      <div className="h-4 w-4 rounded-full bg-[#0075c9]/20 flex items-center justify-center shrink-0">
+                        <Check className="h-2.5 w-2.5 text-[#0075c9]" />
+                      </div>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-6">
+                  <Badge className="bg-[#0075c9]/15 text-[#0075c9] border-[#0075c9]/20 text-xs font-semibold">
+                    Free on all plans
+                  </Badge>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── HOW IT WORKS ─── */}
       <section className="py-20 md:py-28 bg-muted/20">
         <div className="container max-w-5xl">
