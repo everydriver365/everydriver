@@ -109,6 +109,10 @@ const faqs = [
     question: "Can this help me evidence why I have refused a test?",
     answer: "Absolutely. As an ADI, presenting a pupil for a test when they aren't ready reflects poorly on your professional standards and can affect your DVSA standards check grading. EveryDriver's telematics data gives you objective, time-stamped evidence — speed compliance rates, harsh braking frequency, consistency scores across lessons, and trend analysis — to show a pupil (or their parents) exactly why they aren't yet at test standard. Instead of a subjective opinion, you have hard data proving that key competencies like speed management, following distance, or junction approach haven't reached a safe, consistent level. This protects you professionally, supports honest conversations, and ultimately keeps everyone safer on test day.",
   },
+  {
+    question: "Why do I need telematics as an instructor?",
+    answer: "When you're teaching, your focus is on the road, the pupil, and keeping everyone safe — you simply can't observe and record every driving behaviour at the same time. Telematics fills that gap by capturing data you'd otherwise miss: exact speeds on every road, braking intensity, cornering smoothness, and consistency across lessons. This matters for several reasons. First, it makes your coaching more effective — you can show a pupil precise evidence of improvement (or recurring faults) rather than relying on memory. Second, it strengthens your DVSA standards check position by demonstrating structured, evidence-based teaching with measurable outcomes. Third, it builds trust with parents and pupils — sharing a data-backed progress report is far more convincing than a verbal update. Finally, it protects your business: if a pupil disputes your assessment or you need to justify withholding them from test, you have timestamped, objective records to support your professional judgement. In short, telematics turns good teaching into provably great teaching.",
+  },
 ];
 
 export default function InstructorTelematics() {
