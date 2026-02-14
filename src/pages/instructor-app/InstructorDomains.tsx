@@ -288,6 +288,34 @@ export default function InstructorDomains() {
             </TabsList>
 
             <TabsContent value="domains">
+              {/* Value Proposition Banner */}
+              <Card className="border-primary/20 bg-primary/5 mb-10">
+                <CardContent className="p-8 text-center space-y-4">
+                  <Badge variant="secondary" className="text-sm px-4 py-1">Website Building Included</Badge>
+                  <h2 className="text-2xl md:text-3xl font-bold">We Build Your Website. You Just Pay for the Domain.</h2>
+                  <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                    A professional driving instructor website typically costs <strong>£300–£800+</strong> to design and build. With EveryDriver, website design, builds, and unlimited updates are <strong>completely free</strong> — all we ask is that you register your domain.
+                  </p>
+                  <div className="grid sm:grid-cols-3 gap-4 mt-6 max-w-2xl mx-auto">
+                    <div className="flex items-center gap-2 justify-center">
+                      <Check className="h-5 w-5 text-primary shrink-0" />
+                      <span className="text-sm font-medium">Unlimited design changes</span>
+                    </div>
+                    <div className="flex items-center gap-2 justify-center">
+                      <Check className="h-5 w-5 text-primary shrink-0" />
+                      <span className="text-sm font-medium">Unlimited content updates</span>
+                    </div>
+                    <div className="flex items-center gap-2 justify-center">
+                      <Check className="h-5 w-5 text-primary shrink-0" />
+                      <span className="text-sm font-medium">No build fees ever</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Every EveryDriver plan — including Free — comes with a basic professional web presence at no cost. Grab your custom domain below to make it truly yours.
+                  </p>
+                </CardContent>
+              </Card>
+
               {/* Search Results */}
               {hasSearched && (
                 <motion.div
