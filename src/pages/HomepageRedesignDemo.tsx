@@ -8,7 +8,7 @@ import {
 import { InstructorSaaSLayout } from "@/components/layout/InstructorSaaSLayout";
 import featuresHeroImg from "@/assets/features/features-hero.png";
 import diaryAppImg from "@/assets/features/diary-app.png";
-import paymentsImg from "@/assets/features/payments-tracking.jpg";
+import paymentsImg from "@/assets/features/pupil-making-payment.png";
 import websiteImg from "@/assets/features/website-showcase.png";
 import telematicsImg from "@/assets/features/telematics-showcase.png";
 import dashcamFeatureImg from "@/assets/dashcam-feature.png";
