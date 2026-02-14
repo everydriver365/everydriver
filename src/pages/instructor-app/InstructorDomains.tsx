@@ -316,7 +316,38 @@ export default function InstructorDomains() {
                 </CardContent>
               </Card>
 
-              {/* Search Results */}
+              {/* Domain Search */}
+              <Card className="mb-10">
+                <CardContent className="p-6 md:p-8">
+                  <h2 className="text-xl font-bold mb-2">Search for Your Perfect Domain</h2>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Enter your driving school name or preferred domain to check availability
+                  </p>
+                  <div className="flex gap-3">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="e.g. smithdriving or smithdriving.co.uk"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Button onClick={handleSearch} disabled={isSearching}>
+                      {isSearching ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Search
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
               {hasSearched && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
