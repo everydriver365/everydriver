@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useInstructorAuth } from "@/context/InstructorAuthContext";
 import { toast } from "sonner";
 import { Loader2, AlertCircle, ArrowLeft, Fingerprint, Eye, EyeOff, Share, Plus, Download, X } from "lucide-react";
+import { InstructorMarketingBottomNav } from "@/components/layout/InstructorMarketingBottomNav";
 import { motion, AnimatePresence } from "framer-motion";
 import { z } from "zod";
 
@@ -521,6 +522,7 @@ export default function InstructorLogin() {
           </div>
         </div>
       </motion.div>
+      <InstructorMarketingBottomNav />
     </div>
   );
 }
