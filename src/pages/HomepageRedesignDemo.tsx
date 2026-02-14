@@ -16,7 +16,7 @@ import marketingImg from "@/assets/features/marketing-website-mockup.png";
 import lifestyleDiaryImg from "@/assets/features/diary-option-lifestyle.png";
 import websiteShowcaseImg from "@/assets/features/website-showcase.png";
 import telematicsShowcaseImg from "@/assets/features/telematics-showcase.png";
-import dashcamImg from "@/assets/features/dashcam-setup.jpg";
+import dashcamImg from "@/assets/features/dashcam-ai.png";
 import drivingSchool1 from "@/assets/driving-school-1.png";
 import drivingSchool2 from "@/assets/driving-school-2.png";
 import pupilAppHero from "@/assets/pupil-app-hero.png";
