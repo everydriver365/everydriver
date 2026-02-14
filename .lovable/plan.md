@@ -1,82 +1,35 @@
 
 
-# Remove Demo Pages
+# Replace Bottom Nav on Instructor Marketing Pages
 
-## Summary
-Clean up the codebase by removing 22 demo and showcase pages that were used for design exploration. This will reduce bundle size and simplify the routing.
+## Problem
+The instructor marketing site (EveryDriver homepage at `/`) shows the learner-focused bottom navigation bar (Home, Search, Theory, FAQs, Help, Benefits). These items are irrelevant to instructors browsing the marketing site -- they relate to the Drive365 learner experience.
 
-## Pages to Remove
+## Solution
+Create a dedicated bottom nav for the instructor marketing pages that mirrors the site's own navigation sections, and use it in `InstructorSaaSLayout` instead of the learner `MobileBottomNav`.
 
-**Standalone demo pages (14 files):**
-- `src/pages/HeroLayoutDemo.tsx`
-- `src/pages/CollageDemo.tsx`
-- `src/pages/HeroRedesignDemo.tsx`
-- `src/pages/MobileHomeDemo.tsx`
-- `src/pages/MobilePortalDemo.tsx`
-- `src/pages/InstructorMobileDemo.tsx`
-- `src/pages/InstructorTileDemo.tsx`
-- `src/pages/DesignDemo.tsx`
-- `src/pages/InstructorHeroDemo.tsx`
-- `src/pages/InstructorHomeDesignDemo.tsx`
-- `src/pages/InstructorBlueStyleDemo.tsx`
-- `src/pages/QuickActionGradientDemo.tsx`
-- `src/pages/HomepageRedesignDemo.tsx`
-- `src/pages/MobileHomeRedesignDemo.tsx`
-- `src/pages/MobileHomeRedesignDemo2.tsx`
-- `src/pages/MobileHomeIOSDemo.tsx`
-- `src/pages/DiaryImageDemo.tsx`
-- `src/pages/TileDesignDemo.tsx`
+## New Bottom Nav Items
+The nav will include the most important marketing page sections:
 
-**Instructor app demo pages (2 files):**
-- `src/pages/instructor-app/DesignDemo.tsx`
-- `src/pages/instructor-app/PortalLayoutDemo.tsx`
+| Icon | Label | Path |
+|------|-------|------|
+| Home | Home | / |
+| Sparkles | Features | /instructor-app/features |
+| Globe | Websites | /instructor-app/domains |
+| PoundSterling | Pricing | /instructor-app/pricing |
+| LogIn | Log In | /instructor-app/login |
 
-**Showcase pages (2 files):**
-- `src/pages/NextUpTileShowcase.tsx`
-- `src/pages/TodoTileShowcase.tsx`
+This gives visitors quick access to the key decision-making pages (features, websites/domains, pricing) plus a direct login shortcut.
 
-**Instructor portal demo (1 file):**
-- `src/pages/PupilCardDemo.tsx`
+## Technical Changes
 
-## Routes to Remove
+### 1. New file: `src/components/layout/InstructorMarketingBottomNav.tsx`
+- A mobile-only (`md:hidden`) fixed bottom nav bar matching the existing styling conventions (primary background, safe area padding).
+- Uses the same active-state styling pattern as `MobileBottomNav` (white text when active, muted when inactive).
+- Icons from `lucide-react`: `Home`, `Sparkles`, `Globe`, `PoundSterling`, `LogIn`.
 
-From `src/App.tsx`:
-- `/design-demo`
-- `/hero-demo`
-- `/collage-demo`
-- `/hero-redesign`
-- `/mobile-home-demo`
-- `/mobile-portal-demo`
-- `/instructor-mobile-demo`
-- `/instructor-tile-demo`
-- `/instructor-hero-demo`
-- `/instructor-home-demo`
-- `/instructor-blue-demo`
-- `/quick-action-gradient-demo`
-- `/diary-image-demo`
-- `/tile-design-demo`
-- `/instructor-app/design-demo`
-- `/instructor-app/portal-layout-demo`
-- `/homepage-redesign-demo`
-- `/mobile-home-redesign`
-- `/mobile-home-redesign-2`
-- `/mobile-home-ios-demo`
-- `/instructor/next-up-showcase`
-- `/instructor/todo-tile-showcase`
-- `/instructor/pupil-card-demo`
+### 2. Update: `src/components/layout/InstructorSaaSLayout.tsx`
+- Replace the `<MobileBottomNav />` import and usage on line 129 with the new `<InstructorMarketingBottomNav />` component.
+- Remove the `MobileBottomNav` import (line 8).
 
-## Changes to `src/App.tsx`
-- Remove all 23 import statements for the demo/showcase pages
-- Remove all 23 Route entries listed above
-
-## What Will NOT Be Removed
-- The **Demo Mini Site** section in AdminPortal (this is a functional admin tool for managing the Sarah Mitchell demo instructor website, not a design exploration page)
-- The `DemoMiniSiteCMS` component in `src/components/admin/`
-- Any demo assets that may be shared with production pages (will verify during implementation)
-
-## Technical Details
-- Total files deleted: ~23 page components
-- Total routes removed: ~23
-- `App.tsx` will be updated to remove all related imports and route definitions
-- Any orphaned asset imports (e.g. `src/assets/demo/`) will be cleaned up if not used elsewhere
-
+No other files are affected. The learner `MobileBottomNav` continues to work in `MainLayout` for Drive365 pages.
