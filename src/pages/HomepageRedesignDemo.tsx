@@ -348,14 +348,8 @@ export default function HomepageRedesignDemo() {
       </section>
 
       {/* ─── PRODUCT GRID ─── */}
-      <section className="relative py-20 md:py-28 overflow-hidden">
-        {/* Background image with overlay */}
-        <div className="absolute inset-0">
-          <img src={lifestyleDiaryImg} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-background/90 dark:bg-background/95 backdrop-blur-sm" />
-        </div>
-
-        <div className="container max-w-6xl relative z-10">
+      <section className="py-20 md:py-28 bg-background">
+        <div className="container max-w-6xl">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
               Start Free. Grow When Ready.
@@ -367,44 +361,52 @@ export default function HomepageRedesignDemo() {
 
           <div className="grid sm:grid-cols-2 gap-6">
             {[
-              { icon: Calendar, name: "Smart Diary", price: "Free", suffix: "forever", free: true, benefits: ["Drag-and-drop calendar", "Google Calendar sync", "Gap filling & SMS", "Payment tracking"], link: "/instructor-app/features" },
-              { icon: Globe, name: "Website & Domain", price: "From £4.99", suffix: "/mo", free: false, benefits: ["Custom .co.uk domain", "Online booking", "SEO optimised", "Review showcase"], link: "/instructor-app/domains" },
-              { icon: Gauge, name: "Telematics", price: "From £9.99", suffix: "/mo", free: false, benefits: ["Live speed monitoring", "Driver scoring", "Trip replay", "Progress reports"], link: "/instructor-app/telematics" },
-              { icon: Camera, name: "Dashcam", price: "From £12.99", suffix: "/mo", free: false, benefits: ["Incident recording", "Clip sharing", "Cloud storage", "Geotab integration"], link: "/instructor-app/dashcam" },
+              { icon: Calendar, name: "Smart Diary", price: "Free", suffix: "forever", free: true, benefits: ["Drag-and-drop calendar", "Google Calendar sync", "Gap filling & SMS", "Payment tracking"], link: "/instructor-app/features", bg: lifestyleDiaryImg },
+              { icon: Globe, name: "Website & Domain", price: "From £4.99", suffix: "/mo", free: false, benefits: ["Custom .co.uk domain", "Online booking", "SEO optimised", "Review showcase"], link: "/instructor-app/domains", bg: null },
+              { icon: Gauge, name: "Telematics", price: "From £9.99", suffix: "/mo", free: false, benefits: ["Live speed monitoring", "Driver scoring", "Trip replay", "Progress reports"], link: "/instructor-app/telematics", bg: null },
+              { icon: Camera, name: "Dashcam", price: "From £12.99", suffix: "/mo", free: false, benefits: ["Incident recording", "Clip sharing", "Cloud storage", "Geotab integration"], link: "/instructor-app/dashcam", bg: null },
             ].map((product) => (
               <div key={product.name}>
                 <Link
                   to={product.link}
-                  className={`group block h-full rounded-2xl border p-7 transition-all hover:shadow-lg backdrop-blur-md ${
+                  className={`group relative block h-full rounded-2xl border p-7 transition-all hover:shadow-lg overflow-hidden ${
                     product.free
-                      ? "border-[#0075c9]/30 bg-card/80 hover:border-[#0075c9]"
-                      : "border-border bg-card/70 hover:border-[#0075c9]/30"
+                      ? "border-[#0075c9]/30 hover:border-[#0075c9]"
+                      : "border-border bg-card hover:border-[#0075c9]/30"
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-5">
-                    <div className="h-12 w-12 rounded-xl bg-[#0075c9]/10 flex items-center justify-center">
-                      <product.icon className="h-6 w-6 text-[#0075c9]" />
+                  {product.bg && (
+                    <>
+                      <img src={product.bg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-background/85 dark:bg-background/90" />
+                    </>
+                  )}
+                  <div className="relative z-10">
+                    <div className="flex items-start justify-between mb-5">
+                      <div className="h-12 w-12 rounded-xl bg-[#0075c9]/10 flex items-center justify-center">
+                        <product.icon className="h-6 w-6 text-[#0075c9]" />
+                      </div>
+                      {product.free ? (
+                        <Badge className="bg-emerald-500 text-white border-0 text-xs uppercase">Free</Badge>
+                      ) : (
+                        <span className="text-sm font-semibold text-foreground">
+                          {product.price}<span className="text-muted-foreground font-normal">{product.suffix}</span>
+                        </span>
+                      )}
                     </div>
-                    {product.free ? (
-                      <Badge className="bg-emerald-500 text-white border-0 text-xs uppercase">Free</Badge>
-                    ) : (
-                      <span className="text-sm font-semibold text-foreground">
-                        {product.price}<span className="text-muted-foreground font-normal">{product.suffix}</span>
-                      </span>
-                    )}
+                    <h3 className="text-xl font-bold text-foreground mb-4">{product.name}</h3>
+                    <ul className="space-y-2.5 mb-6">
+                      {product.benefits.map((b) => (
+                        <li key={b} className="flex items-center gap-2.5 text-sm text-foreground/80">
+                          <Check className="h-4 w-4 text-[#0075c9] shrink-0" />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0075c9] group-hover:gap-2.5 transition-all">
+                      Learn more <ArrowRight className="h-4 w-4" />
+                    </span>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-4">{product.name}</h3>
-                  <ul className="space-y-2.5 mb-6">
-                    {product.benefits.map((b) => (
-                      <li key={b} className="flex items-center gap-2.5 text-sm text-foreground/80">
-                        <Check className="h-4 w-4 text-[#0075c9] shrink-0" />
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0075c9] group-hover:gap-2.5 transition-all">
-                    Learn more <ArrowRight className="h-4 w-4" />
-                  </span>
                 </Link>
               </div>
             ))}
