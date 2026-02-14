@@ -26,6 +26,14 @@ import {
   Route,
   ClipboardList,
   Lock,
+  Gauge,
+  Award,
+  Trophy,
+  TrendingUp,
+  MessageSquare,
+  Target,
+  BarChart3,
+  Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import dashcamFeatureImg from "@/assets/dashcam-feature.png";
@@ -342,6 +350,210 @@ export default function InstructorDashcam() {
                 <p className="text-sm text-muted-foreground">{item.label}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Monitor Pupil Safety in Real-Time */}
+      <section className="py-20 bg-background">
+        <div className="container max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Monitor Pupil Safety in Real-Time
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                Track risky driving behaviour — speeding, harsh braking, and sharp cornering — as it happens during every lesson. Set up instant alerts and use trend reports to identify which pupils need extra coaching on specific skills.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { stat: "41%", label: "reduction in harsh braking events after coaching", icon: TrendingUp, color: "text-emerald-500" },
+                  { stat: "25%", label: "improvement in pupil driving scores", icon: Award, color: "text-sky-500" },
+                ].map((item) => (
+                  <div key={item.label} className="text-center p-4 rounded-xl bg-muted/50 border">
+                    <item.icon className={`h-6 w-6 mx-auto mb-2 ${item.color}`} />
+                    <p className="text-2xl font-extrabold text-foreground">{item.stat}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="grid grid-cols-2 gap-4"
+            >
+              {[
+                { icon: Gauge, title: "Live Speed Tracking", desc: "See real-time speed with limit alerts during every lesson.", color: "text-sky-500", bg: "bg-sky-500/10" },
+                { icon: AlertTriangle, title: "Risk Alerts", desc: "Instant notifications for harsh braking, swerving, and tailgating.", color: "text-amber-500", bg: "bg-amber-500/10" },
+                { icon: BarChart3, title: "Trend Reports", desc: "Track pupil improvement over weeks with visual progress charts.", color: "text-violet-500", bg: "bg-violet-500/10" },
+                { icon: Target, title: "DVSA Skill Mapping", desc: "Telematics events mapped directly to syllabus competencies.", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              ].map((card) => (
+                <Card key={card.title} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-5">
+                    <div className={`h-10 w-10 rounded-xl ${card.bg} flex items-center justify-center mb-3`}>
+                      <card.icon className={`h-5 w-5 ${card.color}`} />
+                    </div>
+                    <h4 className="font-semibold text-sm text-foreground mb-1">{card.title}</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{card.desc}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* In-Vehicle Feedback */}
+      <section className="py-20 bg-muted/30">
+        <div className="container max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="order-2 md:order-1"
+            >
+              <div className="grid grid-cols-1 gap-4">
+                {[
+                  { icon: MessageSquare, title: "In-Cab Voice Alerts", desc: "Spoken feedback warns of speeding, harsh braking, or distraction — helping pupils self-correct in the moment.", color: "text-sky-500", bg: "bg-sky-500/10" },
+                  { icon: Bell, title: "Configurable Thresholds", desc: "Set custom sensitivity for speed, acceleration, and cornering alerts. Adjust as pupils progress from beginner to test-ready.", color: "text-amber-500", bg: "bg-amber-500/10" },
+                  { icon: Sparkles, title: "AI Coaching Summaries", desc: "After each lesson, AI generates a coaching summary highlighting strengths, areas for improvement, and recommended next steps.", color: "text-violet-500", bg: "bg-violet-500/10" },
+                ].map((item) => (
+                  <div key={item.title} className="flex items-start gap-4 p-4 rounded-xl bg-card border">
+                    <div className={`h-10 w-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
+                      <item.icon className={`h-5 w-5 ${item.color}`} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm text-foreground mb-1">{item.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="order-1 md:order-2"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Deliver Real-Time Pupil Feedback
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                Take your coaching beyond the passenger seat. Provide immediate, automated feedback during lessons with voice alerts and AI-powered summaries that help pupils understand exactly what to improve.
+              </p>
+              <Button className="bg-[#0075c9] hover:bg-[#005a9e] text-white rounded-xl" asChild>
+                <Link to="/instructor-app/contact">
+                  Learn More
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Motivate & Gamify */}
+      <section className="py-20 bg-background">
+        <div className="container max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Motivate Pupils with Driver Scorecards
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Encourage pupils to take ownership of their progress with visual scorecards, achievement badges, and friendly competition — all powered by real driving data.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: Trophy, title: "Driver Scorecard", desc: "Each pupil gets a score based on acceleration, braking, cornering, and speed compliance.", color: "text-amber-500", bg: "bg-amber-500/10" },
+              { icon: Award, title: "Achievement Badges", desc: "Pupils earn badges for milestones like 'Smooth Braker', 'Speed-Aware', and 'Test Ready'.", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              { icon: TrendingUp, title: "Progress Over Time", desc: "Visual charts show how scores improve lesson by lesson, building confidence and motivation.", color: "text-sky-500", bg: "bg-sky-500/10" },
+              { icon: Users, title: "Parent Visibility", desc: "Parents can view scorecards and progress in the parent portal, keeping the whole family engaged.", color: "text-violet-500", bg: "bg-violet-500/10" },
+            ].map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+              >
+                <Card className="h-full hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className={`h-12 w-12 rounded-xl ${card.bg} flex items-center justify-center mb-4`}>
+                      <card.icon className={`h-6 w-6 ${card.color}`} />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-2">{card.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Proactive Safety Culture */}
+      <section className="py-20 bg-gradient-to-br from-[#0075c9]/5 to-[#0075c9]/10">
+        <div className="container max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Build a Proactive Safety Culture
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                EveryDriver's coaching tools help you create a structured approach to pupil development. Work collaboratively with your pupils to achieve measurable improvements across every driving skill.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  "Reduce speeding incidents through real-time awareness",
+                  "Improve hazard perception with video playback coaching",
+                  "Track progress against all 27 DVSA competencies",
+                  "Build test confidence with data-backed readiness scores",
+                  "Engage parents with transparent reporting",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm text-foreground">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="grid grid-cols-2 gap-4"
+            >
+              {[
+                { stat: "87%", label: "reduction in risky driving events after 10 coached lessons", color: "text-emerald-500" },
+                { stat: "28%", label: "improvement in average pupil safety scores", color: "text-sky-500" },
+                { stat: "3×", label: "faster progress to test-readiness with data coaching", color: "text-violet-500" },
+                { stat: "95%", label: "of parents say visibility improved their confidence", color: "text-amber-500" },
+              ].map((item) => (
+                <div key={item.label} className="text-center p-5 rounded-xl bg-card border">
+                  <p className={`text-3xl font-extrabold ${item.color} mb-1`}>{item.stat}</p>
+                  <p className="text-xs text-muted-foreground">{item.label}</p>
+                </div>
+              ))}
+            </motion.div>
           </div>
         </div>
       </section>
