@@ -348,13 +348,13 @@ export default function HomepageRedesignDemo() {
       </section>
 
       {/* ─── PRODUCT GRID ─── */}
-      <section className="py-20 md:py-28 bg-background">
+      <section className="py-20 md:py-28 bg-[#0a1628]">
         <div className="container max-w-6xl">
           <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight mb-3">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-3">
               Start Free. Grow When Ready.
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-white/60 text-lg max-w-2xl mx-auto">
               The diary is free forever. Add premium tools as your business grows.
             </p>
           </div>
@@ -369,36 +369,36 @@ export default function HomepageRedesignDemo() {
               <div key={product.name}>
                 <Link
                   to={product.link}
-                  className={`group relative block h-full rounded-2xl border p-7 transition-all hover:shadow-lg overflow-hidden ${
+                  className={`group relative block h-full rounded-2xl border p-7 transition-all overflow-hidden ${
                     product.free
-                      ? "border-[#0075c9]/30 hover:border-[#0075c9]"
-                      : "border-border bg-card hover:border-[#0075c9]/30"
+                      ? "border-[#0075c9]/50 hover:border-[#0075c9] hover:shadow-[0_0_30px_-5px_rgba(0,117,201,0.3)]"
+                      : "border-white/10 bg-white/[0.04] hover:border-[#0075c9]/40 hover:shadow-[0_0_30px_-5px_rgba(0,117,201,0.15)]"
                   }`}
                 >
                   {product.bg && (
                     <>
                       <img src={product.bg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-background/85 dark:bg-background/90" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/95 via-[#0a1628]/80 to-[#0a1628]/60" />
                     </>
                   )}
                   <div className="relative z-10">
                     <div className="flex items-start justify-between mb-5">
-                      <div className="h-12 w-12 rounded-xl bg-[#0075c9]/10 flex items-center justify-center">
-                        <product.icon className="h-6 w-6 text-[#0075c9]" />
+                      <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${product.free ? "bg-[#0075c9]/20" : "bg-white/10"}`}>
+                        <product.icon className={`h-6 w-6 ${product.free ? "text-[#0075c9]" : "text-white/70"}`} />
                       </div>
                       {product.free ? (
-                        <Badge className="bg-emerald-500 text-white border-0 text-xs uppercase">Free</Badge>
+                        <Badge className="bg-emerald-500 text-white border-0 text-xs uppercase shadow-lg shadow-emerald-500/20">Free Forever</Badge>
                       ) : (
-                        <span className="text-sm font-semibold text-foreground">
-                          {product.price}<span className="text-muted-foreground font-normal">{product.suffix}</span>
+                        <span className="text-sm font-semibold text-white">
+                          {product.price}<span className="text-white/50 font-normal">{product.suffix}</span>
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xl font-bold text-foreground mb-4">{product.name}</h3>
+                    <h3 className="text-xl font-bold text-white mb-4">{product.name}</h3>
                     <ul className="space-y-2.5 mb-6">
                       {product.benefits.map((b) => (
-                        <li key={b} className="flex items-center gap-2.5 text-sm text-foreground/80">
-                          <Check className="h-4 w-4 text-[#0075c9] shrink-0" />
+                        <li key={b} className="flex items-center gap-2.5 text-sm text-white/70">
+                          <Check className={`h-4 w-4 shrink-0 ${product.free ? "text-emerald-400" : "text-[#0075c9]"}`} />
                           {b}
                         </li>
                       ))}
