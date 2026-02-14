@@ -299,8 +299,8 @@ export default function HomepageRedesignDemo() {
       </section>
 
       {/* ─── FREE APPS SECTION ─── */}
-      <section className="py-20 md:py-28 bg-[#0a1628] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-15">
+      <section className="py-20 md:py-28 bg-[#0a1628] relative">
+        <div className="absolute inset-0 overflow-hidden opacity-15 pointer-events-none">
           <div className="absolute top-20 right-1/4 w-80 h-80 bg-[#0075c9] rounded-full blur-[140px]" />
           <div className="absolute bottom-10 left-1/3 w-64 h-64 bg-[#00a3ff] rounded-full blur-[120px]" />
         </div>
