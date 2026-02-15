@@ -161,7 +161,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 <div
                   className={cn(
                     "flex items-center justify-center rounded-lg w-8 h-8 transition-colors",
-                    isActive && !contrast ? "bg-[#0075c9]" : ""
+                    isActive && !contrast ? "bg-primary" : ""
                   )}
                   style={isActive && contrast ? { backgroundColor: contrast.active } : undefined}
                 >
@@ -199,7 +199,7 @@ export function InstructorBottomNav({ wallpaperColor }: InstructorBottomNavProps
                 style={{
                   color: contrast
                     ? (isActive ? contrast.active : contrast.inactive)
-                    : (isActive ? "#0075c9" : "#8e8e93")
+                    : (isActive ? "hsl(var(--primary))" : "#8e8e93")
                 }}
               >
                 {item.label}
